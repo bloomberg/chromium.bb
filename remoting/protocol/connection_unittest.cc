@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -531,7 +532,7 @@ TEST_P(ConnectionTest, Video) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          base::MakeUnique<TestScreenCapturer>());
+          std::make_unique<TestScreenCapturer>());
 
   // Receive 5 frames.
   for (int i = 0; i < 5; ++i) {
@@ -593,7 +594,7 @@ TEST_P(ConnectionTest, VideoStats) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          base::MakeUnique<TestScreenCapturer>());
+          std::make_unique<TestScreenCapturer>());
   video_stream->SetEventTimestampsSource(input_event_timestamps_source);
 
   WaitNextVideoFrame();
@@ -632,7 +633,7 @@ TEST_P(ConnectionTest, Audio) {
   Connect();
 
   std::unique_ptr<AudioStream> audio_stream =
-      host_connection_->StartAudioStream(base::MakeUnique<TestAudioSource>());
+      host_connection_->StartAudioStream(std::make_unique<TestAudioSource>());
 
   // Wait for 1 second worth of audio samples.
   client_audio_player_.WaitForSamples(kAudioSampleRate * 2);
@@ -642,7 +643,7 @@ TEST_P(ConnectionTest, Audio) {
 TEST_P(ConnectionTest, FirstCaptureFailed) {
   Connect();
 
-  auto capturer = base::MakeUnique<TestScreenCapturer>();
+  auto capturer = std::make_unique<TestScreenCapturer>();
   capturer->FailNthFrame(0);
   auto video_stream = host_connection_->StartVideoStream(std::move(capturer));
 
@@ -652,7 +653,7 @@ TEST_P(ConnectionTest, FirstCaptureFailed) {
 TEST_P(ConnectionTest, SecondCaptureFailed) {
   Connect();
 
-  auto capturer = base::MakeUnique<TestScreenCapturer>();
+  auto capturer = std::make_unique<TestScreenCapturer>();
   capturer->FailNthFrame(1);
   auto video_stream = host_connection_->StartVideoStream(std::move(capturer));
 

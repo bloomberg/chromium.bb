@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
@@ -175,7 +174,7 @@ VideoFramePump::EncodeFrame(VideoEncoder* encoder,
       (timestamps->encode_ended_time - timestamps->encode_started_time)
           .InMilliseconds());
 
-  return base::MakeUnique<PacketWithTimestamps>(std::move(packet),
+  return std::make_unique<PacketWithTimestamps>(std::move(packet),
                                                 std::move(timestamps));
 }
 
@@ -250,7 +249,7 @@ void VideoFramePump::SendKeepAlivePacket() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   video_stub_->ProcessVideoPacket(
-      base::MakeUnique<VideoPacket>(),
+      std::make_unique<VideoPacket>(),
       base::Bind(&VideoFramePump::OnKeepAlivePacketSent,
                  weak_factory_.GetWeakPtr()));
 }

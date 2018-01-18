@@ -361,7 +361,7 @@ void FileProxyWrapperLinux::ReadChunkCallback(base::File::Error error,
   next_read_file_offset_ += bytes_read;
 
   std::unique_ptr<std::vector<char>> read_buffer =
-      base::MakeUnique<std::vector<char>>();
+      std::make_unique<std::vector<char>>();
   read_buffer->resize(bytes_read);
   memcpy(read_buffer->data(), data, read_buffer->size());
 

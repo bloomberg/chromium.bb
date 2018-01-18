@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/host/audio_capturer.h"
@@ -53,7 +52,7 @@ BasicDesktopEnvironment::CreateScreenControls() {
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-  return base::MakeUnique<MouseCursorMonitorProxy>(video_capture_task_runner_,
+  return std::make_unique<MouseCursorMonitorProxy>(video_capture_task_runner_,
                                                    desktop_capture_options());
 }
 

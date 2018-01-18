@@ -13,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -191,7 +190,7 @@ void It2MeNativeMessagingHost::ProcessHello(
   response->SetString("version", STRINGIZE(VERSION));
 
   // This list will be populated when new features are added.
-  response->Set("supportedFeatures", base::MakeUnique<base::ListValue>());
+  response->Set("supportedFeatures", std::make_unique<base::ListValue>());
 
   SendMessageToClient(std::move(response));
 }
@@ -307,7 +306,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
     }
 
     auto delegating_signal_strategy =
-        base::MakeUnique<DelegatingSignalStrategy>(
+        std::make_unique<DelegatingSignalStrategy>(
             SignalingAddress(local_jid), host_context_->network_task_runner(),
             base::Bind(&It2MeNativeMessagingHost::SendOutgoingIq,
                        weak_factory_.GetWeakPtr()));
@@ -346,7 +345,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   // Create the It2Me host and start connecting.
   it2me_host_ = factory_->CreateIt2MeHost();
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
-                       base::MakeUnique<It2MeConfirmationDialogFactory>(),
+                       std::make_unique<It2MeConfirmationDialogFactory>(),
                        weak_ptr_, std::move(signal_strategy), username,
                        directory_bot_jid, ice_config);
 
@@ -429,7 +428,7 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
 void It2MeNativeMessagingHost::SendPolicyErrorAndExit() const {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  auto message = base::MakeUnique<base::DictionaryValue>();
+  auto message = std::make_unique<base::DictionaryValue>();
   message->SetString("type", "policyError");
   SendMessageToClient(std::move(message));
   client_->CloseChannel(std::string());

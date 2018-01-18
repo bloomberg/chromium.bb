@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -148,7 +147,7 @@ void It2MeConfirmationDialogLinux::OnResponse(GtkDialog* dialog,
 
 std::unique_ptr<It2MeConfirmationDialog>
 It2MeConfirmationDialogFactory::Create() {
-  return base::MakeUnique<It2MeConfirmationDialogLinux>();
+  return std::make_unique<It2MeConfirmationDialogLinux>();
 }
 
 }  // namespace remoting

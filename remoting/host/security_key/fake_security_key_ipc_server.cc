@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -76,7 +75,7 @@ bool FakeSecurityKeyIpcServer::CreateChannel(
 #if defined(OS_WIN)
   options.enforce_uniqueness = false;
 #endif
-  peer_connection_ = base::MakeUnique<mojo::edk::PeerConnection>();
+  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
   ipc_channel_ = IPC::Channel::CreateServer(
       peer_connection_
           ->Connect(mojo::edk::ConnectionParams(
@@ -129,7 +128,7 @@ std::unique_ptr<SecurityKeyIpcServer> FakeSecurityKeyIpcServerFactory::Create(
     const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
     const base::Closure& connect_callback,
     const base::Closure& done_callback) {
-  auto fake_ipc_server = base::MakeUnique<FakeSecurityKeyIpcServer>(
+  auto fake_ipc_server = std::make_unique<FakeSecurityKeyIpcServer>(
       connection_id, client_session_details, initial_connect_timeout,
       send_message_callback, connect_callback, done_callback);
 

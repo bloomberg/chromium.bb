@@ -98,7 +98,7 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state == SignalStrategy::CONNECTED) {
     DCHECK(!iq_sender_);
-    iq_sender_ = base::MakeUnique<IqSender>(signal_strategy_);
+    iq_sender_ = std::make_unique<IqSender>(signal_strategy_);
     SendHeartbeat();
   } else if (state == SignalStrategy::DISCONNECTED) {
     request_.reset();

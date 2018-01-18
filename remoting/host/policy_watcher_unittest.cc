@@ -95,7 +95,7 @@ class PolicyWatcherTest : public testing::Test {
     nat_one_domain_full_.Set(key::kRemoteAccessHostDomainList,
                              host_domain.CreateDeepCopy());
     domain_empty_.Set(key::kRemoteAccessHostDomainList,
-                      base::MakeUnique<base::ListValue>());
+                      std::make_unique<base::ListValue>());
     domain_full_.Set(key::kRemoteAccessHostDomainList,
                      host_domain.CreateDeepCopy());
     SetDefaults(nat_true_others_default_);
@@ -106,14 +106,14 @@ class PolicyWatcherTest : public testing::Test {
         key::kRemoteAccessHostFirewallTraversal, false);
     SetDefaults(domain_empty_others_default_);
     domain_empty_others_default_.Set(key::kRemoteAccessHostDomainList,
-                                     base::MakeUnique<base::ListValue>());
+                                     std::make_unique<base::ListValue>());
     SetDefaults(domain_full_others_default_);
     domain_full_others_default_.Set(key::kRemoteAccessHostDomainList,
                                     host_domain.CreateDeepCopy());
     nat_true_domain_empty_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                       true);
     nat_true_domain_empty_.Set(key::kRemoteAccessHostDomainList,
-                               base::MakeUnique<base::ListValue>());
+                               std::make_unique<base::ListValue>());
     nat_true_domain_full_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                      true);
     nat_true_domain_full_.Set(key::kRemoteAccessHostDomainList,
@@ -121,7 +121,7 @@ class PolicyWatcherTest : public testing::Test {
     nat_false_domain_empty_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                        false);
     nat_false_domain_empty_.Set(key::kRemoteAccessHostDomainList,
-                                base::MakeUnique<base::ListValue>());
+                                std::make_unique<base::ListValue>());
     nat_false_domain_full_.SetBoolean(key::kRemoteAccessHostFirewallTraversal,
                                       false);
     nat_false_domain_full_.Set(key::kRemoteAccessHostDomainList,
@@ -130,7 +130,7 @@ class PolicyWatcherTest : public testing::Test {
     nat_true_domain_empty_others_default_.SetBoolean(
         key::kRemoteAccessHostFirewallTraversal, true);
     nat_true_domain_empty_others_default_.Set(
-        key::kRemoteAccessHostDomainList, base::MakeUnique<base::ListValue>());
+        key::kRemoteAccessHostDomainList, std::make_unique<base::ListValue>());
     unknown_policies_.SetString("UnknownPolicyOne", std::string());
     unknown_policies_.SetString("UnknownPolicyTwo", std::string());
     unknown_policies_.SetBoolean("RemoteAccessHostUnknownPolicyThree", true);
@@ -308,9 +308,9 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetBoolean(key::kRemoteAccessHostAllowRelayedConnection, true);
     dict.SetString(key::kRemoteAccessHostUdpPortRange, "");
     dict.Set(key::kRemoteAccessHostClientDomainList,
-             base::MakeUnique<base::ListValue>());
+             std::make_unique<base::ListValue>());
     dict.Set(key::kRemoteAccessHostDomainList,
-             base::MakeUnique<base::ListValue>());
+             std::make_unique<base::ListValue>());
     dict.SetBoolean(key::kRemoteAccessHostMatchUsername, false);
     dict.SetString(key::kRemoteAccessHostTalkGadgetPrefix,
                    kDefaultHostTalkGadgetPrefix);

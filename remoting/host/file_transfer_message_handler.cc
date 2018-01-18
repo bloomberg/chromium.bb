@@ -5,7 +5,6 @@
 #include "remoting/host/file_transfer_message_handler.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "remoting/base/compound_buffer.h"
@@ -97,7 +96,7 @@ void FileTransferMessageHandler::ParseNewRequest(
   message.resize(buffer->total_bytes());
   buffer->CopyTo(base::string_as_array(&message), message.size());
 
-  request_ = base::MakeUnique<protocol::FileTransferRequest>();
+  request_ = std::make_unique<protocol::FileTransferRequest>();
   if (!request_->ParseFromString(message)) {
     CancelAndSendError("Failed to parse request protobuf");
     return;

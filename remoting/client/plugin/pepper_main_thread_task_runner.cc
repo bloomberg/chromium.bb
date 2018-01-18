@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/module.h"
@@ -34,7 +33,7 @@ bool PepperMainThreadTaskRunner::PostDelayedTask(
     const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta delay) {
-  auto task_ptr = base::MakeUnique<base::OnceClosure>(base::Bind(
+  auto task_ptr = std::make_unique<base::OnceClosure>(base::Bind(
       &PepperMainThreadTaskRunner::RunTask, weak_ptr_, base::Passed(&task)));
   core_->CallOnMainThread(
       delay.InMillisecondsRoundedUp(),

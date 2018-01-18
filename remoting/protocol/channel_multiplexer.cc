@@ -14,7 +14,6 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -164,7 +163,7 @@ void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
   DCHECK_EQ(packet->channel_id(), receive_id_);
   if (packet->data().size() > 0) {
     pending_packets_.push_back(
-        base::MakeUnique<PendingPacket>(std::move(packet)));
+        std::make_unique<PendingPacket>(std::move(packet)));
     if (socket_) {
       // Notify the socket that we have more data.
       socket_->OnPacketReceived();
@@ -403,7 +402,7 @@ ChannelMultiplexer::MuxChannel* ChannelMultiplexer::GetOrCreateChannel(
   std::unique_ptr<MuxChannel>& channel = channels_[name];
   if (!channel) {
     // Create a new channel if we haven't found existing one.
-    channel = base::MakeUnique<MuxChannel>(this, name, next_channel_id_);
+    channel = std::make_unique<MuxChannel>(this, name, next_channel_id_);
     ++next_channel_id_;
   }
 

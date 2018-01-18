@@ -6,13 +6,14 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
@@ -131,7 +132,7 @@ void ContinueWindowWin::EndDialog() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::MakeUnique<ContinueWindowWin>();
+  return std::make_unique<ContinueWindowWin>();
 }
 
 }  // namespace remoting

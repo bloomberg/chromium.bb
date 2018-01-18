@@ -18,7 +18,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -194,7 +193,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   rtc::InitRandom(random_seed, sizeof(random_seed));
 
   // Send hello message.
-  PostLegacyJsonMessage("hello", base::MakeUnique<base::DictionaryValue>());
+  PostLegacyJsonMessage("hello", std::make_unique<base::DictionaryValue>());
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -345,7 +344,7 @@ void ChromotingInstance::OnVideoDecodeError() {
 
 void ChromotingInstance::OnVideoFirstFrameReceived() {
   PostLegacyJsonMessage("onFirstFrameReceived",
-                        base::MakeUnique<base::DictionaryValue>());
+                        std::make_unique<base::DictionaryValue>());
 }
 
 void ChromotingInstance::OnVideoFrameDirtyRegion(
@@ -693,8 +692,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
           signal_strategy_.get(),
-          base::MakeUnique<PepperPortAllocatorFactory>(this),
-          base::MakeUnique<PepperUrlRequestFactory>(this),
+          std::make_unique<PepperPortAllocatorFactory>(this),
+          std::make_unique<PepperUrlRequestFactory>(this),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT));

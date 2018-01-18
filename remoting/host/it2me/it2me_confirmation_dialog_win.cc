@@ -15,7 +15,6 @@
 #include "base/i18n/message_formatter.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -225,7 +224,7 @@ It2MeConfirmationDialogWin::TaskDialogCallbackProc(HWND hwnd,
 
 std::unique_ptr<It2MeConfirmationDialog>
 It2MeConfirmationDialogFactory::Create() {
-  return base::MakeUnique<It2MeConfirmationDialogWin>();
+  return std::make_unique<It2MeConfirmationDialogWin>();
 }
 
 }  // namespace remoting

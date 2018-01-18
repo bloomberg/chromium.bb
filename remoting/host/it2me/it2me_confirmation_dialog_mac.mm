@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 
 #import <Cocoa/Cocoa.h>
@@ -13,7 +15,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -112,7 +113,7 @@ void It2MeConfirmationDialogMac::OnDialogAction(Result result) {
 
 std::unique_ptr<It2MeConfirmationDialog>
 It2MeConfirmationDialogFactory::Create() {
-  return base::MakeUnique<It2MeConfirmationDialogMac>();
+  return std::make_unique<It2MeConfirmationDialogMac>();
 }
 
 }  // namespace remoting

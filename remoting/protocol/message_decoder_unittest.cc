@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
@@ -81,7 +80,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
       if (!message.get())
         break;
 
-      std::unique_ptr<EventMessage> event = base::MakeUnique<EventMessage>();
+      std::unique_ptr<EventMessage> event = std::make_unique<EventMessage>();
       CompoundBufferInputStream stream(message.get());
       ASSERT_TRUE(event->ParseFromZeroCopyStream(&stream));
       message_list.push_back(std::move(event));

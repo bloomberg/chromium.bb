@@ -6,11 +6,11 @@
 
 #include <android/native_window_jni.h>
 #include <array>
+#include <memory>
 
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "jni/GlDisplay_jni.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/cursor_shape_stub_proxy.h"
@@ -149,7 +149,7 @@ void JniGlDisplayHandler::Core::SurfaceCreated(
   egl_context_.reset(new EglThreadContext());
   egl_context_->BindToWindow(window_);
 
-  renderer_->OnSurfaceCreated(base::MakeUnique<GlCanvas>(
+  renderer_->OnSurfaceCreated(std::make_unique<GlCanvas>(
       static_cast<int>(egl_context_->client_version())));
 
   runtime_->network_task_runner()->PostTask(
@@ -234,13 +234,13 @@ JniGlDisplayHandler::~JniGlDisplayHandler() {
 
 std::unique_ptr<protocol::CursorShapeStub>
 JniGlDisplayHandler::CreateCursorShapeStub() {
-  return base::MakeUnique<CursorShapeStubProxy>(
+  return std::make_unique<CursorShapeStubProxy>(
       core_->GetWeakPtr(), runtime_->display_task_runner());
 }
 
 std::unique_ptr<protocol::VideoRenderer>
 JniGlDisplayHandler::CreateVideoRenderer() {
-  return base::MakeUnique<SoftwareVideoRenderer>(core_->GrabFrameConsumer());
+  return std::make_unique<SoftwareVideoRenderer>(core_->GrabFrameConsumer());
 }
 
 void JniGlDisplayHandler::OnSurfaceCreated(

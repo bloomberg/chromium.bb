@@ -16,7 +16,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
@@ -96,7 +95,7 @@ Me2MeNativeMessagingHost::~Me2MeNativeMessagingHost() {
 void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  auto response = base::MakeUnique<base::DictionaryValue>();
+  auto response = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
   if (!message_value->is_dict()) {
     OnError("Received a message that's not a dictionary.");
@@ -458,7 +457,7 @@ void Me2MeNativeMessagingHost::SendConfigResponse(
   if (config) {
     response->Set("config", std::move(config));
   } else {
-    response->Set("config", base::MakeUnique<base::Value>());
+    response->Set("config", std::make_unique<base::Value>());
   }
   SendMessageToClient(std::move(response));
 }

@@ -4,11 +4,11 @@
 
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/buffered_socket_writer.h"
@@ -34,13 +34,13 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
   DCHECK(event_handler);
   event_handler_ = event_handler;
 
-  writer_ = base::MakeUnique<BufferedSocketWriter>();
+  writer_ = std::make_unique<BufferedSocketWriter>();
   writer_->Start(
       base::Bind(&P2PStreamSocket::Write, base::Unretained(socket_.get())),
       base::Bind(&StreamMessagePipeAdapter::CloseOnError,
                  base::Unretained(this)));
 
-  reader_ = base::MakeUnique<MessageReader>();
+  reader_ = std::make_unique<MessageReader>();
   reader_->StartReading(socket_.get(),
                         base::Bind(&EventHandler::OnMessageReceived,
                                    base::Unretained(event_handler_)),
@@ -99,7 +99,7 @@ void StreamMessageChannelFactoryAdapter::OnChannelCreated(
     error_callback_.Run(net::ERR_FAILED);
     return;
   }
-  callback.Run(base::MakeUnique<StreamMessagePipeAdapter>(std::move(socket),
+  callback.Run(std::make_unique<StreamMessagePipeAdapter>(std::move(socket),
                                                           error_callback_));
 }
 

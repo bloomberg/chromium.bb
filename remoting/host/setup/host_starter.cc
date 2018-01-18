@@ -4,6 +4,7 @@
 
 #include "remoting/host/setup/host_starter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -43,8 +44,8 @@ std::unique_ptr<HostStarter> HostStarter::Create(
     const std::string& chromoting_hosts_url,
     net::URLRequestContextGetter* url_request_context_getter) {
   return base::WrapUnique(new HostStarter(
-      base::MakeUnique<gaia::GaiaOAuthClient>(url_request_context_getter),
-      base::MakeUnique<remoting::ServiceClient>(chromoting_hosts_url,
+      std::make_unique<gaia::GaiaOAuthClient>(url_request_context_getter),
+      std::make_unique<remoting::ServiceClient>(chromoting_hosts_url,
                                                 url_request_context_getter),
       remoting::DaemonController::Create()));
 }

@@ -163,14 +163,14 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetCurrentPolicies() {
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
   result->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
   result->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
   result->Set(key::kRemoteAccessHostClientDomainList,
-              base::MakeUnique<base::ListValue>());
+              std::make_unique<base::ListValue>());
   result->Set(key::kRemoteAccessHostDomainList,
-              base::MakeUnique<base::ListValue>());
+              std::make_unique<base::ListValue>());
   result->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
                     kDefaultHostTalkGadgetPrefix);
   result->SetString(key::kRemoteAccessHostTokenUrl, std::string());
@@ -255,7 +255,7 @@ void PolicyWatcher::HandleDeprecatedPolicies(base::DictionaryValue* dict) {
       std::string domain;
       dict->GetString(policy::key::kRemoteAccessHostDomain, &domain);
       if (!domain.empty()) {
-        auto list = base::MakeUnique<base::ListValue>();
+        auto list = std::make_unique<base::ListValue>();
         list->AppendString(domain);
         dict->Set(policy::key::kRemoteAccessHostDomainList, std::move(list));
       }
@@ -269,7 +269,7 @@ void PolicyWatcher::HandleDeprecatedPolicies(base::DictionaryValue* dict) {
       std::string domain;
       dict->GetString(policy::key::kRemoteAccessHostClientDomain, &domain);
       if (!domain.empty()) {
-        auto list = base::MakeUnique<base::ListValue>();
+        auto list = std::make_unique<base::ListValue>();
         list->AppendString(domain);
         dict->Set(policy::key::kRemoteAccessHostClientDomainList,
                   std::move(list));

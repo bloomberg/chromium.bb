@@ -4,10 +4,11 @@
 
 #include <gtk/gtk.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -353,7 +354,7 @@ gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::MakeUnique<DisconnectWindowGtk>();
+  return std::make_unique<DisconnectWindowGtk>();
 }
 
 }  // namespace remoting

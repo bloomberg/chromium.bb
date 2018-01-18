@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/compound_buffer.h"
@@ -169,12 +168,12 @@ void TestDataChannelManagerFullMatch(bool asynchronous) {
 
   {
     std::string content;
-    auto message = base::MakeUnique<CompoundBuffer>();
+    auto message = std::make_unique<CompoundBuffer>();
     content = "FullMatchContent";
     message->AppendCopyOf(&(content[0]), content.size());
     pipe1.Receive(std::move(message));
 
-    message = base::MakeUnique<CompoundBuffer>();
+    message = std::make_unique<CompoundBuffer>();
     content = "AnotherFullMatchContent";
     message->AppendCopyOf(&(content[0]), content.size());
     pipe2.Receive(std::move(message));

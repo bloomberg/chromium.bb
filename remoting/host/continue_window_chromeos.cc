@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "remoting/host/continue_window.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/chromeos/message_box.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,7 +45,7 @@ void ContinueWindowAura::OnMessageBoxResult(MessageBox::Result result) {
 }
 
 void ContinueWindowAura::ShowUi() {
-  message_box_ = base::MakeUnique<MessageBox>(
+  message_box_ = std::make_unique<MessageBox>(
       l10n_util::GetStringUTF16(IDS_MODE_IT2ME),           // title
       l10n_util::GetStringUTF16(IDS_CONTINUE_PROMPT),      // dialog label
       l10n_util::GetStringUTF16(IDS_CONTINUE_BUTTON),      // ok label
@@ -61,7 +62,7 @@ void ContinueWindowAura::HideUi() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::MakeUnique<ContinueWindowAura>();
+  return std::make_unique<ContinueWindowAura>();
 }
 
 }  // namespace remoting

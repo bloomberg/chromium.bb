@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/session_plugin.h"
@@ -116,7 +115,7 @@ void FakeSession::AddPlugin(SessionPlugin* plugin) {
     if (message) {
       JingleMessage jingle_message;
       jingle_message.AddAttachment(
-          base::MakeUnique<buzz::XmlElement>(*message));
+          std::make_unique<buzz::XmlElement>(*message));
       plugin->OnIncomingMessage(*(jingle_message.attachments));
     }
   }

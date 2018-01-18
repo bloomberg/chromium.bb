@@ -4,9 +4,10 @@
 
 #include "remoting/client/plugin/pepper_url_request.h"
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/cpp/url_response_info.h"
 
@@ -115,7 +116,7 @@ std::unique_ptr<UrlRequest> PepperUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  return base::MakeUnique<PepperUrlRequest>(pp_instance_, type, url,
+  return std::make_unique<PepperUrlRequest>(pp_instance_, type, url,
                                             traffic_annotation);
 }
 

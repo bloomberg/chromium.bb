@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -136,7 +135,7 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
 void HeartbeatSenderTest::SendResponse(int message_index,
                                        base::TimeDelta interval,
                                        int expected_sequence_id) {
-  auto response = base::MakeUnique<XmlElement>(buzz::QN_IQ);
+  auto response = std::make_unique<XmlElement>(buzz::QN_IQ);
   response->AddAttr(QName(std::string(), "type"), "result");
   response->AddAttr(QName(std::string(), "to"), kTestJid);
 

@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
@@ -443,8 +442,8 @@ void ChromotingSession::ConnectToHostOnNetworkThread() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signaling_.get(),
-          base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
-          base::MakeUnique<ChromiumUrlRequestFactory>(
+          std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
+          std::make_unique<ChromiumUrlRequestFactory>(
               runtime_->url_requester()),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),

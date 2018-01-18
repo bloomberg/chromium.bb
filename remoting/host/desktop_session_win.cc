@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -482,7 +481,7 @@ std::unique_ptr<DesktopSession> DesktopSessionWin::CreateForConsole(
     DaemonProcess* daemon_process,
     int id,
     const ScreenResolution& resolution) {
-  return base::MakeUnique<ConsoleSession>(caller_task_runner, io_task_runner,
+  return std::make_unique<ConsoleSession>(caller_task_runner, io_task_runner,
                                           daemon_process, id,
                                           HostService::GetInstance());
 }

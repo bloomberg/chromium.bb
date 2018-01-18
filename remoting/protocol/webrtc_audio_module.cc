@@ -4,8 +4,9 @@
 
 #include "remoting/protocol/webrtc_audio_module.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -351,7 +352,7 @@ int WebrtcAudioModule::GetRecordAudioParameters(
 
 void WebrtcAudioModule::StartPlayoutOnAudioThread() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
-  poll_timer_ = base::MakeUnique<base::RepeatingTimer>();
+  poll_timer_ = std::make_unique<base::RepeatingTimer>();
   poll_timer_->Start(
       FROM_HERE, kPollInterval,
       base::Bind(&WebrtcAudioModule::PollFromSource, base::Unretained(this)));

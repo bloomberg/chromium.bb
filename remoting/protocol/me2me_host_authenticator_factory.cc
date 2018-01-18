@@ -118,7 +118,7 @@ Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     if (!matched) {
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain not allowed.";
-      return base::MakeUnique<RejectingAuthenticator>(
+      return std::make_unique<RejectingAuthenticator>(
           Authenticator::INVALID_ACCOUNT);
     }
   }

@@ -91,7 +91,7 @@ bool SecurityKeyIpcServerImpl::CreateChannel(
       "O:%sG:%sD:(A;;GA;;;AU)", user_sid_utf8.c_str(), user_sid_utf8.c_str()));
 
 #endif  // defined(OS_WIN)
-  peer_connection_ = base::MakeUnique<mojo::edk::PeerConnection>();
+  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
   ipc_channel_ = IPC::Channel::CreateServer(
       peer_connection_
           ->Connect(mojo::edk::ConnectionParams(

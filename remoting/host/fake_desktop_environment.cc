@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/file_proxy_wrapper.h"
@@ -76,7 +75,7 @@ std::unique_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
 }
 
 std::unique_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
-  return base::MakeUnique<FakeScreenControls>();
+  return std::make_unique<FakeScreenControls>();
 }
 
 std::unique_ptr<webrtc::DesktopCapturer>
@@ -94,7 +93,7 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
 FakeDesktopEnvironment::CreateMouseCursorMonitor() {
-  return base::MakeUnique<FakeMouseCursorMonitor>();
+  return std::make_unique<FakeMouseCursorMonitor>();
 }
 
 std::unique_ptr<FileProxyWrapper>

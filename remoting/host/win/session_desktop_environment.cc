@@ -4,10 +4,10 @@
 
 #include "remoting/host/win/session_desktop_environment.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
@@ -23,7 +23,7 @@ std::unique_ptr<InputInjector>
 SessionDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return base::MakeUnique<SessionInputInjectorWin>(
+  return std::make_unique<SessionInputInjectorWin>(
       input_task_runner(),
       InputInjector::Create(input_task_runner(), ui_task_runner(),
                             system_input_injector_factory()),

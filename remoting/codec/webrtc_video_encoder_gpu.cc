@@ -4,6 +4,7 @@
 
 #include "remoting/codec/webrtc_video_encoder_gpu.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -157,7 +158,7 @@ void WebrtcVideoEncoderGpu::RequireBitstreamBuffers(
   output_buffers_.clear();
 
   for (unsigned int i = 0; i < kWebrtcVideoEncoderGpuOutputBufferCount; ++i) {
-    auto shm = base::MakeUnique<base::SharedMemory>();
+    auto shm = std::make_unique<base::SharedMemory>();
     // TODO(gusss): Do we need to handle mapping failure more gracefully?
     CHECK(shm->CreateAndMapAnonymous(output_buffer_size_));
     output_buffers_.push_back(std::move(shm));
@@ -182,7 +183,7 @@ void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
            << "timestamp ms = " << timestamp.InMilliseconds();
 
   std::unique_ptr<EncodedFrame> encoded_frame =
-      base::MakeUnique<EncodedFrame>();
+      std::make_unique<EncodedFrame>();
   base::SharedMemory* output_buffer =
       output_buffers_[bitstream_buffer_id].get();
   DCHECK(output_buffer->memory());

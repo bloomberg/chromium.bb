@@ -29,7 +29,7 @@ std::unique_ptr<AudioPlayerIos> AudioPlayerIos::CreateAudioPlayer(
       AudioStreamConsumerProxy::Create(audio_thread_runner,
                                        buffer->AudioStreamConsumerAsWeakPtr());
 
-  return base::MakeUnique<AudioPlayerIos>(
+  return std::make_unique<AudioPlayerIos>(
       std::move(consumer_proxy), std::move(supplier), audio_thread_runner);
 }
 

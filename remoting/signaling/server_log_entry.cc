@@ -5,7 +5,6 @@
 #include "remoting/signaling/server_log_entry.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "remoting/base/constants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -72,7 +71,7 @@ void ServerLogEntry::AddEventNameField(const char* name) {
 
 // static
 std::unique_ptr<XmlElement> ServerLogEntry::MakeStanza() {
-  return base::MakeUnique<XmlElement>(
+  return std::make_unique<XmlElement>(
       QName(kChromotingXmlNamespace, kLogCommand));
 }
 

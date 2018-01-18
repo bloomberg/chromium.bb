@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -126,7 +125,7 @@ TEST_F(MouseCursorMonitorProxyTest, CursorShape) {
       capture_thread_.task_runner(),
       webrtc::DesktopCaptureOptions::CreateDefault()));
   proxy_->SetMouseCursorMonitorForTests(
-      base::MakeUnique<ThreadCheckMouseCursorMonitor>(
+      std::make_unique<ThreadCheckMouseCursorMonitor>(
           capture_thread_.task_runner()));
   proxy_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
   proxy_->Capture();

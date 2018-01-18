@@ -6,10 +6,11 @@
 
 #include <gtk/gtk.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/glib/glib_signal.h"
@@ -124,7 +125,7 @@ void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::MakeUnique<ContinueWindowGtk>();
+  return std::make_unique<ContinueWindowGtk>();
 }
 
 }  // namespace remoting

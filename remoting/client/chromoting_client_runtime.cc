@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -95,7 +94,7 @@ void ChromotingClientRuntime::CreateLogWriter() {
   }
   log_writer_.reset(new TelemetryLogWriter(
       kTelemetryBaseUrl,
-      base::MakeUnique<ChromiumUrlRequestFactory>(url_requester())));
+      std::make_unique<ChromiumUrlRequestFactory>(url_requester())));
   log_writer_->SetAuthClosure(
       base::Bind(&ChromotingClientRuntime::RequestAuthTokenForLogger,
                  base::Unretained(this)));
