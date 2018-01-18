@@ -133,7 +133,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
 // Tests that back and forward navigation between chrome URLs functions
 // properly.
-- (void)testChromeURLBackAndForwardNavigation {
+- (void)testChromeURLBackAndForwardAndReloadNavigation {
   // Navigate to the first URL chrome://version.
   LoadWebUIUrl(kChromeUIVersionHost);
 
@@ -148,6 +148,20 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Tap the forward button in the toolbar and verify that the resulting page's
   // URL corresponds the second URL chrome://flags that was loaded.
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
+      assertWithMatcher:grey_notNil()];
+
+  // Tap the back button in the toolbar then reload, and verify that the
+  // resulting page corresponds to the first URL.
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [ChromeEarlGrey waitForPageToFinishLoading];
+  [ChromeEarlGrey reload];
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
+      assertWithMatcher:grey_notNil()];
+
+  // Make sure forward navigation is still possible.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]

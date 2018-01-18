@@ -131,6 +131,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetTransientItemImpl() const override;
   void FinishGoToIndex(int index,
                        NavigationInitiationType initiation_type) override;
+  bool IsPlaceholderUrl(const GURL& url) const override;
 
   // Returns the absolute index of WKBackForwardList's |currentItem|. Returns -1
   // if |currentItem| is nil.
