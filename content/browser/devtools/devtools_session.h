@@ -52,7 +52,6 @@ class DevToolsSession : public protocol::FrontendChannel,
                                       const std::string& method,
                                       const std::string& message);
   void InspectElement(const gfx::Point& point);
-  void ReceiveMessageChunk(const DevToolsMessageChunk& chunk);
 
   template <typename Handler>
   static std::vector<Handler*> HandlersForAgentHost(
@@ -102,7 +101,6 @@ class DevToolsSession : public protocol::FrontendChannel,
   // any of the waiting for response messages have been handled.
   std::string state_cookie_;
   std::string response_message_buffer_;
-  uint32_t response_message_buffer_size_ = 0;
 
   base::WeakPtrFactory<DevToolsSession> weak_factory_;
 };
