@@ -25450,6 +25450,7 @@ from previous Chrome versions.
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1456004000" label="VrShell:disabled"/>
+  <int value="-1455852875" label="WebAuthentication:disabled"/>
   <int value="-1454397907" label="OptimizationHints:disabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
@@ -26706,6 +26707,7 @@ from previous Chrome versions.
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1862207743" label="enable-android-spellchecker"/>
+  <int value="1863622457" label="WebAuthentication:enabled"/>
   <int value="1865068568" label="disable-audio-support-for-desktop-share"/>
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1865963858" label="tls13-variant"/>

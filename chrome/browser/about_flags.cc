@@ -3671,6 +3671,13 @@ const FeatureEntry kFeatureEntries[] = {
          kMarkHttpAsFeatureVariations,
          "MarkHttpAs")},
 
+#if !defined(OS_ANDROID)
+    {"enable-web-authentication-api",
+     flag_descriptions::kEnableWebAuthenticationAPIName,
+     flag_descriptions::kEnableWebAuthenticationAPIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebAuth)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
