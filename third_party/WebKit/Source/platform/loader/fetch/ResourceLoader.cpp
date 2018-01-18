@@ -296,10 +296,10 @@ bool ResourceLoader::WillFollowRedirect(
 
         if (!unused_preload) {
           Context().AddErrorConsoleMessage(
-              WebCORS::GetErrorString(
+              CORS::GetErrorString(
                   *cors_error, redirect_response.Url(), new_url,
                   redirect_response.HttpStatusCode(),
-                  redirect_response.HttpHeaderFields(), source_web_origin,
+                  redirect_response.HttpHeaderFields(), *source_origin.get(),
                   resource_->LastResourceRequest().GetRequestContext()),
               FetchContext::kJSSource);
         }
@@ -469,11 +469,11 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append("' from origin '");
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
-  error_msg.Append(WebCORS::GetErrorString(
-      *cors_error, initial_request.Url(), WebURL(),
+  error_msg.Append(CORS::GetErrorString(
+      *cors_error, initial_request.Url(), KURL(),
       response_for_access_control.HttpStatusCode(),
-      response_for_access_control.HttpHeaderFields(),
-      WebSecurityOrigin(source_origin), initial_request.GetRequestContext()));
+      response_for_access_control.HttpHeaderFields(), *source_origin,
+      initial_request.GetRequestContext()));
 
   return CORSStatus::kFailed;
 }
