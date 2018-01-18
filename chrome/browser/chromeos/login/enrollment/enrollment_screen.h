@@ -111,12 +111,12 @@ class EnrollmentScreen
                            TestActiveDirectoryEnrollment_UIErrors);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
-  FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, Retries);
+  FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, Retry);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, TestSuccess);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest,
-                           DoesNotRetryOnTopOfUser);
+                           DoNotRetryOnTopOfUser);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest,
-                           DoesNotRetryAfterSuccess);
+                           DoNotRetryAfterSuccess);
 
   // The authentication mechanisms that this class can use.
   enum Auth {
