@@ -25,10 +25,12 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 
@@ -97,7 +99,10 @@ void SetShelfBehaviorsFromPrefs() {
 
 }  // namespace
 
-ShelfController::ShelfController() {
+ShelfController::ShelfController()
+    : is_touchable_app_context_menu_enabled_(
+          app_list::features::IsTouchableAppContextMenuEnabled()),
+      message_center_observer_(this) {
   // Synchronization is required in the Mash config, since Chrome and Ash run in
   // separate processes; it's optional via kAshDisableShelfModelSynchronization
   // in the Classic Ash config, where Chrome can uses Ash's ShelfModel directly.
@@ -126,6 +131,8 @@ ShelfController::ShelfController() {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  if (is_touchable_app_context_menu_enabled_)
+    message_center_observer_.Add(message_center::MessageCenter::Get());
 }
 
 ShelfController::~ShelfController() {
@@ -374,6 +381,30 @@ void ShelfController::OnWindowTreeHostsSwappedDisplays(
   // The display ids for existing shelf instances may have changed, so update
   // the alignment and auto-hide state from prefs. See http://crbug.com/748291
   SetShelfBehaviorsFromPrefs();
+}
+
+void ShelfController::OnNotificationAdded(const std::string& notification_id) {
+  if (!is_touchable_app_context_menu_enabled_)
+    return;
+
+  message_center::Notification* notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          notification_id);
+  // If the notification is for an ARC app, return early.
+  // TODO(newcomer): Support ARC app notifications.
+  if (notification->notifier_id().type !=
+      message_center::NotifierId::APPLICATION)
+    return;
+
+  model_.AddNotificationRecord(notification->notifier_id().id, notification_id);
+}
+
+void ShelfController::OnNotificationRemoved(const std::string& notification_id,
+                                            bool by_user) {
+  if (!is_touchable_app_context_menu_enabled_)
+    return;
+
+  model_.RemoveNotificationRecord(notification_id);
 }
 
 }  // namespace ash
