@@ -34,11 +34,8 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/editing/DragCaret.h"
-#include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/ErrorEvent.h"
 #include "core/exported/WebPluginContainerImpl.h"
@@ -2063,39 +2060,8 @@ bool LocalFrameView::ComputeCompositedSelection(
   if (!frame.View() || frame.View()->ShouldThrottleRendering())
     return false;
 
-  const VisibleSelection& visible_selection =
-      frame.Selection().ComputeVisibleSelectionInDOMTree();
-  if (!frame.Selection().IsHandleVisible() || frame.Selection().IsHidden())
-    return false;
-
-  // Non-editable caret selections lack any kind of UI affordance, and
-  // needn't be tracked by the client.
-  if (visible_selection.IsCaret() && !visible_selection.IsContentEditable())
-    return false;
-
-  VisiblePosition visible_start(visible_selection.VisibleStart());
-  RenderedPosition rendered_start(visible_start);
-  selection.start = rendered_start.PositionInGraphicsLayerBacking(true);
-  if (!selection.start.layer)
-    return false;
-
-  VisiblePosition visible_end(visible_selection.VisibleEnd());
-  RenderedPosition rendered_end(visible_end);
-  selection.end = rendered_end.PositionInGraphicsLayerBacking(false);
-  if (!selection.end.layer)
-    return false;
-
-  DCHECK(!visible_selection.IsNone());
-  selection.type =
-      visible_selection.IsRange() ? kRangeSelection : kCaretSelection;
-  selection.start.is_text_direction_rtl |=
-      PrimaryDirectionOf(*visible_selection.Start().AnchorNode()) ==
-      TextDirection::kRtl;
-  selection.end.is_text_direction_rtl |=
-      PrimaryDirectionOf(*visible_selection.End().AnchorNode()) ==
-      TextDirection::kRtl;
-
-  return true;
+  selection = RenderedPosition::ComputeCompositedSelection(frame.Selection());
+  return selection.type != kNoSelection;
 }
 
 void LocalFrameView::UpdateCompositedSelectionIfNeeded() {

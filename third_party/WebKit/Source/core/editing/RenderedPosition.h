@@ -39,10 +39,12 @@
 
 namespace blink {
 
+class FrameSelection;
 class LayoutPoint;
 class LayoutUnit;
 class LayoutObject;
 struct CompositedSelectionBound;
+struct CompositedSelection;
 
 class CORE_EXPORT RenderedPosition {
   STACK_ALLOCATED();
@@ -92,6 +94,8 @@ class CORE_EXPORT RenderedPosition {
   // Returns whether this position is not visible on the screen (because
   // clipped out).
   bool IsVisible(bool selection_start) const;
+
+  static CompositedSelection ComputeCompositedSelection(const FrameSelection&);
 
  private:
   bool operator==(const RenderedPosition&) const { return false; }
