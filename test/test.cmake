@@ -328,8 +328,10 @@ endif ()
 if (CONFIG_UNIT_TESTS)
   find_package(PythonInterp)
   if (NOT PYTHONINTERP_FOUND)
-    message(WARNING "--- Unit tests disabled: Python not found.")
-    set(CONFIG_UNIT_TESTS 0)
+    message(FATAL_ERROR
+            "--- Unit tests require Python, rerun cmake with "
+            "-DCONFIG_UNIT_TESTS=0 to avoid this error, or install Python and "
+            "make sure it's in your PATH.")
   endif ()
 
   if (MSVC)
