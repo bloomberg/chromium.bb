@@ -475,7 +475,8 @@ void KeyboardController::OnTextInputStateChanged(
   TRACE_EVENT0("vk", "OnTextInputStateChanged");
 
   bool focused =
-      client && (client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE);
+      client && (client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
+                 client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE);
   bool should_hide = !focused && container_behavior_->TextBlurHidesKeyboard();
 
   if (should_hide) {

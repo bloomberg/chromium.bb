@@ -2377,6 +2377,8 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
 
   const TextInputState* state = text_input_manager_->GetTextInputState();
   if (state && state->show_ime_if_needed &&
+      state->type != ui::TEXT_INPUT_TYPE_NONE &&
+      state->mode != ui::TEXT_INPUT_MODE_NONE &&
       GetInputMethod()->GetTextInputClient() == this) {
     GetInputMethod()->ShowImeIfNeeded();
   }
