@@ -156,6 +156,8 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
         is_audible);
   }
 
+  WebContents* web_contents() { return monitor_->web_contents_; }
+
  protected:
   AudioStreamMonitor* monitor_;
 
@@ -372,6 +374,21 @@ TEST_F(AudioStreamMonitorTest, RenderProcessGone) {
   ExpectIsMonitoring(kRenderProcessId, kRenderFrameId, kStreamId, false);
   monitor_->RenderProcessGone(kAnotherRenderProcessId);
   ExpectIsMonitoring(kAnotherRenderProcessId, kRenderFrameId, kStreamId, false);
+}
+
+TEST_F(AudioStreamMonitorTest, RenderFrameGone) {
+  RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
+
+  StartMonitoring(render_process_id, render_frame_id, kStreamId);
+  StartMonitoring(kAnotherRenderProcessId, kRenderFrameId, kStreamId);
+  ExpectIsMonitoring(render_process_id, render_frame_id, kStreamId, true);
+  ExpectIsMonitoring(kAnotherRenderProcessId, kRenderFrameId, kStreamId, true);
+
+  monitor_->RenderFrameDeleted(render_frame_host);
+  ExpectIsMonitoring(render_process_id, render_frame_id, kStreamId, false);
+  ExpectIsMonitoring(kAnotherRenderProcessId, kRenderFrameId, kStreamId, true);
 }
 
 }  // namespace content

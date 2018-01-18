@@ -40,7 +40,8 @@ bool AudioStreamMonitor::StreamID::operator==(const StreamID& other) const {
 }
 
 AudioStreamMonitor::AudioStreamMonitor(WebContents* contents)
-    : web_contents_(contents),
+    : WebContentsObserver(contents),
+      web_contents_(contents),
       clock_(base::DefaultTickClock::GetInstance()),
       indicator_is_on_(false),
       is_audible_(false) {
@@ -216,6 +217,21 @@ void AudioStreamMonitor::MaybeToggle() {
         off_time - now,
         base::Bind(&AudioStreamMonitor::MaybeToggle, base::Unretained(this)));
   }
+}
+
+void AudioStreamMonitor::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
+
+  // It is possible for a frame to be deleted before notifications about its
+  // streams are received. Explicitly clear these streams.
+  base::EraseIf(streams_, [render_process_id, render_frame_id](
+                              const std::pair<StreamID, bool>& entry) {
+    return entry.first.render_process_id == render_process_id &&
+           entry.first.render_frame_id == render_frame_id;
+  });
+  UpdateStreams();
 }
 
 }  // namespace content
