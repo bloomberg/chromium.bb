@@ -14,6 +14,7 @@
 namespace aura {
 namespace client {
 class DefaultCaptureClient;
+class ScreenPositionClient;
 }  // namespace client
 }  // namespace aura
 
@@ -50,6 +51,7 @@ class CastWindowManagerAura : public CastWindowManager,
   std::unique_ptr<CastWindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
+  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWindowManagerAura);
 };
