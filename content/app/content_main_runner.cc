@@ -445,12 +445,7 @@ int RunNamedProcessTypeMain(
 
 class ContentMainRunnerImpl : public ContentMainRunner {
  public:
-  ContentMainRunnerImpl()
-      : is_initialized_(false),
-        is_shutdown_(false),
-        completed_basic_startup_(false),
-        delegate_(nullptr),
-        ui_task_(nullptr) {
+  ContentMainRunnerImpl() {
 #if defined(OS_WIN)
     memset(&sandbox_info_, 0, sizeof(sandbox_info_));
 #endif
@@ -471,6 +466,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
+    created_main_parts_closure_ = params.created_main_parts_closure;
 
     create_discardable_memory_ = params.create_discardable_memory;
 
@@ -707,6 +703,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     MainFunctionParams main_params(command_line);
     main_params.ui_task = ui_task_;
+    main_params.created_main_parts_closure = created_main_parts_closure_;
 #if defined(OS_WIN)
     main_params.sandbox_info = &sandbox_info_;
 #elif defined(OS_MACOSX)
@@ -747,19 +744,19 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
  private:
   // True if the runner has been initialized.
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
   // True if the runner has been shut down.
-  bool is_shutdown_;
+  bool is_shutdown_ = false;
 
   // True if basic startup was completed.
-  bool completed_basic_startup_;
+  bool completed_basic_startup_ = false;
 
   // Used if the embedder doesn't set one.
   ContentClient empty_content_client_;
 
   // The delegate will outlive this object.
-  ContentMainDelegate* delegate_;
+  ContentMainDelegate* delegate_ = nullptr;
 
   std::unique_ptr<base::AtExitManager> exit_manager_;
 #if defined(OS_WIN)
@@ -768,7 +765,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
 #endif
 
-  base::Closure* ui_task_;
+  base::Closure* ui_task_ = nullptr;
+
+  CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
 
 #if defined(USE_AURA)
   aura::Env::Mode env_mode_ = aura::Env::Mode::LOCAL;

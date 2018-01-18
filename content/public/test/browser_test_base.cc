@@ -292,13 +292,20 @@ void BrowserTestBase::SetUp() {
   auto ui_task = std::make_unique<base::Closure>(base::Bind(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
 
+  auto created_main_parts_closure =
+      std::make_unique<CreatedMainPartsClosure>(base::Bind(
+          &BrowserTestBase::CreatedBrowserMainParts, base::Unretained(this)));
+
 #if defined(OS_ANDROID)
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task.release();
+  params.created_main_parts_closure = created_main_parts_closure.release();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
 #else
   GetContentMainParams()->ui_task = ui_task.release();
+  GetContentMainParams()->created_main_parts_closure =
+      created_main_parts_closure.release();
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
 #endif
   TearDownInProcessBrowserTestFixture();
