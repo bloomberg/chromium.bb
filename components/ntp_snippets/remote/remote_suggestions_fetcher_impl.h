@@ -20,15 +20,14 @@
 #include "components/ntp_snippets/remote/request_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class OAuth2TokenService;
 class PrefService;
-class SigninManagerBase;
 
 namespace base {
 class Value;
 }  // namespace base
 
 namespace identity {
+class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }
 
@@ -43,8 +42,7 @@ class UserClassifier;
 class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
  public:
   RemoteSuggestionsFetcherImpl(
-      SigninManagerBase* signin_manager,
-      OAuth2TokenService* token_service,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
       language::UrlLanguageHistogram* language_histogram,
@@ -90,8 +88,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                      const std::string& error_details);
 
   // Authentication for signed-in users.
-  SigninManagerBase* signin_manager_;
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
 
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
