@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
@@ -210,23 +209,20 @@ void ArcAccessibilityHelperBridge::Shutdown() {
 }
 
 void ArcAccessibilityHelperBridge::OnConnectionReady() {
-  arc::mojom::AccessibilityFilterType filter_type =
-      GetFilterTypeForProfile(profile_);
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->accessibility_helper(), SetFilter);
-  instance->SetFilter(filter_type);
+  UpdateFilterType();
+
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  if (accessibility_manager) {
+    accessibility_status_subscription_ =
+        accessibility_manager->RegisterCallback(base::BindRepeating(
+            &ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged,
+            base::Unretained(this)));
+  }
 
   auto* surface_manager = ArcNotificationSurfaceManager::Get();
   if (surface_manager)
     surface_manager->AddObserver(this);
-
-  if (filter_type == arc::mojom::AccessibilityFilterType::ALL ||
-      filter_type ==
-          arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME) {
-    // TODO(yawano): Handle the case where filter_type has changed between
-    // OFF/FOCUS and ALL/WHITELISTED_PACKAGE_NAME after this initialization.
-    exo::WMHelper::GetInstance()->AddActivationObserver(this);
-  }
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityEventDeprecated(
@@ -434,6 +430,66 @@ void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
   tree_source->NotifyActionResult(data, result);
 }
 
+void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& event_details) {
+  // TODO(yawano): Add case for select to speak and switch access.
+  if (event_details.notification_type !=
+          chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK &&
+      event_details.notification_type !=
+          chromeos::ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT) {
+    return;
+  }
+
+  UpdateFilterType();
+  UpdateTouchExplorationPassThrough(GetActiveWindow());
+}
+
+void ArcAccessibilityHelperBridge::UpdateFilterType() {
+  arc::mojom::AccessibilityFilterType filter_type =
+      GetFilterTypeForProfile(profile_);
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->accessibility_helper(), SetFilter);
+  if (instance)
+    instance->SetFilter(filter_type);
+
+  bool add_activation_observer =
+      filter_type == arc::mojom::AccessibilityFilterType::ALL ||
+      filter_type ==
+          arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME;
+  if (add_activation_observer == activation_observer_added_)
+    return;
+
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  if (!wm_helper)
+    return;
+
+  if (add_activation_observer)
+    wm_helper->AddActivationObserver(this);
+  else
+    wm_helper->RemoveActivationObserver(this);
+}
+
+void ArcAccessibilityHelperBridge::UpdateTouchExplorationPassThrough(
+    aura::Window* window) {
+  if (!window)
+    return;
+
+  if (!GetArcSurface(window))
+    return;
+
+  // First, do a lookup for the task id associated with this app. There should
+  // always be a valid entry.
+  int32_t task_id = GetTaskId(window);
+
+  // Do a lookup for the tree source. A tree source may not exist because the
+  // app isn't whitelisted Android side or no data has been received for the
+  // app.
+  auto it = task_id_to_tree_.find(task_id);
+  window->SetProperty(aura::client::kAccessibilityTouchExplorationPassThrough,
+                      it == task_id_to_tree_.end());
+}
+
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
   exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
   if (!wm_helper)
@@ -449,24 +505,7 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
   if (gained_active == lost_active)
     return;
 
-  if (!GetArcSurface(gained_active))
-    return;
-
-  // First, do a lookup for the task id associated with this app. There should
-  // always be a valid entry.
-  int32_t task_id = GetTaskId(gained_active);
-
-  // Do a lookup for the tree source. A tree source may not exist because the
-  // app isn't whitelisted Android side or no data has been received for the
-  // app.
-  auto it = task_id_to_tree_.find(task_id);
-  if (it != task_id_to_tree_.end()) {
-    gained_active->SetProperty(
-        aura::client::kAccessibilityTouchExplorationPassThrough, false);
-  } else {
-    gained_active->SetProperty(
-        aura::client::kAccessibilityTouchExplorationPassThrough, true);
-  }
+  UpdateTouchExplorationPassThrough(gained_active);
 }
 
 void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
