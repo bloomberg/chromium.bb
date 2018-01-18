@@ -67,6 +67,7 @@ component("geolocation") {
   public_deps = [
     "//device/geolocation/public/cpp",
     "//device/geolocation/public/interfaces",
+    "//services/device/public/interfaces",
   ]
   if (is_android) {
     sources -= [

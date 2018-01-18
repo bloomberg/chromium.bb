@@ -1783,6 +1783,7 @@ split_static_library("browser") {
     "//rlz/features",
     "//services/data_decoder/public/cpp",
     "//services/device/public/cpp:device_features",
+    "//services/device/public/interfaces",
     "//services/identity:lib",
     "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
