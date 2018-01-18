@@ -32,6 +32,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Called on Linux X11 after the browser window is maximized or restored.
   virtual void OnMaximizedStateChanged();
 
+  // Called on Linux X11 after the browser window is fullscreened or
+  // unfullscreened.
+  virtual void OnFullscreenStateChanged();
+
   // Retrieves the bounds, in non-client view coordinates within which the
   // TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;

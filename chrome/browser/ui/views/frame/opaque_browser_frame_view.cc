@@ -142,6 +142,11 @@ void OpaqueBrowserFrameView::OnMaximizedStateChanged() {
   MaybeRedrawFrameButtons();
 }
 
+void OpaqueBrowserFrameView::OnFullscreenStateChanged() {
+  // The top area height is 0 when the window is fullscreened.
+  MaybeRedrawFrameButtons();
+}
+
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)

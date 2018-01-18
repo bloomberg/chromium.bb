@@ -49,6 +49,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // BrowserNonClientFrameView:
   void OnBrowserViewInitViewsComplete() override;
   void OnMaximizedStateChanged() override;
+  void OnFullscreenStateChanged() override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
