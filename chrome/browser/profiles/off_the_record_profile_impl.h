@@ -21,9 +21,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #endif
 
-using base::Time;
-using base::TimeDelta;
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -75,7 +72,7 @@ class OffTheRecordProfileImpl : public Profile {
   void RegisterInProcessServices(StaticServiceMap* services) override;
   net::SSLConfigService* GetSSLConfigService() override;
   bool IsSameProfile(Profile* profile) override;
-  Time GetStartTime() const override;
+  base::Time GetStartTime() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -140,7 +137,7 @@ class OffTheRecordProfileImpl : public Profile {
   std::unique_ptr<OffTheRecordProfileIOData::Handle> io_data_;
 
   // Time we were started.
-  Time start_time_;
+  base::Time start_time_;
 
   base::FilePath last_selected_directory_;
 

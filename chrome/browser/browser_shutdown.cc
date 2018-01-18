@@ -67,7 +67,6 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
-using base::Time;
 using base::TimeDelta;
 
 namespace browser_shutdown {
@@ -76,7 +75,7 @@ namespace {
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
 
-Time* g_shutdown_started = nullptr;
+base::Time* g_shutdown_started = nullptr;
 ShutdownType g_shutdown_type = NOT_VALID;
 int g_shutdown_num_processes;
 int g_shutdown_num_processes_slow;
@@ -136,7 +135,7 @@ void OnShutdownStarting(ShutdownType type) {
   // thread, and we'd really like to avoid anything which might add further
   // delays to shutdown time.
   DCHECK(!g_shutdown_started);
-  g_shutdown_started = new Time(Time::Now());
+  g_shutdown_started = new base::Time(base::Time::Now());
 
   // Call FastShutdown on all of the RenderProcessHosts.  This will be
   // a no-op in some cases, so we still need to go through the normal
@@ -266,7 +265,7 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
-    TimeDelta shutdown_delta = Time::Now() - *g_shutdown_started;
+    TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
     std::string shutdown_ms =
         base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;

@@ -20,7 +20,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 
-using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 

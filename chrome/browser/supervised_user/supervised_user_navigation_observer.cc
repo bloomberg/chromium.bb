@@ -21,7 +21,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 
-using base::Time;
 using content::NavigationEntry;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SupervisedUserNavigationObserver);
@@ -88,7 +87,8 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
-  Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
+  // TODO(bauerb): Use SaneTime when available.
+  base::Time timestamp = base::Time::Now();
   // Create a history entry for the attempt and mark it as such.  This history
   // entry should be marked as "not hidden" so the user can see attempted but
   // blocked navigations.  (This is in contrast to the normal behavior, wherein
