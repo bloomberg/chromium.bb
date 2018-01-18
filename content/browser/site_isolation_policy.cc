@@ -11,9 +11,11 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -112,6 +114,19 @@ std::vector<url::Origin> SiteIsolationPolicy::ParseIsolatedOrigins(
       origins.push_back(origin);
   }
   return origins;
+}
+
+// static
+void SiteIsolationPolicy::StartRecordingSiteIsolationFlagUsage() {
+  RecordSiteIsolationFlagUsage();
+  // Record the flag usage metrics every 24 hours.  Even though site isolation
+  // flags can't change dynamically at runtime, collecting these stats daily
+  // helps determine the overall population of users who run with a given flag
+  // on any given day.
+  CR_DEFINE_STATIC_LOCAL(base::RepeatingTimer, update_stats_timer, ());
+  update_stats_timer.Start(
+      FROM_HERE, base::TimeDelta::FromHours(24),
+      base::BindRepeating(&SiteIsolationPolicy::RecordSiteIsolationFlagUsage));
 }
 
 // static

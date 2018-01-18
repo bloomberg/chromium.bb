@@ -47,9 +47,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // This list applies globally to the whole browser in all profiles.
   static std::vector<url::Origin> GetIsolatedOrigins();
 
-  // Records metrics about which site isolation command-line flags are present.
-  // This should be called once on browser startup.
-  static void RecordSiteIsolationFlagUsage();
+  // Records metrics about which site isolation command-line flags are present,
+  // and sets up a timer to keep recording them every 24 hours.  This should be
+  // called once on browser startup.
+  static void StartRecordingSiteIsolationFlagUsage();
 
  private:
   SiteIsolationPolicy();  // Not instantiable.
@@ -60,6 +61,9 @@ class CONTENT_EXPORT SiteIsolationPolicy {
 
   // Gets isolated origins from cmdline and/or from field trial param.
   static std::vector<url::Origin> GetIsolatedOriginsFromEnvironment();
+
+  // Records metrics about which site isolation command-line flags are present.
+  static void RecordSiteIsolationFlagUsage();
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
 };
