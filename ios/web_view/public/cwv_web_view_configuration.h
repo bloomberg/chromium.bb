@@ -9,6 +9,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CWVPreferences;
 @class CWVUserContentController;
 @class CWVWebsiteDataStore;
@@ -37,5 +39,7 @@ CWV_EXPORT
 @property(nonatomic, readonly, getter=isPersistent) BOOL persistent;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_

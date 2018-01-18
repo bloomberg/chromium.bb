@@ -6,6 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 // UIApplicationDelegate implementation for web_view_shell.
 @interface ShellAppDelegate : UIResponder<UIApplicationDelegate>
 
@@ -13,5 +15,7 @@
 @property(nonatomic, strong) UIWindow* window;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_SHELL_SHELL_APP_DELEGATE_H_

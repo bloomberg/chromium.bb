@@ -9,6 +9,8 @@
 
 #import "cwv_export.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 // Encapsulates information about HTML element. Used in
 // delegate methods.
 CWV_EXPORT
@@ -21,5 +23,7 @@ CWV_EXPORT
 // |innerText| property of an HTML element.
 @property(nullable, copy, readonly) NSString* text;
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_HTML_ELEMENT_H_

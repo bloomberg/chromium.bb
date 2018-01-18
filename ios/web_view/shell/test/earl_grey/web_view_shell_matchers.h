@@ -9,6 +9,8 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 namespace ios_web_view {
 
 // Matcher for web view shell address field text property equal to |text|.
@@ -24,5 +26,7 @@ id<GREYMatcher> ForwardButton();
 id<GREYMatcher> AddressField();
 
 }  // namespace ios_web_view
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_SHELL_TEST_EARL_GREY_WEB_VIEW_SHELL_MATCHERS_H_

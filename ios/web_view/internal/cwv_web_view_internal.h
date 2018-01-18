@@ -7,6 +7,8 @@
 
 #import "ios/web_view/public/cwv_web_view.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CWVWebView ()
 
 // This is called by the associated CWVWebViewConfiguration in order to shut
@@ -14,5 +16,7 @@
 - (void)shutDown;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_CWV_WEB_VIEW_INTERNAL_H_
