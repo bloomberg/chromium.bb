@@ -433,7 +433,8 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
 
   // Add item that is the file quota.
   BlobDataBuilder builder(kId);
-  builder.AppendFutureFile(0, kBlobSize, 0);
+  BlobDataBuilder::FutureFile future_file =
+      builder.AppendFutureFile(0, kBlobSize, 0);
 
   std::vector<scoped_refptr<ShareableBlobDataItem>> items =
       CreateSharedDataItems(builder);
@@ -458,9 +459,8 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
 
   // Do the work to populate the file.
   EXPECT_EQ(1u, files_created_.size());
-  EXPECT_TRUE(
-      builder.PopulateFutureFile(0, std::move(files_created_[0].file_reference),
-                                 files_created_[0].last_modified));
+  EXPECT_TRUE(future_file.Populate(std::move(files_created_[0].file_reference),
+                                   files_created_[0].last_modified));
   base::ThreadRestrictions::SetIOAllowed(true);
   files_created_.clear();
   base::ThreadRestrictions::SetIOAllowed(false);

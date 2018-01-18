@@ -69,32 +69,61 @@ class STORAGE_EXPORT BlobDataBuilder {
   // Copies the given data into the blob.
   void AppendData(const char* data, size_t length);
 
+  // Represents a piece of unpopulated data.
+  class STORAGE_EXPORT FutureData {
+   public:
+    FutureData(FutureData&&);
+    FutureData& operator=(FutureData&&);
+    ~FutureData();
+
+    // Populates a part of an item previously allocated with AppendFutureData.
+    // The first call to PopulateFutureData lazily allocates the memory for the
+    // data element.
+    // Returns true if:
+    // * The offset and length are valid, and
+    // * data is a valid pointer.
+    bool Populate(base::span<const char> data, size_t offset) const;
+
+    // Same as Populate, but rather than passing in the data to be
+    // copied, this method returns a pointer where the caller can copy |length|
+    // bytes of data to.
+    // Returns nullptr if:
+    // * The offset and length are not valid.
+    base::span<char> GetDataToPopulate(size_t offset, size_t length) const;
+
+   private:
+    friend class BlobDataBuilder;
+    FutureData(scoped_refptr<BlobDataItem>);
+
+    scoped_refptr<BlobDataItem> item_;
+    DISALLOW_COPY_AND_ASSIGN(FutureData);
+  };
+
   // Adds an item that is flagged for future data population. The memory is not
   // allocated until the first call to PopulateFutureData. Returns the index of
   // the item (to be used in PopulateFutureData). |length| cannot be 0.
-  size_t AppendFutureData(size_t length);
+  FutureData AppendFutureData(size_t length);
 
-  // Populates a part of an item previously allocated with AppendFutureData.
-  // The first call to PopulateFutureData lazily allocates the memory for the
-  // data element.
-  // Returns true if:
-  // * The item was created by using AppendFutureData,
-  // * The offset and length are valid, and
-  // * data is a valid pointer.
-  bool PopulateFutureData(size_t index,
-                          const char* data,
-                          size_t offset,
-                          size_t length);
+  // Represents an unpopulated file.
+  class STORAGE_EXPORT FutureFile {
+   public:
+    FutureFile(FutureFile&&);
+    FutureFile& operator=(FutureFile&&);
+    ~FutureFile();
 
-  // Same as PopulateFutureData, but rather than passing in the data to be
-  // copied, this method returns a pointer where the caller can copy |length|
-  // bytes of data to.
-  // Returns nullptr if:
-  // * The item was not created by using AppendFutureData, or
-  // * The offset and length are not valid.
-  char* GetFutureDataPointerToPopulate(size_t index,
-                                       size_t offset,
-                                       size_t length);
+    // Populates a part of an item previously allocated with AppendFutureFile.
+    // Returns false if:
+    // * The item has already been populated.
+    bool Populate(scoped_refptr<ShareableFileReference> file_reference,
+                  const base::Time& expected_modification_time);
+
+   private:
+    friend class BlobDataBuilder;
+    FutureFile(scoped_refptr<BlobDataItem>);
+
+    scoped_refptr<BlobDataItem> item_;
+    DISALLOW_COPY_AND_ASSIGN(FutureFile);
+  };
 
   // Adds an item that is flagged for future data population. Use
   // 'PopulateFutureFile' to set the file path and expected modification time
@@ -104,16 +133,9 @@ class STORAGE_EXPORT BlobDataBuilder {
   // different offsets and lengths. The |file_id| is used to differentiate
   // between different 'future' files that will be used to store data for these
   // items.
-  size_t AppendFutureFile(uint64_t offset, uint64_t length, uint64_t file_id);
-
-  // Populates a part of an item previously allocated with AppendFutureFile.
-  // Returns true if:
-  // * The item was created by using AppendFutureFile and
-  // * The filepath is valid.
-  bool PopulateFutureFile(
-      size_t index,
-      const scoped_refptr<ShareableFileReference>& file_reference,
-      const base::Time& expected_modification_time);
+  FutureFile AppendFutureFile(uint64_t offset,
+                              uint64_t length,
+                              uint64_t file_id);
 
   // You must know the length of the file, you cannot use kuint64max to specify
   // the whole file.  This method creates a ShareableFileReference to the given

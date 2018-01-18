@@ -48,7 +48,8 @@ class ReplyTransportStrategy : public BlobTransportStrategy {
 
   void AddBytesElement(blink::mojom::DataElementBytes* bytes,
                        const blink::mojom::BytesProviderPtr& data) override {
-    size_t builder_element_index = builder_->AppendFutureData(bytes->length);
+    BlobDataBuilder::FutureData future_data =
+        builder_->AppendFutureData(bytes->length);
     // base::Unretained is safe because |this| is guaranteed (by the contract
     // that code using BlobTransportStrategy should adhere to) to outlive the
     // BytesProvider.
@@ -56,7 +57,7 @@ class ReplyTransportStrategy : public BlobTransportStrategy {
         &blink::mojom::BytesProvider::RequestAsReply,
         base::Unretained(data.get()),
         base::BindOnce(&ReplyTransportStrategy::OnReply, base::Unretained(this),
-                       builder_element_index, bytes->length)));
+                       std::move(future_data), bytes->length)));
   }
 
   void BeginTransport(
@@ -70,7 +71,7 @@ class ReplyTransportStrategy : public BlobTransportStrategy {
   }
 
  private:
-  void OnReply(size_t builder_element_index,
+  void OnReply(BlobDataBuilder::FutureData future_data,
                size_t expected_size,
                const std::vector<uint8_t>& data) {
     if (data.size() != expected_size) {
@@ -80,9 +81,10 @@ class ReplyTransportStrategy : public BlobTransportStrategy {
           .Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
       return;
     }
-    bool populate_result = builder_->PopulateFutureData(
-        builder_element_index, reinterpret_cast<const char*>(data.data()), 0,
-        data.size());
+    bool populate_result = future_data.Populate(
+        base::make_span(reinterpret_cast<const char*>(data.data()),
+                        data.size()),
+        0);
     DCHECK(populate_result);
 
     if (++num_resolved_requests_ == requests_.size())
@@ -106,17 +108,15 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
   void AddBytesElement(blink::mojom::DataElementBytes* bytes,
                        const blink::mojom::BytesProviderPtr& data) override {
     // Split up the data in |max_bytes_data_item_size| sized chunks.
+    std::vector<BlobDataBuilder::FutureData> future_data;
     for (uint64_t source_offset = 0; source_offset < bytes->length;
          source_offset += limits_.max_bytes_data_item_size) {
-      size_t builder_element_index =
-          builder_->AppendFutureData(std::min<uint64_t>(
-              bytes->length - source_offset, limits_.max_bytes_data_item_size));
-      if (source_offset == 0) {
-        requests_.push_back(base::BindOnce(
-            &DataPipeTransportStrategy::RequestDataPipe, base::Unretained(this),
-            data.get(), bytes->length, builder_element_index));
-      }
+      future_data.push_back(builder_->AppendFutureData(std::min<uint64_t>(
+          bytes->length - source_offset, limits_.max_bytes_data_item_size)));
     }
+    requests_.push_back(base::BindOnce(
+        &DataPipeTransportStrategy::RequestDataPipe, base::Unretained(this),
+        data.get(), bytes->length, std::move(future_data)));
   }
 
   void BeginTransport(
@@ -137,7 +137,7 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
 
   void RequestDataPipe(blink::mojom::BytesProvider* provider,
                        size_t expected_source_size,
-                       size_t first_builder_element_index) {
+                       std::vector<BlobDataBuilder::FutureData> future_data) {
     // TODO(mek): Determine if the overhead of creating a new SharedMemory
     // segment for each BytesProvider is too much. If it is possible solutions
     // would include somehow teaching DataPipe to reuse the SharedMemory from a
@@ -164,16 +164,18 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
     watcher_.Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                    base::Bind(&DataPipeTransportStrategy::OnDataPipeReadable,
                               base::Unretained(this), expected_source_size,
-                              first_builder_element_index));
+                              std::move(future_data)));
   }
 
-  void OnDataPipeReadable(size_t expected_full_source_size,
-                          size_t first_builder_element_index,
-                          MojoResult result) {
+  void OnDataPipeReadable(
+      size_t expected_full_source_size,
+      const std::vector<BlobDataBuilder::FutureData>& future_data,
+      MojoResult result) {
     // The index of the element data should currently be written to, relative to
-    // the first element of this stream (first_builder_element_index).
+    // the first element of this stream (the first item in future_data).
     size_t relative_element_index =
         current_source_offset_ / limits_.max_bytes_data_item_size;
+    DCHECK_LT(relative_element_index, future_data.size());
     // The offset into the current element where data should be written next.
     size_t offset_in_builder_element =
         current_source_offset_ -
@@ -204,12 +206,12 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
       num_bytes =
           std::min<uint32_t>(num_bytes, limits_.max_bytes_data_item_size -
                                             offset_in_builder_element);
-      char* output_buffer = builder_->GetFutureDataPointerToPopulate(
-          first_builder_element_index + relative_element_index,
-          offset_in_builder_element, num_bytes);
-      DCHECK(output_buffer);
+      base::span<char> output_buffer =
+          future_data[relative_element_index].GetDataToPopulate(
+              offset_in_builder_element, num_bytes);
+      DCHECK(output_buffer.data());
 
-      std::memcpy(output_buffer, source_buffer, num_bytes);
+      std::memcpy(output_buffer.data(), source_buffer, num_bytes);
       read_result = consumer_handle_->EndReadData(num_bytes);
       DCHECK_EQ(read_result, MOJO_RESULT_OK);
 
@@ -267,12 +269,12 @@ class FileTransportStrategy : public BlobTransportStrategy {
       uint64_t element_size =
           std::min(bytes->length - source_offset,
                    limits_.max_file_size - current_file_size_);
-      size_t builder_element_index = builder_->AppendFutureFile(
+      BlobDataBuilder::FutureFile future_file = builder_->AppendFutureFile(
           current_file_size_, element_size, file_requests_.size() - 1);
 
       num_unresolved_requests_++;
       file_requests_.back().push_back(Request{
-          data.get(), source_offset, element_size, builder_element_index});
+          data.get(), source_offset, element_size, std::move(future_file)});
 
       source_offset += element_size;
       current_file_size_ += element_size;
@@ -288,10 +290,10 @@ class FileTransportStrategy : public BlobTransportStrategy {
     DCHECK_EQ(file_infos.size(), file_requests_.size());
     for (size_t file_index = 0; file_index < file_requests_.size();
          ++file_index) {
-      const auto& requests = file_requests_[file_index];
+      auto& requests = file_requests_[file_index];
       uint64_t file_offset = 0;
       for (size_t i = 0; i < requests.size(); ++i) {
-        const auto& request = requests[i];
+        auto& request = requests[i];
         base::File file = i == requests.size() - 1
                               ? std::move(file_infos[file_index].file)
                               : file_infos[file_index].file.Duplicate();
@@ -303,7 +305,7 @@ class FileTransportStrategy : public BlobTransportStrategy {
             file_offset,
             base::BindOnce(&FileTransportStrategy::OnReply,
                            base::Unretained(this),
-                           request.builder_element_index,
+                           std::move(request.future_file),
                            file_infos[file_index].file_reference));
         file_offset += request.source_size;
       }
@@ -311,7 +313,7 @@ class FileTransportStrategy : public BlobTransportStrategy {
   }
 
  private:
-  void OnReply(size_t builder_element_index,
+  void OnReply(BlobDataBuilder::FutureFile future_file,
                const scoped_refptr<ShareableFileReference>& file_reference,
                base::Optional<base::Time> time_file_modified) {
     if (!time_file_modified) {
@@ -320,8 +322,8 @@ class FileTransportStrategy : public BlobTransportStrategy {
       return;
     }
 
-    bool populate_result = builder_->PopulateFutureFile(
-        builder_element_index, file_reference, *time_file_modified);
+    bool populate_result =
+        future_file.Populate(file_reference, *time_file_modified);
     DCHECK(populate_result);
 
     if (--num_unresolved_requests_ == 0)
@@ -343,9 +345,8 @@ class FileTransportStrategy : public BlobTransportStrategy {
     uint64_t source_offset;
     // Size of the bytes to request.
     uint64_t source_size;
-    // Index of the element in the BlobDataBuilder the data should be populated
-    // into.
-    size_t builder_element_index;
+    // Future file the data should be populated into.
+    BlobDataBuilder::FutureFile future_file;
   };
   // For each file, a list of requests involving that file.
   std::vector<std::vector<Request>> file_requests_;

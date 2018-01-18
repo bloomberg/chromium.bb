@@ -162,7 +162,7 @@ TEST_F(BlobStorageContextTest, BuildBlobAsync) {
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
 
   BlobDataBuilder builder(kId);
-  builder.AppendFutureData(kSize);
+  BlobDataBuilder::FutureData future_data = builder.AppendFutureData(kSize);
   builder.set_content_type("text/plain");
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
@@ -178,7 +178,7 @@ TEST_F(BlobStorageContextTest, BuildBlobAsync) {
 
   EXPECT_EQ(10u, context_->memory_controller().memory_usage());
 
-  builder.PopulateFutureData(0, "abcdefghij", 0, 10u);
+  future_data.Populate(base::make_span("abcdefghij", 10), 0);
   context_->NotifyTransportComplete(kId);
 
   // Check we're done.
@@ -530,7 +530,7 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
 
   BlobDataBuilder builder(kId1);
   builder.set_content_type("text/plain");
-  builder.AppendFutureFile(0, 10, 0);
+  BlobDataBuilder::FutureFile future_file = builder.AppendFutureFile(0, 10, 0);
 
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
@@ -556,7 +556,7 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
 
   ASSERT_EQ(1u, files_.size());
 
-  builder.PopulateFutureFile(0, files_[0].file_reference, base::Time::Max());
+  future_file.Populate(files_[0].file_reference, base::Time::Max());
   context_->NotifyTransportComplete(kId1);
 
   EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
@@ -728,24 +728,27 @@ constexpr char kTestDiskCacheData[] = "Test Blob Data";
 // Appends data and data types that depend on the index. This is designed to
 // exercise all types of combinations of data, future data, files, future files,
 // and disk cache entries.
-size_t AppendDataInBuilder(BlobDataBuilder* builder,
-                           size_t index,
-                           disk_cache::Entry* cache_entry) {
+size_t AppendDataInBuilder(
+    BlobDataBuilder* builder,
+    std::vector<BlobDataBuilder::FutureData>* future_datas,
+    std::vector<BlobDataBuilder::FutureFile>* future_files,
+    size_t index,
+    disk_cache::Entry* cache_entry) {
   size_t size = 0;
   // We can't have both future data and future files, so split those up.
   if (index % 2 != 0) {
-    builder->AppendFutureData(5u);
+    future_datas->emplace_back(builder->AppendFutureData(5u));
     size += 5u;
     if (index % 3 == 1) {
       builder->AppendData("abcdefghij", 4u);
       size += 4u;
     }
     if (index % 3 == 0) {
-      builder->AppendFutureData(1u);
+      future_datas->emplace_back(builder->AppendFutureData(1u));
       size += 1u;
     }
   } else if (index % 3 == 0) {
-    builder->AppendFutureFile(0lu, 3lu, 0);
+    future_files->emplace_back(builder->AppendFutureFile(0lu, 3lu, 0));
     size += 3u;
   }
   if (index % 5 != 0) {
@@ -768,13 +771,16 @@ bool DoesBuilderHaveFutureData(size_t index) {
   return index < kTotalRawBlobs && (index % 2 != 0 || index % 3 == 0);
 }
 
-void PopulateDataInBuilder(BlobDataBuilder* builder,
-                           size_t index,
-                           base::TaskRunner* file_runner) {
+void PopulateDataInBuilder(
+    BlobDataBuilder* builder,
+    std::vector<BlobDataBuilder::FutureData>* future_datas,
+    std::vector<BlobDataBuilder::FutureFile>* future_files,
+    size_t index,
+    base::TaskRunner* file_runner) {
   if (index % 2 != 0) {
-    builder->PopulateFutureData(0, "abcde", 0, 5);
+    (*future_datas)[0].Populate(base::make_span("abcde", 5), 0);
     if (index % 3 == 0) {
-      builder->PopulateFutureData(1, "z", 0, 1);
+      (*future_datas)[1].Populate(base::make_span("1", 1), 0);
     }
   } else if (index % 3 == 0) {
     scoped_refptr<ShareableFileReference> file_ref =
@@ -782,7 +788,7 @@ void PopulateDataInBuilder(BlobDataBuilder* builder,
             base::FilePath::FromUTF8Unsafe(
                 base::NumberToString(index + kTotalRawBlobs)),
             ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE, file_runner);
-    builder->PopulateFutureFile(0, file_ref, base::Time::Max());
+    (*future_files)[0].Populate(file_ref, base::Time::Max());
   }
 }
 }  // namespace
@@ -802,11 +808,16 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   // This tests mixed blob content with both synchronous and asynchronous
   // construction. Blobs should also be paged to disk during execution.
   std::vector<std::unique_ptr<BlobDataBuilder>> builders;
+  std::vector<std::vector<BlobDataBuilder::FutureData>> future_datas;
+  std::vector<std::vector<BlobDataBuilder::FutureFile>> future_files;
   std::vector<size_t> sizes;
   for (size_t i = 0; i < kTotalRawBlobs; i++) {
     builders.emplace_back(new BlobDataBuilder(base::NumberToString(i)));
+    future_datas.emplace_back();
+    future_files.emplace_back();
     auto& builder = *builders.back();
-    size_t size = AppendDataInBuilder(&builder, i, entry.get());
+    size_t size = AppendDataInBuilder(&builder, &future_datas.back(),
+                                      &future_files.back(), i, entry.get());
     EXPECT_NE(0u, size);
     sizes.push_back(size);
   }
@@ -852,7 +863,8 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
       BlobDataBuilder* builder = builders[i].get();
       if (DoesBuilderHaveFutureData(i) && !populated[i] &&
           statuses[i] == BlobStatus::PENDING_TRANSPORT) {
-        PopulateDataInBuilder(builder, i, file_runner_.get());
+        PopulateDataInBuilder(builder, &future_datas[i], &future_files[i], i,
+                              file_runner_.get());
         context_->NotifyTransportComplete(base::NumberToString(i));
         populated[i] = true;
       }
@@ -860,7 +872,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
     base::RunLoop().RunUntilIdle();
   } while (file_runner_->HasPendingTask());
 
-  // Check all builders with future items were signalled and populated.
+  // Check all builders with future items were signaled and populated.
   for (size_t i = 0; i < populated.size(); i++) {
     if (DoesBuilderHaveFutureData(i)) {
       EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, statuses[i]) << i;
