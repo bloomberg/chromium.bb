@@ -8,6 +8,7 @@
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -16,6 +17,7 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/default_screen_position_client.h"
 
 namespace chromecast {
 namespace {
@@ -229,6 +231,11 @@ void CastWindowManagerAura::Setup() {
   aura::client::SetWindowParentingClient(window_tree_host_->window(), this);
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+  screen_position_client_.reset(new wm::DefaultScreenPositionClient());
+  aura::client::SetScreenPositionClient(
+      window_tree_host_->window()->GetRootWindow(),
+      screen_position_client_.get());
 
   window_tree_host_->Show();
 }
