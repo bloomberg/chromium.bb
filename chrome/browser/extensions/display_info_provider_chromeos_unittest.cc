@@ -1626,6 +1626,74 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationSuccess) {
   EXPECT_TRUE(success);
 }
 
+TEST_F(DisplayInfoProviderChromeosTest, GetDisplayZoomFactor) {
+  UpdateDisplay("1200x600,600x1000*2");
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
+
+  float zoom_factor_1 = 1.23f;
+  float zoom_factor_2 = 2.34f;
+  display_manager()->UpdateZoomFactor(display_id_list[0], zoom_factor_1);
+  display_manager()->UpdateZoomFactor(display_id_list[1], zoom_factor_2);
+
+  DisplayUnitInfoList displays = GetAllDisplaysInfo();
+
+  for (const auto& display : displays) {
+    if (display.id == base::Int64ToString(display_id_list[0]))
+      EXPECT_EQ(display.display_zoom_factor, zoom_factor_1);
+    if (display.id == base::Int64ToString(display_id_list[1]))
+      EXPECT_EQ(display.display_zoom_factor, zoom_factor_2);
+  }
+}
+
+TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
+  UpdateDisplay("1200x600,600x1000*2");
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
+
+  float zoom_factor_1 = 1.23f;
+  float zoom_factor_2 = 2.34f;
+  display_manager()->UpdateZoomFactor(display_id_list[0], zoom_factor_2);
+  display_manager()->UpdateZoomFactor(display_id_list[1], zoom_factor_1);
+
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
+            zoom_factor_2);
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
+            zoom_factor_1);
+
+  // After update, display 1 should have |final_zoom_factor_1| as its zoom
+  // factor and display 2 should have |final_zoom_factor_2| as its zoom factor.
+  float final_zoom_factor_1 = zoom_factor_1;
+  float final_zoom_factor_2 = zoom_factor_2;
+
+  api::system_display::DisplayProperties info;
+  info.display_zoom_factor = std::make_unique<double>(zoom_factor_1);
+
+  bool success = false;
+  std::string error;
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info,
+                         &success, &error);
+  ASSERT_TRUE(success);
+
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
+            final_zoom_factor_1);
+  // Display 2 has not been updated yet, so it will still have the old zoom
+  // factor.
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
+            zoom_factor_1);
+
+  info.display_zoom_factor = std::make_unique<double>(zoom_factor_2);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info,
+                         &success, &error);
+  ASSERT_TRUE(success);
+
+  // Both displays should now have the correct zoom factor set.
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[0]),
+            final_zoom_factor_1);
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
+            final_zoom_factor_2);
+}
+
 class DisplayInfoProviderChromeosTouchviewTest
     : public DisplayInfoProviderChromeosTest {
  public:

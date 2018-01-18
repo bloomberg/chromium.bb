@@ -182,6 +182,11 @@ namespace system.display {
     // Provided for ChromeOS Settings UI only. TODO(stevenjb): Remove when
     // Settings switches to a mojo API. NOTE: The name of this may change.
     [nodoc] boolean hasAccelerometerSupport;
+
+    // The ratio between the display's current and default zoom.
+    // For example, value 1 is equivalent to 100% zoom, and value 1.5 is
+    // equivalent to 150% zoom.
+    double displayZoomFactor;
   };
 
   dictionary DisplayProperties {
@@ -231,6 +236,11 @@ namespace system.display {
 
     // If set, updates the display mode to the mode matching this value.
     DisplayMode? displayMode;
+
+    // If set, updates the zoom associated with the display. This zoom performs
+    // relayout and repaint thus resulting in a better quality zoom than just
+    // performing a pixel by pixel stretch enlargement.
+    double? displayZoomFactor;
   };
 
   dictionary GetInfoFlags {
