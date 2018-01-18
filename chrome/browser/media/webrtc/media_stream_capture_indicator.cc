@@ -429,7 +429,7 @@ void MediaStreamCaptureIndicator::GetStatusTrayIconInfo(
     icon = &vector_icons::kVideocamIcon;
   } else if (audio && !video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY;
-    icon = &vector_icons::kMicrophoneIcon;
+    icon = &vector_icons::kMicIcon;
   } else if (!audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY;
     icon = &vector_icons::kVideocamIcon;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -22,10 +23,6 @@
 class GURL;
 class Profile;
 class PageInfo;
-
-namespace gfx {
-class Image;
-}
 
 namespace net {
 class X509Certificate;
@@ -173,21 +170,8 @@ class PageInfoUI {
   // Returns the color to use for the permission decision reason strings.
   static SkColor GetPermissionDecisionTextColor();
 
-  // Returns the icon resource ID for the given permission |type| and |setting|.
-  static int GetPermissionIconID(ContentSettingsType type,
-                                 ContentSetting setting);
-
-  // Returns the icon for the given permissionInfo |info|.  If |info|'s current
-  // setting is CONTENT_SETTING_DEFAULT, it will return the icon for |info|'s
-  // default setting.
-  static const gfx::Image& GetPermissionIcon(const PermissionInfo& info);
-
   // Returns the UI string describing the given object |info|.
   static base::string16 ChosenObjectToUIString(const ChosenObjectInfo& info);
-
-  // Returns the icon for the given object |info|.
-  static const gfx::Image& GetChosenObjectIcon(const ChosenObjectInfo& info,
-                                               bool deleted);
 
 #if defined(OS_ANDROID)
   // Returns the identity icon ID for the given identity |status|.
@@ -196,11 +180,26 @@ class PageInfoUI {
   // Returns the connection icon ID for the given connection |status|.
   static int GetConnectionIconID(PageInfo::SiteConnectionStatus status);
 #else
+  // Returns icons for the given PermissionInfo |info|. If |info|'s current
+  // setting is CONTENT_SETTING_DEFAULT, it will return the icon for |info|'s
+  // default setting.
+  static const gfx::ImageSkia GetPermissionIcon(
+      const PermissionInfo& info,
+      const SkColor related_text_color);
+
+  // Returns the icon for the given object |info|.
+  static const gfx::ImageSkia GetChosenObjectIcon(
+      const ChosenObjectInfo& info,
+      bool deleted,
+      const SkColor related_text_color);
+
   // Returns the icon for the page Certificate.
-  static const gfx::ImageSkia GetCertificateIcon();
+  static const gfx::ImageSkia GetCertificateIcon(
+      const SkColor related_text_color);
 
   // Returns the icon for the button / link to Site settings.
-  static const gfx::ImageSkia GetSiteSettingsIcon();
+  static const gfx::ImageSkia GetSiteSettingsIcon(
+      const SkColor related_text_color);
 #endif
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
