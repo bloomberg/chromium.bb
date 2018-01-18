@@ -63,10 +63,11 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
 
 AwBrowserPolicyConnector::AwBrowserPolicyConnector()
    : BrowserPolicyConnectorBase(base::Bind(&BuildHandlerList)) {
-  SetPlatformPolicyProvider(
+  std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>> providers;
+  providers.push_back(
       std::make_unique<policy::android::AndroidCombinedPolicyProvider>(
           GetSchemaRegistry()));
-  InitPolicyProviders();
+  SetPolicyProviders(std::move(providers));
 }
 
 AwBrowserPolicyConnector::~AwBrowserPolicyConnector() {}

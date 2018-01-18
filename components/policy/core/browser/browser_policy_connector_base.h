@@ -6,8 +6,10 @@
 #define COMPONENTS_POLICY_CORE_BROWSER_BROWSER_POLICY_CONNECTOR_BASE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -17,6 +19,7 @@ namespace policy {
 
 class ConfigurationPolicyProvider;
 class PolicyService;
+class PolicyServiceImpl;
 
 // The BrowserPolicyConnectorBase keeps and initializes some core elements of
 // the policy component, mainly the PolicyProviders and the PolicyService.
@@ -32,7 +35,7 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   // and should call the parent method.
   virtual void Shutdown();
 
-  // Returns true if InitPolicyProviders() has been called but Shutdown() hasn't
+  // Returns true if SetPolicyProviders() has been called but Shutdown() hasn't
   // been yet.
   bool is_initialized() const { return is_initialized_; }
 
@@ -48,9 +51,6 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   // whole browser.
   PolicyService* GetPolicyService();
 
-  // Returns the platform-specific policy provider, if there is one.
-  ConfigurationPolicyProvider* GetPlatformProvider();
-
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 
   // Sets a |provider| that will be included in PolicyServices returned by
@@ -61,30 +61,26 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   // down.
   static void SetPolicyProviderForTesting(
       ConfigurationPolicyProvider* provider);
+  ConfigurationPolicyProvider* GetPolicyProviderForTesting();
 
  protected:
-  // Builds an uninitialized BrowserPolicyConnectorBase. InitPolicyProviders()
+  // Builds an uninitialized BrowserPolicyConnectorBase. SetPolicyProviders()
   // should be called to create and start the policy components.
   explicit BrowserPolicyConnectorBase(
       const HandlerListFactory& handler_list_factory);
 
-  // Finalizes the initialization of the connector. Must be called by
-  // subclasses. This call can be skipped on tests that don't require the full
-  // policy system running.
-  void InitPolicyProviders();
-
-  // Adds |provider| to the list of |policy_providers_|. Providers should
-  // be added in decreasing order of priority.
-  void AddPolicyProvider(std::unique_ptr<ConfigurationPolicyProvider> provider);
-
-  // Same as AddPolicyProvider(), but |provider| becomes the platform provider
-  // which can be retrieved by GetPlatformProvider(). This can be called at
-  // most once, and uses the same priority order as AddPolicyProvider().
-  void SetPlatformPolicyProvider(
-      std::unique_ptr<ConfigurationPolicyProvider> provider);
+  // Sets the set of providers, in decreasing order of priority. May only be
+  // called once.
+  void SetPolicyProviders(
+      std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers);
 
  private:
-  // Whether InitPolicyProviders() but not Shutdown() has been invoked.
+  // Returns the providers to pass to the PolicyService. Generally this is the
+  // same as |policy_providers_|, unless SetPolicyProviderForTesting() has been
+  // called.
+  std::vector<ConfigurationPolicyProvider*> GetProvidersForPolicyService();
+
+  // Whether SetPolicyProviders() but not Shutdown() has been invoked.
   bool is_initialized_;
 
   // Used to convert policies to preferences. The providers declared below
@@ -101,11 +97,11 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   CombinedSchemaRegistry schema_registry_;
 
   // The browser-global policy providers, in decreasing order of priority.
-  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> policy_providers_;
-  ConfigurationPolicyProvider* platform_policy_provider_;
+  base::Optional<std::vector<std::unique_ptr<ConfigurationPolicyProvider>>>
+      policy_providers_;
 
   // Must be deleted before all the policy providers.
-  std::unique_ptr<PolicyService> policy_service_;
+  std::unique_ptr<PolicyServiceImpl> policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnectorBase);
 };

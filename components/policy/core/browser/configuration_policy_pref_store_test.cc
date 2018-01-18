@@ -30,7 +30,8 @@ ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
       .WillRepeatedly(Return(false));
   provider_.Init();
   providers_.push_back(&provider_);
-  policy_service_.reset(new PolicyServiceImpl(providers_));
+  policy_service_ = std::make_unique<PolicyServiceImpl>();
+  policy_service_->SetProviders(providers_);
   store_ = new ConfigurationPolicyPrefStore(
       policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
 }

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -41,8 +42,21 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
+  ConfigurationPolicyProvider* GetPlatformProvider();
+
+ protected:
+  // Called from Init() to build the list of ConfigurationPolicyProviders that
+  // is supplied to SetPolicyProviders(). This implementation does nothing
+  // and is provided for subclasses. NOTE: |providers| may already contain
+  // some providers, generally subclasses should append.
+  virtual void BuildPolicyProviders(
+      std::vector<std::unique_ptr<ConfigurationPolicyProvider>>* providers);
+
  private:
   std::unique_ptr<ConfigurationPolicyProvider> CreatePlatformProvider();
+
+  // Owned by base class.
+  ConfigurationPolicyProvider* platform_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);
 };

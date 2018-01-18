@@ -19,7 +19,6 @@ namespace policy {
 
 struct PolicyHandlerParameters;
 class PolicyMap;
-class PolicyService;
 class ConfigurationPolicyPrefStore;
 
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
@@ -37,7 +36,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   PolicyServiceImpl::Providers providers_;
   ConfigurationPolicyHandlerList handler_list_;
   MockConfigurationPolicyProvider provider_;
-  std::unique_ptr<PolicyService> policy_service_;
+  std::unique_ptr<PolicyServiceImpl> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
   base::MessageLoop loop_;
 

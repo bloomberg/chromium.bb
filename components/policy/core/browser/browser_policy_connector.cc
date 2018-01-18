@@ -116,8 +116,6 @@ void BrowserPolicyConnector::InitInternal(
       base::Bind(&GetChromePolicyDetails), GetChromeSchema(),
       GetPolicyService(), local_state, base::ThreadTaskRunnerHandle::Get()));
   policy_statistics_collector_->Initialize();
-
-  InitPolicyProviders();
 }
 
 void BrowserPolicyConnector::Shutdown() {
@@ -167,6 +165,5 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
       policy_prefs::kUserPolicyRefreshRate,
       CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
 }
-
 
 }  // namespace policy
