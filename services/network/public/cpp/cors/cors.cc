@@ -6,6 +6,7 @@
 
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace network {
 
@@ -98,6 +99,30 @@ base::Optional<mojom::CORSError> CheckAccess(
     if (allow_credentials_header != "true")
       return mojom::CORSError::kDisallowCredentialsNotSetToTrue;
   }
+  return base::nullopt;
+}
+
+base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
+                                                       bool skip_scheme_check) {
+  if (!skip_scheme_check) {
+    // Block non HTTP(S) schemes as specified in the step 4 in
+    // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
+    // the data scheme.
+    auto& schemes = url::GetCORSEnabledSchemes();
+    if (std::find(std::begin(schemes), std::end(schemes),
+                  redirect_url.scheme()) == std::end(schemes)) {
+      return mojom::CORSError::kRedirectDisallowedScheme;
+    }
+  }
+
+  // Block URLs including credentials as specified in the step 9 in
+  // https://fetch.spec.whatwg.org/#http-redirect-fetch.
+  //
+  // TODO(tyoshino): This check should be performed also when request's
+  // origin is not same origin with the redirect destination's origin.
+  if (redirect_url.has_username() || redirect_url.has_password())
+    return mojom::CORSError::kRedirectContainsCredentials;
+
   return base::nullopt;
 }
 

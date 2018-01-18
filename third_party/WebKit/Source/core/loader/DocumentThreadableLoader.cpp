@@ -698,7 +698,7 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
       redirect_response, resource);
 
   WTF::Optional<network::mojom::CORSError> redirect_error =
-      WebCORS::CheckRedirectLocation(new_url);
+      CORS::CheckRedirectLocation(new_url);
   if (redirect_error) {
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(

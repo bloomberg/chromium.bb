@@ -6,7 +6,9 @@
 
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/http_names.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -204,6 +206,20 @@ WTF::Optional<network::mojom::CORSError> CheckAccess(
       GetHeaderValue(response_header,
                      HTTPNames::Access_Control_Allow_Credentials),
       credentials_mode, origin.ToUrlOrigin());
+}
+
+WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
+    const KURL& url) {
+  static const bool run_blink_side_scheme_check =
+      !RuntimeEnabledFeatures::OutOfBlinkCORSEnabled();
+  // TODO(toyoshim): Deprecate Blink side scheme check when we enable
+  // out-of-renderer CORS support. This will need to deprecate Blink APIs that
+  // are currently used by an embedder. See https://crbug.com/800669.
+  if (run_blink_side_scheme_check &&
+      !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(url.Protocol())) {
+    return network::mojom::CORSError::kRedirectDisallowedScheme;
+  }
+  return network::cors::CheckRedirectLocation(url, run_blink_side_scheme_check);
 }
 
 bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {

@@ -45,6 +45,9 @@ PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckAccess(
     network::mojom::FetchCredentialsMode,
     const SecurityOrigin&);
 
+PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
+    const KURL&);
+
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 
 }  // namespace CORS

@@ -179,7 +179,8 @@ base::Optional<CORSError> HandleRedirect(
   // TODO(tyoshino): This should be fixed to check not only the last one but
   // all redirect responses.
   if (!current_security_origin.CanRequest(last_url)) {
-    base::Optional<CORSError> redirect_error = CheckRedirectLocation(new_url);
+    base::Optional<CORSError> redirect_error =
+        CORS::CheckRedirectLocation(new_url);
     if (redirect_error)
       return redirect_error;
 
@@ -212,31 +213,6 @@ base::Optional<CORSError> HandleRedirect(
 
     options.cors_flag = true;
   }
-  return base::nullopt;
-}
-
-base::Optional<CORSError> CheckRedirectLocation(const WebURL& web_request_url) {
-  // Block non HTTP(S) schemes as specified in the step 4 in
-  // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
-  // the data scheme.
-  //
-  // TODO(tyoshino): This check should be performed regardless of the CORS flag
-  // and request's mode.
-  KURL request_url = web_request_url;
-
-  if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
-          request_url.Protocol())) {
-    return CORSError::kRedirectDisallowedScheme;
-  }
-
-  // Block URLs including credentials as specified in the step 9 in
-  // https://fetch.spec.whatwg.org/#http-redirect-fetch.
-  //
-  // TODO(tyoshino): This check should be performed also when request's
-  // origin is not same origin with the redirect destination's origin.
-  if (!(request_url.User().IsEmpty() && request_url.Pass().IsEmpty()))
-    return CORSError::kRedirectContainsCredentials;
-
   return base::nullopt;
 }
 

@@ -38,6 +38,16 @@ base::Optional<mojom::CORSError> CheckAccess(
     network::mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin);
 
+// Given a redirected-to URL, check if the location is allowed
+// according to CORS. That is:
+// - the URL has a CORS supported scheme and
+// - the URL does not contain the userinfo production.
+// TODO(toyoshim): Remove |skip_scheme_check| that is used when customized
+// scheme check runs in Blink side in the legacy mode.
+// See https://crbug.com/800669.
+base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
+                                                       bool skip_scheme_check);
+
 bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
 
 }  // namespace cors
