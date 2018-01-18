@@ -115,8 +115,7 @@ TEST(NoiseStrengthLut, LutEvalMultiPointInterp) {
 }
 
 TEST(NoiseModel, InitSuccessWithValidSquareShape) {
-  aom_noise_model_params_t params = {.shape = AOM_NOISE_SHAPE_SQUARE,
-                                     .lag = 2 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 2 };
   aom_noise_model_t model;
 
   EXPECT_TRUE(aom_noise_model_init(&model, params));
@@ -136,8 +135,7 @@ TEST(NoiseModel, InitSuccessWithValidSquareShape) {
 
 TEST(NoiseModel, InitSuccessWithValidDiamondShape) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = {.shape = AOM_NOISE_SHAPE_DIAMOND,
-                                     .lag = 2 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_DIAMOND, 2 };
   EXPECT_TRUE(aom_noise_model_init(&model, params));
   EXPECT_EQ(6, model.n);
   const int kNumCoords = 6;
@@ -154,23 +152,21 @@ TEST(NoiseModel, InitSuccessWithValidDiamondShape) {
 
 TEST(NoiseModel, InitFailsWithTooLargeLag) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = {.shape = AOM_NOISE_SHAPE_SQUARE,
-                                     .lag = 10 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 10 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
 
 TEST(NoiseModel, InitFailsWithTooSmallLag) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = {.shape = AOM_NOISE_SHAPE_SQUARE,
-                                     .lag = 0 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 0 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
 
 TEST(NoiseModel, InitFailsWithInvalidShape) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = {.shape = aom_noise_shape(100), .lag = 3 };
+  aom_noise_model_params_t params = { aom_noise_shape(100), 3 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
@@ -300,8 +296,7 @@ class NoiseModelUpdateTest : public ::testing::Test {
   static const int kNumBlocksY = kHeight / kBlockSize;
 
   void SetUp() {
-    const aom_noise_model_params_t params = {.shape = AOM_NOISE_SHAPE_SQUARE,
-                                             .lag = 3 };
+    const aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3 };
     ASSERT_TRUE(aom_noise_model_init(&model_, params));
 
     data_.resize(kWidth * kHeight * 3);
