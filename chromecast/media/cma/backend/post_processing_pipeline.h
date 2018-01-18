@@ -24,6 +24,9 @@ class PostProcessingPipeline {
                             int num_frames,
                             float current_multiplier,
                             bool is_silence) = 0;
+  virtual float* GetOutputBuffer() = 0;
+  virtual int NumOutputChannels() = 0;
+
   virtual bool SetSampleRate(int sample_rate) = 0;
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,

@@ -12,7 +12,7 @@
 #include "base/scoped_native_library.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
-#include "chromecast/public/media/audio_post_processor_shlib.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/volume_control.h"
 
 namespace chromecast {
@@ -22,6 +22,7 @@ namespace {
 
 const int kNoSampleRate = -1;
 const char kProcessorKey[] = "processor";
+const char kTypeKey[] = "type";
 const char kNameKey[] = "name";
 }  // namespace
 
@@ -43,7 +44,7 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     const std::string& name,
     const base::ListValue* filter_description_list,
     int channels)
-    : name_(name), sample_rate_(kNoSampleRate) {
+    : name_(name), sample_rate_(kNoSampleRate), num_output_channels_(channels) {
   if (!filter_description_list) {
     return;  // Warning logged.
   }
@@ -67,6 +68,11 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
       continue;
     }
 
+    std::string post_processor_name;
+
+    // TODO(bshaya): CHECK this when support for AudioPostProcessor is removed.
+    processor_description_dict->GetString(kTypeKey, &post_processor_name);
+
     const base::Value* processor_config_val;
     CHECK(processor_description_dict->Get("config", &processor_config_val));
     CHECK(processor_config_val->is_dict() || processor_config_val->is_string());
@@ -76,11 +82,16 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     LOG(INFO) << "Creating an instance of " << library_path << "("
               << *processor_config_string << ")";
 
-    processors_.emplace_back(
-        PostProcessorInfo{factory_.CreatePostProcessor(
-                              library_path, *processor_config_string, channels),
-                          processor_name});
+    // TODO(bshaya): parse v2 plugin names.
+    std::string plugin_name = "";
+
+    processors_.emplace_back(PostProcessorInfo{
+        factory_.CreatePostProcessor(library_path, plugin_name,
+                                     *processor_config_string, channels),
+        processor_name});
+    channels = processors_.back().ptr->NumOutputChannels();
   }
+  num_output_channels_ = channels;
 }
 
 PostProcessingPipelineImpl::~PostProcessingPipelineImpl() = default;
@@ -90,6 +101,10 @@ int PostProcessingPipelineImpl::ProcessFrames(float* data,
                                               float current_multiplier,
                                               bool is_silence) {
   DCHECK_NE(sample_rate_, kNoSampleRate);
+  DCHECK(data);
+
+  output_buffer_ = data;
+
   if (is_silence) {
     if (!IsRinging()) {
       return total_delay_frames_;  // Output will be silence.
@@ -104,9 +119,20 @@ int PostProcessingPipelineImpl::ProcessFrames(float* data,
   total_delay_frames_ = 0;
   for (auto& processor : processors_) {
     total_delay_frames_ += processor.ptr->ProcessFrames(
-        data, num_frames, cast_volume_, current_dbfs_);
+        output_buffer_, num_frames, cast_volume_, current_dbfs_);
+    output_buffer_ = processor.ptr->GetOutputBuffer();
   }
   return total_delay_frames_;
+}
+
+int PostProcessingPipelineImpl::NumOutputChannels() {
+  return num_output_channels_;
+}
+
+float* PostProcessingPipelineImpl::GetOutputBuffer() {
+  DCHECK(output_buffer_);
+
+  return output_buffer_;
 }
 
 bool PostProcessingPipelineImpl::SetSampleRate(int sample_rate) {

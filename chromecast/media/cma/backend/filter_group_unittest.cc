@@ -37,7 +37,16 @@ constexpr int kDefaultPlayoutChannel = -1;
 
 class MockPostProcessingPipeline : public PostProcessingPipeline {
  public:
-  MockPostProcessingPipeline() {}
+  MockPostProcessingPipeline()
+      : MockPostProcessingPipeline(kNumInputChannels) {}
+
+  MockPostProcessingPipeline(int num_output_channels)
+      : num_output_channels_(num_output_channels) {
+    ON_CALL(*this, ProcessFrames(_, _, _, _))
+        .WillByDefault(
+            testing::Invoke(this, &MockPostProcessingPipeline::StorePtr));
+  }
+
   ~MockPostProcessingPipeline() override {}
   MOCK_METHOD4(
       ProcessFrames,
@@ -47,11 +56,25 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   MOCK_METHOD1(SetContentType, void(AudioContentType));
   MOCK_METHOD1(UpdatePlayoutChannel, void(int));
 
+ protected:
+  float* output_buffer_;
+
  private:
   bool SetSampleRate(int sample_rate) override { return true; }
   bool IsRinging() override { return false; }
+  float* GetOutputBuffer() override { return output_buffer_; }
+  int NumOutputChannels() override { return num_output_channels_; }
   int delay() { return 0; }
   std::string name() const { return "mock"; }
+  int StorePtr(float* data,
+               int num_frames,
+               float current_volume,
+               bool is_silence) {
+    output_buffer_ = data;
+    return 0;
+  }
+
+  const int num_output_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPostProcessingPipeline);
 };
@@ -79,6 +102,7 @@ class InvertChannelPostProcessor : public MockPostProcessingPipeline {
                       int num_frames,
                       float current_volume,
                       bool is_silence) {
+    output_buffer_ = data;
     for (int fr = 0; fr < num_frames; ++fr) {
       for (int ch = 0; ch < channels_; ++ch) {
         if (ch == channel_to_invert_) {
@@ -228,7 +252,7 @@ class FilterGroupTest : public testing::Test {
 
   void AssertPassthrough() {
     // Verify if the fiter group output matches the source.
-    float* interleaved_data = filter_group_->interleaved();
+    float* interleaved_data = filter_group_->GetOutputBuffer();
     for (int f = 0; f < kInputFrames; ++f) {
       for (int ch = 0; ch < kNumInputChannels; ++ch) {
         ASSERT_EQ(Input(ch, f), interleaved_data[f * kNumInputChannels + ch]);
@@ -287,7 +311,7 @@ TEST_F(FilterGroupTest, MonoMixer) {
   filter_group_->MixAndFilter(kInputFrames);
 
   // Verify if the fiter group output matches the source after down mixing.
-  float* interleaved_data = filter_group_->interleaved();
+  float* interleaved_data = filter_group_->GetOutputBuffer();
   for (int i = 0; i < kInputFrames; ++i) {
     ASSERT_EQ((LeftInput(i) + RightInput(i)) / 2, interleaved_data[i * 2]);
     ASSERT_EQ(interleaved_data[i * 2], interleaved_data[i * 2 + 1]);
@@ -302,7 +326,7 @@ TEST_F(FilterGroupTest, MonoMixesAfterPostProcessors) {
 
   // Verify both output channels = (-1 * ch0 + ch1) / 2 after mixing.
   // If order of mixing, filtering is incorrect, the channels won't match.
-  float* interleaved_data = filter_group_->interleaved();
+  float* interleaved_data = filter_group_->GetOutputBuffer();
   for (int i = 0; i < kInputFrames; ++i) {
     ASSERT_EQ((-LeftInput(i) + RightInput(i)) / 2, interleaved_data[i * 2]);
     ASSERT_EQ(interleaved_data[i * 2], interleaved_data[i * 2 + 1]);
@@ -347,7 +371,7 @@ TEST_F(FilterGroupTest, SelectsOutputChannel) {
   filter_group_->UpdatePlayoutChannel(0);
   filter_group_->MixAndFilter(kInputFrames);
 
-  float* interleaved_data = filter_group_->interleaved();
+  float* interleaved_data = filter_group_->GetOutputBuffer();
   for (int f = 0; f < kInputFrames; ++f) {
     for (int ch = 0; ch < kNumInputChannels; ++ch) {
       // Both output channels should be equal to left channel.
@@ -388,7 +412,7 @@ TEST_F(FilterGroupTest, SelectsOutputChannelBeforePostProcessors) {
   filter_group_->UpdatePlayoutChannel(0);
   filter_group_->MixAndFilter(kInputFrames);
 
-  float* interleaved_data = filter_group_->interleaved();
+  float* interleaved_data = filter_group_->GetOutputBuffer();
   for (int f = 0; f < kInputFrames; ++f) {
     // channel 0 out = channel 0 in * -1
     // channel 1 out = channel 0 in
@@ -431,6 +455,15 @@ TEST_F(FilterGroupTest, ChecksContentType) {
   filter_group_->ClearActiveInputs();
   filter_group_->AddActiveInput(&input_);
   filter_group_->MixAndFilter(kInputFrames);
+}
+
+TEST_F(FilterGroupTest, ReportsOutputChannels) {
+  const int num_output_channels = 4;
+  MakeFilterGroup(
+      FilterGroup::GroupType::kStream, false,
+      std::make_unique<MockPostProcessingPipeline>(num_output_channels));
+
+  EXPECT_EQ(num_output_channels, filter_group_->GetOutputChannelCount());
 }
 
 }  // namespace media

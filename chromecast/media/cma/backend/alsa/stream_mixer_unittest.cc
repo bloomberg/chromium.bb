@@ -267,8 +267,12 @@ class MockPostProcessor : public PostProcessingPipeline {
   MockPostProcessor(const std::string& name,
                     const base::ListValue* filter_description_list,
                     int channels)
-      : name_(name) {
+      : name_(name), num_output_channels_(channels) {
     CHECK(instances_.insert({name_, this}).second);
+
+    ON_CALL(*this, ProcessFrames(_, _, _, _))
+        .WillByDefault(
+            testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
 
     if (!filter_description_list) {
       // This happens for PostProcessingPipeline with no post-processors.
@@ -291,11 +295,10 @@ class MockPostProcessor : public PostProcessingPipeline {
         CHECK(processor_config_dict->GetInteger("delay", &module_delay));
         rendering_delay_ += module_delay;
         processor_config_dict->GetBoolean("ringing", &ringing_);
+        processor_config_dict->GetInteger("output_channels",
+                                          &num_output_channels_);
       }
     }
-    ON_CALL(*this, ProcessFrames(_, _, _, _))
-        .WillByDefault(
-            testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
   }
   ~MockPostProcessor() override { instances_.erase(name_); }
   MOCK_METHOD4(
@@ -306,6 +309,8 @@ class MockPostProcessor : public PostProcessingPipeline {
   bool IsRinging() override { return ringing_; }
   int delay() { return rendering_delay_; }
   std::string name() const { return name_; }
+  float* GetOutputBuffer() override { return output_buffer_; }
+  int NumOutputChannels() override { return num_output_channels_; }
 
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
@@ -318,7 +323,8 @@ class MockPostProcessor : public PostProcessingPipeline {
   int DoProcessFrames(float* data,
                       int num_frames,
                       float current_volume,
-                      bool is_sience) {
+                      bool is_silence) {
+    output_buffer_ = data;
     return rendering_delay_;
   }
 
@@ -326,6 +332,8 @@ class MockPostProcessor : public PostProcessingPipeline {
   std::string name_;
   int rendering_delay_ = 0;
   bool ringing_ = false;
+  float* output_buffer_ = nullptr;
+  int num_output_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPostProcessor);
 };
@@ -473,6 +481,8 @@ class StreamMixerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerTest);
 };
+
+using StreamMixerDeathTest = StreamMixerTest;
 
 TEST_F(StreamMixerTest, AddSingleInput) {
   auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
@@ -1035,9 +1045,11 @@ TEST_F(StreamMixerTest, PostProcessorDelayUnlistedDevice) {
                                           false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1,
                                           kNumFrames, false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications", 0,
+
+  // These will be called once to ensure their buffers are initialized.
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications", 1,
                                           _, _);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 0,
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
                                           _, _);
 
   StreamMixer* mixer = StreamMixer::Get();
@@ -1174,10 +1186,10 @@ TEST_F(StreamMixerTest, PostProcessorProvidesDefaultPipeline) {
       std::make_unique<MockPostProcessorFactory>(), "{}");
 
   auto* instances = MockPostProcessor::instances();
-  CHECK(instances->find("default") != instances->end());
+  CHECK(instances->find("default") == instances->end());
   CHECK(instances->find("mix") != instances->end());
   CHECK(instances->find("linearize") != instances->end());
-  CHECK_EQ(MockPostProcessor::instances()->size(), 3u);
+  CHECK_EQ(MockPostProcessor::instances()->size(), 2u);
 }
 
 TEST_F(StreamMixerTest, InvalidStreamTypeCrashes) {
@@ -1339,6 +1351,26 @@ TEST_F(StreamMixerTest, SetPostProcessorConfig) {
   }
 
   mixer->SetPostProcessorConfig(name, config);
+}
+
+TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
+  StreamMixer* mixer = StreamMixer::Get();
+  const std::string config = R"Json({
+"postprocessors": {
+  "output_streams": [{
+    "streams": [ "default" ],
+    "processors": [{
+      "processor": "delay.so",
+      "config": { "output_channels": 4,
+                  "delay": 0 }
+    }]
+  }]
+}})Json";
+
+  ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), config),
+               "PostProcessor configuration channel count does not match "
+               "command line flag");
 }
 
 }  // namespace media

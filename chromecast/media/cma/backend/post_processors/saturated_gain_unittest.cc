@@ -6,9 +6,9 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "chromecast/media/cma/backend/post_processor_factory.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
+#include "chromecast/media/cma/backend/post_processors/saturated_gain.h"
 
 namespace chromecast {
 namespace media {
@@ -19,8 +19,6 @@ namespace {
 const char kConfigTemplate[] =
     R"config({"gain_db": %f})config";
 
-const char kLibraryPath[] = "libcast_saturated_gain_1.0.so";
-
 std::string MakeConfigString(float gain_db) {
   return base::StringPrintf(kConfigTemplate, gain_db);
 }
@@ -29,33 +27,29 @@ std::string MakeConfigString(float gain_db) {
 
 // Default tests from post_processor_test
 TEST_P(PostProcessorTest, SaturatedGainDelay) {
-  PostProcessorFactory factory;
   std::string config = MakeConfigString(0.0);
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
   TestDelay(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, SaturatedGainRinging) {
-  PostProcessorFactory factory;
   std::string config = MakeConfigString(0.0);
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
   TestRingingTime(pp.get(), sample_rate_);
 }
 
 // Also tests clipping (by attempting to set gain way too high).
 TEST_P(PostProcessorTest, SaturatedGainPassthrough) {
-  PostProcessorFactory factory;
   std::string config = MakeConfigString(100.0);
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
   TestPassthrough(pp.get(), sample_rate_);
 }
 
 TEST_P(PostProcessorTest, Gain) {
   const int kNumFrames = 256;
   const int kNumChannels = 2;
-  PostProcessorFactory factory;
   std::string config = MakeConfigString(20.0);  // Exactly 10x multiplier.
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
   std::vector<float> data = GetSineData(256, 1000, sample_rate_);
   for (size_t i = 0; i < data.size(); ++i) {
     data[i] /= 100.0;
@@ -68,9 +62,8 @@ TEST_P(PostProcessorTest, Gain) {
 }
 
 TEST_P(PostProcessorTest, SaturatedGainBenchmark) {
-  PostProcessorFactory factory;
   std::string config = MakeConfigString(20.0);
-  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
   AudioProcessorBenchmark(pp.get(), sample_rate_);
 }
 

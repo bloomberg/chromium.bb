@@ -141,6 +141,7 @@ cast_source_set("audio") {
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
+    "//chromecast/media/cma/backend/post_processors:post_processor_wrapper",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",
@@ -153,19 +154,13 @@ test("cast_audio_backend_unittests") {
   testonly = true
   sources = [
     "filter_group_unittest.cc",
-    "post_processors/governor_unittest.cc",
-    "post_processors/saturated_gain_unittest.cc",
   ]
 
   deps = [
     ":audio",
-    ":governor",
-    ":libcast_governor_1.0",
-    ":libcast_saturated_gain_1.0",
-    ":saturated_gain",
     "//base",
     "//base/test:run_all_unittests",
-    "//chromecast/media/cma/backend/post_processors:test_support",
+    "//chromecast/media/cma/backend/post_processors:unittests",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media:shared_memory_support",
@@ -179,60 +174,4 @@ test("cast_audio_backend_unittests") {
   if (is_fuchsia) {
     deps += [ "fuchsia:unit_tests" ]
   }
-}
-
-# This is separate from ":governor" because the associated unittest needs
-# to create a Governor directly (to use test functions).
-cast_shared_library("libcast_governor_1.0") {
-  sources = [
-    "post_processors/governor_create.cc",
-  ]
-  deps = [
-    ":governor",
-    "//chromecast/public/media",
-  ]
-  if (is_fuchsia) {
-    ldflags = [ "-Wl,-Bsymbolic" ]
-  }
-}
-
-cast_source_set("governor") {
-  sources = [
-    "post_processors/governor.cc",
-    "post_processors/governor.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media/base",
-    "//chromecast/public/media",
-  ]
-  public_configs = [ "//chromecast/public:public_config" ]
-}
-
-cast_shared_library("libcast_saturated_gain_1.0") {
-  sources = [
-    "post_processors/saturated_gain_create.cc",
-  ]
-  deps = [
-    ":saturated_gain",
-    "//chromecast/public/media",
-  ]
-  if (is_fuchsia) {
-    ldflags = [ "-Wl,-Bsymbolic" ]
-  }
-}
-
-cast_source_set("saturated_gain") {
-  sources = [
-    "post_processors/saturated_gain.cc",
-    "post_processors/saturated_gain.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media/base",
-    "//chromecast/public/media",
-  ]
-  public_configs = [ "//chromecast/public:public_config" ]
 }
