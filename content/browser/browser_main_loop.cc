@@ -935,7 +935,7 @@ int BrowserMainLoop::PreCreateThreads() {
   policy->AddIsolatedOrigins(SiteIsolationPolicy::GetIsolatedOrigins());
 
   // Record metrics about which site isolation flags have been turned on.
-  SiteIsolationPolicy::RecordSiteIsolationFlagUsage();
+  SiteIsolationPolicy::StartRecordingSiteIsolationFlagUsage();
 
   return result_code_;
 }
