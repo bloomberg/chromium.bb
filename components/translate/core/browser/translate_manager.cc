@@ -503,8 +503,7 @@ bool TranslateManager::ShouldSuppressBubbleUI(
   // continue offering translation after the user navigates
   // to another page.
   language_state_.SetTranslateEnabled(true);
-  if (!base::FeatureList::IsEnabled(translate::kTranslateUI2016Q2) &&
-      !language_state_.HasLanguageChanged() &&
+  if (!language_state_.HasLanguageChanged() &&
       !ShouldOverrideDecision(
           metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE)) {
     TranslateBrowserMetrics::ReportInitiationStatus(

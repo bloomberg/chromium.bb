@@ -152,38 +152,6 @@ class TranslatePrefsTest : public testing::Test {
   base::Time two_days_ago_;
 };
 
-TEST_F(TranslatePrefsTest, IsTooOftenDeniedIn2016Q2UI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
-
-  translate_prefs_->ResetDenialState();
-  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-
-  for (int i = 0; i < 3; i++) {
-    translate_prefs_->IncrementTranslationDeniedCount(kTestLanguage);
-    EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-  }
-
-  translate_prefs_->IncrementTranslationDeniedCount(kTestLanguage);
-  EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-}
-
-TEST_F(TranslatePrefsTest, IsTooOftenIgnoredIn2016Q2UI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
-
-  translate_prefs_->ResetDenialState();
-  EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-
-  for (int i = 0; i < 10; i++) {
-    translate_prefs_->IncrementTranslationIgnoredCount(kTestLanguage);
-    EXPECT_FALSE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-  }
-
-  translate_prefs_->IncrementTranslationIgnoredCount(kTestLanguage);
-  EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
-}
-
 TEST_F(TranslatePrefsTest, UpdateLastDeniedTime) {
   // Test that denials with more than 24 hours difference between them do not
   // block the language.

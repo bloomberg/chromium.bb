@@ -171,10 +171,6 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   }
 
-  void TurnOnTranslate2016Q2UIFlag() {
-    scoped_feature_list_.InitAndEnableFeature(translate::kTranslateUI2016Q2);
-  }
-
   void CreateAndShowBubble() {
     std::unique_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
@@ -225,50 +221,6 @@ TEST_F(TranslateBubbleViewTest, TranslateButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
 }
 
-TEST_F(TranslateBubbleViewTest, TranslateButtonIn2016Q2UI) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_FALSE(mock_model_->translate_called_);
-
-  // Press the "Translate" button.
-  PressButton(TranslateBubbleView::BUTTON_ID_TRANSLATE);
-  EXPECT_TRUE(mock_model_->translate_called_);
-}
-
-TEST_F(TranslateBubbleViewTest, CloseButtonIn2016Q2UI) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_FALSE(mock_model_->translate_called_);
-  EXPECT_FALSE(mock_model_->translation_declined_);
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-
-  // Press the "Close" button.
-  bubble_->GetBubbleFrameView()->ButtonPressed(
-      bubble_->GetBubbleFrameView()->GetCloseButtonForTest(),
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
-
-  EXPECT_FALSE(mock_model_->translate_called_);
-  EXPECT_TRUE(mock_model_->translation_declined_);
-}
-
-TEST_F(TranslateBubbleViewTest, CloseButton) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_FALSE(mock_model_->translate_called_);
-  EXPECT_FALSE(mock_model_->translation_declined_);
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-
-  // Press the "Close" button.
-  bubble_->GetBubbleFrameView()->ButtonPressed(
-      bubble_->GetBubbleFrameView()->GetCloseButtonForTest(),
-      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
-
-  EXPECT_FALSE(mock_model_->translate_called_);
-  EXPECT_TRUE(mock_model_->translation_declined_);
-}
-
 TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
   CreateAndShowBubble();
 
@@ -303,58 +255,6 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
   EXPECT_TRUE(denial_button_clicked());
   EXPECT_TRUE(mock_model_->never_translate_site_);
   EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
-}
-
-TEST_F(TranslateBubbleViewTest, MenuButtonNeverTranslateLanguage) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-  EXPECT_FALSE(mock_model_->never_translate_language_);
-  EXPECT_FALSE(denial_button_clicked());
-
-  bubble_->ExecuteCommand(
-      TranslateBubbleView::OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE, 0);
-
-  EXPECT_TRUE(denial_button_clicked());
-  EXPECT_TRUE(mock_model_->never_translate_language_);
-  EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
-}
-
-TEST_F(TranslateBubbleViewTest, MenuButtonNeverTranslateSite) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_FALSE(mock_model_->never_translate_site_);
-  EXPECT_FALSE(denial_button_clicked());
-  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
-
-  bubble_->ExecuteCommand(
-      TranslateBubbleView::OptionsMenuItem::NEVER_TRANSLATE_SITE, 0);
-
-  EXPECT_TRUE(denial_button_clicked());
-  EXPECT_TRUE(mock_model_->never_translate_site_);
-  EXPECT_TRUE(bubble_->GetWidget()->IsClosed());
-}
-
-TEST_F(TranslateBubbleViewTest, AdvancedLink) {
-  CreateAndShowBubble();
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-
-  // Click the "Advanced" link.
-  bubble_->HandleLinkClicked(TranslateBubbleView::LINK_ID_ADVANCED);
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ADVANCED, bubble_->GetViewState());
-}
-
-TEST_F(TranslateBubbleViewTest, AdvancedLinkIn2016Q2UI) {
-  TurnOnTranslate2016Q2UIFlag();
-  CreateAndShowBubble();
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-
-  // Click the styled label link.
-  views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);
-  bubble_->StyledLabelLinkClicked(&styled_label, gfx::Range(), ui::EF_NONE);
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ADVANCED, bubble_->GetViewState());
 }
 
 TEST_F(TranslateBubbleViewTest, ShowOriginalButton) {

@@ -31,9 +31,6 @@ class PrefRegistrySyncable;
 
 namespace translate {
 
-// Feature flag for "Translate UI 2016 Q2" project.
-extern const base::Feature kTranslateUI2016Q2;
-
 // Enables or disables the new improved language settings.
 // These settings support the new UI.
 extern const base::Feature kImprovedLanguageSettings;
@@ -41,9 +38,6 @@ extern const base::Feature kImprovedLanguageSettings;
 // Enables or disables using the most recent target language as the default
 // target language option.
 extern const base::Feature kTranslateRecentTarget;
-
-// The trial (study) name in finch study config.
-extern const char kTranslateUI2016Q2TrialName[];
 
 // The name of the parameter for the number of translations, after which the
 // "Always Translate" checkbox default to checked.

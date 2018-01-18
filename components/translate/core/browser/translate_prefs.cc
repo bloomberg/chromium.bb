@@ -47,10 +47,6 @@ const char TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage[] =
 const char TranslatePrefs::kPrefTranslateRecentTarget[] =
     "translate_recent_target";
 
-const char kTranslateUI2016Q2TrialName[] = "TranslateUI2016Q2";
-const char kAlwaysTranslateOfferThreshold[] =
-    "always_translate_offer_threshold";
-
 #if defined(OS_ANDROID)
 const char TranslatePrefs::kPrefTranslateAutoAlwaysCount[] =
     "translate_auto_always_count";
@@ -100,9 +96,6 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
 }
 
 }  // namespace
-
-const base::Feature kTranslateUI2016Q2{"TranslateUI2016Q2",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kImprovedLanguageSettings{"ImprovedLanguageSettings",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -690,17 +683,10 @@ void TranslatePrefs::UpdateLastDeniedTime(const std::string& language) {
 }
 
 bool TranslatePrefs::IsTooOftenDenied(const std::string& language) const {
-  if (base::FeatureList::IsEnabled(kTranslateUI2016Q2)) {
-    // In the new logic, we only hide the bubble if user denied it more than
-    // 3 times or the user ignored it more than 10 times.
-    return (GetTranslationDeniedCount(language) > 3) ||
-           (GetTranslationIgnoredCount(language) > 10);
-  } else {
-    const base::DictionaryValue* dict =
-        prefs_->GetDictionary(kPrefTranslateTooOftenDeniedForLanguage);
-    bool result = false;
-    return dict->GetBoolean(language, &result) ? result : false;
-  }
+  const base::DictionaryValue* dict =
+      prefs_->GetDictionary(kPrefTranslateTooOftenDeniedForLanguage);
+  bool result = false;
+  return dict->GetBoolean(language, &result) ? result : false;
 }
 
 void TranslatePrefs::ResetDenialState() {

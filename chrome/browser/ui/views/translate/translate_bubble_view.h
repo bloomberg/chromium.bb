@@ -147,11 +147,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
       ::Browser*,
       const ::base::string16&);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButton);
-  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TranslateButtonIn2016Q2UI);
-  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CloseButton);
-  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, CloseButtonIn2016Q2UI);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, AdvancedLink);
-  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, AdvancedLinkIn2016Q2UI);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, ShowOriginalButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TryAgainButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
