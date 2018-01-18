@@ -83,7 +83,7 @@ TEST_F(InsecureSensitiveInputDriverTest, PasswordVisibilityWithSubframe) {
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://example2.test"), subframe);
   auto subframe_driver =
-      base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
+      std::make_unique<InsecureSensitiveInputDriver>(subframe);
   subframe_driver->PasswordFieldVisibleInInsecureContext();
 
   content::NavigationEntry* entry =
@@ -121,7 +121,7 @@ TEST_F(InsecureSensitiveInputDriverTest,
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://example2.test"), subframe);
   auto subframe_driver =
-      base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
+      std::make_unique<InsecureSensitiveInputDriver>(subframe);
   subframe_driver->PasswordFieldVisibleInInsecureContext();
 
   entry = web_contents()->GetController().GetVisibleEntry();
@@ -151,7 +151,7 @@ TEST_F(InsecureSensitiveInputDriverTest,
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://example2.test"), subframe);
   auto subframe_driver =
-      base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
+      std::make_unique<InsecureSensitiveInputDriver>(subframe);
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
   subframe_driver->PasswordFieldVisibleInInsecureContext();
@@ -196,7 +196,7 @@ TEST_F(InsecureSensitiveInputDriverTest,
                           GURL("http://example2.test"),
                           ui::PAGE_TRANSITION_TYPED);
 
-  auto driver = base::MakeUnique<InsecureSensitiveInputDriver>(main_rfh());
+  auto driver = std::make_unique<InsecureSensitiveInputDriver>(main_rfh());
   driver->PasswordFieldVisibleInInsecureContext();
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
@@ -251,7 +251,7 @@ TEST_F(InsecureSensitiveInputDriverTest, FieldEditWithSubframe) {
   subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://example2.test"), subframe);
   auto subframe_driver =
-      base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
+      std::make_unique<InsecureSensitiveInputDriver>(subframe);
   subframe_driver->DidEditFieldInInsecureContext();
 
   EXPECT_EQ(url, entry->GetURL());

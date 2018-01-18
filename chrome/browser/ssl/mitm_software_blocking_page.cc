@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -43,7 +42,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
-      base::MakeUnique<ChromeMetricsHelper>(web_contents, request_url,
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
                                             reporting_info, kMetricsName);
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
   return metrics_helper;
@@ -77,7 +76,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
           std::move(ssl_cert_reporter),
           false /* overridable */,
           base::Time::Now(),
-          base::MakeUnique<SSLErrorControllerClient>(
+          std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
               request_url,

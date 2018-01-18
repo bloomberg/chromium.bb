@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "crypto/sha2.h"
@@ -101,7 +102,7 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   SSLErrorAssistantTest() {
-    embedded_test_server_ = base::MakeUnique<net::EmbeddedTestServer>();
+    embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
   }
 
   ~SSLErrorAssistantTest() override {}
@@ -130,7 +131,7 @@ TEST_F(SSLErrorAssistantTest, CaptivePortalCertificateList) {
 
   // Test without the known captive portal certificate in config_proto.
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
   config_proto->add_captive_portal_cert()->set_sha256_hash("sha256/boxfish");
   config_proto->add_captive_portal_cert()->set_sha256_hash(
@@ -159,7 +160,7 @@ TEST_F(SSLErrorAssistantTest, MitMSoftwareMatching) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Tests for a basic and more complex regex match.
@@ -205,7 +206,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListMatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -245,7 +246,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListMatchUnknownCertError) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -284,7 +285,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListCertErrorMismatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::DynamicInterstitial* filter =
@@ -307,7 +308,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListHashesMismatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::DynamicInterstitial* filter =

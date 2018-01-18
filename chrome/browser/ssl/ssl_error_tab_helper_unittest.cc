@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/ssl_error_tab_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
@@ -25,7 +27,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
     content::WebContents* web_contents) {
   security_interstitials::MetricsHelper::ReportDetails report_details;
   report_details.metric_prefix = kMetricsName;
-  return base::MakeUnique<ChromeMetricsHelper>(web_contents, GURL(),
+  return std::make_unique<ChromeMetricsHelper>(web_contents, GURL(),
                                                report_details, kMetricsName);
 }
 

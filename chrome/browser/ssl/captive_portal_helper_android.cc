@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,7 +26,7 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
     const base::android::JavaParamRef<jstring>& jhash) {
   const std::string hash = ConvertJavaStringToUTF8(env, jhash);
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(INT_MAX);
   config_proto->add_captive_portal_cert()->set_sha256_hash(hash);
 

@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
@@ -264,7 +263,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
 
     cert_error_dict =
         dict->SetDictionary(kSSLCertDecisionCertErrorMapKey,
-                            base::MakeUnique<base::DictionaryValue>());
+                            std::make_unique<base::DictionaryValue>());
   }
 
   return cert_error_dict;
