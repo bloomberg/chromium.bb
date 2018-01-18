@@ -3514,5 +3514,7 @@ crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.worker.h
 # This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
 # WebKit Linux Trusty (dbg).
 crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-restored-breakpoint.js [ Pass Failure ]
+# This test has been flaky for some time on Win 7 (dgb)
+crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
 
 crbug.com/799929 external/wpt/performance-timeline/po-takeRecords.html [ Failure ]
