@@ -3,11 +3,16 @@
     "Cronet tests 64-bit iOS 11.0 simulators."
   ],
   "xcode build version": "9C40b",
+  "comments": [
+    "TODO(crbug.com/803158): remove enable_precompiled_headers=false",
+    "when the bug is fixed."
+  ],
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=false",
     "disable_file_support=true",
     "disable_ftp_support=true",
+    "enable_precompiled_headers=false",
     "enable_websockets=false",
     "goma_dir=\"$(goma_dir)\"",
     "ios_deployment_target=\"9.0\"",
