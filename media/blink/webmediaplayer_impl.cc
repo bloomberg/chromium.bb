@@ -203,7 +203,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       worker_task_runner_(params->worker_task_runner()),
       media_log_(params->take_media_log()),
       pipeline_controller_(
-          std::make_unique<PipelineImpl>(media_task_runner_, media_log_.get()),
+          std::make_unique<PipelineImpl>(media_task_runner_,
+                                         main_task_runner_,
+                                         media_log_.get()),
           base::Bind(&WebMediaPlayerImpl::CreateRenderer,
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),

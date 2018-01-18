@@ -101,7 +101,9 @@ class PipelineImplTest : public ::testing::Test {
   };
 
   PipelineImplTest()
-      : pipeline_(new PipelineImpl(message_loop_.task_runner(), &media_log_)),
+      : pipeline_(new PipelineImpl(message_loop_.task_runner(),
+                                   message_loop_.task_runner(),
+                                   &media_log_)),
         demuxer_(new StrictMock<MockDemuxer>()),
         demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),

@@ -126,6 +126,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       webaudio_attached_(false),
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
+                           scoped_task_environment_.GetMainThreadTaskRunner(),
                            &media_log_)),
       ended_(false),
       pipeline_status_(PIPELINE_OK),

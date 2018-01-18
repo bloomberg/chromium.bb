@@ -66,9 +66,9 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
  public:
   // Constructs a media pipeline that will execute media tasks on
   // |media_task_runner|.
-  PipelineImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      MediaLog* media_log);
+  PipelineImpl(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+               scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+               MediaLog* media_log);
   ~PipelineImpl() override;
 
   // Pipeline implementation.
