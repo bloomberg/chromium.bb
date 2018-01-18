@@ -15528,22 +15528,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DisplayManager.MirroringDisplayCountRanges"
+    enum="MultiDisplayModeDisplayCountRanges">
+  <owner>weidongg@chromium.org</owner>
+  <summary>
+    The number of displays connected to the device that are in software or
+    hardware mirror mode. This is emitted once when the normal or mixed mirror
+    mode is enabled through API call, or the display configuration changes (e.g.
+    adding or removing a display) when mirror mode is on.
+  </summary>
+</histogram>
+
+<histogram name="DisplayManager.MirrorModeTypes" enum="DisplayMirrorModeTypes">
+  <owner>weidongg@chromium.org</owner>
+  <summary>
+    The types of mirror mode in which the displays connected to the device are
+    in. This is emitted once when the normal or mixed mirror mode is enabled
+    through API call, or the display configuration changes ( e.g. adding or
+    removing a display) when mirror mode is on.
+  </summary>
+</histogram>
+
 <histogram name="DisplayManager.MultiDisplayMode" enum="MultiDisplayModes">
   <owner>afakhry@chromium.org</owner>
   <summary>
-    The mode in which the connected displays to the device is in. This is
+    The mode in which the connected displays to the device are in. This is
     emitted once when displays are added or removed, or when the user changes
     the mode by e.g. enabling mirror or unified modes.
   </summary>
 </histogram>
 
 <histogram name="DisplayManager.UnifiedDesktopDisplayCountRange"
-    enum="UnifiedDesktopDisplayCountRanges">
+    enum="MultiDisplayModeDisplayCountRanges">
   <owner>afakhry@chromium.org</owner>
   <summary>
-    The the number of displays connected to the device when Unified Desktop mode
-    is on. This is emitted when Unified Desktop mode is turned on, or the
-    displays are added or removed while in Unified Mode.
+    The number of displays connected to the device when Unified Desktop mode is
+    on. This is emitted when Unified Desktop mode is turned on, or the displays
+    are added or removed while in Unified Mode.
   </summary>
 </histogram>
 
