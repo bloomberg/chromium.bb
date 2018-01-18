@@ -18,7 +18,7 @@
   SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(originalSourceFrame);
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
-  await new Promise(resolve => TestRunner.reloadPage(resolve));
+  await TestRunner.reloadPagePromise();
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   let sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
   await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);
@@ -37,7 +37,7 @@
   }
 
   TestRunner.addResult('Reload page and add script again and dump breakpoints');
-  await new Promise(resolve => TestRunner.reloadPage(resolve));
+  await TestRunner.reloadPagePromise();
   await TestRunner.addScriptTag(TestRunner.url('resources/a.js'));
   sourceFrameAfterReload = await SourcesTestRunner.showScriptSourcePromise('a.js');
   SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrameAfterReload);

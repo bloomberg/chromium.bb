@@ -12,5 +12,6 @@ Frame 2) line 13, content:   return f2(); (must be part of function 'f3')
 Frame 3) line 15, content: f3(); (must be part of function '')
 Script execution resumed.
 didResume
+Page reloaded.
 didReload
 
