@@ -406,6 +406,64 @@
       }
     ]
   },
+  "OOP Raster Perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "smoothness.oop_rasterization.top_25_smooth",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "smoothness.oop_rasterization.top_25_smooth",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device2",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
+      },
+      {
+        "args": [
+          "thread_times.oop_rasterization.key_mobile",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "thread_times.oop_rasterization.key_mobile",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build46-b1--device2",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
+      }
+    ]
+  },
   "One Buildbot Step Test Builder": {
     "isolated_scripts": [
       {
