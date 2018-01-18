@@ -30,7 +30,7 @@ namespace chromeos {
 //     --dest=org.chromium.ComponentUpdaterService
 //     /org/chromium/ComponentUpdaterService
 //     org.chromium.ComponentUpdaterService.LoadComponent
-//     "string:|component name|"
+//     "string:|component name|" "boolean:|mount|"
 //
 // % string "/run/imageloader/|component name|/|version|"
 //
@@ -49,12 +49,14 @@ class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
   // ComponentUpdaterServiceProvider.
   class Delegate {
    public:
+    using LoadCallback = base::OnceCallback<void(const base::FilePath&)>;
+
     Delegate() {}
     virtual ~Delegate() {}
 
-    virtual void LoadComponent(
-        const std::string& name,
-        base::OnceCallback<void(const base::FilePath&)> load_callback) = 0;
+    virtual void LoadComponent(const std::string& name,
+                               bool mount,
+                               LoadCallback load_callback) = 0;
 
     virtual bool UnloadComponent(const std::string& name) = 0;
 
