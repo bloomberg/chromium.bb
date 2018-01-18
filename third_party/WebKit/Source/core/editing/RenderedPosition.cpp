@@ -30,15 +30,18 @@
 
 #include "core/editing/RenderedPosition.h"
 
+#include "core/editing/EditingUtilities.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/InlineBoxPosition.h"
 #include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/CompositedSelectionBound.h"
+#include "core/paint/compositing/CompositedSelection.h"
 
 namespace blink {
 
@@ -397,6 +400,44 @@ bool LayoutObjectContainsPosition(LayoutObject* target,
       return true;
   }
   return false;
+}
+
+CompositedSelection RenderedPosition::ComputeCompositedSelection(
+    const FrameSelection& frame_selection) {
+  const VisibleSelection& visible_selection =
+      frame_selection.ComputeVisibleSelectionInDOMTree();
+  if (!frame_selection.IsHandleVisible() || frame_selection.IsHidden())
+    return {};
+
+  // Non-editable caret selections lack any kind of UI affordance, and
+  // needn't be tracked by the client.
+  if (visible_selection.IsCaret() && !visible_selection.IsContentEditable())
+    return {};
+
+  CompositedSelection selection;
+  VisiblePosition visible_start(visible_selection.VisibleStart());
+  RenderedPosition rendered_start(visible_start);
+  selection.start = rendered_start.PositionInGraphicsLayerBacking(true);
+  if (!selection.start.layer)
+    return {};
+
+  VisiblePosition visible_end(visible_selection.VisibleEnd());
+  RenderedPosition rendered_end(visible_end);
+  selection.end = rendered_end.PositionInGraphicsLayerBacking(false);
+  if (!selection.end.layer)
+    return {};
+
+  DCHECK(!visible_selection.IsNone());
+  selection.type =
+      visible_selection.IsRange() ? kRangeSelection : kCaretSelection;
+  selection.start.is_text_direction_rtl |=
+      PrimaryDirectionOf(*visible_selection.Start().AnchorNode()) ==
+      TextDirection::kRtl;
+  selection.end.is_text_direction_rtl |=
+      PrimaryDirectionOf(*visible_selection.End().AnchorNode()) ==
+      TextDirection::kRtl;
+
+  return selection;
 }
 
 }  // namespace blink
