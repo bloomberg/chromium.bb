@@ -44,6 +44,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
         mMoreIcon.dismiss();
 
+        mMoreIcon.setContentDescriptionContext(bookmarkItem.getTitle());
         mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
         setChecked(mDelegate.getSelectionDelegate().isItemSelected(bookmarkId));
 

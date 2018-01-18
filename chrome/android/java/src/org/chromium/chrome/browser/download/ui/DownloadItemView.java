@@ -289,6 +289,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             }
         }
 
+        mMoreButton.setContentDescriptionContext(item.getDisplayFileName());
         boolean canShowMore = item.isComplete() && isMoreButtonEnabled();
         mMoreButton.setVisibility(canShowMore ? View.VISIBLE : View.GONE);
 

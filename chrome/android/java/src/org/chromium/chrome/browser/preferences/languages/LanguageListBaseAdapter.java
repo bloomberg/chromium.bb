@@ -81,6 +81,8 @@ public class LanguageListBaseAdapter
                 mDescription.setText(item.getNativeDisplayName());
             }
 
+            mMoreButton.setContentDescriptionContext(item.getDisplayName());
+
             // The default visibility for the views below is GONE.
             mStartIcon.setVisibility(View.GONE);
             mMoreButton.setVisibility(View.GONE);
