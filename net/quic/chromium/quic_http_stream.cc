@@ -50,6 +50,7 @@ QuicHttpStream::QuicHttpStream(
       next_state_(STATE_NONE),
       stream_(nullptr),
       request_info_(nullptr),
+      can_send_early_(false),
       request_body_stream_(nullptr),
       priority_(MINIMUM_PRIORITY),
       response_info_(nullptr),
@@ -98,6 +99,7 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
 }
 
 int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
+                                     bool can_send_early,
                                      RequestPriority priority,
                                      const NetLogWithSource& stream_net_log,
                                      const CompletionCallback& callback) {
@@ -122,6 +124,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
+  can_send_early_ = can_send_early;
   request_time_ = base::Time::Now();
   priority_ = priority;
 
@@ -518,7 +521,7 @@ int QuicHttpStream::DoRequestStream() {
   next_state_ = STATE_REQUEST_STREAM_COMPLETE;
 
   return quic_session()->RequestStream(
-      request_info_->method == "POST",
+      !can_send_early_,
       base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 

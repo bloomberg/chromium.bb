@@ -159,7 +159,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   HttpRequestInfo request_info;
   request_info.method = kMethod;
   request_info.url = GURL(kUrl);
-  stream->InitializeStream(&request_info, DEFAULT_PRIORITY, env->net_log,
+  stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY, env->net_log,
                            CompletionCallback());
 
   HttpResponseInfo response;

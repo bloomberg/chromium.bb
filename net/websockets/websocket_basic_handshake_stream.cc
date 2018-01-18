@@ -312,11 +312,12 @@ WebSocketBasicHandshakeStream::~WebSocketBasicHandshakeStream() = default;
 
 int WebSocketBasicHandshakeStream::InitializeStream(
     const HttpRequestInfo* request_info,
+    bool can_send_early,
     RequestPriority priority,
     const NetLogWithSource& net_log,
     const CompletionCallback& callback) {
   url_ = request_info->url;
-  state_.Initialize(request_info, priority, net_log, callback);
+  state_.Initialize(request_info, can_send_early, priority, net_log, callback);
   return OK;
 }
 

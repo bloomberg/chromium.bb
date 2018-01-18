@@ -15719,6 +15719,7 @@ class FakeStream : public HttpStream,
   RequestPriority priority() const { return priority_; }
 
   int InitializeStream(const HttpRequestInfo* request_info,
+                       bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override {
@@ -15972,10 +15973,12 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   // the fact that the WebSocket code is not compiled on iOS makes that
   // difficult.
   int InitializeStream(const HttpRequestInfo* request_info,
+                       bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override {
-    state_.Initialize(request_info, priority, net_log, callback);
+    state_.Initialize(request_info, can_send_early, priority, net_log,
+                      callback);
     return OK;
   }
 

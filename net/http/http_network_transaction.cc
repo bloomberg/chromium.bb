@@ -86,6 +86,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       request_(NULL),
       priority_(priority),
       headers_valid_(false),
+      can_send_early_data_(false),
       request_headers_(),
       read_buf_len_(0),
       total_received_bytes_(0),
@@ -131,6 +132,10 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   if (request_->load_flags & LOAD_DISABLE_CERT_REVOCATION_CHECKING) {
     server_ssl_config_.rev_checking_enabled = false;
     proxy_ssl_config_.rev_checking_enabled = false;
+  }
+
+  if (request_info->method != "POST") {
+    can_send_early_data_ = true;
   }
 
   if (request_->load_flags & LOAD_PREFETCH)
@@ -908,7 +913,8 @@ int HttpNetworkTransaction::DoInitStream() {
 
   stream_->GetRemoteEndpoint(&remote_endpoint_);
 
-  return stream_->InitializeStream(request_, priority_, net_log_, io_callback_);
+  return stream_->InitializeStream(request_, can_send_early_data_, priority_,
+                                   net_log_, io_callback_);
 }
 
 int HttpNetworkTransaction::DoInitStreamComplete(int result) {

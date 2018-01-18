@@ -44,6 +44,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
 
   // HttpStream implementation.
   int InitializeStream(const HttpRequestInfo* request_info,
+                       bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override;
@@ -149,6 +150,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
   // The request to send.
   // Only valid before the response body is read.
   const HttpRequestInfo* request_info_;
+
+  // Whether this request can be sent without confirmation.
+  bool can_send_early_;
 
   // The request body to send, if any, owned by the caller.
   UploadDataStream* request_body_stream_;

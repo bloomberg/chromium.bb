@@ -46,7 +46,7 @@ TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
 TEST(HttpBasicStateTest, InitializeWorks) {
   HttpBasicState state(std::make_unique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
-  EXPECT_EQ(OK, state.Initialize(&request_info, LOW, NetLogWithSource(),
+  EXPECT_EQ(OK, state.Initialize(&request_info, false, LOW, NetLogWithSource(),
                                  CompletionCallback()));
   EXPECT_TRUE(state.parser());
 }
@@ -54,7 +54,7 @@ TEST(HttpBasicStateTest, InitializeWorks) {
 TEST(HttpBasicStateTest, DeleteParser) {
   HttpBasicState state(std::make_unique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
-  state.Initialize(&request_info, LOW, NetLogWithSource(),
+  state.Initialize(&request_info, false, LOW, NetLogWithSource(),
                    CompletionCallback());
   EXPECT_TRUE(state.parser());
   state.DeleteParser();
@@ -68,7 +68,7 @@ TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
-  state.Initialize(&request_info, LOW, NetLogWithSource(),
+  state.Initialize(&request_info, false, LOW, NetLogWithSource(),
                    CompletionCallback());
   EXPECT_EQ("PUT /path?foo=bar HTTP/1.1\r\n", state.GenerateRequestLine());
 }
@@ -80,7 +80,7 @@ TEST(HttpBasicStateTest, GenerateRequestLineWithProxy) {
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
-  state.Initialize(&request_info, LOW, NetLogWithSource(),
+  state.Initialize(&request_info, false, LOW, NetLogWithSource(),
                    CompletionCallback());
   EXPECT_EQ("PUT http://www.example.com/path?foo=bar HTTP/1.1\r\n",
             state.GenerateRequestLine());

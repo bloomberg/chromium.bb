@@ -123,7 +123,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     request_info.method = "GET";
     request_info.load_flags = LOAD_DISABLE_CACHE;
     int rv =
-        handshake->InitializeStream(&request_info, DEFAULT_PRIORITY,
+        handshake->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                     NetLogWithSource(), CompletionCallback());
     EXPECT_THAT(rv, IsOk());
 
