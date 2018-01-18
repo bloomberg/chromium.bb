@@ -50,6 +50,8 @@ public class ContextualSearchSelectionController {
     private static final int MAX_SELECTION_LENGTH = 100;
 
     private static final int INVALID_DURATION = -1;
+    // A default tap duration value when we can't compute it.
+    private static final int DEFAULT_DURATION = 0;
 
     private final ChromeActivity mActivity;
     private final ContextualSearchSelectionHandler mHandler;
@@ -339,9 +341,10 @@ public class ContextualSearchSelectionController {
         mWasTapGestureDetected = false;
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS) {
-            assert mTapTimeNanoseconds != 0 : "mTapTimeNanoseconds not set!";
-            mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
-                    / ContextualSearchHeuristic.NANOSECONDS_IN_A_MILLISECOND);
+            if (mTapTimeNanoseconds != 0) {
+                mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
+                        / ContextualSearchHeuristic.NANOSECONDS_IN_A_MILLISECOND);
+            }
             mWasTapGestureDetected = true;
             mSelectionType = SelectionType.TAP;
             mX = x;
@@ -369,7 +372,7 @@ public class ContextualSearchSelectionController {
         int y = (int) mY;
 
         // TODO(donnd): Remove tap counters.
-        assert mTapDurationMs != INVALID_DURATION : "mTapDurationMs not set!";
+        if (mTapDurationMs == INVALID_DURATION) mTapDurationMs = DEFAULT_DURATION;
         TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, mLastTapState,
                 x, y, contextualSearchContext, mTapDurationMs, mWasSelectionEmptyBeforeTap);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
