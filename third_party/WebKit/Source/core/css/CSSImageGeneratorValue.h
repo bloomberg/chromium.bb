@@ -41,6 +41,22 @@ class FloatSize;
 class ComputedStyle;
 class ImageResourceObserver;
 
+class GeneratedImageCache {
+ public:
+  void AddSize(const LayoutSize&);
+  void RemoveSize(const LayoutSize&);
+
+  Image* GetImage(const LayoutSize&) const;
+  void PutImage(const LayoutSize&, scoped_refptr<Image>);
+
+ private:
+  // A count of how many times a given image size is in use.
+  HashCountedSet<LayoutSize> sizes_;
+
+  // A cache of Image objects by image size.
+  HashMap<LayoutSize, scoped_refptr<Image>> images_;
+};
+
 struct SizeAndCount {
   DISALLOW_NEW();
   SizeAndCount(LayoutSize new_size = LayoutSize(), int new_count = 0)
@@ -85,12 +101,11 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
   void PutImage(const LayoutSize&, scoped_refptr<Image>);
   const ClientSizeCountMap& Clients() const { return clients_; }
 
-  HashCountedSet<LayoutSize>
-      sizes_;  // A count of how many times a given image size is in use.
-  ClientSizeCountMap
-      clients_;  // A map from LayoutObjects (with entry count) to image sizes.
-  HashMap<LayoutSize, scoped_refptr<Image>>
-      images_;  // A cache of Image objects by image size.
+  // A map from LayoutObjects (with entry count) to image sizes.
+  ClientSizeCountMap clients_;
+
+  // Cached image instances.
+  GeneratedImageCache cached_images_;
 
   // TODO(Oilpan): when/if we can make the layoutObject point directly to the
   // CSSImageGenerator value using a member we don't need to have this hack
