@@ -624,9 +624,6 @@ const char kMojoLocalStorage[]              = "mojo-local-storage";
 // automated testing.
 const char kMuteAudio[]                     = "mute-audio";
 
-// Don't send HTTP-Referer headers.
-const char kNoReferrers[]                   = "no-referrers";
-
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 

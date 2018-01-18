@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/loader_util.h"
+#include "services/network/public/cpp/loader_util.h"
 
 #include <string>
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/common/content_switches.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
-#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace network {
 
 const char kAcceptHeader[] = "Accept";
 const char kFrameAcceptHeader[] =
@@ -54,8 +53,8 @@ scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers) {
-  scoped_refptr<network::HttpRawRequestResponseInfo> info =
-      new network::HttpRawRequestResponseInfo();
+  scoped_refptr<HttpRawRequestResponseInfo> info =
+      new HttpRawRequestResponseInfo();
 
   const net::HttpResponseInfo& response_info = request.response_info();
   // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
@@ -99,23 +98,6 @@ scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
   return info;
 }
 
-int BuildLoadFlagsForRequest(const network::ResourceRequest& request) {
-  int load_flags = request.load_flags;
-
-  // Although EV status is irrelevant to sub-frames and sub-resources, we have
-  // to perform EV certificate verification on all resources because an HTTP
-  // keep-alive connection created to load a sub-frame or a sub-resource could
-  // be reused to load a main frame.
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (request.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
-    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-  } else if (request.resource_type == RESOURCE_TYPE_PREFETCH) {
-    load_flags |= net::LOAD_PREFETCH;
-  }
-
-  return load_flags;
-}
-
 std::string ComputeReferrer(const GURL& referrer) {
   if (!referrer.is_valid() || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kNoReferrers)) {
@@ -125,4 +107,4 @@ std::string ComputeReferrer(const GURL& referrer) {
   return referrer.spec();
 }
 
-}  // namespace content
+}  // namespace network

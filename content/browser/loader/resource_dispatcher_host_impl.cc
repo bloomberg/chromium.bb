@@ -69,7 +69,6 @@
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
-#include "content/common/loader_util.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -110,6 +109,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -1034,7 +1034,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   storage::BlobStorageContext* blob_context = nullptr;
   bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
-  int load_flags = BuildLoadFlagsForRequest(request_data);
+  int load_flags = request_data.load_flags;
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(
@@ -1099,7 +1099,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     // else it will fail for SSL redirects since net/ will think the blob:https
     // for the stream is not a secure scheme (specifically, in the call to
     // ComputeReferrerForRedirect).
-    new_request->SetReferrer(ComputeReferrer(request_data.referrer));
+    new_request->SetReferrer(network::ComputeReferrer(request_data.referrer));
     new_request->set_referrer_policy(request_data.referrer_policy);
 
     new_request->SetExtraRequestHeaders(headers);
@@ -1841,9 +1841,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   if (info.is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
 
-  // TODO(davidben): BuildLoadFlagsForRequest includes logic for
-  // CanSendCookiesForOrigin and CanReadRawCookies. Is this needed here?
-
   // Sync loads should have maximum priority and should be the only
   // requests that have the ignore limits flag set.
   DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
@@ -1865,7 +1862,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(info.begin_params->headers);
-  headers.SetHeader(kAcceptHeader, kFrameAcceptHeader);
+  headers.SetHeader(network::kAcceptHeader, network::kFrameAcceptHeader);
   new_request->SetExtraRequestHeaders(headers);
 
   new_request->SetLoadFlags(load_flags);

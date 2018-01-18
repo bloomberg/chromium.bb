@@ -29,6 +29,7 @@
 #include "components/ssl_config/ssl_config_switches.h"
 #include "components/sync/base/pref_names.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 
@@ -69,7 +70,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
          true},
         {switches::kAllowOutdatedPlugins, prefs::kPluginsAllowOutdated, true},
         {switches::kNoPings, prefs::kEnableHyperlinkAuditing, false},
-        {switches::kNoReferrers, prefs::kEnableReferrers, false},
+        {network::switches::kNoReferrers, prefs::kEnableReferrers, false},
         {switches::kAllowRunningInsecureContent,
          prefs::kWebKitAllowRunningInsecureContent, true},
         {switches::kAllowCrossOriginAuthPrompt,
