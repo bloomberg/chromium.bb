@@ -225,10 +225,9 @@ def build_gn_with_ninja_manually(tempdir, options):
     write_compiled_message(root_gen_dir,
         'base/trace_event/etw_manifest/chrome_events_win.man')
 
-  if is_android:
-    write_buildflag_header_manually(
-        root_gen_dir, 'base/android/library_loader.h',
-        {'USE_LLD': 'false'})
+  write_buildflag_header_manually(
+      root_gen_dir, 'base/android/library_loader.h',
+      {'USE_LLD': 'false'})
 
   write_gn_ninja(os.path.join(tempdir, 'build.ninja'),
                  root_gen_dir, options)
@@ -468,13 +467,12 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/json/json_string_value_serializer.cc',
       'base/json/json_writer.cc',
       'base/json/string_escape.cc',
-      'base/lazy_instance.cc',
+      'base/lazy_instance_helpers.cc',
       'base/location.cc',
       'base/logging.cc',
       'base/md5.cc',
       'base/memory/ref_counted.cc',
       'base/memory/ref_counted_memory.cc',
-      'base/memory/singleton.cc',
       'base/memory/shared_memory_handle.cc',
       'base/memory/shared_memory_tracker.cc',
       'base/memory/weak_ptr.cc',
