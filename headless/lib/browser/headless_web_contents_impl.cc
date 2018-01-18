@@ -536,34 +536,37 @@ void HeadlessWebContentsImpl::OnNeedsExternalBeginFrames(
                "needs_begin_frames", needs_begin_frames);
 
   needs_external_begin_frames_ = needs_begin_frames;
-  for (int session_id : begin_frame_events_enabled_sessions_)
-    SendNeedsBeginFramesEvent(session_id);
+  for (content::DevToolsAgentHostClient* client :
+       begin_frame_events_enabled_clients_) {
+    SendNeedsBeginFramesEvent(client);
+  }
 }
 
-void HeadlessWebContentsImpl::SetBeginFrameEventsEnabled(int session_id,
-                                                         bool enabled) {
+void HeadlessWebContentsImpl::SetBeginFrameEventsEnabled(
+    content::DevToolsAgentHostClient* client,
+    bool enabled) {
   TRACE_EVENT2("headless",
-               "HeadlessWebContentsImpl::SetBeginFrameEventsEnabled",
-               "session_id", session_id, "enabled", enabled);
+               "HeadlessWebContentsImpl::SetBeginFrameEventsEnabled", "client",
+               client, "enabled", enabled);
 
   if (enabled) {
-    if (!base::ContainsValue(begin_frame_events_enabled_sessions_,
-                             session_id)) {
-      begin_frame_events_enabled_sessions_.push_back(session_id);
+    if (!base::ContainsValue(begin_frame_events_enabled_clients_, client)) {
+      begin_frame_events_enabled_clients_.push_back(client);
 
       // We only need to send an event if BeginFrames are needed, as clients
       // assume that they are not needed by default.
       if (needs_external_begin_frames_)
-        SendNeedsBeginFramesEvent(session_id);
+        SendNeedsBeginFramesEvent(client);
     }
   } else {
-    begin_frame_events_enabled_sessions_.remove(session_id);
+    begin_frame_events_enabled_clients_.remove(client);
   }
 }
 
-void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(int session_id) {
+void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(
+    content::DevToolsAgentHostClient* client) {
   TRACE_EVENT2("headless", "HeadlessWebContentsImpl::SendNeedsBeginFramesEvent",
-               "session_id", session_id, "needs_begin_frames",
+               "client", client, "needs_begin_frames",
                needs_external_begin_frames_);
   DCHECK(agent_host_);
   auto params = std::make_unique<base::DictionaryValue>();
@@ -575,7 +578,7 @@ void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(int session_id) {
 
   std::string json_result;
   CHECK(base::JSONWriter::Write(event, &json_result));
-  agent_host_->SendProtocolMessageToClient(session_id, json_result);
+  client->DispatchProtocolMessage(agent_host_.get(), json_result);
 }
 
 void HeadlessWebContentsImpl::DidReceiveCompositorFrame() {
@@ -594,8 +597,10 @@ void HeadlessWebContentsImpl::DidReceiveCompositorFrame() {
 
     std::string json_result;
     CHECK(base::JSONWriter::Write(event, &json_result));
-    for (int session_id : begin_frame_events_enabled_sessions_)
-      agent_host_->SendProtocolMessageToClient(session_id, json_result);
+    for (content::DevToolsAgentHostClient* client :
+         begin_frame_events_enabled_clients_) {
+      client->DispatchProtocolMessage(agent_host_.get(), json_result);
+    }
   }
 
   // Set main_frame_content_updated on pending frames that the display hasn't

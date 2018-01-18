@@ -333,9 +333,9 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   }
 }
 
-void RenderFrameDevToolsAgentHost::DetachSession(int session_id) {
+void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
-  suspended_messages_by_session_id_.erase(session_id);
+  suspended_messages_by_session_.erase(session);
   if (sessions().empty()) {
     frame_trace_recorder_.reset();
     RevokePolicy();
@@ -350,14 +350,13 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
   std::string method;
-  int session_id = session->session_id();
   if (session->Dispatch(message, &call_id, &method) !=
       protocol::Response::kFallThrough) {
     return true;
   }
 
   if (!navigation_handles_.empty()) {
-    suspended_messages_by_session_id_[session_id].push_back(
+    suspended_messages_by_session_[session].push_back(
         {call_id, method, message});
     return true;
   }
@@ -422,9 +421,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   UpdateFrameHost(frame_tree_node_->current_frame_host());
 
   if (navigation_handles_.empty()) {
-    for (auto& pair : suspended_messages_by_session_id_) {
-      int session_id = pair.first;
-      DevToolsSession* session = SessionById(session_id);
+    for (auto& pair : suspended_messages_by_session_) {
+      DevToolsSession* session = pair.first;
       for (const Message& message : pair.second) {
         session->DispatchProtocolMessageToAgent(message.call_id, message.method,
                                                 message.message);
@@ -432,7 +430,7 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
                                                         message.message};
       }
     }
-    suspended_messages_by_session_id_.clear();
+    suspended_messages_by_session_.clear();
   }
   if (handle->HasCommitted()) {
     for (auto* target : protocol::TargetHandler::ForAgentHost(this))

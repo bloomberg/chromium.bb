@@ -27,6 +27,7 @@ class SkBitmap;
 
 namespace content {
 class DevToolsAgentHost;
+class DevToolsAgentHostClient;
 class WebContents;
 }
 
@@ -140,7 +141,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
     return needs_external_begin_frames_;
   }
 
-  void SetBeginFrameEventsEnabled(int session_id, bool enabled);
+  void SetBeginFrameEventsEnabled(content::DevToolsAgentHostClient* client,
+                                  bool enabled);
 
   using FrameFinishedCallback =
       base::Callback<void(bool /* has_damage */,
@@ -168,7 +170,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
       const MojoService::ServiceFactoryCallback& service_factory,
       mojo::ScopedMessagePipeHandle handle);
 
-  void SendNeedsBeginFramesEvent(int session_id);
+  void SendNeedsBeginFramesEvent(content::DevToolsAgentHostClient* client);
   void PendingFrameReadbackComplete(PendingFrame* pending_frame,
                                     const SkBitmap& bitmap,
                                     content::ReadbackResponse response);
@@ -177,7 +179,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   uint64_t begin_frame_sequence_number_ =
       viz::BeginFrameArgs::kStartingFrameNumber;
   bool begin_frame_control_enabled_ = false;
-  std::list<int> begin_frame_events_enabled_sessions_;
+  std::list<content::DevToolsAgentHostClient*>
+      begin_frame_events_enabled_clients_;
   bool needs_external_begin_frames_ = false;
   std::list<std::unique_ptr<PendingFrame>> pending_frames_;
   bool first_compositor_frame_received_ = false;

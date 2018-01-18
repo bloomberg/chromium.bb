@@ -25,11 +25,9 @@ class DevToolsSession : public protocol::FrontendChannel,
                         public blink::mojom::DevToolsSessionHost {
  public:
   DevToolsSession(DevToolsAgentHostImpl* agent_host,
-                  DevToolsAgentHostClient* client,
-                  int session_id);
+                  DevToolsAgentHostClient* client);
   ~DevToolsSession() override;
 
-  int session_id() const { return session_id_; }
   DevToolsAgentHostClient* client() const { return client_; }
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
   void SetRenderer(RenderProcessHost* process_host,
@@ -93,7 +91,6 @@ class DevToolsSession : public protocol::FrontendChannel,
   blink::mojom::DevToolsSessionPtr io_session_ptr_;
   DevToolsAgentHostImpl* agent_host_;
   DevToolsAgentHostClient* client_;
-  int session_id_;
   base::flat_map<std::string, std::unique_ptr<protocol::DevToolsDomainHandler>>
       handlers_;
   RenderProcessHost* process_;

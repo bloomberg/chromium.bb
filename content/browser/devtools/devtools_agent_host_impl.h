@@ -65,12 +65,10 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   static bool ShouldForceCreation();
 
   virtual void AttachSession(DevToolsSession* session) = 0;
-  virtual void DetachSession(int session_id) = 0;
+  virtual void DetachSession(DevToolsSession* session) = 0;
   virtual bool DispatchProtocolMessage(
       DevToolsSession* session,
       const std::string& message) = 0;
-  bool SendProtocolMessageToClient(int session_id,
-                                   const std::string& message) override;
   virtual void InspectElement(DevToolsSession* session, int x, int y);
 
   void NotifyCreated();
@@ -80,7 +78,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
-  DevToolsSession* SessionById(int session_id);
 
  private:
   friend class DevToolsAgentHost; // for static methods
@@ -94,12 +91,10 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   const std::string id_;
   base::flat_set<DevToolsSession*> sessions_;
-  base::flat_map<int, DevToolsSession*> session_by_id_;
   base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<DevToolsSession>>
       session_by_client_;
   DevToolsIOContext io_context_;
   static int s_force_creation_count_;
-  static int s_last_session_id_;
 };
 
 }  // namespace content

@@ -134,7 +134,7 @@ void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
 }
 
-void ServiceWorkerDevToolsAgentHost::DetachSession(int session_id) {
+void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (state_ == WORKER_READY && sessions().empty()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

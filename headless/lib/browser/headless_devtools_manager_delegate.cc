@@ -326,7 +326,7 @@ HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() = default;
 
 bool HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     base::DictionaryValue* command) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -348,7 +348,7 @@ bool HeadlessDevToolsManagerDelegate::HandleCommand(
     // handle.
     find_it = unhandled_command_map_.find(method);
     if (find_it != unhandled_command_map_.end())
-      find_it->second.Run(agent_host, session_id, id_value->GetInt(), params);
+      find_it->second.Run(agent_host, client, id_value->GetInt(), params);
     return false;
   }
 
@@ -358,17 +358,16 @@ bool HeadlessDevToolsManagerDelegate::HandleCommand(
     return false;
 
   auto cmd_result =
-      find_it->second.Run(agent_host, session_id, id_value->GetInt(), params);
+      find_it->second.Run(agent_host, client, id_value->GetInt(), params);
   if (!cmd_result)
     return false;
-  agent_host->SendProtocolMessageToClient(session_id,
-                                          ToString(std::move(cmd_result)));
+  client->DispatchProtocolMessage(agent_host, ToString(std::move(cmd_result)));
   return true;
 }
 
 bool HeadlessDevToolsManagerDelegate::HandleAsyncCommand(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     base::DictionaryValue* command,
     const CommandCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -387,8 +386,7 @@ bool HeadlessDevToolsManagerDelegate::HandleAsyncCommand(
 
   const base::DictionaryValue* params = nullptr;
   command->GetDictionary("params", &params);
-  find_it->second.Run(agent_host, session_id, id_value->GetInt(), params,
-                      callback);
+  find_it->second.Run(agent_host, client, id_value->GetInt(), params, callback);
   return true;
 }
 
@@ -418,9 +416,9 @@ std::string HeadlessDevToolsManagerDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
-void HeadlessDevToolsManagerDelegate::SessionDestroyed(
+void HeadlessDevToolsManagerDelegate::ClientDetached(
     content::DevToolsAgentHost* agent_host,
-    int session_id) {
+    content::DevToolsAgentHostClient* client) {
   if (!browser_)
     return;
 
@@ -433,12 +431,12 @@ void HeadlessDevToolsManagerDelegate::SessionDestroyed(
   if (!headless_contents)
     return;
 
-  headless_contents->SetBeginFrameEventsEnabled(session_id, false);
+  headless_contents->SetBeginFrameEventsEnabled(client, false);
 }
 
 void HeadlessDevToolsManagerDelegate::PrintToPDF(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params,
     const CommandCallback& callback) {
@@ -472,7 +470,7 @@ void HeadlessDevToolsManagerDelegate::PrintToPDF(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::CreateTarget(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   std::string url;
@@ -545,7 +543,7 @@ HeadlessDevToolsManagerDelegate::CreateTarget(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::CloseTarget(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   const base::Value* target_id_value = params->FindKey("targetId");
@@ -569,7 +567,7 @@ HeadlessDevToolsManagerDelegate::CloseTarget(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::CreateBrowserContext(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   HeadlessBrowserContext* browser_context =
@@ -586,7 +584,7 @@ HeadlessDevToolsManagerDelegate::CreateBrowserContext(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   const base::Value* browser_context_id_value =
@@ -615,7 +613,7 @@ HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::GetWindowForTarget(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   const base::Value* target_id_value = params->FindKey("targetId");
@@ -638,7 +636,7 @@ HeadlessDevToolsManagerDelegate::GetWindowForTarget(
 
 std::unique_ptr<base::DictionaryValue> HeadlessDevToolsManagerDelegate::Close(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   content::BrowserThread::PostTask(
@@ -651,7 +649,7 @@ std::unique_ptr<base::DictionaryValue> HeadlessDevToolsManagerDelegate::Close(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::GetWindowBounds(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   HeadlessWebContentsImpl* web_contents;
@@ -672,7 +670,7 @@ HeadlessDevToolsManagerDelegate::GetWindowBounds(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::SetWindowBounds(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   HeadlessWebContentsImpl* web_contents;
@@ -753,7 +751,7 @@ HeadlessDevToolsManagerDelegate::SetWindowBounds(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::EmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   // Associate NetworkConditions to context
@@ -783,7 +781,7 @@ HeadlessDevToolsManagerDelegate::EmulateNetworkConditions(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::NetworkDisable(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   std::vector<HeadlessBrowserContext*> browser_contexts =
@@ -809,7 +807,7 @@ void HeadlessDevToolsManagerDelegate::SetNetworkConditions(
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::EnableHeadlessExperimental(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   content::WebContents* web_contents = agent_host->GetWebContents();
@@ -820,14 +818,14 @@ HeadlessDevToolsManagerDelegate::EnableHeadlessExperimental(
 
   HeadlessWebContentsImpl* headless_contents =
       HeadlessWebContentsImpl::From(browser_.get(), web_contents);
-  headless_contents->SetBeginFrameEventsEnabled(session_id, true);
+  headless_contents->SetBeginFrameEventsEnabled(client, true);
   return CreateSuccessResponse(command_id, nullptr);
 }
 
 std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::DisableHeadlessExperimental(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params) {
   content::WebContents* web_contents = agent_host->GetWebContents();
@@ -838,13 +836,13 @@ HeadlessDevToolsManagerDelegate::DisableHeadlessExperimental(
 
   HeadlessWebContentsImpl* headless_contents =
       HeadlessWebContentsImpl::From(browser_.get(), web_contents);
-  headless_contents->SetBeginFrameEventsEnabled(session_id, false);
+  headless_contents->SetBeginFrameEventsEnabled(client, false);
   return CreateSuccessResponse(command_id, nullptr);
 }
 
 void HeadlessDevToolsManagerDelegate::BeginFrame(
     content::DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     int command_id,
     const base::DictionaryValue* params,
     const CommandCallback& callback) {

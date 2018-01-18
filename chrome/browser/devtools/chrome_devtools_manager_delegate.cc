@@ -109,7 +109,7 @@ void ChromeDevToolsManagerDelegate::Inspect(
 
 bool ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
-    int session_id,
+    content::DevToolsAgentHostClient* client,
     base::DictionaryValue* command_dict) {
   int id = 0;
   std::string method;
@@ -120,13 +120,12 @@ bool ChromeDevToolsManagerDelegate::HandleCommand(
   if (method == chrome::devtools::Target::setRemoteLocations::kName) {
     auto result = SetRemoteLocations(agent_host, id, params);
     DCHECK(result);
-    agent_host->SendProtocolMessageToClient(session_id,
-                                            ToString(std::move(result)));
+    client->DispatchProtocolMessage(agent_host, ToString(std::move(result)));
     return true;
   }
 
-  DCHECK(sessions_.find(session_id) != sessions_.end());
-  auto response = sessions_[session_id]->dispatcher()->dispatch(
+  DCHECK(sessions_.find(client) != sessions_.end());
+  auto response = sessions_[client]->dispatcher()->dispatch(
       protocol::toProtocolValue(command_dict, 1000));
   return response != protocol::DispatchResponse::Status::kFallThrough;
 }
@@ -154,18 +153,18 @@ std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
   return extension_name;
 }
 
-void ChromeDevToolsManagerDelegate::SessionCreated(
+void ChromeDevToolsManagerDelegate::ClientAttached(
     content::DevToolsAgentHost* agent_host,
-    int session_id) {
-  DCHECK(sessions_.find(session_id) == sessions_.end());
-  sessions_[session_id] =
-      std::make_unique<ChromeDevToolsSession>(agent_host, session_id);
+    content::DevToolsAgentHostClient* client) {
+  DCHECK(sessions_.find(client) == sessions_.end());
+  sessions_[client] =
+      std::make_unique<ChromeDevToolsSession>(agent_host, client);
 }
 
-void ChromeDevToolsManagerDelegate::SessionDestroyed(
+void ChromeDevToolsManagerDelegate::ClientDetached(
     content::DevToolsAgentHost* agent_host,
-    int session_id) {
-  sessions_.erase(session_id);
+    content::DevToolsAgentHostClient* client) {
+  sessions_.erase(client);
 }
 
 scoped_refptr<DevToolsAgentHost>
