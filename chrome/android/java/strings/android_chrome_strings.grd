@@ -731,8 +731,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_READER_FOR_ACCESSIBILITY_TITLE" desc="Title of preference that allows the user to use simplified view on any articles, even if the page is mobile-friendly. Simplified view is the new user-facing name for Reader Mode, which extracts the content of an article and removes clutter from a web page and puts the result in a easier-to-read format.">
         Simplified view
       </message>
-      <message name="IDS_READER_FOR_ACCESSIBILITY_SUMMARY" desc="Summary of preference that allows the user to use simplified view on any articles, even if the page is mobile-friendly.">
-        Enable simplified view on all articles
+      <message name="IDS_READER_FOR_ACCESSIBILITY_SUMMARY" desc="Summary of preference that allows the user to use simplified view on any supported articles, even if the page is mobile-friendly.">
+        Offer to show articles in simplified view, when supported
       </message>
 
       <!-- Site settings -->
