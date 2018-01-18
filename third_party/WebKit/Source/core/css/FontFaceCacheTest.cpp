@@ -12,6 +12,8 @@
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceCache.h"
 #include "core/css/StyleRule.h"
+#include "core/css/parser/AtRuleDescriptorValueSet.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,15 +66,18 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
       kFontNameForTesting, kDoNotCheckContentSecurityPolicy);
   CSSValueList* src_value_list = CSSValueList::CreateCommaSeparated();
   src_value_list->Append(*src);
-  CSSPropertyValue properties[] = {
-      CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name),
-      CSSPropertyValue(GetCSSPropertySrc(), *src_value_list)};
-  MutableCSSPropertyValueSet* font_face_descriptor =
-      MutableCSSPropertyValueSet::Create(properties, arraysize(properties));
 
-  font_face_descriptor->SetProperty(CSSPropertyFontStretch, stretch);
-  font_face_descriptor->SetProperty(CSSPropertyFontStyle, style);
-  font_face_descriptor->SetProperty(CSSPropertyFontWeight, weight);
+  HeapVector<CSSPropertyValue, 256> properties;
+  properties.push_back(
+      CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name));
+  properties.push_back(CSSPropertyValue(GetCSSPropertySrc(), *src_value_list));
+  AtRuleDescriptorValueSet* font_face_descriptor =
+      AtRuleDescriptorValueSet::Create(properties, kCSSFontFaceRuleMode,
+                                       AtRuleDescriptorValueSet::kFontFaceType);
+
+  font_face_descriptor->SetProperty(AtRuleDescriptorID::FontStretch, stretch);
+  font_face_descriptor->SetProperty(AtRuleDescriptorID::FontStyle, style);
+  font_face_descriptor->SetProperty(AtRuleDescriptorID::FontWeight, weight);
 
   StyleRuleFontFace* style_rule_font_face =
       StyleRuleFontFace::Create(font_face_descriptor);

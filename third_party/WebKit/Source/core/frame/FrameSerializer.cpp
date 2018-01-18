@@ -41,6 +41,8 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/AtRuleDescriptorValueSet.h"
+#include "core/css/parser/AtRuleDescriptors.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
@@ -584,6 +586,21 @@ void FrameSerializer::RetrieveResourcesForProperties(
   for (unsigned i = 0; i < property_count; ++i) {
     const CSSValue& css_value = style_declaration->PropertyAt(i).Value();
     RetrieveResourcesForCSSValue(css_value, document);
+  }
+}
+
+void FrameSerializer::RetrieveResourcesForProperties(
+    const AtRuleDescriptorValueSet* descriptor_value_set,
+    Document& document) {
+  if (!descriptor_value_set)
+    return;
+
+  // Skip invalid (0).
+  for (unsigned i = 1; i < numAtRuleDescriptors; ++i) {
+    AtRuleDescriptorID id = static_cast<AtRuleDescriptorID>(i);
+    const CSSValue* value = descriptor_value_set->GetPropertyCSSValue(id);
+    if (value)
+      RetrieveResourcesForCSSValue(*value, document);
   }
 }
 
