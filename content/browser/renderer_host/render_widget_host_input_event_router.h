@@ -209,7 +209,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void DispatchTouchEvent(RenderWidgetHostViewBase* root_view,
                           RenderWidgetHostViewBase* target,
                           const blink::WebTouchEvent& touch_event,
-                          const ui::LatencyInfo& latency);
+                          const ui::LatencyInfo& latency,
+                          const base::Optional<gfx::PointF>& target_location);
   // Assumes |gesture_event| has coordinates in root view's coordinate space.
   void DispatchTouchscreenGestureEvent(
       RenderWidgetHostViewBase* root_view,
