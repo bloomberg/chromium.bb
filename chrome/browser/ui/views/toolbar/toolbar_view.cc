@@ -458,11 +458,11 @@ void ToolbarView::Layout() {
     return;
   }
 
-  // We assume all child elements except the location bar are the same height.
-  // Set child_y such that buttons appear vertically centered.
-  const int child_height =
+  // We assume all toolbar buttons except for the browser actions are the same
+  // height. Set toolbar_button_y such that buttons appear vertically centered.
+  const int toolbar_button_height =
       std::min(back_->GetPreferredSize().height(), height());
-  const int child_y = (height() - child_height) / 2;
+  const int toolbar_button_y = (height() - toolbar_button_height) / 2;
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -476,28 +476,31 @@ void ToolbarView::Layout() {
   // The padding at either end of the toolbar.
   const int end_padding = GetToolbarHorizontalPadding();
   back_->SetLeadingMargin(maximized ? end_padding : 0);
-  back_->SetBounds(maximized ? 0 : end_padding, child_y,
-                   back_->GetPreferredSize().width(), child_height);
+  back_->SetBounds(maximized ? 0 : end_padding, toolbar_button_y,
+                   back_->GetPreferredSize().width(), toolbar_button_height);
   const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   int next_element_x = back_->bounds().right() + element_padding;
 
-  forward_->SetBounds(next_element_x, child_y,
-                      forward_->GetPreferredSize().width(), child_height);
+  forward_->SetBounds(next_element_x, toolbar_button_y,
+                      forward_->GetPreferredSize().width(),
+                      toolbar_button_height);
   next_element_x = forward_->bounds().right() + element_padding;
 
-  reload_->SetBounds(next_element_x, child_y,
-                     reload_->GetPreferredSize().width(), child_height);
+  reload_->SetBounds(next_element_x, toolbar_button_y,
+                     reload_->GetPreferredSize().width(),
+                     toolbar_button_height);
   next_element_x = reload_->bounds().right();
 
   if (show_home_button_.GetValue() ||
       (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled())) {
     next_element_x += element_padding;
     home_->SetVisible(true);
-    home_->SetBounds(next_element_x, child_y,
-                     home_->GetPreferredSize().width(), child_height);
+    home_->SetBounds(next_element_x, toolbar_button_y,
+                     home_->GetPreferredSize().width(), toolbar_button_height);
   } else {
     home_->SetVisible(false);
-    home_->SetBounds(next_element_x, child_y, 0, child_height);
+    home_->SetBounds(next_element_x, toolbar_button_y, 0,
+                     toolbar_button_height);
   }
   next_element_x =
       home_->bounds().right() + GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
@@ -528,8 +531,13 @@ void ToolbarView::Layout() {
                            location_bar_width, location_height);
 
   next_element_x = location_bar_->bounds().right();
-  browser_actions_->SetBounds(
-      next_element_x, child_y, browser_actions_width, child_height);
+
+  // Note height() may be zero in fullscreen.
+  const int browser_actions_height =
+      std::min(browser_actions_->GetPreferredSize().height(), height());
+  const int browser_actions_y = (height() - browser_actions_height) / 2;
+  browser_actions_->SetBounds(next_element_x, browser_actions_y,
+                              browser_actions_width, browser_actions_height);
   next_element_x = browser_actions_->bounds().right();
   if (!browser_actions_width)
     next_element_x += right_padding;
@@ -547,8 +555,8 @@ void ToolbarView::Layout() {
   // we extend the back button to the left edge.
   if (maximized)
     app_menu_width += end_padding;
-  app_menu_button_->SetBounds(next_element_x, child_y, app_menu_width,
-                              child_height);
+  app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
+                              toolbar_button_height);
   app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
 }
 
