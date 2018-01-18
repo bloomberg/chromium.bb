@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -263,22 +262,6 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   const AvatarMenu::Item& item3 = menu->GetItemAt(2u);
   EXPECT_EQ(2u, item3.menu_index);
   EXPECT_EQ(ASCIIToUTF16("Test 3"), item3.name);
-}
-
-TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
-  // If multiprofile mode is not enabled, the trial will not be enabled, so it
-  // isn't tested.
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  base::FieldTrialList field_trial_list_(NULL);
-  base::FieldTrialList::CreateFieldTrial("ShowProfileSwitcher", "AlwaysShow");
-
-#if defined(OS_CHROMEOS)
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-#else
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
-#endif
 }
 
 TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
