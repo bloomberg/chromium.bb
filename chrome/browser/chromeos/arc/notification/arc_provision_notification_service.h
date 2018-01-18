@@ -38,6 +38,7 @@ class ArcProvisionNotificationService : public KeyedService,
 
   // ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
+  void OnArcStarted() override;
   void OnArcOptInManagementCheckStarted() override;
   void OnArcInitialStart() override;
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
