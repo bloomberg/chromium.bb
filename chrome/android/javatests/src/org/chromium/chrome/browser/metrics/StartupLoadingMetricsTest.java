@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -38,6 +40,7 @@ public class StartupLoadingMetricsTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String ERROR_PAGE = "/close-socket";
+    private static final String SLOW_PAGE = "/slow?2";
     private static final String FIRST_COMMIT_HISTOGRAM =
             "Startup.Android.Experimental.Cold.TimeToFirstNavigationCommit";
     private static final String FIRST_CONTENTFUL_PAINT_HISTOGRAM =
@@ -46,6 +49,7 @@ public class StartupLoadingMetricsTest {
     private String mTestPage;
     private String mTestPage2;
     private String mErrorPage;
+    private String mSlowPage;
     private EmbeddedTestServer mTestServer;
 
     @Before
@@ -57,6 +61,7 @@ public class StartupLoadingMetricsTest {
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         mErrorPage = mTestServer.getURL(ERROR_PAGE);
+        mSlowPage = mTestServer.getURL(SLOW_PAGE);
     }
 
     @After
@@ -64,10 +69,9 @@ public class StartupLoadingMetricsTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    private interface InterruptibleRunnable { void run() throws InterruptedException; }
+    private interface CheckedRunnable { void run() throws Exception; }
 
-    private void runAndWaitForPageLoadMetricsRecorded(InterruptibleRunnable runnable)
-            throws InterruptedException {
+    private void runAndWaitForPageLoadMetricsRecorded(CheckedRunnable runnable) throws Exception {
         PageLoadMetricsTest.PageLoadMetricsTestObserver testObserver =
                 new PageLoadMetricsTest.PageLoadMetricsTestObserver();
         ThreadUtils.runOnUiThreadBlockingNoException(
@@ -80,11 +84,11 @@ public class StartupLoadingMetricsTest {
                 () -> PageLoadMetrics.removeObserver(testObserver));
     }
 
-    private void loadUrlAndWaitForPageLoadMetricsRecorded(String url) throws InterruptedException {
+    private void loadUrlAndWaitForPageLoadMetricsRecorded(String url) throws Exception {
         runAndWaitForPageLoadMetricsRecorded(() -> mActivityTestRule.loadUrl(url));
     }
 
-    private void assertHistogramsRecorded(int expectedCount) throws InterruptedException {
+    private void assertHistogramsRecorded(int expectedCount) {
         Assert.assertEquals(expectedCount,
                 RecordHistogram.getHistogramTotalCountForTesting(FIRST_COMMIT_HISTOGRAM));
         Assert.assertEquals(expectedCount,
@@ -97,7 +101,7 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testStartWithURLRecorded() throws InterruptedException {
+    public void testStartWithURLRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mActivityTestRule.startMainActivityWithURL(mTestPage));
         assertHistogramsRecorded(1);
@@ -112,7 +116,7 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testFromExternalAppRecorded() throws InterruptedException {
+    public void testFromExternalAppRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mActivityTestRule.startMainActivityFromExternalApp(mTestPage, null));
         assertHistogramsRecorded(1);
@@ -126,7 +130,7 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testNTPNotRecorded() throws InterruptedException {
+    public void testNTPNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mActivityTestRule.startMainActivityFromLauncher());
         assertHistogramsRecorded(0);
@@ -141,7 +145,7 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testBlankPageNotRecorded() throws InterruptedException {
+    public void testBlankPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mActivityTestRule.startMainActivityOnBlankPage());
         assertHistogramsRecorded(0);
@@ -156,11 +160,40 @@ public class StartupLoadingMetricsTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testErrorPageNotRecorded() throws InterruptedException {
+    public void testErrorPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mActivityTestRule.startMainActivityWithURL(mErrorPage));
         assertHistogramsRecorded(0);
         loadUrlAndWaitForPageLoadMetricsRecorded(mTestPage2);
+        assertHistogramsRecorded(0);
+    }
+
+    /**
+     * Tests that the startup loading histograms are not recorded if the application is in
+     * background at the time of the page loading.
+     */
+    @Test
+    @LargeTest
+    @RetryOnFailure
+    public void testBackgroundedPageNotRecorded() throws Exception {
+        runAndWaitForPageLoadMetricsRecorded(() -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+            // mSlowPage will hang for 2 seconds before sending a response. It should be enough to
+            // put Chrome in background before the page is committed.
+            mActivityTestRule.prepareUrlIntent(intent, mSlowPage);
+            mActivityTestRule.startActivityCompletely(intent);
+
+            // Put Chrome in background before the page is committed.
+            ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
+        });
+        assertHistogramsRecorded(0);
+        runAndWaitForPageLoadMetricsRecorded(() -> {
+            // Put Chrome in foreground before loading a new page.
+            ApplicationTestUtils.launchChrome(InstrumentationRegistry.getTargetContext());
+            mActivityTestRule.loadUrl(mTestPage);
+        });
         assertHistogramsRecorded(0);
     }
 }

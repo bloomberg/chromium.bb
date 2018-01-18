@@ -84802,7 +84802,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The time from the earliest entry point in the browser process to
     the first contentful paint of the first loaded page. It's not recorded when
     the first loaded page is non http(s) page like a chrome error page, a new
-    tab page, a blank page.
+    tab page, a blank page. It's also not recorded if the application wasn't in
+    the foreground since the start till the end of event.
   </summary>
 </histogram>
 
@@ -84815,6 +84816,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the moment the first navigation is committed, i.e. when renderer gets the
     first byte of the document. It's not recorded when the first loaded page is
     non http(s) page like a chrome error page, a new tab page, a blank page.
+    It's also not recorded if the application wasn't in the foreground since the
+    start till the end of event.
   </summary>
 </histogram>
 
