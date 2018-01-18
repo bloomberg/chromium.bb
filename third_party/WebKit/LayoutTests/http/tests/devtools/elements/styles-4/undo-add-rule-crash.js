@@ -27,7 +27,7 @@
   }
 
   function step2() {
-    TestRunner.domModel.undo();
+    SDK.domModelUndoStack.undo();
     ElementsTestRunner.waitForStyles('other', step3);
   }
 

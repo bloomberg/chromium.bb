@@ -46,7 +46,7 @@
       TestRunner.addResult('(After adding property)');
       ElementsTestRunner.dumpSelectedElementStyles(true);
 
-      TestRunner.domModel.undo();
+      SDK.domModelUndoStack.undo();
       ElementsTestRunner.selectNodeAndWaitForStyles('other', step2);
     }
 
@@ -54,7 +54,7 @@
       TestRunner.addResult('(After undo)');
       ElementsTestRunner.dumpSelectedElementStyles(true);
 
-      TestRunner.domModel.redo();
+      SDK.domModelUndoStack.redo();
       ElementsTestRunner.selectNodeAndWaitForStyles('container', step3);
     }
 
