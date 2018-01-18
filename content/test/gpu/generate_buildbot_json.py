@@ -18,8 +18,10 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
 # Current stable Windows NVIDIA Quadro P400 device/driver/os identifiers.
-WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-23.21.13.8792'
-WIN_NVIDIA_QUADRO_P400_STABLE_OS = 'Windows-2008ServerR2-SP1'
+WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-23.21.13.8792'
+WIN7_NVIDIA_QUADRO_P400_STABLE_OS = 'Windows-2008ServerR2-SP1'
+WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-23.21.13.8816'
+WIN10_NVIDIA_QUADRO_P400_STABLE_OS = 'Windows-10'
 
 # Current experimental Windows NVIDIA Quadro P400 device/driver/os
 # identifiers.
@@ -134,7 +136,7 @@ WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -147,7 +149,7 @@ WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -267,7 +269,7 @@ FYI_WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -280,7 +282,7 @@ FYI_WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -292,8 +294,8 @@ FYI_WATERFALL = {
     'Win7 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN_NVIDIA_QUADRO_P400_STABLE_OS,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN7_NVIDIA_QUADRO_P400_STABLE_OS,
           'pool': 'Chrome-GPU',
         },
       ],
@@ -321,8 +323,8 @@ FYI_WATERFALL = {
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-10',
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
           'pool': 'Chrome-GPU',
         },
       ],
@@ -333,8 +335,8 @@ FYI_WATERFALL = {
     'Win10 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-10',
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
           'pool': 'Chrome-GPU',
         },
       ],
@@ -394,7 +396,7 @@ FYI_WATERFALL = {
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -406,7 +408,7 @@ FYI_WATERFALL = {
     'Win7 x64 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -418,7 +420,7 @@ FYI_WATERFALL = {
     'Win7 x64 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -809,7 +811,7 @@ FYI_WATERFALL = {
     'Optional Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -964,7 +966,7 @@ V8_FYI_WATERFALL = {
     'Win Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
