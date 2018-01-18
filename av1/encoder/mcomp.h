@@ -98,7 +98,7 @@ typedef int(fractional_mv_step_fp)(
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred,
     const uint8_t *mask, int mask_stride, int invert_mask, int w, int h,
-    int use_upsampled_ref);
+    int use_accurate_subpel_search);
 
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned;
@@ -146,7 +146,7 @@ int av1_find_best_obmc_sub_pixel_tree_up(
     MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
     int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *mvjcost, int *mvcost[2], int *distortion,
-    unsigned int *sse1, int is_second, int use_upsampled_ref);
+    unsigned int *sse1, int is_second, int use_accurate_subpel_search);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -232,7 +232,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
     sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
-    sf->use_upsampled_references = 0;
+    sf->use_accurate_subpel_search = 0;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
@@ -477,7 +477,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->disable_filter_search_var_thresh = 0;
   sf->adaptive_interp_filter_search = 0;
   sf->allow_partition_search_skip = 0;
-  sf->use_upsampled_references = 1;
+  sf->use_accurate_subpel_search = 1;
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->drop_ref = 0;

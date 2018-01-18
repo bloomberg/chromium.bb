@@ -6077,7 +6077,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
           x->errorperbit, &cpi->fn_ptr[bsize], 0,
           cpi->sf.mv.subpel_iters_per_step, NULL, x->nmvjointcost, x->mvcost,
           &dis, &sse, second_pred, mask, mask_stride, id, pw, ph,
-          cpi->sf.use_upsampled_references);
+          cpi->sf.use_accurate_subpel_search);
     }
 
     // Restore the pointer to the first (possibly scaled) prediction buffer.
@@ -6507,7 +6507,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     int dis; /* TODO: use dis in distortion calculation later. */
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
-        if (cpi->sf.use_upsampled_references) {
+        if (cpi->sf.use_accurate_subpel_search) {
           int best_mv_var;
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
@@ -6562,7 +6562,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
             x, &x->best_mv.as_mv, &ref_mv, cm->allow_high_precision_mv,
             x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
             cpi->sf.mv.subpel_iters_per_step, x->nmvjointcost, x->mvcost, &dis,
-            &x->pred_sse[ref], 0, cpi->sf.use_upsampled_references);
+            &x->pred_sse[ref], 0, cpi->sf.use_accurate_subpel_search);
         break;
       default: assert(0 && "Invalid motion mode!\n");
     }
@@ -6766,7 +6766,7 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         x, &ref_mv.as_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
         x->nmvjointcost, x->mvcost, &dis, &sse, second_pred, mask, mask_stride,
-        ref_idx, pw, ph, cpi->sf.use_upsampled_references);
+        ref_idx, pw, ph, cpi->sf.use_accurate_subpel_search);
   }
 
   // Restore the pointer to the first (possibly scaled) prediction buffer.
