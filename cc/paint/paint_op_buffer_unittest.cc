@@ -19,7 +19,6 @@
 #include "cc/test/test_skcanvas.h"
 #include "cc/test/transfer_cache_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"

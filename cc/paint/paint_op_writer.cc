@@ -12,7 +12,6 @@
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
@@ -62,10 +61,7 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
     return;
   }
 
-  // TODO(enne): change skia API to make this a const parameter.
-  sk_sp<SkData> data(
-      SkValidatingSerializeFlattenable(const_cast<SkFlattenable*>(val)));
-
+  sk_sp<SkData> data = val->serialize();
   WriteSize(data->size());
   if (!data->isEmpty())
     WriteData(data->size(), data->data());
