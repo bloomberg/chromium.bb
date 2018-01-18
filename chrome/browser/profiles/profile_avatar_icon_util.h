@@ -21,7 +21,6 @@ namespace gfx {
 class Image;
 }
 
-class GURL;
 class SkBitmap;
 
 namespace profiles {
@@ -114,19 +113,6 @@ bool IsDefaultAvatarIconIndex(size_t index);
 // Checks if the given URL points to one of the default avatar icons. If it
 // is, returns true and its index through |icon_index|. If not, returns false.
 bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
-
-// Given an image URL this function builds a new URL, appending passed
-// |image_size| and |no_silhouette| parameters. |old_url| must be valid.
-// For example, if |image_size| was set to 256, |no_silhouette| was set to
-// true and |old_url| was either:
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg
-//   or
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s64-c-ns/photo.jpg
-// then return value would be:
-//   https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s256-c-ns/photo.jpg
-GURL GetImageURLWithOptions(const GURL& old_url,
-                            int image_size,
-                            bool no_silhouette);
 
 // Returns a list of dictionaries containing the default profile avatar icons as
 // well as avatar labels used for accessibility purposes. The list is ordered
