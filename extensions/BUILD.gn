@@ -258,7 +258,6 @@ source_set("chrome_extensions_browsertests") {
     "browser/api/bluetooth/bluetooth_apitest.cc",
     "browser/api/bluetooth/bluetooth_private_apitest.cc",
     "browser/api/cast_channel/cast_channel_apitest.cc",
-    "browser/api/runtime/runtime_apitest.cc",
     "browser/api/serial/serial_apitest.cc",
     "browser/api/usb/usb_manual_apitest.cc",
     "browser/app_window/app_window_browsertest.cc",
