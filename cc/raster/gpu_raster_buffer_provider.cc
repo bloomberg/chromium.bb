@@ -188,13 +188,14 @@ GpuRasterBufferProvider::~GpuRasterBufferProvider() {
 }
 
 std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
-    const Resource* resource,
+    const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
-  return std::make_unique<RasterBufferImpl>(
-      this, resource_provider_, resource->id(), resource_has_previous_content);
+  return std::make_unique<RasterBufferImpl>(this, resource_provider_,
+                                            resource.gpu_backing_resource_id(),
+                                            resource_has_previous_content);
 }
 
 void GpuRasterBufferProvider::OrderingBarrier() {
@@ -238,9 +239,9 @@ bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 }
 
 bool GpuRasterBufferProvider::IsResourceReadyToDraw(
-    viz::ResourceId resource_id) const {
-  gpu::SyncToken sync_token =
-      resource_provider_->GetSyncTokenForResources({resource_id});
+    const ResourcePool::InUsePoolResource& resource) const {
+  gpu::SyncToken sync_token = resource_provider_->GetSyncTokenForResources(
+      {resource.gpu_backing_resource_id()});
   if (!sync_token.HasData())
     return true;
 
@@ -250,9 +251,13 @@ bool GpuRasterBufferProvider::IsResourceReadyToDraw(
 }
 
 uint64_t GpuRasterBufferProvider::SetReadyToDrawCallback(
-    const ResourceProvider::ResourceIdArray& resource_ids,
+    const std::vector<const ResourcePool::InUsePoolResource*>& resources,
     const base::Closure& callback,
     uint64_t pending_callback_id) const {
+  std::vector<viz::ResourceId> resource_ids;
+  resource_ids.reserve(resources.size());
+  for (auto* resource : resources)
+    resource_ids.push_back(resource->gpu_backing_resource_id());
   gpu::SyncToken sync_token =
       resource_provider_->GetSyncTokenForResources(resource_ids);
   uint64_t callback_id = sync_token.release_count();

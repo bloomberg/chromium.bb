@@ -25,9 +25,12 @@ namespace {
 
 class ZeroCopyRasterBufferImpl : public RasterBuffer {
  public:
-  ZeroCopyRasterBufferImpl(LayerTreeResourceProvider* resource_provider,
-                           const Resource* resource)
-      : lock_(resource_provider, resource->id()), resource_(resource) {}
+  ZeroCopyRasterBufferImpl(
+      LayerTreeResourceProvider* resource_provider,
+      const ResourcePool::InUsePoolResource& in_use_resource)
+      : lock_(resource_provider, in_use_resource.gpu_backing_resource_id()),
+        resource_size_(in_use_resource.size()),
+        resource_format_(in_use_resource.format()) {}
 
   // Overridden from RasterBuffer:
   void Playback(
@@ -51,15 +54,16 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
 
     // TODO(danakj): Implement partial raster with raster_dirty_rect.
     RasterBufferProvider::PlaybackToMemory(
-        buffer->memory(0), resource_->format(), resource_->size(),
-        buffer->stride(0), raster_source, raster_full_rect, raster_full_rect,
-        transform, lock_.color_space_for_raster(), playback_settings);
+        buffer->memory(0), resource_format_, resource_size_, buffer->stride(0),
+        raster_source, raster_full_rect, raster_full_rect, transform,
+        lock_.color_space_for_raster(), playback_settings);
     buffer->Unmap();
   }
 
  private:
   LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock_;
-  const Resource* resource_;
+  gfx::Size resource_size_;
+  viz::ResourceFormat resource_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ZeroCopyRasterBufferImpl);
 };
@@ -85,11 +89,11 @@ ZeroCopyRasterBufferProvider::~ZeroCopyRasterBufferProvider() = default;
 
 std::unique_ptr<RasterBuffer>
 ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
-    const Resource* resource,
+    const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  return base::WrapUnique<RasterBuffer>(
-      new ZeroCopyRasterBufferImpl(resource_provider_, resource));
+  return std::make_unique<ZeroCopyRasterBufferImpl>(resource_provider_,
+                                                    resource);
 }
 
 void ZeroCopyRasterBufferProvider::OrderingBarrier() {
@@ -120,13 +124,13 @@ bool ZeroCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource()
 }
 
 bool ZeroCopyRasterBufferProvider::IsResourceReadyToDraw(
-    viz::ResourceId resource_id) const {
+    const ResourcePool::InUsePoolResource& resource) const {
   // Zero-copy resources are immediately ready to draw.
   return true;
 }
 
 uint64_t ZeroCopyRasterBufferProvider::SetReadyToDrawCallback(
-    const ResourceProvider::ResourceIdArray& resource_ids,
+    const std::vector<const ResourcePool::InUsePoolResource*>& resources,
     const base::Closure& callback,
     uint64_t pending_callback_id) const {
   // Zero-copy resources are immediately ready to draw.

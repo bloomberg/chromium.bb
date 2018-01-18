@@ -199,31 +199,37 @@ class PerfImageDecodeTaskImpl : public PerfTileTask {
 class PerfRasterBufferProviderHelper {
  public:
   virtual std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) = 0;
 };
 
 class PerfRasterTaskImpl : public PerfTileTask {
  public:
-  PerfRasterTaskImpl(std::unique_ptr<ScopedResource> resource,
+  PerfRasterTaskImpl(ResourcePool* pool,
+                     ResourcePool::InUsePoolResource in_use_resource,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
       : PerfTileTask(dependencies),
-        resource_(std::move(resource)),
+        pool_(pool),
+        resource_(std::move(in_use_resource)),
         raster_buffer_(std::move(raster_buffer)) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
 
   // Overridden from TileTask:
-  void OnTaskCompleted() override { raster_buffer_ = nullptr; }
+  void OnTaskCompleted() override {
+    raster_buffer_ = nullptr;
+    pool_->ReleaseResource(std::move(resource_));
+  }
 
  protected:
   ~PerfRasterTaskImpl() override = default;
 
  private:
-  std::unique_ptr<ScopedResource> resource_;
+  ResourcePool* const pool_;
+  ResourcePool::InUsePoolResource resource_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfRasterTaskImpl);
@@ -258,18 +264,18 @@ class RasterBufferProviderPerfTestBase {
     const gfx::Size size(1, 1);
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
-      auto resource =
-          std::make_unique<ScopedResource>(resource_provider_.get());
-      resource->AllocateGpuTexture(size, viz::ResourceTextureHint::kDefault,
-                                   viz::RGBA_8888, gfx::ColorSpace());
+      ResourcePool::InUsePoolResource in_use_resource =
+          resource_pool_->AcquireResource(size, viz::RGBA_8888,
+                                          gfx::ColorSpace());
 
       // No tile ids are given to support partial updates.
       std::unique_ptr<RasterBuffer> raster_buffer;
       if (helper)
-        raster_buffer = helper->AcquireBufferForRaster(resource.get(), 0, 0);
+        raster_buffer = helper->AcquireBufferForRaster(in_use_resource, 0, 0);
       TileTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(new PerfRasterTaskImpl(
-          std::move(resource), std::move(raster_buffer), &dependencies));
+          resource_pool_.get(), std::move(in_use_resource),
+          std::move(raster_buffer), &dependencies));
     }
   }
 
@@ -326,6 +332,7 @@ class RasterBufferProviderPerfTestBase {
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   LapTimer timer_;
 };
@@ -342,6 +349,10 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ = ZeroCopyRasterBufferProvider::Create(
             resource_provider_.get(), viz::PlatformColor::BestTextureFormat());
+        resource_pool_ = std::make_unique<ResourcePool>(
+            resource_provider_.get(), task_runner_,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+            ResourcePool::kDefaultExpirationDelay, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -351,6 +362,10 @@ class RasterBufferProviderPerfTest
             std::numeric_limits<int>::max(), false,
             std::numeric_limits<int>::max(),
             viz::PlatformColor::BestTextureFormat());
+        resource_pool_ = std::make_unique<ResourcePool>(
+            resource_provider_.get(), task_runner_,
+            viz::ResourceTextureHint::kDefault,
+            ResourcePool::kDefaultExpirationDelay, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
@@ -358,11 +373,18 @@ class RasterBufferProviderPerfTest
             compositor_context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
             viz::PlatformColor::BestTextureFormat(), false);
+        resource_pool_ = std::make_unique<ResourcePool>(
+            resource_provider_.get(), task_runner_,
+            viz::ResourceTextureHint::kFramebuffer,
+            ResourcePool::kDefaultExpirationDelay, false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
         raster_buffer_provider_ =
             BitmapRasterBufferProvider::Create(resource_provider_.get());
+        resource_pool_ = std::make_unique<ResourcePool>(
+            resource_provider_.get(), task_runner_,
+            ResourcePool::kDefaultExpirationDelay, false);
         break;
     }
 
@@ -379,7 +401,7 @@ class RasterBufferProviderPerfTest
 
   // Overridden from PerfRasterBufferProviderHelper:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override {
     return raster_buffer_provider_->AcquireBufferForRaster(

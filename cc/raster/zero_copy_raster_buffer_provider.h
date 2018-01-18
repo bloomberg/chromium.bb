@@ -31,7 +31,7 @@ class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override;
   void OrderingBarrier() override;
@@ -39,9 +39,10 @@ class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
-  bool IsResourceReadyToDraw(viz::ResourceId id) const override;
+  bool IsResourceReadyToDraw(
+      const ResourcePool::InUsePoolResource& resource) const override;
   uint64_t SetReadyToDrawCallback(
-      const ResourceProvider::ResourceIdArray& resource_ids,
+      const std::vector<const ResourcePool::InUsePoolResource*>& resources,
       const base::Closure& callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;

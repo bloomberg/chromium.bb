@@ -466,8 +466,9 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           quad->SetNew(
               shared_quad_state, offset_geometry_rect,
               offset_visible_geometry_rect, needs_blending,
-              draw_info.resource_id(), texture_rect, draw_info.resource_size(),
-              draw_info.contents_swizzled(), nearest_neighbor_,
+              draw_info.resource_id_for_export(), texture_rect,
+              draw_info.resource_size(), draw_info.contents_swizzled(),
+              nearest_neighbor_,
               !layer_tree_impl()->settings().enable_edge_anti_aliasing);
           ValidateQuadResources(quad);
           has_draw_quad = true;
@@ -1035,7 +1036,7 @@ void PictureLayerImpl::GetContentsResourceId(
     return;
   }
 
-  *resource_id = draw_info.resource_id();
+  *resource_id = draw_info.resource_id_for_export();
   *resource_size = draw_info.resource_size();
   // |resource_uv_size| represents the range of UV coordinates that map to the
   // content being drawn. Typically, we draw to the entire texture, so these

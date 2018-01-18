@@ -4615,21 +4615,25 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid,
     ASSERT_TRUE(active_layer()->tilings());
     ASSERT_GT(active_layer()->tilings()->num_tilings(), 0u);
     std::vector<Tile*> tiles =
-        active_layer()->tilings()->tiling_at(0)->AllTilesForTesting();
-    EXPECT_FALSE(tiles.empty());
-    host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
-  }
-
-  if (partial_opaque) {
-    std::vector<Tile*> high_res_tiles =
         active_layer()->HighResTiling()->AllTilesForTesting();
-    size_t i = 0;
-    for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();
-         tile_it != high_res_tiles.end() && i < 5; ++tile_it, ++i) {
-      Tile* tile = *tile_it;
-      TileDrawInfo& draw_info = tile->draw_info();
-      draw_info.SetSolidColorForTesting(0);
+    EXPECT_FALSE(tiles.empty());
+
+    std::vector<Tile*> resource_tiles;
+    if (!partial_opaque) {
+      resource_tiles = tiles;
+    } else {
+      size_t i = 0;
+      for (auto it = tiles.begin(); it != tiles.end(); ++it, ++i) {
+        if (i < 5) {
+          TileDrawInfo& draw_info = (*it)->draw_info();
+          draw_info.SetSolidColorForTesting(0);
+        } else {
+          resource_tiles.push_back(*it);
+        }
+      }
     }
+    host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(
+        resource_tiles);
   }
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();

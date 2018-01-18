@@ -1378,13 +1378,14 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
   EXPECT_TRUE(host_impl()->is_likely_to_require_a_draw());
 
-  Resource* resource = host_impl()->resource_pool()->AcquireResource(
-      gfx::Size(256, 256), viz::RGBA_8888, gfx::ColorSpace());
+  ResourcePool::InUsePoolResource resource =
+      host_impl()->resource_pool()->AcquireResource(
+          gfx::Size(256, 256), viz::RGBA_8888, gfx::ColorSpace());
 
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
 
-  host_impl()->resource_pool()->ReleaseResource(resource);
+  host_impl()->resource_pool()->ReleaseResource(std::move(resource));
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, DefaultMemoryPolicy) {
@@ -1726,7 +1727,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     EXPECT_TRUE(tile->draw_info().IsReadyToDraw());
 
     LayerTreeResourceProvider::ScopedWriteLockSoftware lock(
-        host_impl()->resource_provider(), tile->draw_info().resource_id());
+        host_impl()->resource_provider(),
+        tile->draw_info().GetResource().software_backing_resource_id());
     const SkBitmap bitmap = lock.sk_bitmap();
     for (int x = 0; x < size.width(); ++x) {
       for (int y = 0; y < size.height(); ++y) {
@@ -1889,7 +1891,7 @@ class VerifyResourceContentIdRasterBufferProvider
 
   // RasterBufferProvider methods.
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override {
     EXPECT_EQ(expected_resource_id_, resource_content_id);
@@ -1922,10 +1924,11 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       &raster_buffer_provider);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
-  auto* resource = host_impl->resource_pool()->AcquireResource(
-      kTileSize, viz::RGBA_8888, gfx::ColorSpace());
-  host_impl->resource_pool()->OnContentReplaced(resource->id(), kInvalidatedId);
-  host_impl->resource_pool()->ReleaseResource(resource);
+  ResourcePool::InUsePoolResource resource =
+      host_impl->resource_pool()->AcquireResource(kTileSize, viz::RGBA_8888,
+                                                  gfx::ColorSpace());
+  host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
+  host_impl->resource_pool()->ReleaseResource(std::move(resource));
   host_impl->resource_pool()->CheckBusyResources();
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
@@ -1981,10 +1984,11 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       &raster_buffer_provider);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
-  auto* resource = host_impl->resource_pool()->AcquireResource(
-      kTileSize, viz::RGBA_8888, gfx::ColorSpace());
-  host_impl->resource_pool()->OnContentReplaced(resource->id(), kInvalidatedId);
-  host_impl->resource_pool()->ReleaseResource(resource);
+  ResourcePool::InUsePoolResource resource =
+      host_impl->resource_pool()->AcquireResource(kTileSize, viz::RGBA_8888,
+                                                  gfx::ColorSpace());
+  host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
+  host_impl->resource_pool()->ReleaseResource(std::move(resource));
   host_impl->resource_pool()->CheckBusyResources();
 
   const gfx::Size layer_bounds(500, 500);
@@ -2080,15 +2084,17 @@ TEST_F(TileManagerTest, PartialRasterSuccessfullyDisabled) {
 class MockReadyToDrawRasterBufferProviderImpl
     : public FakeRasterBufferProviderImpl {
  public:
-  MOCK_CONST_METHOD1(IsResourceReadyToDraw, bool(viz::ResourceId resource_id));
+  MOCK_CONST_METHOD1(IsResourceReadyToDraw,
+                     bool(const ResourcePool::InUsePoolResource& resource));
   MOCK_CONST_METHOD3(
       SetReadyToDrawCallback,
-      uint64_t(const ResourceProvider::ResourceIdArray& resource_ids,
-               const base::Closure& callback,
-               uint64_t pending_callback_id));
+      uint64_t(
+          const std::vector<const ResourcePool::InUsePoolResource*>& resources,
+          const base::RepeatingClosure& callback,
+          uint64_t pending_callback_id));
 
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override {
     return std::make_unique<FakeRasterBuffer>();
@@ -2186,7 +2192,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithPendingTreeTiles();
 
-  base::Closure callback;
+  base::RepeatingClosure callback;
   {
     base::RunLoop run_loop;
 
@@ -2197,13 +2203,16 @@ TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(testing::Invoke([&run_loop, &callback](
-            const ResourceProvider::ResourceIdArray& resource_ids,
-            const base::Closure& callback_in, uint64_t pending_callback_id) {
-          callback = callback_in;
-          run_loop.Quit();
-          return 1;
-        }));
+        .WillOnce(testing::Invoke(
+            [&run_loop, &callback](
+                const std::vector<const ResourcePool::InUsePoolResource*>&
+                    resources,
+                const base::RepeatingClosure& callback_in,
+                uint64_t pending_callback_id) {
+              callback = callback_in;
+              run_loop.Quit();
+              return 1;
+            }));
     host_impl()->tile_manager()->DidModifyTilePriorities();
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
@@ -2248,7 +2257,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithActiveTreeTiles();
 
-  base::Closure callback;
+  base::RepeatingClosure callback;
   {
     base::RunLoop run_loop;
 
@@ -2259,13 +2268,16 @@ TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(Invoke([&run_loop, &callback](
-            const ResourceProvider::ResourceIdArray& resource_ids,
-            const base::Closure& callback_in, uint64_t pending_callback_id) {
-          callback = callback_in;
-          run_loop.Quit();
-          return 1;
-        }));
+        .WillOnce(Invoke(
+            [&run_loop, &callback](
+                const std::vector<const ResourcePool::InUsePoolResource*>&
+                    resources,
+                const base::RepeatingClosure& callback_in,
+                uint64_t pending_callback_id) {
+              callback = callback_in;
+              run_loop.Quit();
+              return 1;
+            }));
     host_impl()->tile_manager()->DidModifyTilePriorities();
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
@@ -2364,18 +2376,21 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
   EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(testing::_))
       .WillRepeatedly(Return(false));
 
-  base::Closure callback;
+  base::RepeatingClosure callback;
   {
     base::RunLoop run_loop;
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(testing::Invoke([&run_loop, &callback](
-            const ResourceProvider::ResourceIdArray& resource_ids,
-            const base::Closure& callback_in, uint64_t pending_callback_id) {
-          callback = callback_in;
-          run_loop.Quit();
-          return 1;
-        }));
+        .WillOnce(testing::Invoke(
+            [&run_loop, &callback](
+                const std::vector<const ResourcePool::InUsePoolResource*>&
+                    resources,
+                const base::RepeatingClosure& callback_in,
+                uint64_t pending_callback_id) {
+              callback = callback_in;
+              run_loop.Quit();
+              return 1;
+            }));
     host_impl()->tile_manager()->DidModifyTilePriorities();
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
@@ -2982,7 +2997,7 @@ class VerifyImageProviderRasterBufferProvider
   }
 
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
-      const Resource* resource,
+      const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override {
     buffer_count_++;
