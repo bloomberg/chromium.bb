@@ -39,6 +39,7 @@ class ASH_EXPORT ConvertiblePowerButtonController
 
   ConvertiblePowerButtonController(
       PowerButtonDisplayController* display_controller,
+      bool show_power_button_menu,
       base::TickClock* tick_clock);
   ~ConvertiblePowerButtonController() override;
 
@@ -65,6 +66,10 @@ class ASH_EXPORT ConvertiblePowerButtonController
   // Called by |shutdown_timer_| to start the pre-shutdown animation.
   void OnShutdownTimeout();
 
+  // Called by |power_button_menu_timer_| to start showing the power button
+  // menu.
+  void OnPowerButtonMenuTimeout();
+
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
 
@@ -82,10 +87,19 @@ class ASH_EXPORT ConvertiblePowerButtonController
   // released. Runs OnShutdownTimeout() to start shutdown.
   base::OneShotTimer shutdown_timer_;
 
+  // Used when |show_power_button_menu_| is true. Started when the power button
+  // is pressed and stopped when it's released. Runs OnPowerButtonMenuTimeout()
+  // to show the power button menu.
+  base::OneShotTimer power_button_menu_timer_;
+
   LockStateController* lock_state_controller_;  // Not owned.
 
   // Used to interact with the display.
   PowerButtonDisplayController* display_controller_;  // Not owned.
+
+  // If true, start the |power_button_menu_timer_| to show the menu when the
+  // power button is long pressed.
+  bool show_power_button_menu_ = false;
 
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.

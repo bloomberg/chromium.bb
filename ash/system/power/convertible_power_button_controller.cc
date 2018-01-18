@@ -39,13 +39,19 @@ constexpr base::TimeDelta kShutdownWhenScreenOnTimeout =
 constexpr base::TimeDelta kShutdownWhenScreenOffTimeout =
     base::TimeDelta::FromMilliseconds(2000);
 
+// Time that power button should be pressed before starting to show the power
+// off menu animation.
+constexpr base::TimeDelta kStartPowerButtonMenuAnimationTimeout =
+    base::TimeDelta::FromMilliseconds(500);
 }  // namespace
 
 ConvertiblePowerButtonController::ConvertiblePowerButtonController(
     PowerButtonDisplayController* display_controller,
+    bool show_power_button_menu,
     base::TickClock* tick_clock)
     : lock_state_controller_(Shell::Get()->lock_state_controller()),
       display_controller_(display_controller),
+      show_power_button_menu_(show_power_button_menu),
       tick_clock_(tick_clock) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
@@ -85,7 +91,13 @@ void ConvertiblePowerButtonController::OnPowerButtonEvent(
 
     screen_off_when_power_button_down_ = !display_controller_->IsScreenOn();
     display_controller_->SetBacklightsForcedOff(false);
-    StartShutdownTimer();
+    if (show_power_button_menu_) {
+      power_button_menu_timer_.Start(
+          FROM_HERE, kStartPowerButtonMenuAnimationTimeout, this,
+          &ConvertiblePowerButtonController::OnPowerButtonMenuTimeout);
+    } else {
+      StartShutdownTimer();
+    }
   } else {
     const base::TimeTicks previous_up_time = last_button_up_time_;
     last_button_up_time_ = timestamp;
@@ -147,6 +159,10 @@ void ConvertiblePowerButtonController::StartShutdownTimer() {
 
 void ConvertiblePowerButtonController::OnShutdownTimeout() {
   lock_state_controller_->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
+}
+
+void ConvertiblePowerButtonController::OnPowerButtonMenuTimeout() {
+  // TODO(minch), create the power button menu.
 }
 
 }  // namespace ash

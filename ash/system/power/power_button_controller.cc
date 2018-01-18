@@ -218,7 +218,8 @@ void PowerButtonController::OnAccelerometerUpdated(
   if (!force_clamshell_power_button_ && !convertible_controller_) {
     convertible_controller_ =
         std::make_unique<ConvertiblePowerButtonController>(
-            display_controller_.get(), tick_clock_.get());
+            display_controller_.get(), show_power_button_menu_,
+            tick_clock_.get());
   }
 
   if (!screenshot_controller_) {
@@ -255,6 +256,7 @@ void PowerButtonController::ProcessCommandLine() {
   enable_tablet_mode_ = cl->HasSwitch(switches::kAshEnableTabletMode);
   force_clamshell_power_button_ =
       cl->HasSwitch(switches::kForceClamshellPowerButton);
+  show_power_button_menu_ = cl->HasSwitch(switches::kShowPowerButtonMenu);
 }
 
 void PowerButtonController::ForceDisplayOffAfterLock() {
