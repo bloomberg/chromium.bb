@@ -413,6 +413,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   int request_id() const { return request_id_; }
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
 
   void Cancel();
   void SetDefersLoading(bool value);
@@ -512,7 +515,8 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   void OnReceivedCachedMetadata(const char* data, int len) override {}
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override {
-    context_->resource_dispatcher()->Cancel(context_->request_id());
+    context_->resource_dispatcher()->Cancel(context_->request_id(),
+                                            context_->task_runner());
   }
 
  private:
@@ -550,7 +554,7 @@ void WebURLLoaderImpl::Context::Cancel() {
                          TRACE_EVENT_FLAG_FLOW_IN);
   if (resource_dispatcher_ && // NULL in unittest.
       request_id_ != -1) {
-    resource_dispatcher_->Cancel(request_id_);
+    resource_dispatcher_->Cancel(request_id_, task_runner_);
     request_id_ = -1;
   }
 

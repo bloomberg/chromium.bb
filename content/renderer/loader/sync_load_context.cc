@@ -27,8 +27,9 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
     base::WaitableEvent* event) {
-  auto* context = new SyncLoadContext(
-      request.get(), std::move(url_loader_factory_info), response, event);
+  auto* context =
+      new SyncLoadContext(request.get(), std::move(url_loader_factory_info),
+                          response, event, loading_task_runner);
 
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
@@ -41,8 +42,9 @@ SyncLoadContext::SyncLoadContext(
     network::ResourceRequest* request,
     std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory,
     SyncLoadResponse* response,
-    base::WaitableEvent* event)
-    : response_(response), event_(event) {
+    base::WaitableEvent* event,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : response_(response), event_(event), task_runner_(std::move(task_runner)) {
   url_loader_factory_ =
       SharedURLLoaderFactory::Create(std::move(url_loader_factory));
 
@@ -111,7 +113,7 @@ void SyncLoadContext::OnCompletedRequest(
   event_->Signal();
 
   // This will indirectly cause this object to be deleted.
-  resource_dispatcher_->RemovePendingRequest(request_id_);
+  resource_dispatcher_->RemovePendingRequest(request_id_, task_runner_);
 }
 
 }  // namespace content

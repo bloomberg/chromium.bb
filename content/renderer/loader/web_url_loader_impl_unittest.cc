@@ -102,7 +102,9 @@ class TestResourceDispatcher : public ResourceDispatcher {
     return 1;
   }
 
-  void Cancel(int request_id) override {
+  void Cancel(
+      int request_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     EXPECT_FALSE(canceled_);
     canceled_ = true;
   }

@@ -45,18 +45,24 @@ class URLLoaderClientImpl::DeferredOnReceiveResponse final
 class URLLoaderClientImpl::DeferredOnReceiveRedirect final
     : public DeferredMessage {
  public:
-  DeferredOnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                            const network::ResourceResponseHead& response_head)
-      : redirect_info_(redirect_info), response_head_(response_head) {}
+  DeferredOnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : redirect_info_(redirect_info),
+        response_head_(response_head),
+        task_runner_(std::move(task_runner)) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
-    dispatcher->OnReceivedRedirect(request_id, redirect_info_, response_head_);
+    dispatcher->OnReceivedRedirect(request_id, redirect_info_, response_head_,
+                                   task_runner_);
   }
   bool IsCompletionMessage() const override { return false; }
 
  private:
   const net::RedirectInfo redirect_info_;
   const network::ResourceResponseHead response_head_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class URLLoaderClientImpl::DeferredOnDataDownloaded final
@@ -245,10 +251,10 @@ void URLLoaderClientImpl::OnReceiveRedirect(
   DCHECK(!body_consumer_);
   if (NeedsStoringMessage()) {
     StoreAndDispatch(std::make_unique<DeferredOnReceiveRedirect>(
-        redirect_info, response_head));
+        redirect_info, response_head, task_runner_));
   } else {
     resource_dispatcher_->OnReceivedRedirect(request_id_, redirect_info,
-                                             response_head);
+                                             response_head, task_runner_);
   }
 }
 
