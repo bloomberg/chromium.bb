@@ -12,11 +12,9 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
 
@@ -271,6 +269,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     scoped_refptr<NotificationDelegate> delegate,
     const gfx::VectorIcon& small_image,
     SystemNotificationWarningLevel color_type) {
+  DCHECK_EQ(NotifierId::SYSTEM_COMPONENT, notifier_id.type);
   SkColor color = message_center::kSystemNotificationColorNormal;
   switch (color_type) {
     case SystemNotificationWarningLevel::NORMAL:
@@ -283,16 +282,9 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       color = message_center::kSystemNotificationColorCriticalWarning;
       break;
   }
-  base::string16 display_source_or_default = display_source;
-  // TODO(tetsui): move this function to Ash. Ash should know its own name.
-  if (display_source_or_default.empty() && MessageCenter::Get()) {
-    display_source_or_default = l10n_util::GetStringFUTF16(
-        IDS_MESSAGE_CENTER_NOTIFICATION_CHROMEOS_SYSTEM,
-        MessageCenter::Get()->GetProductOSName());
-  }
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      type, id, title, message, icon, display_source_or_default, origin_url,
-      notifier_id, optional_fields, delegate);
+      type, id, title, message, icon, display_source, origin_url, notifier_id,
+      optional_fields, delegate);
   notification->set_accent_color(color);
   notification->set_small_image(
       small_image.is_empty() ? gfx::Image()

@@ -644,13 +644,13 @@ void MessageCenterImpl::PausePopupTimers() {
     popup_timers_controller_->PauseAll();
 }
 
-const base::string16& MessageCenterImpl::GetProductOSName() const {
-  return product_os_name_;
+const base::string16& MessageCenterImpl::GetSystemNotificationAppName() const {
+  return system_notification_app_name_;
 }
 
-void MessageCenterImpl::SetProductOSName(
-    const base::string16& product_os_name) {
-  product_os_name_ = product_os_name;
+void MessageCenterImpl::SetSystemNotificationAppName(
+    const base::string16& name) {
+  system_notification_app_name_ = name;
 }
 
 void MessageCenterImpl::DisableTimersForTest() {
