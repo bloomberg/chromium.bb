@@ -493,13 +493,31 @@ void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 void VrTestContext::StartAutocomplete(const base::string16& string) {
   auto result = std::make_unique<OmniboxSuggestions>();
-  for (int i = 0; i < 5; i++) {
-    result->suggestions.emplace_back(OmniboxSuggestion(
-        base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
-        base::UTF8ToUTF16(
-            "Very lengthy description of the suggestion that would wrap "
-            "if not truncated through some other means."),
-        AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
+  for (int i = 0; i < 4; i++) {
+    if (i == 0) {
+      result->suggestions.emplace_back(OmniboxSuggestion(
+          base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
+          base::UTF8ToUTF16("none url match dim invsible"),
+          ACMatchClassifications(),
+          {
+              ACMatchClassification(0, ACMatchClassification::NONE),
+              ACMatchClassification(5, ACMatchClassification::URL),
+              ACMatchClassification(9, ACMatchClassification::MATCH),
+              ACMatchClassification(15, ACMatchClassification::DIM),
+              ACMatchClassification(19, ACMatchClassification::INVISIBLE),
+          },
+          AutocompleteMatch::Type::VOICE_SUGGEST,
+          GURL("http://www.test.com/")));
+    } else {
+      result->suggestions.emplace_back(OmniboxSuggestion(
+          base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
+          base::UTF8ToUTF16(
+              "Very lengthy description of the suggestion that would wrap "
+              "if not truncated through some other means."),
+          ACMatchClassifications(), ACMatchClassifications(),
+          AutocompleteMatch::Type::VOICE_SUGGEST,
+          GURL("http://www.test.com/")));
+    }
   }
   ui_->SetOmniboxSuggestions(std::move(result));
 }

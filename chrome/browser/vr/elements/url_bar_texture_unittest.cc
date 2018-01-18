@@ -12,10 +12,10 @@
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/test/mock_render_text.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
 #include "components/url_formatter/url_formatter.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_palette.h"
@@ -112,21 +112,6 @@ TestUrlBarTexture::TestUrlBarTexture()
   SetBackgroundColor(SK_ColorBLACK);
   SetForegroundColor(SK_ColorWHITE);
 }
-
-class MockRenderText : public RenderTextWrapper {
- public:
-  MockRenderText() : RenderTextWrapper(nullptr) {}
-  ~MockRenderText() override {}
-
-  MOCK_METHOD1(SetColor, void(SkColor value));
-  MOCK_METHOD2(ApplyColor, void(SkColor value, const gfx::Range& range));
-  MOCK_METHOD2(SetStyle, void(gfx::TextStyle style, bool value));
-  MOCK_METHOD3(ApplyStyle,
-               void(gfx::TextStyle style, bool value, const gfx::Range& range));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRenderText);
-};
 
 class UrlEmphasisTest : public testing::Test {
  protected:
