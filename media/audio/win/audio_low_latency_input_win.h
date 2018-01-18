@@ -133,6 +133,11 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   HRESULT InitializeAudioEngine();
   void ReportOpenResult(HRESULT hr) const;
 
+  // Reports stats for format related audio client initilization
+  // (IAudioClient::Initialize) errors, that is if |hr| is an error related to
+  // the format.
+  void MaybeReportFormatRelatedInitError(HRESULT hr) const;
+
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 

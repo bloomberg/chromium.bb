@@ -33178,6 +33178,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Capture.Win.InitError.FormatRelated"
+    enum="AudioStreamFormatRelatedInitError">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    Errors from IAudioClient::Initialize() in
+    WASAPIAudioInputStream::InitializeAudioEngine on Windows that are related to
+    the audio format. Each error is split by whether format conversion was used
+    or not.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Capture.Win.Open" enum="AudioStreamOpenResult">
   <owner>tommi@chromium.org</owner>
   <summary>

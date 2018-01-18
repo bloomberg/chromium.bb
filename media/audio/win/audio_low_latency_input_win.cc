@@ -32,6 +32,17 @@ namespace media {
 
 namespace {
 
+// Errors when initializing the audio client related to the audio format. Split
+// by whether we're using format conversion or not. Used for reporting stats -
+// do not renumber entries.
+enum FormatRelatedInitError {
+  kUnsupportedFormat = 0,
+  kUnsupportedFormatWithFormatConversion = 1,
+  kInvalidArgument = 2,
+  kInvalidArgumentWithFormatConversion = 3,
+  kCount
+};
+
 bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
   if (format.nSamplesPerSec < limits::kMinSampleRate ||
       format.nSamplesPerSec > limits::kMaxSampleRate) {
@@ -776,6 +787,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_AUDIO_CLIENT_INIT_FAILED;
     base::UmaHistogramSparse("Media.Audio.Capture.Win.InitError", hr);
+    MaybeReportFormatRelatedInitError(hr);
     return hr;
   }
 
@@ -902,6 +914,25 @@ void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
         output_format_.cbSize));
     // clang-format on
   }
+}
+
+void WASAPIAudioInputStream::MaybeReportFormatRelatedInitError(
+    HRESULT hr) const {
+  if (hr != AUDCLNT_E_UNSUPPORTED_FORMAT && hr != E_INVALIDARG)
+    return;
+
+  const FormatRelatedInitError format_related_error =
+      hr == AUDCLNT_E_UNSUPPORTED_FORMAT
+          ? converter_.get()
+                ? FormatRelatedInitError::kUnsupportedFormatWithFormatConversion
+                : FormatRelatedInitError::kUnsupportedFormat
+          // Otherwise |hr| == E_INVALIDARG.
+          : converter_.get()
+                ? FormatRelatedInitError::kInvalidArgumentWithFormatConversion
+                : FormatRelatedInitError::kInvalidArgument;
+  base::UmaHistogramEnumeration(
+      "Media.Audio.Capture.Win.InitError.FormatRelated", format_related_error,
+      FormatRelatedInitError::kCount);
 }
 
 double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,
