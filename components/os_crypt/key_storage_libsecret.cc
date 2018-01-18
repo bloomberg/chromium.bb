@@ -45,7 +45,6 @@ SecretValue* ToSingleSecret(GList* secret_items) {
   SecretItem* secret_item = static_cast<SecretItem*>(first->data);
   SecretValue* secret_value =
       LibsecretLoader::secret_item_get_secret(secret_item);
-  g_list_free(secret_items);
   return secret_value;
 }
 
@@ -73,20 +72,18 @@ std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
 }
 
 std::string KeyStorageLibsecret::GetKeyImpl() {
-  GError* error = nullptr;
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", kApplicationName);
-  GList* search_results = LibsecretLoader::secret_service_search_sync(
-      nullptr /* default secret service */, &kKeystoreSchemaV2, attrs.Get(),
-      static_cast<SecretSearchFlags>(SECRET_SEARCH_UNLOCK |
-                                     SECRET_SEARCH_LOAD_SECRETS),
-      nullptr, &error);
-  if (error) {
-    VLOG(1) << "Libsecret lookup failed: " << error->message;
-    g_error_free(error);
+
+  LibsecretLoader::SearchHelper helper;
+  helper.Search(&kKeystoreSchemaV2, attrs.Get(),
+                SECRET_SEARCH_UNLOCK | SECRET_SEARCH_LOAD_SECRETS);
+  if (!helper.success()) {
+    VLOG(1) << "Libsecret lookup failed: " << helper.error()->message;
     return std::string();
   }
-  SecretValue* password_libsecret = ToSingleSecret(search_results);
+
+  SecretValue* password_libsecret = ToSingleSecret(helper.results());
   if (!password_libsecret) {
     std::string password = Migrate();
     if (!password.empty())
@@ -107,21 +104,16 @@ bool KeyStorageLibsecret::Init() {
 }
 
 std::string KeyStorageLibsecret::Migrate() {
-  GError* error = nullptr;
   LibsecretAttributesBuilder attrs;
 
   // Detect old entry.
-  GList* search_results = LibsecretLoader::secret_service_search_sync(
-      nullptr /* default secret service */, &kKeystoreSchemaV1, attrs.Get(),
-      static_cast<SecretSearchFlags>(SECRET_SEARCH_UNLOCK |
-                                     SECRET_SEARCH_LOAD_SECRETS),
-      nullptr, &error);
-  if (error) {
-    g_error_free(error);
-    g_list_free(search_results);
+  LibsecretLoader::SearchHelper helper;
+  helper.Search(&kKeystoreSchemaV1, attrs.Get(),
+                SECRET_SEARCH_UNLOCK | SECRET_SEARCH_LOAD_SECRETS);
+  if (!helper.success())
     return std::string();
-  }
-  SecretValue* password_libsecret = ToSingleSecret(search_results);
+
+  SecretValue* password_libsecret = ToSingleSecret(helper.results());
   if (!password_libsecret)
     return std::string();
 
@@ -131,6 +123,7 @@ std::string KeyStorageLibsecret::Migrate() {
   LibsecretLoader::secret_value_unref(password_libsecret);
 
   // Create new entry.
+  GError* error = nullptr;
   bool success = LibsecretLoader::secret_password_store_sync(
       &kKeystoreSchemaV2, nullptr, KeyStorageLinux::kKey, password.c_str(),
       nullptr, &error, "application", kApplicationName, nullptr);

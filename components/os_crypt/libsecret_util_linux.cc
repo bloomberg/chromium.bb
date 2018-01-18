@@ -63,6 +63,25 @@ const LibsecretLoader::FunctionInfo LibsecretLoader::kFunctions[] = {
     {"secret_value_unref", reinterpret_cast<void**>(&secret_value_unref)},
 };
 
+LibsecretLoader::SearchHelper::SearchHelper() = default;
+LibsecretLoader::SearchHelper::~SearchHelper() {
+  if (error_)
+    g_error_free(error_);
+  if (results_)
+    g_list_free_full(results_, &g_object_unref);
+}
+
+void LibsecretLoader::SearchHelper::Search(const SecretSchema* schema,
+                                           GHashTable* attrs,
+                                           int flags) {
+  DCHECK(!results_);
+  results_ = LibsecretLoader::secret_service_search_sync(
+      nullptr,  // default secret service
+      schema, attrs, static_cast<SecretSearchFlags>(flags),
+      nullptr,  // no cancellable object
+      &error_);
+}
+
 // static
 bool LibsecretLoader::EnsureLibsecretLoaded() {
   return LoadLibsecret() && LibsecretIsAvailable();
@@ -114,20 +133,10 @@ bool LibsecretLoader::LibsecretIsAvailable() {
       {{"application", SECRET_SCHEMA_ATTRIBUTE_STRING},
        {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING}}};
 
-  GError* error = nullptr;
-  GList* found = secret_service_search_sync(
-      nullptr,  // default secret service
-      &kDummySchema, attrs.Get(),
-      static_cast<SecretSearchFlags>(SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK),
-      nullptr,  // no cancellable ojbect
-      &error);
-  bool success = (error == nullptr);
-  if (error)
-    g_error_free(error);
-  if (found)
-    g_list_free(found);
-
-  return success;
+  SearchHelper helper;
+  helper.Search(&kDummySchema, attrs.Get(),
+                SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK);
+  return helper.success();
 }
 
 // TODO(crbug.com/660005) This is needed to properly unlock the default keyring.
