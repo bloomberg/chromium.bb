@@ -112,8 +112,15 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
   loop.Run();
 }
 
+// Flaky on Chromium OS ASAN: http://crbug.com/803188
+#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+#define MAYBE_TerminateOnServiceQuit DISABLED_TerminateOnServiceQuit
+#else
+#define MAYBE_TerminateOnServiceQuit TerminateOnServiceQuit
+#endif
 // Verifies that if an important service quits then the browser exits.
-IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest, TerminateOnServiceQuit) {
+IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
+                       MAYBE_TerminateOnServiceQuit) {
   // Run the above test and collect the test output.
   base::CommandLine new_test =
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
