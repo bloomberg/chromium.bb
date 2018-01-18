@@ -110,9 +110,8 @@ class CORE_EXPORT RenderedPosition {
   bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
                                 unsigned char bidi_level_of_run) const;
 
-  void GetLocalSelectionEndpoints(bool selection_start,
-                                  LayoutPoint& edge_top_in_layer,
-                                  LayoutPoint& edge_bottom_in_layer) const;
+  std::pair<LayoutPoint, LayoutPoint> GetLocalSelectionEndpoints(
+      bool selection_star) const;
 
   FloatPoint LocalToInvalidationBackingPoint(
       const LayoutPoint& local_point) const;

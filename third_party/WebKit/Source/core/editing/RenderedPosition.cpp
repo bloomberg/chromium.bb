@@ -299,18 +299,16 @@ static GraphicsLayer* GetGraphicsLayerBacking(
       &paint_invalidation_container);
 }
 
-void RenderedPosition::GetLocalSelectionEndpoints(
-    bool selection_start,
-    LayoutPoint& edge_top_in_layer,
-    LayoutPoint& edge_bottom_in_layer) const {
+std::pair<LayoutPoint, LayoutPoint>
+RenderedPosition::GetLocalSelectionEndpoints(bool selection_start) const {
   const LayoutRect rect = layout_object_->LocalCaretRect(inline_box_, offset_);
   if (layout_object_->Style()->IsHorizontalWritingMode()) {
-    edge_top_in_layer = rect.MinXMinYCorner();
-    edge_bottom_in_layer = rect.MinXMaxYCorner();
-    return;
+    const LayoutPoint edge_top_in_layer = rect.MinXMinYCorner();
+    const LayoutPoint edge_bottom_in_layer = rect.MinXMaxYCorner();
+    return {edge_top_in_layer, edge_bottom_in_layer};
   }
-  edge_top_in_layer = rect.MinXMinYCorner();
-  edge_bottom_in_layer = rect.MaxXMinYCorner();
+  LayoutPoint edge_top_in_layer = rect.MinXMinYCorner();
+  LayoutPoint edge_bottom_in_layer = rect.MaxXMinYCorner();
 
   // When text is vertical, it looks better for the start handle baseline to
   // be at the starting edge, to enclose the selection fully between the
@@ -320,6 +318,7 @@ void RenderedPosition::GetLocalSelectionEndpoints(
     edge_bottom_in_layer.SetX(edge_top_in_layer.X());
     edge_top_in_layer.SetX(x_swap);
   }
+  return {edge_top_in_layer, edge_bottom_in_layer};
 }
 
 CompositedSelectionBound RenderedPosition::PositionInGraphicsLayerBacking(
@@ -327,16 +326,15 @@ CompositedSelectionBound RenderedPosition::PositionInGraphicsLayerBacking(
   if (IsNull())
     return CompositedSelectionBound();
 
-  LayoutPoint edge_top_in_layer;
-  LayoutPoint edge_bottom_in_layer;
-  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
-                             edge_bottom_in_layer);
   CompositedSelectionBound bound;
   // Flipped blocks writing mode is not only vertical but also right to left.
   if (!layout_object_->Style()->IsHorizontalWritingMode()) {
     bound.is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
   }
 
+  LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
+  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
+      GetLocalSelectionEndpoints(selection_start);
   bound.edge_top_in_layer = LocalToInvalidationBackingPoint(edge_top_in_layer);
   bound.edge_bottom_in_layer =
       LocalToInvalidationBackingPoint(edge_bottom_in_layer);
@@ -374,10 +372,9 @@ bool RenderedPosition::IsVisible(bool selection_start) const {
   if (!layout_object || !layout_object->IsBox())
     return true;
 
-  LayoutPoint edge_top_in_layer;
-  LayoutPoint edge_bottom_in_layer;
-  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
-                             edge_bottom_in_layer);
+  LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
+  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
+      GetLocalSelectionEndpoints(selection_start);
   LayoutPoint sample_point =
       GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer);
 
