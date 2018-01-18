@@ -149,7 +149,7 @@ void NotificationImageReporterTest::SetUp() {
   g_browser_process->safe_browsing_service()->Initialize();
   base::RunLoop().RunUntilIdle();  // TODO(johnme): Might still be tasks on IO.
 
-  profile_ = base::MakeUnique<TestingProfile>();
+  profile_ = std::make_unique<TestingProfile>();
 
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
@@ -178,7 +178,7 @@ void NotificationImageReporterTest::SetUpOnIO() {
 
 void NotificationImageReporterTest::SetExtendedReportingLevel(
     ExtendedReportingLevel level) {
-  feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+  feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   if (level != SBER_LEVEL_SCOUT)
     // Explicitly disable CanShowScoutOptIn, which is on by default.
     feature_list_->InitWithFeatures({}, {safe_browsing::kCanShowScoutOptIn});

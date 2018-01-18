@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ std::unique_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
       changed
           ? ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CHANGED
           : ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CLEARED);
-  return base::MakeUnique<TrackedPreferenceIncident>(std::move(incident),
+  return std::make_unique<TrackedPreferenceIncident>(std::move(incident),
                                                      is_personal);
 }
 

@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionHostBrowserTest,
                                                false);
   ASSERT_TRUE(embedded_test_server()->Start());
   std::unique_ptr<TestClientSideDetectionHost> csd_host =
-      base::MakeUnique<TestClientSideDetectionHost>(
+      std::make_unique<TestClientSideDetectionHost>(
           browser()->tab_strip_model()->GetActiveWebContents());
   GURL page_url(embedded_test_server()->GetURL("/safe_browsing/malware.html"));
   ui_test_utils::NavigateToURL(browser(), page_url);

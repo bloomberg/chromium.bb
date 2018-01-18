@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 
+#include <memory>
+
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -86,7 +88,7 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
   std::unique_ptr<NavigationEvent> CreateNavigationEventUniquePtr(
       const GURL& destination_url, const base::Time& timestamp) {
     std::unique_ptr<NavigationEvent> nav_event_ptr =
-        base::MakeUnique<NavigationEvent>();
+        std::make_unique<NavigationEvent>();
     nav_event_ptr->original_request_url = destination_url;
     nav_event_ptr->source_url = GURL("http://dummy.com");
     nav_event_ptr->last_updated = timestamp;

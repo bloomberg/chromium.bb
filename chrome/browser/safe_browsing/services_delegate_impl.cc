@@ -188,7 +188,7 @@ void ServicesDelegateImpl::CreatePasswordProtectionService(Profile* profile) {
   auto it = password_protection_service_map_.find(profile);
   DCHECK(it == password_protection_service_map_.end());
   std::unique_ptr<ChromePasswordProtectionService> service =
-      base::MakeUnique<ChromePasswordProtectionService>(safe_browsing_service_,
+      std::make_unique<ChromePasswordProtectionService>(safe_browsing_service_,
                                                         profile);
   password_protection_service_map_[profile] = std::move(service);
 }

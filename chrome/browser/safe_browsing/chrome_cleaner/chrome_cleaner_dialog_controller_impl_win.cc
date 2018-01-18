@@ -58,7 +58,7 @@ ChromeCleanerDialogControllerImpl::ChromeCleanerDialogControllerImpl(
     ChromeCleanerController* cleaner_controller)
     : cleaner_controller_(cleaner_controller),
       prompt_delegate_impl_(
-          base::MakeUnique<ChromeCleanerPromptDelegateImpl>()) {
+          std::make_unique<ChromeCleanerPromptDelegateImpl>()) {
   DCHECK(cleaner_controller_);
   DCHECK_EQ(ChromeCleanerController::State::kScanning,
             cleaner_controller_->state());

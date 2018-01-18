@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -60,7 +62,7 @@ const char kRedirectURL[] = "http://redirect.com";
 
 std::unique_ptr<KeyedService> BuildFakeUserEventService(
     content::BrowserContext* context) {
-  return base::MakeUnique<syncer::FakeUserEventService>();
+  return std::make_unique<syncer::FakeUserEventService>();
 }
 
 constexpr struct {
@@ -138,7 +140,7 @@ class ChromePasswordProtectionServiceTest
     content_setting_map_ = new HostContentSettingsMap(
         &test_pref_service_, false /* incognito */, false /* guest_profile */,
         false /* store_last_modified */);
-    service_ = base::MakeUnique<MockChromePasswordProtectionService>(
+    service_ = std::make_unique<MockChromePasswordProtectionService>(
         profile(), content_setting_map_,
         new SafeBrowsingUIManager(
             SafeBrowsingService::CreateSafeBrowsingService()));
@@ -192,14 +194,14 @@ class ChromePasswordProtectionServiceTest
   }
 
   void InitializeVerdict(LoginReputationClientResponse::VerdictType type) {
-    verdict_ = base::MakeUnique<LoginReputationClientResponse>();
+    verdict_ = std::make_unique<LoginReputationClientResponse>();
     verdict_->set_verdict_type(type);
   }
 
   void SimulateRequestFinished(
       LoginReputationClientResponse::VerdictType verdict_type) {
     std::unique_ptr<LoginReputationClientResponse> verdict =
-        base::MakeUnique<LoginReputationClientResponse>();
+        std::make_unique<LoginReputationClientResponse>();
     verdict->set_verdict_type(verdict_type);
     service_->RequestFinished(request_.get(), false, std::move(verdict));
   }
@@ -429,7 +431,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   }
 
   {
-    auto response = base::MakeUnique<LoginReputationClientResponse>();
+    auto response = std::make_unique<LoginReputationClientResponse>();
     response->set_verdict_token("token1");
     response->set_verdict_type(LoginReputationClientResponse::LOW_REPUTATION);
     service_->MaybeLogPasswordReuseLookupEvent(
@@ -449,7 +451,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   }
 
   {
-    auto response = base::MakeUnique<LoginReputationClientResponse>();
+    auto response = std::make_unique<LoginReputationClientResponse>();
     response->set_verdict_token("token2");
     response->set_verdict_type(LoginReputationClientResponse::SAFE);
     service_->MaybeLogPasswordReuseLookupEvent(

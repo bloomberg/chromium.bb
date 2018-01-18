@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -44,7 +43,7 @@ void ClearBinaryIntegrityForFile(IncidentReceiver* incident_receiver,
       incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
   incident->set_file_basename(basename);
   incident_receiver->ClearIncidentForProcess(
-      base::MakeUnique<BinaryIntegrityIncident>(std::move(incident)));
+      std::make_unique<BinaryIntegrityIncident>(std::move(incident)));
 }
 
 void RegisterBinaryIntegrityAnalysis() {

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -73,7 +74,7 @@ ChromeCleanerRebootDialogControllerImpl::PromptDelegate::~PromptDelegate() =
 ChromeCleanerRebootDialogControllerImpl*
 ChromeCleanerRebootDialogControllerImpl::Create(
     ChromeCleanerController* cleaner_controller) {
-  return Create(cleaner_controller, base::MakeUnique<PromptDelegateImpl>());
+  return Create(cleaner_controller, std::make_unique<PromptDelegateImpl>());
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -463,7 +465,7 @@ ChromePasswordProtectionService::GetUserEventSpecificsWithNavigationId(
   if (navigation_id <= 0)
     return nullptr;
 
-  auto specifics = base::MakeUnique<UserEventSpecifics>();
+  auto specifics = std::make_unique<UserEventSpecifics>();
   specifics->set_event_time_usec(
       GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
   specifics->set_navigation_id(navigation_id);

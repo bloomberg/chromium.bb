@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_entropy_provider.h"
@@ -297,7 +296,7 @@ class IncidentReportingServiceTest : public testing::Test {
     incident->set_path(kTestTrackedPrefPath);
     if (value)
       incident->set_atomic_value(value);
-    return base::MakeUnique<safe_browsing::TrackedPreferenceIncident>(
+    return std::make_unique<safe_browsing::TrackedPreferenceIncident>(
         std::move(incident), false /* is_personal */);
   }
 
@@ -560,7 +559,7 @@ class IncidentReportingServiceTest : public testing::Test {
       on_start_upload_callback_.Run();
       on_start_upload_callback_ = base::Closure();
     }
-    return base::MakeUnique<FakeUploader>(
+    return std::make_unique<FakeUploader>(
         base::Bind(&IncidentReportingServiceTest::OnUploaderDestroyed,
                    base::Unretained(this)),
         callback, upload_result_);
@@ -1312,11 +1311,11 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   // Set up a prune state dict with data to be cleared (and not).
   std::unique_ptr<base::DictionaryValue> incidents_sent(
       new base::DictionaryValue());
-  auto type_dict = base::MakeUnique<base::DictionaryValue>();
+  auto type_dict = std::make_unique<base::DictionaryValue>();
   type_dict->SetKey("foo", base::Value("47"));
   incidents_sent->SetWithoutPathExpansion(blacklist_load_type,
                                           std::move(type_dict));
-  type_dict = base::MakeUnique<base::DictionaryValue>();
+  type_dict = std::make_unique<base::DictionaryValue>();
   type_dict->SetKey("bar", base::Value("43"));
   incidents_sent->SetWithoutPathExpansion(preference_type,
                                           std::move(type_dict));

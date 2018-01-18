@@ -81,7 +81,7 @@ class ResourceRequestDetectorTest : public testing::Test {
             new StrictMock<safe_browsing::MockIncidentReceiver>()),
         mock_database_manager_(new StrictMock<MockSafeBrowsingDatabaseManager>),
         fake_resource_request_detector_(
-            base::MakeUnique<FakeResourceRequestDetector>(
+            std::make_unique<FakeResourceRequestDetector>(
                 mock_database_manager_,
                 base::WrapUnique(mock_incident_receiver_))) {}
 

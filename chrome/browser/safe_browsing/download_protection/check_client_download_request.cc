@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 
+#include <memory>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -613,7 +615,7 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
 
   if (results.signature_blob.size() > 0) {
     disk_image_signature_ =
-        base::MakeUnique<std::vector<uint8_t>>(results.signature_blob);
+        std::make_unique<std::vector<uint8_t>>(results.signature_blob);
   }
 
   // Even if !results.success, some of the DMG may have been parsed.

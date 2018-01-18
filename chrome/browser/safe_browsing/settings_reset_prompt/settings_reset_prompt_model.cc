@@ -70,7 +70,7 @@ SettingsResetPromptModel::SettingsResetPromptModel(
     : profile_(profile),
       prefs_manager_(profile, prompt_config->prompt_wave()),
       prompt_config_(std::move(prompt_config)),
-      settings_snapshot_(base::MakeUnique<ResettableSettingsSnapshot>(profile)),
+      settings_snapshot_(std::make_unique<ResettableSettingsSnapshot>(profile)),
       profile_resetter_(std::move(profile_resetter)),
       time_since_last_prompt_(base::Time::Now() -
                               prefs_manager_.LastTriggeredPrompt()) {

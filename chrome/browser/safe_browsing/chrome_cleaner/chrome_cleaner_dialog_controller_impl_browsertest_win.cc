@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -119,7 +118,7 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
 
 IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest, AllBrowsersClosed) {
   std::unique_ptr<ScopedKeepAlive> keep_alive =
-      base::MakeUnique<ScopedKeepAlive>(KeepAliveOrigin::BROWSER,
+      std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::BROWSER,
                                         KeepAliveRestartOption::DISABLED);
 
   CloseAllBrowsers();

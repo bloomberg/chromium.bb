@@ -4,7 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -453,7 +454,7 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
       SafeBrowsingNavigationObserverManager::ClearURLRef(target_url);
 
   std::unique_ptr<NavigationEvent> nav_event =
-      base::MakeUnique<NavigationEvent>();
+      std::make_unique<NavigationEvent>();
   if (rfh) {
     nav_event->source_url = SafeBrowsingNavigationObserverManager::ClearURLRef(
         rfh->GetLastCommittedURL());
@@ -568,7 +569,7 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
     const GURL& destination_main_frame_url,
     ReferrerChainEntry::URLType type) {
   std::unique_ptr<ReferrerChainEntry> referrer_chain_entry =
-      base::MakeUnique<ReferrerChainEntry>();
+      std::make_unique<ReferrerChainEntry>();
   referrer_chain_entry->set_navigation_initiation(
       nav_event->navigation_initiation);
   const GURL destination_url = nav_event->GetDestinationUrl();

@@ -15,7 +15,6 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -151,8 +150,8 @@ class ClientSideDetectionServiceTest : public testing::Test {
 
   void SetCache(const GURL& gurl, bool is_phishing, base::Time time) {
     csd_service_->cache_[gurl] =
-        base::MakeUnique<ClientSideDetectionService::CacheState>(
-            is_phishing, time);
+        std::make_unique<ClientSideDetectionService::CacheState>(is_phishing,
+                                                                 time);
   }
 
   void TestCache() {
@@ -163,28 +162,28 @@ class ClientSideDetectionServiceTest : public testing::Test {
             ClientSideDetectionService::kNegativeCacheIntervalDays) +
         base::TimeDelta::FromMinutes(5);
     cache[GURL("http://first.url.com/")] =
-        base::MakeUnique<ClientSideDetectionService::CacheState>(false, time);
+        std::make_unique<ClientSideDetectionService::CacheState>(false, time);
 
     time =
         now - base::TimeDelta::FromDays(
             ClientSideDetectionService::kNegativeCacheIntervalDays) -
         base::TimeDelta::FromHours(1);
-    cache[GURL("http://second.url.com/")]
-        = base::MakeUnique<ClientSideDetectionService::CacheState>(false, time);
+    cache[GURL("http://second.url.com/")] =
+        std::make_unique<ClientSideDetectionService::CacheState>(false, time);
 
     time =
         now - base::TimeDelta::FromMinutes(
             ClientSideDetectionService::kPositiveCacheIntervalMinutes) -
         base::TimeDelta::FromMinutes(5);
-    cache[GURL("http://third.url.com/")]
-        = base::MakeUnique<ClientSideDetectionService::CacheState>(true, time);
+    cache[GURL("http://third.url.com/")] =
+        std::make_unique<ClientSideDetectionService::CacheState>(true, time);
 
     time =
         now - base::TimeDelta::FromMinutes(
             ClientSideDetectionService::kPositiveCacheIntervalMinutes) +
         base::TimeDelta::FromMinutes(5);
     cache[GURL("http://fourth.url.com/")] =
-        base::MakeUnique<ClientSideDetectionService::CacheState>(true, time);
+        std::make_unique<ClientSideDetectionService::CacheState>(true, time);
 
     csd_service_->UpdateCache();
 

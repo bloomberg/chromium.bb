@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -70,8 +69,8 @@ void MaybeShowSettingsResetPrompt(
   // displaying the dialog.
   Profile* profile = browser->profile()->GetOriginalProfile();
 
-  auto model = base::MakeUnique<SettingsResetPromptModel>(
-      profile, std::move(config), base::MakeUnique<ProfileResetter>(profile));
+  auto model = std::make_unique<SettingsResetPromptModel>(
+      profile, std::move(config), std::make_unique<ProfileResetter>(profile));
 
   model->ReportUmaMetrics();
 

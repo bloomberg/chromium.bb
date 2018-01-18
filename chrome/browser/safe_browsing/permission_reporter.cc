@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 
 #include <functional>
+#include <memory>
 
 #include "base/containers/queue.h"
 #include "base/hash.h"
@@ -177,7 +178,7 @@ std::size_t PermissionAndOriginHash::operator()(
 
 PermissionReporter::PermissionReporter(net::URLRequestContext* request_context)
     : PermissionReporter(
-          base::MakeUnique<net::ReportSender>(request_context,
+          std::make_unique<net::ReportSender>(request_context,
                                               kTrafficAnnotation),
           base::WrapUnique(new base::DefaultClock)) {}
 

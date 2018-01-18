@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -203,7 +202,7 @@ void ChromeCleanerRunner::CreateChromePromptImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!chrome_prompt_impl_);
 
-  // Cannot use base::MakeUnique() since it does not support creating
+  // Cannot use std::make_unique() since it does not support creating
   // std::unique_ptrs with custom deleters.
   chrome_prompt_impl_.reset(new ChromePromptImpl(
       std::move(chrome_prompt_request),

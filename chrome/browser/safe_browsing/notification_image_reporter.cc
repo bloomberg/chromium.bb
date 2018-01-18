@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
@@ -93,7 +92,7 @@ const char NotificationImageReporter::kReportingUploadUrl[] =
 NotificationImageReporter::NotificationImageReporter(
     net::URLRequestContext* request_context)
     : NotificationImageReporter(
-          base::MakeUnique<net::ReportSender>(request_context,
+          std::make_unique<net::ReportSender>(request_context,
                                               kTrafficAnnotation)) {}
 
 NotificationImageReporter::NotificationImageReporter(

@@ -369,7 +369,7 @@ void DownloadMetadataManager::SetRequest(content::DownloadItem* item,
       GetDownloadManagerForBrowserContext(item->GetBrowserContext());
   DCHECK_EQ(contexts_.count(download_manager), 1U);
   contexts_[download_manager]->SetRequest(
-      item, base::MakeUnique<ClientDownloadRequest>(*request));
+      item, std::make_unique<ClientDownloadRequest>(*request));
 }
 
 void DownloadMetadataManager::GetDownloadDetails(
@@ -481,7 +481,7 @@ void DownloadMetadataManager::ManagerContext::GetDownloadDetails(
     get_details_callbacks_.push_back(callback);
   } else {
     callback.Run(download_metadata_
-                     ? base::MakeUnique<ClientIncidentReport_DownloadDetails>(
+                     ? std::make_unique<ClientIncidentReport_DownloadDetails>(
                            download_metadata_->download())
                      : nullptr);
   }
@@ -590,7 +590,7 @@ void DownloadMetadataManager::ManagerContext::RunCallbacks() {
   while (!get_details_callbacks_.empty()) {
     const auto& callback = get_details_callbacks_.front();
     callback.Run(download_metadata_
-                     ? base::MakeUnique<ClientIncidentReport_DownloadDetails>(
+                     ? std::make_unique<ClientIncidentReport_DownloadDetails>(
                            download_metadata_->download())
                      : nullptr);
     get_details_callbacks_.pop_front();
