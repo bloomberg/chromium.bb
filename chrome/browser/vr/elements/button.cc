@@ -38,6 +38,7 @@ Button::Button(base::RepeatingCallback<void()> click_handler)
 
   auto hit_plane = std::make_unique<InvisibleHitTarget>();
   hit_plane->SetType(kTypeButtonHitTarget);
+  hit_plane->set_focusable(false);
   hit_plane->set_bubble_events(true);
   hit_plane->set_contributes_to_parent_bounds(false);
   hit_plane_ = hit_plane.get();
