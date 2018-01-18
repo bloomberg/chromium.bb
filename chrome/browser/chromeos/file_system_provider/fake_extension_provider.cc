@@ -49,6 +49,10 @@ const std::string& FakeExtensionProvider::GetName() const {
   return name_;
 }
 
+const IconSet& FakeExtensionProvider::GetIconSet() const {
+  return icon_set_;
+}
+
 FakeExtensionProvider::FakeExtensionProvider(
     const extensions::ExtensionId& extension_id,
     const Capabilities& capabilities)

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
@@ -46,7 +47,7 @@ class FileSystemProviderOperationsWriteFileTest : public testing::Test {
     mount_options.writable = true;
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, mount_options, base::FilePath(), false /* configurable */,
-        true /* watchable */, extensions::SOURCE_FILE);
+        true /* watchable */, extensions::SOURCE_FILE, IconSet());
     io_buffer_ = base::MakeRefCounted<net::StringIOBuffer>(kWriteData);
   }
 
@@ -120,7 +121,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute_ReadOnly) {
   const ProvidedFileSystemInfo read_only_file_system_info(
       kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
       base::FilePath() /* mount_path */, false /* configurable */,
-      true /* watchable */, extensions::SOURCE_FILE);
+      true /* watchable */, extensions::SOURCE_FILE, IconSet());
 
   WriteFile write_file(NULL,
                        read_only_file_system_info,

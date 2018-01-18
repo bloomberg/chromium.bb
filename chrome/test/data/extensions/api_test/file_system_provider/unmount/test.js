@@ -50,8 +50,10 @@ function runTests() {
       var onMountCompleted = function(event) {
         chrome.test.assertEq('unmount', event.eventType);
         chrome.test.assertEq('success', event.status);
+        // For extension based providers, provider id is the same as
+        // extension id.
         chrome.test.assertEq(
-            chrome.runtime.id, event.volumeMetadata.extensionId);
+            chrome.runtime.id, event.volumeMetadata.providerId);
         chrome.test.assertEq(
             FIRST_FILE_SYSTEM_ID, event.volumeMetadata.fileSystemId);
         chrome.fileManagerPrivate.onMountCompleted.removeListener(
@@ -114,8 +116,10 @@ function runTests() {
       var onMountCompleted = chrome.test.callbackPass(function(event) {
         chrome.test.assertEq('unmount', event.eventType);
         chrome.test.assertEq('error_unknown', event.status);
+        // For extension based providers, provider id is the same as
+        // extension id.
         chrome.test.assertEq(
-            chrome.runtime.id, event.volumeMetadata.extensionId);
+            chrome.runtime.id, event.volumeMetadata.providerId);
         chrome.test.assertEq(
             SECOND_FILE_SYSTEM_ID, event.volumeMetadata.fileSystemId);
         chrome.test.assertTrue(unmountRequested);

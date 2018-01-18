@@ -133,7 +133,7 @@ base::File::Error Service::MountFileSystemInternal(
   //   source = SOURCE_FILE
   ProvidedFileSystemInfo file_system_info(
       provider_id, options, mount_path, capabilities.configurable,
-      capabilities.watchable, capabilities.source);
+      capabilities.watchable, capabilities.source, provider->GetIconSet());
 
   // If already exists a file system provided by the same extension with this
   // id, then abort.

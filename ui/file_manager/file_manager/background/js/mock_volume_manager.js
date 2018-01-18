@@ -138,9 +138,12 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       {isCurrentProfile: true, displayName: ''},  // profile
       label,                                      // label
       undefined,                                  // providerId
-      undefined,                                  // extensionId
       false,                                      // hasMedia
-      false);                                     // configurable
+      false,                                      // configurable
+      false,                                      // watchable
+      'network',                                  // source
+      '',                                         // diskFileSystemType
+      {});                                        // iconSet
 
   return volumeInfo;
 };
@@ -281,7 +284,12 @@ MockVolumeManagerWrapper.createMockVolumeInfo =
       {isCurrentProfile: true, displayName: ''},  // profile
       label,                                      // label
       undefined,                                  // providerId
-      undefined,                                  // extensionId
-      false);                                     // hasMedia
+      {},                                         // iconSet
+      false,                                      // hasMedia
+      false,                                      // configurable
+      false,                                      // watchable
+      'network',                                  // source
+      '',                                         // diskFileSystemType
+      {});                                        // iconSet
   return volumeInfo;
 };

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/file_system_provider/extension_provider.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "extensions/common/extension_id.h"
@@ -34,6 +35,7 @@ class FakeExtensionProvider : public ProviderInterface {
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
   const std::string& GetName() const override;
+  const IconSet& GetIconSet() const override;
 
  protected:
   FakeExtensionProvider(const extensions::ExtensionId& extension_id,
@@ -42,6 +44,7 @@ class FakeExtensionProvider : public ProviderInterface {
   ProviderId provider_id_;
   Capabilities capabilities_;
   std::string name_;
+  IconSet icon_set_;
 };
 
 }  // namespace file_system_provider

@@ -646,6 +646,8 @@ source_set("chromeos") {
     "file_system_provider/fileapi/provider_async_file_util.h",
     "file_system_provider/fileapi/watcher_manager.cc",
     "file_system_provider/fileapi/watcher_manager.h",
+    "file_system_provider/icon_set.cc",
+    "file_system_provider/icon_set.h",
     "file_system_provider/mount_path_util.cc",
     "file_system_provider/mount_path_util.h",
     "file_system_provider/notification_manager.cc",

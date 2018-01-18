@@ -8,5 +8,8 @@
       'warning_level=VERBOSE',
     ],
   },
+  'dependencies': [
+    '<(EXTERNS_GYP):file_manager_private'
+  ],
   'includes': ['../../third_party/closure_compiler/compile_js2.gypi'],
 }

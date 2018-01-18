@@ -188,7 +188,9 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
       this.providersModel_.getInstalledProviders()
           .then(function(providers) {
             callback(providers.map(function(provider) {
-              return provider.extensionId;
+              // Assume that the provider is an extension backed provider. In
+              // such case the providerId is the same as extensionId.
+              return provider.providerId;
             }));
           })
           .catch(function(error) {

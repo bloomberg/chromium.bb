@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
@@ -34,7 +35,7 @@ struct ProvidingExtensionInfo {
 
 class ExtensionProvider : public ProviderInterface {
  public:
-  ~ExtensionProvider() override {}
+  ~ExtensionProvider() override;
 
   // Returns a provider instance for the specified extension. If the extension
   // cannot be a providing extension, returns nullptr.
@@ -49,6 +50,7 @@ class ExtensionProvider : public ProviderInterface {
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
   const std::string& GetName() const override;
+  const IconSet& GetIconSet() const override;
 
  private:
   ExtensionProvider(const extensions::ExtensionId& extension_id,
@@ -57,6 +59,7 @@ class ExtensionProvider : public ProviderInterface {
   ProviderId provider_id_;
   Capabilities capabilities_;
   std::string name_;
+  IconSet icon_set_;
 };
 
 }  // namespace file_system_provider

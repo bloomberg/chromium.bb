@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
@@ -18,11 +19,12 @@ class Profile;
 namespace chromeos {
 namespace smb_client {
 
-using file_system_provider::ProviderId;
 using file_system_provider::Capabilities;
+using file_system_provider::IconSet;
 using file_system_provider::ProvidedFileSystemInfo;
-using file_system_provider::ProviderInterface;
 using file_system_provider::ProvidedFileSystemInterface;
+using file_system_provider::ProviderId;
+using file_system_provider::ProviderInterface;
 
 class SmbProvider : public ProviderInterface {
  public:
@@ -40,11 +42,13 @@ class SmbProvider : public ProviderInterface {
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
   const std::string& GetName() const override;
+  const IconSet& GetIconSet() const override;
 
  private:
   ProviderId provider_id_;
   Capabilities capabilities_;
   std::string name_;
+  IconSet icon_set_;
 
   UnmountCallback unmount_callback_;
 

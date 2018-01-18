@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -241,7 +242,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     mount_options.writable = true;
     file_system_info_.reset(new ProvidedFileSystemInfo(
         kExtensionId, mount_options, mount_path, false /* configurable */,
-        true /* watchable */, extensions::SOURCE_FILE));
+        true /* watchable */, extensions::SOURCE_FILE, IconSet()));
     provided_file_system_.reset(
         new ProvidedFileSystem(profile_.get(), *file_system_info_.get()));
     event_router_.reset(
@@ -422,7 +423,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_PersistentIllegal) {
     mount_options.supports_notify_tag = false;
     ProvidedFileSystemInfo file_system_info(
         kExtensionId, mount_options, mount_path, false /* configurable */,
-        true /* watchable */, extensions::SOURCE_FILE);
+        true /* watchable */, extensions::SOURCE_FILE, IconSet());
     ProvidedFileSystem simple_provided_file_system(profile_.get(),
                                                    file_system_info);
     simple_provided_file_system.SetEventRouterForTesting(event_router_.get());

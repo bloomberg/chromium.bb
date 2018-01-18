@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -56,8 +57,8 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
 
     ProvidedFileSystemInfo file_system_info(
         kExtensionId, options, base::FilePath() /* mount_path */,
-        false /* configurable */, true /* watchable */,
-        extensions::SOURCE_FILE);
+        false /* configurable */, true /* watchable */, extensions::SOURCE_FILE,
+        IconSet());
 
     file_system_.reset(new ThrottledFileSystem(
         std::make_unique<FakeProvidedFileSystem>(file_system_info)));

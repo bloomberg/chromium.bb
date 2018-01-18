@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
+#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/logging_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
@@ -332,7 +333,8 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   options.supports_notify_tag = true;
   ProvidedFileSystemInfo file_system_info(
       kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, false /* watchable */, extensions::SOURCE_FILE);
+      false /* configurable */, false /* watchable */, extensions::SOURCE_FILE,
+      IconSet());
   Watchers fake_watchers;
   fake_watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
       fake_watcher_;

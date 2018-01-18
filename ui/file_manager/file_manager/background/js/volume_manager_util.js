@@ -155,13 +155,12 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             volumeMetadata.mountCondition, volumeMetadata.deviceType,
             volumeMetadata.devicePath, volumeMetadata.isReadOnly,
             volumeMetadata.isReadOnlyRemovableDevice, volumeMetadata.profile,
-            localizedLabel, volumeMetadata.providerId,
-            volumeMetadata.extensionId, volumeMetadata.hasMedia,
+            localizedLabel, volumeMetadata.providerId, volumeMetadata.hasMedia,
             volumeMetadata.configurable, volumeMetadata.watchable,
             /** @type {VolumeManagerCommon.Source} */
             (volumeMetadata.source),
             /** @type {VolumeManagerCommon.FileSystemType} */
-            (volumeMetadata.diskFileSystemType));
+            (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet);
   })
   .catch(
       /**
@@ -180,13 +179,12 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             volumeMetadata.mountCondition, volumeMetadata.deviceType,
             volumeMetadata.devicePath, volumeMetadata.isReadOnly,
             volumeMetadata.isReadOnlyRemovableDevice, volumeMetadata.profile,
-            localizedLabel, volumeMetadata.providerId,
-            volumeMetadata.extensionId, volumeMetadata.hasMedia,
+            localizedLabel, volumeMetadata.providerId, volumeMetadata.hasMedia,
             volumeMetadata.configurable, volumeMetadata.watchable,
             /** @type {VolumeManagerCommon.Source} */
             (volumeMetadata.source),
             /** @type {VolumeManagerCommon.FileSystemType} */
-            (volumeMetadata.diskFileSystemType));
+            (volumeMetadata.diskFileSystemType), volumeMetadata.iconSet);
       });
 };
 

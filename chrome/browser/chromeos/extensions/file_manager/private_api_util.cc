@@ -172,6 +172,20 @@ void ContinueGetSelectedFileInfo(
 
 }  // namespace
 
+void FillIconSet(file_manager_private::IconSet* output,
+                 const chromeos::file_system_provider::IconSet& input) {
+  DCHECK(output);
+  using chromeos::file_system_provider::IconSet;
+  if (input.HasIcon(IconSet::IconSize::SIZE_16x16)) {
+    output->icon16x16_url.reset(
+        new std::string(input.GetIcon(IconSet::IconSize::SIZE_16x16).spec()));
+  }
+  if (input.HasIcon(IconSet::IconSize::SIZE_32x32)) {
+    output->icon32x32_url.reset(
+        new std::string(input.GetIcon(IconSet::IconSize::SIZE_32x32).spec()));
+  }
+}
+
 void VolumeToVolumeMetadata(
     Profile* profile,
     const Volume& volume,
@@ -215,14 +229,11 @@ void VolumeToVolumeMetadata(
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
     volume_metadata->provider_id.reset(
         new std::string(volume.provider_id().ToString()));
-    if (volume.provider_id().GetType() ==
-        chromeos::file_system_provider::ProviderId::EXTENSION) {
-      volume_metadata->extension_id.reset(
-          new std::string(volume.provider_id().GetExtensionId()));
-    }
     volume_metadata->file_system_id.reset(
         new std::string(volume.file_system_id()));
   }
+
+  FillIconSet(&volume_metadata->icon_set, volume.icon_set());
 
   volume_metadata->volume_label.reset(new std::string(volume.volume_label()));
   volume_metadata->disk_file_system_type.reset(

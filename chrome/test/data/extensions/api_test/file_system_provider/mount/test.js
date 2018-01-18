@@ -73,7 +73,9 @@ chrome.test.runTests([
           chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
             var volumeInfo;
             volumeList.forEach(function(inVolumeInfo) {
-              if (inVolumeInfo.extensionId === chrome.runtime.id &&
+              // For extension based providers, provider id is the same as
+              // extension id.
+              if (inVolumeInfo.providerId === chrome.runtime.id &&
                   inVolumeInfo.fileSystemId === fileSystemId) {
                 volumeInfo = inVolumeInfo;
               }
@@ -98,7 +100,9 @@ chrome.test.runTests([
           chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
             var volumeInfo;
             volumeList.forEach(function(inVolumeInfo) {
-              if (inVolumeInfo.extensionId === chrome.runtime.id &&
+              // For extension based providers, provider id is the same as
+              // extension id.
+              if (inVolumeInfo.providerId === chrome.runtime.id &&
                   inVolumeInfo.fileSystemId === fileSystemId) {
                 volumeInfo = inVolumeInfo;
               }
@@ -150,7 +154,7 @@ chrome.test.runTests([
     chrome.fileManagerPrivate.getProviders(
         chrome.test.callbackPass(function(providers) {
           chrome.test.assertEq(providers.length, 1);
-          chrome.test.assertEq(chrome.runtime.id, providers[0].extensionId);
+          chrome.test.assertEq(chrome.runtime.id, providers[0].providerId);
           chrome.test.assertEq(
               chrome.runtime.getManifest().name, providers[0].name);
           chrome.test.assertFalse(providers[0].configurable);
