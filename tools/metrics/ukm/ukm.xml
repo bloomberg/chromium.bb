@@ -2335,6 +2335,18 @@ be describing additional metrics about the same event.
       Duration of activity in seconds up to last activity.
     </summary>
   </metric>
+  <metric name="ScreenDimDelay">
+    <summary>
+      Delay after which the screen will be dimmed in seconds.
+    </summary>
+  </metric>
+  <metric name="ScreenDimToOffDelay">
+    <summary>
+      Delay after which the screen will be turned off in seconds, as measured
+      from screen is dimmed. If dim is diabled, it is the delay from the start
+      of inactivity.
+    </summary>
+  </metric>
   <metric name="TimeSinceLastKey">
     <summary>
       Time from last key event in seconds.

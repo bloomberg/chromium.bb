@@ -120,6 +120,14 @@ class UserActivityLoggerTest : public testing::Test {
 
   void ReportIdleSleep() { fake_power_manager_client_.SendSuspendDone(); }
 
+  void ReportInactivityDelays(const base::TimeDelta& screen_dim_delay,
+                              const base::TimeDelta& screen_off_delay) {
+    power_manager::PowerManagementPolicy::Delays proto;
+    proto.set_screen_dim_ms(screen_dim_delay.InMilliseconds());
+    proto.set_screen_off_ms(screen_off_delay.InMilliseconds());
+    fake_power_manager_client_.SetInactivityDelays(proto);
+  }
+
   const scoped_refptr<base::TestMockTimeTaskRunner>& GetTaskRunner() {
     return task_runner_;
   }
@@ -387,6 +395,51 @@ TEST_F(UserActivityLoggerTest, UpdateOpenTabsURLsCalledTimes) {
   ReportIdleEvent({});
   ReportUserActivity(nullptr);
   EXPECT_EQ(2, delegate_.num_update_open_tabs_urls_calls());
+}
+
+TEST_F(UserActivityLoggerTest, DimAndOffDelays) {
+  ReportInactivityDelays(
+      base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
+      base::TimeDelta::FromMilliseconds(3000) /* screen_off_delay */);
+  ReportIdleEvent({});
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_EQ(2, features.on_to_dim_sec());
+  EXPECT_EQ(1, features.dim_to_screen_off_sec());
+}
+
+TEST_F(UserActivityLoggerTest, DimDelays) {
+  ReportInactivityDelays(
+      base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
+      base::TimeDelta() /* screen_off_delay */);
+  ReportIdleEvent({});
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_EQ(2, features.on_to_dim_sec());
+  EXPECT_TRUE(!features.has_dim_to_screen_off_sec());
+}
+
+TEST_F(UserActivityLoggerTest, OffDelays) {
+  ReportInactivityDelays(
+      base::TimeDelta() /* screen_dim_delay */,
+      base::TimeDelta::FromMilliseconds(4000) /* screen_off_delay */);
+  ReportIdleEvent({});
+  ReportUserActivity(nullptr);
+
+  const auto& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  const UserActivityEvent::Features& features = events[0].features();
+  EXPECT_EQ(4, features.dim_to_screen_off_sec());
+  EXPECT_TRUE(!features.has_on_to_dim_sec());
 }
 
 }  // namespace ml

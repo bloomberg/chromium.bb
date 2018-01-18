@@ -38,6 +38,8 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
     event->set_log_duration_sec(395);
     UserActivityEvent::Features* features =
         user_activity_event_.mutable_features();
+    features->set_on_to_dim_sec(100);
+    features->set_dim_to_screen_off_sec(200);
     features->set_last_activity_time_sec(7300);
     features->set_last_user_activity_time_sec(3800);
     features->set_last_activity_day(UserActivityEvent::Features::MON);
@@ -115,6 +117,8 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
       {UserActivity::kEventTypeName, 1},    // REACTIVATE
       {UserActivity::kEventReasonName, 1},  // USER_ACTIVITY
       {UserActivity::kEventLogDurationName, 380},
+      {UserActivity::kScreenDimDelayName, 100},
+      {UserActivity::kScreenDimToOffDelayName, 200},
       {UserActivity::kLastActivityTimeName, 2},
       {UserActivity::kLastUserActivityTimeName, 1},
       {UserActivity::kLastActivityDayName, 1},  // MON
