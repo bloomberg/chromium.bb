@@ -3,12 +3,54 @@
 // found in the LICENSE file.
 
 #include "components/assist_ranker/ranker_example_util.h"
+#include "base/bit_cast.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/stringprintf.h"
 
 namespace assist_ranker {
+namespace {
+const uint64_t MASK32Bits = (1LL << 32) - 1;
+constexpr int kFloatMainDigits = 23;
+// Returns lower 32 bits of the hash of the input.
+int32_t StringToIntBits(const std::string& str) {
+  return base::HashMetricName(str) & MASK32Bits;
+}
+
+// Converts float to int32
+int32_t FloatToIntBits(float f) {
+  if (std::numeric_limits<float>::is_iec559) {
+    // Directly bit_cast if float follows ieee754 standard.
+    return bit_cast<int32_t>(f);
+  } else {
+    // Otherwise, manually calculate sign, exp and mantissa.
+    // For sign.
+    const uint32_t sign = f < 0;
+
+    // For exponent.
+    int exp;
+    f = std::abs(std::frexp(f, &exp));
+    // Add 126 to get non-negative format of exp.
+    // This should not be 127 because the return of frexp is different from
+    // ieee754 with a multiple of 2.
+    const uint32_t exp_u = exp + 126;
+
+    // Get mantissa.
+    const uint32_t mantissa = std::ldexp(f * 2.0f - 1.0f, kFloatMainDigits);
+    // Set each bits and return.
+    return (sign << 31) | (exp_u << kFloatMainDigits) | mantissa;
+  }
+}
+
+// Pair type, value and index into one int64.
+int64_t PairInt(const uint64_t type,
+                const uint32_t value,
+                const uint64_t index) {
+  return (type << 56) | (index << 32) | static_cast<uint64_t>(value);
+}
+
+}  // namespace
 
 bool SafeGetFeature(const std::string& key,
                     const RankerExample& example,
@@ -45,25 +87,41 @@ bool GetFeatureValueAsFloat(const std::string& key,
   return true;
 }
 
-bool FeatureToInt(const Feature& feature, int* int_value) {
-  switch (feature.feature_type_case()) {
+bool FeatureToInt64(const Feature& feature,
+                    int64_t* const res,
+                    const int index) {
+  int32_t value = -1;
+  int32_t type = feature.feature_type_case();
+  switch (type) {
     case Feature::kBoolValue:
-      *int_value = static_cast<int>(feature.bool_value());
-      return true;
-    case Feature::kInt32Value:
-      *int_value = feature.int32_value();
-      return true;
+      value = static_cast<int32_t>(feature.bool_value());
+      break;
     case Feature::kFloatValue:
-      // TODO(crbug.com/794187): Implement this.
-      return false;
+      value = FloatToIntBits(feature.float_value());
+      break;
+    case Feature::kInt32Value:
+      value = feature.int32_value();
+      break;
     case Feature::kStringValue:
-      // TODO(crbug.com/794187): Implement this.
-      return false;
+      value = StringToIntBits(feature.string_value());
+      break;
+    case Feature::kStringList:
+      if (index >= 0 && index < feature.string_list().string_value_size()) {
+        value = StringToIntBits(feature.string_list().string_value(index));
+      } else {
+        DVLOG(3) << "Invalid index for string list: " << index;
+        NOTREACHED();
+        return false;
+      }
+      break;
     default:
+      DVLOG(3) << "Feature type is supported for logging: " << type;
       NOTREACHED();
       return false;
   }
-}
+  *res = PairInt(type, value, index);
+  return true;
+  }
 
 bool GetOneHotValue(const std::string& key,
                     const RankerExample& example,
