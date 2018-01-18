@@ -808,6 +808,10 @@ public class VrShellDelegate
         return true;
     }
 
+    private boolean isVrBrowsingEnabled() {
+        return isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity);
+    }
+
     private void enterVr(final boolean tentativeWebVrMode) {
         // We can't enter VR before the application resumes, or we encounter bizarre crashes
         // related to gpu surfaces.
@@ -836,10 +840,8 @@ public class VrShellDelegate
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
-        boolean browsingDisabled =
-                !isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity);
         mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
-                mActivity instanceof CustomTabActivity, browsingDisabled);
+                mActivity instanceof CustomTabActivity, !isVrBrowsingEnabled());
         mVrShell.setWebVrModeEnabled(webVrMode, false);
 
         // We're entering VR, but not in WebVr mode.
@@ -1102,7 +1104,7 @@ public class VrShellDelegate
         mRequestedWebVr = true;
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
-                mVrShell.setWebVrModeEnabled(true, !mAutopresentWebVr);
+                mVrShell.setWebVrModeEnabled(true, !mAutopresentWebVr && isVrBrowsingEnabled());
                 maybeSetPresentResult(true, true);
                 break;
             case ENTER_VR_CANCELLED:
