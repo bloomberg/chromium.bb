@@ -347,6 +347,8 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
 
   if (IsHTMLSummaryElement(*GetNode())) {
     ContainerNode* parent = FlatTreeTraversal::Parent(*GetNode());
+    if (parent && IsHTMLSlotElement(parent))
+      parent = FlatTreeTraversal::Parent(*parent);
     if (parent && IsHTMLDetailsElement(parent))
       return kDisclosureTriangleRole;
     return kUnknownRole;
