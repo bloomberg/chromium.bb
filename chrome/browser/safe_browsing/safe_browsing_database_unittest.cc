@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sha1.h"
@@ -85,7 +84,7 @@ std::unique_ptr<SBChunkData> BuildChunk(
     raw_data->add_add_numbers(add_chunk_numbers[i]);
   }
 
-  return base::MakeUnique<SBChunkData>(std::move(raw_data));
+  return std::make_unique<SBChunkData>(std::move(raw_data));
 }
 
 // Create add chunk with a single prefix.

@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -210,7 +209,7 @@ void ChromeCleanerControllerDelegate::ResetTaggedProfiles(
   if (PostCleanupSettingsResetter::IsEnabled()) {
     PostCleanupSettingsResetter().ResetTaggedProfiles(
         std::move(profiles), std::move(continuation),
-        base::MakeUnique<PostCleanupSettingsResetter::Delegate>());
+        std::make_unique<PostCleanupSettingsResetter::Delegate>());
   }
 }
 
@@ -472,7 +471,7 @@ void ChromeCleanerControllerImpl::Scan(
 
   DCHECK(!reporter_invocation_);
   reporter_invocation_ =
-      base::MakeUnique<SwReporterInvocation>(reporter_invocation);
+      std::make_unique<SwReporterInvocation>(reporter_invocation);
 
   const std::string& reporter_engine =
       reporter_invocation_->command_line().GetSwitchValueASCII(
@@ -548,7 +547,7 @@ void ChromeCleanerControllerImpl::Reboot() {
 }
 
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
-    : real_delegate_(base::MakeUnique<ChromeCleanerControllerDelegate>()),
+    : real_delegate_(std::make_unique<ChromeCleanerControllerDelegate>()),
       delegate_(real_delegate_.get()),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

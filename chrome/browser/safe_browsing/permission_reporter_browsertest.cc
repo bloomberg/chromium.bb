@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   // Set up mock permission manager and prompt factory.
   PermissionRequestManager* manager = GetPermissionRequestManager(browser);
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
-      base::MakeUnique<MockPermissionPromptFactory>(manager);
+      std::make_unique<MockPermissionPromptFactory>(manager);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -136,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   // Set up mock permission manager and prompt factory.
   PermissionRequestManager* manager = GetPermissionRequestManager(browser);
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
-      base::MakeUnique<MockPermissionPromptFactory>(manager);
+      std::make_unique<MockPermissionPromptFactory>(manager);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(

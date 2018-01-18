@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/ping_manager.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/safe_browsing/notification_image_reporter.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
@@ -31,9 +33,9 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     const SafeBrowsingProtocolConfig& config)
     : BasePingManager(request_context_getter, config) {
   if (request_context_getter) {
-    permission_reporter_ = base::MakeUnique<PermissionReporter>(
+    permission_reporter_ = std::make_unique<PermissionReporter>(
         request_context_getter->GetURLRequestContext());
-    notification_image_reporter_ = base::MakeUnique<NotificationImageReporter>(
+    notification_image_reporter_ = std::make_unique<NotificationImageReporter>(
         request_context_getter->GetURLRequestContext());
   }
 }

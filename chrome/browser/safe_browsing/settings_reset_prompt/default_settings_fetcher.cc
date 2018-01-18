@@ -9,7 +9,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -70,7 +69,7 @@ void DefaultSettingsFetcher::Start() {
   // For non Google Chrome builds and cases with an empty |brandcode|, we create
   // a default-constructed |BrandcodedDefaultSettings| object and post the
   // callback immediately.
-  PostCallbackAndDeleteSelf(base::MakeUnique<BrandcodedDefaultSettings>());
+  PostCallbackAndDeleteSelf(std::make_unique<BrandcodedDefaultSettings>());
 }
 
 void DefaultSettingsFetcher::OnSettingsFetched() {

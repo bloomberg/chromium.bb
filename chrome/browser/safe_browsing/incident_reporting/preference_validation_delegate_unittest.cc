@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
@@ -130,7 +129,7 @@ class PreferenceValidationDelegateValues
     using base::Value;
     switch (value_type) {
       case Value::Type::NONE:
-        return base::MakeUnique<base::Value>();
+        return std::make_unique<base::Value>();
       case Value::Type::BOOLEAN:
         return std::unique_ptr<Value>(new base::Value(false));
       case Value::Type::INTEGER:
@@ -213,7 +212,7 @@ class PreferenceValidationDelegateNoIncident
 
 TEST_P(PreferenceValidationDelegateNoIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath, base::MakeUnique<base::Value>(), value_state_,
+      kPrefPath, std::make_unique<base::Value>(), value_state_,
       external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
@@ -256,7 +255,7 @@ class PreferenceValidationDelegateWithIncident
 
 TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath, base::MakeUnique<base::Value>(), value_state_,
+      kPrefPath, std::make_unique<base::Value>(), value_state_,
       external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(

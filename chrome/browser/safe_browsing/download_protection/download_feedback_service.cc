@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
@@ -56,7 +55,7 @@ void DownloadFeedbackPings::CreateForDownload(
     content::DownloadItem* download,
     const std::string& ping_request,
     const std::string& ping_response) {
-  download->SetUserData(kPingKey, base::MakeUnique<DownloadFeedbackPings>(
+  download->SetUserData(kPingKey, std::make_unique<DownloadFeedbackPings>(
                                       ping_request, ping_response));
 }
 

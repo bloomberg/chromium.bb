@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -488,7 +487,7 @@ void SafeBrowsingService::Observe(int type,
 void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   DCHECK(prefs_map_.find(pref_service) == prefs_map_.end());
   std::unique_ptr<PrefChangeRegistrar> registrar =
-      base::MakeUnique<PrefChangeRegistrar>();
+      std::make_unique<PrefChangeRegistrar>();
   registrar->Init(pref_service);
   registrar->Add(
       prefs::kSafeBrowsingEnabled,
@@ -588,6 +587,6 @@ void SafeBrowsingService::ProcessResourceRequest(
 
 void SafeBrowsingService::CreateTriggerManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trigger_manager_ = base::MakeUnique<TriggerManager>(ui_manager_.get());
+  trigger_manager_ = std::make_unique<TriggerManager>(ui_manager_.get());
 }
 }  // namespace safe_browsing

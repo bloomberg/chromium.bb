@@ -152,7 +152,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
   if (!base::StartsWith(request.relative_url, kNeverCompletesPath,
                         base::CompareCase::SENSITIVE))
     return nullptr;
-  return base::MakeUnique<NeverCompletingHttpResponse>();
+  return std::make_unique<NeverCompletingHttpResponse>();
 }
 
 // This is not a proper WebSocket server. It does the minimum necessary to make
@@ -194,7 +194,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleWebSocketRequests(
   if (request.relative_url != kMalwareWebSocketPath)
     return nullptr;
 
-  return base::MakeUnique<QuasiWebSocketHttpResponse>(request);
+  return std::make_unique<QuasiWebSocketHttpResponse>(request);
 }
 
 enum class ContextType { kWindow, kWorker, kSharedWorker, kServiceWorker };
@@ -938,7 +938,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrameInApp) {
-  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   GURL url = embedded_test_server()->GetURL(kEmptyPage);
@@ -1982,7 +1982,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
         base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    sb_factory_ = base::MakeUnique<TestSafeBrowsingServiceFactory>();
+    sb_factory_ = std::make_unique<TestSafeBrowsingServiceFactory>();
     SetProtocolConfigURLPrefix(
         embedded_test_server()->GetURL("/testpath").spec(), sb_factory_.get());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
@@ -2130,7 +2130,7 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
   V4SafeBrowsingServiceTest() : SafeBrowsingServiceTest() {}
 
   void SetUp() override {
-    sb_factory_ = base::MakeUnique<TestSafeBrowsingServiceFactory>(
+    sb_factory_ = std::make_unique<TestSafeBrowsingServiceFactory>(
         V4FeatureList::V4UsageStatus::V4_ONLY);
     sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());

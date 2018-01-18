@@ -238,7 +238,7 @@ void DownloadProtectionService::SetDownloadPingToken(
     const std::string& token) {
   if (item) {
     item->SetUserData(kDownloadPingTokenKey,
-                      base::MakeUnique<DownloadPingToken>(token));
+                      std::make_unique<DownloadPingToken>(token));
   }
 }
 
@@ -364,7 +364,7 @@ DownloadProtectionService::IdentifyReferrerChain(
     return nullptr;
 
   std::unique_ptr<ReferrerChain> referrer_chain =
-      base::MakeUnique<ReferrerChain>();
+      std::make_unique<ReferrerChain>();
   content::WebContents* web_contents = item.GetWebContents();
   int download_tab_id = SessionTabHelper::IdForTab(web_contents);
   UMA_HISTOGRAM_BOOLEAN(

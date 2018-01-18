@@ -367,7 +367,7 @@ IncidentReportingService::~IncidentReportingService() {
 
 std::unique_ptr<IncidentReceiver>
 IncidentReportingService::GetIncidentReceiver() {
-  return base::MakeUnique<Receiver>(receiver_weak_ptr_factory_.GetWeakPtr());
+  return std::make_unique<Receiver>(receiver_weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
@@ -376,7 +376,7 @@ IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
 
   if (profile->IsOffTheRecord())
     return std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>();
-  return base::MakeUnique<PreferenceValidationDelegate>(profile,
+  return std::make_unique<PreferenceValidationDelegate>(profile,
                                                         GetIncidentReceiver());
 }
 
@@ -522,7 +522,7 @@ IncidentReportingService::ProfileContext*
 IncidentReportingService::GetOrCreateProfileContext(Profile* profile) {
   std::unique_ptr<ProfileContext>& context = profiles_[profile];
   if (!context)
-    context = base::MakeUnique<ProfileContext>();
+    context = std::make_unique<ProfileContext>();
   return context.get();
 }
 

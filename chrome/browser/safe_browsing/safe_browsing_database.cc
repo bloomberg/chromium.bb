@@ -268,7 +268,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_extension_blacklist,
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list) override {
-    return base::MakeUnique<SafeBrowsingDatabaseNew>(
+    return std::make_unique<SafeBrowsingDatabaseNew>(
         db_task_runner, CreateStore(true, db_task_runner),  // browse_store
         CreateStore(enable_download_protection, db_task_runner),
         CreateStore(enable_client_side_whitelist, db_task_runner),

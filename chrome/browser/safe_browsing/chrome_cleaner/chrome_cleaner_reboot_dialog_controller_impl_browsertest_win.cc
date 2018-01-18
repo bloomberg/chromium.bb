@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -80,7 +79,7 @@ class ChromeCleanerRebootFlowTest
     EXPECT_CALL(mock_cleaner_controller_, state())
         .WillRepeatedly(
             Return(ChromeCleanerController::State::kRebootRequired));
-    mock_prompt_delegate_ = base::MakeUnique<StrictMock<MockPromptDelegate>>();
+    mock_prompt_delegate_ = std::make_unique<StrictMock<MockPromptDelegate>>();
   }
 
   void SetUpOnMainThread() override {
@@ -89,7 +88,7 @@ class ChromeCleanerRebootFlowTest
             ? chrome::GetSettingsUrl(chrome::kCleanupSubPage)
             : chrome::GetSettingsUrl("");
 
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   void OpenPage(const GURL& gurl, Browser* browser) {
@@ -178,7 +177,7 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerRebootFlowTest,
 
 IN_PROC_BROWSER_TEST_P(ChromeCleanerRebootFlowTest,
                        OnRebootRequired_SettingsPageActiveWhenBrowserIsOpened) {
-  auto keep_alive = base::MakeUnique<ScopedKeepAlive>(
+  auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
 
   SetExpectationsWhenSettingsPageIsActive();
@@ -209,7 +208,7 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerRebootFlowTest,
 IN_PROC_BROWSER_TEST_P(
     ChromeCleanerRebootFlowTest,
     OnRebootRequired_SettingsPageNotActiveWhenBrowserIsOpened) {
-  auto keep_alive = base::MakeUnique<ScopedKeepAlive>(
+  auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
 
   SetExpectationsWhenSettingsPageIsNotActive();
@@ -253,7 +252,7 @@ class ChromeCleanerRebootDialogResponseTest : public InProcessBrowserTest {
 
   ChromeCleanerRebootDialogControllerImpl* dialog_controller() {
     auto mock_prompt_delegate =
-        base::MakeUnique<StrictMock<MockPromptDelegate>>();
+        std::make_unique<StrictMock<MockPromptDelegate>>();
     EXPECT_CALL(*mock_prompt_delegate, ShowChromeCleanerRebootPrompt(_, _))
         .Times(1);
     return ChromeCleanerRebootDialogControllerImpl::Create(

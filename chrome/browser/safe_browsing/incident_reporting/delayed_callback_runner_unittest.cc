@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,7 +69,7 @@ class DelayedCallbackRunnerTest : public testing::Test {
   // on behalf of the given callback name.
   std::unique_ptr<CallbackArgument> MakeCallbackArgument(
       const std::string& name) {
-    return base::MakeUnique<CallbackArgument>(base::Bind(
+    return std::make_unique<CallbackArgument>(base::Bind(
         &DelayedCallbackRunnerTest::OnDelete, base::Unretained(this), name));
   }
 

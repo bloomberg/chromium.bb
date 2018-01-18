@@ -350,7 +350,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckDownloadUrl(
   // We need to check the database for url prefix, and later may fetch the url
   // from the safebrowsing backends. These need to be asynchronous.
   std::unique_ptr<SafeBrowsingCheck> check =
-      base::MakeUnique<SafeBrowsingCheck>(
+      std::make_unique<SafeBrowsingCheck>(
           url_chain, std::vector<SBFullHash>(), client, BINURL,
           CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_BINARY_MALWARE}));
   std::vector<SBPrefix> prefixes;
@@ -378,7 +378,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckExtensionIDs(
     prefixes.push_back(hash.prefix);
 
   std::unique_ptr<SafeBrowsingCheck> check =
-      base::MakeUnique<SafeBrowsingCheck>(
+      std::make_unique<SafeBrowsingCheck>(
           std::vector<GURL>(), extension_id_hashes, client, EXTENSIONBLACKLIST,
           CreateSBThreatTypeSet({SB_THREAT_TYPE_EXTENSION}));
   StartSafeBrowsingCheck(

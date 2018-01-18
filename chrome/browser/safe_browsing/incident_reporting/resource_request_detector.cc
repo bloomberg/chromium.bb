@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_incident.h"
@@ -182,7 +181,7 @@ void ResourceRequestDetector::ReportIncidentOnUIThread(
 
     incident_receiver_->AddIncidentForProfile(
         profile,
-        base::MakeUnique<ResourceRequestIncident>(std::move(incident_data)));
+        std::make_unique<ResourceRequestIncident>(std::move(incident_data)));
   }
 }
 

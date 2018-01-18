@@ -4,7 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -81,7 +82,7 @@ void SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
     web_contents->SetUserData(
         kWebContentsUserDataKey,
-        base::MakeUnique<SafeBrowsingNavigationObserver>(
+        std::make_unique<SafeBrowsingNavigationObserver>(
             web_contents, g_browser_process->safe_browsing_service()
                               ->navigation_observer_manager()));
   }
@@ -114,7 +115,7 @@ SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 void SafeBrowsingNavigationObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   std::unique_ptr<NavigationEvent> nav_event =
-      base::MakeUnique<NavigationEvent>();
+      std::make_unique<NavigationEvent>();
   auto it = navigation_handle_map_.find(navigation_handle);
   // It is possible to see multiple DidStartNavigation(..) with the same
   // navigation_handle (e.g. cross-process transfer). If that's the case,

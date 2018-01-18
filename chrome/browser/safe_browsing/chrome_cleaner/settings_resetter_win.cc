@@ -211,7 +211,7 @@ bool PostCleanupSettingsResetter::IsEnabled() {
 
 std::unique_ptr<ProfileResetter>
 PostCleanupSettingsResetter::Delegate::GetProfileResetter(Profile* profile) {
-  return base::MakeUnique<ProfileResetter>(profile);
+  return std::make_unique<ProfileResetter>(profile);
 }
 
 void PostCleanupSettingsResetter::TagForResetting(Profile* profile) {

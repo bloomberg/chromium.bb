@@ -4,10 +4,10 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/extension_data_collection.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -100,10 +100,10 @@ void ExtensionTestingProfile::AddExtension(std::string extension_id,
 
   extension_prefs_->UpdateExtensionPref(
       extension_id, "install_time",
-      base::MakeUnique<base::Value>(
+      std::make_unique<base::Value>(
           base::Int64ToString(install_time.ToInternalValue())));
   extension_prefs_->UpdateExtensionPref(
-      extension_id, "state", base::MakeUnique<base::Value>(state_value));
+      extension_id, "state", std::make_unique<base::Value>(state_value));
 }
 
 void ExtensionTestingProfile::SetInstallSignature(
@@ -175,7 +175,7 @@ class ExtensionDataCollectionTest : public testing::Test {
         std::string(),                    // supervised_user_id
         TestingProfile::TestingFactories());
 
-    return base::MakeUnique<ExtensionTestingProfile>(profile);
+    return std::make_unique<ExtensionTestingProfile>(profile);
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
