@@ -41,6 +41,7 @@ class CORE_EXPORT PerformanceObserver final
 
   void observe(const PerformanceObserverInit&, ExceptionState&);
   void disconnect();
+  PerformanceEntryVector takeRecords();
   void EnqueuePerformanceEntry(PerformanceEntry&);
   PerformanceEntryTypeMask FilterOptions() const { return filter_options_; }
 
