@@ -39,8 +39,8 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
   ChildProcessSurfaceManager() {}
   ~ChildProcessSurfaceManager() override {}
 
-  // |service impl| is the instance of
-  // org.chromium.content.app.ChildProcessServiceImpl.
+  // |service_impl| is the instance of
+  // org.chromium.content.app.ChildProcessService.
   void SetServiceImpl(const base::android::JavaRef<jobject>& service_impl) {
     service_impl_.Reset(service_impl);
   }
@@ -88,7 +88,7 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChildProcessSurfaceManager>;
-  // The instance of org.chromium.content.app.ChildProcessServiceImpl.
+  // The instance of org.chromium.content.app.ChildProcessService.
   base::android::ScopedJavaGlobalRef<jobject> service_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSurfaceManager);

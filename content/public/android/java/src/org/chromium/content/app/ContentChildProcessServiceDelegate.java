@@ -252,7 +252,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     /**
      * Initializes the native parts of the service.
      *
-     * @param serviceImpl This ChildProcessServiceImpl object.
+     * @param serviceImpl This ChildProcessService object.
      * @param cpuCount The number of CPUs.
      * @param cpuFeatures The CPU features.
      */

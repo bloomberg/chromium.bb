@@ -6,27 +6,8 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "components/variations/variations_associated_data.h"
-#include "jni/ChromeWebApkHost_jni.h"
-
-namespace {
-
-// Variations flag to enable launching Chrome renderer in WebAPK process.
-const char* kLaunchRendererInWebApkProcess =
-    "launch_renderer_in_webapk_process";
-
-}  // anonymous namespace
 
 // static
 bool ChromeWebApkHost::CanInstallWebApk() {
   return base::FeatureList::IsEnabled(chrome::android::kImprovedA2HS);
-}
-
-// static
-jboolean JNI_ChromeWebApkHost_CanLaunchRendererInWebApkProcess(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
-  return variations::GetVariationParamValueByFeature(
-             chrome::android::kImprovedA2HS, kLaunchRendererInWebApkProcess) ==
-         "true";
 }
