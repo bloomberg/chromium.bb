@@ -44,6 +44,7 @@
 #include "platform/Histogram.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "public/platform/modules/indexeddb/WebIDBFactory.h"
@@ -97,7 +98,9 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
   Platform::Current()->IdbFactory()->GetDatabaseNames(
       request->CreateWebCallbacks().release(),
       WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()));
+          ExecutionContext::From(script_state)->GetSecurityOrigin()),
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }
 
@@ -152,7 +155,9 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       name, version, transaction_id, request->CreateWebCallbacks().release(),
       database_callbacks->CreateWebCallbacks().release(),
       WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()));
+          ExecutionContext::From(script_state)->GetSecurityOrigin()),
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }
 
@@ -217,7 +222,9 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
       name, request->CreateWebCallbacks().release(),
       WebSecurityOrigin(
           ExecutionContext::From(script_state)->GetSecurityOrigin()),
-      force_close);
+      force_close,
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kInternalIndexedDB));
   return request;
 }
 

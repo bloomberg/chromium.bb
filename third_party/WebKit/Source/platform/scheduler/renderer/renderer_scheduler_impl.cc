@@ -173,6 +173,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalTest";
     case TaskType::kInternalWebCrypto:
       return "InternalWebCrypto";
+    case TaskType::kInternalIndexedDB:
+      return "InternalIndexedDB";
     case TaskType::kCount:
       return "Count";
   }

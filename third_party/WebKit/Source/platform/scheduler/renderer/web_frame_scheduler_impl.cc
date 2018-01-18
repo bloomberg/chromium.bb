@@ -267,6 +267,7 @@ scoped_refptr<blink::WebTaskRunner> WebFrameSchedulerImpl::GetTaskRunner(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
+    case TaskType::kInternalIndexedDB:
       return WebTaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:

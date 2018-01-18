@@ -67,8 +67,9 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
 }  // namespace
 
 IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
-    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks)
-    : callback_runner_(base::ThreadTaskRunnerHandle::Get()),
+    std::unique_ptr<WebIDBDatabaseCallbacks> callbacks,
+    scoped_refptr<base::SingleThreadTaskRunner> callback_runner)
+    : callback_runner_(std::move(callback_runner)),
       callbacks_(callbacks.release()) {
   IndexedDBDispatcher::ThreadSpecificInstance()
       ->RegisterMojoOwnedDatabaseCallbacks(callbacks_);
