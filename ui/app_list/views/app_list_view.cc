@@ -1276,6 +1276,14 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
     animation_duration = kAppListAnimationDurationMs;
   }
 
+  if (fullscreen_widget_->GetNativeView()->bounds().y() ==
+      GetDisplayNearestView().work_area().bottom()) {
+    // If the animation start position is the bottom of the screen activate the
+    // fade in animation.
+    app_list_main_view_->contents_view()->FadeInOnOpen(
+        base::TimeDelta::FromMilliseconds(animation_duration));
+  }
+
   ui::Layer* layer = fullscreen_widget_->GetLayer();
   layer->SetBounds(target_bounds);
   gfx::Transform transform;
