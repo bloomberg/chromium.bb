@@ -91,7 +91,7 @@ class CORE_EXPORT RenderedPosition {
 
   // Returns whether this position is not visible on the screen (because
   // clipped out).
-  bool IsVisible(bool selection_start);
+  bool IsVisible(bool selection_start) const;
 
  private:
   bool operator==(const RenderedPosition&) const { return false; }

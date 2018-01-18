@@ -2076,16 +2076,12 @@ bool LocalFrameView::ComputeCompositedSelection(
   VisiblePosition visible_start(visible_selection.VisibleStart());
   RenderedPosition rendered_start(visible_start);
   selection.start = rendered_start.PositionInGraphicsLayerBacking(true);
-  // TODO(yoichio): Assign hidden in PositionInGraphicsLayerBacking();
-  selection.start.hidden = !rendered_start.IsVisible(true);
   if (!selection.start.layer)
     return false;
 
   VisiblePosition visible_end(visible_selection.VisibleEnd());
   RenderedPosition rendered_end(visible_end);
   selection.end = rendered_end.PositionInGraphicsLayerBacking(false);
-  // TODO(yoichio): Assign hidden in PositionInGraphicsLayerBacking();
-  selection.end.hidden = !rendered_end.IsVisible(false);
   if (!selection.end.layer)
     return false;
 
