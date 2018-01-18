@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -61,7 +62,9 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       host_frame_sink_manager_(host_frame_sink_manager),
       frame_sink_manager_(frame_sink_manager),
       client_(client),
-      begin_frame_source_(this) {
+      begin_frame_source_(this),
+      enable_surface_synchronization_(
+          features::IsSurfaceSynchronizationEnabled()) {
   DCHECK(view_);
   DCHECK(client_);
 
@@ -192,6 +195,16 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
   registered_parent_compositor_ = nullptr;
 }
 
+void DelegatedFrameHostAndroid::WasResized() {
+  if (enable_surface_synchronization_) {
+    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+
+    // TODO(ericrk): We should handle updating our surface layer with the new
+    // ID. See similar behavior in delegated_frame_host.cc.
+    // https://crbug.com/801350
+  }
+}
+
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
@@ -244,8 +257,13 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
       this, frame_sink_id_, is_root, needs_sync_points);
 }
 
-viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
+const viz::SurfaceId& DelegatedFrameHostAndroid::SurfaceId() const {
   return surface_info_.id();
+}
+
+const viz::LocalSurfaceId& DelegatedFrameHostAndroid::GetLocalSurfaceId()
+    const {
+  return local_surface_id_;
 }
 
 }  // namespace ui

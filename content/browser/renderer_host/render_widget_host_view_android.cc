@@ -571,6 +571,8 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
 }
 
 void RenderWidgetHostViewAndroid::WasResized() {
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasResized();
   host_->WasResized();
 }
 
@@ -2148,6 +2150,12 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
   return touch_selection_controller_client_manager_.get();
+}
+
+viz::LocalSurfaceId RenderWidgetHostViewAndroid::GetLocalSurfaceId() const {
+  if (delegated_frame_host_)
+    return delegated_frame_host_->GetLocalSurfaceId();
+  return viz::LocalSurfaceId();
 }
 
 bool RenderWidgetHostViewAndroid::OnMouseEvent(
