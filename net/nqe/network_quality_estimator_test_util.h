@@ -122,9 +122,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void NotifyRTTAndThroughputEstimatesObserverIfPresent(
       RTTAndThroughputEstimatesObserver* observer) const override;
 
-  void set_start_time_null_http_rtt(const base::TimeDelta& http_rtt) {
-    start_time_null_http_rtt_ = http_rtt;
-  }
+  // Force set the HTTP RTT estimate.
+  void SetStartTimeNullHttpRtt(const base::TimeDelta http_rtt);
 
   void set_recent_http_rtt(const base::TimeDelta& recent_http_rtt) {
     // Callers should not set effective connection type along with the
@@ -138,9 +137,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   bool GetRecentHttpRTT(const base::TimeTicks& start_time,
                         base::TimeDelta* rtt) const override;
 
-  void set_start_time_null_transport_rtt(const base::TimeDelta& transport_rtt) {
-    start_time_null_transport_rtt_ = transport_rtt;
-  }
+  // Force set the transport RTT estimate.
+  void SetStartTimeNullTransportRtt(const base::TimeDelta transport_rtt);
 
   void set_recent_transport_rtt(const base::TimeDelta& recent_transport_rtt) {
     // Callers should not set effective connection type along with the

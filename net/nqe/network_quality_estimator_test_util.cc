@@ -361,4 +361,24 @@ void TestNetworkQualityEstimator::
       observer);
 }
 
+void TestNetworkQualityEstimator::SetStartTimeNullHttpRtt(
+    const base::TimeDelta http_rtt) {
+  start_time_null_http_rtt_ = http_rtt;
+  // Force compute effective connection type so that the new RTT value is
+  // immediately picked up. This ensures that the next call to
+  // GetEffectiveConnectionType() returns the effective connnection type
+  // that was computed based on |http_rtt|.
+  ComputeEffectiveConnectionType();
+}
+
+void TestNetworkQualityEstimator::SetStartTimeNullTransportRtt(
+    const base::TimeDelta transport_rtt) {
+  start_time_null_transport_rtt_ = transport_rtt;
+  // Force compute effective connection type so that the new RTT value is
+  // immediately picked up. This ensures that the next call to
+  // GetEffectiveConnectionType() returns the effective connnection type
+  // that was computed based on |transport_rtt|.
+  ComputeEffectiveConnectionType();
+}
+
 }  // namespace net

@@ -768,22 +768,22 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolTimeoutWithExperiment) {
   // Timeout should be |transport_rtt_multiplier| times the transport RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(7);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(rtt_estimate + rtt_estimate, pool_->ConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(8);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(rtt_estimate + rtt_estimate, pool_->ConnectionTimeout());
 
   // Connection timeout should not exceed |max_timeout|.
   rtt_estimate = base::TimeDelta::FromSeconds(25);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(max_timeout, pool_->ConnectionTimeout());
 
   // Connection timeout should not be less than |min_timeout|.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(min_timeout, pool_->ConnectionTimeout());
 }
 
@@ -802,24 +802,24 @@ TEST_P(HttpProxyClientSocketPoolTest,
   // Timeout should be |transport_rtt_multiplier| times the transport RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(2);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(rtt_estimate + rtt_estimate + rtt_estimate,
             pool_->ConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(7);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(rtt_estimate + rtt_estimate + rtt_estimate,
             pool_->ConnectionTimeout());
 
   // Connection timeout should not exceed |max_timeout|.
   rtt_estimate = base::TimeDelta::FromSeconds(35);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(max_timeout, pool_->ConnectionTimeout());
 
   // Connection timeout should not be less than |min_timeout|.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_EQ(min_timeout, pool_->ConnectionTimeout());
 }
 
@@ -834,24 +834,24 @@ TEST_P(HttpProxyClientSocketPoolTest,
   // Timeout should be |transport_rtt_multiplier| times the transport RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(10);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   // Connection timeout should not be less than the transport RTT estimate.
   EXPECT_LE(rtt_estimate, pool_->ConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(10);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   // Connection timeout should not be less than the transport RTT estimate.
   EXPECT_LE(rtt_estimate, pool_->ConnectionTimeout());
 
   // Set RTT to a very large value.
   rtt_estimate = base::TimeDelta::FromMinutes(60);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_GT(rtt_estimate, pool_->ConnectionTimeout());
 
   // Set RTT to a very small value.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  estimator()->set_start_time_null_transport_rtt(rtt_estimate);
+  estimator()->SetStartTimeNullTransportRtt(rtt_estimate);
   EXPECT_LT(rtt_estimate, pool_->ConnectionTimeout());
 }
 
