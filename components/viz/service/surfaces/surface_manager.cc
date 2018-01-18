@@ -508,8 +508,9 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
 
   const std::vector<LocalSurfaceId>& temp_surfaces = it->second;
   for (const LocalSurfaceId& local_surface_id : base::Reversed(temp_surfaces)) {
-    // The in-flight surface cannot be newer than the primary surface ID.
-    if (local_surface_id.parent_sequence_number() >
+    // The in-flight surface must be older than the primary surface ID.
+    if (local_surface_id == primary_surface_id.local_surface_id() ||
+        local_surface_id.parent_sequence_number() >
             primary_surface_id.local_surface_id().parent_sequence_number() ||
         local_surface_id.child_sequence_number() >
             primary_surface_id.local_surface_id().child_sequence_number()) {
