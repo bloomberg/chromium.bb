@@ -99,3 +99,4 @@ and cc the people listed in OWNERS; they'll be on the hook to rebuild and
 re-enable the test.
 
 CLANG_REVISION = '321529'
+LASTCHANGE=bfcea61717d615f8d021c0da2d7ad7dc0589a0b1-refs/heads/master@{#530086}

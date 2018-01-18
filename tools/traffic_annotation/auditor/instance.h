@@ -70,7 +70,8 @@ class AnnotationInstance : public InstanceBase {
       int second_id_hash_code,
       int content_hash_code,
       const std::set<int>& semantics_fields,
-      const std::set<int>& policy_fields);
+      const std::set<int>& policy_fields,
+      const std::string& file_path);
 
   // Checks if an annotation has all required fields.
   AuditorResult IsComplete() const;

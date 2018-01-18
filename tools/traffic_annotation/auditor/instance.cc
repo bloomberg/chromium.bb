@@ -504,12 +504,14 @@ AnnotationInstance AnnotationInstance::LoadFromArchive(
     int second_id_hash_code,
     int content_hash_code,
     const std::set<int>& semantics_fields,
-    const std::set<int>& policy_fields) {
+    const std::set<int>& policy_fields,
+    const std::string& file_path) {
   AnnotationInstance annotation;
 
   annotation.is_loaded_from_archive = true;
   annotation.type = type;
   annotation.proto.set_unique_id(unique_id);
+  annotation.proto.mutable_source()->set_file(file_path);
   annotation.unique_id_hash_code = unique_id_hash_code;
 
   if (annotation.NeedsTwoIDs()) {
