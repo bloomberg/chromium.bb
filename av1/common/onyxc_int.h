@@ -755,7 +755,7 @@ static INLINE int av1_num_planes(const AV1_COMMON *cm) {
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tran_low_t *dqcoeff) {
-  for (int i = 0; i < av1_num_planes(cm); ++i) {
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
