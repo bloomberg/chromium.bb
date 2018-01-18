@@ -117,6 +117,10 @@ wheel: <
   version: "version:1.10.0"
 >
 wheel: <
-  name: "infra/python/wheels/tlslite-py2_py3"
-  version: "version:0.4.9"
+  name: "infra/python/wheels/pyftpdlib-py2_py3"
+  version: "version:0.7.0"
+>
+wheel: <
+  name: "infra/python/wheels/simplejson/${vpython_platform}"
+  version: "version:3.13.2"
 >

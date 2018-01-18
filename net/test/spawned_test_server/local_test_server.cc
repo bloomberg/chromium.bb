@@ -167,14 +167,7 @@ bool LocalTestServer::SetPythonPath() const {
   }
   third_party_dir = third_party_dir.AppendASCII("third_party");
 
-  // For simplejson. (simplejson, unlike all the other Python modules
-  // we include, doesn't have an extra 'simplejson' directory, so we
-  // need to include its parent directory, i.e. third_party_dir).
-  AppendToPythonPath(third_party_dir);
-
   AppendToPythonPath(third_party_dir.AppendASCII("tlslite"));
-  AppendToPythonPath(
-      third_party_dir.AppendASCII("pyftpdlib").AppendASCII("src"));
   AppendToPythonPath(
       third_party_dir.AppendASCII("pywebsocket").AppendASCII("src"));
 
