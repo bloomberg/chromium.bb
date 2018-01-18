@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -1348,7 +1349,11 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
   UIResourceId test_id1_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
+// http://crbug.com/803532 : Flaky on Win 7 (dbg).
+#if defined(NDEBUG) || defined(OS_WIN)
+SINGLE_THREAD_TEST_F(UIResourceLostBeforeCommit);
+#endif
+MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
 
 // Losing UI resource before the pending trees is activated but after the
 // commit.  Impl-side-painting only.
