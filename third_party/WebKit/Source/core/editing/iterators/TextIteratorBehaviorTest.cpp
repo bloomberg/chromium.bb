@@ -98,6 +98,10 @@ TEST(TextIteratorBehaviorTest, Values) {
                   .SetDoesNotEmitSpaceBeyondRangeEnd(true)
                   .Build()
                   .DoesNotEmitSpaceBeyondRangeEnd());
+  EXPECT_TRUE(TextIteratorBehavior::Builder()
+                  .SetSuppressesExtraNewlineEmission(true)
+                  .Build()
+                  .SuppressesExtraNewlineEmission());
 }
 
 }  // namespace blink

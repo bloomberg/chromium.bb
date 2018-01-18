@@ -790,7 +790,8 @@ void TextIteratorAlgorithm<Strategy>::ExitNode() {
   // of how this mismatch will cause problems.
   if (last_text_node_ && ShouldEmitNewlineAfterNode(*node_)) {
     // use extra newline to represent margin bottom, as needed
-    bool add_newline = ShouldEmitExtraNewlineForNode(node_);
+    const bool add_newline = !behavior_.SuppressesExtraNewlineEmission() &&
+                             ShouldEmitExtraNewlineForNode(node_);
 
     // FIXME: We need to emit a '\n' as we leave an empty block(s) that
     // contain a VisiblePosition when doing selection preservation.

@@ -124,6 +124,12 @@ TextIteratorBehavior::Builder::SetSkipsUnselectableContent(bool value) {
   behavior_.values_.bits.skips_unselectable_content = value;
   return *this;
 }
+
+TextIteratorBehavior::Builder&
+TextIteratorBehavior::Builder::SetSuppressesExtraNewlineEmission(bool value) {
+  behavior_.values_.bits.suppresses_newline_emission = value;
+  return *this;
+}
 // -
 TextIteratorBehavior::TextIteratorBehavior(const TextIteratorBehavior& other) =
     default;
