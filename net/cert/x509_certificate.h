@@ -98,6 +98,13 @@ class NET_EXPORT X509Certificate
   static scoped_refptr<X509Certificate> CreateFromDERCertChain(
       const std::vector<base::StringPiece>& der_certs);
 
+  // Create an X509Certificate from a chain of DER encoded certificates with
+  // non-standard parsing options.
+  // Do not use without consulting //net owners.
+  static scoped_refptr<X509Certificate> CreateFromDERCertChainUnsafeOptions(
+      const std::vector<base::StringPiece>& der_certs,
+      UnsafeCreateOptions options);
+
   // Create an X509Certificate from the DER-encoded representation.
   // Returns NULL on failure.
   static scoped_refptr<X509Certificate> CreateFromBytes(const char* data,
@@ -116,6 +123,13 @@ class NET_EXPORT X509Certificate
   // Returns NULL on failure.
   static scoped_refptr<X509Certificate> CreateFromPickle(
       base::PickleIterator* pickle_iter);
+
+  // Create an X509Certificate from the representation stored in the given
+  // pickle with non-standard parsing options.
+  // Do not use without consulting //net owners.
+  static scoped_refptr<X509Certificate> CreateFromPickleUnsafeOptions(
+      base::PickleIterator* pickle_iter,
+      UnsafeCreateOptions options);
 
   // Parses all of the certificates possible from |data|. |format| is a
   // bit-wise OR of Format, indicating the possible formats the

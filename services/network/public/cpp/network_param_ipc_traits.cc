@@ -309,7 +309,13 @@ bool ParamTraits<scoped_refptr<net::X509Certificate>>::Read(
     return false;
   if (!has_object)
     return true;
-  *r = net::X509Certificate::CreateFromPickle(iter);
+  net::X509Certificate::UnsafeCreateOptions options;
+  // Setting the |printable_string_is_utf8| option to be true here is necessary
+  // to round-trip any X509Certificate objects that were parsed with this
+  // option in the first place.
+  // See https://crbug.com/770323 and https://crbug.com/788655.
+  options.printable_string_is_utf8 = true;
+  *r = net::X509Certificate::CreateFromPickleUnsafeOptions(iter, options);
   return !!r->get();
 }
 

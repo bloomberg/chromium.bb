@@ -198,6 +198,14 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromBufferUnsafeOptions(
 // static
 scoped_refptr<X509Certificate> X509Certificate::CreateFromDERCertChain(
     const std::vector<base::StringPiece>& der_certs) {
+  return CreateFromDERCertChainUnsafeOptions(der_certs, {});
+}
+
+// static
+scoped_refptr<X509Certificate>
+X509Certificate::CreateFromDERCertChainUnsafeOptions(
+    const std::vector<base::StringPiece>& der_certs,
+    UnsafeCreateOptions options) {
   TRACE_EVENT0("io", "X509Certificate::CreateFromDERCertChain");
   if (der_certs.empty())
     return nullptr;
@@ -221,7 +229,8 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromDERCertChain(
   if (!handle)
     return nullptr;
 
-  return CreateFromBuffer(std::move(handle), std::move(intermediate_ca_certs));
+  return CreateFromBufferUnsafeOptions(
+      std::move(handle), std::move(intermediate_ca_certs), options);
 }
 
 // static
@@ -249,6 +258,13 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromBytesUnsafeOptions(
 // static
 scoped_refptr<X509Certificate> X509Certificate::CreateFromPickle(
     base::PickleIterator* pickle_iter) {
+  return CreateFromPickleUnsafeOptions(pickle_iter, {});
+}
+
+// static
+scoped_refptr<X509Certificate> X509Certificate::CreateFromPickleUnsafeOptions(
+    base::PickleIterator* pickle_iter,
+    UnsafeCreateOptions options) {
   int chain_length = 0;
   if (!pickle_iter->ReadLength(&chain_length))
     return nullptr;
@@ -261,7 +277,7 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromPickle(
       return nullptr;
     cert_chain.push_back(base::StringPiece(data, data_length));
   }
-  return CreateFromDERCertChain(cert_chain);
+  return CreateFromDERCertChainUnsafeOptions(cert_chain, options);
 }
 
 // static
