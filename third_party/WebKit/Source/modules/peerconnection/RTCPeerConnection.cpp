@@ -58,6 +58,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
@@ -456,6 +457,16 @@ RTCPeerConnection* RTCPeerConnection::Create(
     const RTCConfiguration& rtc_configuration,
     const Dictionary& media_constraints,
     ExceptionState& exception_state) {
+  // Count number of PeerConnections that could potentially be impacted by CSP
+  if (context) {
+    auto& security_context = context->GetSecurityContext();
+    auto content_security_policy = security_context.GetContentSecurityPolicy();
+    if (content_security_policy &&
+        content_security_policy->IsActiveForConnections()) {
+      UseCounter::Count(context, WebFeature::kRTCPeerConnectionWithActiveCsp);
+    }
+  }
+
   if (media_constraints.IsObject()) {
     UseCounter::Count(context,
                       WebFeature::kRTCPeerConnectionConstructorConstraints);

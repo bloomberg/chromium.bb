@@ -1100,6 +1100,14 @@ bool ContentSecurityPolicy::IsActive() const {
   return !policies_.IsEmpty();
 }
 
+bool ContentSecurityPolicy::IsActiveForConnections() const {
+  for (const auto& policy : policies_) {
+    if (policy->IsActiveForConnections())
+      return true;
+  }
+  return false;
+}
+
 const KURL ContentSecurityPolicy::Url() const {
   return execution_context_->Url();
 }
