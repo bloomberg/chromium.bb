@@ -1491,8 +1491,7 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
         starting_rect = VirtualRectForAreaElementAndDirection(*area, type);
       }
     }
-    container = ScrollableEnclosingBoxOrParentFrameForNodeInDirection(
-        type, focused_element);
+    container = ScrollableAreaOrDocumentOf(focused_element);
   }
 
   bool consumed = false;
@@ -1502,8 +1501,8 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
     if (consumed)
       break;
 
-    container =
-        ScrollableEnclosingBoxOrParentFrameForNodeInDirection(type, container);
+    container = ScrollableAreaOrDocumentOf(container);
+
     if (container && container->IsDocumentNode())
       ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
