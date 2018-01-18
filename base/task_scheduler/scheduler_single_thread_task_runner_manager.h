@@ -58,21 +58,19 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   void Start();
 
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a thread
-  // named "TaskSchedulerSingleThread[Shared]" + |name| +
+  // named "TaskSchedulerSingleThread[Shared]" +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +
   // index.
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
-      const std::string& name,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
 
 #if defined(OS_WIN)
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a COM
-  // STA thread named "TaskSchedulerSingleThreadCOMSTA[Shared]" + |name| +
+  // STA thread named "TaskSchedulerSingleThreadCOMSTA[Shared]" +
   // kEnvironmentParams[GetEnvironmentIndexForTraits(traits)].name_suffix +
   // index.
   scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
-      const std::string& name,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
 #endif  // defined(OS_WIN)
@@ -84,7 +82,6 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
 
   template <typename DelegateType>
   scoped_refptr<SchedulerSingleThreadTaskRunner> CreateTaskRunnerWithTraitsImpl(
-      const std::string& name,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode);
 

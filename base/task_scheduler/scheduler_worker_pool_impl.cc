@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/sequence_token.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -153,12 +154,13 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
 };
 
 SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
-    const std::string& name,
+    StringPiece histogram_label,
+    StringPiece pool_label,
     ThreadPriority priority_hint,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : SchedulerWorkerPool(task_tracker, delayed_task_manager),
-      name_(name),
+      pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
       lock_(shared_priority_queue_.container_lock()),
       idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
@@ -166,7 +168,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
                                  WaitableEvent::InitialState::NOT_SIGNALED),
       // Mimics the UMA_HISTOGRAM_LONG_TIMES macro.
       detach_duration_histogram_(Histogram::FactoryTimeGet(
-          kDetachDurationHistogramPrefix + name_ + kPoolNameSuffix,
+          JoinString({kDetachDurationHistogramPrefix, histogram_label,
+                      kPoolNameSuffix},
+                     ""),
           TimeDelta::FromMilliseconds(1),
           TimeDelta::FromHours(1),
           50,
@@ -175,7 +179,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
       // than 1000 tasks before detaching, there is no need to know the exact
       // number of tasks that ran.
       num_tasks_before_detach_histogram_(Histogram::FactoryGet(
-          kNumTasksBeforeDetachHistogramPrefix + name_ + kPoolNameSuffix,
+          JoinString({kNumTasksBeforeDetachHistogramPrefix, histogram_label,
+                      kPoolNameSuffix},
+                     ""),
           1,
           1000,
           50,
@@ -185,12 +191,15 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
       // When it runs more than 100 tasks, there is no need to know the exact
       // number of tasks that ran.
       num_tasks_between_waits_histogram_(Histogram::FactoryGet(
-          kNumTasksBetweenWaitsHistogramPrefix + name_ + kPoolNameSuffix,
+          JoinString({kNumTasksBetweenWaitsHistogramPrefix, histogram_label,
+                      kPoolNameSuffix},
+                     ""),
           1,
           100,
           50,
           HistogramBase::kUmaTargetedHistogramFlag)) {
-  DCHECK(!name_.empty());
+  DCHECK(!histogram_label.empty());
+  DCHECK(!pool_label_.empty());
 }
 
 void SchedulerWorkerPoolImpl::Start(
@@ -368,7 +377,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
   DCHECK_EQ(num_tasks_since_last_wait_, 0U);
 
   PlatformThread::SetName(
-      StringPrintf("TaskScheduler%sWorker", outer_->name_.c_str()));
+      StringPrintf("TaskScheduler%sWorker", outer_->pool_label_.c_str()));
 
   outer_->BindToCurrentThread();
   SetBlockingObserverForCurrentThread(this);
