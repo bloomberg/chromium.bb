@@ -37,9 +37,9 @@ namespace content {
 namespace {
 
 #if defined(ANDROID)
-const base::Feature kProgressBarCompletionResourcesBeforeDOMContentLoaded {
+const base::Feature kProgressBarCompletionResourcesBeforeDOMContentLoaded{
     "progress-bar-completion-resources-before-domContentLoaded",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kSavePreviousDocumentResources{
@@ -120,12 +120,12 @@ ProgressBarCompletion GetProgressBarCompletionPolicy() {
   }
   // The command line, which is set by the user, takes priority. Otherwise,
   // fall back to the feature flag.
-  if (base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           kProgressBarCompletionResourcesBeforeDOMContentLoaded)) {
-    return ProgressBarCompletion::RESOURCES_BEFORE_DCL;
+    return ProgressBarCompletion::LOAD_EVENT;
   }
 #endif
-  return ProgressBarCompletion::LOAD_EVENT;
+  return ProgressBarCompletion::RESOURCES_BEFORE_DCL;
 }
 
 SavePreviousDocumentResources GetSavePreviousDocumentResources() {

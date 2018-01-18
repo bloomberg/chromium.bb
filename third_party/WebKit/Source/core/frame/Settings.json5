@@ -790,7 +790,7 @@
 
     {
       name: "progressBarCompletion",
-      initial: "ProgressBarCompletion::kLoadEvent",
+      initial: "ProgressBarCompletion::kResourcesBeforeDCL",
       type: "ProgressBarCompletion",
     },
 
