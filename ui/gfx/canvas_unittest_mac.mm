@@ -66,7 +66,8 @@ class CanvasTestMac : public testing::Test {
 
  // Tests that Canvas' SizeStringFloat yields result consistent with a native
  // implementation.
- TEST_F(CanvasTestMac, StringSizeIdenticalForSkia) {
+// Disabled for the typesetter migration. http://crbug.com/803354.
+TEST_F(CanvasTestMac, DISABLED_StringSizeIdenticalForSkia) {
   CompareSizes("");
   CompareSizes("Foo");
   CompareSizes("Longword");
