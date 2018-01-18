@@ -3191,13 +3191,14 @@ static void intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_INTRABC
   const int use_intrabc = mbmi->use_intrabc;
 #endif  // CONFIG_INTRABC
-  // Can only activate one mode.
-  assert((mbmi->mode != DC_PRED) + use_palette +
+// Can only activate one mode.
 #if CONFIG_INTRABC
-             use_intrabc +
+  assert(((mbmi->mode != DC_PRED) + use_palette + use_intrabc +
+          use_filter_intra) <= 1);
+#else
+  assert((mbmi->mode != DC_PRED) + use_palette + use_filter_intra <= 1);
 #endif
-             use_filter_intra <=
-         1);
+
   const int try_palette =
       av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
   if (try_palette && mbmi->mode == DC_PRED) {
