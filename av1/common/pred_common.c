@@ -12,9 +12,7 @@
 #include "av1/common/common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
-#if CONFIG_EXT_INTRA
 #include "av1/common/reconintra.h"
-#endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
 
 // Returns a context number for the given MB prediction signal

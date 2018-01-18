@@ -173,7 +173,6 @@ void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y) {
   }
 }
 
-#if CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTRA_MOD2
 const int16_t dr_intra_derivative[90] = {
   // More evenly spread out angles and limited to 10-bit
@@ -219,4 +218,3 @@ const int16_t dr_intra_derivative[90] = {
   54,   49,    45,   40,   35,   31,   26,   22,   17,   13,   8,    4,
 };
 #endif  // CONFIG_EXT_INTRA_MOD2
-#endif  // CONFIG_EXT_INTRA

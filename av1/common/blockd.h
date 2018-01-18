@@ -267,10 +267,8 @@ typedef struct MB_MODE_INFO {
 #if CONFIG_FILTER_INTRA
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
 #endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[2];
-#endif  // CONFIG_EXT_INTRA
 
   // interintra members
   INTERINTRA_MODE interintra_mode;
@@ -855,12 +853,10 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
     return largest_tx_size;
 }
 
-#if CONFIG_EXT_INTRA
 extern const int16_t dr_intra_derivative[90];
 static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
-#endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_FILTER_INTRA
 static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {

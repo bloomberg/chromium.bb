@@ -18,9 +18,7 @@
 #include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
-#if CONFIG_EXT_INTRA
 #include "av1/common/reconintra.h"
-#endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
 #include "av1/common/warped_motion.h"
 
@@ -840,7 +838,6 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
 }
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTRA_MOD
 static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
   const int sym = aom_read_symbol(r, cdf, 2 * MAX_ANGLE_DELTA + 1, ACCT_STR);
@@ -879,7 +876,6 @@ static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
 #endif  // CONFIG_EXT_INTRA_MOD
   }
 }
-#endif  // CONFIG_EXT_INTRA
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
@@ -1152,9 +1148,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
   }
 
-#if CONFIG_EXT_INTRA
   read_intra_angle_info(xd, r);
-#endif  // CONFIG_EXT_INTRA
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
@@ -1468,9 +1462,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   // ext-intra, palette and filter-intra are enabled.
   (void)cm;
 
-#if CONFIG_EXT_INTRA
   read_intra_angle_info(xd, r);
-#endif  // CONFIG_EXT_INTRA
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
@@ -2006,10 +1998,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           read_interintra_mode(xd, r, bsize_group);
       mbmi->ref_frame[1] = INTRA_FRAME;
       mbmi->interintra_mode = interintra_mode;
-#if CONFIG_EXT_INTRA
       mbmi->angle_delta[0] = 0;
       mbmi->angle_delta[1] = 0;
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA

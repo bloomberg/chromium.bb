@@ -35,9 +35,7 @@
 #include "av1/common/odintrin.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
-#if CONFIG_EXT_INTRA
 #include "av1/common/reconintra.h"
-#endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
 
@@ -779,7 +777,6 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_EXT_INTRA
 static void write_intra_angle_info(const MACROBLOCKD *xd,
                                    FRAME_CONTEXT *const ec_ctx, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -809,7 +806,6 @@ static void write_intra_angle_info(const MACROBLOCKD *xd,
 #endif
   }
 }
-#endif  // CONFIG_EXT_INTRA
 
 static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
                                    aom_writer *w) {
@@ -1335,9 +1331,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif
     }
 
-#if CONFIG_EXT_INTRA
     write_intra_angle_info(xd, ec_ctx, w);
-#endif  // CONFIG_EXT_INTRA
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA
@@ -1641,9 +1635,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 #endif
   }
 
-#if CONFIG_EXT_INTRA
   write_intra_angle_info(xd, ec_ctx, w);
-#endif  // CONFIG_EXT_INTRA
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA

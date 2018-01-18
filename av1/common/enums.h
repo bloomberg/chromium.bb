@@ -550,11 +550,9 @@ typedef enum ATTRIBUTE_PACKED {
 #define COEFF_LEVELS 18
 #endif
 
-#if CONFIG_EXT_INTRA
 #define DIRECTIONAL_MODES 8
 #define MAX_ANGLE_DELTA 3
 #define ANGLE_STEP 3
-#endif  // CONFIG_EXT_INTRA
 
 #define INTER_MODES (1 + NEWMV - NEARESTMV)
 

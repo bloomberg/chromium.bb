@@ -239,12 +239,12 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       }
     }
   }
-#if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+#if CONFIG_EXT_INTRA_MOD
   for (i = 0; i < DIRECTIONAL_MODES; ++i) {
     av1_cost_tokens_from_cdf(x->angle_delta_cost[i], fc->angle_delta_cdf[i],
                              NULL);
   }
-#endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+#endif  // CONFIG_EXT_INTRA_MOD
 #if CONFIG_LOOP_RESTORATION
   av1_cost_tokens_from_cdf(x->switchable_restore_cost,
                            fc->switchable_restore_cdf, NULL);
