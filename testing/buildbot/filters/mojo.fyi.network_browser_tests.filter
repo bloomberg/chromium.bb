@@ -180,13 +180,16 @@
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
 
-# crbug.com/776589 Intercepting requests with net::URLRequestFilter.
--ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
+# Need support for blocking cookies via content settings:
+# https://crbug.com/803452.
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
 -ContentSettingsTest.BasicCookies
 -ContentSettingsTest.BasicCookiesHttps
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
+
+# crbug.com/776589 Intercepting requests with net::URLRequestFilter.
+-ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DevToolsSanityTest.TestNetworkPushTime
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingCorrections
