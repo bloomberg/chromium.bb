@@ -65,34 +65,34 @@ const uint8_t kPublicHeaderSequenceNumberShift = 4;
 
 // Masks to determine if the frame type is a special use
 // and for specific special frame types.
-const uint8_t kQuicFrameTypeSpecialMask = 0xE0;  // 0b 11100000
-const uint8_t kQuicFrameTypeStreamMask_Pre40 = 0x80;
-const uint8_t kQuicFrameTypeStreamMask = 0xC0;
-const uint8_t kQuicFrameTypeAckMask_Pre40 = 0x40;
-const uint8_t kQuicFrameTypeAckMask = 0xA0;
+const uint8_t kQuicFrameTypeSpecialMask = 0b11100000;
+const uint8_t kQuicFrameTypeStreamMask_Pre40 = 0b10000000;
+const uint8_t kQuicFrameTypeStreamMask = 0b11000000;
+const uint8_t kQuicFrameTypeAckMask_Pre40 = 0b01000000;
+const uint8_t kQuicFrameTypeAckMask = 0b10100000;
 
 // Stream type format is 11FSSOOD.
 // Stream frame relative shifts and masks for interpreting the stream flags.
 // StreamID may be 1, 2, 3, or 4 bytes.
 const uint8_t kQuicStreamIdShift_Pre40 = 2;
-const uint8_t kQuicStreamIDLengthMask_Pre40 = 0x03;
+const uint8_t kQuicStreamIDLengthMask_Pre40 = 0b00000011;
 const uint8_t kQuicStreamIDLengthShift = 3;
 const uint8_t kQuicStreamIDLengthNumBits = 2;
 
 // Offset may be 0, 2, 4, or 8 bytes.
 const uint8_t kQuicStreamShift_Pre40 = 3;
-const uint8_t kQuicStreamOffsetMask_Pre40 = 0x07;
+const uint8_t kQuicStreamOffsetMask_Pre40 = 0b00000111;
 const uint8_t kQuicStreamOffsetNumBits = 2;
 const uint8_t kQuicStreamOffsetShift = 1;
 
 // Data length may be 0 or 2 bytes.
 const uint8_t kQuicStreamDataLengthShift_Pre40 = 1;
-const uint8_t kQuicStreamDataLengthMask_Pre40 = 0x01;
+const uint8_t kQuicStreamDataLengthMask_Pre40 = 0b00000001;
 const uint8_t kQuicStreamDataLengthShift = 0;
 
 // Fin bit may be set or not.
 const uint8_t kQuicStreamFinShift_Pre40 = 1;
-const uint8_t kQuicStreamFinMask_Pre40 = 0x01;
+const uint8_t kQuicStreamFinMask_Pre40 = 0b00000001;
 const uint8_t kQuicStreamFinShift = 5;
 
 // packet number size shift used in AckFrames.

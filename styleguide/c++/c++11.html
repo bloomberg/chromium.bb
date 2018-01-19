@@ -377,19 +377,27 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
-<td>Number literal separators</td>
-<td><code>float f = 1'000'000.000'1;</code></td>
-<td><code>'</code>s anywhere in int or float literals are ignored</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/exS1aGs1wes/discussion">Discussion thread</a></td>
-</tr>
-
-<tr>
 <td>Aggregate member initialization</td>
 <td><code>struct Point { int x, y, z = 0; };<br>Point p = {2, 3};</code></td>
 <td>Allows classes with default member initializers to be initialized with aggregate initialization, optionally omitting data members with such initializers.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/aggregate_initialization">aggregate initialization</a></td>
 <td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/WMBs3K9OQ_E/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Binary literals</td>
+<td><code>int i = 0b1001;</code></td>
+<td>Allows defining literals in base two.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/zsGhgaKLmIk/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Number literal separators</td>
+<td><code>float f = 1'000'000.000'1;</code></td>
+<td><code>'</code>s anywhere in int or float literals are ignored</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/topic/cxx/exS1aGs1wes/discussion">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -974,15 +982,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/language/attributes">Standard attributes</a></td>
 <td>We don't use deprecation warnings in Chromium; if you want to deprecate
 something, remove all callers and remove the function instead.</td>
-</tr>
-
-<tr>
-<td>Binary literals</td>
-<td><code>int i = 0b1001;</code></td>
-<td>Allows defining literals in base two.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a></td>
-<td>Might confuse syntax highlighting in editors. No standard library support
-for printing or reading in this format. Still seems useful in minor ways.</td>
 </tr>
 
 <tr>
