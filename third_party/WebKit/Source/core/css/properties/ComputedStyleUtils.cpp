@@ -640,11 +640,11 @@ CSSValueList* ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
                               CSSIdentifierValue::Create(CSSValueBaseline),
                               CSSValuePair::kDropIdenticalValues));
   } else {
+    if (data.GetPosition() >= ItemPosition::kCenter &&
+        data.Overflow() != OverflowAlignment::kDefault)
+      result->Append(*CSSIdentifierValue::Create(data.Overflow()));
     result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
-  if (data.GetPosition() >= ItemPosition::kCenter &&
-      data.Overflow() != OverflowAlignment::kDefault)
-    result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_LE(result->length(), 2u);
   return result;
 }
@@ -672,14 +672,14 @@ ComputedStyleUtils::ValueForContentPositionAndDistributionWithOverflowAlignment(
                                 CSSValuePair::kDropIdenticalValues));
       break;
     default:
+      // Handle overflow-alignment (only allowed for content-position values)
+      if ((data.GetPosition() >= ContentPosition::kCenter ||
+           data.Distribution() != ContentDistributionType::kDefault) &&
+          data.Overflow() != OverflowAlignment::kDefault)
+        result->Append(*CSSIdentifierValue::Create(data.Overflow()));
       result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
 
-  // Handle overflow-alignment (only allowed for content-position values)
-  if ((data.GetPosition() >= ContentPosition::kCenter ||
-       data.Distribution() != ContentDistributionType::kDefault) &&
-      data.Overflow() != OverflowAlignment::kDefault)
-    result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_GT(result->length(), 0u);
   DCHECK_LE(result->length(), 3u);
   return result;

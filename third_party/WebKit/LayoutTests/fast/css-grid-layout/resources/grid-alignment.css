@@ -13,10 +13,10 @@
 .alignSelfSelfStart { align-self: self-start; }
 .alignSelfSelfEnd { align-self: self-end; }
 
-.alignSelfCenterSafe { align-self: center safe; }
-.alignSelfCenterUnsafe { align-self: center unsafe; }
-.alignSelfEndSafe { align-self: end safe; }
-.alignSelfEndUnsafe { align-self: end unsafe; }
+.alignSelfCenterSafe { align-self: safe center; }
+.alignSelfCenterUnsafe { align-self: unsafe center; }
+.alignSelfEndSafe { align-self: safe end; }
+.alignSelfEndUnsafe { align-self: unsafe end; }
 
 .alignSelfBaseline { align-self: baseline; }
 
@@ -28,10 +28,10 @@
 .alignItemsEnd { align-items: end; }
 .alignItemsBaseline { align-items: baseline; }
 
-.alignItemsCenterSafe { align-items: center safe; }
-.alignItemsCenterUnsafe { align-items: center unsafe; }
-.alignItemsEndSafe { align-items: end safe; }
-.alignItemsEndUnsafe { align-items: end unsafe; }
+.alignItemsCenterSafe { align-items: safe center; }
+.alignItemsCenterUnsafe { align-items: unsafe center; }
+.alignItemsEndSafe { align-items: safe end; }
+.alignItemsEndUnsafe { align-items: unsafe end; }
 
 /* align-content */
 .alignContentBaseline { align-content: baseline; }
@@ -63,8 +63,8 @@
 .justifySelfSelfStart { justify-self: self-start; }
 .justifySelfSelfEnd { justify-self: self-end; }
 
-.justifySelfCenterSafe { justify-self: center safe; }
-.justifySelfCenterUnsafe { justify-self: center unsafe; }
+.justifySelfCenterSafe { justify-self: safe center; }
+.justifySelfCenterUnsafe { justify-self: unsafe center; }
 
 .justifySelfBaseline { justify-self: baseline; }
 
@@ -75,10 +75,10 @@
 .justifyItemsCenter { justify-items: center; }
 .justifyItemsEnd { justify-items: end; }
 
-.justifyItemsCenterSafe { justify-items: center safe; }
-.justifyItemsCenterUnsafe { justify-items: center unsafe; }
-.justifyItemsEndSafe { justify-items: end safe; }
-.justifyItemsEndUnsafe { justify-items: end unsafe; }
+.justifyItemsCenterSafe { justify-items: safe center; }
+.justifyItemsCenterUnsafe { justify-items: unsafe center; }
+.justifyItemsEndSafe { justify-items: safe end; }
+.justifyItemsEndUnsafe { justify-items: unsafe end; }
 
 .justifyItemsBaseline { justify-items: baseline; }
 
@@ -200,23 +200,23 @@
 }
 
 .contentCenterSafe {
-    align-content: center safe;
-    justify-content: center safe;
+    align-content: safe center;
+    justify-content: safe center;
 }
 
 .contentCenterUnsafe {
-    align-content: center unsafe;
-    justify-content: center unsafe;
+    align-content: unsafe center;
+    justify-content: unsafe center;
 }
 
 .contentEndSafe {
-    align-content: end safe;
-    justify-content: end safe;
+    align-content: safe end;
+    justify-content: safe end;
 }
 
 .contentEndUnsafe {
-    align-content: end unsafe;
-    justify-content: end unsafe;
+    align-content: unsafe end;
+    justify-content: unsafe end;
 }
 
 .contentSpaceBetween {
