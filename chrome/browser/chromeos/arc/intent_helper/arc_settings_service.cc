@@ -59,10 +59,10 @@ bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
   proxy_rules.ParseFromString(proxy_rules_string);
 
   const net::ProxyList* proxy_list = nullptr;
-  if (proxy_rules.type == net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY) {
+  if (proxy_rules.type == net::ProxyConfig::ProxyRules::Type::PROXY_LIST) {
     proxy_list = &proxy_rules.single_proxies;
   } else if (proxy_rules.type ==
-             net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME) {
+             net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME) {
     proxy_list = proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
   }
   if (!proxy_list || proxy_list->IsEmpty())

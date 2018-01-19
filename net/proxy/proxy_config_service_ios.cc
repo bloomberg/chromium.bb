@@ -77,7 +77,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kCFNetworkProxiesHTTPPort);
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
       // Desktop Safari applies the HTTP proxy to http:// URLs only, but
       // Mobile Safari applies the HTTP proxy to https:// URLs as well.

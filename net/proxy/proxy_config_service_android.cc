@@ -126,7 +126,7 @@ bool GetProxyRules(const GetPropertyCallback& get_property,
   // connections via proxy.  This default is identical on other platforms.
   // On the opposite, Java spec suggests to use HTTPS port (443) by default (the
   // default value of https.proxyPort).
-  rules->type = ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+  rules->type = ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
   rules->proxies_for_http.SetSingleProxyServer(
       LookupProxy("http", get_property, ProxyServer::SCHEME_HTTP));
   rules->proxies_for_https.SetSingleProxyServer(

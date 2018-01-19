@@ -53,7 +53,7 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
   net::ProxyConfig config;
   DCHECK(!config.is_valid() && config.proxy_rules().proxies_for_http.IsEmpty());
   config.proxy_rules().type =
-      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+      net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
 
   for (const auto& http_proxy : proxies_for_http) {
     // If the config is being generated for fetching the probe URL, then the

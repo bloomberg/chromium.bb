@@ -378,16 +378,16 @@ std::unique_ptr<base::DictionaryValue> CreateProxyRulesDict(
   rules.ParseFromString(proxy_servers);
 
   switch (rules.type) {
-    case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
+    case net::ProxyConfig::ProxyRules::Type::EMPTY:
       return NULL;
-    case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST:
       if (!rules.single_proxies.IsEmpty()) {
         extension_proxy_rules->Set(
             keys::field_name[keys::SCHEME_ALL],
             CreateProxyServerDict(rules.single_proxies.Get()));
       }
       break;
-    case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
       if (!rules.proxies_for_http.IsEmpty()) {
         extension_proxy_rules->Set(
             keys::field_name[keys::SCHEME_HTTP],

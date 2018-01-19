@@ -98,8 +98,8 @@ ProxyRulesExpectation::ProxyRulesExpectation(
   bool failed = false;
 
   if (rules.type != type) {
-    failure_details << "Type mismatch. Expected: "
-                    << type << " but was: " << rules.type;
+    failure_details << "Type mismatch. Expected: " << static_cast<int>(type)
+                    << " but was: " << static_cast<int>(rules.type);
     failed = true;
   }
 
@@ -133,14 +133,14 @@ ProxyRulesExpectation::ProxyRulesExpectation(
 
 // static
 ProxyRulesExpectation ProxyRulesExpectation::Empty() {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_NO_RULES,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::EMPTY,
                                "", "", "", "", "", "", false);
 }
 
 // static
 ProxyRulesExpectation ProxyRulesExpectation::EmptyWithBypass(
     const char* flattened_bypass_rules) {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_NO_RULES,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::EMPTY,
                                "", "", "", "", "", flattened_bypass_rules,
                                false);
 }
@@ -149,7 +149,7 @@ ProxyRulesExpectation ProxyRulesExpectation::EmptyWithBypass(
 ProxyRulesExpectation ProxyRulesExpectation::Single(
     const char* single_proxy,
     const char* flattened_bypass_rules) {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::PROXY_LIST,
                                single_proxy, "", "", "", "",
                                flattened_bypass_rules, false);
 }
@@ -160,7 +160,7 @@ ProxyRulesExpectation ProxyRulesExpectation::PerScheme(
     const char* proxy_https,
     const char* proxy_ftp,
     const char* flattened_bypass_rules) {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
                                "", proxy_http, proxy_https, proxy_ftp, "",
                                flattened_bypass_rules, false);
 }
@@ -172,7 +172,7 @@ ProxyRulesExpectation ProxyRulesExpectation::PerSchemeWithSocks(
     const char* proxy_ftp,
     const char* socks_proxy,
     const char* flattened_bypass_rules) {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
                                "", proxy_http, proxy_https, proxy_ftp,
                                socks_proxy, flattened_bypass_rules, false);
 }
@@ -183,7 +183,7 @@ ProxyRulesExpectation ProxyRulesExpectation::PerSchemeWithBypassReversed(
     const char* proxy_https,
     const char* proxy_ftp,
     const char* flattened_bypass_rules) {
-  return ProxyRulesExpectation(ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+  return ProxyRulesExpectation(ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
                                "", proxy_http, proxy_https, proxy_ftp, "",
                                flattened_bypass_rules, true);
 }

@@ -134,7 +134,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
   // "all_proxy" is a shortcut to avoid defining {http,https,ftp}_proxy.
   ProxyServer proxy_server;
   if (GetProxyFromEnvVar("all_proxy", &proxy_server)) {
-    config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+    config->proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
     config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_server);
   } else {
     bool have_http = GetProxyFromEnvVar("http_proxy", &proxy_server);
@@ -155,7 +155,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
     if (have_http || have_https || have_ftp) {
       // mustn't change type unless some rules are actually set.
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
     }
   }
   if (config->proxy_rules().empty()) {
@@ -168,7 +168,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
         && env_version == "4")
       scheme = ProxyServer::SCHEME_SOCKS4;
     if (GetProxyFromEnvVarForScheme("SOCKS_SERVER", scheme, &proxy_server)) {
-      config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+      config->proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
       config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_server);
     }
   }
@@ -1087,18 +1087,18 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
   if (same_proxy) {
     if (proxy_for_http.is_valid()) {
       // Use the http proxy for all schemes.
-      config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+      config->proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
       config->proxy_rules().single_proxies.SetSingleProxyServer(proxy_for_http);
     }
   } else if (num_proxies_specified > 0) {
     if (socks_proxy.is_valid() && num_proxies_specified == 1) {
       // If the only proxy specified was for SOCKS, use it for all schemes.
-      config->proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+      config->proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
       config->proxy_rules().single_proxies.SetSingleProxyServer(socks_proxy);
     } else {
       // Otherwise use the indicated proxies per-scheme.
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().proxies_for_http.
           SetSingleProxyServer(proxy_for_http);
       config->proxy_rules().proxies_for_https.

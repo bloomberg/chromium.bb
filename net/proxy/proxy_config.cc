@@ -40,7 +40,7 @@ void AddProxyURIListToProxyList(std::string uri_list,
 
 ProxyConfig::ProxyRules::ProxyRules()
     : reverse_bypass(false),
-      type(TYPE_NO_RULES) {
+      type(Type::EMPTY) {
 }
 
 ProxyConfig::ProxyRules::ProxyRules(const ProxyRules& other) = default;
@@ -62,11 +62,11 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
   }
 
   switch (type) {
-    case ProxyRules::TYPE_SINGLE_PROXY: {
+    case ProxyRules::Type::PROXY_LIST: {
       result->UseProxyList(single_proxies);
       return;
     }
-    case ProxyRules::TYPE_PROXY_PER_SCHEME: {
+    case ProxyRules::Type::PROXY_LIST_PER_SCHEME: {
       const ProxyList* entry = MapUrlSchemeToProxyList(url.scheme());
       if (entry) {
         result->UseProxyList(*entry);
@@ -87,7 +87,7 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
 
 void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
   // Reset.
-  type = TYPE_NO_RULES;
+  type = Type::EMPTY;
   single_proxies = ProxyList();
   proxies_for_http = ProxyList();
   proxies_for_https = ProxyList();
@@ -106,12 +106,12 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
       // this is a regular proxy server configuration, i.e. proxies
       // are not configured per protocol.
       if (!proxy_server_for_scheme.GetNext()) {
-        if (type == TYPE_PROXY_PER_SCHEME)
+        if (type == Type::PROXY_LIST_PER_SCHEME)
           continue;  // Unexpected.
         AddProxyURIListToProxyList(url_scheme,
                                    &single_proxies,
                                    ProxyServer::SCHEME_HTTP);
-        type = TYPE_SINGLE_PROXY;
+        type = Type::PROXY_LIST;
         return;
       }
 
@@ -119,7 +119,7 @@ void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
       base::TrimWhitespaceASCII(url_scheme, base::TRIM_ALL, &url_scheme);
 
       // Add it to the per-scheme mappings (if supported scheme).
-      type = TYPE_PROXY_PER_SCHEME;
+      type = Type::PROXY_LIST_PER_SCHEME;
       ProxyList* entry = MapUrlSchemeToProxyListNoFallback(url_scheme);
       ProxyServer::Scheme default_scheme = ProxyServer::SCHEME_HTTP;
 
@@ -169,7 +169,7 @@ bool ProxyConfig::ProxyRules::Equals(const ProxyRules& other) const {
 
 ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyListNoFallback(
     const std::string& scheme) {
-  DCHECK_EQ(TYPE_PROXY_PER_SCHEME, type);
+  DCHECK_EQ(Type::PROXY_LIST_PER_SCHEME, type);
   if (scheme == "http")
     return &proxies_for_http;
   if (scheme == "https")
@@ -232,13 +232,13 @@ std::unique_ptr<base::DictionaryValue> ProxyConfig::ToValue() const {
   }
 
   // Output the manual settings.
-  if (proxy_rules_.type != ProxyRules::TYPE_NO_RULES) {
+  if (proxy_rules_.type != ProxyRules::Type::EMPTY) {
     switch (proxy_rules_.type) {
-      case ProxyRules::TYPE_SINGLE_PROXY:
+      case ProxyRules::Type::PROXY_LIST:
         AddProxyListToValue("single_proxy", proxy_rules_.single_proxies,
                             dict.get());
         break;
-      case ProxyRules::TYPE_PROXY_PER_SCHEME: {
+      case ProxyRules::Type::PROXY_LIST_PER_SCHEME: {
         std::unique_ptr<base::DictionaryValue> dict2(
             new base::DictionaryValue());
         AddProxyListToValue("http", proxy_rules_.proxies_for_http, dict2.get());
