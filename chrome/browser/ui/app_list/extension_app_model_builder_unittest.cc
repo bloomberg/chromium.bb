@@ -265,9 +265,9 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   sorting->ClearOrdinals(kPackagedApp1Id);
 
   // Creates a corrupted ordinal case.
-  extensions::ExtensionScopedPrefs* scoped_prefs =
+  extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
-  scoped_prefs->UpdateExtensionPref(
+  prefs->UpdateExtensionPref(
       kHostedAppId, "page_ordinal",
       std::make_unique<base::Value>("a corrupted ordinal"));
 

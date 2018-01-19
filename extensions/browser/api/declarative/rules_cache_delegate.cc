@@ -203,8 +203,7 @@ void RulesCacheDelegate::ReadFromStorageCallback(
 bool RulesCacheDelegate::GetDeclarativeRulesStored(
     const std::string& extension_id) const {
   CHECK(browser_context_);
-  const ExtensionScopedPrefs* extension_prefs =
-      ExtensionPrefs::Get(browser_context_);
+  const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
 
   bool rules_stored = true;
   if (extension_prefs->ReadPrefAsBoolean(
@@ -223,7 +222,7 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
   DCHECK(ExtensionRegistry::Get(browser_context_)
              ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING));
 
-  ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   extension_prefs->UpdateExtensionPref(
       extension_id, rules_stored_key_,
       std::make_unique<base::Value>(rules_stored));
