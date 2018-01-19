@@ -69,6 +69,14 @@ class MockMediaDevicesDispatcherHost
     NOTREACHED();
   }
 
+  void AddMediaDevicesListener(
+      bool subscribe_audio_input,
+      bool subscribe_video_input,
+      bool subscribe_audio_output,
+      blink::mojom::MediaDevicesListenerPtr listener) override {
+    NOTREACHED();
+  }
+
   blink::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     blink::mojom::MediaDevicesDispatcherHostPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));

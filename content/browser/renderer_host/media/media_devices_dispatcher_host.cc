@@ -119,6 +119,11 @@ MediaDevicesDispatcherHost::~MediaDevicesDispatcherHost() {
               static_cast<MediaDeviceType>(i), this);
     }
   }
+
+  for (auto& subscription_id : subscription_ids_) {
+    media_stream_manager_->media_devices_manager()->UnsubscribeDeviceChange(
+        subscription_id);
+  }
 }
 
 void MediaDevicesDispatcherHost::EnumerateDevices(
@@ -224,6 +229,31 @@ void MediaDevicesDispatcherHost::UnsubscribeDeviceChangeNotifications(
     media_stream_manager_->media_devices_manager()
         ->UnsubscribeDeviceChangeNotifications(type, this);
   }
+}
+
+void MediaDevicesDispatcherHost::AddMediaDevicesListener(
+    bool subscribe_audio_input,
+    bool subscribe_video_input,
+    bool subscribe_audio_output,
+    blink::mojom::MediaDevicesListenerPtr listener) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!subscribe_audio_input && !subscribe_video_input &&
+      !subscribe_audio_output) {
+    bad_message::ReceivedBadMessage(
+        render_process_id_, bad_message::MDDH_INVALID_DEVICE_TYPE_REQUEST);
+    return;
+  }
+
+  MediaDevicesManager::BoolDeviceTypes devices_to_subscribe;
+  devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = subscribe_audio_input;
+  devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = subscribe_video_input;
+  devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = subscribe_audio_output;
+
+  uint32_t subscription_id = media_stream_manager_->media_devices_manager()
+                                 ->SubscribeDeviceChangeNotifications(
+                                     devices_to_subscribe, std::move(listener));
+  subscription_ids_.push_back(subscription_id);
 }
 
 void MediaDevicesDispatcherHost::OnDevicesChanged(

@@ -7,7 +7,6 @@
 
 #include <list>
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,12 +15,9 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/user_media_processor.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
-#include "third_party/WebKit/public/web/WebMediaDeviceChangeObserver.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
@@ -57,8 +53,6 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   void RequestUserMedia(const blink::WebUserMediaRequest& web_request) override;
   void CancelUserMediaRequest(
       const blink::WebUserMediaRequest& web_request) override;
-  void SetMediaDeviceChangeObserver(
-      const blink::WebMediaDeviceChangeObserver& observer) override;
   void ApplyConstraints(
       const blink::WebApplyConstraintsRequest& web_request) override;
   void StopTrack(const blink::WebMediaStreamTrack& web_track) override;
@@ -111,11 +105,6 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  // Callback invoked by MediaDevicesEventDispatcher when a device-change
-  // notification arrives.
-  void DevicesChanged(MediaDeviceType device_type,
-                      const MediaDeviceInfoArray& device_infos);
-
   const blink::mojom::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 
@@ -132,11 +121,6 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
   std::list<Request> pending_request_infos_;
-
-  MediaDevicesEventDispatcher::SubscriptionIdList
-      device_change_subscription_ids_;
-
-  blink::WebMediaDeviceChangeObserver media_device_change_observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
