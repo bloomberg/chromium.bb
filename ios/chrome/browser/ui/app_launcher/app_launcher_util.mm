@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/external_app_launcher_util.h"
+#import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/grit/ios_strings.h"
