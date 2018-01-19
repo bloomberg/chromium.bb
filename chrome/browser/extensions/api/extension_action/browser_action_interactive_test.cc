@@ -134,16 +134,23 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
   }
 
   // Open an extension popup via the chrome.browserAction.openPopup API.
+  // If |will_reply| is true, then the listener is responsible for having a
+  // test message listener that replies to the extension. Otherwise, this
+  // method will create a listener and reply to the extension before returning
+  // to avoid leaking an API function while waiting for a reply.
   void OpenPopupViaAPI(bool will_reply) {
     // Setup the notification observer to wait for the popup to finish loading.
     content::WindowedNotificationObserver frame_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    ExtensionTestMessageListener listener("ready", will_reply);
+    std::unique_ptr<ExtensionTestMessageListener> listener;
+    if (!will_reply)
+      listener = std::make_unique<ExtensionTestMessageListener>("ready", false);
     // Show first popup in first window and expect it to have loaded.
     ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
                                     "open_popup_succeeds.html")) << message_;
-    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    if (listener)
+      EXPECT_TRUE(listener->WaitUntilSatisfied());
     frame_observer.Wait();
     EnsurePopupActive();
   }
