@@ -18,13 +18,17 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_util.h"
+#include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -339,7 +343,12 @@ ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
 void NetworkMenuModel::ShowOther(const std::string& type) const {
   // Note: this UI is deprecated and generally unused. If |type| is 'cellular'
   // this will do nothing.
-  NetworkConfigView::ShowForType(type);
+  if (chromeos::switches::IsNetworkSettingsConfigEnabled()) {
+    chromeos::InternetConfigDialog::ShowDialogForNetworkType(
+        chromeos::network_util::TranslateShillTypeToONC(type));
+  } else {
+    NetworkConfigView::ShowForType(type);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,13 +6,16 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/login/localized_values_builder.h"
+#include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -89,7 +92,12 @@ void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
     handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), true,
                                   network_handler::ErrorCallback());
   }
-  NetworkConfigView::ShowForType(shill::kTypeWifi);
+  if (chromeos::switches::IsNetworkSettingsConfigEnabled()) {
+    chromeos::InternetConfigDialog::ShowDialogForNetworkType(
+        ::onc::network_type::kWiFi);
+  } else {
+    NetworkConfigView::ShowForType(shill::kTypeWifi);
+  }
 }
 
 void NetworkDropdownHandler::HandleShowNetworkDetails(

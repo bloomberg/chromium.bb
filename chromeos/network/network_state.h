@@ -49,8 +49,11 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   void IPConfigPropertiesChanged(const base::DictionaryValue& properties);
 
-  // Returns true, if the network requires a service activation.
+  // Returns true if the network requires a service activation.
   bool RequiresActivation() const;
+
+  // Returns true if the network security type requires a passphrase only.
+  bool SecurityRequiresPassphraseOnly() const;
 
   // Accessors
   bool visible() const { return visible_; }

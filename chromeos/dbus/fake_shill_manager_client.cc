@@ -730,6 +730,10 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       services->SetServiceProperty(kWifi2Path, shill::kSecurityClassProperty,
                                    base::Value(shill::kSecurityPsk));
     }
+    services->SetServiceProperty(kWifi2Path, shill::kConnectableProperty,
+                                 base::Value(false));
+    services->SetServiceProperty(kWifi2Path, shill::kPassphraseRequiredProperty,
+                                 base::Value(true));
     services->SetServiceProperty(kWifi2Path, shill::kSignalStrengthProperty,
                                  base::Value(80));
     profiles->AddService(shared_profile, kWifi2Path);

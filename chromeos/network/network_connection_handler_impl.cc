@@ -348,7 +348,8 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     bool check_error_state,
     const std::string& service_path,
     const base::DictionaryValue& service_properties) {
-  NET_LOG_EVENT("VerifyConfiguredAndConnect", service_path);
+  NET_LOG(EVENT) << "VerifyConfiguredAndConnect: " << service_path
+                 << " check_error_state: " << check_error_state;
 
   // If 'passphrase_required' is still true, then the 'Passphrase' property
   // has not been set to a minimum length value.

@@ -31,14 +31,14 @@ suite('network-config', function() {
     document.body.appendChild(networkConfig);
     networkConfig.init();
     Polymer.dom.flush();
-  };
+  }
 
   function flushAsync() {
     Polymer.dom.flush();
     return new Promise(resolve => {
       networkConfig.async(resolve);
     });
-  };
+  }
 
   suite('New WiFi Config', function() {
     setup(function() {
@@ -79,7 +79,7 @@ suite('network-config', function() {
       return flushAsync().then(() => {
         assertEquals('someguid', networkConfig.networkProperties.GUID);
         assertEquals('somename', networkConfig.networkProperties.Name);
-        assertTrue(!!networkConfig.$$('#share'));
+        assertFalse(!!networkConfig.$$('#share'));
         assertTrue(!!networkConfig.$$('#ssid'));
         assertTrue(!!networkConfig.$$('#security'));
         assertTrue(networkConfig.$$('#security').disabled);
@@ -100,20 +100,20 @@ suite('network-config', function() {
       // Networks must be shared.
       networkConfig.shareAllowEnable = false;
       networkConfig.shareDefault = true;
-    };
+    }
 
     function setKiosk() {
       // New networks can not be shared.
       networkConfig.shareAllowEnable = false;
       networkConfig.shareDefault = false;
-    };
+    }
 
     function setAuthenticated() {
       // Logged in users can share new networks.
       networkConfig.shareAllowEnable = true;
       // Authenticated networks default to not shared.
       networkConfig.shareDefault = false;
-    };
+    }
 
     test('New Config: Login or guest', function() {
       setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
@@ -164,28 +164,8 @@ suite('network-config', function() {
       });
     });
 
-    // Existing networks can not change their shared state.
-
-    test('Existing Shared', function() {
-      var network = {
-        GUID: 'someguid',
-        Name: 'somename',
-        Source: 'Device',
-        Type: 'WiFi',
-        WiFi: {SSID: 'somessid', Security: 'None'}
-      };
-      api_.addNetworksForTest([network]);
-      setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
-      setAuthenticated();
-      return flushAsync().then(() => {
-        let share = networkConfig.$$('#share');
-        assertTrue(!!share);
-        assertTrue(share.disabled);
-        assertTrue(share.checked);
-      });
-    });
-
-    test('Existing Not Shared', function() {
+    // Existing networks hide the shared control in the config UI.
+    test('Existing Hides Shared', function() {
       var network = {
         GUID: 'someguid',
         Name: 'somename',
@@ -197,10 +177,7 @@ suite('network-config', function() {
       setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
       setAuthenticated();
       return flushAsync().then(() => {
-        let share = networkConfig.$$('#share');
-        assertTrue(!!share);
-        assertTrue(share.disabled);
-        assertFalse(share.checked);
+        assertFalse(!!networkConfig.$$('#share'));
       });
     });
 
