@@ -3451,7 +3451,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-manual-password-saving",
      flag_descriptions::kManualPasswordSavingName,
      flag_descriptions::kManualPasswordSavingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kEnableManualSaving)},
+     FEATURE_VALUE_TYPE(password_manager::features::kManualSaving)},
 
 #if !defined(OS_ANDROID)
     {"remove-deprecared-gaia-signin-endpoint",

@@ -1717,7 +1717,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
   provisionally_saved_form_.Set(std::move(password_form), form, element);
 
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnableManualSaving)) {
+          password_manager::features::kManualSaving)) {
     if (has_password) {
       GetPasswordManagerDriver()->ShowManualFallbackForSaving(
           provisionally_saved_form_.password_form());
