@@ -124,6 +124,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVideoPersistence,
     &kVrBrowsingFeedback,
     &kVrBrowsingInCustomTab,
+    &kVrIconInDaydreamHome,
     &kVrLaunchIntents,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
@@ -380,6 +381,9 @@ const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
 
 const base::Feature kVrBrowsingInCustomTab{"VrBrowsingInCustomTab",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVrIconInDaydreamHome{"VrIconInDaydreamHome",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVrLaunchIntents{"VrLaunchIntents",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
