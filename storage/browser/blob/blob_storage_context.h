@@ -62,11 +62,7 @@ class STORAGE_EXPORT BlobStorageContext {
   // BlobStatus::RunOnConstructionComplete(callback) to determine construction
   // completion and possible errors.
   std::unique_ptr<BlobDataHandle> AddFinishedBlob(
-      const BlobDataBuilder& builder);
-
-  // Deprecated, use const ref version above or BuildBlob below.
-  std::unique_ptr<BlobDataHandle> AddFinishedBlob(
-      const BlobDataBuilder* builder);
+      std::unique_ptr<BlobDataBuilder> builder);
 
   std::unique_ptr<BlobDataHandle> AddBrokenBlob(
       const std::string& uuid,
@@ -98,7 +94,7 @@ class STORAGE_EXPORT BlobStorageContext {
   // * REFERENCED_BLOB_BROKEN if a referenced blob is broken or we're
   //   referencing ourself.
   std::unique_ptr<BlobDataHandle> BuildBlob(
-      const BlobDataBuilder& input_builder,
+      std::unique_ptr<BlobDataBuilder> input_builder,
       TransportAllowedCallback transport_allowed_callback);
 
   // Similar to BuildBlob, but this merely registers a blob that will be built
@@ -117,7 +113,7 @@ class STORAGE_EXPORT BlobStorageContext {
   // Same as BuildBlob, but for a blob that was previously registered by calling
   // AddFutureBlob.
   std::unique_ptr<BlobDataHandle> BuildPreregisteredBlob(
-      const BlobDataBuilder& input_builder,
+      std::unique_ptr<BlobDataBuilder> input_builder,
       TransportAllowedCallback transport_allowed_callback);
 
   // This breaks a blob that is currently being built by using the BuildBlob
@@ -259,7 +255,7 @@ class STORAGE_EXPORT BlobStorageContext {
  private:
   std::unique_ptr<BlobDataHandle> BuildBlobInternal(
       BlobEntry* entry,
-      const BlobDataBuilder& input_builder,
+      std::unique_ptr<BlobDataBuilder> input_builder,
       TransportAllowedCallback transport_allowed_callback);
 
   std::unique_ptr<BlobDataHandle> CreateHandle(const std::string& uuid,

@@ -366,14 +366,15 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
         DCHECK(!request->GetFilePath().empty());
         DCHECK(blob_storage_context_);
 
-        storage::BlobDataBuilder blob_builder(base::GenerateGUID());
-        blob_builder.AppendFile(request->GetFilePath(), 0 /* offset */,
-                                request->GetFileSize(),
-                                base::Time() /* expected_modification_time */);
+        auto blob_builder =
+            std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
+        blob_builder->AppendFile(request->GetFilePath(), 0 /* offset */,
+                                 request->GetFileSize(),
+                                 base::Time() /* expected_modification_time */);
 
         auto blob_data_handle =
             GetBlobStorageContext(blob_storage_context_.get())
-                ->AddFinishedBlob(&blob_builder);
+                ->AddFinishedBlob(std::move(blob_builder));
 
         // TODO(peter): Appropriately handle !blob_data_handle
         if (blob_data_handle) {

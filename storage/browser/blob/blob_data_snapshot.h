@@ -62,5 +62,26 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
   std::vector<scoped_refptr<BlobDataItem>> items_;
 };
 
+#if defined(UNIT_TEST)
+
+inline bool operator==(const BlobDataSnapshot& a, const BlobDataSnapshot& b) {
+  if (a.content_type() != b.content_type()) {
+    return false;
+  }
+  if (a.content_disposition() != b.content_disposition()) {
+    return false;
+  }
+  if (a.items().size() != b.items().size()) {
+    return false;
+  }
+  for (size_t i = 0; i < a.items().size(); ++i) {
+    if (*(a.items()[i]) != *(b.items()[i]))
+      return false;
+  }
+  return true;
+}
+
+#endif  // defined(UNIT_TEST)
+
 }  // namespace storage
 #endif  // STORAGE_BROWSER_BLOB_BLOB_DATA_SNAPSHOT_H_

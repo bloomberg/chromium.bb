@@ -603,14 +603,15 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
 void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
                                                        uint64_t* blob_size) {
   DCHECK(HasRequestBody());
-  storage::BlobDataBuilder blob_builder(base::GenerateGUID());
+  auto blob_builder =
+      std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
   for (const network::DataElement& element : (*body_->elements())) {
-    blob_builder.AppendIPCDataElement(element, nullptr);  // TODO
+    blob_builder->AppendIPCDataElement(element, nullptr);  // TODO
   }
 
+  *blob_uuid = blob_builder->uuid();
   request_body_blob_data_handle_ =
-      blob_storage_context_->AddFinishedBlob(&blob_builder);
-  *blob_uuid = blob_builder.uuid();
+      blob_storage_context_->AddFinishedBlob(std::move(blob_builder));
   *blob_size = request_body_blob_data_handle_->size();
 
   blink::mojom::BlobPtr blob_ptr;

@@ -148,12 +148,12 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
-  storage::BlobDataBuilder blob_data_builder(uuid);
-  blob_data_builder.set_content_type(content_type);
-  blob_data_builder.AppendData(data, length);
+  auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
+  blob_data_builder->set_content_type(content_type);
+  blob_data_builder->AppendData(data, length);
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(&blob_data_builder);
+      context_->AddFinishedBlob(std::move(blob_data_builder));
   if (!blob_data_handle)
     return std::unique_ptr<BlobHandle>();
 
@@ -170,11 +170,11 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
-  storage::BlobDataBuilder blob_data_builder(uuid);
-  blob_data_builder.AppendFile(path, offset, size, expected_modification_time);
+  auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
+  blob_data_builder->AppendFile(path, offset, size, expected_modification_time);
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(&blob_data_builder);
+      context_->AddFinishedBlob(std::move(blob_data_builder));
   if (!blob_data_handle)
     return std::unique_ptr<BlobHandle>();
 

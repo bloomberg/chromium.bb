@@ -53,9 +53,10 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStream) {
     const int64_t kIdentifier = 12345;
 
     BlobStorageContext context;
-    BlobDataBuilder builder(kBlob);
-    builder.AppendData(kBlobData);
-    std::unique_ptr<BlobDataHandle> handle = context.AddFinishedBlob(&builder);
+    auto builder = std::make_unique<BlobDataBuilder>(kBlob);
+    builder->AppendData(kBlobData);
+    std::unique_ptr<BlobDataHandle> handle =
+        context.AddFinishedBlob(std::move(builder));
 
     request_body->AppendBytes(kData, arraysize(kData) - 1);
     request_body->AppendFileRange(base::FilePath(kFilePath), kFileOffset,
@@ -118,7 +119,7 @@ TEST(UploadDataStreamBuilderTest,
         new BlobDataBuilder(blob_id));
     blob_data_builder->AppendFile(test_blob_path, 0, kZeroLength, blob_time);
     std::unique_ptr<BlobDataHandle> handle =
-        blob_storage_context.AddFinishedBlob(blob_data_builder.get());
+        blob_storage_context.AddFinishedBlob(std::move(blob_data_builder));
 
     scoped_refptr<network::ResourceRequestBody> request_body(
         new network::ResourceRequestBody());
@@ -176,10 +177,10 @@ TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
     const int64_t kIdentifier = 12345;
 
     BlobStorageContext blob_storage_context;
-    BlobDataBuilder builder(kBlob);
-    builder.AppendData(kBlobData);
+    auto builder = std::make_unique<BlobDataBuilder>(kBlob);
+    builder->AppendData(kBlobData);
     std::unique_ptr<BlobDataHandle> handle =
-        blob_storage_context.AddFinishedBlob(&builder);
+        blob_storage_context.AddFinishedBlob(std::move(builder));
     request_body->AppendBlob(kBlob);
     request_body->set_identifier(kIdentifier);
 

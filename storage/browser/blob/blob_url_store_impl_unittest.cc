@@ -39,11 +39,12 @@ class BlobURLStoreImplTest : public testing::Test {
 
   BlobPtr CreateBlobFromString(const std::string& uuid,
                                const std::string& contents) {
-    BlobDataBuilder builder(uuid);
-    builder.set_content_type("text/plain");
-    builder.AppendData(contents);
+    auto builder = std::make_unique<BlobDataBuilder>(uuid);
+    builder->set_content_type("text/plain");
+    builder->AppendData(contents);
     BlobPtr blob;
-    BlobImpl::Create(context_->AddFinishedBlob(builder), MakeRequest(&blob));
+    BlobImpl::Create(context_->AddFinishedBlob(std::move(builder)),
+                     MakeRequest(&blob));
     return blob;
   }
 

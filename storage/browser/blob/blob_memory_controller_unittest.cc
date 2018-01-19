@@ -432,12 +432,13 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
   std::memset(kData, 'e', kBlobSize);
 
   // Add item that is the file quota.
-  BlobDataBuilder builder(kId);
+  auto builder = std::make_unique<BlobDataBuilder>(kId);
   BlobDataBuilder::FutureFile future_file =
-      builder.AppendFutureFile(0, kBlobSize, 0);
+      builder->AppendFutureFile(0, kBlobSize, 0);
 
   std::vector<scoped_refptr<ShareableBlobDataItem>> items =
-      CreateSharedDataItems(builder);
+      CreateSharedDataItems(*builder);
+  builder.reset();
 
   file_quota_result_ = false;
   base::WeakPtr<QuotaAllocationTask> task =
@@ -468,7 +469,6 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
   EXPECT_FALSE(
       BlobDataBuilder::IsFutureFileItem(items[0]->item()->data_element()));
 
-  builder.Clear();
   items.clear();
   // Run cleanup tasks from the ShareableFileReferences.
   base::RunLoop().RunUntilIdle();

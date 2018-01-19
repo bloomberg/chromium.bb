@@ -841,7 +841,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     expected_response += kTestData;
   }
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
-      blob_storage_context->context()->AddFinishedBlob(blob_data.get());
+      blob_storage_context->context()->AddFinishedBlob(std::move(blob_data));
   SetUpWithHelper(std::make_unique<BlobResponder>(blob_handle->uuid(),
                                                   expected_response.size()));
 

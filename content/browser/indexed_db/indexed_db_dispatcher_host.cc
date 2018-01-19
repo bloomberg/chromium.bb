@@ -169,11 +169,11 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   if (uuid.empty()) {
     uuid = base::GenerateGUID();
-    storage::BlobDataBuilder blob_data_builder(uuid);
-    blob_data_builder.set_content_type(base::UTF16ToUTF8(blob_info.type()));
-    blob_data_builder.AppendFile(blob_info.file_path(), 0, blob_info.size(),
-                                 blob_info.last_modified());
-    blob_data_handle = context->AddFinishedBlob(&blob_data_builder);
+    auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
+    blob_data_builder->set_content_type(base::UTF16ToUTF8(blob_info.type()));
+    blob_data_builder->AppendFile(blob_info.file_path(), 0, blob_info.size(),
+                                  blob_info.last_modified());
+    blob_data_handle = context->AddFinishedBlob(std::move(blob_data_builder));
   } else {
     auto iter = blob_data_handle_map_.find(uuid);
     if (iter != blob_data_handle_map_.end()) {
