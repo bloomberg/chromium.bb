@@ -64,27 +64,27 @@
 #pragma mark - PrimaryToolbarCoordinator
 
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/799446): This code should be moved to the location bar.
   return nil;
 }
 
 - (id<QRScannerResultLoading>)QRScannerResultLoader {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/799446): This code should be moved to the location bar.
   return nil;
 }
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803373): Implement that.
   return nil;
 }
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803376): Implement that.
   return nil;
 }
 
 - (void)showPrerenderingAnimation {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803377): Implement that.
 }
 
 - (BOOL)isOmniboxFirstResponder {
@@ -101,19 +101,9 @@
 #pragma mark - ToolbarCoordinating
 
 - (void)updateToolbarState {
-}
-
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-}
-
-#pragma mark - ToolbarCommands
-
-- (void)contractToolbar {
-  // TODO(crbug.com/801082): Implement that.
-}
-
-- (void)triggerToolsMenuButtonAnimation {
-  // TODO(crbug.com/801083): Implement that.
+  // TODO(crbug.com/803383): This should be done inside the location bar.
+  [self.locationBarCoordinator updateOmniboxState];
+  [super updateToolbarState];
 }
 
 #pragma mark - OmniboxFocuser
@@ -130,15 +120,15 @@
 }
 
 - (void)focusFakebox {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803372): Implement that.
 }
 
 - (void)onFakeboxBlur {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803372): Implement that.
 }
 
 - (void)onFakeboxAnimationComplete {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803372): Implement that.
 }
 
 #pragma mark - LocationBarDelegate
@@ -214,7 +204,7 @@
 }
 
 - (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
-  // TODO(crbug.com/799438): Implement that.
+  // TODO(crbug.com/803371): Implement that.
   return nil;
 }
 
