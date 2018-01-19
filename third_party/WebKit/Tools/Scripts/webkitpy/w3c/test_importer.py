@@ -133,7 +133,8 @@ class TestImporter(object):
 
         self._generate_manifest()
 
-        self._delete_orphaned_baselines()
+        # TODO(crbug.com/800570 robertma): Re-enable it once we fix the bug.
+        # self._delete_orphaned_baselines()
 
         # TODO(qyearsley): Consider running the imported tests with
         # `run-webkit-tests --reset-results external/wpt` to get some baselines
