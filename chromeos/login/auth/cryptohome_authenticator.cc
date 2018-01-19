@@ -141,11 +141,13 @@ void OnMount(const base::WeakPtr<AuthAttemptState>& attempt,
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       public_mount ? "CryptohomeMountPublic-End" : "CryptohomeMount-End",
       false);
-  attempt->RecordCryptohomeStatus(BaseReplyToMountError(reply));
-  if (attempt->cryptohome_code() == cryptohome::MOUNT_ERROR_NONE)
-    attempt->RecordUsernameHash(BaseReplyToMountHash(reply.value()));
-  else
+  attempt->RecordCryptohomeStatus(MountExReplyToMountError(reply));
+  if (attempt->cryptohome_code() == cryptohome::MOUNT_ERROR_NONE) {
+    attempt->RecordUsernameHash(MountExReplyToMountHash(reply.value()));
+  } else {
+    LOGIN_LOG(ERROR) << "MountEx failed. Error: " << attempt->cryptohome_code();
     attempt->RecordUsernameHashFailed();
+  }
   resolver->Resolve();
 }
 
@@ -187,7 +189,7 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   auth_key->set_secret(key->GetSecret());
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()), auth,
-      mount, base::Bind(&OnMount, attempt, resolver));
+      mount, base::BindOnce(&OnMount, attempt, resolver));
 }
 
 // Handle cryptohome migration status.
@@ -195,12 +197,12 @@ void OnCryptohomeRenamed(const base::WeakPtr<AuthAttemptState>& attempt,
                          scoped_refptr<CryptohomeAuthenticator> resolver,
                          bool ephemeral,
                          bool create_if_nonexistent,
-                         bool success,
-                         cryptohome::MountError return_code) {
+                         base::Optional<cryptohome::BaseReply> reply) {
+  cryptohome::MountError return_code = cryptohome::BaseReplyToMountError(reply);
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeRename-End", false);
   const AccountId account_id = attempt->user_context.GetAccountId();
-  if (success) {
+  if (return_code == cryptohome::MOUNT_ERROR_NONE) {
     cryptohome::SetGaiaIdMigrationStatusDone(account_id);
     UMACryptohomeMigrationToGaiaId(CryptohomeMigrationToGaiaId::SUCCESS);
   } else {
@@ -255,11 +257,11 @@ void EnsureCryptohomeMigratedToGaiaId(
     const std::string cryptohome_id_to =
         attempt->user_context.GetAccountId().GetAccountIdKey();
 
-    cryptohome::HomedirMethods::GetInstance()->RenameCryptohome(
+    DBusThreadManager::Get()->GetCryptohomeClient()->RenameCryptohome(
         cryptohome::Identification::FromString(cryptohome_id_from),
         cryptohome::Identification::FromString(cryptohome_id_to),
-        base::Bind(&OnCryptohomeRenamed, attempt, resolver, ephemeral,
-                   create_if_nonexistent));
+        base::BindOnce(&OnCryptohomeRenamed, attempt, resolver, ephemeral,
+                       create_if_nonexistent));
     return;
   }
   if (!already_migrated && has_account_key) {
@@ -434,7 +436,7 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
   DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),
       cryptohome::AuthorizationRequest(), mount,
-      base::Bind(&OnMount, attempt, resolver));
+      base::BindOnce(&OnMount, attempt, resolver));
 }
 
 // Calls cryptohome's key migration method.
