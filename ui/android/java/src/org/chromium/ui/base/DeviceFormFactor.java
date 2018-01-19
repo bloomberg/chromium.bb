@@ -23,12 +23,15 @@ public class DeviceFormFactor {
     public static final int MINIMUM_TABLET_WIDTH_DP = 600;
 
     /**
-     * @return Whether the app should currently treat the device as a tablet for layout. This method
-     *         is not affected by Android N multi-window, but can change for external displays.
-     *         E.g. http://developer.samsung.com/samsung-dex/testing
+     * @return Whether the app should treat the device as a tablet for layout. This method is not
+     *         affected by Android N multi-window.
      */
     @CalledByNative
     public static boolean isTablet() {
+        // On some devices, OEM modifications have been made to the resource loader that cause the
+        // DeviceFormFactor calculation of whether a device is using tablet resources to be
+        // incorrect. Check which resources were actually loaded rather than look at screen size.
+        // See crbug.com/662338.
         return ContextUtils.getApplicationContext().getResources().getBoolean(R.bool.is_tablet);
     }
 
