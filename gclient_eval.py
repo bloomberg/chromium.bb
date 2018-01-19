@@ -21,6 +21,22 @@ _GCLIENT_DEPS_SCHEMA = {
             # Optional condition string. The dep will only be processed
             # if the condition evaluates to True.
             schema.Optional('condition'): basestring,
+
+            schema.Optional('dep_type', default='git'): basestring,
+        },
+        # CIPD package.
+        {
+            'packages': [
+                {
+                    'package': basestring,
+
+                    'version': basestring,
+                }
+            ],
+
+            schema.Optional('condition'): basestring,
+
+            schema.Optional('dep_type', default='cipd'): basestring,
         },
     ),
 }
@@ -217,7 +233,7 @@ def Exec(content, global_scope, local_scope, filename='<unknown>'):
             filename,
             getattr(node_or_string, 'lineno', '<unknown>')))
 
-  _GCLIENT_SCHEMA.validate(local_scope)
+  return _GCLIENT_SCHEMA.validate(local_scope)
 
 
 def EvaluateCondition(condition, variables, referenced_variables=None):

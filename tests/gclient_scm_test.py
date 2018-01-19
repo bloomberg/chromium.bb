@@ -11,6 +11,7 @@
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
+import json
 import logging
 import os
 import re
@@ -65,7 +66,7 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'rmtree')
     self.mox.StubOutWithMock(subprocess2, 'communicate')
     self.mox.StubOutWithMock(subprocess2, 'Popen')
-    self._scm_wrapper = gclient_scm.CreateSCM
+    self._scm_wrapper = gclient_scm.GitWrapper
     self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
     gclient_scm.GitWrapper.BinaryExists = staticmethod(lambda : True)
     # Absolute path of the fake checkout directory.
@@ -256,8 +257,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       return
     options = self.Options()
     file_path = join(self.base_path, 'a')
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, None, file_list)
     gclient_scm.os.remove(file_path)
@@ -273,8 +274,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, None, file_list)
     file_list = []
@@ -288,8 +289,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, None, file_list)
     file_path = join(self.base_path, 'a')
@@ -308,8 +309,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, None, file_list)
     file_path = join(self.base_path, 'c')
@@ -334,8 +335,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     options = self.Options()
     file_path = join(self.base_path, 'a')
     open(file_path, 'a').writelines('touched\n')
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.status(options, self.args, file_list)
     self.assertEquals(file_list, [file_path])
@@ -353,8 +354,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       file_path = join(self.base_path, f)
       open(file_path, 'a').writelines('touched\n')
       expected_file_list.extend([file_path])
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.status(options, self.args, file_list)
     expected_file_list = [join(self.base_path, x) for x in ['a', 'b']]
@@ -369,8 +370,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       return
     options = self.Options()
     expected_file_list = [join(self.base_path, x) for x in ['a', 'b']]
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, (), file_list)
     self.assertEquals(file_list, expected_file_list)
@@ -383,8 +384,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       return
     options = self.Options()
     options.merge = True
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     scm._Run(['checkout', '-q', 'feature'], options)
     rev = scm.revinfo(options, (), None)
     file_list = []
@@ -404,8 +405,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     scm._Run(['checkout', '-q', 'feature'], options)
     file_list = []
     # Fake a 'y' key press.
@@ -436,8 +437,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_path = join(self.base_path, 'file')
     open(file_path, 'w').writelines('new\n')
 
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, (), file_list)
     self.assert_(gclient_scm.os.path.isdir(dir_path))
@@ -458,8 +459,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_path = join(self.base_path, 'file')
     open(file_path, 'w').writelines('new\n')
 
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     scm.update(options, (), file_list)
     self.assert_(not gclient_scm.os.path.isdir(dir_path))
@@ -470,8 +471,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_path = join(self.base_path, 'b')
     open(file_path, 'w').writelines('conflict\n')
     try:
@@ -491,8 +492,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_path = join(self.base_path, '.git', 'index.lock')
     with open(file_path, 'w'):
       pass
@@ -505,8 +506,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       return
     options = self.Options()
     options.break_repo_locks = True
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_path = join(self.base_path, '.git', 'index.lock')
     with open(file_path, 'w'):
       pass
@@ -520,8 +521,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_path = join(self.base_path, 'b')
     open(file_path, 'w').writelines('conflict\n')
     scm._Run(['commit', '-am', 'test'], options)
@@ -542,8 +543,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     if not self.enabled:
       return
     options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
 
@@ -605,8 +606,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
     self.mox.ReplayAll()
 
-    git_scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                    relpath=self.relpath)
+    git_scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                     self.relpath)
     # A [fake] git sha1 with a git repo should work (this is in the case that
     # the LKGR gets flipped to git sha1's some day).
     self.assertEquals(git_scm.GetUsableRev(self.fake_hash_1, options),
@@ -641,8 +642,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).AndReturn('')
 
     self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
+    scm = self._scm_wrapper(self.url, self.root_dir,
+                            self.relpath)
     scm.update(options, None, [])
     self.checkstdout('\n')
 
@@ -678,8 +679,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).AndReturn('')
 
     self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
+    scm = self._scm_wrapper(self.url, self.root_dir,
+                            self.relpath)
     scm.update(options, None, [])
     self.checkstdout('\n')
 
@@ -715,9 +716,9 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.relpath = '.'
     self.base_path = join(self.root_dir, self.relpath)
 
-    scm = gclient_scm.CreateSCM(url=origin_root_dir,
-                                root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(origin_root_dir,
+                                 self.root_dir,
+                                 self.relpath)
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b")]
@@ -747,9 +748,9 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     url_with_commit_ref = origin_root_dir +\
                           '@a7142dc9f0009350b96a11f372b6ea658592aa95'
 
-    scm = gclient_scm.CreateSCM(url=url_with_commit_ref,
-                                root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(url_with_commit_ref,
+                                 self.root_dir,
+                                 self.relpath)
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b")]
@@ -778,9 +779,9 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.base_path = join(self.root_dir, self.relpath)
     url_with_branch_ref = origin_root_dir + '@feature'
 
-    scm = gclient_scm.CreateSCM(url=url_with_branch_ref,
-                                root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(url_with_branch_ref,
+                                 self.root_dir,
+                                 self.relpath)
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
@@ -811,9 +812,9 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.base_path = join(self.root_dir, self.relpath)
     url_with_branch_ref = origin_root_dir + '@refs/remotes/origin/feature'
 
-    scm = gclient_scm.CreateSCM(url=url_with_branch_ref,
-                                root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(url_with_branch_ref,
+                                 self.root_dir,
+                                 self.relpath)
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
@@ -843,9 +844,9 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.base_path = join(self.root_dir, self.relpath)
     url_with_branch_ref = origin_root_dir + '@refs/heads/feature'
 
-    scm = gclient_scm.CreateSCM(url=url_with_branch_ref,
-                                root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(url_with_branch_ref,
+                                 self.root_dir,
+                                 self.relpath)
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
@@ -876,8 +877,8 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
       return
     options = self.Options()
     expected_file_list = []
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
@@ -885,6 +886,129 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(scm.revinfo(options, (), None),
                       '069c602044c5388d2d15c3f875b057c852003458')
     self.checkstdout('________ unmanaged solution; skipping .\n')
+
+
+class CipdWrapperTestCase(BaseTestCase):
+
+  def setUp(self):
+    # Create this before setting up mocks.
+    self._cipd_root_dir = tempfile.mkdtemp()
+    self._workdir = tempfile.mkdtemp()
+    BaseTestCase.setUp(self)
+
+    self._cipd_instance_url = 'https://chrome-infra-packages.appspot.com'
+    self._cipd_root = gclient_scm.CipdRoot(
+        self._cipd_root_dir,
+        self._cipd_instance_url)
+    self._cipd_packages = [
+        self._cipd_root.add_package('f', 'foo_package', 'foo_version'),
+        self._cipd_root.add_package('b', 'bar_package', 'bar_version'),
+        self._cipd_root.add_package('b', 'baz_package', 'baz_version'),
+    ]
+    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'add_package')
+    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'clobber')
+    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'ensure')
+
+  def tearDown(self):
+    BaseTestCase.tearDown(self)
+    rmtree(self._cipd_root_dir)
+    rmtree(self._workdir)
+
+  def createScmWithPackageThatSatisfies(self, condition):
+    return gclient_scm.CipdWrapper(
+        url=self._cipd_instance_url,
+        root_dir=self._cipd_root_dir,
+        relpath='fake_relpath',
+        root=self._cipd_root,
+        package=self.getPackageThatSatisfies(condition))
+
+  def getPackageThatSatisfies(self, condition):
+    for p in self._cipd_packages:
+      if condition(p):
+        return p
+
+    self.fail('Unable to find a satisfactory package.')
+
+  def testSingleRootAuthority(self):
+    """Checks that exactly one package has root authority."""
+    self.assertEquals(1, len([p for p in self._cipd_packages
+                              if p.authority_for_root]))
+
+  def testRevert(self):
+    """Checks that revert w/ root authority clobbers and reruns ensure."""
+    scm = self.createScmWithPackageThatSatisfies(
+        lambda p: p.authority_for_root)
+
+    gclient_scm.CipdRoot.clobber()
+    gclient_scm.CipdRoot.ensure()
+
+    self.mox.ReplayAll()
+
+    scm.revert(None, (), [])
+
+  def testRevertWithoutAuthority(self):
+    """Checks that revert w/o root authority does nothing."""
+    scm = self.createScmWithPackageThatSatisfies(
+        lambda p: not p.authority_for_root)
+
+    self.mox.ReplayAll()
+
+    scm.revert(None, (), [])
+
+  def testRevinfo(self):
+    """Checks that revinfo uses the JSON from cipd describe."""
+    scm = self.createScmWithPackageThatSatisfies(lambda _: True)
+
+    expected_revinfo = '0123456789abcdef0123456789abcdef01234567'
+    json_contents = {
+        'result': {
+            'pin': {
+                'instance_id': expected_revinfo,
+            }
+        }
+    }
+    describe_json_path = join(self._workdir, 'describe.json')
+    with open(describe_json_path, 'w') as describe_json:
+      json.dump(json_contents, describe_json)
+
+    cmd = [
+        'cipd', 'describe', 'foo_package',
+        '-log-level', 'error',
+        '-version', 'foo_version',
+        '-json-output', describe_json_path,
+    ]
+
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
+
+    tempfile.mkdtemp().AndReturn(self._workdir)
+    gclient_scm.gclient_utils.CheckCallAndFilter(
+        cmd, filter_fn=mox.IgnoreArg(), print_stdout=False)
+    gclient_scm.gclient_utils.rmtree(self._workdir)
+
+    self.mox.ReplayAll()
+
+    revinfo = scm.revinfo(None, (), [])
+    self.assertEquals(revinfo, expected_revinfo)
+
+  def testUpdate(self):
+    """Checks that update w/ root authority runs ensure."""
+    scm = self.createScmWithPackageThatSatisfies(
+        lambda p: p.authority_for_root)
+
+    gclient_scm.CipdRoot.ensure()
+
+    self.mox.ReplayAll()
+
+    scm.update(None, (), [])
+
+  def testUpdateWithoutAuthority(self):
+    """Checks that update w/o root authority does nothing."""
+    scm = self.createScmWithPackageThatSatisfies(
+        lambda p: not p.authority_for_root)
+
+    self.mox.ReplayAll()
+
+    scm.update(None, (), [])
 
 
 if __name__ == '__main__':
