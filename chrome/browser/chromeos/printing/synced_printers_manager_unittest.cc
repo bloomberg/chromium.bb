@@ -29,11 +29,11 @@ namespace chromeos {
 
 namespace {
 
-const char kTestPrinterId[] = "UUID-UUID-UUID-PRINTER";
-const char kTestPrinterId2[] = "UUID-UUID-UUID-PRINTR2";
-const char kTestUri[] = "ipps://printer.chromium.org/ipp/print";
+constexpr char kTestPrinterId[] = "UUID-UUID-UUID-PRINTER";
+constexpr char kTestPrinterId2[] = "UUID-UUID-UUID-PRINTR2";
+constexpr char kTestUri[] = "ipps://printer.chromium.org/ipp/print";
 
-const char kLexJson[] = R"({
+constexpr char kLexJson[] = R"({
         "display_name": "LexaPrint",
         "description": "Laser on the test shelf",
         "manufacturer": "LexaPrint, Inc.",
@@ -45,7 +45,7 @@ const char kLexJson[] = R"({
         },
       } )";
 
-const char kColorLaserJson[] = R"json({
+constexpr char kColorLaserJson[] = R"json({
       "display_name": "Color Laser",
       "description": "The printer next to the water cooler.",
       "manufacturer": "Printer Manufacturer",
