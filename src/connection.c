@@ -533,10 +533,13 @@ wl_argument_from_va_list(const char *signature, union wl_argument *args,
 static void
 wl_closure_clear_fds(struct wl_closure *closure)
 {
+	const char *signature = closure->message->signature;
+	struct argument_details arg;
 	int i;
 
-	for (i = 0; closure->message->signature[i]; i++) {
-		if (closure->message->signature[i] == 'h')
+	for (i = 0; i < closure->count; i++) {
+		signature = get_next_argument(signature, &arg);
+		if (arg.type == 'h')
 			closure->args[i].h = -1;
 	}
 }
