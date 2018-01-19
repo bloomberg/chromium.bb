@@ -48,9 +48,78 @@
 
 namespace blink {
 
-const char* const kQuotedPrintable = "quoted-printable";
-const char* const kBase64 = "base64";
-const char* const kBinary = "binary";
+namespace {
+
+const size_t kMaximumLineLength = 76;
+const char kCrlfLineEnding[] = "\r\n";
+
+const char kRFC2047EncodingPrefix[] = "=?utf-8?Q?";
+const size_t kRFC2047EncodingPrefixLength = 10;
+const char kRFC2047EncodingSuffix[] = "?=";
+const size_t kRFC2047EncodingSuffixLength = 2;
+
+const char kQuotedPrintable[] = "quoted-printable";
+const char kBase64[] = "base64";
+const char kBinary[] = "binary";
+
+}  // namespace
+
+// Controls quoted-printable encoding characters in body, per RFC 2045.
+class QuotedPrintableEncodeBodyDelegate : public QuotedPrintableEncodeDelegate {
+ public:
+  QuotedPrintableEncodeBodyDelegate() = default;
+  ~QuotedPrintableEncodeBodyDelegate() override = default;
+
+  size_t GetMaxLineLengthForEncodedContent() const override {
+    return kMaximumLineLength;
+  }
+
+  bool ShouldEncodeWhiteSpaceCharacters(bool end_of_line) const override {
+    // They should be encoded only if they appear at the end of a body line.
+    return end_of_line;
+  }
+
+  void DidStartLine(Vector<char>& out) override {
+    // Nothing to add.
+  }
+
+  void DidFinishLine(bool last_line, Vector<char>& out) override {
+    if (!last_line) {
+      out.push_back('=');
+      out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+    }
+  }
+};
+
+// Controls quoted-printable encoding characters in headers, per RFC 2047.
+class QuotedPrintableEncodeHeaderDelegate
+    : public QuotedPrintableEncodeDelegate {
+ public:
+  QuotedPrintableEncodeHeaderDelegate() = default;
+  ~QuotedPrintableEncodeHeaderDelegate() override = default;
+
+  size_t GetMaxLineLengthForEncodedContent() const override {
+    return kMaximumLineLength - kRFC2047EncodingPrefixLength -
+           kRFC2047EncodingSuffixLength;
+  }
+
+  bool ShouldEncodeWhiteSpaceCharacters(bool end_of_line) const override {
+    // They should always be encoded if they appear anywhere in the header.
+    return true;
+  }
+
+  void DidStartLine(Vector<char>& out) override {
+    out.Append(kRFC2047EncodingPrefix, kRFC2047EncodingPrefixLength);
+  }
+
+  void DidFinishLine(bool last_line, Vector<char>& out) override {
+    out.Append(kRFC2047EncodingSuffix, kRFC2047EncodingSuffixLength);
+    if (!last_line) {
+      out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+      out.push_back(' ');
+    }
+  }
+};
 
 static String ConvertToPrintableCharacters(const String& text) {
   // If the text contains all printable ASCII characters, no need for encoding.
@@ -70,9 +139,11 @@ static String ConvertToPrintableCharacters(const String& text) {
   // where, "utf-8" is the chosen charset to represent the text and "Q" is the
   // Quoted-Printable format to convert to 7-bit printable ASCII characters.
   CString utf8_text = text.Utf8();
+  QuotedPrintableEncodeHeaderDelegate header_delegate;
   Vector<char> encoded_text;
-  QuotedPrintableEncode(utf8_text.data(), utf8_text.length(), encoded_text);
-  return "=?utf-8?Q?" + String(encoded_text.data(), encoded_text.size()) + "?=";
+  QuotedPrintableEncode(utf8_text.data(), utf8_text.length(), &header_delegate,
+                        encoded_text);
+  return String(encoded_text.data(), encoded_text.size());
 }
 
 MHTMLArchive::MHTMLArchive() = default;
@@ -245,7 +316,8 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
     size_t data_length = flat_data.size();
     Vector<char> encoded_data;
     if (!strcmp(content_encoding, kQuotedPrintable)) {
-      QuotedPrintableEncode(data, data_length, encoded_data);
+      QuotedPrintableEncodeBodyDelegate body_delegate;
+      QuotedPrintableEncode(data, data_length, &body_delegate, encoded_data);
       output_buffer.Append(encoded_data.data(), encoded_data.size());
       output_buffer.Append("\r\n", 2u);
     } else {
@@ -253,7 +325,6 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
       // We are not specifying insertLFs = true below as it would cut the lines
       // with LFs and MHTML requires CRLFs.
       Base64Encode(data, data_length, encoded_data);
-      const size_t kMaximumLineLength = 76;
       size_t index = 0;
       size_t encoded_data_length = encoded_data.size();
       do {

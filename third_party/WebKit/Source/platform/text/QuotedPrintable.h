@@ -36,10 +36,38 @@
 
 namespace blink {
 
-PLATFORM_EXPORT void QuotedPrintableEncode(const Vector<char>&, Vector<char>&);
-PLATFORM_EXPORT void QuotedPrintableEncode(const char*, size_t, Vector<char>&);
+// Delegate for controling the behavior of quoted-printable encoding. The
+// original characters may be encoded a bit differently depending on where
+// they live, header or body. For example, "=CRLF" should be used to break
+// long line in body while "CRLF+SPACE" should be used to break long line in
+// header.
+class PLATFORM_EXPORT QuotedPrintableEncodeDelegate {
+ public:
+  QuotedPrintableEncodeDelegate() = default;
+  virtual ~QuotedPrintableEncodeDelegate() = default;
 
-PLATFORM_EXPORT void QuotedPrintableDecode(const Vector<char>&, Vector<char>&);
+  // Returns maximum number of characters allowed for an encoded line, excluding
+  // prefix and soft line break.
+  virtual size_t GetMaxLineLengthForEncodedContent() const = 0;
+
+  // Returns true if space and tab characters need to be encoded.
+  virtual bool ShouldEncodeWhiteSpaceCharacters(bool end_of_line) const = 0;
+
+  // Called when an encoded line starts. The delegate can take this chance to
+  // add any prefix.
+  virtual void DidStartLine(Vector<char>& out) = 0;
+
+  // Called when an encoded line ends. The delegate can take this chance to add
+  // any suffix. If it is not last line, a soft line break should also
+  // be added after the suffix.
+  virtual void DidFinishLine(bool last_line, Vector<char>& out) = 0;
+};
+
+PLATFORM_EXPORT void QuotedPrintableEncode(const char*,
+                                           size_t,
+                                           QuotedPrintableEncodeDelegate*,
+                                           Vector<char>&);
+
 PLATFORM_EXPORT void QuotedPrintableDecode(const char*, size_t, Vector<char>&);
 
 }  // namespace blink

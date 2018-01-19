@@ -34,8 +34,6 @@
 
 namespace blink {
 
-static const size_t kMaximumLineLength = 76;
-
 static const char kCrlfLineEnding[] = "\r\n";
 
 static size_t LengthOfLineEndingAtIndex(const char* input,
@@ -54,15 +52,13 @@ static size_t LengthOfLineEndingAtIndex(const char* input,
   return 0;
 }
 
-void QuotedPrintableEncode(const Vector<char>& in, Vector<char>& out) {
-  QuotedPrintableEncode(in.data(), in.size(), out);
-}
-
 void QuotedPrintableEncode(const char* input,
                            size_t input_length,
+                           QuotedPrintableEncodeDelegate* delegate,
                            Vector<char>& out) {
   out.clear();
   out.ReserveCapacity(input_length);
+  delegate->DidStartLine(out);
   size_t current_line_length = 0;
   for (size_t i = 0; i < input_length; ++i) {
     bool is_last_character = (i == input_length - 1);
@@ -74,13 +70,14 @@ void QuotedPrintableEncode(const char* input,
         current_character != '\t')
       requires_encoding = true;
 
-    // Space and tab characters have to be encoded if they appear at the end of
-    // a line.
+    // Decide if space and tab characters need to be encoded.
     if (!requires_encoding &&
-        (current_character == '\t' || current_character == ' ') &&
-        (is_last_character ||
-         LengthOfLineEndingAtIndex(input, input_length, i + 1)))
-      requires_encoding = true;
+        (current_character == '\t' || current_character == ' ')) {
+      bool end_of_line = is_last_character ||
+                         LengthOfLineEndingAtIndex(input, input_length, i + 1);
+      requires_encoding =
+          delegate->ShouldEncodeWhiteSpaceCharacters(end_of_line);
+    }
 
     // End of line should be converted to CR-LF sequences.
     if (!is_last_character) {
@@ -103,10 +100,10 @@ void QuotedPrintableEncode(const char* input,
 
     // Insert a soft line break if necessary.
     if (current_line_length + length_of_encoded_character >
-        kMaximumLineLength) {
-      out.push_back('=');
-      out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+        delegate->GetMaxLineLengthForEncodedContent()) {
+      delegate->DidFinishLine(false /*last_line*/, out);
       current_line_length = 0;
+      delegate->DidStartLine(out);
     }
 
     // Finally, insert the actual character(s).
@@ -120,6 +117,7 @@ void QuotedPrintableEncode(const char* input,
       current_line_length++;
     }
   }
+  delegate->DidFinishLine(true /*last_line*/, out);
 }
 
 void QuotedPrintableDecode(const Vector<char>& in, Vector<char>& out) {
