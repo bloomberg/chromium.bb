@@ -463,6 +463,8 @@ component("chromeos") {
     "printing/printer_configuration.h",
     "printing/printer_translator.cc",
     "printing/printer_translator.h",
+    "printing/uri_components.cc",
+    "printing/uri_components.h",
     "process_proxy/process_output_watcher.cc",
     "process_proxy/process_output_watcher.h",
     "process_proxy/process_proxy.cc",
