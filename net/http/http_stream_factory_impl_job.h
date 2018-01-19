@@ -366,7 +366,8 @@ class HttpStreamFactoryImpl::Job {
   static SpdySessionKey GetSpdySessionKey(bool spdy_session_direct,
                                           const ProxyServer& proxy_server,
                                           const GURL& origin_url,
-                                          PrivacyMode privacy_mode);
+                                          PrivacyMode privacy_mode,
+                                          const SocketTag& socket_tag);
 
   // Returns true if the current request can use an existing spdy session.
   bool CanUseExistingSpdySession() const;

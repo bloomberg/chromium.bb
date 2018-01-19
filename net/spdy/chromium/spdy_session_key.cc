@@ -16,9 +16,11 @@ SpdySessionKey::SpdySessionKey() = default;
 
 SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
                                const ProxyServer& proxy_server,
-                               PrivacyMode privacy_mode)
+                               PrivacyMode privacy_mode,
+                               const SocketTag& socket_tag)
     : host_port_proxy_pair_(host_port_pair, proxy_server),
-      privacy_mode_(privacy_mode) {
+      privacy_mode_(privacy_mode),
+      socket_tag_(socket_tag) {
   DVLOG(1) << "SpdySessionKey(host=" << host_port_pair.ToString()
       << ", proxy=" << proxy_server.ToURI()
       << ", privacy=" << privacy_mode;
@@ -30,15 +32,17 @@ SpdySessionKey::~SpdySessionKey() = default;
 
 bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
   return std::tie(privacy_mode_, host_port_proxy_pair_.first,
-                  host_port_proxy_pair_.second) <
+                  host_port_proxy_pair_.second, socket_tag_) <
          std::tie(other.privacy_mode_, other.host_port_proxy_pair_.first,
-                  other.host_port_proxy_pair_.second);
+                  other.host_port_proxy_pair_.second, other.socket_tag_);
 }
 
 bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
   return privacy_mode_ == other.privacy_mode_ &&
-      host_port_proxy_pair_.first.Equals(other.host_port_proxy_pair_.first) &&
-      host_port_proxy_pair_.second == other.host_port_proxy_pair_.second;
+         host_port_proxy_pair_.first.Equals(
+             other.host_port_proxy_pair_.first) &&
+         host_port_proxy_pair_.second == other.host_port_proxy_pair_.second &&
+         socket_tag_ == other.socket_tag_;
 }
 
 size_t SpdySessionKey::EstimateMemoryUsage() const {

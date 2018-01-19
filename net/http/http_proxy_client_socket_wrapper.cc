@@ -470,7 +470,8 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
     SpdySessionKey key(ssl_params_->GetDirectConnectionParams()
                            ->destination()
                            .host_port_pair(),
-                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                       initial_socket_tag_);
     if (spdy_session_pool_->FindAvailableSession(
             key, /* enable_ip_based_pooling = */ true, net_log_)) {
       using_spdy_ = true;
@@ -583,7 +584,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   DCHECK(ssl_params_);
   SpdySessionKey key(
       ssl_params_->GetDirectConnectionParams()->destination().host_port_pair(),
-      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+      ProxyServer::Direct(), PRIVACY_MODE_DISABLED, initial_socket_tag_);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool_->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true, net_log_);
