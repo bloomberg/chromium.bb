@@ -74,6 +74,7 @@ extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;
 extern const base::Feature kReaderModeInCCT;
+extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
