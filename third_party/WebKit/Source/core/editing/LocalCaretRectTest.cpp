@@ -170,6 +170,33 @@ TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
       LocalCaretRectOfPosition({Position(foo, 6), TextAffinity::kDownstream}));
 }
 
+TEST_F(LocalCaretRectTest, CaretRectAtBR) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  LoadAhem();
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem; width: 30px'><br>foo</div>");
+  const Element& br = *GetDocument().QuerySelector("br");
+
+  EXPECT_EQ(LocalCaretRect(br.GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(br), TextAffinity::kDownstream}));
+}
+
+TEST_F(LocalCaretRectTest, CaretRectAtRtlBR) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  LoadAhem();
+  SetBodyContent(
+      "<bdo dir=rtl style='display: block; font: 10px/10px Ahem; width: 30px'>"
+      "<br>foo</bdo>");
+  const Element& br = *GetDocument().QuerySelector("br");
+
+  EXPECT_EQ(LocalCaretRect(br.GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(br), TextAffinity::kDownstream}));
+}
+
 TEST_F(LocalCaretRectTest, Images) {
   // This test only records the current behavior. Future changes are allowed.
 
