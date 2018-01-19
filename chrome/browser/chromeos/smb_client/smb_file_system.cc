@@ -278,8 +278,17 @@ AbortCallback SmbFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->DeleteEntry(
+      GetMountId(), entry_path, recursive,
+      base::BindOnce(&SmbFileSystem::HandleRequestDeleteEntryCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
+}
+
+void SmbFileSystem::HandleRequestDeleteEntryCallback(
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::CopyEntry(

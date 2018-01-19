@@ -201,6 +201,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback,
       smbprovider::ErrorType error) const;
 
+  void HandleRequestDeleteEntryCallback(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      smbprovider::ErrorType error) const;
+
   base::File::Error RunUnmountCallback(
       const ProviderId& provider_id,
       const std::string& file_system_id,
