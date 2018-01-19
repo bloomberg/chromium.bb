@@ -66,14 +66,14 @@ Polymer({
     enableConnect: {
       type: Boolean,
       notify: true,
-      computed: 'computeEnableConnect_(isConfigured_, propertiesSent_)',
+      value: false,
     },
 
     /** @private */
     enableSave: {
       type: Boolean,
       notify: true,
-      computed: 'computeEnableSave_(isConfigured_, propertiesReceived_)',
+      value: false,
     },
 
     /**
@@ -295,6 +295,8 @@ Polymer({
   },
 
   observers: [
+    'setEnableConnect_(isConfigured_, propertiesSent_)',
+    'setEnableSave_(isConfigured_, propertiesReceived_)',
     'updateConfigProperties_(networkProperties)',
     'updateSecurity_(configProperties_, security_)',
     'updateEapOuter_(eapProperties_.Outer)',
@@ -306,6 +308,7 @@ Polymer({
     // Multiple updateIsConfigured observers for different configurations.
     'updateIsConfigured_(configProperties_.*, security_)',
     'updateIsConfigured_(configProperties_, eapProperties_.*)',
+    'updateIsConfigured_(configProperties_.WiFi.*)',
     'updateIsConfigured_(configProperties_.VPN.*, vpnType_)',
   ],
 
@@ -344,7 +347,8 @@ Polymer({
           this.guid, this.getPropertiesCallback_.bind(this));
     }
     this.onCertificateListsChanged_();
-    this.async(() => {
+    this.updateIsConfigured_();
+    requestAnimationFrame(() => {
       var e = this.$$(
           'network-config-input:not([disabled]),' +
           'network-config-select:not([disabled])');
@@ -949,20 +953,14 @@ Polymer({
     return type == networkType;
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeEnableSave_: function() {
-    return this.isConfigured_ && this.propertiesReceived_;
+  /** @private */
+  setEnableSave_: function() {
+    this.enableSave = this.isConfigured_ && this.propertiesReceived_;
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeEnableConnect_: function() {
-    return this.isConfigured_ && !this.propertiesSent_;
+  /** @private */
+  setEnableConnect_: function() {
+    this.enableConnect = this.isConfigured_ && !this.propertiesSent_;
   },
 
   /**
@@ -1011,7 +1009,8 @@ Polymer({
    * @private
    */
   shareIsVisible_: function() {
-    return this.type == CrOnc.Type.WI_FI || this.type == CrOnc.Type.WI_MAX;
+    return !this.guid &&
+        (this.type == CrOnc.Type.WI_FI || this.type == CrOnc.Type.WI_MAX);
   },
 
   /**

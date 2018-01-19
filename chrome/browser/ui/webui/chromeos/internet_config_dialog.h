@@ -29,6 +29,7 @@ class InternetConfigDialog : public SystemWebDialogDelegate {
   ~InternetConfigDialog() override;
 
   // ui::WebDialogDelegate
+  void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
 
  private:

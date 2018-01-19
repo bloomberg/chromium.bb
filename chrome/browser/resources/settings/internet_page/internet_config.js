@@ -114,22 +114,6 @@ Polymer({
     return !!this.guid && !!source && source != CrOnc.Source.NONE;
   },
 
-  /**
-   * @return {string}
-   * @private
-   */
-  getSaveOrConnectLabel_: function() {
-    return this.i18n(this.isConfigured_() ? 'save' : 'networkButtonConnect');
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getSaveOrConnectEnabled_: function() {
-    return this.isConfigured_() ? this.enableSave_ : this.enableConnect_;
-  },
-
   /** @private */
   onCancelTap_: function() {
     this.close();

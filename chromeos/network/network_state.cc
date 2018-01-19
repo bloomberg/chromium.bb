@@ -337,9 +337,15 @@ GURL NetworkState::GetWebProxyAutoDiscoveryUrl() const {
 }
 
 bool NetworkState::RequiresActivation() const {
-  return (type() == shill::kTypeCellular &&
-          activation_state() != shill::kActivationStateActivated &&
-          activation_state() != shill::kActivationStateUnknown);
+  return type() == shill::kTypeCellular &&
+         activation_state() != shill::kActivationStateActivated &&
+         activation_state() != shill::kActivationStateUnknown;
+}
+
+bool NetworkState::SecurityRequiresPassphraseOnly() const {
+  return type() == shill::kTypeWifi &&
+         (security_class() == shill::kSecurityPsk ||
+          security_class() == shill::kSecurityWep);
 }
 
 std::string NetworkState::connection_state() const {
