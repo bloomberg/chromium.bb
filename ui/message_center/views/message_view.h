@@ -94,11 +94,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() const { return notification_id_; }
 
-#if defined(OS_CHROMEOS)
-  // By calling this, all notifications are treated as non-pinned forcibly.
-  void set_force_disable_pinned() { force_disable_pinned_ = true; }
-#endif
-
   bool manually_expanded_or_collapsed() const {
     return manually_expanded_or_collapsed_;
   }
@@ -129,9 +124,6 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   // Flag if the notification is set to pinned or not.
   bool pinned_ = false;
-  // Flag if pin is forcibly disabled on this view. If true, the view is never
-  // pinned regardless of the value of |pinned_|.
-  bool force_disable_pinned_ = false;
 
   // True if the notification is expanded/collapsed by user interaction.
   // If true, MessagePopupCollection will not auto-collapse the notification.

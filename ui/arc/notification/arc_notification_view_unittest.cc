@@ -313,6 +313,7 @@ TEST_F(ArcNotificationViewTest, SlideOutPinned) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   notification()->set_pinned(true);
+  notification_view()->SetIsNested();
   UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
