@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<title>media controls picture in picture button</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<body>
+<script>
+async_test(t => {
+    enablePictureInPictureForTest(t);
+
+    var video = document.createElement('video');
+    video.setAttribute('controls', '');
+    video.src = findMediaFile('video', '../content/test');
+    document.body.appendChild(video);
+
+    video.play();
+
+    video.onloadedmetadata = t.step_func(function() {
+        // Should have a picture in picture button.
+        var button = pictureInPictureButton(video);
+        assert_false(
+            ("display" in button.style) && (button.style.display == "none"),
+             "button should exist");
+
+        // Should not have a picture in picture interstitial while the video
+        // is not playing.
+        checkPictureInPictureInterstitialDoesNotExist(video);
+
+        button.onclick = setTimeout(t.step_func_done(function() {
+            // Interstitial should appear when picture in picture button is clicked.
+            var interstitial = pictureInPictureInterstitial(video);
+            assert_equals(interstitial.style.display, '',
+                'interstitial should be visible when the video is not playing');
+        }));
+
+        video.play();
+        button.click();
+    });
+});
+</script>
+</body>

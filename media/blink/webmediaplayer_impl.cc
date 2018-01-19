@@ -800,6 +800,13 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
+void WebMediaPlayerImpl::PictureInPicture() {
+  if (client_) {
+    client_->PictureInPictureStarted();
+    // client_->MediaRemotingStarted("eh");
+  }
+}
+
 void WebMediaPlayerImpl::SetSinkId(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,

@@ -328,6 +328,7 @@ class CORE_EXPORT Node : public EventTarget {
   virtual bool IsCharacterDataNode() const { return false; }
   virtual bool IsFrameOwnerElement() const { return false; }
   virtual bool IsMediaRemotingInterstitial() const { return false; }
+  virtual bool IsPictureInPictureInterstitial() const { return false; }
 
   // Traverses the ancestors of this node and returns true if any of them are
   // either a MediaControlElement or MediaControls.

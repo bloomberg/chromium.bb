@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<title>media controls picture in picture button</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<body>
+<script>
+async_test(t => {
+    enablePictureInPictureForTest(t);
+
+    var video = document.createElement('video');
+    video.setAttribute('controls', '');
+    video.src = findMediaFile('video', '../content/test');
+    document.body.appendChild(video);
+
+    video.onloadedmetadata = t.step_func_done(function() {
+        // Should have a picture in picture button.
+        var button = pictureInPictureButton(video);
+        assert_false(
+            ("display" in button.style) && (button.style.display == "none"),
+             "button should exist");
+
+        // Check its position is to the right of the timeline.
+        var buttonBoundingRect = button.getBoundingClientRect();
+        var x = buttonBoundingRect.left + buttonBoundingRect.width / 2;
+        var timelinePosition =
+            mediaControlsButtonCoordinates(video, "timeline");
+        assert_greater_than(x, timelinePosition[0],
+                            "button should be to right of timeline");
+
+        // Button should be to the left of the fullscreen button.
+        var fullscreenPosition =
+            mediaControlsButtonCoordinates(video, "fullscreen-button");
+        assert_less_than(x, fullscreenPosition[0],
+                         "button should be to left of fullscreen button");
+    });
+});
+</script>
+</body>

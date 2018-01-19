@@ -171,7 +171,8 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 /* TODO(xjz): Move media remoting elements to a separate css file. */
-video::-internal-media-remoting-interstitial {
+video::-internal-media-remoting-interstitial,
+video::-internal-picture-in-picture-interstitial {
     width: inherit;
     height: inherit;
     position: relative;
@@ -190,7 +191,8 @@ video::-internal-media-remoting-interstitial {
     transition: opacity .3s ease-in-out;
 }
 
-video::-internal-media-remoting-background-image {
+video::-internal-media-remoting-background-image,
+video::-internal-picture-in-picture-background-image {
     display: flex;
     position: absolute;
     margin: 0;
@@ -225,7 +227,8 @@ video::-internal-media-remoting-cast-icon {
     top: calc(50% - 3vw);
 }
 
-video::-internal-media-remoting-cast-text-message {
+video::-internal-media-remoting-cast-text-message,
+video::-internal-picture-in-picture-message {
     display: inline;
     position: absolute;
     top: calc(50% + 1vw);
@@ -239,6 +242,10 @@ video::-internal-media-remoting-cast-text-message {
     font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
     margin: 0px;
+}
+
+video::-internal-picture-in-picture-message {
+    top: calc(50%);
 }
 
 video::-internal-media-remoting-toast-message {
