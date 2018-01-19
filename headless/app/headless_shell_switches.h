@@ -35,7 +35,6 @@ extern const char kWindowSize[];
 extern const char kAuthServerWhitelist[];
 
 // Switches which are replicated from content.
-using ::switches::kHostResolverRules;
 using ::switches::kRemoteDebuggingPort;
 
 }  // namespace switches

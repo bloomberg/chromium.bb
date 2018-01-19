@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/url_constants.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/url_request/view_cache_helper.h"
 
@@ -29,16 +28,13 @@ class CacheURLLoader {
     resource_response.mime_type = "text/html";
     client_->OnReceiveResponse(resource_response, base::nullopt, nullptr);
 
-    DCHECK(base::StartsWith(url.spec(), kChromeUINetworkViewCacheURL,
-                            base::CompareCase::INSENSITIVE_ASCII));
-
-    std::string cache_key =
-        url.spec().substr(strlen(kChromeUINetworkViewCacheURL));
+    auto url_prefix = url.GetWithEmptyPath().spec();
+    std::string cache_key = url.spec().substr(url_prefix.size());
 
     int rv;
     if (cache_key.empty()) {
       rv = cache_helper_.GetContentsHTML(
-          request_context, kChromeUINetworkViewCacheURL, &data_,
+          request_context, url_prefix, &data_,
           base::Bind(&CacheURLLoader::DataAvailable, base::Unretained(this)));
     } else {
       rv = cache_helper_.GetEntryInfoHTML(

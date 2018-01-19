@@ -53,6 +53,7 @@ include_rules = [
 
   "+printing",
 
+  "+services/network/public/cpp",
   "+services/service_manager/public/cpp",
 
   "+storage/browser/quota",

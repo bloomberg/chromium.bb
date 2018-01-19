@@ -543,9 +543,6 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 const char kHistoryEntryRequiresUserGesture[] =
     "history-entry-requires-user-gesture";
 
-// These mappings only apply to the host resolver.
-const char kHostResolverRules[]             = "host-resolver-rules";
-
 // A set of public key hashes for which to ignore certificate-related errors.
 //
 // If the certificate chain presented by the server does not validate, and one
@@ -592,11 +589,6 @@ const char kLoggingLevel[]                  = "log-level";
 // Overrides the default file name to use for general-purpose logging (does not
 // affect which events are logged).
 const char kLogFile[] = "log-file";
-
-// Enables saving net log events to a file. If a value is given, it used as the
-// path the the file, otherwise the file is named netlog.json and placed in the
-// user data directory.
-const char kLogNetLog[]                     = "log-net-log";
 
 // Resizes of the main frame are caused by changing between landscape and
 // portrait mode (i.e. Android) so the page should be rescaled to fit.

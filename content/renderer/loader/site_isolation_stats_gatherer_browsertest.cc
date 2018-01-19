@@ -16,6 +16,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -40,7 +41,7 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     // This allows us to use "real" hostnames in URLs, which we can use to
     // create arbitrary SiteInstances.
     command_line->AppendSwitchASCII(
-        switches::kHostResolverRules,
+        network::switches::kHostResolverRules,
         "MAP * " + embedded_test_server()->host_port_pair().ToString() +
             ",EXCLUDE localhost");
 

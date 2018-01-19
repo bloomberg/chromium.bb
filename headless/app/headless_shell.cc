@@ -40,6 +40,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "net/socket/ssl_client_socket.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -741,9 +742,9 @@ int HeadlessShellMain(int argc, const char** argv) {
     builder.SetProxyConfig(std::move(proxy_config));
   }
 
-  if (command_line.HasSwitch(switches::kHostResolverRules)) {
-    builder.SetHostResolverRules(
-        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+  if (command_line.HasSwitch(::network::switches::kHostResolverRules)) {
+    builder.SetHostResolverRules(command_line.GetSwitchValueASCII(
+        ::network::switches::kHostResolverRules));
   }
 
   if (command_line.HasSwitch(switches::kUseGL)) {

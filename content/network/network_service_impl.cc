@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/network/network_context.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
@@ -21,6 +20,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace content {
 
@@ -64,11 +64,11 @@ class NetworkServiceImpl::MojoNetLog : public net::NetLog {
   // If specified by the command line, stream network events (NetLog) to a
   // file on disk. This will last for the duration of the process.
   void ProcessCommandLine(const base::CommandLine& command_line) {
-    if (!command_line.HasSwitch(switches::kLogNetLog))
+    if (!command_line.HasSwitch(network::switches::kLogNetLog))
       return;
 
     base::FilePath log_path =
-        command_line.GetSwitchValuePath(switches::kLogNetLog);
+        command_line.GetSwitchValuePath(network::switches::kLogNetLog);
 
     // TODO(eroman): Should get capture mode from the command line.
     net::NetLogCaptureMode capture_mode =
