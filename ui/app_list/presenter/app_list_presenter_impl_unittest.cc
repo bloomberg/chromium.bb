@@ -35,7 +35,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool init_called() const { return init_called_; }
   bool on_shown_called() const { return on_shown_called_; }
   bool on_dismissed_called() const { return on_dismissed_called_; }
-  bool update_bounds_called() const { return update_bounds_called_; }
 
  private:
   // AppListPresenterDelegate:
@@ -52,7 +51,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   }
   void OnShown(int64_t display_id) override { on_shown_called_ = true; }
   void OnDismissed() override { on_dismissed_called_ = true; }
-  void UpdateBounds() override { update_bounds_called_ = true; }
   gfx::Vector2d GetVisibilityAnimationOffset(aura::Window*) override {
     return gfx::Vector2d(0, 0);
   }
@@ -68,7 +66,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool init_called_ = false;
   bool on_shown_called_ = false;
   bool on_dismissed_called_ = false;
-  bool update_bounds_called_ = false;
   views::TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
@@ -162,7 +159,6 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
-  EXPECT_FALSE(delegate()->update_bounds_called());
   focus_client->FocusWindow(presenter()->GetWindow());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
 
@@ -171,7 +167,6 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
   focus_client->FocusWindow(window.get());
 
   EXPECT_TRUE(delegate()->on_dismissed_called());
-  EXPECT_FALSE(delegate()->update_bounds_called());
   EXPECT_FALSE(presenter()->GetTargetVisibility());
 }
 
@@ -192,7 +187,6 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
-  EXPECT_FALSE(delegate()->update_bounds_called());
 
   // Create a sibling window.
   std::unique_ptr<aura::Window> window(
@@ -201,23 +195,6 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
 
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_FALSE(delegate()->on_dismissed_called());
-  EXPECT_FALSE(delegate()->update_bounds_called());
-}
-
-// Tests that UpdateBounds is called on the delegate when the root window
-// is resized.
-TEST_F(AppListPresenterImplTest, RootWindowResize) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  presenter()->Show(GetDisplayId());
-  EXPECT_FALSE(delegate()->update_bounds_called());
-  gfx::Rect bounds = root_window()->bounds();
-  bounds.Inset(-10, 0);
-  root_window()->SetBounds(bounds);
-  EXPECT_TRUE(delegate()->update_bounds_called());
 }
 
 // Tests that the app list is dismissed and the delegate is destroyed when the

@@ -34,7 +34,6 @@ class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate,
             int current_apps_page) override;
   void OnShown(int64_t display_id) override;
   void OnDismissed() override;
-  void UpdateBounds() override;
   gfx::Vector2d GetVisibilityAnimationOffset(
       aura::Window* root_window) override;
   base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,

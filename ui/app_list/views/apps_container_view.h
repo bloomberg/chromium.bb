@@ -133,8 +133,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
 
   size_t top_icon_animation_pending_count_ = 0u;
 
-  const bool is_fullscreen_app_list_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };
 

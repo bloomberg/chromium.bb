@@ -1327,8 +1327,6 @@ TEST_F(AppListViewTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
   params.parent = GetContext();
   params.initial_apps_page = 1;
   view_->Initialize(params);
-  const gfx::Size size = view_->bounds().size();
-  view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
   Show();
 
   ASSERT_EQ(0, view_->GetAppsPaginationModel()->selected_page());
@@ -1821,8 +1819,6 @@ TEST_F(AppListViewTest, MultiplePagesReinitializeOnInputPage) {
   params.parent = GetContext();
   params.initial_apps_page = 1;
   view_->Initialize(params);
-  const gfx::Size size = view_->bounds().size();
-  view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
   Show();
 
   ASSERT_EQ(1, view_->GetAppsPaginationModel()->selected_page());

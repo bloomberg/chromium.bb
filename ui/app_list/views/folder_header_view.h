@@ -91,7 +91,6 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   FolderHeaderViewDelegate* delegate_;
 
   bool folder_name_visible_;
-  bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderView);
 };

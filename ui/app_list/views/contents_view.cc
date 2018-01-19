@@ -48,9 +48,7 @@ void DoAnimation(base::TimeDelta animation_duration,
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListView* app_list_view)
-    : app_list_main_view_(app_list_main_view),
-      app_list_view_(app_list_view),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+    : app_list_main_view_(app_list_main_view), app_list_view_(app_list_view) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
   pagination_model_.AddObserver(this);
@@ -214,17 +212,6 @@ void ContentsView::ActivePageChanged() {
   app_list_pages_[GetActivePageIndex()]->OnWillBeShown();
 
   app_list_main_view_->model()->SetState(state);
-
-  // Set the visibility of the search box's back button.
-  const bool folder_active = state == AppListModel::STATE_APPS &&
-                             apps_container_view_->IsInFolderView();
-
-  if (!is_fullscreen_app_list_enabled_) {
-    app_list_main_view_->search_box_view()->back_button()->SetVisible(
-        state != AppListModel::STATE_START);
-    app_list_main_view_->search_box_view()->Layout();
-    app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
-  }
 }
 
 void ContentsView::ShowSearchResults(bool show) {
@@ -334,18 +321,10 @@ int ContentsView::AddLauncherPage(AppListPage* view,
 
 gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
   gfx::Rect search_box_bounds;
-  if (is_fullscreen_app_list_enabled_) {
-    search_box_bounds.set_size(GetSearchBoxView()->GetPreferredSize());
-    search_box_bounds.Offset((bounds().width() - search_box_bounds.width()) / 2,
-                             0);
-    search_box_bounds.set_y(kSearchBoxTopPadding);
-  } else {
-    search_box_bounds =
-        gfx::Rect(0, 0, GetDefaultContentsSize().width(),
-                  GetSearchBoxView()->GetPreferredSize().height());
-    search_box_bounds.set_y(kSearchBoxPadding);
-    search_box_bounds.Inset(kSearchBoxPadding, 0);
-  }
+  search_box_bounds.set_size(GetSearchBoxView()->GetPreferredSize());
+  search_box_bounds.Offset((bounds().width() - search_box_bounds.width()) / 2,
+                           0);
+  search_box_bounds.set_y(kSearchBoxTopPadding);
   return search_box_bounds;
 }
 
@@ -358,8 +337,7 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForState(
 gfx::Rect ContentsView::GetDefaultContentsBounds() const {
   const gfx::Size contents_size(GetDefaultContentsSize());
   gfx::Point origin(0, GetDefaultSearchBoxBounds().bottom());
-  if (is_fullscreen_app_list_enabled_)
-    origin.Offset((bounds().width() - contents_size.width()) / 2, 0);
+  origin.Offset((bounds().width() - contents_size.width()) / 2, 0);
   return gfx::Rect(origin, contents_size);
 }
 
@@ -384,9 +362,7 @@ bool ContentsView::Back() {
       if (apps_container_view_->IsInFolderView()) {
         apps_container_view_->app_list_folder_view()->CloseFolderPage();
       } else {
-        is_fullscreen_app_list_enabled_
-            ? app_list_view_->Dismiss()
-            : SetActiveState(AppListModel::STATE_START);
+        app_list_view_->Dismiss();
       }
       break;
     case AppListModel::STATE_SEARCH_RESULTS:
@@ -413,9 +389,7 @@ gfx::Size ContentsView::CalculatePreferredSize() const {
       search_box_bounds.bottom_right().OffsetFromOrigin();
   bottom_right.SetToMax(
       default_contents_bounds.bottom_right().OffsetFromOrigin());
-  return gfx::Size(bottom_right.x(), is_fullscreen_app_list_enabled_
-                                         ? GetDisplayHeight()
-                                         : bottom_right.y());
+  return gfx::Size(bottom_right.x(), GetDisplayHeight());
 }
 
 void ContentsView::Layout() {
@@ -474,7 +448,6 @@ int ContentsView::GetDisplayHeight() const {
 }
 
 void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
-  DCHECK(is_fullscreen_app_list_enabled_);
   DoAnimation(animation_duration, layer(), 0.0f);
   DoAnimation(animation_duration, GetSearchBoxView()->layer(), 0.0f);
 }

@@ -42,7 +42,6 @@ class AppListViewDelegate;
 // for laying out the app list UI to ash::AppListLayoutDelegate.
 class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
     : public aura::client::FocusChangeObserver,
-      public aura::WindowObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
       public PaginationModelObserver {
@@ -105,12 +104,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // aura::client::FocusChangeObserver overrides:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
-
-  // aura::WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* root,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
