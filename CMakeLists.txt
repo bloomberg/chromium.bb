@@ -57,8 +57,11 @@ set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 if ("${AOM_ROOT}" STREQUAL "${AOM_CONFIG_DIR}")
   message(FATAL_ERROR
           "Building from within the aom source tree is not supported.\n"
-          "Hint: mkdir -p ../aom_build && cd ../aom_build\n"
-          "Run cmake from there.")
+          "Hint: Run these commands\n"
+          "$ rm -rf CMakeCache.txt CMakeFiles\n"
+          "$ mkdir -p ../aom_build\n"
+          "$ cd ../aom_build\n"
+          "And re-run CMake from the aom_build directory.")
 endif ()
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
