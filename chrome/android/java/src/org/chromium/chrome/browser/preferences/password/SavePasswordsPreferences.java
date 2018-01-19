@@ -21,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordManagerHandler;
@@ -78,6 +79,9 @@ public class SavePasswordsPreferences
     // True if the user triggered the password export flow and this fragment is waiting for the
     // result of the user's reauthentication.
     private boolean mExportRequested;
+    // True if the option to export passwords in the three-dots menu should be disabled due to an
+    // ongoing export.
+    private boolean mExportOptionSuspended = false;
     private Preference mLinkPref;
     private ChromeSwitchPreference mSavePasswordsSwitch;
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
@@ -109,7 +113,7 @@ public class SavePasswordsPreferences
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.export_passwords).setEnabled(!mNoPasswords);
+        menu.findItem(R.id.export_passwords).setEnabled(!mNoPasswords && !mExportOptionSuspended);
         super.onPrepareOptionsMenu(menu);
     }
 
@@ -117,10 +121,33 @@ public class SavePasswordsPreferences
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.export_passwords) {
+            // Disable re-triggering exporting until the current exporting finishes.
+            mExportOptionSuspended = true;
+
+            // Start fetching the serialized passwords now to use the time the user spends
+            // reauthenticating and reading the warning message. If the user cancels the export or
+            // fails the reauthentication, the serialised passwords will simply get ignored when
+            // they arrive.
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .serializePasswords(new Callback<String>() {
+                        @Override
+                        public void onResult(String serializedPasswords) {
+                            // TODO(crbug.com/788701): Ensure that the SavePasswordsPreferences is
+                            // not dead before trying to use any of its data members.
+                            // TODO(crbug.com/788701): Ensure that the passwords are stored to a
+                            // file here and its URI in saved-state-bundle in case the reauth
+                            // dialogue causes this activity to be killed.
+                            // TODO(crbug.com/788701): Synchronise with end of the UI flow and pass
+                            // the data.
+                        }
+                    });
             if (!ReauthenticationManager.isScreenLockSetUp(getActivity().getApplicationContext())) {
                 Toast.makeText(getActivity().getApplicationContext(),
                              R.string.password_export_set_lock_screen, Toast.LENGTH_LONG)
                         .show();
+                // Re-enable exporting, the current one was cancelled by Chrome.
+                mExportOptionSuspended = false;
             } else if (ReauthenticationManager.authenticationStillValid()) {
                 exportAfterReauth();
             } else {
@@ -144,13 +171,16 @@ public class SavePasswordsPreferences
                 if (which == AlertDialog.BUTTON_POSITIVE) {
                     exportAfterWarning();
                 }
+                // Re-enable exporting, the current one was either finished or dismissed.
+                mExportOptionSuspended = false;
             }
         });
         exportWarningDialogFragment.show(getFragmentManager(), null);
     }
 
     private void exportAfterWarning() {
-        // TODO(crbug.com/788701): Start the export.
+        // TODO(crbug.com/788701): Synchronise with obtaining serialised passwords and pass them to
+        // the intent.
     }
 
     /**
@@ -279,7 +309,13 @@ public class SavePasswordsPreferences
         super.onResume();
         if (mExportRequested) {
             mExportRequested = false;
-            if (ReauthenticationManager.authenticationStillValid()) exportAfterReauth();
+            // Depending on the authentication result, either carry on with exporting or re-enable
+            // the export menu for future attempts.
+            if (ReauthenticationManager.authenticationStillValid()) {
+                exportAfterReauth();
+            } else {
+                mExportOptionSuspended = false;
+            }
         }
         rebuildPasswordLists();
     }

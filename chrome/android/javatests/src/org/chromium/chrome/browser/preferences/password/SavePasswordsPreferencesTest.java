@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -64,10 +65,17 @@ public class SavePasswordsPreferencesTest {
         private final PasswordListObserver mObserver;
 
         // The faked contents of the password store to be displayed.
-        private ArrayList<SavedPasswordEntry> mSavedPasswords;
+        private ArrayList<SavedPasswordEntry> mSavedPasswords = new ArrayList<SavedPasswordEntry>();
+
+        // This is set to true when serializePasswords is called.
+        private boolean mSerializePasswordsCalled;
 
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
+        }
+
+        public boolean getSerializePasswordsCalled() {
+            return mSerializePasswordsCalled;
         }
 
         /**
@@ -109,6 +117,11 @@ public class SavePasswordsPreferencesTest {
             // Define this method before starting to use it in tests.
             assert false;
             return;
+        }
+
+        @Override
+        public void serializePasswords(Callback<String> callback) {
+            mSerializePasswordsCalled = true;
         }
     }
 
@@ -350,6 +363,35 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that tapping the export menu requests the passwords to be serialised in the background.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportTriggersSerialization() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // Before tapping the menu item for export, pretend that the last successful
+        // reauthentication just happened. This will allow the export flow to continue.
+        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        Assert.assertTrue(mHandler.getSerializePasswordsCalled());
+    }
+
+    /**
      * Check that the export menu item is included and hidden behind the overflow menu. Check that
      * the menu displays the warning before letting the user export passwords.
      */
@@ -405,6 +447,77 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
         Espresso.onView(withText(R.string.password_export_set_lock_screen))
                 .inRoot(withDecorView(not(is(mainDecorView))))
+                .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that if exporting is cancelled for the absence of the screen lock, the menu item is
+     * enabled for a retry.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportMenuItemReenabledNoLock() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.UNAVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // The text matches a text view, but the potentially disabled entity is some wrapper two
+        // levels up in the view hierarchy, hence the two withParent matchers.
+        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
+                                withParent(withParent(isEnabled()))))
+                .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that if exporting is cancelled for the user's failure to reauthenticate, the menu item
+     * is enabled for a retry.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportMenuItemReenabledReauthFailure() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setSkipSystemReauth(true);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+        // The reauthentication dialog is skipped and the last reauthentication timestamp is not
+        // reset. This looks like a failed reauthentication to SavePasswordsPreferences' onResume.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // The text matches a text view, but the potentially disabled entity is some wrapper two
+        // levels up in the view hierarchy, hence the two withParent matchers.
+        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
+                                withParent(withParent(isEnabled()))))
                 .check(matches(isDisplayed()));
     }
 

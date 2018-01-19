@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.Callback;
+
 /**
  * Interface for retrieving passwords and password exceptions (websites for which Chrome should not
  * save password) from native code.
@@ -61,4 +63,11 @@ public interface PasswordManagerHandler {
      * @param index of exception entry.
      */
     public void removeSavedPasswordException(int index);
+
+    /**
+     * Trigger serializing the saved passwords in the background.
+     *
+     * @param callback is called on completion, with the serialized passwords as argument.
+     */
+    public void serializePasswords(Callback<String> callback);
 }
