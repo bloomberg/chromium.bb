@@ -146,10 +146,6 @@ v8::Local<v8::Value> ToV8(const IDBAny* impl,
       return ToV8(impl->IdbCursorWithValue(), creation_context, isolate);
     case IDBAny::kIDBDatabaseType:
       return ToV8(impl->IdbDatabase(), creation_context, isolate);
-    case IDBAny::kIDBIndexType:
-      return ToV8(impl->IdbIndex(), creation_context, isolate);
-    case IDBAny::kIDBObjectStoreType:
-      return ToV8(impl->IdbObjectStore(), creation_context, isolate);
     case IDBAny::kIDBValueType:
       return DeserializeIDBValue(isolate, creation_context, impl->Value());
     case IDBAny::kIDBValueArrayType:
