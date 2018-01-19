@@ -44,7 +44,7 @@ GamepadProvider::GamepadProvider(
       devices_changed_(true),
       ever_had_user_gesture_(false),
       sanitize_(true),
-      gamepad_shared_buffer_(new GamepadSharedBuffer()),
+      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       connection_change_client_(connection_change_client) {
   Initialize(std::unique_ptr<GamepadDataFetcher>());
 }
@@ -57,7 +57,7 @@ GamepadProvider::GamepadProvider(
       devices_changed_(true),
       ever_had_user_gesture_(false),
       sanitize_(true),
-      gamepad_shared_buffer_(new GamepadSharedBuffer()),
+      gamepad_shared_buffer_(std::make_unique<GamepadSharedBuffer>()),
       connection_change_client_(connection_change_client) {
   Initialize(std::move(fetcher));
 }

@@ -7,8 +7,10 @@
 namespace device {
 
 GamepadSharedBuffer::GamepadSharedBuffer() {
-  size_t data_size = sizeof(GamepadHardwareBuffer);
-  bool res = shared_memory_.CreateAndMapAnonymous(data_size);
+  base::SharedMemoryCreateOptions options;
+  options.size = sizeof(GamepadHardwareBuffer);
+  options.share_read_only = true;
+  bool res = shared_memory_.Create(options) && shared_memory_.Map(options.size);
   CHECK(res);
 
   void* mem = shared_memory_.memory();
