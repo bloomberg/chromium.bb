@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/smbprovider/directory_entry.pb.h"
@@ -31,6 +32,8 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
       base::OnceCallback<void(smbprovider::ErrorType error,
                               const smbprovider::DirectoryEntryList& entries)>;
   using StatusCallback = base::OnceCallback<void(smbprovider::ErrorType error)>;
+  using ReadFileCallback = base::OnceCallback<void(smbprovider::ErrorType error,
+                                                   const base::ScopedFD& fd)>;
 
   ~SmbProviderClient() override;
 
@@ -75,6 +78,16 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   virtual void CloseFile(int32_t mount_id,
                          int32_t file_id,
                          StatusCallback callback) = 0;
+
+  // Calls ReadFile. Using the corresponding mount |mount_id|, this reads the
+  // file with handle |file_id| from |offset| and reads up to |length| in bytes.
+  // The data read is saved to a temporary file and is returned as a file
+  // descriptor in the supplied ReadFileCallback.
+  virtual void ReadFile(int32_t mount_id,
+                        int32_t file_id,
+                        int64_t offset,
+                        int32_t length,
+                        ReadFileCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

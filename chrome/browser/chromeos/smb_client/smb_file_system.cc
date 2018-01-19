@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
+#include "net/base/io_buffer.h"
 
 namespace chromeos {
 
@@ -249,7 +251,11 @@ AbortCallback SmbFileSystem::ReadFile(
     int64_t offset,
     int length,
     const ReadChunkReceivedCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->ReadFile(
+      GetMountId(), file_handle, offset, length,
+      base::BindOnce(&SmbFileSystem::HandleRequestReadFileCallback,
+                     weak_ptr_factory_.GetWeakPtr(), length,
+                     scoped_refptr<net::IOBuffer>(buffer), callback));
   return CreateAbortCallback();
 }
 
@@ -435,6 +441,38 @@ base::File::Error SmbFileSystem::RunUnmountCallback(
   base::File::Error error =
       std::move(unmount_callback_).Run(provider_id, file_system_id, reason);
   return error;
+}
+
+void SmbFileSystem::HandleRequestReadFileCallback(
+    int32_t length,
+    scoped_refptr<net::IOBuffer> buffer,
+    const ReadChunkReceivedCallback& callback,
+    smbprovider::ErrorType error,
+    const base::ScopedFD& fd) const {
+  if (error != smbprovider::ERROR_OK) {
+    callback.Run(0 /* chunk_length */, false /* has_more */,
+                 TranslateError(error));
+    return;
+  }
+
+  int32_t total_read = 0;
+  while (total_read < length) {
+    // read() may return less than the requested amount of bytes. If this
+    // happens, try to read the remaining bytes.
+    const int32_t bytes_read = HANDLE_EINTR(
+        read(fd.get(), buffer->data() + total_read, length - total_read));
+    if (bytes_read < 0) {
+      // This is an error case, return an error immediately.
+      callback.Run(0 /* chunk_length */, false /* has_more */,
+                   base::File::FILE_ERROR_IO);
+      return;
+    }
+    if (bytes_read == 0) {
+      break;
+    }
+    total_read += bytes_read;
+  }
+  callback.Run(total_read, false /* has_more */, base::File::FILE_OK);
 }
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>
