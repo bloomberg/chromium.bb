@@ -48,6 +48,15 @@ class FakeSensor : public device::mojom::Sensor {
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(device::SensorReadingSharedBuffer) *
         static_cast<uint64_t>(device::mojom::SensorType::LAST));
+
+    if (!shared_buffer_handle_.is_valid())
+      return;
+
+    // Create read/write mapping now, to ensure it is kept writable
+    // after the region is sealed read-only on Android.
+    shared_buffer_mapping_ = shared_buffer_handle_->MapAtOffset(
+        device::mojom::SensorInitParams::kReadBufferSizeForTests,
+        GetBufferOffset());
   }
 
   ~FakeSensor() override = default;
@@ -104,16 +113,13 @@ class FakeSensor : public device::mojom::Sensor {
   void set_reading(device::SensorReading reading) { reading_ = reading; }
 
   void SensorReadingChanged() {
-    if (!shared_buffer_handle_.is_valid())
+    if (!shared_buffer_mapping_.get())
       return;
 
-    mojo::ScopedSharedBufferMapping shared_buffer =
-        shared_buffer_handle_->MapAtOffset(
-            device::mojom::SensorInitParams::kReadBufferSizeForTests,
-            GetBufferOffset());
-
     device::SensorReadingSharedBuffer* buffer =
-        static_cast<device::SensorReadingSharedBuffer*>(shared_buffer.get());
+        static_cast<device::SensorReadingSharedBuffer*>(
+            shared_buffer_mapping_.get());
+
     auto& seqlock = buffer->seqlock.value();
     seqlock.WriteBegin();
     buffer->reading = reading_;
@@ -127,6 +133,7 @@ class FakeSensor : public device::mojom::Sensor {
   device::mojom::SensorType sensor_type_;
   bool reading_notification_enabled_ = true;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
+  mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
   device::mojom::SensorClientPtr client_;
   device::SensorReading reading_;
 

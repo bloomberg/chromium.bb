@@ -226,7 +226,7 @@ class BASE_EXPORT SharedMemory {
   // before being mapped.
   bool external_section_ = false;
   string16 name_;
-#else
+#elif !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   // If valid, points to the same memory region as shm_, but with readonly
   // permissions.
   SharedMemoryHandle readonly_shm_;

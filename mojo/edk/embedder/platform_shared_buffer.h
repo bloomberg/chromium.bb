@@ -91,6 +91,12 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // Duplicates the underlying platform handle and passes it to the caller.
   ScopedPlatformHandle DuplicatePlatformHandle();
 
+  // Duplicate the underlying platform handle and passes it to the caller,
+  // for the purpose of serialization / IPC. The difference with
+  // DuplicatePlatformHandle() is that this also seals read-only regions
+  // on Android to ensure the receiver cannot map them writable.
+  ScopedPlatformHandle DuplicatePlatformHandleForIPC();
+
   // Duplicates the underlying shared memory handle and passes it to the caller.
   base::SharedMemoryHandle DuplicateSharedMemoryHandle();
 

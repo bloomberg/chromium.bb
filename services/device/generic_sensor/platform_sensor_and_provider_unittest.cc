@@ -65,9 +65,8 @@ TEST_F(PlatformSensorProviderTest, ResourcesAreNotFreedOnPendingRequest) {
       base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
 }
 
-// This test verifies that when sensor is stopped, shared buffer contents are
-// filled with default values.
-TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
+// This test verifies that the shared buffer's default values are 0.
+TEST_F(PlatformSensorProviderTest, SharedBufferDefaultValue) {
   mojo::ScopedSharedBufferHandle handle = provider_->CloneSharedBufferHandle();
   mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
       sizeof(SensorReadingSharedBuffer),
@@ -76,7 +75,11 @@ TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
   EXPECT_THAT(buffer->reading.als.value, 0);
+}
 
+// This test verifies that when sensor is stopped, shared buffer contents are
+// filled with default values.
+TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> sensor) {

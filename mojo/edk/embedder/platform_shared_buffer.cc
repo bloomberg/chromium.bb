@@ -180,6 +180,34 @@ ScopedPlatformHandle PlatformSharedBuffer::DuplicatePlatformHandle() {
   return SharedMemoryToPlatformHandle(handle);
 }
 
+ScopedPlatformHandle PlatformSharedBuffer::DuplicatePlatformHandleForIPC() {
+  DCHECK(shared_memory_);
+  base::SharedMemoryHandle handle;
+  {
+    base::AutoLock locker(lock_);
+    handle = base::SharedMemory::DuplicateHandle(shared_memory_->handle());
+  }
+  if (!handle.IsValid())
+    return ScopedPlatformHandle();
+
+#if defined(OS_ANDROID)
+  if (handle.IsReadOnly()) {
+    // Trying to send a descriptor with the |read_only| property set
+    // while the region has not been sealed read-only yet is a programmer
+    // error. However, fixing all uses cases would require refactoring
+    // too much code for now. TODO(digit): See http://crbug.com/795291
+    //
+    // So just print an error. In the future, change this to DCHECK() to
+    // catch bad use cases, and refactor the appropriate code.
+    if (!handle.IsRegionReadOnly()) {
+      DLOG(ERROR) << "Forcing region read-only before Mojo serialization";
+      handle.SetRegionReadOnly();
+    }
+  }
+#endif
+  return SharedMemoryToPlatformHandle(handle);
+}
+
 ScopedPlatformHandle PlatformSharedBuffer::PassPlatformHandle() {
   DCHECK(HasOneRef());
 

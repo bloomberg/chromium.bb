@@ -57,6 +57,7 @@ class FakeSensor : public device::mojom::Sensor {
   device::mojom::SensorType sensor_type_;
   bool reading_notification_enabled_ = true;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
+  mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
   device::mojom::SensorClientPtr client_;
   device::SensorReading reading_;
 

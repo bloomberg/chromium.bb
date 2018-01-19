@@ -78,9 +78,13 @@ class VROrientationDeviceTest : public testing::Test {
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
         mojo::MakeRequest(&sensor_ptr_));
+
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(SensorReadingSharedBuffer) *
         static_cast<uint64_t>(mojom::SensorType::LAST));
+
+    shared_buffer_mapping_ = shared_buffer_handle_->MapAtOffset(
+        mojom::SensorInitParams::kReadBufferSizeForTests, GetBufferOffset());
 
     fake_screen_ = std::make_unique<FakeScreen>();
 
@@ -160,13 +164,11 @@ class VROrientationDeviceTest : public testing::Test {
   }
 
   void WriteToBuffer(gfx::Quaternion q) {
-    mojo::ScopedSharedBufferMapping shared_buffer =
-        shared_buffer_handle_->MapAtOffset(
-            mojom::SensorInitParams::kReadBufferSizeForTests,
-            GetBufferOffset());
+    if (!shared_buffer_mapping_)
+      return;
 
     SensorReadingSharedBuffer* buffer =
-        static_cast<SensorReadingSharedBuffer*>(shared_buffer.get());
+        static_cast<SensorReadingSharedBuffer*>(shared_buffer_mapping_.get());
 
     auto& seqlock = buffer->seqlock.value();
     seqlock.WriteBegin();
@@ -192,6 +194,7 @@ class VROrientationDeviceTest : public testing::Test {
   std::unique_ptr<FakeOrientationSensor> fake_sensor_;
   mojom::SensorPtrInfo sensor_ptr_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
+  mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
   mojom::SensorClientPtr sensor_client_ptr_;
 
   std::unique_ptr<FakeScreen> fake_screen_;
