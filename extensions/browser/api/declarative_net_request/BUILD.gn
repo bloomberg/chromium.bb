@@ -32,7 +32,6 @@ source_set("declarative_net_request") {
     "//components/web_cache/browser:browser",
     "//content/public/browser:browser",
     "//extensions/browser:browser_sources",
-    "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
     "//extensions/common",
     "//extensions/common/api",
     "//net",
