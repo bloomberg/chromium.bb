@@ -795,6 +795,7 @@ mojom("mojo_bindings") {
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces:interfaces",
     "//services/service_manager/public/interfaces",
+    "//skia/public/interfaces",
     "//third_party/WebKit/common:mojo_platform_bindings",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
