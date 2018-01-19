@@ -61,6 +61,7 @@ static_library("vr_android") {
     "//device/gamepad",
     "//device/vr",
     "//services/device/public/interfaces",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/ui/public/cpp/gpu",
     "//ui/android",
     "//ui/base",
