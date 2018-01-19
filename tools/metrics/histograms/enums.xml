@@ -33026,6 +33026,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="No thanks"/>
 </enum>
 
+<enum name="PasswordCertificateError">
+  <int value="0" label="No error"/>
+  <int value="1" label="Other error"/>
+  <int value="2" label="Authority invalid (e.g., self-signed certificates)"/>
+  <int value="3" label="Date invalid (e.g., expired)"/>
+  <int value="4" label="Common name invalid"/>
+  <int value="5" label="Weak signature algorithm"/>
+</enum>
+
 <enum name="PasswordFormQueryVolume">
   <int value="0" label="New password query"/>
   <int value="1" label="Current query"/>
