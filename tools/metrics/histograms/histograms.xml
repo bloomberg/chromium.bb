@@ -88465,6 +88465,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.SesssionsDuplicateSyncId" units="count">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    https://crbug.com/639009, count of duplicate sync ids (tab node id) when any
+    are encountered. Likely caused from a persistence race between native tab
+    storage and sync db on Android. Should be trending to zero.
+  </summary>
+</histogram>
+
 <histogram name="Sync.Shutdown.BackendDestroyedTime" units="ms">
   <owner>zea@chromium.org</owner>
   <summary>
