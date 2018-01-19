@@ -69,7 +69,7 @@ class WindowLocationTest : public web::WebIntTest {
     // Load the window.location test page.
     window_location_url_ =
         web::test::HttpServer::MakeUrl(kWindowLocationTestURL);
-    LoadUrl(window_location_url());
+    ASSERT_TRUE(LoadUrl(window_location_url()));
   }
 
   // The URL of the window.location test page.
@@ -120,23 +120,23 @@ class WindowLocationTest : public web::WebIntTest {
 TEST_F(WindowLocationTest, MAYBE_Assign) {
   // Navigate to about:blank so there is a forward entry to prune.
   GURL about_blank("about:blank");
-  LoadUrl(about_blank);
+  ASSERT_TRUE(LoadUrl(about_blank));
   web::NavigationItem* about_blank_item =
       navigation_manager()->GetLastCommittedItem();
 
   // Navigate back to the window.location test page.
-  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(window_location_url(), ^{
     navigation_manager()->GoBack();
-  });
+  }));
 
   // Set the window.location test URL and tap the window.location.assign()
   // button.
   GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
   SetWindowLocationUrl(sample_url);
-  ExecuteBlockAndWaitForLoad(sample_url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(sample_url, ^{
     ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
                                                    kWindowLocationAssignID));
-  });
+  }));
 
   // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
   EXPECT_EQ(sample_url, navigation_manager()->GetLastCommittedItem()->GetURL());
@@ -164,23 +164,23 @@ TEST_F(WindowLocationTest, WindowLocationAssignUnresolvable) {
 TEST_F(WindowLocationTest, DISABLED_Replace) {
   // Navigate to about:blank so there is a forward entry.
   GURL about_blank("about:blank");
-  LoadUrl(about_blank);
+  ASSERT_TRUE(LoadUrl(about_blank));
   web::NavigationItem* about_blank_item =
       navigation_manager()->GetLastCommittedItem();
 
   // Navigate back to the window.location test page.
-  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(window_location_url(), ^{
     navigation_manager()->GoBack();
-  });
+  }));
 
   // Set the window.location test URL and tap the window.location.replace()
   // button.
   GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
   SetWindowLocationUrl(sample_url);
-  ExecuteBlockAndWaitForLoad(sample_url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(sample_url, ^{
     ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
                                                    kWindowLocationReplaceID));
-  });
+  }));
 
   // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
   web::NavigationItem* current_item =
@@ -214,10 +214,10 @@ TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
 // TODO(crbug.com/721465): Enable this test on device.
 TEST_F(WindowLocationTest, MAYBE_WindowLocationReload) {
   // Tap the window.location.reload() button.
-  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(window_location_url(), ^{
     ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
                                                    kWindowLocationReloadID));
-  });
+  }));
 
   // Verify that |kOnLoadText| is displayed and that no additional
   // NavigationItems are added.
@@ -236,23 +236,23 @@ TEST_F(WindowLocationTest, MAYBE_WindowLocationReload) {
 TEST_F(WindowLocationTest, MAYBE_WindowLocationSetToDOMString) {
   // Navigate to about:blank so there is a forward entry to prune.
   GURL about_blank("about:blank");
-  LoadUrl(about_blank);
+  ASSERT_TRUE(LoadUrl(about_blank));
   web::NavigationItem* about_blank_item =
       navigation_manager()->GetLastCommittedItem();
 
   // Navigate back to the window.location test page.
-  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(window_location_url(), ^{
     navigation_manager()->GoBack();
-  });
+  }));
 
   // Set the window.location test URL and tap the window.location.assign()
   // button.
   GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
   SetWindowLocationUrl(sample_url);
-  ExecuteBlockAndWaitForLoad(sample_url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(sample_url, ^{
     ASSERT_TRUE(web::test::TapWebViewElementWithId(
         web_state(), kWindowLocationSetToDOMStringID));
-  });
+  }));
 
   // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
   EXPECT_EQ(sample_url, navigation_manager()->GetLastCommittedItem()->GetURL());

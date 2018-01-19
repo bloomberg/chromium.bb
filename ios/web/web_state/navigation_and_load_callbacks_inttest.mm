@@ -420,7 +420,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 }
 
 // Tests that if web usage is already enabled, enabling it again would not cause
@@ -448,7 +448,7 @@ TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
 
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
   web_state()->SetWebUsageEnabled(true);
   web_state()->SetWebUsageEnabled(true);
 }
@@ -494,7 +494,7 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 
   // Reload web page.
   NavigationContext* context = nullptr;
@@ -515,10 +515,10 @@ TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   // the delegate will allow form resubmission. Remove this workaround (clearing
   // the delegate, once |check_for_repost| is supported).
   web_state()->SetDelegate(nullptr);
-  ExecuteBlockAndWaitForLoad(url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->Reload(ReloadType::NORMAL,
                                  false /*check_for_repost*/);
-  });
+  }));
 }
 
 // Tests user-initiated hash change.
@@ -541,7 +541,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-document navigation.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
@@ -561,7 +561,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(hash_url);
+  ASSERT_TRUE(LoadUrl(hash_url));
 
   // Perform same-document navigation by going back.
   // No ShouldAllowRequest callback for same-document back-forward navigations.
@@ -581,9 +581,9 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  ExecuteBlockAndWaitForLoad(url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->GoBack();
-  });
+  }));
 }
 
 // Tests renderer-initiated hash change.
@@ -606,7 +606,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-page navigation using JavaScript.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
@@ -649,7 +649,7 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 
   // Perform push state using JavaScript.
   const GURL push_url = HttpServer::MakeUrl("http://chromium.test/test.html");
@@ -699,7 +699,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   [provider_ setController:content_ forURL:url];
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 }
 
 // Tests native content reload navigation.
@@ -714,7 +714,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentReload) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   [provider_ setController:content_ forURL:url];
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 
   // Reload native content.
   NavigationContext* context = nullptr;
@@ -761,7 +761,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
   web::NavigationManager::WebLoadParams params(url);
   params.post_data = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
   params.extra_headers = @{@"Content-Type" : @"text/html"};
-  LoadWithParams(params);
+  ASSERT_TRUE(LoadWithParams(params));
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 }
 
@@ -786,7 +786,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
@@ -829,7 +829,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
@@ -865,10 +865,10 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   // the delegate will allow form resubmission. Remove this workaround (clearing
   // the delegate, once |check_for_repost| is supported).
   web_state()->SetDelegate(nullptr);
-  ExecuteBlockAndWaitForLoad(action, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(action, ^{
     navigation_manager()->Reload(ReloadType::NORMAL,
                                  false /*check_for_repost*/);
-  });
+  }));
 }
 
 // Tests going forward to a page rendered from post response.
@@ -892,7 +892,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
@@ -929,9 +929,9 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  ExecuteBlockAndWaitForLoad(url, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->GoBack();
-  });
+  }));
 
   // Go forward.
   NavigationContext* context = nullptr;
@@ -956,9 +956,9 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   // the delegate will allow form resubmission. Remove this workaround (clearing
   // the delegate, once |check_for_repost| is supported).
   web_state()->SetDelegate(nullptr);
-  ExecuteBlockAndWaitForLoad(action, ^{
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(action, ^{
     navigation_manager()->GoForward();
-  });
+  }));
 }
 
 // Tests server redirect navigation.
@@ -989,7 +989,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RedirectNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  LoadUrl(url);
+  ASSERT_TRUE(LoadUrl(url));
 }
 
 }  // namespace web
