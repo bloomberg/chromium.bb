@@ -973,7 +973,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, 0);
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
-      mbmi->min_tx_size = TX_SIZES_ALL;
+      mbmi->min_tx_size = TX_SIZES_LARGEST;
       for (int idy = 0; idy < height; idy += bh) {
         for (int idx = 0; idx < width; idx += bw) {
           read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, 0, idy, idx,
@@ -2245,7 +2245,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
     const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
 
-    mbmi->min_tx_size = TX_SIZES_ALL;
+    mbmi->min_tx_size = TX_SIZES_LARGEST;
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, 0, idy, idx,

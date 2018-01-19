@@ -845,20 +845,20 @@ static const int tx_size_high_log2[TX_SIZES_ALL] = {
 #define TX_UNIT_WIDE_LOG2 (MI_SIZE_LOG2 - tx_size_wide_log2[0])
 #define TX_UNIT_HIGH_LOG2 (MI_SIZE_LOG2 - tx_size_high_log2[0])
 
-static const int tx_size_2d[TX_SIZES_ALL + 1] = { 16,   64,   256, 1024,
+static const int tx_size_2d[TX_SIZES_ALL + 1] = {
+  16,   64,   256, 1024,
 #if CONFIG_TX64X64
-                                                  4096,
+  4096,
 #endif  // CONFIG_TX64X64
-                                                  32,   32,   128, 128,
-                                                  512,  512,
+  32,   32,   128, 128,  512, 512,
 #if CONFIG_TX64X64
-                                                  2048, 2048,
+  2048, 2048,
 #endif  // CONFIG_TX64X64
-                                                  64,   64,   256, 256,
+  64,   64,   256, 256,
 #if CONFIG_TX64X64
-                                                  1024, 1024,
+  1024, 1024,
 #endif  // CONFIG_TX64X64
-                                                  32767 };
+};
 
 static const BLOCK_SIZE txsize_to_bsize[TX_SIZES_ALL] = {
   BLOCK_4X4,    // TX_4X4

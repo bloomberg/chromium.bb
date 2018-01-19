@@ -207,7 +207,12 @@ typedef enum ATTRIBUTE_PACKED {
 #endif                // CONFIG_TX64X64
   TX_SIZES_ALL,       // Includes rectangular transforms
   TX_SIZES = TX_4X8,  // Does NOT include rectangular transforms
-  TX_INVALID = 255    // Invalid transform size
+#if CONFIG_TX64X64
+  TX_SIZES_LARGEST = TX_64X64,
+#else
+  TX_SIZES_LARGEST = TX_32X32,
+#endif
+  TX_INVALID = 255  // Invalid transform size
 #if defined(_MSC_VER)
 };
 #else
