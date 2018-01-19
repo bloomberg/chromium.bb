@@ -39,6 +39,7 @@ const char kEventTypeSentence[] = "sentence";
 const char kEventTypeStart[] = "start";
 const char kEventTypeWord[] = "word";
 
+const char kErrorExtensionIdMismatch[] = "Extension id mismatch.";
 const char kErrorInvalidGender[] = "Invalid gender.";
 const char kErrorInvalidLang[] = "Invalid lang.";
 const char kErrorInvalidPitch[] = "Invalid pitch.";

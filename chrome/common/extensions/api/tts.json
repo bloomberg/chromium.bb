@@ -82,7 +82,7 @@
           },
           "eventTypes": {
             "type": "array",
-            "items": {"type": "string"},
+            "items": {"$ref": "EventType"},
             "optional": true,
             "description": "All of the callback event types that this voice is capable of sending."
           }

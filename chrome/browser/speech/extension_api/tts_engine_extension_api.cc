@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -32,6 +33,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using extensions::EventRouter;
 using extensions::Extension;
@@ -65,6 +67,16 @@ void WarnIfMissingPauseOrResumeListener(
       constants::kErrorMissingPauseOrResume);
 }
 
+const std::vector<extensions::TtsVoice>* GetVoicesInternal(
+    content::BrowserContext* context,
+    const extensions::Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  const std::vector<extensions::TtsVoice>* voices =
+      TtsEngineExtensionObserver::GetInstance(profile)->GetRuntimeVoices(
+          extension->id());
+  return voices ? voices : extensions::TtsVoices::GetTtsVoices(extension);
+}
+
 }  // namespace
 
 TtsExtensionEngine* TtsExtensionEngine::GetInstance() {
@@ -94,7 +106,7 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
     }
 
     const std::vector<extensions::TtsVoice>* tts_voices =
-        extensions::TtsVoice::GetTtsVoices(extension);
+        GetVoicesInternal(profile, extension);
     if (!tts_voices)
       continue;
 
@@ -260,6 +272,69 @@ bool TtsExtensionEngine::LoadBuiltInTtsExtension(
 }
 
 ExtensionFunction::ResponseAction
+ExtensionTtsEngineUpdateVoicesFunction::Run() {
+  base::ListValue* voices_data = nullptr;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &voices_data));
+  auto tts_voices = std::make_unique<extensions::TtsVoices>();
+  const char* error = nullptr;
+  for (size_t i = 0; i < voices_data->GetSize(); i++) {
+    extensions::TtsVoice voice;
+    base::DictionaryValue* voice_data = nullptr;
+    voices_data->GetDictionary(i, &voice_data);
+
+    // Note partial validation of these attributes occurs based on tts engine's
+    // json schema (e.g. for data type matching). The missing checks follow
+    // similar checks in manifest parsing.
+    if (voice_data->HasKey(constants::kVoiceNameKey))
+      voice_data->GetString(constants::kVoiceNameKey, &voice.voice_name);
+    if (voice_data->HasKey(constants::kLangKey)) {
+      voice_data->GetString(constants::kLangKey, &voice.lang);
+      if (!l10n_util::IsValidLocaleSyntax(voice.lang)) {
+        error = constants::kErrorInvalidLang;
+        continue;
+      }
+    }
+    if (voice_data->HasKey(constants::kGenderKey))
+      voice_data->GetString(constants::kGenderKey, &voice.gender);
+    if (voice_data->HasKey(constants::kRemoteKey))
+      voice_data->GetBoolean(constants::kRemoteKey, &voice.remote);
+    if (voice_data->HasKey(constants::kExtensionIdKey)) {
+      // Allow this for clients who might have used |chrome.tts.getVoices| to
+      // update existing voices. However, trying to update the voice of another
+      // extension should trigger an error.
+      std::string extension_id;
+      voice_data->GetString(constants::kExtensionIdKey, &extension_id);
+      if (extension()->id() != extension_id) {
+        error = constants::kErrorExtensionIdMismatch;
+        continue;
+      }
+    }
+    base::ListValue* event_types = nullptr;
+    if (voice_data->HasKey(constants::kEventTypesKey))
+      voice_data->GetList(constants::kEventTypesKey, &event_types);
+
+    if (event_types) {
+      for (size_t j = 0; j < event_types->GetSize(); j++) {
+        std::string event_type;
+        event_types->GetString(j, &event_type);
+        voice.event_types.insert(event_type);
+      }
+    }
+
+    tts_voices->voices.push_back(voice);
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  TtsEngineExtensionObserver::GetInstance(profile)->SetRuntimeVoices(
+      std::move(tts_voices), extension()->id());
+
+  if (error)
+    return RespondNow(Error(error));
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 ExtensionTtsEngineSendTtsEventFunction::Run() {
   int utterance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
@@ -279,8 +354,9 @@ ExtensionTtsEngineSendTtsEventFunction::Run() {
 
   // Make sure the extension has included this event type in its manifest.
   bool event_type_allowed = false;
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::vector<extensions::TtsVoice>* tts_voices =
-      extensions::TtsVoice::GetTtsVoices(extension());
+      GetVoicesInternal(profile, extension());
   if (!tts_voices)
     return RespondNow(Error(constants::kErrorUndeclaredEventType));
 

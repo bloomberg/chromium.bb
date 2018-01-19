@@ -15,6 +15,19 @@
     ],
     "functions": [
       {
+        "name": "updateVoices",
+        "type": "function",
+        "description": "Called by an engine to update its list of voices. This list overrides any voices declared in this extension's manifest.",
+        "parameters": [
+          {
+            "type": "array",
+            "name": "voices",
+            "items": { "$ref": "tts.TtsVoice" },
+            "description": "Array of $(ref:tts.TtsVoice) objects representing the available voices for speech synthesis."
+          }
+        ]
+      },
+      {
         "name": "sendTtsEvent",
         "nodoc": true,
         "type": "function",
