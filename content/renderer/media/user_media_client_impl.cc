@@ -259,37 +259,6 @@ void UserMediaClientImpl::CancelUserMediaRequest(
   }
 }
 
-void UserMediaClientImpl::SetMediaDeviceChangeObserver(
-    const blink::WebMediaDeviceChangeObserver& observer) {
-  media_device_change_observer_ = observer;
-
-  // Do nothing if setting a valid observer while already subscribed or setting
-  // no observer while unsubscribed.
-  if (media_device_change_observer_.IsNull() ==
-      device_change_subscription_ids_.empty())
-    return;
-
-  base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
-      MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
-  if (media_device_change_observer_.IsNull()) {
-    event_dispatcher->UnsubscribeDeviceChangeNotifications(
-        device_change_subscription_ids_);
-    device_change_subscription_ids_.clear();
-  } else {
-    DCHECK(device_change_subscription_ids_.empty());
-    device_change_subscription_ids_ =
-        event_dispatcher->SubscribeDeviceChangeNotifications(base::Bind(
-            &UserMediaClientImpl::DevicesChanged, weak_factory_.GetWeakPtr()));
-  }
-}
-
-void UserMediaClientImpl::DevicesChanged(
-    MediaDeviceType type,
-    const MediaDeviceInfoArray& device_infos) {
-  if (!media_device_change_observer_.IsNull())
-    media_device_change_observer_.DidChangeMediaDevices();
-}
-
 void UserMediaClientImpl::DeleteAllUserMediaRequests() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   user_media_processor_->StopAllProcessing();

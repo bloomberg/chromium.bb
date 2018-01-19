@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/system_monitor/system_monitor.h"
@@ -17,6 +18,7 @@
 #include "content/common/media/media_devices.h"
 #include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace media {
 class AudioSystem;
@@ -107,6 +109,11 @@ class CONTENT_EXPORT MediaDevicesManager
   void UnsubscribeDeviceChangeNotifications(
       MediaDeviceType type,
       MediaDeviceChangeSubscriber* subscriber);
+
+  uint32_t SubscribeDeviceChangeNotifications(
+      const BoolDeviceTypes& subscribe_types,
+      blink::mojom::MediaDevicesListenerPtr listener);
+  void UnsubscribeDeviceChange(uint32_t subscription_id);
 
   // Tries to start device monitoring. If successful, enables caching of
   // enumeration results for the device types supported by the monitor.
@@ -237,6 +244,21 @@ class CONTENT_EXPORT MediaDevicesManager
 
   std::vector<MediaDeviceChangeSubscriber*>
       device_change_subscribers_[NUM_MEDIA_DEVICE_TYPES];
+
+  struct SubscriptionRequest {
+    SubscriptionRequest(const BoolDeviceTypes& subscribe_types,
+                        blink::mojom::MediaDevicesListenerPtr listener);
+    SubscriptionRequest(SubscriptionRequest&&);
+    ~SubscriptionRequest();
+
+    SubscriptionRequest& operator=(SubscriptionRequest&&);
+
+    BoolDeviceTypes subscribe_types;
+    blink::mojom::MediaDevicesListenerPtr listener;
+  };
+
+  uint32_t current_subscription_id_ = 0u;
+  base::flat_map<uint32_t, SubscriptionRequest> subscriptions_;
 
   // Callback used to obtain the current device ID salt and security origin.
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;

@@ -242,6 +242,14 @@ class MockMediaDevicesDispatcherHost
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
 
+  void AddMediaDevicesListener(
+      bool subscribe_audio_input,
+      bool subscribe_video_input,
+      bool subscribe_audio_output,
+      blink::mojom::MediaDevicesListenerPtr listener) override {
+    NOTREACHED();
+  }
+
   void GetAllVideoInputDeviceFormats(
       const std::string&,
       GetAllVideoInputDeviceFormatsCallback callback) override {
@@ -437,8 +445,7 @@ class UserMediaClientImplTest : public ::testing::Test {
  public:
   UserMediaClientImplTest()
       : binding_user_media_processor_(&media_devices_dispatcher_),
-        binding_user_media_client_(&media_devices_dispatcher_),
-        binding_event_dispatcher_(&media_devices_dispatcher_) {}
+        binding_user_media_client_(&media_devices_dispatcher_) {}
 
   void SetUp() override {
     // Create our test object.
@@ -464,18 +471,9 @@ class UserMediaClientImplTest : public ::testing::Test {
         mojo::MakeRequest(&user_media_client_host_proxy));
     user_media_client_impl_->SetMediaDevicesDispatcherForTesting(
         std::move(user_media_client_host_proxy));
-
-    base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
-        MediaDevicesEventDispatcher::GetForRenderFrame(nullptr);
-    blink::mojom::MediaDevicesDispatcherHostPtr event_dispatcher_host_proxy;
-    binding_event_dispatcher_.Bind(
-        mojo::MakeRequest(&event_dispatcher_host_proxy));
-    event_dispatcher->SetMediaDevicesDispatcherForTesting(
-        std::move(event_dispatcher_host_proxy));
   }
 
   void TearDown() override {
-    MediaDevicesEventDispatcher::GetForRenderFrame(nullptr)->OnDestruct();
     user_media_client_impl_.reset();
     blink::WebHeap::CollectAllGarbageForTesting();
   }
@@ -621,8 +619,6 @@ class UserMediaClientImplTest : public ::testing::Test {
       binding_user_media_processor_;
   mojo::Binding<blink::mojom::MediaDevicesDispatcherHost>
       binding_user_media_client_;
-  mojo::Binding<blink::mojom::MediaDevicesDispatcherHost>
-      binding_event_dispatcher_;
 
   UserMediaProcessorUnderTest* user_media_processor_ =
       nullptr;  // Owned by |user_media_client_impl_|
@@ -1101,41 +1097,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
   const std::vector<media::Point> kGeometry = {{1.0, 1.0, 1.0}};
   EXPECT_EQ(kGeometry, properties.goog_array_geometry);
-}
-
-TEST_F(UserMediaClientImplTest, ObserveMediaDeviceChanges) {
-  EXPECT_CALL(media_devices_dispatcher_, SubscribeDeviceChangeNotifications(
-                                             MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
-  EXPECT_CALL(media_devices_dispatcher_, SubscribeDeviceChangeNotifications(
-                                             MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
-  EXPECT_CALL(
-      media_devices_dispatcher_,
-      SubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _));
-  user_media_client_impl_->SetMediaDeviceChangeObserver(
-      blink::WebMediaDeviceChangeObserver(true));
-  base::RunLoop().RunUntilIdle();
-
-  base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
-      MediaDevicesEventDispatcher::GetForRenderFrame(nullptr);
-  event_dispatcher->DispatchDevicesChangedEvent(MEDIA_DEVICE_TYPE_AUDIO_INPUT,
-                                                MediaDeviceInfoArray());
-  event_dispatcher->DispatchDevicesChangedEvent(MEDIA_DEVICE_TYPE_VIDEO_INPUT,
-                                                MediaDeviceInfoArray());
-  event_dispatcher->DispatchDevicesChangedEvent(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT,
-                                                MediaDeviceInfoArray());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(media_devices_dispatcher_, UnsubscribeDeviceChangeNotifications(
-                                             MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
-  EXPECT_CALL(media_devices_dispatcher_, UnsubscribeDeviceChangeNotifications(
-                                             MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
-  EXPECT_CALL(
-      media_devices_dispatcher_,
-      UnsubscribeDeviceChangeNotifications(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _));
-
-  user_media_client_impl_->SetMediaDeviceChangeObserver(
-      blink::WebMediaDeviceChangeObserver());
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UserMediaClientImplTest, CreateWithMandatoryInvalidAudioDeviceId) {
