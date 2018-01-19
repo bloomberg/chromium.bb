@@ -128,6 +128,15 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableSensorsContentSetting_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('enableSensorsContentSetting');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

@@ -149,6 +149,12 @@
           label="$i18n{siteSettingsProtectedContentIdentifiers}">
       </site-details-permission>
 </if>
+    <site-details-permission
+        category="{{ContentSettingsTypes.SENSORS}}"
+        icon="settings:sensors" id="sensors"
+        label="$i18n{siteSettingsSensors}"
+        hidden$="[[!enableSensorsContentSetting_]]">
+    </site-details-permission>
     </div>
 
     <div id="clearAndReset" class="settings-box"

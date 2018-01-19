@@ -31,7 +31,12 @@ ContentSetting SensorPermissionContext::GetPermissionStatusInternal(
   // able to access sensors (which are provided by generic sensor) in
   // cross-origin iframes. The Generic Sensor API is not allowed in
   // cross-origin iframes and this is enforced by the renderer.
-  return CONTENT_SETTING_ALLOW;
+
+  // Sensors are allowed by default in content_settings_registry.cc.
+  // If cross-origin access check is required, comparison between requesting
+  // and embedding origin must be performed.
+  return PermissionContextBase::GetPermissionStatusInternal(
+      render_frame_host, requesting_origin, embedding_origin);
 }
 
 bool SensorPermissionContext::IsRestrictedToSecureOrigins() const {
