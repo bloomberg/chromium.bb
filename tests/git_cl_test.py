@@ -2096,7 +2096,8 @@ class TestGitCl(TestCase):
   @staticmethod
   def _get_gerrit_codereview_server_calls(branch, value=None,
                                           git_short_host='host',
-                                          detect_branch=True):
+                                          detect_branch=True,
+                                          detect_server=True):
     """Returns calls executed by _GerritChangelistImpl.GetCodereviewServer.
 
     If value is given, branch.<BRANCH>.gerritcodereview is already set.
@@ -2104,8 +2105,9 @@ class TestGitCl(TestCase):
     calls = []
     if detect_branch:
       calls.append(((['git', 'symbolic-ref', 'HEAD'],), branch))
-    calls.append(((['git', 'config', 'branch.' + branch + '.gerritserver'],),
-                  CERR1 if value is None else value))
+    if detect_server:
+      calls.append(((['git', 'config', 'branch.' + branch + '.gerritserver'],),
+                    CERR1 if value is None else value))
     if value is None:
       calls += [
           ((['git', 'config', 'branch.' + branch + '.merge'],),
@@ -2232,11 +2234,13 @@ class TestGitCl(TestCase):
     self._patch_common(default_codereview='gerrit', git_short_host='chromium',
                        detect_gerrit_server=True)
     self.calls += [
+      ((['git', 'config', 'remote.origin.url'],),
+        'https://chromium.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-       ''),
+        ''),
       ((['git', 'config', 'branch.master.gerritserver',
         'https://chromium-review.googlesource.com'],), ''),
       ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
@@ -2250,6 +2254,8 @@ class TestGitCl(TestCase):
     self._patch_common(default_codereview='gerrit', force_codereview=True,
                        git_short_host='host', detect_gerrit_server=True)
     self.calls += [
+      ((['git', 'config', 'remote.origin.url'],),
+        'https://host.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
@@ -2268,12 +2274,13 @@ class TestGitCl(TestCase):
     self._patch_common(
         default_codereview=None,  # It doesn't matter what's default.
         actual_codereview='gerrit',
-        git_short_host='else', detect_gerrit_server=False)
+        git_short_host='else')
+    self.calls += self._get_gerrit_codereview_server_calls(
+        'master', git_short_host='else', detect_server=False)
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
@@ -2290,12 +2297,13 @@ class TestGitCl(TestCase):
     self._patch_common(
         default_codereview=None,  # It doesn't matter what's default.
         actual_codereview='gerrit',
-        git_short_host='else', detect_gerrit_server=False)
+        git_short_host='else')
+    self.calls += self._get_gerrit_codereview_server_calls(
+        'master', git_short_host='else', detect_server=False)
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
@@ -2308,10 +2316,36 @@ class TestGitCl(TestCase):
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/123456/1']), 0)
 
+  def test_patch_gerrit_guess_by_url_with_repo(self):
+    self._patch_common(
+        default_codereview=None,  # It doesn't matter what's default.
+        actual_codereview='gerrit',
+        git_short_host='else')
+    self.calls += self._get_gerrit_codereview_server_calls(
+        'master', git_short_host='else', detect_server=False)
+    self.calls += [
+      ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
+         'refs/changes/56/123456/1'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
+       ''),
+      ((['git', 'config', 'branch.master.gerritserver',
+        'https://else-review.googlesource.com'],), ''),
+      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
+      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
+      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
+    ]
+    self.assertEqual(git_cl.main(
+      ['patch', 'https://else-review.googlesource.com/c/my/repo/+/123456/1']),
+      0)
+
   def test_patch_gerrit_conflict(self):
     self._patch_common(default_codereview='gerrit', detect_gerrit_server=True,
                        git_short_host='chromium')
     self.calls += [
+      ((['git', 'config', 'remote.origin.url'],),
+        'https://chromium.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
@@ -2343,6 +2377,22 @@ class TestGitCl(TestCase):
     ]
     with self.assertRaises(SystemExitMock):
       self.assertEqual(1, git_cl.main(['patch', '123456']))
+
+  def test_patch_gerrit_wrong_repo(self):
+    self._patch_common(default_codereview='gerrit', git_short_host='chromium',
+                       detect_gerrit_server=True)
+    self.calls += [
+      ((['git', 'config', 'remote.origin.url'],),
+        'https://chromium.googlesource.com/wrong/repo'),
+      ((['DieWithError',
+         'Trying to patch a change from '
+         'https://chromium.googlesource.com/my/repo but this repo appears '
+         'to be https://chromium.googlesource.com/wrong/repo.'],),
+        SystemExitMock()),
+    ]
+    with self.assertRaises(SystemExitMock):
+      self.assertEqual(1, git_cl.main(['patch', '123456']))
+
 
   def _checkout_calls(self):
     return [

@@ -2820,7 +2820,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         DieWithError('Couldn\'t find patchset %i in change %i' %
                      (parsed_issue_arg.patchset, self.GetIssue()))
 
+    remote_url = self._changelist.GetRemoteUrl()
+    if remote_url.endswith('.git'):
+      remote_url = remote_url[:-len('.git')]
     fetch_info = revision_info['fetch']['http']
+
+    if remote_url != fetch_info['url']:
+      DieWithError('Trying to patch a change from %s but this repo appears '
+                   'to be %s.' % (fetch_info['url'], remote_url))
+
     RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
 
     if force:
