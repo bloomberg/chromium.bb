@@ -178,14 +178,15 @@ void BlendWithColorsFromGradient(cssvalue::CSSGradientValue* gradient,
                                  bool& found_non_transparent_color,
                                  bool& found_opaque_color,
                                  const LayoutObject& layout_object) {
-  Vector<Color> stop_colors;
-  gradient->GetStopColors(stop_colors, layout_object);
+  const Document& document = layout_object.GetDocument();
+  const ComputedStyle& style = layout_object.StyleRef();
 
+  Vector<Color> stop_colors = gradient->GetStopColors(document, style);
   if (colors.IsEmpty()) {
     colors.AppendRange(stop_colors.begin(), stop_colors.end());
   } else {
     if (colors.size() > 1) {
-      // Gradient on gradient is too complicated, bail out
+      // Gradient on gradient is too complicated, bail out.
       colors.clear();
       return;
     }
@@ -198,9 +199,8 @@ void BlendWithColorsFromGradient(cssvalue::CSSGradientValue* gradient,
       colors.push_back(existing_color.Blend(stop_color));
     }
   }
-  found_opaque_color = found_opaque_color ||
-                       gradient->KnownToBeOpaque(layout_object.GetDocument(),
-                                                 layout_object.StyleRef());
+  found_opaque_color =
+      found_opaque_color || gradient->KnownToBeOpaque(document, style);
 }
 
 // Gets the colors from an image style, if one exists and it is a gradient.
