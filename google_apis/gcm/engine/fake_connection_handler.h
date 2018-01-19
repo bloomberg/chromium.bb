@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/connection_handler.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace gcm {
 
@@ -24,6 +25,7 @@ class FakeConnectionHandler : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   void Init(const mcs_proto::LoginRequest& login_request,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation,
             net::StreamSocket* socket) override;
   void Reset() override;
   bool CanSendMessage() const override;

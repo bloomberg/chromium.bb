@@ -212,13 +212,16 @@ void SocketInputStream::CloseStream(net::Error error,
     callback.Run();
 }
 
-SocketOutputStream::SocketOutputStream(net::StreamSocket* socket)
+SocketOutputStream::SocketOutputStream(
+    net::StreamSocket* socket,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : socket_(socket),
       io_buffer_(new net::IOBuffer(kDefaultBufferSize)),
-      write_buffer_(new net::DrainableIOBuffer(io_buffer_.get(),
-                                               kDefaultBufferSize)),
+      write_buffer_(
+          new net::DrainableIOBuffer(io_buffer_.get(), kDefaultBufferSize)),
       next_pos_(0),
       last_error_(net::OK),
+      traffic_annotation_(traffic_annotation),
       weak_ptr_factory_(this) {
   DCHECK(socket->IsConnected());
 }
@@ -264,11 +267,10 @@ net::Error SocketOutputStream::Flush(const base::Closure& callback) {
 
   DVLOG(1) << "Flushing " << next_pos_ << " bytes into socket.";
   int result =
-      socket_->Write(write_buffer_.get(),
-                     next_pos_,
+      socket_->Write(write_buffer_.get(), next_pos_,
                      base::Bind(&SocketOutputStream::FlushCompletionCallback,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                callback));
+                                weak_ptr_factory_.GetWeakPtr(), callback),
+                     traffic_annotation_);
   DVLOG(1) << "Write returned " << result;
   if (result == net::ERR_IO_PENDING) {
     last_error_ = net::ERR_IO_PENDING;

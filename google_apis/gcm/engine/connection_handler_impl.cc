@@ -66,6 +66,7 @@ ConnectionHandlerImpl::~ConnectionHandlerImpl() {
 
 void ConnectionHandlerImpl::Init(
     const mcs_proto::LoginRequest& login_request,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     net::StreamSocket* socket) {
   DCHECK(!read_callback_.is_null());
   DCHECK(!write_callback_.is_null());
@@ -79,7 +80,7 @@ void ConnectionHandlerImpl::Init(
   message_size_ = 0;
   socket_ = socket;
   input_stream_.reset(new SocketInputStream(socket_));
-  output_stream_.reset(new SocketOutputStream(socket_));
+  output_stream_.reset(new SocketOutputStream(socket_, traffic_annotation));
 
   Login(login_request);
 }

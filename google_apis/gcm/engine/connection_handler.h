@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "google_apis/gcm/base/gcm_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net{
 class StreamSocket;
@@ -47,6 +48,7 @@ class GCM_EXPORT ConnectionHandler {
   // Note: It is correct and expected to call Init more than once, as connection
   // issues are encountered and new connections must be made.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
+                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                     net::StreamSocket* socket) = 0;
 
   // Resets the handler and any internal state. Should be called any time

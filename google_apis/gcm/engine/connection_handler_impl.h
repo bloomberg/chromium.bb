@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/engine/connection_handler.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace mcs_proto {
 class LoginRequest;
@@ -42,6 +43,7 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   void Init(const mcs_proto::LoginRequest& login_request,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation,
             net::StreamSocket* socket) override;
   void Reset() override;
   bool CanSendMessage() const override;

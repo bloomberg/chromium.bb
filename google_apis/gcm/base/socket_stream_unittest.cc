@@ -16,6 +16,7 @@
 #include "net/base/ip_address.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -194,7 +195,8 @@ void GCMSocketStreamTest::ResetInputStream() {
 
 void GCMSocketStreamTest::ResetOutputStream() {
   DCHECK(socket_.get());
-  socket_output_stream_.reset(new SocketOutputStream(socket_.get()));
+  socket_output_stream_.reset(
+      new SocketOutputStream(socket_.get(), TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
 // A read where all data is already available.

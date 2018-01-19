@@ -17,6 +17,7 @@
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/backoff_entry.h"
 #include "net/http/http_network_session.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Policy;
@@ -168,7 +169,7 @@ void TestConnectionFactoryImpl::StartConnection() {
   ASSERT_GT(num_expected_attempts_, 0);
   ASSERT_FALSE(GetConnectionHandler()->CanSendMessage());
   std::unique_ptr<mcs_proto::LoginRequest> request(BuildLoginRequest(0, 0, ""));
-  GetConnectionHandler()->Init(*request, NULL);
+  GetConnectionHandler()->Init(*request, TRAFFIC_ANNOTATION_FOR_TESTS, NULL);
   OnConnectDone(connect_result_);
   if (!NextRetryAttempt().is_null()) {
     // Advance the time to the next retry time.

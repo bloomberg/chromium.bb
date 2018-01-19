@@ -25,6 +25,7 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -239,9 +240,8 @@ void GCMConnectionHandlerImplTest::Connect(
           base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
                      base::Unretained(this))));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
-  connection_handler_->Init(
-      *BuildLoginRequest(kAuthId, kAuthToken, ""),
-      socket_.get());
+  connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken, ""),
+                            TRAFFIC_ANNOTATION_FOR_TESTS, socket_.get());
 }
 
 void GCMConnectionHandlerImplTest::ReadContinuation(
