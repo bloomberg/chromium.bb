@@ -1634,7 +1634,7 @@ public class TabsTest {
             try {
                 selectCallback.waitForCallback(0);
             } catch (TimeoutException e) {
-                Assert.fail("Tab selected event was never received");
+                throw new AssertionError("Tab selected event was never received", e);
             }
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
@@ -1984,7 +1984,8 @@ public class TabsTest {
             try {
                 pageLoadedCallbacks[i].waitForCallback(0);
             } catch (TimeoutException e) {
-                Assert.fail("PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i]);
+                throw new AssertionError(
+                        "PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i], e);
             }
         }
     }

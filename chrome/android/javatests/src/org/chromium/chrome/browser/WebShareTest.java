@@ -254,7 +254,7 @@ public class WebShareTest {
             @Override
             public void onCustomChooserShown(AlertDialog dialog) {
                 // Click on an app (it doesn't matter which, because we will hook the intent).
-                assert dialog.getListView().getCount() > 0;
+                Assert.assertTrue(dialog.getListView().getCount() > 0);
                 dialog
                     .getListView()
                     .performItemClick(null, 0, dialog.getListView().getItemIdAtPosition(0));
