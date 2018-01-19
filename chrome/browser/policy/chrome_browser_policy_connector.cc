@@ -67,6 +67,10 @@ ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
 
 ChromeBrowserPolicyConnector::~ChromeBrowserPolicyConnector() {}
 
+void ChromeBrowserPolicyConnector::OnResourceBundleCreated() {
+  BrowserPolicyConnectorBase::OnResourceBundleCreated();
+}
+
 void ChromeBrowserPolicyConnector::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {

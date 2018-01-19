@@ -51,8 +51,7 @@ class DownloadDirPolicyHandlerTest
  public:
   void SetUp() override {
     recommended_store_ = new policy::ConfigurationPolicyPrefStore(
-        policy_service_.get(),
-        &handler_list_,
+        nullptr, policy_service_.get(), &handler_list_,
         policy::POLICY_LEVEL_RECOMMENDED);
     handler_list_.AddHandler(
         base::WrapUnique<policy::ConfigurationPolicyHandler>(

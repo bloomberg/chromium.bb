@@ -10,10 +10,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/prefs/pref_value_map.h"
@@ -22,14 +21,11 @@ namespace policy {
 
 namespace {
 
-// Policies are loaded early on startup, before PolicyErrorMaps are ready to
-// be retrieved. This function is posted to UI to log any errors found on
-// Refresh below.
-void LogErrors(PolicyErrorMap* errors) {
-  PolicyErrorMap::const_iterator iter;
-  for (iter = errors->begin(); iter != errors->end(); ++iter) {
-    base::string16 policy = base::ASCIIToUTF16(iter->first);
-    DLOG(WARNING) << "Policy " << policy << ": " << iter->second;
+void LogErrors(std::unique_ptr<PolicyErrorMap> errors) {
+  DCHECK(errors->IsReady());
+  for (auto& pair : *errors) {
+    base::string16 policy = base::ASCIIToUTF16(pair.first);
+    DLOG(WARNING) << "Policy " << policy << ": " << pair.second;
   }
 }
 
@@ -40,10 +36,12 @@ bool IsLevel(PolicyLevel level, const PolicyMap::const_iterator iter) {
 }  // namespace
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
+    BrowserPolicyConnectorBase* policy_connector,
     PolicyService* service,
     const ConfigurationPolicyHandlerList* handler_list,
     PolicyLevel level)
-    : policy_service_(service),
+    : policy_connector_(policy_connector),
+      policy_service_(service),
       handler_list_(handler_list),
       level_(level) {
   // Read initial policy.
@@ -129,16 +127,20 @@ PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
   filtered_policies.EraseNonmatching(base::Bind(&IsLevel, level_));
 
-  std::unique_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
+  std::unique_ptr<PolicyErrorMap> errors = std::make_unique<PolicyErrorMap>();
 
   handler_list_->ApplyPolicySettings(filtered_policies,
                                      prefs.get(),
                                      errors.get());
 
-  // Retrieve and log the errors once the UI loop is ready. This is only an
-  // issue during startup.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&LogErrors, base::Owned(errors.release())));
+  if (!errors->empty()) {
+    if (errors->IsReady()) {
+      LogErrors(std::move(errors));
+    } else if (policy_connector_) {  // May be null in tests.
+      policy_connector_->NotifyWhenResourceBundleReady(
+          base::BindOnce(&LogErrors, std::move(errors)));
+    }
+  }
 
   return prefs.release();
 }

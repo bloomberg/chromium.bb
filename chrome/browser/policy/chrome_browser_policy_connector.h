@@ -38,6 +38,10 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   ~ChromeBrowserPolicyConnector() override;
 
+  // Called once the resource bundle has been created. Calls through to super
+  // class to notify observers.
+  void OnResourceBundleCreated();
+
   void Init(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;

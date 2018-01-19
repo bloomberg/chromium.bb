@@ -33,7 +33,7 @@ ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
   policy_service_ = std::make_unique<PolicyServiceImpl>();
   policy_service_->SetProviders(providers_);
   store_ = new ConfigurationPolicyPrefStore(
-      policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
+      nullptr, policy_service_.get(), &handler_list_, POLICY_LEVEL_MANDATORY);
 }
 
 ConfigurationPolicyPrefStoreTest::~ConfigurationPolicyPrefStoreTest() {}
