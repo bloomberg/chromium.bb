@@ -104,6 +104,15 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMES3Test
     gl_.Initialize(options);
     CheckStatus();
   }
+  void CheckStatus() {
+    // Not applicable for devices not supporting OpenGLES3.
+    if (!gl_.IsInitialized()) {
+      LOG(INFO) << "CONTEXT_TYPE_OPENGLES3 not supported. "
+                   "Skipping test...";
+      return;
+    }
+    GLApplyScreenSpaceAntialiasingCHROMIUMTest::CheckStatus();
+  }
 };
 
 // TODO(dongseong.hwang): This test fails on the Nexus 9 GPU fyi bot.
