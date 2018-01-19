@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
@@ -243,7 +242,7 @@ class InstallWorkerTest : public testing::Test {
       installer_state->AddProductFromState(*chrome);
     } else {
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      installer_state->AddProduct(base::MakeUnique<Product>(dist));
+      installer_state->AddProduct(std::make_unique<Product>(dist));
     }
   }
 

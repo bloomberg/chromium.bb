@@ -13,7 +13,6 @@
 
 #include "base/atomicops.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/installer_util_strings.h"
@@ -28,7 +27,7 @@ BrowserDistribution* g_browser_distribution = NULL;
 }  // namespace
 
 BrowserDistribution::BrowserDistribution()
-    : app_reg_data_(base::MakeUnique<NonUpdatingAppRegistrationData>(
+    : app_reg_data_(std::make_unique<NonUpdatingAppRegistrationData>(
           L"Software\\Chromium")) {}
 
 BrowserDistribution::BrowserDistribution(

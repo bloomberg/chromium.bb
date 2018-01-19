@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/gtest_util.h"
 #include "chrome/installer/zucchini/address_translator.h"
@@ -234,7 +234,7 @@ TEST_F(RelocUtilsWin32Test, ReadWrite) {
   offset_t offset_bound = image_size - kVAWidthX86 + 1;
 
   // Make RelocReaderWin32 that wraps |reloc_rva_reader|.
-  auto reader = base::MakeUnique<RelocReaderWin32>(
+  auto reader = std::make_unique<RelocReaderWin32>(
       std::move(reloc_rva_reader), kRelocTypeX86, offset_bound, translator);
 
   // Read all references and check.
@@ -249,7 +249,7 @@ TEST_F(RelocUtilsWin32Test, ReadWrite) {
 
   // Write reference, extract bytes and check.
   MutableBufferView mutable_image(&image_data[0], image_data.size());
-  auto writer = base::MakeUnique<RelocWriterWin32>(
+  auto writer = std::make_unique<RelocWriterWin32>(
       kRelocTypeX86, mutable_image, reloc_region_, reloc_block_offsets_,
       translator);
 

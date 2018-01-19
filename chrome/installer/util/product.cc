@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -23,7 +22,7 @@ namespace installer {
 
 Product::Product(BrowserDistribution* distribution)
     : distribution_(distribution),
-      operations_(base::MakeUnique<ChromeBrowserOperations>()) {}
+      operations_(std::make_unique<ChromeBrowserOperations>()) {}
 
 Product::~Product() {
 }

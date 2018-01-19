@@ -11,10 +11,10 @@
 #include <msi.h>
 #include <shellapi.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -87,7 +87,7 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 }  // namespace
 
 GoogleChromeDistribution::GoogleChromeDistribution()
-    : BrowserDistribution(base::MakeUnique<UpdatingAppRegistrationData>(
+    : BrowserDistribution(std::make_unique<UpdatingAppRegistrationData>(
           install_static::GetAppGuid())) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(

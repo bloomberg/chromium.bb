@@ -29,7 +29,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
@@ -781,10 +780,10 @@ void DeRegisterEventLogProvider() {
 
 std::unique_ptr<AppRegistrationData> MakeBinariesRegistrationData() {
   if (install_static::kUseGoogleUpdateIntegration) {
-    return base::MakeUnique<UpdatingAppRegistrationData>(
+    return std::make_unique<UpdatingAppRegistrationData>(
         install_static::kBinariesAppGuid);
   }
-  return base::MakeUnique<NonUpdatingAppRegistrationData>(
+  return std::make_unique<NonUpdatingAppRegistrationData>(
       base::string16(L"Software\\").append(install_static::kBinariesPathName));
 }
 

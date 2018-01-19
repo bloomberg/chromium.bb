@@ -12,7 +12,6 @@
 
 #include "base/base_paths.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -1066,7 +1065,7 @@ void CollectStatsConsent::SetUp() {
 
   const StatsState& stats_state = GetParam();
   scoped_install_details_ =
-      base::MakeUnique<install_static::ScopedInstallDetails>(
+      std::make_unique<install_static::ScopedInstallDetails>(
           stats_state.system_level(), 0 /* install_mode_index */);
   const HKEY root_key = stats_state.root_key();
   ASSERT_NO_FATAL_FAILURE(

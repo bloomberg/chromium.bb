@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -69,7 +68,7 @@ std::unique_ptr<FirewallManager> FirewallManager::Create(
     BrowserDistribution* dist,
     const base::FilePath& chrome_path) {
   // Try to connect to "Windows Firewall with Advanced Security" (Vista+).
-  auto manager = base::MakeUnique<FirewallManagerAdvancedImpl>();
+  auto manager = std::make_unique<FirewallManagerAdvancedImpl>();
   if (manager->Init(dist->GetDisplayName(), chrome_path))
     return std::move(manager);
 

@@ -4,7 +4,6 @@
 
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -32,13 +31,13 @@ class ScopedUserProtocolEntryTest : public testing::Test {
                               const base::string16& name,
                               const base::string16& value) {
     std::vector<std::unique_ptr<RegistryEntry>> entries;
-    entries.push_back(base::MakeUnique<RegistryEntry>(key_path, name, value));
+    entries.push_back(std::make_unique<RegistryEntry>(key_path, name, value));
     ASSERT_TRUE(ShellUtil::AddRegistryEntries(HKEY_CURRENT_USER, entries));
   }
 
   void CreateScopedUserProtocolEntryAndVerifyRegistryValue(
       const base::string16& expected_entry_value) {
-    entry_ = base::MakeUnique<ScopedUserProtocolEntry>(L"http");
+    entry_ = std::make_unique<ScopedUserProtocolEntry>(L"http");
     ASSERT_TRUE(RegistryEntry(kProtocolEntryKeyPath, kProtocolEntryName,
                               expected_entry_value)
                     .ExistsInRegistry(RegistryEntry::LOOK_IN_HKCU));

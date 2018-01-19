@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/memory/ptr_util.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/install_static/install_details.h"
@@ -41,17 +40,17 @@ void UpdateOsUpgradeBeacon() {
 namespace installer_util {
 
 std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon() {
-  return base::MakeUnique<Beacon>(L"LastOsUpgrade", Beacon::BeaconType::LAST,
+  return std::make_unique<Beacon>(L"LastOsUpgrade", Beacon::BeaconType::LAST,
                                   Beacon::BeaconScope::PER_INSTALL);
 }
 
 std::unique_ptr<Beacon> MakeLastWasDefaultBeacon() {
-  return base::MakeUnique<Beacon>(L"LastWasDefault", Beacon::BeaconType::LAST,
+  return std::make_unique<Beacon>(L"LastWasDefault", Beacon::BeaconType::LAST,
                                   Beacon::BeaconScope::PER_USER);
 }
 
 std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon() {
-  return base::MakeUnique<Beacon>(L"FirstNotDefault", Beacon::BeaconType::FIRST,
+  return std::make_unique<Beacon>(L"FirstNotDefault", Beacon::BeaconType::FIRST,
                                   Beacon::BeaconScope::PER_USER);
 }
 

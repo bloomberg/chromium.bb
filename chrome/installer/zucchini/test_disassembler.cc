@@ -4,7 +4,6 @@
 
 #include "chrome/installer/zucchini/test_disassembler.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/installer/zucchini/test_reference_reader.h"
 
 namespace zucchini {
@@ -43,7 +42,7 @@ bool TestDisassembler::Parse(ConstBufferView image) {
 }
 
 std::unique_ptr<ReferenceReader> TestDisassembler::MakeReadRefs(int type) {
-  return base::MakeUnique<TestReferenceReader>(refs_[type]);
+  return std::make_unique<TestReferenceReader>(refs_[type]);
 }
 
 std::unique_ptr<ReferenceWriter> TestDisassembler::MakeWriteRefs(
@@ -53,7 +52,7 @@ std::unique_ptr<ReferenceWriter> TestDisassembler::MakeWriteRefs(
     // ReferenceWriter:
     void PutNext(Reference) override {}
   };
-  return base::MakeUnique<NoOpWriter>();
+  return std::make_unique<NoOpWriter>();
 }
 
 }  // namespace zucchini
