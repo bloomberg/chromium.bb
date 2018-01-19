@@ -88,9 +88,10 @@ void WindowElement::SetVisible(bool visible) {
     window_->Hide();
 }
 
-std::pair<aura::Window*, gfx::Rect> WindowElement::GetNodeWindowAndBounds()
+std::pair<gfx::NativeWindow, gfx::Rect> WindowElement::GetNodeWindowAndBounds()
     const {
-  return std::make_pair(window_, window_->GetBoundsInScreen());
+  return std::make_pair(static_cast<aura::Window*>(window_),
+                        window_->GetBoundsInScreen());
 }
 
 // static

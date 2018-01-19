@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui_devtools {
 
@@ -39,7 +40,8 @@ class WindowElement : public aura::WindowObserver, public UIElement {
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
-  std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds() const override;
+  std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
+      const override;
 
   static aura::Window* From(const UIElement* element);
 

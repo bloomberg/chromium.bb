@@ -87,7 +87,7 @@ std::unique_ptr<Array<std::string>> GetAttributes(UIElement* ui_element) {
   return attributes;
 }
 
-views::Widget* GetWidgetFromWindow(aura::Window* window) {
+views::Widget* GetWidgetFromWindow(gfx::NativeWindow window) {
   return views::Widget::GetWidgetForNativeView(window);
 }
 
@@ -540,10 +540,10 @@ Response DOMAgent::HighlightNode(int node_id, bool show_size) {
     layer_for_highlighting_->set_delegate(this);
     layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }
-  std::pair<aura::Window*, gfx::Rect> window_and_bounds =
+  std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
       node_id_to_ui_element_.count(node_id)
           ? node_id_to_ui_element_[node_id]->GetNodeWindowAndBounds()
-          : std::make_pair<aura::Window*, gfx::Rect>(nullptr, gfx::Rect());
+          : std::make_pair<gfx::NativeWindow, gfx::Rect>(nullptr, gfx::Rect());
 
   if (!window_and_bounds.first)
     return Response::Error("No node found with that id");
@@ -558,25 +558,32 @@ Response DOMAgent::HighlightNode(int node_id, bool show_size) {
   return Response::OK();
 }
 
-int DOMAgent::FindElementIdTargetedByPoint(const gfx::Point& p,
-                                           aura::Window* root_window) const {
-  aura::Window* targeted_window = root_window->GetEventHandlerForPoint(p);
+int DOMAgent::FindElementIdTargetedByPoint(
+    const gfx::Point& p,
+    gfx::NativeWindow root_window) const {
+  gfx::NativeWindow targeted_window = root_window->GetEventHandlerForPoint(p);
   if (!targeted_window)
     return 0;
 
   views::Widget* targeted_widget =
       views::Widget::GetWidgetForNativeWindow(targeted_window);
   if (!targeted_widget) {
+#if defined(USE_AURA)
     return window_element_root_->FindUIElementIdForBackendElement<aura::Window>(
         targeted_window);
+#else
+    return 0;
+#endif  // defined(USE_AURA)
   }
 
   views::View* root_view = targeted_widget->GetRootView();
   DCHECK(root_view);
 
   gfx::Point point_in_targeted_window(p);
+#if defined(USE_AURA)
   aura::Window::ConvertPointToTarget(root_window, targeted_window,
                                      &point_in_targeted_window);
+#endif  // defined(USE_AURA)
   views::View* targeted_view =
       root_view->GetEventHandlerForPoint(point_in_targeted_window);
   DCHECK(targeted_view);
@@ -585,9 +592,9 @@ int DOMAgent::FindElementIdTargetedByPoint(const gfx::Point& p,
 }
 
 void DOMAgent::ShowDistancesInHighlightOverlay(int pinned_id, int element_id) {
-  const std::pair<aura::Window*, gfx::Rect> pair_r2(
+  const std::pair<gfx::NativeWindow, gfx::Rect> pair_r2(
       node_id_to_ui_element_[element_id]->GetNodeWindowAndBounds());
-  const std::pair<aura::Window*, gfx::Rect> pair_r1(
+  const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
       node_id_to_ui_element_[pinned_id]->GetNodeWindowAndBounds());
   gfx::Rect r2(pair_r2.second);
   gfx::Rect r1(pair_r1.second);
@@ -901,11 +908,11 @@ void DOMAgent::Reset() {
 }
 
 void DOMAgent::UpdateHighlight(
-    const std::pair<aura::Window*, gfx::Rect>& window_and_bounds) {
+    const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_and_bounds.first);
-  aura::Window* root = window_and_bounds.first->GetRootWindow();
+  gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
   layer_for_highlighting_->SetBounds(root->bounds());
   layer_for_highlighting_->SchedulePaint(root->bounds());
 
