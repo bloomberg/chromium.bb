@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "components/ui_devtools/views/ui_element.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
@@ -41,7 +41,8 @@ class WidgetElement : public views::WidgetRemovalsObserver,
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
-  std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds() const override;
+  std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
+      const override;
 
   static views::Widget* From(const UIElement* element);
 

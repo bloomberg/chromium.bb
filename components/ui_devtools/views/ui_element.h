@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"
 
 namespace ui_devtools {
@@ -53,7 +53,7 @@ class UIElement {
 
   // If element exists, return its associated native window and its bounds.
   // Otherwise, return null and empty bounds.
-  virtual std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds()
+  virtual std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
       const = 0;
 
   template <typename BackingT, typename T>

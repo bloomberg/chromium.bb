@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "components/ui_devtools/views/ui_element.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -37,7 +37,8 @@ class ViewElement : public views::ViewObserver, public UIElement {
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
-  std::pair<aura::Window*, gfx::Rect> GetNodeWindowAndBounds() const override;
+  std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
+      const override;
   static views::View* From(const UIElement* element);
 
  private:

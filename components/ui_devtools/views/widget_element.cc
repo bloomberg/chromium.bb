@@ -61,7 +61,7 @@ void WidgetElement::SetVisible(bool visible) {
     widget_->Hide();
 }
 
-std::pair<aura::Window*, gfx::Rect> WidgetElement::GetNodeWindowAndBounds()
+std::pair<gfx::NativeWindow, gfx::Rect> WidgetElement::GetNodeWindowAndBounds()
     const {
   return std::make_pair(widget_->GetNativeWindow(),
                         widget_->GetWindowBoundsInScreen());
