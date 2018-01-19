@@ -1362,6 +1362,12 @@
       'filepath': 'content/browser/site_instance|'\
         'content/browser/browsing_instance',
     },
+    'smb': {
+      'filepath': 'chrome/browser/chromeos/file_system_provider'\
+                  '|chrome/browser/chromeos/smb_client'\
+                  '|chromeos/dbus/fake_smb_provider_client'\
+                  '|chromeos/dbus/smb_provider_client',
+    },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\
                   '|chrome/browser/renderer_context_menu/spelling_'\
@@ -2229,6 +2235,7 @@
     'site_instance': ['ajwong+watch@chromium.org',
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
+    'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
