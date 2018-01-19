@@ -82,7 +82,8 @@ bool ContainerFullWidthBehavior::IsOverscrollAllowed() const {
   return controller_ && !controller_->keyboard_locked();
 }
 
-void ContainerFullWidthBehavior::SavePosition(const gfx::Point& position) {
+void ContainerFullWidthBehavior::SavePosition(const gfx::Rect& keyboard_bounds,
+                                              const gfx::Size& screen_size) {
   // No-op. Nothing to save.
 }
 
@@ -93,7 +94,8 @@ bool ContainerFullWidthBehavior::IsDragHandle(
 }
 
 void ContainerFullWidthBehavior::HandlePointerEvent(
-    const ui::LocatedEvent& event) {
+    const ui::LocatedEvent& event,
+    const gfx::Rect& display_bounds) {
   // No-op. Nothing special to do for pointer events.
 }
 
