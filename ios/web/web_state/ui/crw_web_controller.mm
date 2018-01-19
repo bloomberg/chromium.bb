@@ -4225,17 +4225,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              responseURL, contentDisposition, contentLength,
                              base::SysNSStringToUTF8(MIMEType),
                              context->GetPageTransition());
-    BOOL downloadItem =
-        (base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) ||
-         base::FeatureList::IsEnabled(web::features::kNewFileDownload));
-
+    BOOL isPassKit = [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
     if (!base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) &&
-        [self.passKitDownloader isMIMETypePassKitType:MIMEType]) {
+        isPassKit) {
       [self.passKitDownloader downloadPassKitFileWithURL:responseURL];
-      downloadItem = YES;
     }
 
-    if (downloadItem) {
+    if (isPassKit ||
+        base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
       // Discard the pending item to ensure that the current URL is not
       // different from what is displayed on the view. If there is no previous
       // committed URL, which can happen when a link is opened in a new tab via
