@@ -250,13 +250,12 @@ cast_test_group("cast_tests") {
     if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
-      # Disable GpuDataManagerImplPrivateTest.SetGLStrings and
-      # RenderWidgetHostTest.Background because we disable the blacklist to enable WebGL (b/16142554)
+      # Disable RenderWidgetHostTest.Background because we disable the
+      # blacklist to enable WebGL (b/16142554)
       gtest_excludes += [
         "DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
         "DesktopCaptureDeviceTest.Capture",
         "GamepadProviderTest.PollingAccess",
-        "GpuDataManagerImplPrivateTest.SetGLStrings",
         "PepperGamepadHostTest.WaitForReply",
         "RenderWidgetHostTest.Background",
       ]

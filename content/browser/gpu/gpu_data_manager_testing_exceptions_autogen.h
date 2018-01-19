@@ -29,40 +29,6 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
     },
 };
 
-const GpuControlList::Conditions kExceptionsForEntry6[1] = {
-    {
-        GpuControlList::kOsAny,  // os_type
-        {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-         nullptr, nullptr},                        // os_version
-        0x8086,                                    // vendor_id
-        arraysize(kDeviceIDsForEntry6Exception0),  // DeviceIDs size
-        kDeviceIDsForEntry6Exception0,             // DeviceIDs
-        GpuControlList::kMultiGpuCategoryNone,     // multi_gpu_category
-        GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
-        &kDriverInfoForEntry6Exception0,           // driver info
-        nullptr,                                   // GL strings
-        nullptr,                                   // machine model info
-        nullptr,                                   // more conditions
-    },
-};
-
-const GpuControlList::Conditions kExceptionsForEntry7[1] = {
-    {
-        GpuControlList::kOsAny,  // os_type
-        {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-         nullptr, nullptr},                        // os_version
-        0x8086,                                    // vendor_id
-        arraysize(kDeviceIDsForEntry7Exception0),  // DeviceIDs size
-        kDeviceIDsForEntry7Exception0,             // DeviceIDs
-        GpuControlList::kMultiGpuCategoryNone,     // multi_gpu_category
-        GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
-        &kDriverInfoForEntry7Exception0,           // driver info
-        nullptr,                                   // GL strings
-        nullptr,                                   // machine model info
-        nullptr,                                   // more conditions
-    },
-};
-
 }  // namespace gpu
 
 #endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_TESTING_EXCEPTIONS_AUTOGEN_H_

@@ -26,7 +26,6 @@
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
-#include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
@@ -52,13 +51,11 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
-#include "chromecast/public/cast_sys_info.h"
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -240,10 +237,9 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #endif
 #endif
 #endif  // defined(OS_LINUX)
-    // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
-    // against GPU process creation (which is otherwise triggered from
-    // BrowserThreadsStarted).  The GPU process will be created as soon as a
-    // renderer needs it, which always happens after main loop starts.
+    // It's better to start GPU process on demand. For example, for TV platforms
+    // cast starts in background and can't render until TV switches to cast
+    // input.
     {switches::kDisableGpuEarlyInit, ""},
     // Enable navigator.connection API.
     // TODO(derekjchow): Remove this switch when enabled by default.
@@ -420,14 +416,6 @@ int CastBrowserMainParts::PreCreateThreads() {
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
   if (!base::CreateDirectory(home_dir))
     return 1;
-
-  // Set GL strings so GPU config code can make correct feature blacklisting/
-  // whitelisting decisions.
-  // Note: SetGLStrings can be called before GpuDataManager::Initialize.
-  std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
-  content::GpuDataManager::GetInstance()->SetGLStrings(
-      sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
-      sys_info->GetGlVersion());
 #endif
 
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
