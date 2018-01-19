@@ -33,12 +33,11 @@ String CSSContentDistributionValue::CustomCSSText() const {
       list->Append(*CSSIdentifierValue::Create(preference));
       list->Append(*CSSIdentifierValue::Create(CSSValueBaseline));
     } else {
+      if (overflow_ != CSSValueInvalid)
+        list->Append(*CSSIdentifierValue::Create(overflow_));
       list->Append(*CSSIdentifierValue::Create(position_));
     }
   }
-  if (overflow_ != CSSValueInvalid)
-    list->Append(*CSSIdentifierValue::Create(overflow_));
-
   return list->CustomCSSText();
 }
 

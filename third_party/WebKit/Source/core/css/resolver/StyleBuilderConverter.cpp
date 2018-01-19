@@ -698,10 +698,10 @@ StyleSelfAlignmentData StyleBuilderConverter::ConvertSelfOrDefaultAlignmentData(
                CSSValueLast) {
       alignment_data.SetPosition(ItemPosition::kLastBaseline);
     } else {
-      alignment_data.SetPosition(
-          ToCSSIdentifierValue(pair.First()).ConvertTo<ItemPosition>());
       alignment_data.SetOverflow(
-          ToCSSIdentifierValue(pair.Second()).ConvertTo<OverflowAlignment>());
+          ToCSSIdentifierValue(pair.First()).ConvertTo<OverflowAlignment>());
+      alignment_data.SetPosition(
+          ToCSSIdentifierValue(pair.Second()).ConvertTo<ItemPosition>());
     }
   } else {
     alignment_data.SetPosition(

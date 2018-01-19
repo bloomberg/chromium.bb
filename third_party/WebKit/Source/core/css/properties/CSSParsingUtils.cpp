@@ -84,6 +84,18 @@ bool IsOverflowKeyword(CSSValueID id) {
       id);
 }
 
+CSSIdentifierValue* ConsumeOverflowPositionKeyword(CSSParserTokenRange& range) {
+  return IsOverflowKeyword(range.Peek().Id())
+             ? CSSPropertyParserHelpers::ConsumeIdent(range)
+             : nullptr;
+}
+
+CSSIdentifierValue* ConsumeContentPositionKeyword(CSSParserTokenRange& range) {
+  return IsContentPositionKeyword(range.Peek().Id())
+             ? CSSPropertyParserHelpers::ConsumeIdent(range)
+             : nullptr;
+}
+
 bool IsBaselineKeyword(CSSValueID id) {
   return CSSPropertyParserHelpers::IdentMatches<CSSValueFirst, CSSValueLast,
                                                 CSSValueBaseline>(id);
@@ -542,19 +554,12 @@ CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange& range) {
   if (IsBaselineKeyword(id))
     return ConsumeBaselineKeyword(range);
 
-  CSSIdentifierValue* overflow_position =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnsafe, CSSValueSafe>(
-          range);
+  CSSIdentifierValue* overflow_position = ConsumeOverflowPositionKeyword(range);
   CSSIdentifierValue* self_position = ConsumeSelfPositionKeyword(range);
   if (!self_position)
     return nullptr;
-  if (!overflow_position) {
-    overflow_position =
-        CSSPropertyParserHelpers::ConsumeIdent<CSSValueUnsafe, CSSValueSafe>(
-            range);
-  }
   if (overflow_position) {
-    return CSSValuePair::Create(self_position, overflow_position,
+    return CSSValuePair::Create(overflow_position, self_position,
                                 CSSValuePair::kDropIdenticalValues);
   }
   return self_position;
@@ -588,40 +593,21 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
         CSSValueInvalid, GetBaselineKeyword(*baseline), CSSValueInvalid);
   }
 
-  CSSValueID distribution = CSSValueInvalid;
-  CSSValueID position = CSSValueInvalid;
-  CSSValueID overflow = CSSValueInvalid;
-  do {
-    if (IsContentDistributionKeyword(id)) {
-      if (distribution != CSSValueInvalid)
-        return nullptr;
-      distribution = id;
-    } else if (IsContentPositionKeyword(id)) {
-      if (position != CSSValueInvalid)
-        return nullptr;
-      position = id;
-    } else if (IsOverflowKeyword(id)) {
-      if (overflow != CSSValueInvalid)
-        return nullptr;
-      overflow = id;
-    } else {
-      return nullptr;
-    }
+  if (IsContentDistributionKeyword(id)) {
     range.ConsumeIncludingWhitespace();
-    id = range.Peek().Id();
-  } while (!range.AtEnd());
+    return CSSContentDistributionValue::Create(id, CSSValueInvalid,
+                                               CSSValueInvalid);
+  }
 
-  // The grammar states that we should have at least <content-distribution> or
-  // <content-position>.
-  if (position == CSSValueInvalid && distribution == CSSValueInvalid)
+  CSSIdentifierValue* overflow = ConsumeOverflowPositionKeyword(range);
+  CSSIdentifierValue* position = ConsumeContentPositionKeyword(range);
+  if (!position)
     return nullptr;
 
-  // The grammar states that <overflow-position> must be associated to
-  // <content-position>.
-  if (overflow != CSSValueInvalid && position == CSSValueInvalid)
-    return nullptr;
-
-  return CSSContentDistributionValue::Create(distribution, position, overflow);
+  CSSValueID overflow_id = overflow ? overflow->GetValueID() : CSSValueInvalid;
+  CSSValueID position_id = position->GetValueID();
+  return CSSContentDistributionValue::Create(CSSValueInvalid, position_id,
+                                             overflow_id);
 }
 
 CSSValue* ConsumeSimplifiedContentPosition(CSSParserTokenRange& range) {
