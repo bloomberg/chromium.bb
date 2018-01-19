@@ -510,29 +510,15 @@ crbug.com/714962 virtual/layout_ng/fast/inline/out-of-flow-objects-and-whitespac
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/styledEmptyInlinesWithBRs.html [ Failure ]
 
-### virtual/layout_ng/external/wpt/css/CSS2/floats/
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-left-overflow.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-overflow.xht [ Failure ]
-
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox/
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-015.xht [ Failure ]
 crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow/
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-002.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-zorder-001.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-zorder-002.xht [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002a.xht [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002b.xht [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-valign-001.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-001.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-002.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-105.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-106.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-107.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-height-104.xht [ Failure ]
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-height-106.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning/
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/bottom-offset-001.xht [ Failure ]
