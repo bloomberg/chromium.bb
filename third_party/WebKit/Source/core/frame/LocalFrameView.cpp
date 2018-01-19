@@ -2054,14 +2054,11 @@ void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {
   }
 }
 
-bool LocalFrameView::ComputeCompositedSelection(
-    LocalFrame& frame,
-    CompositedSelection& selection) {
+static CompositedSelection ComputeCompositedSelection(LocalFrame& frame) {
   if (!frame.View() || frame.View()->ShouldThrottleRendering())
-    return false;
+    return {};
 
-  selection = RenderedPosition::ComputeCompositedSelection(frame.Selection());
-  return selection.type != kNoSelection;
+  return RenderedPosition::ComputeCompositedSelection(frame.Selection());
 }
 
 void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
@@ -2073,7 +2070,6 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
   Page* page = GetFrame().GetPage();
   DCHECK(page);
 
-  CompositedSelection selection;
   LocalFrame* focused_frame = page->GetFocusController().FocusedFrame();
   LocalFrame* local_frame =
       (focused_frame &&
@@ -2081,22 +2077,26 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
           ? focused_frame
           : nullptr;
 
-  if (local_frame && ComputeCompositedSelection(*local_frame, selection)) {
-    page->GetChromeClient().UpdateCompositedSelection(local_frame, selection);
-  } else {
-    if (!local_frame) {
-      // Clearing the mainframe when there is no focused frame (and hence
-      // no localFrame) is legacy behaviour, and implemented here to
-      // satisfy ParameterizedWebFrameTest.CompositedSelectionBoundsCleared's
-      // first check that the composited selection has been cleared even
-      // though no frame has focus yet. If this is not desired, then the
-      // expectation needs to be removed from the test.
-      local_frame = &frame_->LocalFrameRoot();
+  if (local_frame) {
+    const CompositedSelection& selection =
+        ComputeCompositedSelection(*local_frame);
+    if (selection.type != kNoSelection) {
+      page->GetChromeClient().UpdateCompositedSelection(local_frame, selection);
+      return;
     }
-
-    if (local_frame)
-      page->GetChromeClient().ClearCompositedSelection(local_frame);
   }
+
+  if (!local_frame) {
+    // Clearing the mainframe when there is no focused frame (and hence
+    // no localFrame) is legacy behaviour, and implemented here to
+    // satisfy ParameterizedWebFrameTest.CompositedSelectionBoundsCleared's
+    // first check that the composited selection has been cleared even
+    // though no frame has focus yet. If this is not desired, then the
+    // expectation needs to be removed from the test.
+    local_frame = &frame_->LocalFrameRoot();
+  }
+  DCHECK(local_frame);
+  page->GetChromeClient().ClearCompositedSelection(local_frame);
 }
 
 void LocalFrameView::SetNeedsCompositingUpdate(

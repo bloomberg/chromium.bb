@@ -95,7 +95,6 @@ class TracedValue;
 class TransformState;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
-struct CompositedSelection;
 struct IntrinsicSizingInfo;
 struct WebScrollIntoViewParams;
 
@@ -1099,7 +1098,6 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateLayersAndCompositingAfterScrollIfNeeded();
 
-  static bool ComputeCompositedSelection(LocalFrame&, CompositedSelection&);
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
