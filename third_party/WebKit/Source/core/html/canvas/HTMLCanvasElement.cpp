@@ -441,7 +441,6 @@ void HTMLCanvasElement::DisableAcceleration() {
   std::unique_ptr<Canvas2DLayerBridge> bridge = CreateUnaccelerated2dBuffer();
 
   if (bridge && canvas2d_bridge_) {
-    RestoreCanvasMatrixClipStack(bridge->Canvas());
     ReplaceExistingCanvas2DBuffer(std::move(bridge));
     UpdateMemoryUsage();
   }
@@ -1239,7 +1238,6 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
     std::unique_ptr<Canvas2DLayerBridge> surface =
         CreateAccelerated2dBuffer(&msaa_sample_count);
     if (surface) {
-      RestoreCanvasMatrixClipStack(surface->Canvas());
       ReplaceExistingCanvas2DBuffer(std::move(surface));
       UpdateMemoryUsage();
       SetNeedsCompositingUpdate();
@@ -1553,6 +1551,8 @@ void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
       return;
     new_buffer->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
   }
+
+  RestoreCanvasMatrixClipStack(new_buffer->Canvas());
   canvas2d_bridge_ = std::move(new_buffer);
 }
 
