@@ -56,15 +56,7 @@ namespace {
 
 static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 
-// TODO(mcasas): enable real-camera tests by disabling the Fake Device for
-// platforms where the ImageCaptureCode is landed, https://crbug.com/656810
-static struct TargetCamera {
-  bool use_fake;
-} const kTargetCameras[] = {{true},
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
-                            {false}
-#endif
-};
+enum class TargetCamera { REAL_WEBCAM, FAKE_DEVICE };
 
 static struct TargetVideoCaptureStack {
   bool use_video_capture_service;
@@ -82,13 +74,14 @@ static struct TargetVideoCaptureStack {
 // This class is the content_browsertests for Image Capture API, which allows
 // for capturing still images out of a MediaStreamTrack. Is a
 // WebRtcWebcamBrowserTest to be able to use a physical camera.
-class WebRtcImageCaptureBrowserTestBase : public WebRtcWebcamBrowserTest {
+class WebRtcImageCaptureBrowserTestBase
+    : public UsingRealWebcam_WebRtcWebcamBrowserTest {
  public:
   WebRtcImageCaptureBrowserTestBase() = default;
   ~WebRtcImageCaptureBrowserTestBase() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebRtcWebcamBrowserTest::SetUpCommandLine(command_line);
+    UsingRealWebcam_WebRtcWebcamBrowserTest::SetUpCommandLine(command_line);
 
     ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
@@ -101,7 +94,7 @@ class WebRtcImageCaptureBrowserTestBase : public WebRtcWebcamBrowserTest {
 
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-    WebRtcWebcamBrowserTest::SetUp();
+    UsingRealWebcam_WebRtcWebcamBrowserTest::SetUp();
   }
 
   // Tries to run a |command| JS test, returning true if the test can be safely
@@ -155,7 +148,7 @@ class WebRtcImageCaptureSucceedsBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcImageCaptureBrowserTestBase::SetUpCommandLine(command_line);
 
-    if (std::get<0>(GetParam()).use_fake) {
+    if (std::get<0>(GetParam()) == TargetCamera::FAKE_DEVICE) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kUseFakeDeviceForMediaStream);
       ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -167,7 +160,7 @@ class WebRtcImageCaptureSucceedsBrowserTest
     // TODO(chfremer): Enable test cases using the video capture service with
     // real cameras as soon as root cause for https://crbug.com/733582 is
     // understood and resolved.
-    if ((!std::get<0>(GetParam()).use_fake) &&
+    if ((std::get<0>(GetParam()) == TargetCamera::REAL_WEBCAM) &&
         (std::get<1>(GetParam()).use_video_capture_service)) {
       LOG(INFO) << "Skipping this test case";
       return true;
@@ -224,10 +217,25 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
 }
 
 INSTANTIATE_TEST_CASE_P(
-    ,
+    ,  // Use no prefix, so that these get picked up when using
+       // --gtest_filter=WebRtc*
     WebRtcImageCaptureSucceedsBrowserTest,
-    testing::Combine(testing::ValuesIn(kTargetCameras),
+    testing::Combine(testing::Values(TargetCamera::FAKE_DEVICE),
                      testing::ValuesIn(kTargetVideoCaptureStacks)));
+
+// Tests on real webcam can only run on platforms for which the image capture
+// API has already been implemented.
+// Note, these tests must be run sequentially, since multiple parallel test runs
+// competing for a single physical webcam typically causes failures.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
+INSTANTIATE_TEST_CASE_P(
+    UsingRealWebcam,  // This prefix can be used with --gtest_filter to
+                      // distinguish the tests using a real camera from the ones
+                      // that don't.
+    WebRtcImageCaptureSucceedsBrowserTest,
+    testing::Combine(testing::Values(TargetCamera::REAL_WEBCAM),
+                     testing::ValuesIn(kTargetVideoCaptureStacks)));
+#endif
 
 // Test fixture template for setting up a fake device with a custom
 // configuration. We are going to use this to set up fake devices that respond

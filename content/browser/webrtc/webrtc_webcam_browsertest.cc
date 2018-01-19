@@ -42,33 +42,34 @@ void RemoveFakeDeviceFromCommandLine(base::CommandLine* command_line) {
 
 namespace content {
 
-void WebRtcWebcamBrowserTest::SetUpCommandLine(
+// The prefix "UsingRealWebcam" is used to indicate that this test must not
+// be run in parallel with other tests using a real webcam.
+void UsingRealWebcam_WebRtcWebcamBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   // Allows for accessing capture devices without prompting for permission.
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 
-  // The content_browsertests run with this flag by default, and this test is
-  // the only current exception to that rule, so just remove the flag
-  // --use-fake-device-for-media-stream here. We could also have all tests
-  // involving media streams add this flag explicitly, but it will be really
-  // unintuitive for developers to write tests involving media stream and have
-  // them fail on what looks like random bots, so running with fake devices
-  // is really a reasonable default.
+  // The content_browsertests run with this flag by default, so remove the flag
+  // --use-fake-device-for-media-stream here.
+  // TODO(chfremer): A better solution would be to promote
+  // |kUseFakeDeviceForMediaStream| from a switch to a base::Feature and then
+  // use ScopedFeatureList::InitAndEnableFeature() in the base class and
+  // ScopedFeatureList::InitAndDisableFeature() here and wherever else we want
+  // to use a real webcam.
   RemoveFakeDeviceFromCommandLine(command_line);
 }
 
-void WebRtcWebcamBrowserTest::SetUp() {
+void UsingRealWebcam_WebRtcWebcamBrowserTest::SetUp() {
   EnablePixelOutput();
   ContentBrowserTest::SetUp();
 }
 
-// The test is tagged as MANUAL since the webcam is a system-level resource; we
-// only want it to run on bots where we can ensure sequential execution. The
-// Android bots will run the test since they ignore MANUAL, but that's what we
-// want here since the bot runs tests sequentially on the device.
 // Tests that GetUserMedia acquires VGA by default.
-IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
-                       MANUAL_CanAcquireVgaOnRealWebcam) {
+// The MANUAL prefix is used to only run this tests on certain bots for which
+// we can guarantee that tests are executed sequentially. TODO(chfremer): Is
+// this still needed or is the prefix "UsingRealWebcam" sufficient?
+IN_PROC_BROWSER_TEST_F(UsingRealWebcam_WebRtcWebcamBrowserTest,
+                       MANUAL_CanAcquireVga) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/media/getusermedia-real-webcam.html"));
