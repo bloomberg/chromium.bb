@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_service_record_win.h"
 
+#include <math.h>
+
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
