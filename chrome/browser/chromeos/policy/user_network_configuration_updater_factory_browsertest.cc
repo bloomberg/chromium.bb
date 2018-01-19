@@ -302,7 +302,7 @@ class PolicyProvidedTrustRootsPublicSessionTest
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsPublicSessionTest,
-                       NotAllowedInPublicSession) {
+                       AllowedInPublicSession) {
   StartLogin();
   WaitForSessionStart();
 
@@ -312,8 +312,7 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsPublicSessionTest,
   ASSERT_TRUE(browser);
 
   SetRootCertONCPolicy(browser->profile());
-  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            VerifyTestServerCert(browser->profile()));
+  EXPECT_EQ(net::OK, VerifyTestServerCert(browser->profile()));
 }
 
 }  // namespace policy

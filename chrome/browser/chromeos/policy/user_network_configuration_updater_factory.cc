@@ -75,27 +75,20 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (user != user_manager::UserManager::Get()->GetPrimaryUser())
     return nullptr;
 
+  // Guest sessions don't get user policy, but a UserNetworkConfigurationUpdater
+  // can be created for them anyway.
+  const bool allow_trusted_certs_from_policy =
+      user->GetType() != user_manager::USER_TYPE_GUEST;
+
   ProfilePolicyConnector* profile_connector =
       ProfilePolicyConnectorFactory::GetForBrowserContext(context);
 
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
-             profile, AllowTrustedCertsFromPolicy(user), *user,
+             profile, allow_trusted_certs_from_policy, *user,
              profile_connector->policy_service(),
              chromeos::NetworkHandler::Get()
                  ->managed_network_configuration_handler())
       .release();
-}
-
-// static
-bool UserNetworkConfigurationUpdaterFactory::AllowTrustedCertsFromPolicy(
-    const user_manager::User* user) {
-  user_manager::UserType user_type = user->GetType();
-
-  // Disallow trusted root certs for public sessions.
-  // Also, guest sessions don't get user policy, but a
-  // UserNetworkCofnigurationUpdater can be created for them anyway.
-  return user_type != user_manager::USER_TYPE_GUEST &&
-         user_type != user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
 }  // namespace policy
