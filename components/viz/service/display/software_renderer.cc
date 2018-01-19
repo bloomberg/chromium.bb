@@ -31,7 +31,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/effects/SkLayerRasterizer.h"
+#include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -497,15 +497,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
 
-    SkPaint mask_paint;
-    mask_paint.setShader(
+    current_paint_.setMaskFilter(SkShaderMaskFilter::Make(
         SkShader::MakeBitmapShader(*mask, SkShader::kClamp_TileMode,
-                                   SkShader::kClamp_TileMode, &mask_mat));
-
-    SkLayerRasterizer::Builder builder;
-    builder.addLayer(mask_paint);
-
-    current_paint_.setRasterizer(builder.detach());
+                                   SkShader::kClamp_TileMode, &mask_mat)));
   }
 
   // If we have a background filter shader, render its results first.
@@ -514,7 +508,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   if (background_filter_shader) {
     SkPaint paint;
     paint.setShader(std::move(background_filter_shader));
-    paint.setRasterizer(current_paint_.refRasterizer());
+    paint.setMaskFilter(current_paint_.refMaskFilter());
     current_canvas_->drawRect(dest_visible_rect, paint);
   }
   current_paint_.setShader(std::move(shader));
