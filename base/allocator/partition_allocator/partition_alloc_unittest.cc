@@ -859,7 +859,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   }
 
   // Too large allocation.
-  requested_size = INT_MAX;
+  requested_size = (1UL << 31) + 1;
   predicted_size = generic_allocator.root()->ActualSize(requested_size);
   EXPECT_EQ(requested_size, predicted_size);
 }
