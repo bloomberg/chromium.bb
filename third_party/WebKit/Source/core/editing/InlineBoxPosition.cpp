@@ -37,7 +37,9 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/line/RootInlineBox.h"
 
 namespace blink {
 
@@ -151,11 +153,14 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
   return InlineBoxPosition(result_box, result_box->CaretLeftmostOffset());
 }
 
+// TODO(editing-dev): We should get rid of |TextDirection| parameter.
 InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi,
-    TextDirection primary_direction) {
+    TextDirection) {
+  const TextDirection primary_direction =
+      inline_box->Root().Block().Style()->Direction();
   if (inline_box->Direction() == primary_direction)
     return AdjustInlineBoxPositionForPrimaryDirection(inline_box, caret_offset);
 

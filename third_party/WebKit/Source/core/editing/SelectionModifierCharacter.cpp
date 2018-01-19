@@ -249,7 +249,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
   while (true) {
     InlineBoxPosition box_position = ComputeInlineBoxPosition(
-        PositionWithAffinityTemplate<Strategy>(p, affinity), primary_direction);
+        PositionWithAffinityTemplate<Strategy>(p, affinity));
     const InlineBox* box = box_position.inline_box;
     int offset = box_position.offset_in_box;
     if (!box) {
@@ -297,8 +297,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
           const InlineBox* box_on_left =
               ComputeInlineBoxPosition(PositionWithAffinityTemplate<Strategy>(
-                                           position_on_left, affinity),
-                                       primary_direction)
+                                           position_on_left, affinity))
                   .inline_box;
           if (box_on_left && box_on_left->Root() == box->Root())
             return PositionTemplate<Strategy>();

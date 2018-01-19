@@ -67,13 +67,7 @@ struct InlineBoxPosition {
 CORE_EXPORT InlineBoxPosition
 ComputeInlineBoxPosition(const PositionWithAffinity&);
 CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionWithAffinity&,
-                         TextDirection primary_direction);
-CORE_EXPORT InlineBoxPosition
 ComputeInlineBoxPosition(const PositionInFlatTreeWithAffinity&);
-CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionInFlatTreeWithAffinity&,
-                         TextDirection primary_direction);
 CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition&);
 
 PositionWithAffinity ComputeInlineAdjustedPosition(const PositionWithAffinity&);
