@@ -20,11 +20,6 @@ class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class ShouldAllowTimingDetails {
-    Yes,
-    No,
-  };
-
   ~PerformanceServerTiming();
 
   const String& name() const { return name_; }
@@ -32,8 +27,7 @@ class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
   const String& description() const { return description_; }
 
   static WebVector<WebServerTimingInfo> ParseServerTiming(
-      const ResourceTimingInfo&,
-      ShouldAllowTimingDetails);
+      const ResourceTimingInfo&);
   static HeapVector<Member<PerformanceServerTiming>> FromParsedServerTiming(
       const WebVector<WebServerTimingInfo>&);
 
