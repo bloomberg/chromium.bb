@@ -258,8 +258,13 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   // page.  Furthermore, mousemove events before the first layout should not
   // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in Document::performMouseEventHitTest.
+  // The check to LifecycleUpdatesActive() prevents hit testing to frames
+  // that have already had layout but are throttled to prevent painting
+  // because the current Document isn't ready to render yet. In that case
+  // the lifecycle update prompted by HitTest() would fail.
   if (!frame_->ContentLayoutObject() || !frame_->View() ||
-      !frame_->View()->DidFirstLayout())
+      !frame_->View()->DidFirstLayout() ||
+      !frame_->View()->LifecycleUpdatesActive())
     return result;
 
   frame_->ContentLayoutObject()->HitTest(result);
