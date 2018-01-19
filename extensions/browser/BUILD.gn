@@ -78,6 +78,8 @@ source_set("browser_sources") {
     "content_hash_tree.h",
     "content_verifier.cc",
     "content_verifier.h",
+    "content_verifier/content_hash.cc",
+    "content_verifier/content_hash.h",
     "content_verifier_delegate.h",
     "content_verifier_io_data.cc",
     "content_verifier_io_data.h",
