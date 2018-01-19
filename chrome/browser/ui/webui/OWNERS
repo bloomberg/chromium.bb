@@ -10,6 +10,8 @@ per-file inspect_ui*=pfeldman@chromium.org
 
 per-file md_history_ui*=calamity@chromium.org
 
+per-file memory_internals_ui*=erikchen@chromium.org
+
 per-file net_export_ui.*=file://net/OWNERS
 
 per-file ntp_tiles_internals_ui.*=file://components/ntp_tiles/OWNERS
