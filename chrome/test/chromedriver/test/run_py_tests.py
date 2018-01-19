@@ -126,12 +126,16 @@ _OS_SPECIFIC_FILTER['linux'] = [
     'ChromeDriverTest.testWindowMaximize',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2132
     'MobileEmulationCapabilityTest.testDeviceMetricsWithDeviceWidth',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
+    'ChromeDriverTest.testGoBackAndGoForward'
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
     'ChromeDriverTest.testWindowFullScreen',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
+    'ChromeDriverTest.testGoBackAndGoForward'
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
