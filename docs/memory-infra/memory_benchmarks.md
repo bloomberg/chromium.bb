@@ -118,7 +118,9 @@ $SRC/tools/perf/run_benchmark run system_health.memory_mobile \
 This will run the story with a default of 3 repetitions and produce a
 `results.html` file comparing results from this and any previous benchmark
 runs. In addition, you'll also get individual [trace files][memory-infra]
-for each story run by the benchmark.
+for each story run by the benchmark. **Note:** by default only high level
+metrics are shown, you may need to tick the "Show all" check box in order to
+view some of the lower level memory metrics.
 
 ![Example results.html file](https://storage.googleapis.com/chromium-docs.appspot.com/ea60207d9bb4809178fe75923d6d1a2b241170ef.png)
 
