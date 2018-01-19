@@ -80,8 +80,8 @@ class MultiBrowserSharedState(story_module.SharedState):
     extra_browser_types = set(story.browser_type for story in story_set)
     extra_browser_types.remove('default')  # Must include 'default' browser.
     for browser_type in extra_browser_types:
-      options = _OptionsForBrowser(browser_type, finder_options)
-      if not self._PrepareBrowser(browser_type, options):
+      finder_options_copy = _OptionsForBrowser(browser_type, finder_options)
+      if not self._PrepareBrowser(browser_type, finder_options_copy):
         logging.warning(
           'Cannot run %s (%s) because %s browser is not available',
           test.__name__, str(test), browser_type)
@@ -109,7 +109,7 @@ class MultiBrowserSharedState(story_module.SharedState):
   def platform(self):
     return self._platform
 
-  def _PrepareBrowser(self, browser_type, options):
+  def _PrepareBrowser(self, browser_type, finder_options):
     """Add a browser to the dict of possible browsers.
 
     TODO(perezju): When available, use the GetBrowserForPlatform API instead.
@@ -118,7 +118,7 @@ class MultiBrowserSharedState(story_module.SharedState):
     Returns:
       The possible browser if found, or None otherwise.
     """
-    possible_browser = browser_finder.FindBrowser(options)
+    possible_browser = browser_finder.FindBrowser(finder_options)
     if possible_browser is None:
       return None
 
@@ -126,7 +126,8 @@ class MultiBrowserSharedState(story_module.SharedState):
       self._platform = possible_browser.platform
     else:
       assert self._platform is possible_browser.platform
-    self._possible_browsers[browser_type] = (possible_browser, options)
+    self._possible_browsers[browser_type] = (
+        possible_browser, finder_options.browser_options)
     return possible_browser
 
   def _CreateAllBrowsersIfNeeeded(self):
@@ -139,20 +140,26 @@ class MultiBrowserSharedState(story_module.SharedState):
     if self._browsers_created:
       return
     for browser_type in self._browsers:
-      possible_browser, options = self._possible_browsers[browser_type]
-      self._browsers[browser_type] = possible_browser.Create(options)
+      possible_browser, browser_options = self._possible_browsers[browser_type]
+      possible_browser.SetUpEnvironment(browser_options)
+      self._browsers[browser_type] = possible_browser.Create()
     self._browsers_created = True
 
   def _CloseAllBrowsers(self):
     """Close all of the browsers that were launched for this benchmark."""
-    if not self._browsers_created:
-      return
-    for browser_type, browser in self._browsers.iteritems():
+    for browser_type, browser in list(self._browsers.iteritems()):
+      if browser is not None:
+        try:
+          browser.Close()
+        except Exception:
+          logging.exception('Error while closing %s browser', browser_type)
+        self._browsers[browser_type] = None
+      possible_browser, _ = self._possible_browsers[browser_type]
       try:
-        browser.Close()
+        possible_browser.CleanUpEnvironment()
       except Exception:
-        logging.exception('Error while closing %s browser', browser_type)
-      self._browsers[browser_type] = None
+        logging.exception(
+            'Error while cleaning up environment for %s', browser_type)
     self._browsers_created = False
 
   def CanRunStory(self, _):
