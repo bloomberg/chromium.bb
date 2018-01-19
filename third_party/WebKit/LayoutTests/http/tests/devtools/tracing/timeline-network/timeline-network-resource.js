@@ -6,8 +6,12 @@
   TestRunner.addResult(`Tests the Timeline API instrumentation of a network resource load\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
+  await TestRunner.NetworkAgent.setCacheDisabled(true);
+
+  await PerformanceTestRunner.startTimeline();
+  await TestRunner.navigatePromise('http://127.0.0.1:8000/devtools/tracing/resources/hello.html');
   await TestRunner.evaluateInPagePromise(`
-      var scriptUrl = "../resources/timeline-network-resource.js";
+      var scriptUrl = "timeline-network-resource.js";
 
       function performActions()
       {
@@ -19,55 +23,37 @@
       }
   `);
 
-  await TestRunner.NetworkAgent.setCacheDisabled(true);
   var requestId;
   var scriptUrl = 'timeline-network-resource.js';
 
-  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
+  await TestRunner.callFunctionInPageAsync('performActions');
+  await PerformanceTestRunner.stopTimeline();
 
-  var model = PerformanceTestRunner.timelineModel();
-  model.mainThreadEvents().forEach(event => {
-    if (event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
-      printSend(event);
-    else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
-      printReceive(event);
-    else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceFinish)
-      printFinish(event);
-  });
+  const sendRequests = PerformanceTestRunner.timelineModel().mainThreadEvents().
+      filter(e => e.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest);
+  for (let event of sendRequests) {
+    printEvent(event);
+    printEventsWithId(event.args['data'].requestId);
+  }
   TestRunner.completeTest();
+
+  function printEventsWithId(id) {
+    var model = PerformanceTestRunner.timelineModel();
+    model.mainThreadEvents().forEach(event => {
+        if (event.name !== TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse &&
+            event.name !== TimelineModel.TimelineModel.RecordType.ResourceFinish) {
+          return;
+        }
+        if (event.args['data'].requestId !== id)
+          return;
+        printEvent(event);
+    });
+  }
 
   function printEvent(event) {
     TestRunner.addResult('');
     PerformanceTestRunner.printTraceEventProperties(event);
     TestRunner.addResult(
         `Text details for ${event.name}: ` + Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event));
-  }
-
-  function printSend(event) {
-    printEvent(event);
-    var data = event.args['data'];
-    requestId = data.requestId;
-    if (data.url === undefined)
-      TestRunner.addResult('* No \'url\' property in record');
-    else if (data.url.indexOf(scriptUrl) === -1)
-      TestRunner.addResult('* Didn\'t find URL: ' + scriptUrl);
-  }
-
-  function printReceive(event) {
-    printEvent(event);
-    var data = event.args['data'];
-    if (requestId !== data.requestId)
-      TestRunner.addResult('Didn\'t find matching requestId: ' + requestId);
-    if (data.statusCode !== 0)
-      TestRunner.addResult('Response received status: ' + data.statusCode);
-  }
-
-  function printFinish(event) {
-    printEvent(event);
-    var data = event.args['data'];
-    if (requestId !== data.requestId)
-      TestRunner.addResult('Didn\'t find matching requestId: ' + requestId);
-    if (data.didFail)
-      TestRunner.addResult('Request failed.');
   }
 })();
