@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
+#include "gin/converter.h"
 #include "gin/per_context_data.h"
 
 namespace extensions {
@@ -22,6 +23,15 @@ bool IsContextValid(v8::Local<v8::Context> context) {
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   return per_context_data &&
          per_context_data->GetUserData(kInvalidatedContextFlagKey) == nullptr;
+}
+
+bool IsContextValidOrThrowError(v8::Local<v8::Context> context) {
+  if (IsContextValid(context))
+    return true;
+  v8::Isolate* isolate = context->GetIsolate();
+  isolate->ThrowException(v8::Exception::Error(
+      gin::StringToV8(isolate, "Extension context invalidated.")));
+  return false;
 }
 
 void InvalidateContext(v8::Local<v8::Context> context) {

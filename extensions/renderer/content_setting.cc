@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "content/public/common/console_message_level.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
@@ -129,6 +130,9 @@ void ContentSetting::HandleFunction(const std::string& method_name,
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  if (!binding::IsContextValidOrThrowError(context))
+    return;
 
   std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/easy_unlock_proximity_required_stub.h"
 
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -46,6 +47,10 @@ v8::Local<v8::Value> EasyUnlockProximityRequiredStub::GetOnChangeEvent(
   v8::Isolate* isolate = arguments->isolate();
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
   v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();
+
+  if (!binding::IsContextValidOrThrowError(context))
+    return v8::Undefined(isolate);
+
   v8::Local<v8::Private> key = v8::Private::ForApi(
       isolate, gin::StringToSymbol(isolate, "onChangeEvent"));
   v8::Local<v8::Value> event;

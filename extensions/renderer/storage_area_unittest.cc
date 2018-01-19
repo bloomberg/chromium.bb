@@ -43,7 +43,8 @@ TEST_F(StorageAreaTest, TestUseAfterInvalidation) {
   DisposeContext(context);
 
   EXPECT_FALSE(binding::IsContextValid(context));
-  RunFunction(run_storage_get, context, arraysize(args), args);
+  RunFunctionAndExpectError(run_storage_get, context, arraysize(args), args,
+                            "Uncaught Error: Extension context invalidated.");
 }
 
 }  // namespace extensions

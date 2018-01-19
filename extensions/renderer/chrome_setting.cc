@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
@@ -84,6 +85,9 @@ void ChromeSetting::Set(gin::Arguments* arguments) {
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
+  if (!binding::IsContextValidOrThrowError(context))
+    return;
+
   v8::Local<v8::Value> value = arguments->PeekNext();
   // The set schema included in the Schema object is generic, since it varies
   // per-setting. However, this is only ever for a single setting, so we can
@@ -107,6 +111,10 @@ v8::Local<v8::Value> ChromeSetting::GetOnChangeEvent(
   v8::Isolate* isolate = arguments->isolate();
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
   v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();
+
+  if (!binding::IsContextValidOrThrowError(context))
+    return v8::Undefined(isolate);
+
   v8::Local<v8::Private> key = v8::Private::ForApi(
       isolate, gin::StringToSymbol(isolate, "onChangeEvent"));
   v8::Local<v8::Value> event;
@@ -138,6 +146,9 @@ void ChromeSetting::HandleFunction(const std::string& method_name,
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  if (!binding::IsContextValidOrThrowError(context))
+    return;
 
   std::vector<v8::Local<v8::Value>> argument_list = arguments->GetAll();
 
