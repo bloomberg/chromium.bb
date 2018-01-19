@@ -38,7 +38,7 @@ enum ErrorType {
   ERROR_DBUS_PARSE_FAILED = 50;
 }
 
-message DirectoryEntry {
+message DirectoryEntryProto {
   optional bool is_directory = 1;
   optional string name = 2;
   // Size in bytes.
@@ -47,26 +47,24 @@ message DirectoryEntry {
   optional int64 last_modified_time = 4;
 }
 
-// DirectoryEntryList is included in responses to ReadDirectory D-Bus method
-// calls.
-message DirectoryEntryList {
-  repeated DirectoryEntry entries = 1;
-}
+// DirectoryEntryListProto is included in responses to ReadDirectory D-Bus
+// method calls.
+message DirectoryEntryListProto { repeated DirectoryEntryProto entries = 1; }
 
-// MountOptions is used for passing inputs into SmbProvider.Mount().
-message MountOptions {
+// Used for passing inputs into SmbProvider.Mount().
+message MountOptionsProto {
   // Path of the share to be mounted. (e.g. "smb://qnap/testshare")
   optional string path = 1;
 }
 
-// UnmountOptions is used for passing inputs into SmbProvider.Unmount().
-message UnmountOptions {
+// Used for passing inputs into SmbProvider.Unmount().
+message UnmountOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
 }
 
 // Used for passing inputs into SmbProvider.ReadDirectory().
-message ReadDirectoryOptions {
+message ReadDirectoryOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the directory to be read. The paths are relative to the mount root.
@@ -75,7 +73,7 @@ message ReadDirectoryOptions {
 }
 
 // Used for passing inputs into SmbProvider.GetMetadataEntry().
-message GetMetadataEntryOptions {
+message GetMetadataEntryOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the entry to be read. This can be a file or directory path.
@@ -84,7 +82,7 @@ message GetMetadataEntryOptions {
 }
 
 // Used for passing inputs into SmbProvider.OpenFile().
-message OpenFileOptions {
+message OpenFileOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the file to be opened. This must be a file path.
@@ -95,7 +93,7 @@ message OpenFileOptions {
 }
 
 // Used for passing inputs into SmbProvider.CloseFile().
-message CloseFileOptions {
+message CloseFileOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // ID of the file returned from OpenFile().
@@ -103,7 +101,7 @@ message CloseFileOptions {
 }
 
 // Used for passing inputs into SmbProvider.ReadFile().
-message ReadFileOptions {
+message ReadFileOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // ID of the file returned from OpenFile().
@@ -115,7 +113,7 @@ message ReadFileOptions {
 }
 
 // Used for passing inputs into SmbProvider.DeleteEntry().
-message DeleteEntryOptions {
+message DeleteEntryOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the entry to be deleted. This can be a file or directory path.
@@ -126,7 +124,7 @@ message DeleteEntryOptions {
 }
 
 // Used for passing inputs into SmbProvider.CreateFile().
-message CreateFileOptions {
+message CreateFileOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the file to be created. Paths are relative to the mount root,
@@ -135,7 +133,7 @@ message CreateFileOptions {
 }
 
 // Used for passing inputs into SmbProvider.Truncate().
-message TruncateOptions {
+message TruncateOptionsProto {
   // ID of the mount returned from Mount().
   optional int32 mount_id = 1;
   // Path of the file to be truncated. Paths are relative to the mount root,
