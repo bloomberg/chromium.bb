@@ -98,11 +98,10 @@ class PlatformKeysService : public KeyedService {
                           const std::string& error_message)>;
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
-  // to allow a single sign operation by the given extension. |token_id| is
-  // currently ignored, instead the user token associated with |browser_context|
-  // is always used. |callback| will be invoked with the resulting public key or
-  // an error.
-  // Will only call back during the lifetime of this object.
+  // to allow a single sign operation by the given extension. |token_id|
+  // specifies the token to store the keypair on. |callback| will be invoked
+  // with the resulting public key or an error. Will only call back during the
+  // lifetime of this object.
   void GenerateRSAKey(const std::string& token_id,
                       unsigned int modulus_length_bits,
                       const std::string& extension_id,
@@ -115,9 +114,9 @@ class PlatformKeysService : public KeyedService {
                                            const std::string& error_message)>;
 
   // Digests |data|, applies PKCS1 padding and afterwards signs the data with
-  // the private key matching |params.public_key|. If a non empty token id is
-  // provided and the key is not found in that token, the operation aborts.
-  // If the extension does not have permissions for signing with this key, the
+  // the private key matching |public_key_spki_der|. If a non empty token id is
+  // provided and the key is not found in that token, the operation aborts. If
+  // the extension does not have permissions for signing with this key, the
   // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
   // future signing attempts.
@@ -125,14 +124,14 @@ class PlatformKeysService : public KeyedService {
   // Will only call back during the lifetime of this object.
   void SignRSAPKCS1Digest(const std::string& token_id,
                           const std::string& data,
-                          const std::string& public_key,
+                          const std::string& public_key_spki_der,
                           platform_keys::HashAlgorithm hash_algorithm,
                           const std::string& extension_id,
                           const SignCallback& callback);
 
   // Applies PKCS1 padding and afterwards signs the data with the private key
-  // matching |params.public_key|. |data| is not digested. If a non empty token
-  // id is provided and the key is not found in that token, the operation
+  // matching |public_key_spki_der|. |data| is not digested. If a non empty
+  // token id is provided and the key is not found in that token, the operation
   // aborts.
   // The size of |data| (number of octets) must be smaller than k - 11, where k
   // is the key size in octets.
@@ -144,7 +143,7 @@ class PlatformKeysService : public KeyedService {
   // Will only call back during the lifetime of this object.
   void SignRSAPKCS1Raw(const std::string& token_id,
                        const std::string& data,
-                       const std::string& public_key,
+                       const std::string& public_key_spki_der,
                        const std::string& extension_id,
                        const SignCallback& callback);
 

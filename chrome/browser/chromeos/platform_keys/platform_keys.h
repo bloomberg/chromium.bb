@@ -65,9 +65,10 @@ typedef base::Callback<void(const std::string& public_key_spki_der,
                             const std::string& error_message)>
     GenerateKeyCallback;
 
-// Generates a RSA key pair with |modulus_length_bits|. |token_id| is currently
-// ignored, instead the user token associated with |browser_context| is always
-// used. |callback| will be invoked with the resulting public key or an error.
+// Generates a RSA key pair with |modulus_length_bits|. |token_id| specifies the
+// token to store the keypair on and can currently be |kTokenIdUser| or
+// |kTokenIdSystem|. |callback| will be invoked with the resulting public key or
+// an error.
 void GenerateRSAKey(const std::string& token_id,
                     unsigned int modulus_length_bits,
                     const GenerateKeyCallback& callback,
@@ -77,25 +78,25 @@ typedef base::Callback<void(const std::string& signature,
                             const std::string& error_message)> SignCallback;
 
 // Digests |data|, applies PKCS1 padding and afterwards signs the data with the
-// private key matching |params.public_key|. If a non empty token id is provided
-// and the key is not found in that token, the operation aborts. |callback| will
-// be invoked with the signature or an error message.
+// private key matching |public_key_spki_der|. If a non empty token id is
+// provided and the key is not found in that token, the operation aborts.
+// |callback| will be invoked with the signature or an error message.
 void SignRSAPKCS1Digest(const std::string& token_id,
                         const std::string& data,
-                        const std::string& public_key,
+                        const std::string& public_key_spki_der,
                         HashAlgorithm hash_algorithm,
                         const SignCallback& callback,
                         content::BrowserContext* browser_context);
 
 // Applies PKCS1 padding and afterwards signs the data with the private key
-// matching |params.public_key|. |data| is not digested. If a non empty token id
-// is provided and the key is not found in that token, the operation aborts.
-// The size of |data| (number of octets) must be smaller than k - 11, where k
-// is the key size in octets.
-// |callback| will be invoked with the signature or an error message.
+// matching |public_key_spki_der|. |data| is not digested. If a non empty token
+// id is provided and the key is not found in that token, the operation aborts.
+// The size of |data| (number of octets) must be smaller than k - 11, where k is
+// the key size in octets. |callback| will be invoked with the signature or an
+// error message.
 void SignRSAPKCS1Raw(const std::string& token_id,
                      const std::string& data,
-                     const std::string& public_key,
+                     const std::string& public_key_spki_der,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context);
 
@@ -151,9 +152,10 @@ typedef base::Callback<void(std::unique_ptr<net::CertificateList> certs,
     GetCertificatesCallback;
 
 // Returns the list of all certificates with stored private key available from
-// the given token. |token_id| is currently ignored, instead the user token
-// associated with |browser_context| is always used. |callback| will be invoked
-// with the list of available certificates or an error message.
+// the given token. If an empty |token_id| is provided, all certificates the
+// user associated with |browser_context| has access to are listed. Otherwise,
+// only certificates from the specified token are listed. |callback| will be
+// invoked with the list of available certificates or an error message.
 void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
                      content::BrowserContext* browser_context);
@@ -165,9 +167,10 @@ typedef base::Callback<void(const std::string& error_message)>
 
 // Imports |certificate| to the given token if the certified key is already
 // stored in this token. Any intermediate of |certificate| will be ignored.
-// |token_id| is currently ignored, instead the user token associated with
-// |browser_context| is always used. |callback| will be invoked when the import
-// is finished, possibly with an error message.
+// |token_id| specifies the token to store the certificate on and can currently
+// be |kTokenIdUser| or |kTokenIdSystem|. The private key must be stored on the
+// same token. |callback| will be invoked when the import is finished, possibly
+// with an error message.
 void ImportCertificate(const std::string& token_id,
                        const scoped_refptr<net::X509Certificate>& certificate,
                        const ImportCertificateCallback& callback,
@@ -179,9 +182,10 @@ typedef base::Callback<void(const std::string& error_message)>
     RemoveCertificateCallback;
 
 // Removes |certificate| from the given token if present. Any intermediate of
-// |certificate| will be ignored. |token_id| is currently ignored, instead the
-// user token associated with |browser_context| is always used. |callback| will
-// be invoked when the removal is finished, possibly with an error message.
+// |certificate| will be ignored. |token_id| specifies the token to remove the
+// certificate from and can currently be empty (any token), |kTokenIdUser| or
+// |kTokenIdSystem|. |callback| will be invoked when the removal is finished,
+// possibly with an error message.
 void RemoveCertificate(const std::string& token_id,
                        const scoped_refptr<net::X509Certificate>& certificate,
                        const RemoveCertificateCallback& callback,
@@ -199,6 +203,30 @@ typedef base::Callback<void(std::unique_ptr<std::vector<std::string>> token_ids,
 // Must be called and calls |callback| on the UI thread.
 void GetTokens(const GetTokensCallback& callback,
                content::BrowserContext* browser_context);
+
+// If token ids have been successfully retrieved, |error_message| will be empty.
+// Two cases are possible then:
+// If |token_ids| is not empty, |token_ids| has been filled with the identifiers
+// of the tokens the private key was found on and the user has access to.
+// Currently, valid token identifiers are |kTokenIdUser| and |kTokenIdSystem|.
+// If |token_ids| is empty, the private key has not been found on any token the
+// user has access to. Note that this is also the case if the key exists on the
+// system token, but the current user does not have access to the system token.
+// If an error occurred during processing, |token_ids| will be empty and
+// |error_message| will be set to an error message.
+// TODO(pmarko): This is currently a RepeatingCallback because of
+// GetNSSCertDatabaseForResourceContext semantics.
+typedef base::RepeatingCallback<void(const std::vector<std::string>& token_ids,
+                                     const std::string& error_message)>
+    GetKeyLocationsCallback;
+
+// Determines the token(s) on which the private key corresponding to
+// |public_key_spki_der| is stored. |callback| will be invoked when the token
+// ids are determined, possibly with an error message. Must be called and calls
+// |callback| on the UI thread.
+void GetKeyLocations(const std::string& public_key_spki_der,
+                     const GetKeyLocationsCallback& callback,
+                     content::BrowserContext* browser_context);
 
 }  // namespace platform_keys
 

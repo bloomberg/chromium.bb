@@ -1159,6 +1159,8 @@ test("browser_tests") {
         "../browser/extensions/api/passwords_private/passwords_private_apitest.cc",
         "../browser/extensions/api/permissions/permissions_apitest.cc",
         "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
+        "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
+        "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
         "../browser/extensions/api/preference/preference_apitest.cc",
         "../browser/extensions/api/preference/preferences_private_apitest.cc",
         "../browser/extensions/api/processes/processes_apitest.cc",
@@ -1697,6 +1699,8 @@ test("browser_tests") {
           "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
           "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
           "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
+          "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
+          "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
           "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         ]
       }
