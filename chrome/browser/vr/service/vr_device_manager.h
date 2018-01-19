@@ -36,6 +36,7 @@ class VRDeviceManager {
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
   static bool HasInstance();
+  static void RecordVrStartupHistograms();
 
   // Adds a listener for device manager events. VRDeviceManager does not own
   // this object.

@@ -27,6 +27,8 @@ class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
 
   bool Initialized() override;
 
+  static void RecordRuntimeAvailability();
+
  private:
   void CreateDevice();
 

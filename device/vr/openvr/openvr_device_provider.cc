@@ -4,12 +4,21 @@
 
 #include "device/vr/openvr/openvr_device_provider.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/vr/openvr/openvr_device.h"
 #include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 namespace device {
+
+void OpenVRDeviceProvider::RecordRuntimeAvailability() {
+  XrRuntimeAvailable runtime = XrRuntimeAvailable::NONE;
+  if (vr::VR_IsRuntimeInstalled())
+    runtime = XrRuntimeAvailable::OPENVR;
+  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeAvailable", runtime,
+                            XrRuntimeAvailable::COUNT);
+}
 
 OpenVRDeviceProvider::OpenVRDeviceProvider() = default;
 
