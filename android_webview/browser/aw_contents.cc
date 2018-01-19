@@ -1155,8 +1155,9 @@ void AwContents::SmoothScroll(JNIEnv* env,
                               jlong duration_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  float scale = browser_view_renderer_.dip_scale() *
-                browser_view_renderer_.page_scale_factor();
+  float scale = browser_view_renderer_.page_scale_factor();
+  if (!content::UseZoomForDSFEnabled())
+    scale *= browser_view_renderer_.dip_scale();
   render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
                                       duration_ms);
 }
