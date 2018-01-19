@@ -3702,6 +3702,8 @@
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
+      # chromium.sandbox
+      'Linux Tests SANDBOX',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -3755,6 +3757,8 @@
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       'VR Linux',
+      # chromium.sandbox
+      'Linux Tests SANDBOX',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',

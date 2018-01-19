@@ -1878,6 +1878,7 @@
     'site_isolation_chromium_gtests',
     'site_isolation_chromium_linux_gtests',
     'viz_gtests',
+    'vr_platform_specific_non_clang_win_chromium_gtests',
   ],
 
   'linux_chromeos_dbg_gtests': [
