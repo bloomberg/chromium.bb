@@ -488,8 +488,10 @@ class VIEWS_EXPORT Textfield : public View,
   base::string16 placeholder_text_;
 
   // Placeholder text color.
-  // TODO(estade): remove this when Harmony/MD is default.
-  SkColor placeholder_text_color_;
+  // TODO(newcomer): Use NativeTheme to define different default placeholder
+  // text colors for chrome/CrOS when harmony is enabled by default
+  // (https://crbug.com/803279).
+  base::Optional<SkColor> placeholder_text_color_;
 
   // The draw flags specified for |placeholder_text_|.
   int placeholder_text_draw_flags_;
