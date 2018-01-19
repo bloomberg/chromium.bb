@@ -46,55 +46,7 @@ const GpuControlList::GLStrings kGLStringsForEntry5Exception0 = {
     nullptr, ".*GeForce.*", nullptr, nullptr,
 };
 
-const int kFeatureListForEntry6[1] = {
-    GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-};
-
-const uint32_t kDeviceIDsForEntry6Exception0[1] = {
-    0x0042,
-};
-
-const GpuControlList::DriverInfo kDriverInfoForEntry6Exception0 = {
-    nullptr,  // driver_vendor
-    {GpuControlList::kGE, GpuControlList::kVersionStyleNumerical, "8.0.2",
-     nullptr},  // driver_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // driver_date
-};
-
-const int kFeatureListForEntry7[1] = {
-    GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-};
-
-const uint32_t kDeviceIDsForEntry7Exception0[1] = {
-    0x0042,
-};
-
-const GpuControlList::DriverInfo kDriverInfoForEntry7Exception0 = {
-    nullptr,  // driver_vendor
-    {GpuControlList::kGE, GpuControlList::kVersionStyleNumerical, "8.0.2",
-     nullptr},  // driver_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // driver_date
-};
-
-const int kFeatureListForEntry8[1] = {
-    GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-};
-
-const uint32_t kDeviceIDsForEntry8[1] = {
-    0x0042,
-};
-
-const GpuControlList::DriverInfo kDriverInfoForEntry8 = {
-    "Mesa",  // driver_vendor
-    {GpuControlList::kGE, GpuControlList::kVersionStyleNumerical, "8.0.0",
-     nullptr},  // driver_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // driver_date
-};
-
-const int kFeatureListForEntry9[9] = {
+const int kFeatureListForEntry6[9] = {
     GPU_FEATURE_TYPE_FLASH_STAGE3D,
     GPU_FEATURE_TYPE_GPU_COMPOSITING,
     GPU_FEATURE_TYPE_GPU_RASTERIZATION,
@@ -106,7 +58,7 @@ const int kFeatureListForEntry9[9] = {
     GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE,
 };
 
-const int kFeatureListForEntry10[1] = {
+const int kFeatureListForEntry7[1] = {
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
 };
 

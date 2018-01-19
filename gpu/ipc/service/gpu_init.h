@@ -41,8 +41,13 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 
   // TODO(zmo): Get rid of |command_line| in the following two functions.
   // Pass all bits through GpuPreferences.
+  // Mostly we collect GPUInfo and compute GpuFeatureInfo inside this function,
+  // but on certain platforms (Chromecast, MacOSX) they might be computed
+  // somewhere else.
   bool InitializeAndStartSandbox(base::CommandLine* command_line,
-                                 const GpuPreferences& gpu_preferences);
+                                 const GpuPreferences& gpu_preferences,
+                                 const GPUInfo* gpu_info,
+                                 const GpuFeatureInfo* gpu_feature_info);
   void InitializeInProcess(base::CommandLine* command_line,
                            const GpuPreferences& gpu_preferences,
                            const GPUInfo* gpu_info = nullptr,

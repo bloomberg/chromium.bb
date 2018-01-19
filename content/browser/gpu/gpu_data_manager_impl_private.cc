@@ -453,38 +453,6 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
   timestamps_of_gpu_resets_.clear();
 }
 
-void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
-                                             const std::string& gl_renderer,
-                                             const std::string& gl_version) {
-  if (gl_vendor.empty() && gl_renderer.empty() && gl_version.empty())
-    return;
-
-  if (!is_initialized_) {
-    post_init_tasks_.push_back(
-        base::Bind(&GpuDataManagerImplPrivate::SetGLStrings,
-                   base::Unretained(this), gl_vendor, gl_renderer, gl_version));
-    return;
-  }
-
-  // If GPUInfo already got GL strings, do nothing.  This is for the rare
-  // situation where GPU process collected GL strings before this call.
-  if (!gpu_info_.gl_vendor.empty() ||
-      !gpu_info_.gl_renderer.empty() ||
-      !gpu_info_.gl_version.empty())
-    return;
-
-  gpu::GPUInfo gpu_info = gpu_info_;
-
-  gpu_info.gl_vendor = gl_vendor;
-  gpu_info.gl_renderer = gl_renderer;
-  gpu_info.gl_version = gl_version;
-
-  gpu::IdentifyActiveGPU(&gpu_info);
-  gpu::CollectDriverInfoGL(&gpu_info);
-
-  UpdateGpuInfo(gpu_info);
-}
-
 void GpuDataManagerImplPrivate::Initialize() {
   TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
   if (finalized_) {

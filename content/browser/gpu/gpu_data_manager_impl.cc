@@ -84,13 +84,6 @@ void GpuDataManagerImpl::UnblockDomainFrom3DAPIs(const GURL& url) {
   private_->UnblockDomainFrom3DAPIs(url);
 }
 
-void GpuDataManagerImpl::SetGLStrings(const std::string& gl_vendor,
-                                      const std::string& gl_renderer,
-                                      const std::string& gl_version) {
-  base::AutoLock auto_lock(lock_);
-  private_->SetGLStrings(gl_vendor, gl_renderer, gl_version);
-}
-
 void GpuDataManagerImpl::DisableHardwareAcceleration() {
   base::AutoLock auto_lock(lock_);
   private_->DisableHardwareAcceleration();

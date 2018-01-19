@@ -18,11 +18,8 @@ enum GpuDataManagerTestingEntryEnum {
   kGpuDataManagerImplPrivateTest_GpuSideBlacklistingWebGL_0 = 2,
   kGpuDataManagerImplPrivateTest_GpuSideBlacklistingWebGL_1 = 3,
   kGpuDataManagerImplPrivateTest_GpuSideException = 4,
-  kGpuDataManagerImplPrivateTest_SetGLStrings = 5,
-  kGpuDataManagerImplPrivateTest_SetGLStringsNoEffects = 6,
-  kGpuDataManagerImplPrivateTest_SetGLStringsDefered = 7,
-  kGpuDataManagerImplPrivateTest_BlacklistAllFeatures = 8,
-  kGpuDataManagerImplPrivateTest_UpdateActiveGpu = 9,
+  kGpuDataManagerImplPrivateTest_BlacklistAllFeatures = 5,
+  kGpuDataManagerImplPrivateTest_UpdateActiveGpu = 6,
 };
 }  // namespace gpu
 

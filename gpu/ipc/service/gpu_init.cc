@@ -104,11 +104,16 @@ GpuInit::~GpuInit() {
   gpu::StopForceDiscreteGPU();
 }
 
-bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
-                                        const GpuPreferences& gpu_preferences) {
+bool GpuInit::InitializeAndStartSandbox(
+    base::CommandLine* command_line,
+    const GpuPreferences& gpu_preferences,
+    const GPUInfo* gpu_info,
+    const GpuFeatureInfo* gpu_feature_info) {
   gpu_preferences_ = gpu_preferences;
 #if !defined(OS_ANDROID)
-  if (!PopGPUInfoCache(&gpu_info_)) {
+  if (gpu_info) {
+    gpu_info_ = *gpu_info;
+  } else if (!PopGPUInfoCache(&gpu_info_)) {
     // Get vendor_id, device_id, driver_version from browser process through
     // commandline switches.
     // TODO(zmo): Collect basic GPU info (without a context) here instead of
@@ -125,7 +130,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
 #endif
-  if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
+  if (gpu_feature_info) {
+    gpu_feature_info_ = *gpu_feature_info;
+  } else if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
     // Compute blacklist and driver bug workaround decisions based on basic GPU
     // info.
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
@@ -319,15 +326,20 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
-  if (gpu_info && gpu_feature_info) {
+  if (gpu_info) {
     gpu_info_ = *gpu_info;
-    gpu_feature_info_ = *gpu_feature_info;
   } else {
 #if !defined(OS_ANDROID)
     if (!PopGPUInfoCache(&gpu_info_)) {
       // TODO(zmo): Collect basic GPU info here instead.
       gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
     }
+#endif
+  }
+  if (gpu_feature_info) {
+    gpu_feature_info_ = *gpu_feature_info;
+  } else {
+#if !defined(OS_ANDROID)
     if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
       gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
           gpu_info_, gpu_preferences.ignore_gpu_blacklist,
