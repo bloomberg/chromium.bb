@@ -31,13 +31,13 @@ namespace {
 
 // Android defines the background priority to this value since at least 2009
 // (see Process.java).
-const int kBackgroundPriority = 10;
+constexpr int kBackgroundPriority = 10;
 // Valid for all the Android architectures.
-const size_t kPageSize = 4096;
-const char* kLibchromeSuffix = "libchrome.so";
+constexpr size_t kPageSize = 4096;
+constexpr char kLibchromeSuffix[] = "libchrome.so";
 // "base.apk" is a suffix because the library may be loaded directly from the
 // APK.
-const char* kSuffixesToMatch[] = {kLibchromeSuffix, "base.apk"};
+constexpr const char* kSuffixesToMatch[] = {kLibchromeSuffix, "base.apk"};
 
 bool IsReadableAndPrivate(const base::debug::MappedMemoryRegion& region) {
   return region.permissions & base::debug::MappedMemoryRegion::READ &&
