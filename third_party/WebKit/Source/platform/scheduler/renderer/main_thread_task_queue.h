@@ -25,7 +25,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     // the situation settles.
     kControl = 0,
     kDefault = 1,
-    kDefaultLoading = 2,
+
+    // 2 was used for default loading task runner but this was deprecated.
+
     // kDefaultTimer is deprecated and should be replaced with appropriate
     // per-frame task queues.
     kDefaultTimer = 3,

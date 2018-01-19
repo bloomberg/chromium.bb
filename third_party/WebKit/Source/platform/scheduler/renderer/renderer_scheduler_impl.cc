@@ -241,8 +241,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       std::make_pair(compositor_task_queue_,
                      compositor_task_queue_->CreateQueueEnabledVoter()));
 
-  default_loading_task_queue_ =
-      NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::kDefaultLoading);
   default_timer_task_queue_ =
       NewTimerTaskQueue(MainThreadTaskQueue::QueueType::kDefaultTimer);
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
@@ -607,11 +605,6 @@ scoped_refptr<MainThreadTaskQueue>
 RendererSchedulerImpl::CompositorTaskQueue() {
   helper_.CheckOnValidThread();
   return compositor_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::LoadingTaskQueue() {
-  helper_.CheckOnValidThread();
-  return default_loading_task_queue_;
 }
 
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::TimerTaskQueue() {
@@ -2284,7 +2277,6 @@ void RendererSchedulerImpl::SetTopLevelBlameContext(
   // with renderer scheduler which do not have a corresponding frame.
   control_task_queue_->SetBlameContext(blame_context);
   DefaultTaskQueue()->SetBlameContext(blame_context);
-  default_loading_task_queue_->SetBlameContext(blame_context);
   default_timer_task_queue_->SetBlameContext(blame_context);
   compositor_task_queue_->SetBlameContext(blame_context);
   idle_helper_.IdleTaskRunner()->SetBlameContext(blame_context);

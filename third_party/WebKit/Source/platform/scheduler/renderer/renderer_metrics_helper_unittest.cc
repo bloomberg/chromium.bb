@@ -218,8 +218,6 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
   RunTask(QueueType::kDefault, Milliseconds(3),
           base::TimeDelta::FromMicroseconds(700));
 
-  RunTask(QueueType::kDefaultLoading, Milliseconds(200),
-          base::TimeDelta::FromMilliseconds(20));
   RunTask(QueueType::kControl, Milliseconds(400),
           base::TimeDelta::FromMilliseconds(30));
   RunTask(QueueType::kDefaultTimer, Milliseconds(600),
@@ -263,7 +261,6 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
   std::vector<base::Bucket> expected_samples = {
       {static_cast<int>(QueueType::kControl), 75},
       {static_cast<int>(QueueType::kDefault), 2},
-      {static_cast<int>(QueueType::kDefaultLoading), 20},
       {static_cast<int>(QueueType::kDefaultTimer), 5},
       {static_cast<int>(QueueType::kUnthrottled), 25},
       {static_cast<int>(QueueType::kFrameLoading), 105},
@@ -282,7 +279,6 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
               UnorderedElementsAre(
                   Bucket(static_cast<int>(QueueType::kControl), 30),
                   Bucket(static_cast<int>(QueueType::kDefault), 2),
-                  Bucket(static_cast<int>(QueueType::kDefaultLoading), 20),
                   Bucket(static_cast<int>(QueueType::kDefaultTimer), 5),
                   Bucket(static_cast<int>(QueueType::kFrameLoading), 70),
                   Bucket(static_cast<int>(QueueType::kCompositor), 25),
