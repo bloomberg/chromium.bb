@@ -333,12 +333,6 @@ class StructureNode(base.Node):
   def IsResourceMapSource(self):
     return True
 
-  def GeneratesResourceMapEntry(self, output_all_resource_defines,
-                                is_active_descendant):
-    if output_all_resource_defines:
-      return True
-    return is_active_descendant
-
   @staticmethod
   def Construct(parent, name, type, file, encoding='cp1252'):
     '''Creates a new node which is a child of 'parent', with attributes set

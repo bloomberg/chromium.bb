@@ -28,45 +28,22 @@ def Format(root, lang='en', output_dir='.'):
   for line in emit_lines or default_includes:
     yield line + '\n'
 
-  for line in FormatDefines(root, root.ShouldOutputAllResourceDefines(),
-                            root.GetRcHeaderFormat()):
+  for line in FormatDefines(root, root.GetRcHeaderFormat()):
     yield line
 
 
-def FormatDefines(root, output_all_resource_defines=True,
-                  rc_header_format=None):
+def FormatDefines(root, rc_header_format=None):
   '''Yields #define SYMBOL 1234 lines.
 
   Args:
     root: A GritNode.
-    output_all_resource_defines: If False, output only the symbols used in the
-      current output configuration.
   '''
-  if output_all_resource_defines:
-    items = root.Preorder()
-  else:
-    items = root.ActiveDescendants()
   tids = root.GetIdMap()
 
   if not rc_header_format:
     rc_header_format = "#define {textual_id} {numeric_id}"
   rc_header_format += "\n"
-  seen = set()
-  for item in items:
-    if not isinstance(item, message.MessageNode):
-      with item:
-        for tid in item.GetTextualIds():
-          if tid in tids and tid not in seen:
-            seen.add(tid)
-            yield rc_header_format.format(textual_id=tid,numeric_id=tids[tid])
-
-  # Temporarily mimic old behavior: MessageNodes were only output if active,
-  # even with output_all_resource_defines set. TODO(benrg): Remove this after
-  # fixing problems in the Chrome tree.
   for item in root.ActiveDescendants():
-    if isinstance(item, message.MessageNode):
-      with item:
-        for tid in item.GetTextualIds():
-          if tid in tids and tid not in seen:
-            seen.add(tid)
-            yield rc_header_format.format(textual_id=tid,numeric_id=tids[tid])
+    with item:
+      for tid in item.GetTextualIds():
+        yield rc_header_format.format(textual_id=tid,numeric_id=tids[tid])
