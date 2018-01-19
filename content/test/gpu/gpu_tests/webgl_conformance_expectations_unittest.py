@@ -49,6 +49,9 @@ Conditions = collections.\
 
 class WebGLConformanceExpectationsTest(unittest.TestCase):
   def testGlslConstructVecMatIndexExpectationOnWin(self):
+    # TODO(kbr): re-enable after Catapult rolls forward. crbug.com/801578
+    if True:
+      return unittest.skip('Skipping due to crbug.com/801578')
     possible_browser = fakes.FakePossibleBrowser()
     browser = possible_browser.Create(None)
     browser.platform = FakeWindowsPlatform()
