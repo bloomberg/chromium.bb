@@ -1293,8 +1293,13 @@ void WebGLRenderingContextBase::DestroyContext() {
 
 void WebGLRenderingContextBase::MarkContextChanged(
     ContentChangeType change_type) {
-  if (framebuffer_binding_ || isContextLost())
+  if (isContextLost())
     return;
+
+  if (framebuffer_binding_) {
+    framebuffer_binding_->SetContentsChanged(true);
+    return;
+  }
 
   if (!GetDrawingBuffer()->MarkContentsChanged() && marked_canvas_dirty_) {
     return;
