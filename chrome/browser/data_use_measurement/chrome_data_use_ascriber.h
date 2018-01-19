@@ -12,6 +12,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
@@ -26,6 +27,9 @@ class RenderFrameHost;
 }
 
 namespace data_use_measurement {
+
+// Disables data use ascriber if data saver is disabled.
+extern const base::Feature kDisableAscriberIfDataSaverDisabled;
 
 class URLRequestClassifier;
 
@@ -181,6 +185,11 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   void AscribeRecorderWithRequest(net::URLRequest* request,
                                   DataUseRecorderEntry entry);
 
+  void DisableAscriber() override;
+
+  // Returns true if data use ascriber is disabled.
+  bool IsDisabled() const;
+
   // Owner for all instances of DataUseRecorder. An instance is kept in this
   // list if any entity (render frame hosts, URLRequests, pending navigations)
   // that ascribe data use to the instance exists, and deleted when all
@@ -205,6 +214,10 @@ class ChromeDataUseAscriber : public DataUseAscriber {
 
   // Detects heavy pages. Can be null when the feature is disabled.
   std::unique_ptr<DataUseAscriber::PageLoadObserver> page_capping_observer_;
+
+  // True if the dtaa use ascriber should be disabled. The ascriber is enabled
+  // by default.
+  bool disable_ascriber_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriber);
 };
