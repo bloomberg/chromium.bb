@@ -722,4 +722,21 @@ TEST_F(FlatTreeTraversalTest, v1AllFallbackContent) {
   EXPECT_EQ(nullptr, FlatTreeTraversal::PreviousSibling(*fallback_x));
 }
 
+TEST_F(FlatTreeTraversalTest, v0ParentDetailsInsertionPoint) {
+  const char* main_html = "<div><span></span></div>";
+  const char* shadow_html = "<content></content>";
+
+  SetupSampleHTML(main_html, shadow_html, 0);
+
+  Element* span = GetDocument().body()->QuerySelector("span");
+  ASSERT_TRUE(span);
+
+  FlatTreeTraversal::ParentTraversalDetails details;
+  EXPECT_FALSE(details.GetInsertionPoint());
+
+  ContainerNode* parent = FlatTreeTraversal::Parent(*span, &details);
+  ASSERT_TRUE(parent);
+  EXPECT_TRUE(details.GetInsertionPoint());
+}
+
 }  // namespace blink

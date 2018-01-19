@@ -194,7 +194,7 @@ inline ContainerNode* FlatTreeTraversal::Parent(
     const Node& node,
     ParentTraversalDetails* details) {
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
-    return FlatTreeTraversalNg::Parent(node);
+    return FlatTreeTraversalNg::Parent(node, details);
   AssertPrecondition(node);
   ContainerNode* result = TraverseParent(node, details);
   AssertPostcondition(result);
