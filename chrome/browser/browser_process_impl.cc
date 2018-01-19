@@ -131,6 +131,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1078,9 +1079,9 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
-  if (command_line.HasSwitch(switches::kLogNetLog)) {
+  if (command_line.HasSwitch(network::switches::kLogNetLog)) {
     base::FilePath log_file =
-        command_line.GetSwitchValuePath(switches::kLogNetLog);
+        command_line.GetSwitchValuePath(network::switches::kLogNetLog);
     if (log_file.empty()) {
       base::FilePath user_data_dir;
       bool success =

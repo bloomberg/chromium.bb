@@ -12,6 +12,9 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public",
 
+  # Network service public library.
+  "+services/network/public/cpp",
+
   # The content_shell is an embedder so it must work with resource bundles.
   "+ui/base/l10n",
   "+ui/base/resource",

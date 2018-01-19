@@ -40,6 +40,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::InterstitialPage;
@@ -121,10 +122,10 @@ class SupervisedUserTest : public InProcessBrowserTest {
     // Enable the test server and remap all URLs to it.
     ASSERT_TRUE(embedded_test_server()->Start());
     std::string host_port = embedded_test_server()->host_port_pair().ToString();
-    command_line->AppendSwitchASCII(switches::kHostResolverRules,
-        "MAP *.example.com " + host_port + "," +
-        "MAP *.new-example.com " + host_port + "," +
-        "MAP *.a.com " + host_port);
+    command_line->AppendSwitchASCII(network::switches::kHostResolverRules,
+                                    "MAP *.example.com " + host_port + "," +
+                                        "MAP *.new-example.com " + host_port +
+                                        "," + "MAP *.a.com " + host_port);
 
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }

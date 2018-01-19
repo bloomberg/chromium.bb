@@ -41,6 +41,7 @@
 #include "media/base/media_switches.h"
 #include "net/cookies/cookie_monster.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -219,7 +220,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
     command_line.AppendSwitch(switches::kEnablePreciseMemoryInfo);
 
-    command_line.AppendSwitchASCII(switches::kHostResolverRules,
+    command_line.AppendSwitchASCII(network::switches::kHostResolverRules,
                                    "MAP *.test 127.0.0.1");
 
     command_line.AppendSwitch(switches::kEnablePartialRaster);

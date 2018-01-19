@@ -20,6 +20,9 @@ struct NetworkContextParams {
   // Name used by memory tools to identify the context.
   string? context_name;
 
+  // The user agent string.
+  string user_agent;
+
   // Whether Brotli content-encoding should be enabled for HTTPS responses.
   bool enable_brotli = true;
 

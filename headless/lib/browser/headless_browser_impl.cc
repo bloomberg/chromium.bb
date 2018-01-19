@@ -25,6 +25,7 @@
 #include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -142,9 +143,9 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 void HeadlessBrowserImpl::PreMainMessageLoopRun() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(::switches::kLogNetLog)) {
+  if (command_line->HasSwitch(::network::switches::kLogNetLog)) {
     base::FilePath log_path =
-        command_line->GetSwitchValuePath(::switches::kLogNetLog);
+        command_line->GetSwitchValuePath(::network::switches::kLogNetLog);
     net_log_.reset(new HeadlessNetLog(log_path));
   } else {
     net_log_.reset(new net::NetLog());

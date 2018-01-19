@@ -33,6 +33,7 @@ include_rules = [
   "+media/mojo",
   "+mojo/public",
   "+net",
+  "+services/network/public/cpp",
   "+services/service_manager/public",
   "+ui/aura",
   "+ui/base",

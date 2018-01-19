@@ -41,6 +41,7 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -174,12 +175,12 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         ignore_certificate_errors_;
     builder.set_http_network_session_params(network_session_params);
 
-    if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    if (command_line.HasSwitch(network::switches::kHostResolverRules)) {
       std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
           new net::MappedHostResolver(
               net::HostResolver::CreateDefaultResolver(net_log_)));
-      mapped_host_resolver->SetRulesFromString(
-          command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+      mapped_host_resolver->SetRulesFromString(command_line.GetSwitchValueASCII(
+          network::switches::kHostResolverRules));
       builder.set_host_resolver(std::move(mapped_host_resolver));
     }
 

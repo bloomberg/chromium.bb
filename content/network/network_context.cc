@@ -30,8 +30,6 @@
 #include "content/network/throttling/throttling_controller.h"
 #include "content/network/throttling/throttling_network_transaction_factory.h"
 #include "content/network/url_loader.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/network/ignore_errors_cert_verifier.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -50,6 +48,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/proxy_config_service_mojo.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace content {
 
@@ -224,17 +223,18 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(switches::kHostResolverRules)) {
+  if (command_line->HasSwitch(network::switches::kHostResolverRules)) {
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(nullptr));
     std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
         new net::MappedHostResolver(std::move(host_resolver)));
     remapped_host_resolver->SetRulesFromString(
-        command_line->GetSwitchValueASCII(switches::kHostResolverRules));
+        command_line->GetSwitchValueASCII(
+            network::switches::kHostResolverRules));
     builder.set_host_resolver(std::move(remapped_host_resolver));
   }
   builder.set_accept_language("en-us,en");
-  builder.set_user_agent(GetContentClient()->GetUserAgent());
+  builder.set_user_agent(network_context_params->user_agent);
 
   // The cookie configuration is in this method, which is only used by the
   // network process, and not ApplyContextParamsToBuilder which is used by the
