@@ -188,9 +188,11 @@ class MoblabVMTestStageTestCase(
         config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE),
     ]
     stage = vm_test_stages.MoblabVMTestStage(self._run, self._current_board)
-    # Unblock stage from dependencies on other stages.
-    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
+    image_dir = stage.GetImageDirSymlink()
+    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
+                  makedirs=True)
+    osutils.Touch(os.path.join(image_dir, constants.TEST_IMAGE_BIN),
+                  makedirs=True)
     return stage
 
   def _temp_chroot_path(self, suffix):
@@ -225,14 +227,23 @@ class MoblabVMTestStageTestCase(
     self.PatchObject(gs, 'GSContext', autospec=True,
                      return_value=mock_gs_context)
     mock_buildbot_link = self.PatchObject(cros_logging, 'PrintBuildbotLink')
-    mock_moblab_vm = mock.create_autospec(moblab_vm.MoblabVm)
-    self.PatchObject(moblab_vm, 'MoblabVm', autospec=True,
-                     return_value=mock_moblab_vm)
+    mock_generate_payloads = self.PatchObject(commands, 'GeneratePayloads')
+    self.PatchObject(commands, 'BuildAutotestTarballsForHWTest')
+    #self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
     mock_run_moblab_tests = self.PatchObject(vm_test_stages, 'RunMoblabTests',
                                              autospec=True)
     mock_validate_results = self.PatchObject(vm_test_stages,
                                              'ValidateMoblabTestSuccess',
                                              autospec=True)
+
+    disk_dir = os.path.join(self.tempdir, 'moblab_mounted_disk')
+    osutils.SafeMakedirsNonRoot(disk_dir)
+    mock_context_manager = mock.MagicMock()
+    mock_context_manager.__enter__.return_value = disk_dir
+    mock_moblab_vm = mock.create_autospec(moblab_vm.MoblabVm)
+    mock_moblab_vm.MountedMoblabDiskContext.return_value = mock_context_manager
+    self.PatchObject(moblab_vm, 'MoblabVm', autospec=True,
+                     return_value=mock_moblab_vm)
 
     # Prepopulate results in the results directory to test result link printing.
     osutils.SafeMakedirsNonRoot(os.path.join(
@@ -261,10 +272,16 @@ class MoblabVMTestStageTestCase(
 
     mock_moblab_vm.Create.assert_called_once_with(mock.ANY, mock.ANY)
     self.assertEqual(mock_moblab_vm.Start.call_count, 1)
-
-    mock_run_moblab_tests.assert_called_once_with(
-        'moblab-generic-vm', mock.ANY, mock.ANY,
-        self._temp_host_path('results'), mock.ANY)
+    self.assertEqual(mock_generate_payloads.call_count, 1)
+    generate_payloads_kwargs = mock_generate_payloads.call_args_list[0][1]
+    self.assertTrue(os.path.isdir(generate_payloads_kwargs['archive_dir']))
+    self.assertTrue(os.path.isdir(generate_payloads_kwargs['build_root']))
+    self.assertTrue(
+        os.path.isfile(generate_payloads_kwargs['target_image_path']))
+    self.assertEqual(mock_run_moblab_tests.call_count, 1)
+    run_moblab_tests_kwargs = mock_run_moblab_tests.call_args_list[0][1]
+    self.assertEqual(run_moblab_tests_kwargs['moblab_board'],
+                     'moblab-generic-vm')
 
     self.assertEqual(mock_validate_results.call_count, 1)
     # 1 for the overall results during _Upload, 4 more for the detailed logs.

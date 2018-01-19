@@ -28,6 +28,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cts_helper
 from chromite.lib import failures_lib
+from chromite.lib import git
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -52,6 +53,17 @@ corresponding update directory.
 _TEST_REPORT_FILENAME = 'test_report.log'
 _TEST_PASSED = 'PASSED'
 _TEST_FAILED = 'FAILED'
+
+# This is where the external disk is mounted by moblab VM.
+_MOBLAB_STATIC_MOUNT_PATH = os.path.join('/', 'mnt', 'moblab')
+# Must be under '.../static' for staging to work.
+_MOBLAB_PAYLOAD_CACHE_DIR = os.path.join('static', 'prefetched')
+_DEVSERVER_STAGE_URL = (
+    'http://localhost:8080/stage?local_path=%(payload_dir)s'
+    '&delete_source=True'
+    '&artifacts=full_payload,stateful,quick_provision,'
+    'test_suites,control_files,autotest_packages,autotest_server_package'
+)
 
 
 class VMTestStage(generic_stages.BoardSpecificBuilderStage,
@@ -382,22 +394,6 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
   def __str__(self):
     return type(self).__name__
 
-  def WaitUntilReady(self):
-    """Wait for the test artifacts to be uploaded.
-
-    These artifacts are needed for sub-DUT provision.
-    """
-    if not self.GetParallel('test_artifacts_uploaded',
-                            pretty_name='test artifacts'):
-      logging.PrintBuildbotStepWarnings()
-      logging.warning('Missing test artifacts')
-      logging.warning(
-          'We need the test artifacts to be uploaded so that the sub-DUT can '
-          'be provisioned with the image from this build.'
-      )
-      return False
-    return True
-
   def PerformStage(self):
     test_root_in_chroot = commands.CreateTestRoot(self._build_root)
     test_root = path_util.FromChrootPath(test_root_in_chroot)
@@ -422,7 +418,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       workdir: The workspace directory to use for all temporary files.
       results_dir: The directory to use to drop test results into.
     """
-    dut_target_image = self._SubDutTargetImage(),
+    dut_target_image = self._SubDutTargetImage()
     osutils.SafeMakedirsNonRoot(self._Workspace(workdir))
     vms = moblab_vm.MoblabVm(self._Workspace(workdir))
     try:
@@ -430,15 +426,19 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       with timeout_util.Timeout(self._PERFORM_TIMEOUT_S, reason_message=r):
         start_time = datetime.datetime.now()
         vms.Create(self.GetImageDirSymlink(), self.GetImageDirSymlink())
+        payload_dir = self._GenerateTestArtifactsInMoblabDisk(vms)
         vms.Start()
+
         elapsed = (datetime.datetime.now() - start_time).total_seconds()
         RunMoblabTests(
-            self._current_board,
-            vms.moblab_ssh_port,
-            dut_target_image,
-            results_dir,
-            (self._PERFORM_TIMEOUT_S - elapsed) / 60,
+            moblab_board=self._current_board,
+            moblab_ip=vms.moblab_ssh_port,
+            dut_target_image=dut_target_image,
+            results_dir=results_dir,
+            local_image_cache=payload_dir,
+            timeout_m=(self._PERFORM_TIMEOUT_S - elapsed) / 60,
         )
+
       vms.Stop()
       ValidateMoblabTestSuccess(results_dir)
     except:
@@ -544,6 +544,45 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     # (2) This image is available on GS for provision flow.
     return '%s/%s' % (self._run.bot_id, self._run.GetVersion())
 
+  def _GenerateTestArtifactsInMoblabDisk(self, vms):
+    """Generates test artifacts into devserver cache directory in moblab's disk.
+
+    Args:
+      vms: A moblab_vm.MoblabVm instance that has been Createed but not Started.
+
+    Returns:
+      The absolute path inside moblab VM where the image cache is located.
+    """
+    with vms.MountedMoblabDiskContext() as disk_dir:
+      # If by any chance this path exists, the permission bits are surely
+      # nonsense, since 'moblab' user doesn't exist on the host system.
+      osutils.RmDir(os.path.join(disk_dir, _MOBLAB_PAYLOAD_CACHE_DIR),
+                    ignore_missing=True, sudo=True)
+      payloads_dir = os.path.join(disk_dir, _MOBLAB_PAYLOAD_CACHE_DIR,
+                                  self._SubDutTargetImage())
+      # moblab VM will chown this folder upon boot, so once again permission
+      # bits from the host don't matter.
+      osutils.SafeMakedirsNonRoot(payloads_dir)
+      source_dir = git.FindRepoCheckoutRoot(__file__)
+      commands.GeneratePayloads(
+          build_root=source_dir,
+          target_image_path=os.path.join(
+              self.GetImageDirSymlink(),
+              constants.TEST_IMAGE_BIN,
+          ),
+          archive_dir=payloads_dir,
+          full=True,
+          delta=False,
+          stateful=True,
+      )
+      cwd = os.path.abspath(
+          os.path.join(self._build_root, 'chroot', 'build',
+                       self._current_board, constants.AUTOTEST_BUILD_PATH,
+                       '..'))
+      commands.BuildAutotestTarballsForHWTest(self._build_root, cwd,
+                                              payloads_dir)
+    return os.path.join(_MOBLAB_STATIC_MOUNT_PATH, _MOBLAB_PAYLOAD_CACHE_DIR)
+
   def _Upload(self, path, prefix=''):
     """Upload |path| to GS and print a link to it on the log."""
     logging.info('Uploading artifact %s to Google Storage...', path)
@@ -629,6 +668,7 @@ def GetTestResultsDir(buildroot, test_results_dir):
   """
   test_results_dir = test_results_dir.lstrip('/')
   return os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR, test_results_dir)
+
 
 def ArchiveTestResults(results_path, archive_dir):
   """Archives the test results to |archive_dir|.
@@ -769,7 +809,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
 
 
 def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
-                   timeout_m):
+                   local_image_cache, timeout_m):
   """Run the moblab test suite against a running moblab_vm setup.
 
   Args:
@@ -779,14 +819,23 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
         exist on GS so that the provision flow can download and install it on
         the DUT VM.
     results_dir: Directory to drop results into.
+    local_image_cache: Path in moblab VM to serve as the local image cache. You
+        should have copied the payloads required for the test to this path
+        already.
     timeout_m: (int) Timeout for the test in minutes.
   """
+  # devserver requires the path to have a trailing '/'
+  if not local_image_cache.endswith('/'):
+    local_image_cache += '/'
+
   test_args = [
       # moblab in VM takes longer to bring up all upstart services on first
       # boot than on physical machines.
       'services_init_timeout_m=10',
       'target_build="%s"' % dut_target_image,
       'test_timeout_hint_m=%d' % timeout_m,
+      'clear_devserver_cache=False',
+      'image_storage_server="%s"' % local_image_cache,
   ]
   cros_build_lib.RunCommand(
       [
