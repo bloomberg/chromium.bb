@@ -93,7 +93,7 @@ class StatusBubbleMacTest : public CocoaTest {
  public:
   void SetUp() override {
     CocoaTest::SetUp();
-    NSWindow* window = test_window();
+    CocoaTestHelperWindow* window = test_window();
     EXPECT_TRUE(window);
     delegate_.reset(
         [[StatusBubbleMacTestDelegate alloc] initWithWindow: window]);
@@ -133,7 +133,7 @@ class StatusBubbleMacTest : public CocoaTest {
     BubbleView* bubbleView = [bubble_->window_ contentView];
     return [bubbleView content];
   }
-  NSWindow* GetWindow() { return bubble_->window_; }
+  NSWindow* GetWindow() { return bubble_->GetWindow(); }
   NSWindow* parent() {
     return bubble_->parent_;
   }
@@ -678,4 +678,22 @@ TEST_F(StatusBubbleMacTest, ReparentBubble) {
   // Switch back to the original parent with the bubble showing.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
   bubble_->SwitchParentWindow(test_window());
+}
+
+TEST_F(StatusBubbleMacTest, WaitsUntilVisible) {
+  [test_window() orderOut:nil];
+  bubble_->SetStatus(UTF8ToUTF16("Show soon"));
+  EXPECT_NSEQ(nil, GetWindow().parentWindow);
+
+  [test_window() orderBack:nil];
+  EXPECT_NSNE(nil, GetWindow().parentWindow);
+}
+
+TEST_F(StatusBubbleMacTest, WaitsUntilOnActiveSpace) {
+  test_window().pretendIsOnActiveSpace = NO;
+  bubble_->SetStatus(UTF8ToUTF16("Show soon"));
+  EXPECT_NSEQ(nil, GetWindow().parentWindow);
+
+  test_window().pretendIsOnActiveSpace = YES;
+  EXPECT_NSNE(nil, GetWindow().parentWindow);
 }

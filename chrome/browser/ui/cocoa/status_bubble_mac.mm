@@ -64,10 +64,100 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 }  // namespace
 
+// StatusBubbleWindow becomes a child of |statusBubbleParentWindow|, but waits
+// until |statusBubbleParentWindow| is visible. This works around macOS
+// bugs/features which make unexpected things happen when adding a child window
+// to a window that's in another space, miniaturized, or hidden
+// (https://crbug.com/783521, https://crbug.com/798792).
+@interface StatusBubbleWindow : NSWindow
+
+// The window which this window should become a child of. May be changed or
+// nilled out at any time.
+@property(assign, nonatomic) NSWindow* statusBubbleParentWindow;
+
+@end
+
+@implementation StatusBubbleWindow {
+  BOOL observingParentWindowVisibility_;
+}
+@synthesize statusBubbleParentWindow = statusBubbleParentWindow_;
+
+- (void)dealloc {
+  // StatusBubbleMac is expected to always clear statusBubbleParentWindow
+  // before releasing StatusBubbleWindow. If that changes, it's OK to remove
+  // this DCHECK as long as StatusBubbleWindow will never outlive its parent.
+  DCHECK(!statusBubbleParentWindow_);
+
+  [self stopObserving];
+  [super dealloc];
+}
+
+- (void)setStatusBubbleParentWindow:(NSWindow*)statusBubbleParentWindow {
+  if (statusBubbleParentWindow_ == statusBubbleParentWindow)
+    return;
+
+  // First, detach from the current parent window, if any.
+  if (statusBubbleParentWindow_) {
+    [self stopObserving];
+    [self orderOut:nil];  // Also removes |self| from its parent window.
+  }
+
+  // Assign the new parent window.
+  statusBubbleParentWindow_ = statusBubbleParentWindow;
+
+  if (statusBubbleParentWindow_) {
+    // Attach to the new parent window if it's visible and on the active space.
+    [self maybeAttach];
+
+    if (!self.parentWindow) {
+      // If maybeAttach bailed, start observing the window's visibility and the
+      // active space, and try again when they change.
+      observingParentWindowVisibility_ = YES;
+      [statusBubbleParentWindow_ addObserver:self
+                                  forKeyPath:@"visible"
+                                     options:0
+                                     context:nil];
+      [[NSWorkspace sharedWorkspace].notificationCenter
+          addObserver:self
+             selector:@selector(maybeAttach)
+                 name:NSWorkspaceActiveSpaceDidChangeNotification
+               object:[NSWorkspace sharedWorkspace]];
+    }
+  }
+}
+
+- (void)stopObserving {
+  if (!observingParentWindowVisibility_)
+    return;
+  observingParentWindowVisibility_ = NO;
+  [statusBubbleParentWindow_ removeObserver:self
+                                 forKeyPath:@"visible"
+                                    context:nil];
+  [[NSWorkspace sharedWorkspace].notificationCenter removeObserver:self];
+}
+
+- (void)maybeAttach {
+  if (![statusBubbleParentWindow_ isVisible])
+    return;
+  if (![statusBubbleParentWindow_ isOnActiveSpace])
+    return;
+  [self stopObserving];
+  // Adding |self| as a child window also orders it in.
+  [statusBubbleParentWindow_ addChildWindow:self ordered:NSWindowAbove];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id>*)change
+                       context:(void*)context {
+  [self maybeAttach];
+}
+
+@end
+
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : parent_(parent),
       delegate_(delegate),
-      window_(nil),
       status_text_(nil),
       url_text_(nil),
       state_(kBubbleHidden),
@@ -86,8 +176,6 @@ StatusBubbleMac::~StatusBubbleMac() {
 
   completion_handler_factory_.InvalidateWeakPtrs();
   Detach();
-  [window_ release];
-  window_ = nil;
 }
 
 void StatusBubbleMac::SetStatus(const base::string16& status) {
@@ -326,10 +414,11 @@ void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
 void StatusBubbleMac::Create() {
   DCHECK(!window_);
 
-  window_ = [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                        styleMask:NSBorderlessWindowMask
-                                          backing:NSBackingStoreBuffered
-                                            defer:NO];
+  window_.reset([[StatusBubbleWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
   [window_ setCollectionBehavior:[window_ collectionBehavior] |
                                  NSWindowCollectionBehaviorTransient];
   [window_ setMovableByWindowBackground:NO];
@@ -354,7 +443,7 @@ void StatusBubbleMac::Create() {
 void StatusBubbleMac::Attach() {
   if (is_attached())
     return;
-  [parent_ addChildWindow:window_ ordered:NSWindowAbove];
+  [window_ setStatusBubbleParentWindow:parent_];
   [[window_ contentView] setThemeProvider:parent_];
 }
 
@@ -370,11 +459,15 @@ void StatusBubbleMac::Detach() {
   if (state_ != kBubbleHidden) {
     frame = CalculateWindowFrame(/*expand=*/false);
   }
+  // See https://crbug.com/28107 and https://crbug.com/29054.
   [window_ setFrame:frame display:NO];
-  [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
-  [window_ orderOut:nil];               // ... and crbug.com/29054.
+  [window_ setStatusBubbleParentWindow:nil];
 
   [[window_ contentView] setThemeProvider:nil];
+}
+
+bool StatusBubbleMac::is_attached() {
+  return [window_ statusBubbleParentWindow] != nil;
 }
 
 void StatusBubbleMac::AnimationDidStop() {
@@ -699,4 +792,8 @@ unsigned long StatusBubbleMac::OSDependentCornerFlags(NSRect window_frame) {
   }
 
   return corner_flags;
+}
+
+NSWindow* StatusBubbleMac::GetWindow() {
+  return window_;
 }
