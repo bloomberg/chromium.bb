@@ -236,6 +236,19 @@ const char kCloudPrintLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_cloud_print";
 #endif
 
+const char kCloudPrintCertificateErrorLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "https://support.google.com/chromebook?p=cloudprint_error_troubleshoot";
+#elif defined(OS_MACOSX)
+    "https://support.google.com/cloudprint?p=cloudprint_error_offline_mac";
+#elif defined(OS_WIN)
+        "https://support.google.com/"
+        "cloudprint?p=cloudprint_error_offline_windows";
+#else
+        "https://support.google.com/"
+        "cloudprint?p=cloudprint_error_offline_linux";
+#endif
+
 const char kCloudPrintNoDestinationsLearnMoreURL[] =
     "https://www.google.com/cloudprint/learn/";
 
