@@ -193,9 +193,10 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const SpdySessionKey& alias_key = alias_it->second;
 
     // We can reuse this session only if the proxy and privacy
-    // settings match.
+    // settings and socket tag match.
     if (!(alias_key.proxy_server() == key.proxy_server()) ||
-        !(alias_key.privacy_mode() == key.privacy_mode()))
+        !(alias_key.privacy_mode() == key.privacy_mode()) ||
+        !(alias_key.socket_tag() == key.socket_tag()))
       continue;
 
     AvailableSessionMap::iterator available_session_it =

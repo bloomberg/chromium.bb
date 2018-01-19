@@ -845,7 +845,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
-        PRIVACY_MODE_DISABLED);
+        PRIVACY_MODE_DISABLED, SocketTag());
   }
 
   MockRead reads[] = {
@@ -905,7 +905,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
-        PRIVACY_MODE_DISABLED);
+        PRIVACY_MODE_DISABLED, SocketTag());
   }
 
   MockRead reads[] = {

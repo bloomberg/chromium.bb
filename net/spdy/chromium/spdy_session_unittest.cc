@@ -133,7 +133,8 @@ class SpdySessionTest : public PlatformTest {
         test_server_(test_url_),
         key_(HostPortPair::FromURL(test_url_),
              ProxyServer::Direct(),
-             PRIVACY_MODE_DISABLED),
+             PRIVACY_MODE_DISABLED,
+             SocketTag()),
         ssl_(SYNCHRONOUS, OK) {}
 
   ~SpdySessionTest() override {
@@ -3508,14 +3509,16 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
-                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SocketTag());
   base::WeakPtr<SpdySession> session1 =
       ::net::CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
   EXPECT_FALSE(pool->IsStalled());
 
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
-                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                      SocketTag());
   HostResolver::RequestInfo info(key2.host_port_pair());
   AddressList addresses;
   std::unique_ptr<HostResolver::Request> request;
@@ -3649,9 +3652,9 @@ TEST_F(SpdySessionTest, SpdySessionKeyPrivacyMode) {
 
   HostPortPair host_port_pair("www.example.org", 443);
   SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
-                                     PRIVACY_MODE_ENABLED);
+                                     PRIVACY_MODE_ENABLED, SocketTag());
   SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
-                                     PRIVACY_MODE_DISABLED);
+                                      PRIVACY_MODE_DISABLED, SocketTag());
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));

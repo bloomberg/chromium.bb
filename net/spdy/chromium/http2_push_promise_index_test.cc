@@ -6,6 +6,7 @@
 
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
+#include "net/socket/socket_tag.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -58,10 +59,12 @@ class Http2PushPromiseIndexTest : public testing::Test {
         url2_("https://mail.example.com"),
         key1_(HostPortPair::FromURL(url1_),
               ProxyServer::Direct(),
-              PRIVACY_MODE_ENABLED),
+              PRIVACY_MODE_ENABLED,
+              SocketTag()),
         key2_(HostPortPair::FromURL(url2_),
               ProxyServer::Direct(),
-              PRIVACY_MODE_ENABLED) {}
+              PRIVACY_MODE_ENABLED,
+              SocketTag()) {}
 
   const GURL url1_;
   const GURL url2_;

@@ -23,6 +23,7 @@
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/chromium/buffered_spdy_framer.h"
@@ -159,7 +160,8 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       proxy_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
       endpoint_spdy_session_key_(endpoint_host_port_pair_,
                                  proxy_,
-                                 PRIVACY_MODE_DISABLED) {
+                                 PRIVACY_MODE_DISABLED,
+                                 SocketTag()) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
