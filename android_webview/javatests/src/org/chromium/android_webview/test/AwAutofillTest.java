@@ -818,8 +818,8 @@ public class AwAutofillTest {
             // Submit form.
             executeJavaScriptAndWaitForResult("document.getElementById('formid').submit();");
             waitForCallbackAndVerifyTypes(cnt,
-                    new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED, AUTOFILL_COMMIT,
-                            AUTOFILL_CANCEL});
+                    new Integer[] {
+                            AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED, AUTOFILL_COMMIT});
             ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
             assertEquals(2, values.size());
             assertEquals("a", values.get(0).second.getTextValue());
