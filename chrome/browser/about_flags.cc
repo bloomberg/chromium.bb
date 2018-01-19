@@ -1487,7 +1487,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
     {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
-     flag_descriptions::kEnableNightLightDescription, kOsCrOS,
+     flag_descriptions::kEnableNightLightDescription, kOsAll,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},
     {"allow-touchpad-three-finger-click",
      flag_descriptions::kAllowTouchpadThreeFingerClickName,
@@ -1545,10 +1545,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
-    {"ash-disable-v1-app-back-button",
-     flag_descriptions::kAshDisableV1AppBackButtonName,
-     flag_descriptions::kAshDisableV1AppBackButtonDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshDisableV1AppBackButton)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",
