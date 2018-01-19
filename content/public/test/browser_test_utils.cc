@@ -635,8 +635,9 @@ void SimulateUnresponsiveRenderer(WebContents* web_contents,
 #if defined(USE_AURA)
 bool IsResizeComplete(aura::test::WindowEventDispatcherTestApi* dispatcher_test,
                       RenderWidgetHostImpl* widget_host) {
-  return !dispatcher_test->HoldingPointerMoves() &&
-      !widget_host->resize_ack_pending_for_testing();
+  dispatcher_test->WaitUntilPointerMovesDispatched();
+  widget_host->WasResized();
+  return !widget_host->resize_ack_pending_for_testing();
 }
 
 void WaitForResizeComplete(WebContents* web_contents) {
