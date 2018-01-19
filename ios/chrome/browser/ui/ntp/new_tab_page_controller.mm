@@ -259,26 +259,16 @@ const CGFloat kToolbarHeight = 56;
   return NO;
 }
 
-- (void)dismissKeyboard {
-  [_currentController dismissKeyboard];
-}
-
 - (void)dismissModals {
   [_currentController dismissModals];
 }
 
 - (void)willUpdateSnapshot {
-  if ([_currentController respondsToSelector:@selector(willUpdateSnapshot)]) {
-    [_currentController willUpdateSnapshot];
-  }
+  [_currentController willUpdateSnapshot];
 }
 
 - (CGPoint)scrollOffset {
-  if (_currentController == self.homePanel &&
-      [self.homePanel respondsToSelector:@selector(scrollOffset)]) {
-    return [self.homePanel scrollOffset];
-  }
-  return CGPointZero;
+  return [_currentController scrollOffset];
 }
 
 #pragma mark -

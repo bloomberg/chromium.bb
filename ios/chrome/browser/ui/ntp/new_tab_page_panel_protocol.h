@@ -20,19 +20,9 @@ extern const int kNewTabPageDistanceToFadeShadow;
 
 @end
 
-// TODO(jbbegue): rename, extract and upstream so that CRWNativeContent can
-// implement it ( https://crbug.com/492156 ).
-@protocol NewTabPagePanelControllerSnapshotting<NSObject>
-
-@optional
-// Called when a snapshot of the content will be taken.
-- (void)willUpdateSnapshot;
-
-@end
-
 // Base class of a controller for the panels in the New Tab Page. This should
 // not be instantiated, but instead one of its sub-classes.
-@protocol NewTabPagePanelProtocol<NewTabPagePanelControllerSnapshotting>
+@protocol NewTabPagePanelProtocol
 
 // NewTabPagePanelController delegate, may be nil.
 @property(nonatomic, assign) id<NewTabPagePanelControllerDelegate> delegate;
@@ -52,16 +42,11 @@ extern const int kNewTabPageDistanceToFadeShadow;
 // Dismisses any modal interaction elements.
 - (void)dismissModals;
 
-// Dismisses on-screen keyboard if necessary.
-- (void)dismissKeyboard;
-
-// Disable and enable scrollToTop
-- (void)setScrollsToTop:(BOOL)enable;
-
-@optional
-
 // Returns the scroll offset associated with this panel.
 - (CGPoint)scrollOffset;
+
+// Called when a snapshot of the content will be taken.
+- (void)willUpdateSnapshot;
 
 @end
 

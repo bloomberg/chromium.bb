@@ -90,14 +90,15 @@ const CGFloat kDistanceToFadeToolbar = 50.0;
 - (void)dismissModals {
 }
 
-- (void)dismissKeyboard {
-}
-
-- (void)setScrollsToTop:(BOOL)enable {
-}
-
 - (CGFloat)alphaForBottomShadow {
   return 0;
+}
+
+- (CGPoint)scrollOffset {
+  return CGPointZero;
+}
+
+- (void)willUpdateSnapshot {
 }
 
 #pragma mark - UIScrollViewDelegate methods
