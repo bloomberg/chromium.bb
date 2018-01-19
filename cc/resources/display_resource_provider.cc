@@ -91,6 +91,15 @@ void DisplayResourceProvider::SendPromotionHints(
   }
 }
 
+void DisplayResourceProvider::DeletePromotionHint(ResourceMap::iterator it,
+                                                  DeleteStyle style) {
+  viz::internal::Resource* resource = &it->second;
+  // If this resource was interested in promotion hints, then remove it from
+  // the set of resources that we'll notify.
+  if (resource->wants_promotion_hint)
+    wants_promotion_hints_set_.erase(it->first);
+}
+
 bool DisplayResourceProvider::IsBackedBySurfaceTexture(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
   return resource->is_backed_by_surface_texture;
@@ -293,6 +302,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     child_info->child_to_parent_map.erase(child_id);
     resource.imported_count = 0;
+#if defined(OS_ANDROID)
+    DeletePromotionHint(it, style);
+#endif
     DeleteResourceInternal(it, style);
   }
 
@@ -555,6 +567,9 @@ void DisplayResourceProvider::UnlockForRead(viz::ResourceId id) {
   if (resource->marked_for_deletion && !resource->lock_for_read_count) {
     if (!resource->child_id) {
       // The resource belongs to this ResourceProvider, so it can be destroyed.
+#if defined(OS_ANDROID)
+      DeletePromotionHint(it, NORMAL);
+#endif
       DeleteResourceInternal(it, NORMAL);
     } else {
       if (batch_return_resources_) {
