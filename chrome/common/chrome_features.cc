@@ -546,8 +546,8 @@ const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
 #if defined(OS_CHROMEOS)
 // Enables or disables user activity event logging for power management on
 // Chrome OS.
-const base::Feature kUserActivityEventLogging{
-    "UserActivityEventLogging", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
