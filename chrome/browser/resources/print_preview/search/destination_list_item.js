@@ -72,6 +72,9 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.getChildElement('.register-promo-button'), 'click',
           this.onRegisterPromoClicked_.bind(this));
+      this.tracker.add(
+          this.getChildElement('.learn-more-link'), 'click',
+          this.onGcpErrorLearnMoreClick_.bind(this));
     },
 
     /** @return {!print_preview.Destination} */
@@ -321,6 +324,16 @@ cr.define('print_preview', function() {
           new Event(DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
       promoClickedEvent.destination = this.destination_;
       this.eventTarget_.dispatchEvent(promoClickedEvent);
+    },
+
+    /**
+     * Called when the learn more link for an unsupported cloud destination is
+     * clicked. Opens the help page via native layer.
+     * @private
+     */
+    onGcpErrorLearnMoreClick_: function() {
+      print_preview.NativeLayer.getInstance().forceOpenNewTab(
+          loadTimeData.getString('gcpCertificateErrorLearnMoreURL'));
     },
 
     /**

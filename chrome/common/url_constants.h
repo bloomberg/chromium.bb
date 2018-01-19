@@ -250,6 +250,9 @@ extern const char kCloudPrintLearnMoreURL[];
 // "Learn more" URL for the Cloud Print Preview No Destinations Promotion.
 extern const char kCloudPrintNoDestinationsLearnMoreURL[];
 
+// "Learn more" URL for the Cloud Print Preview certificate error.
+extern const char kCloudPrintCertificateErrorLearnMoreURL[];
+
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 

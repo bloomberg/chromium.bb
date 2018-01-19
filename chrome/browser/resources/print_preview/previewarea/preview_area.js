@@ -81,7 +81,8 @@ cr.define('print_preview', function() {
     this.printTicketStore_ = printTicketStore;
 
     /**
-     * Used to contruct the preview generator.
+     * Used to construct the preview generator and to open the GCP learn more
+     * help link.
      * @type {!print_preview.NativeLayer}
      * @private
      */
@@ -213,7 +214,8 @@ cr.define('print_preview', function() {
         'preview-area-open-system-dialog-button-throbber',
     OVERLAY: 'preview-area-overlay-layer',
     MARGIN_CONTROL: 'margin-control',
-    PREVIEW_AREA: 'preview-area-plugin-wrapper'
+    PREVIEW_AREA: 'preview-area-plugin-wrapper',
+    GCP_ERROR_LEARN_MORE_LINK: 'learn-more-link'
   };
 
   /**
@@ -328,6 +330,9 @@ cr.define('print_preview', function() {
       this.tracker.add(
           assert(this.openSystemDialogButton_), 'click',
           this.onOpenSystemDialogButtonClick_.bind(this));
+      this.tracker.add(
+          assert(this.gcpErrorLearnMoreLink_), 'click',
+          this.onGcpErrorLearnMoreClick_.bind(this));
 
       const TicketStoreEvent = print_preview.PrintTicketStore.EventType;
       [TicketStoreEvent.INITIALIZE, TicketStoreEvent.CAPABILITIES_CHANGE,
@@ -377,6 +382,7 @@ cr.define('print_preview', function() {
       print_preview.Component.prototype.exitDocument.call(this);
       this.overlayEl_ = null;
       this.openSystemDialogButton_ = null;
+      this.gcpErrorLearnMoreLink_ = null;
     },
 
     /** @override */
@@ -386,6 +392,8 @@ cr.define('print_preview', function() {
           PreviewArea.Classes_.OVERLAY)[0];
       this.openSystemDialogButton_ = this.getElement().getElementsByClassName(
           PreviewArea.Classes_.OPEN_SYSTEM_DIALOG_BUTTON)[0];
+      this.gcpErrorLearnMoreLink_ = this.getElement().getElementsByClassName(
+          PreviewArea.Classes_.GCP_ERROR_LEARN_MORE_LINK)[0];
     },
 
     /**
@@ -523,6 +531,17 @@ cr.define('print_preview', function() {
       setIsVisible(openSystemDialogThrobber, true);
       cr.dispatchSimpleEvent(
           this, PreviewArea.EventType.OPEN_SYSTEM_DIALOG_CLICK);
+    },
+
+    /**
+     * Called when the learn more link for a cloud destination with an invalid
+     * certificate is clicked. Calls nativeLayer to open a new tab with the help
+     * page.
+     * @private
+     */
+    onGcpErrorLearnMoreClick_: function() {
+      this.nativeLayer_.forceOpenNewTab(
+          loadTimeData.getString('gcpCertificateErrorLearnMoreURL'));
     },
 
     /**
