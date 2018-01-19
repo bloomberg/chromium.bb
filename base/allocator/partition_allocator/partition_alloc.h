@@ -206,7 +206,7 @@ static const size_t kGenericMaxBucketed =
 static const size_t kGenericMinDirectMappedDownsize =
     kGenericMaxBucketed +
     1;  // Limit when downsizing a direct mapping using realloc().
-static const size_t kGenericMaxDirectMapped = INT_MAX - kSystemPageSize;
+static const size_t kGenericMaxDirectMapped = 1UL << 31;  // 2 GiB
 static const size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
 // Constants for the memory reclaim logic.
