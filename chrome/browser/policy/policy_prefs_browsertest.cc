@@ -457,7 +457,8 @@ class PolicyPrefsTest : public InProcessBrowserTest {
 
 // Verifies that policies make their corresponding preferences become managed,
 // and that the user can't override that setting.
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
+// Failed on all platforms. See crbug.com/803755.
+IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, DISABLED_PolicyToPrefsMapping) {
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
   PrefService* local_state = g_browser_process->local_state();
