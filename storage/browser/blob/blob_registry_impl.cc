@@ -375,7 +375,7 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
       DCHECK(blob_uuid_it != referenced_blob_uuids_.end());
       const std::string& blob_uuid = *blob_uuid_it++;
       builder_->AppendBlob(blob_uuid, element->get_blob()->offset,
-                           element->get_blob()->length);
+                           element->get_blob()->length, context()->registry());
     }
   }
 

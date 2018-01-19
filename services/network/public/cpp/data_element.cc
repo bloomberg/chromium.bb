@@ -13,6 +13,8 @@
 
 namespace network {
 
+const uint64_t DataElement::kUnknownSize;
+
 DataElement::DataElement()
     : type_(TYPE_UNKNOWN),
       bytes_(NULL),
