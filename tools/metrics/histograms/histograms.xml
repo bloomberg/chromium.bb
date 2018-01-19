@@ -60229,6 +60229,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.CertificateErrorsWhileSeeingForms"
+    enum="PasswordCertificateError">
+  <owner>battre@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    When the password manager sees new forms on the page, it records in this
+    histogram whether there were any SSL certificate errors. The presence of SSL
+    errors likely means that the password manger will stop working, so the
+    reporting is done at the last point when password manager is still
+    guaranteed to be active. Some particular errors are distinguished, with the
+    rest being reported in a catch-all bucket.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.EditsInSaveBubble"
     enum="PasswordManagerEditsInSaveBubbleEnum">
   <owner>battre@chromium.org</owner>

@@ -263,6 +263,17 @@ enum ShowAllSavedPasswordsContext {
   SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT
 };
 
+// Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"
+enum class CertificateError {
+  NONE = 0,
+  OTHER = 1,
+  AUTHORITY_INVALID = 2,
+  DATE_INVALID = 3,
+  COMMON_NAME_INVALID = 4,
+  WEAK_SIGNATURE_ALGORITHM = 5,
+  COUNT
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);

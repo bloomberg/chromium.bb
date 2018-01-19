@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "net/cert/cert_status_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,6 +63,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD0(GetMainFrameCertStatus, net::CertStatus());
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
   // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.
@@ -154,6 +156,7 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(manager_.get()));
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
+    EXPECT_CALL(client_, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
 
     ON_CALL(client_, GetMainFrameURL()).WillByDefault(ReturnRef(test_url_));
   }
@@ -2205,6 +2208,62 @@ TEST_F(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// If there are no forms to parse, certificate errors should not be reported.
+TEST_F(PasswordManagerTest, CertErrorReported_NoForms) {
+  const std::vector<PasswordForm> observed;
+  EXPECT_CALL(client_, GetMainFrameCertStatus())
+      .WillRepeatedly(Return(net::CERT_STATUS_AUTHORITY_INVALID));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  base::HistogramTester histogram_tester;
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.CertificateErrorsWhileSeeingForms", 0);
+}
+
+TEST_F(PasswordManagerTest, CertErrorReported) {
+  constexpr struct {
+    net::CertStatus cert_status;
+    metrics_util::CertificateError expected_error;
+  } kCases[] = {
+      {0, metrics_util::CertificateError::NONE},
+      {net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,  // not an error
+       metrics_util::CertificateError::NONE},
+      {net::CERT_STATUS_COMMON_NAME_INVALID,
+       metrics_util::CertificateError::COMMON_NAME_INVALID},
+      {net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
+       metrics_util::CertificateError::WEAK_SIGNATURE_ALGORITHM},
+      {net::CERT_STATUS_DATE_INVALID,
+       metrics_util::CertificateError::DATE_INVALID},
+      {net::CERT_STATUS_AUTHORITY_INVALID,
+       metrics_util::CertificateError::AUTHORITY_INVALID},
+      {net::CERT_STATUS_WEAK_KEY, metrics_util::CertificateError::OTHER},
+      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_WEAK_KEY,
+       metrics_util::CertificateError::DATE_INVALID},
+      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_AUTHORITY_INVALID,
+       metrics_util::CertificateError::AUTHORITY_INVALID},
+      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_AUTHORITY_INVALID |
+           net::CERT_STATUS_WEAK_KEY,
+       metrics_util::CertificateError::AUTHORITY_INVALID},
+  };
+
+  const std::vector<PasswordForm> observed = {PasswordForm()};
+
+  for (const auto& test_case : kCases) {
+    SCOPED_TRACE(testing::Message("index of test_case = ")
+                 << (&test_case - kCases));
+    EXPECT_CALL(client_, GetMainFrameCertStatus())
+        .WillRepeatedly(Return(test_case.cert_status));
+    base::HistogramTester histogram_tester;
+    EXPECT_CALL(*store_, GetLogins(_, _));
+    manager()->OnPasswordFormsParsed(&driver_, observed);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.CertificateErrorsWhileSeeingForms",
+        test_case.expected_error, 1);
+  }
 }
 
 }  // namespace password_manager
