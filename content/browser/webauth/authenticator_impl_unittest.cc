@@ -63,14 +63,12 @@ constexpr uint8_t kTestChallengeBytes[] = {
     0xB8, 0x8C, 0x25, 0xDB, 0x9E, 0x60, 0x26, 0x45, 0xF1, 0x41};
 
 constexpr char kTestRegisterClientDataJsonString[] =
-    R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE",)"
-    R"("hashAlgorithm":"SHA-256","origin":"google.com","tokenBinding":)"
-    R"("unused","type":"webauthn.create"})";
+    R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
+    R"("google.com","tokenBinding":"unused","type":"webauthn.create"})";
 
 constexpr char kTestSignClientDataJsonString[] =
-    R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE",)"
-    R"("hashAlgorithm":"SHA-256","origin":"google.com","tokenBinding":)"
-    R"("unused","type":"webauthn.get"})";
+    R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
+    R"("google.com","tokenBinding":"unused","type":"webauthn.get"})";
 
 constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
     {"http://localhost", "localhost"},
