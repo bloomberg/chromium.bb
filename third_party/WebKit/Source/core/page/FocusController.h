@@ -101,6 +101,8 @@ class CORE_EXPORT FocusController final
   void Trace(blink::Visitor*);
 
  private:
+  using SkipList = HeapHashSet<Member<Node>>;
+
   explicit FocusController(Page*);
 
   Element* FindFocusableElement(WebFocusType, Element&, OwnerMap&);
@@ -116,13 +118,15 @@ class CORE_EXPORT FocusController final
       bool initial_focus,
       InputDeviceCapabilities* source_capabilities);
 
-  bool AdvanceFocusDirectionallyInContainer(Node* container,
+  bool AdvanceFocusDirectionallyInContainer(Node* start_container,
                                             const LayoutRect& starting_rect,
-                                            WebFocusType);
+                                            WebFocusType,
+                                            Node* pruned_sub_tree_root);
   void FindFocusCandidateInContainer(Node& container,
                                      const LayoutRect& starting_rect,
                                      WebFocusType,
-                                     FocusCandidate& closest);
+                                     FocusCandidate& closest,
+                                     const SkipList& already_checked);
 
   void NotifyFocusChangedObservers() const;
 
