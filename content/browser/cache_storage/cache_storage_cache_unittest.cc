@@ -484,7 +484,7 @@ class CacheStorageCacheTest : public testing::Test {
     std::unique_ptr<storage::BlobDataBuilder> builder =
         std::make_unique<storage::BlobDataBuilder>(uuid);
     builder->AppendData(data);
-    return blob_storage_context_->AddFinishedBlob(builder.get());
+    return blob_storage_context_->AddFinishedBlob(std::move(builder));
   }
 
   void CopySideDataToResponse(storage::BlobDataHandle* side_data_blob_handle,

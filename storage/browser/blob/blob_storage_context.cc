@@ -418,15 +418,9 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
-    const BlobDataBuilder& external_builder) {
+    std::unique_ptr<BlobDataBuilder> external_builder) {
   TRACE_EVENT0("Blob", "Context::AddFinishedBlob");
-  return BuildBlob(external_builder, TransportAllowedCallback());
-}
-
-std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
-    const BlobDataBuilder* builder) {
-  DCHECK(builder);
-  return AddFinishedBlob(*builder);
+  return BuildBlob(std::move(external_builder), TransportAllowedCallback());
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::AddBrokenBlob(
@@ -474,36 +468,36 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildPreregisteredBlob(
-    const BlobDataBuilder& content,
+    std::unique_ptr<BlobDataBuilder> content,
     TransportAllowedCallback transport_allowed_callback) {
-  BlobEntry* entry = registry_.GetEntry(content.uuid());
+  BlobEntry* entry = registry_.GetEntry(content->uuid());
   DCHECK(entry);
   DCHECK_EQ(BlobStatus::PENDING_CONSTRUCTION, entry->status());
   entry->set_size(0);
 
-  return BuildBlobInternal(entry, content,
+  return BuildBlobInternal(entry, std::move(content),
                            std::move(transport_allowed_callback));
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
-    const BlobDataBuilder& content,
+    std::unique_ptr<BlobDataBuilder> content,
     TransportAllowedCallback transport_allowed_callback) {
-  DCHECK(!registry_.HasEntry(content.uuid_));
+  DCHECK(!registry_.HasEntry(content->uuid_));
 
   BlobEntry* entry = registry_.CreateEntry(
-      content.uuid(), content.content_type_, content.content_disposition_);
+      content->uuid(), content->content_type_, content->content_disposition_);
 
-  return BuildBlobInternal(entry, content,
+  return BuildBlobInternal(entry, std::move(content),
                            std::move(transport_allowed_callback));
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
     BlobEntry* entry,
-    const BlobDataBuilder& content,
+    std::unique_ptr<BlobDataBuilder> content,
     TransportAllowedCallback transport_allowed_callback) {
   // This flattens all blob references in the transportion content out and
   // stores the complete item representation in the internal data.
-  BlobFlattener flattener(content, entry, &registry_);
+  BlobFlattener flattener(*content, entry, &registry_);
 
   DCHECK(!flattener.contains_unpopulated_transport_items ||
          transport_allowed_callback)
@@ -513,7 +507,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
          flattener.total_size == entry->total_size());
   entry->set_size(flattener.total_size);
   entry->set_status(flattener.status);
-  std::unique_ptr<BlobDataHandle> handle = CreateHandle(content.uuid_, entry);
+  std::unique_ptr<BlobDataHandle> handle = CreateHandle(content->uuid_, entry);
 
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize",
@@ -542,7 +536,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
     if (BlobStatusIsPending(pending_blob.second->status())) {
       pending_blob.second->building_state_->build_completion_callbacks
           .push_back(base::Bind(&BlobStorageContext::OnDependentBlobFinished,
-                                ptr_factory_.GetWeakPtr(), content.uuid_));
+                                ptr_factory_.GetWeakPtr(), content->uuid_));
       num_building_dependent_blobs++;
     }
   }
@@ -589,7 +583,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
         memory_controller_.ReserveMemoryQuota(
             std::move(flattener.pending_copy_items),
             base::Bind(&BlobStorageContext::OnEnoughSpaceForCopies,
-                       ptr_factory_.GetWeakPtr(), content.uuid_));
+                       ptr_factory_.GetWeakPtr(), content->uuid_));
     // Building state will be null if the blob is already finished.
     if (entry->building_state_)
       entry->building_state_->copy_quota_request = std::move(pending_request);
@@ -605,7 +599,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
         pending_request = memory_controller_.ReserveMemoryQuota(
             std::move(flattener.pending_transport_items),
             base::Bind(&BlobStorageContext::OnEnoughSpaceForTransport,
-                       ptr_factory_.GetWeakPtr(), content.uuid_,
+                       ptr_factory_.GetWeakPtr(), content->uuid_,
                        base::Passed(&empty_files)));
         break;
       }
@@ -613,7 +607,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
         pending_request = memory_controller_.ReserveFileQuota(
             std::move(flattener.pending_transport_items),
             base::Bind(&BlobStorageContext::OnEnoughSpaceForTransport,
-                       ptr_factory_.GetWeakPtr(), content.uuid_));
+                       ptr_factory_.GetWeakPtr(), content->uuid_));
         break;
     }
 

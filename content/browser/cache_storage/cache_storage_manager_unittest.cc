@@ -412,7 +412,7 @@ class CacheStorageManagerTest : public testing::Test {
     blob_data->AppendData(request.url.spec());
 
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-        blob_storage_context_->AddFinishedBlob(blob_data.get());
+        blob_storage_context_->AddFinishedBlob(std::move(blob_data));
 
     scoped_refptr<storage::BlobHandle> blob_handle;
     blink::mojom::BlobPtr blob;

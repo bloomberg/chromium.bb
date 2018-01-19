@@ -32,10 +32,10 @@ ScopedTextBlob::ScopedTextBlob(const MockBlobURLRequestContext& request_context,
                                const std::string& data)
     : blob_id_(blob_id), context_(request_context.blob_storage_context()) {
   DCHECK(context_);
-  storage::BlobDataBuilder blob_builder(blob_id_);
+  auto blob_builder = std::make_unique<storage::BlobDataBuilder>(blob_id_);
   if (!data.empty())
-    blob_builder.AppendData(data);
-  handle_ = context_->AddFinishedBlob(&blob_builder);
+    blob_builder->AppendData(data);
+  handle_ = context_->AddFinishedBlob(std::move(blob_builder));
 }
 
 ScopedTextBlob::~ScopedTextBlob() = default;

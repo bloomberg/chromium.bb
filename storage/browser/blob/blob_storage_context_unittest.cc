@@ -122,10 +122,10 @@ class BlobStorageContextTest : public testing::Test {
   }
 
   std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
-    BlobDataBuilder builder(id);
-    builder.AppendData("1", 1);
-    builder.set_content_type("text/plain");
-    return context_->AddFinishedBlob(builder);
+    auto builder = std::make_unique<BlobDataBuilder>(id);
+    builder->AppendData("1", 1);
+    builder->set_content_type("text/plain");
+    return context_->AddFinishedBlob(std::move(builder));
   }
 
   void SetTestMemoryLimits() {
@@ -161,12 +161,15 @@ TEST_F(BlobStorageContextTest, BuildBlobAsync) {
   const size_t kSize = 10u;
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
 
-  BlobDataBuilder builder(kId);
-  BlobDataBuilder::FutureData future_data = builder.AppendFutureData(kSize);
-  builder.set_content_type("text/plain");
+  auto builder = std::make_unique<BlobDataBuilder>(kId);
+  BlobDataBuilder::FutureData future_data = builder->AppendFutureData(kSize);
+  builder->set_content_type("text/plain");
+  std::unique_ptr<BlobDataSnapshot> builder_snapshot =
+      builder->CreateSnapshot();
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-      builder, base::Bind(&SaveBlobStatusAndFiles, &status, &files_));
+      std::move(builder),
+      base::BindOnce(&SaveBlobStatusAndFiles, &status, &files_));
   EXPECT_EQ(10lu, context_->memory_controller().memory_usage());
   EXPECT_TRUE(handle->IsBeingBuilt())
       << static_cast<int>(handle->GetBlobStatus());
@@ -186,7 +189,7 @@ TEST_F(BlobStorageContextTest, BuildBlobAsync) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(BlobStatus::DONE, construction_done);
 
-  EXPECT_EQ(builder, *handle->CreateSnapshot());
+  EXPECT_EQ(*builder_snapshot, *handle->CreateSnapshot());
 
   handle.reset();
   base::RunLoop().RunUntilIdle();
@@ -198,12 +201,13 @@ TEST_F(BlobStorageContextTest, BuildBlobAndCancel) {
   const size_t kSize = 10u;
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
 
-  BlobDataBuilder builder(kId);
-  builder.AppendFutureData(kSize);
-  builder.set_content_type("text/plain");
+  auto builder = std::make_unique<BlobDataBuilder>(kId);
+  builder->AppendFutureData(kSize);
+  builder->set_content_type("text/plain");
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-      builder, base::Bind(&SaveBlobStatusAndFiles, &status, &files_));
+      std::move(builder),
+      base::BindOnce(&SaveBlobStatusAndFiles, &status, &files_));
   EXPECT_EQ(10lu, context_->memory_controller().memory_usage());
   EXPECT_TRUE(handle->IsBeingBuilt());
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, status);
@@ -230,12 +234,13 @@ TEST_F(BlobStorageContextTest, CancelledReference) {
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
 
   // Start our first blob.
-  BlobDataBuilder builder(kId1);
-  builder.AppendFutureData(kSize);
-  builder.set_content_type("text/plain");
+  auto builder = std::make_unique<BlobDataBuilder>(kId1);
+  builder->AppendFutureData(kSize);
+  builder->set_content_type("text/plain");
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-      builder, base::Bind(&SaveBlobStatusAndFiles, &status, &files_));
+      std::move(builder),
+      base::BindOnce(&SaveBlobStatusAndFiles, &status, &files_));
   EXPECT_EQ(10lu, context_->memory_controller().memory_usage());
   EXPECT_TRUE(handle->IsBeingBuilt());
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, status);
@@ -247,11 +252,11 @@ TEST_F(BlobStorageContextTest, CancelledReference) {
   EXPECT_EQ(10u, context_->memory_controller().memory_usage());
 
   // Create our second blob, which depends on the first.
-  BlobDataBuilder builder2(kId2);
-  builder2.AppendBlob(kId1);
-  builder2.set_content_type("text/plain");
+  auto builder2 = std::make_unique<BlobDataBuilder>(kId2);
+  builder2->AppendBlob(kId1);
+  builder2->set_content_type("text/plain");
   std::unique_ptr<BlobDataHandle> handle2 = context_->BuildBlob(
-      builder2, BlobStorageContext::TransportAllowedCallback());
+      std::move(builder2), BlobStorageContext::TransportAllowedCallback());
   BlobStatus construction_done2 =
       BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
   handle->RunOnConstructionComplete(
@@ -284,10 +289,10 @@ TEST_F(BlobStorageContextTest, IncorrectSlice) {
 
   EXPECT_EQ(1lu, context_->memory_controller().memory_usage());
 
-  BlobDataBuilder builder(kId2);
-  builder.AppendBlob(kId1, 1, 10);
+  auto builder = std::make_unique<BlobDataBuilder>(kId2);
+  builder->AppendBlob(kId1, 1, 10);
   std::unique_ptr<BlobDataHandle> handle2 = context_->BuildBlob(
-      builder, BlobStorageContext::TransportAllowedCallback());
+      std::move(builder), BlobStorageContext::TransportAllowedCallback());
 
   EXPECT_TRUE(handle2->IsBroken());
   EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,
@@ -345,24 +350,24 @@ TEST_F(BlobStorageContextTest, MemoryUsage) {
   const std::string kId1("id1");
   const std::string kId2("id2");
 
-  BlobDataBuilder builder1(kId1);
-  BlobDataBuilder builder2(kId2);
-  builder1.AppendData("Data1Data2");
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
-  builder2.AppendBlob(kId1);
+  auto builder1 = std::make_unique<BlobDataBuilder>(kId1);
+  auto builder2 = std::make_unique<BlobDataBuilder>(kId2);
+  builder1->AppendData("Data1Data2");
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
+  builder2->AppendBlob(kId1);
 
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
 
   std::unique_ptr<BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(&builder1);
+      context_->AddFinishedBlob(std::move(builder1));
   EXPECT_EQ(10lu, context_->memory_controller().memory_usage());
   std::unique_ptr<BlobDataHandle> blob_data_handle2 =
-      context_->AddFinishedBlob(&builder2);
+      context_->AddFinishedBlob(std::move(builder2));
   EXPECT_EQ(10lu, context_->memory_controller().memory_usage());
 
   EXPECT_EQ(2u, context_->registry().blob_count());
@@ -384,21 +389,22 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
   const std::string kId2("id12");
   const std::string kId3("id3");
 
-  BlobDataBuilder builder1(kId1);
-  BlobDataBuilder builder2(kId2);
+  auto builder1 = std::make_unique<BlobDataBuilder>(kId1);
+  auto builder2 = std::make_unique<BlobDataBuilder>(kId2);
   BlobDataBuilder canonicalized_blob_data2(kId2);
-  builder1.AppendData("Data1Data2");
-  builder2.AppendBlob(kId1, 5, 5);
-  builder2.AppendData(" is the best");
+  builder1->AppendData("Data1Data2");
+  builder2->AppendBlob(kId1, 5, 5);
+  builder2->AppendData(" is the best");
   canonicalized_blob_data2.AppendData("Data2");
   canonicalized_blob_data2.AppendData(" is the best");
+  std::unique_ptr<BlobDataSnapshot> builder1_data = builder1->CreateSnapshot();
 
   BlobStorageContext context;
 
   std::unique_ptr<BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(&builder1);
+      context_->AddFinishedBlob(std::move(builder1));
   std::unique_ptr<BlobDataHandle> blob_data_handle2 =
-      context_->AddFinishedBlob(&builder2);
+      context_->AddFinishedBlob(std::move(builder2));
 
   EXPECT_EQ(10u + 12u + 5u, context_->memory_controller().memory_usage());
 
@@ -406,7 +412,7 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
   ASSERT_TRUE(blob_data_handle2);
   std::unique_ptr<BlobDataSnapshot> data1 = blob_data_handle->CreateSnapshot();
   std::unique_ptr<BlobDataSnapshot> data2 = blob_data_handle2->CreateSnapshot();
-  EXPECT_EQ(*data1, builder1);
+  EXPECT_EQ(*data1, *builder1_data);
   EXPECT_EQ(*data2, canonicalized_blob_data2);
   blob_data_handle.reset();
   data2.reset();
@@ -422,11 +428,11 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob) {
   EXPECT_EQ(*data2, canonicalized_blob_data2);
 
   // Test shared elements stick around.
-  BlobDataBuilder builder3(kId3);
-  builder3.AppendBlob(kId2);
-  builder3.AppendBlob(kId2);
+  auto builder3 = std::make_unique<BlobDataBuilder>(kId3);
+  builder3->AppendBlob(kId2);
+  builder3->AppendBlob(kId2);
   std::unique_ptr<BlobDataHandle> blob_data_handle3 =
-      context_->AddFinishedBlob(&builder3);
+      context_->AddFinishedBlob(std::move(builder3));
   EXPECT_FALSE(blob_data_handle3->IsBeingBuilt());
   blob_data_handle2.reset();
   base::RunLoop().RunUntilIdle();
@@ -461,17 +467,17 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
   const std::string kId1("id1");
   const std::string kId2("id2");
 
-  BlobDataBuilder builder1(kId1);
-  builder1.AppendFileSystemFile(GURL(), 0, kLargeSize, base::Time::Now(),
-                                nullptr);
+  auto builder1 = std::make_unique<BlobDataBuilder>(kId1);
+  builder1->AppendFileSystemFile(GURL(), 0, kLargeSize, base::Time::Now(),
+                                 nullptr);
 
-  BlobDataBuilder builder2(kId2);
-  builder2.AppendBlob(kId1, kLargeSize - kBlobLength, kBlobLength);
+  auto builder2 = std::make_unique<BlobDataBuilder>(kId2);
+  builder2->AppendBlob(kId1, kLargeSize - kBlobLength, kBlobLength);
 
   std::unique_ptr<BlobDataHandle> blob_data_handle1 =
-      context_->AddFinishedBlob(&builder1);
+      context_->AddFinishedBlob(std::move(builder1));
   std::unique_ptr<BlobDataHandle> blob_data_handle2 =
-      context_->AddFinishedBlob(&builder2);
+      context_->AddFinishedBlob(std::move(builder2));
 
   ASSERT_TRUE(blob_data_handle1);
   ASSERT_TRUE(blob_data_handle2);
@@ -505,15 +511,16 @@ TEST_F(BlobStorageContextTest, BuildDiskCacheBlob) {
     canonicalized_blob_data.AppendData(kTestBlobData.c_str());
 
     const std::string kId1("id1");
-    BlobDataBuilder builder(kId1);
+    auto builder = std::make_unique<BlobDataBuilder>(kId1);
 
-    builder.AppendDiskCacheEntry(
-        data_handle, entry.get(), kTestDiskCacheStreamIndex);
+    builder->AppendDiskCacheEntry(data_handle, entry.get(),
+                                  kTestDiskCacheStreamIndex);
 
+    std::unique_ptr<BlobDataSnapshot> builder_data = builder->CreateSnapshot();
     std::unique_ptr<BlobDataHandle> blob_data_handle =
-        context.AddFinishedBlob(&builder);
+        context.AddFinishedBlob(std::move(builder));
     std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
-    EXPECT_EQ(*data, builder);
+    EXPECT_EQ(*data, *builder_data);
     EXPECT_FALSE(data_handle->HasOneRef())
         << "Data handle was destructed while context and builder still exist.";
   }
@@ -528,13 +535,14 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
       std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits();
 
-  BlobDataBuilder builder(kId1);
-  builder.set_content_type("text/plain");
-  BlobDataBuilder::FutureFile future_file = builder.AppendFutureFile(0, 10, 0);
+  auto builder = std::make_unique<BlobDataBuilder>(kId1);
+  builder->set_content_type("text/plain");
+  BlobDataBuilder::FutureFile future_file = builder->AppendFutureFile(0, 10, 0);
 
   BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
   std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-      builder, base::Bind(&SaveBlobStatusAndFiles, &status, &files_));
+      std::move(builder),
+      base::BindOnce(&SaveBlobStatusAndFiles, &status, &files_));
 
   size_t blobs_finished = 0;
   EXPECT_EQ(BlobStatus::PENDING_QUOTA, handle->GetBlobStatus());
@@ -564,7 +572,6 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, blobs_finished);
 
-  builder.Clear();
   handle.reset();
   files_.clear();
   base::RunLoop().RunUntilIdle();
@@ -586,26 +593,30 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
   ASSERT_TRUE(base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1));
   ASSERT_TRUE(base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2));
 
-  BlobDataBuilder blob_data1(kId1);
-  blob_data1.AppendData("Data1");
-  blob_data1.AppendData("Data2");
-  blob_data1.AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")), 10,
-                        1024, time1);
+  auto blob_data1_builder = std::make_unique<BlobDataBuilder>(kId1);
+  blob_data1_builder->AppendData("Data1");
+  blob_data1_builder->AppendData("Data2");
+  blob_data1_builder->AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")),
+                                 10, 1024, time1);
+  std::unique_ptr<BlobDataSnapshot> blob_data1 =
+      blob_data1_builder->CreateSnapshot();
 
-  BlobDataBuilder blob_data2(kId2);
-  blob_data2.AppendData("Data3");
-  blob_data2.AppendBlob(kId1, 8, 100);
-  blob_data2.AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20,
-                        time2);
+  auto blob_data2 = std::make_unique<BlobDataBuilder>(kId2);
+  blob_data2->AppendData("Data3");
+  blob_data2->AppendBlob(kId1, 8, 100);
+  blob_data2->AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20,
+                         time2);
 
-  BlobDataBuilder blob_data3(kId3);
-  blob_data3.AppendData("Data4");
+  auto blob_data3_builder = std::make_unique<BlobDataBuilder>(kId3);
+  blob_data3_builder->AppendData("Data4");
   std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
   ASSERT_TRUE(cache);
   disk_cache::ScopedEntryPtr disk_cache_entry =
       CreateDiskCacheEntry(cache.get(), "another key", "Data5");
-  blob_data3.AppendDiskCacheEntry(new EmptyDataHandle(), disk_cache_entry.get(),
-                                  kTestDiskCacheStreamIndex);
+  blob_data3_builder->AppendDiskCacheEntry(
+      new EmptyDataHandle(), disk_cache_entry.get(), kTestDiskCacheStreamIndex);
+  std::unique_ptr<BlobDataSnapshot> blob_data3 =
+      blob_data3_builder->CreateSnapshot();
 
   BlobDataBuilder canonicalized_blob_data2(kId2);
   canonicalized_blob_data2.AppendData("Data3");
@@ -619,25 +630,25 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
   std::unique_ptr<BlobDataHandle> blob_data_handle;
 
   // Test a blob referring to only data and a file.
-  blob_data_handle = context_->AddFinishedBlob(&blob_data1);
+  blob_data_handle = context_->AddFinishedBlob(std::move(blob_data1_builder));
 
   ASSERT_TRUE(blob_data_handle);
   std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
-  EXPECT_EQ(*data, blob_data1);
+  EXPECT_EQ(*data, *blob_data1);
 
   // Test a blob composed in part with another blob.
-  blob_data_handle = context_->AddFinishedBlob(&blob_data2);
+  blob_data_handle = context_->AddFinishedBlob(std::move(blob_data2));
   data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
   ASSERT_TRUE(data);
   EXPECT_EQ(*data, canonicalized_blob_data2);
 
   // Test a blob referring to only data and a disk cache entry.
-  blob_data_handle = context_->AddFinishedBlob(&blob_data3);
+  blob_data_handle = context_->AddFinishedBlob(std::move(blob_data3_builder));
   data = blob_data_handle->CreateSnapshot();
   ASSERT_TRUE(blob_data_handle);
-  EXPECT_EQ(*data, blob_data3);
+  EXPECT_EQ(*data, *blob_data3);
 
   blob_data_handle.reset();
   base::RunLoop().RunUntilIdle();
@@ -687,10 +698,11 @@ TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   EXPECT_TRUE(context_->registry().HasEntry(kBrokenId));
 
   // Try to create a blob with a reference to an unknown blob.
-  BlobDataBuilder builder(kReferencingId);
-  builder.AppendData("data");
-  builder.AppendBlob(kUnknownId);
-  std::unique_ptr<BlobDataHandle> handle = context_->AddFinishedBlob(builder);
+  auto builder = std::make_unique<BlobDataBuilder>(kReferencingId);
+  builder->AppendData("data");
+  builder->AppendBlob(kUnknownId);
+  std::unique_ptr<BlobDataHandle> handle =
+      context_->AddFinishedBlob(std::move(builder));
   EXPECT_TRUE(handle->IsBroken());
   EXPECT_TRUE(context_->registry().HasEntry(kReferencingId));
   handle.reset();
@@ -698,10 +710,10 @@ TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   EXPECT_FALSE(context_->registry().HasEntry(kReferencingId));
 
   // Try to create a blob with a reference to the broken blob.
-  BlobDataBuilder builder2(kReferencingId);
-  builder2.AppendData("data");
-  builder2.AppendBlob(kBrokenId);
-  handle = context_->AddFinishedBlob(builder2);
+  auto builder2 = std::make_unique<BlobDataBuilder>(kReferencingId);
+  builder2->AppendData("data");
+  builder2->AppendBlob(kBrokenId);
+  handle = context_->AddFinishedBlob(std::move(builder2));
   EXPECT_TRUE(handle->IsBroken());
   EXPECT_TRUE(context_->registry().HasEntry(kReferencingId));
   handle.reset();
@@ -709,10 +721,10 @@ TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   EXPECT_FALSE(context_->registry().HasEntry(kReferencingId));
 
   // Try to create a blob with a reference to the building blob.
-  BlobDataBuilder builder3(kReferencingId);
-  builder3.AppendData("data");
-  builder3.AppendBlob(kBuildingId);
-  handle = context_->AddFinishedBlob(builder3);
+  auto builder3 = std::make_unique<BlobDataBuilder>(kReferencingId);
+  builder3->AppendData("data");
+  builder3->AppendBlob(kBuildingId);
+  handle = context_->AddFinishedBlob(std::move(builder3));
   EXPECT_TRUE(handle->IsBroken());
   EXPECT_TRUE(context_->registry().HasEntry(kReferencingId));
   handle.reset();
@@ -772,7 +784,6 @@ bool DoesBuilderHaveFutureData(size_t index) {
 }
 
 void PopulateDataInBuilder(
-    BlobDataBuilder* builder,
     std::vector<BlobDataBuilder::FutureData>* future_datas,
     std::vector<BlobDataBuilder::FutureFile>* future_files,
     size_t index,
@@ -839,11 +850,11 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
                   BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
   populated.resize(kTotalRawBlobs, false);
   for (size_t i = 0; i < builders.size(); i++) {
-    BlobDataBuilder& builder = *builders[i];
-    builder.set_content_type("text/plain");
+    std::unique_ptr<BlobDataBuilder> builder = std::move(builders[i]);
+    builder->set_content_type("text/plain");
     bool has_pending_memory = DoesBuilderHaveFutureData(i);
     std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-        builder,
+        std::move(builder),
         has_pending_memory
             ? base::Bind(&SaveBlobStatusAndFiles, &statuses[0] + i, &files_)
             : BlobStorageContext::TransportAllowedCallback());
@@ -851,6 +862,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
         base::Bind(&IncrementNumber, &total_finished_blobs));
     handles.push_back(std::move(handle));
   }
+  builders.clear();
   base::RunLoop().RunUntilIdle();
 
   // We should be needing to send a page or two to disk.
@@ -860,10 +872,9 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
     base::RunLoop().RunUntilIdle();
     // Continue populating data for items that can fit.
     for (size_t i = 0; i < kTotalRawBlobs; i++) {
-      BlobDataBuilder* builder = builders[i].get();
       if (DoesBuilderHaveFutureData(i) && !populated[i] &&
           statuses[i] == BlobStatus::PENDING_TRANSPORT) {
-        PopulateDataInBuilder(builder, &future_datas[i], &future_files[i], i,
+        PopulateDataInBuilder(&future_datas[i], &future_files[i], i,
                               file_runner_.get());
         context_->NotifyTransportComplete(base::NumberToString(i));
         populated[i] = true;
@@ -905,10 +916,10 @@ TEST_F(BlobStorageContextTest, NegativeSlice) {
 
   EXPECT_EQ(1lu, context_->memory_controller().memory_usage());
 
-  BlobDataBuilder builder(kId2);
-  builder.AppendBlob(kId1, static_cast<uint64_t>(-10), 11);
+  auto builder = std::make_unique<BlobDataBuilder>(kId2);
+  builder->AppendBlob(kId1, static_cast<uint64_t>(-10), 11);
   std::unique_ptr<BlobDataHandle> handle2 = context_->BuildBlob(
-      builder, BlobStorageContext::TransportAllowedCallback());
+      std::move(builder), BlobStorageContext::TransportAllowedCallback());
 
   EXPECT_TRUE(handle2->IsBroken());
   EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,

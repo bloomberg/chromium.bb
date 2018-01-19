@@ -670,7 +670,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   auto blob_data = std::make_unique<storage::BlobDataBuilder>("blob-id:myblob");
   blob_data->AppendData(kResponseBody);
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
-      blob_context_.AddFinishedBlob(blob_data.get());
+      blob_context_.AddFinishedBlob(std::move(blob_data));
   blink::mojom::BlobPtr blob_ptr;
   blink::mojom::BlobRequest request = mojo::MakeRequest(&blob_ptr);
   storage::BlobImpl::Create(std::move(blob_handle), std::move(request));

@@ -1865,13 +1865,14 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   // Create a blob with the response body data.
   response->blob_size = entry->GetDataSize(INDEX_RESPONSE_BODY);
   response->blob_uuid = base::GenerateGUID();
-  storage::BlobDataBuilder blob_data(response->blob_uuid);
+  auto blob_data =
+      std::make_unique<storage::BlobDataBuilder>(response->blob_uuid);
 
   disk_cache::Entry* temp_entry = entry.get();
-  blob_data.AppendDiskCacheEntryWithSideData(
+  blob_data->AppendDiskCacheEntryWithSideData(
       new CacheStorageCacheDataHandle(CreateCacheHandle(), std::move(entry)),
       temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
-  auto result = blob_storage_context_->AddFinishedBlob(&blob_data);
+  auto result = blob_storage_context_->AddFinishedBlob(std::move(blob_data));
 
   blink::mojom::BlobPtr blob_ptr;
   storage::BlobImpl::Create(std::make_unique<storage::BlobDataHandle>(*result),

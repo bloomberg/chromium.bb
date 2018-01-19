@@ -59,9 +59,10 @@ void BlobTaskProxy::SaveAsBlobOnIO(std::unique_ptr<std::string> data,
 
   // Build blob data.
   std::string blob_uuid = base::GenerateGUID();
-  storage::BlobDataBuilder builder(blob_uuid);
-  builder.AppendData(*data.get());
-  blob_data_handle_ = blob_storage_context_->AddFinishedBlob(builder);
+  auto builder = std::make_unique<storage::BlobDataBuilder>(blob_uuid);
+  builder->AppendData(*data.get());
+  blob_data_handle_ =
+      blob_storage_context_->AddFinishedBlob(std::move(builder));
 
   // Wait for blob data construction complete.
   auto cb = base::BindRepeating(&BlobTaskProxy::BlobSavedOnIO,

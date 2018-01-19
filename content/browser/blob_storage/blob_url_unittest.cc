@@ -153,6 +153,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
   BlobURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         blob_data_(new BlobDataBuilder("uuid")),
+        blob_uuid_(blob_data_->uuid()),
         response_error_code_(net::OK),
         expected_status_code_(0) {}
 
@@ -272,7 +273,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
     if (GetParam()) {
       GetHandleFromBuilder();  // To add to StorageContext.
       const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
-          .CreateUrlMapping(url, blob_data_->uuid());
+          .CreateUrlMapping(url, blob_uuid_);
       network::ResourceRequest request;
       request.url = url;
       request.method = method;
@@ -358,7 +359,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
 
   storage::BlobDataHandle* GetHandleFromBuilder() {
     if (!blob_handle_) {
-      blob_handle_ = blob_context_.AddFinishedBlob(blob_data_.get());
+      blob_handle_ = blob_context_.AddFinishedBlob(std::move(blob_data_));
     }
     return blob_handle_.get();
   }
@@ -403,6 +404,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
   storage::BlobStorageContext blob_context_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::unique_ptr<BlobDataBuilder> blob_data_;
+  std::string blob_uuid_;
   std::unique_ptr<BlobDataSnapshot> blob_data_snapshot_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   net::URLRequestContext url_request_context_;

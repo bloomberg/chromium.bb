@@ -128,9 +128,6 @@ uint64_t BlobDataBuilder::GetFutureFileID(const network::DataElement& element) {
 }
 
 BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
-
-BlobDataBuilder::BlobDataBuilder(BlobDataBuilder&&) = default;
-BlobDataBuilder& BlobDataBuilder::operator=(BlobDataBuilder&&) = default;
 BlobDataBuilder::~BlobDataBuilder() = default;
 
 void BlobDataBuilder::AppendIPCDataElement(
@@ -262,11 +259,9 @@ void BlobDataBuilder::AppendDiskCacheEntryWithSideData(
                                     disk_cache_side_stream_index));
 }
 
-void BlobDataBuilder::Clear() {
-  items_.clear();
-  content_disposition_.clear();
-  content_type_.clear();
-  uuid_.clear();
+std::unique_ptr<BlobDataSnapshot> BlobDataBuilder::CreateSnapshot() const {
+  return base::WrapUnique(
+      new BlobDataSnapshot(uuid_, content_type_, content_disposition_, items_));
 }
 
 void PrintTo(const BlobDataBuilder& x, std::ostream* os) {

@@ -124,10 +124,10 @@ class BlobRegistryImplTest : public testing::Test {
   std::unique_ptr<BlobDataHandle> CreateBlobFromString(
       const std::string& uuid,
       const std::string& contents) {
-    BlobDataBuilder builder(uuid);
-    builder.set_content_type("text/plain");
-    builder.AppendData(contents);
-    return context_->AddFinishedBlob(builder);
+    auto builder = std::make_unique<BlobDataBuilder>(uuid);
+    builder->set_content_type("text/plain");
+    builder->AppendData(contents);
+    return context_->AddFinishedBlob(std::move(builder));
   }
 
   std::string UUIDFromBlob(blink::mojom::Blob* blob) {
@@ -943,10 +943,10 @@ TEST_F(BlobRegistryImplTest,
   EXPECT_FALSE(context_->registry().HasEntry(kId));
 
   // Now cause construction to complete, if it would still be going on.
-  BlobDataBuilder builder(kDepId);
-  builder.AppendData(kData);
+  auto builder = std::make_unique<BlobDataBuilder>(kDepId);
+  builder->AppendData(kData);
   context_->BuildPreregisteredBlob(
-      builder, BlobStorageContext::TransportAllowedCallback());
+      std::move(builder), BlobStorageContext::TransportAllowedCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }

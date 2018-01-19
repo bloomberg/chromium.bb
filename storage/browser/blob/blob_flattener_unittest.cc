@@ -97,10 +97,10 @@ class BlobFlattenerTest : public testing::Test {
   };
 
   std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
-    BlobDataBuilder builder(id);
-    builder.AppendData("1", 1);
-    builder.set_content_type("text/plain");
-    return context_->AddFinishedBlob(builder);
+    auto builder = std::make_unique<BlobDataBuilder>(id);
+    builder->AppendData("1", 1);
+    builder->set_content_type("text/plain");
+    return context_->AddFinishedBlob(std::move(builder));
   }
 
   BlobStorageRegistry* registry() { return context_->mutable_registry(); }
@@ -204,28 +204,28 @@ TEST_F(BlobFlattenerTest, BlobWithSlices) {
 
   std::unique_ptr<BlobDataHandle> data_blob;
   {
-    BlobDataBuilder builder(kDataBlob);
-    builder.AppendData("12345", 5);
-    builder.set_content_type("text/plain");
-    data_blob = context_->AddFinishedBlob(builder);
+    auto builder = std::make_unique<BlobDataBuilder>(kDataBlob);
+    builder->AppendData("12345", 5);
+    builder->set_content_type("text/plain");
+    data_blob = context_->AddFinishedBlob(std::move(builder));
   }
 
   std::unique_ptr<BlobDataHandle> file_blob;
   {
-    BlobDataBuilder builder(kFileBlob);
-    builder.AppendFile(fake_file_path_, 1u, 10u, base::Time::Max());
-    file_blob = context_->AddFinishedBlob(builder);
+    auto builder = std::make_unique<BlobDataBuilder>(kFileBlob);
+    builder->AppendFile(fake_file_path_, 1u, 10u, base::Time::Max());
+    file_blob = context_->AddFinishedBlob(std::move(builder));
   }
 
   BlobStatus file_status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
   std::vector<FileCreationInfo> file_handles;
   std::unique_ptr<BlobDataHandle> future_file_blob;
   {
-    BlobDataBuilder builder(kPendingFileBlob);
-    builder.AppendFutureFile(0u, 2u, 0);
-    builder.AppendFutureFile(2u, 5u, 0);
+    auto builder = std::make_unique<BlobDataBuilder>(kPendingFileBlob);
+    builder->AppendFutureFile(0u, 2u, 0);
+    builder->AppendFutureFile(2u, 5u, 0);
     future_file_blob = context_->BuildBlob(
-        builder,
+        std::move(builder),
         base::Bind(&SaveBlobStatusAndFiles, &file_status, &file_handles));
   }
 

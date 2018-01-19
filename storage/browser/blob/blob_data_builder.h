@@ -45,8 +45,6 @@ class STORAGE_EXPORT BlobDataBuilder {
   static uint64_t GetFutureFileID(const network::DataElement& element);
 
   explicit BlobDataBuilder(const std::string& uuid);
-  BlobDataBuilder(BlobDataBuilder&&);
-  BlobDataBuilder& operator=(BlobDataBuilder&&);
   ~BlobDataBuilder();
 
   const std::string& uuid() const { return uuid_; }
@@ -175,13 +173,11 @@ class STORAGE_EXPORT BlobDataBuilder {
     content_disposition_ = content_disposition;
   }
 
-  void Clear();
+  std::unique_ptr<BlobDataSnapshot> CreateSnapshot() const;
 
  private:
   friend class BlobMemoryControllerTest;
   friend class BlobStorageContext;
-  friend bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b);
-  friend bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b);
   friend STORAGE_EXPORT void PrintTo(const BlobDataBuilder& x,
                                      ::std::ostream* os);
   FRIEND_TEST_ALL_PREFIXES(BlobDataBuilderTest, TestFutureFiles);
@@ -196,35 +192,12 @@ class STORAGE_EXPORT BlobDataBuilder {
 };
 
 #if defined(UNIT_TEST)
-inline bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b) {
-  if (a.content_type_ != b.content_type_)
-    return false;
-  if (a.content_disposition_ != b.content_disposition_)
-    return false;
-  if (a.items_.size() != b.items_.size())
-    return false;
-  for (size_t i = 0; i < a.items_.size(); ++i) {
-    if (*(a.items_[i]) != *(b.items_[i]))
-      return false;
-  }
-  return true;
+inline bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
+  return a == *b.CreateSnapshot();
 }
 
-inline bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
-  if (a.content_type() != b.content_type_) {
-    return false;
-  }
-  if (a.content_disposition() != b.content_disposition_) {
-    return false;
-  }
-  if (a.items().size() != b.items_.size()) {
-    return false;
-  }
-  for (size_t i = 0; i < a.items().size(); ++i) {
-    if (*(a.items()[i]) != *(b.items_[i]))
-      return false;
-  }
-  return true;
+inline bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b) {
+  return *a.CreateSnapshot() == b;
 }
 
 inline bool operator==(const BlobDataBuilder& a, const BlobDataSnapshot& b) {
