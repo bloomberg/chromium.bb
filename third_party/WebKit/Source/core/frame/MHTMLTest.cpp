@@ -157,13 +157,29 @@ class MHTMLTest : public ::testing::Test {
     LineReader line_reader(
         std::string(mhtml_data->data(), mhtml_data->length()));
     std::string line;
-    while (line_reader.GetNextLine(&line) && line.length()) {
+    line_reader.GetNextLine(&line);
+    while (line.length()) {
+      // Peek next line to see if it starts with soft line break. If yes, append
+      // to current line.
+      std::string next_line;
+      while (true) {
+        line_reader.GetNextLine(&next_line);
+        if (next_line.length() > 1 &&
+            (next_line[0] == ' ' || next_line[0] == '\t')) {
+          line += &(next_line.at(1));
+          continue;
+        }
+        break;
+      }
+
       std::string::size_type pos = line.find(':');
       if (pos == std::string::npos)
         continue;
       std::string key = line.substr(0, pos);
       std::string value = line.substr(pos + 2);
       mhtml_headers.emplace(key, value);
+
+      line = next_line;
     }
     return mhtml_headers;
   }
@@ -251,14 +267,16 @@ TEST_F(MHTMLTest, TestMHTMLHeadersWithTitleContainingAllPrintableCharacters) {
 
   EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
   EXPECT_FALSE(mhtml_headers["Date"].empty());
-  EXPECT_EQ("multipart/related;", mhtml_headers["Content-Type"]);
+  EXPECT_EQ(
+      "multipart/related;type=\"text/html\";boundary=\"boundary-example\"",
+      mhtml_headers["Content-Type"]);
   EXPECT_EQ("abc", mhtml_headers["Subject"]);
   EXPECT_EQ(kURL, mhtml_headers["Snapshot-Content-Location"]);
 }
 
 TEST_F(MHTMLTest, TestMHTMLHeadersWithTitleContainingNonPrintableCharacters) {
   const char kURL[] = "http://www.example.com/";
-  const char kTitle[] = u8"abc=\u261D\U0001F3FB";
+  const char kTitle[] = "abc \t=\xe2\x98\x9d\xf0\x9f\x8f\xbb";
   AddTestResources();
   scoped_refptr<RawData> data =
       Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
@@ -268,9 +286,40 @@ TEST_F(MHTMLTest, TestMHTMLHeadersWithTitleContainingNonPrintableCharacters) {
 
   EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
   EXPECT_FALSE(mhtml_headers["Date"].empty());
-  EXPECT_EQ("multipart/related;", mhtml_headers["Content-Type"]);
-  EXPECT_EQ("=?utf-8?Q?abc=3D=E2=98=9D=F0=9F=8F=BB?=",
+  EXPECT_EQ(
+      "multipart/related;type=\"text/html\";boundary=\"boundary-example\"",
+      mhtml_headers["Content-Type"]);
+  EXPECT_EQ("=?utf-8?Q?abc=20=09=3D=E2=98=9D=F0=9F=8F=BB?=",
             mhtml_headers["Subject"]);
+  EXPECT_EQ(kURL, mhtml_headers["Snapshot-Content-Location"]);
+}
+
+TEST_F(MHTMLTest,
+       TestMHTMLHeadersWithLongTitleContainingNonPrintableCharacters) {
+  const char kURL[] = "http://www.example.com/";
+  const char kTitle[] =
+      "01234567890123456789012345678901234567890123456789"
+      "01234567890123456789012345678901234567890123456789"
+      " \t=\xe2\x98\x9d\xf0\x9f\x8f\xbb";
+  AddTestResources();
+  scoped_refptr<RawData> data =
+      Serialize(ToKURL(kURL), String::FromUTF8(kTitle), "text/html",
+                MHTMLArchive::kUseDefaultEncoding);
+
+  std::map<std::string, std::string> mhtml_headers = ExtractMHTMLHeaders(data);
+
+  EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
+  EXPECT_FALSE(mhtml_headers["Date"].empty());
+  EXPECT_EQ(
+      "multipart/related;type=\"text/html\";boundary=\"boundary-example\"",
+      mhtml_headers["Content-Type"]);
+  EXPECT_EQ(
+      "=?utf-8?Q?012345678901234567890123456789"
+      "012345678901234567890123456789012?="
+      "=?utf-8?Q?345678901234567890123456789"
+      "0123456789=20=09=3D=E2=98=9D=F0=9F?="
+      "=?utf-8?Q?=8F=BB?=",
+      mhtml_headers["Subject"]);
   EXPECT_EQ(kURL, mhtml_headers["Snapshot-Content-Location"]);
 }
 
@@ -464,6 +513,26 @@ TEST_F(MHTMLTest, FormControlElements) {
 
   EXPECT_FALSE(document->getElementById("h1")->IsDisabledFormControl());
   EXPECT_FALSE(document->getElementById("fm")->IsDisabledFormControl());
+}
+
+TEST_F(MHTMLTest, LoadMHTMLContainingSoftLineBreaks) {
+  const char kURL[] = "http://www.example.com";
+
+  // Register the mocked frame and load it.
+  RegisterMockedURLLoad(kURL, "soft_line_break.mht");
+  LoadURLInTopFrame(ToKURL(kURL));
+  ASSERT_TRUE(GetPage());
+  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  ASSERT_TRUE(frame);
+  // We should not have problem to concatenate header lines separated by soft
+  // line breaks.
+  Document* document = frame->GetDocument();
+  ASSERT_TRUE(document);
+
+  // We should not have problem to concatenate body lines separated by soft
+  // line breaks.
+  EXPECT_TRUE(document->getElementById(
+      "AVeryLongID012345678901234567890123456789012345678901234567890End"));
 }
 
 }  // namespace blink
