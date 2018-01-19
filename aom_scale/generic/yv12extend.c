@@ -98,7 +98,8 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
   }
 }
 
-void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
+void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf,
+                                     const int num_planes) {
   assert(ybf->border % 2 == 0);
   assert(ybf->y_height - ybf->y_crop_height < 16);
   assert(ybf->y_width - ybf->y_crop_width < 16);
@@ -106,7 +107,7 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
   assert(ybf->y_width - ybf->y_crop_width >= 0);
 
   if (ybf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (int plane = 0; plane < 3; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       const int is_uv = plane > 0;
       const int plane_border = ybf->border >> is_uv;
       extend_plane_high(
@@ -117,7 +118,7 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
     }
     return;
   }
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     const int is_uv = plane > 0;
     const int plane_border = ybf->border >> is_uv;
     extend_plane(ybf->buffers[plane], ybf->strides[is_uv],
@@ -129,7 +130,8 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
 }
 
 #if CONFIG_AV1
-static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
+static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size,
+                         const int num_planes) {
   const int ss_x = ybf->uv_width < ybf->y_width;
   const int ss_y = ybf->uv_height < ybf->y_height;
 
@@ -139,7 +141,7 @@ static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
   assert(ybf->y_width - ybf->y_crop_width >= 0);
 
   if (ybf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (int plane = 0; plane < 3; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       const int is_uv = plane > 0;
       const int top = ext_size >> (is_uv ? ss_y : 0);
       const int left = ext_size >> (is_uv ? ss_x : 0);
@@ -151,7 +153,7 @@ static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
     }
     return;
   }
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     const int is_uv = plane > 0;
     const int top = ext_size >> (is_uv ? ss_y : 0);
     const int left = ext_size >> (is_uv ? ss_x : 0);
@@ -163,15 +165,16 @@ static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
   }
 }
 
-void aom_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
-  extend_frame(ybf, ybf->border);
+void aom_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf, const int num_planes) {
+  extend_frame(ybf, ybf->border, num_planes);
 }
 
-void aom_extend_frame_inner_borders_c(YV12_BUFFER_CONFIG *ybf) {
+void aom_extend_frame_inner_borders_c(YV12_BUFFER_CONFIG *ybf,
+                                      const int num_planes) {
   const int inner_bw = (ybf->border > AOMINNERBORDERINPIXELS)
                            ? AOMINNERBORDERINPIXELS
                            : ybf->border;
-  extend_frame(ybf, inner_bw);
+  extend_frame(ybf, inner_bw, num_planes);
 }
 
 void aom_extend_frame_borders_y_c(YV12_BUFFER_CONFIG *ybf) {
@@ -205,7 +208,7 @@ static void memcpy_short_addr(uint8_t *dst8, const uint8_t *src8, int num) {
 // destination's UMV borders.
 // Note: The frames are assumed to be identical in size.
 void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
-                           YV12_BUFFER_CONFIG *dst_bc) {
+                           YV12_BUFFER_CONFIG *dst_bc, const int num_planes) {
 #if 0
   /* These assertions are valid in the codec, but the libaom-tester uses
    * this code slightly differently.
@@ -218,7 +221,7 @@ void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
          (dst_bc->flags & YV12_FLAG_HIGHBITDEPTH));
 
   if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (int plane = 0; plane < 3; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       const uint8_t *plane_src = src_bc->buffers[plane];
       uint8_t *plane_dst = dst_bc->buffers[plane];
       const int is_uv = plane > 0;
@@ -229,10 +232,10 @@ void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
         plane_dst += dst_bc->strides[is_uv];
       }
     }
-    aom_yv12_extend_frame_borders_c(dst_bc);
+    aom_yv12_extend_frame_borders_c(dst_bc, num_planes);
     return;
   }
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     const uint8_t *plane_src = src_bc->buffers[plane];
     uint8_t *plane_dst = dst_bc->buffers[plane];
     const int is_uv = plane > 0;
@@ -243,7 +246,7 @@ void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
       plane_dst += dst_bc->strides[is_uv];
     }
   }
-  aom_yv12_extend_frame_borders_c(dst_bc);
+  aom_yv12_extend_frame_borders_c(dst_bc, num_planes);
 }
 
 void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,

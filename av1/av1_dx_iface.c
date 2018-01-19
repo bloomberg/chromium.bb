@@ -886,6 +886,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           yuvconfig2image(&ctx->img, &sd, frame_worker_data->user_priv);
 
 #if CONFIG_EXT_TILE
+          const int num_planes = av1_num_planes(cm);
           if (cm->single_tile_decoding &&
               frame_worker_data->pbi->dec_tile_row >= 0) {
             const int tile_row =
@@ -894,9 +895,11 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
             const int ssy = ctx->img.y_chroma_shift;
             int plane;
             ctx->img.planes[0] += mi_row * MI_SIZE * ctx->img.stride[0];
-            for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-              ctx->img.planes[plane] +=
-                  mi_row * (MI_SIZE >> ssy) * ctx->img.stride[plane];
+            if (num_planes > 1) {
+              for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
+                ctx->img.planes[plane] +=
+                    mi_row * (MI_SIZE >> ssy) * ctx->img.stride[plane];
+              }
             }
             ctx->img.d_h =
                 AOMMIN(cm->tile_height, cm->mi_rows - mi_row) * MI_SIZE;
@@ -910,8 +913,10 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
             const int ssx = ctx->img.x_chroma_shift;
             int plane;
             ctx->img.planes[0] += mi_col * MI_SIZE;
-            for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-              ctx->img.planes[plane] += mi_col * (MI_SIZE >> ssx);
+            if (num_planes > 1) {
+              for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
+                ctx->img.planes[plane] += mi_col * (MI_SIZE >> ssx);
+              }
             }
             ctx->img.d_w =
                 AOMMIN(cm->tile_width, cm->mi_cols - mi_col) * MI_SIZE;

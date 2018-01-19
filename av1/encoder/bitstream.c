@@ -970,6 +970,7 @@ static void write_palette_colors_uv(const MACROBLOCKD *const xd,
 static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                     const MODE_INFO *const mi, int mi_row,
                                     int mi_col, aom_writer *w) {
+  const int num_planes = av1_num_planes(cm);
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
@@ -991,7 +992,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   const int uv_dc_pred =
-      av1_num_planes(cm) > 1 && mbmi->uv_mode == UV_DC_PRED &&
+      num_planes > 1 && mbmi->uv_mode == UV_DC_PRED &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y);
   if (uv_dc_pred) {
@@ -1869,6 +1870,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                            const TOKENEXTRA *const tok_end, int mi_row,
                            int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int mi_offset = mi_row * cm->mi_stride + mi_col;
   MODE_INFO *const m = *(cm->mi_grid_visible + mi_offset);
@@ -1895,7 +1897,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
                  cm->mi_rows, cm->mi_cols);
 
-  const int num_planes = av1_num_planes(cm);
   for (plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
@@ -2025,6 +2026,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                            const TOKENEXTRA *const tok_end, int mi_row,
                            int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int hbs = mi_size_wide[bsize] / 2;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2037,7 +2039,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
 #if CONFIG_LOOP_RESTORATION
-  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
@@ -2172,11 +2174,12 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   int all_none = 1, chroma_none = 1;
-  for (int p = 0; p < av1_num_planes(cm); ++p) {
+  for (int p = 0; p < num_planes; ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
     if (rsi->frame_restoration_type != RESTORE_NONE) {
       all_none = 0;
@@ -2212,7 +2215,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     }
   }
 
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
     if (s && !chroma_none) {
       aom_wb_write_bit(wb,
@@ -2333,6 +2336,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
@@ -2343,7 +2347,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 #if CONFIG_LOOPFILTER_LEVEL
   aom_wb_write_literal(wb, lf->filter_level[0], 6);
   aom_wb_write_literal(wb, lf->filter_level[1], 6);
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     if (lf->filter_level[0] || lf->filter_level[1]) {
       aom_wb_write_literal(wb, lf->filter_level_u, 6);
       aom_wb_write_literal(wb, lf->filter_level_v, 6);
@@ -2385,6 +2389,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 }
 
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
@@ -2394,7 +2399,7 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->cdef_bits, 2);
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);
-    if (av1_num_planes(cm) > 1)
+    if (num_planes > 1)
       aom_wb_write_literal(wb, cm->cdef_uv_strengths[i], CDEF_STRENGTH_BITS);
   }
 }
@@ -2410,9 +2415,11 @@ static void write_delta_q(struct aom_write_bit_buffer *wb, int delta_q) {
 
 static void encode_quantization(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *wb) {
+  const int num_planes = av1_num_planes(cm);
+
   aom_wb_write_literal(wb, cm->base_qindex, QINDEX_BITS);
   write_delta_q(wb, cm->y_dc_delta_q);
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
                         (cm->u_ac_delta_q != cm->v_ac_delta_q);
 #if CONFIG_EXT_QM
@@ -4404,6 +4411,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
                                        int insert_frame_header_obu_flag) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   aom_writer mode_bc;
   int tile_row, tile_col;
   TOKENEXTRA *(*const tok_buffers)[MAX_TILE_COLS] = cpi->tile_tok;
@@ -4602,7 +4610,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, dst + total_size);

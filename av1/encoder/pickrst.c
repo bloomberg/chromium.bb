@@ -1148,6 +1148,7 @@ static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
 
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
 
   int ntiles[2];
   for (int is_uv = 0; is_uv < 2; ++is_uv)
@@ -1165,7 +1166,9 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   memset(rusi, 0, sizeof(*rusi) * ntiles[0]);
 
   RestSearchCtxt rsc;
-  for (int plane = AOM_PLANE_Y; plane <= AOM_PLANE_V; ++plane) {
+  const int plane_start = AOM_PLANE_Y;
+  const int plane_end = num_planes > 1 ? AOM_PLANE_V : AOM_PLANE_Y;
+  for (int plane = plane_start; plane <= plane_end; ++plane) {
     init_rsc(src, &cpi->common, &cpi->td.mb, plane, rusi, &cpi->trial_frame_rst,
              &rsc);
 

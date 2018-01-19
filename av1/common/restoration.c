@@ -1447,6 +1447,7 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
@@ -1469,7 +1470,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
 
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     const RestorationInfo *rsi = &cm->rst_info[plane];
     RestorationType rtype = rsi->frame_restoration_type;
     if (rtype == RESTORE_NONE) {
@@ -1505,7 +1506,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                    filter_frame_on_unit, &ctxt);
   }
 
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     copy_funs[plane](&dst, frame);
   }
   aom_free_frame_buffer(&dst);
@@ -1936,8 +1937,9 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 // lines are saved in rst_internal.stripe_boundary_lines
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               AV1_COMMON *cm, int after_cdef) {
+  const int num_planes = av1_num_planes(cm);
   const int use_highbd = cm->use_highbitdepth;
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+  for (int p = 0; p < num_planes; ++p) {
     TileInfo tile_info;
     for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
       av1_tile_init(&tile_info, cm, tile_row, 0);

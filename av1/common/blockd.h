@@ -990,7 +990,8 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   return intra_type;
 }
 
-void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
+void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
+                            const int num_planes);
 
 static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize, int is_inter) {
   TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter);
@@ -1055,10 +1056,10 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
 }
 
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize);
+                            BLOCK_SIZE bsize, const int num_planes);
 
 #if CONFIG_LOOP_RESTORATION
-void av1_reset_loop_restoration(MACROBLOCKD *xd);
+void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
@@ -1074,7 +1075,7 @@ void av1_foreach_transformed_block_in_plane(
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
-                                   void *arg);
+                                   void *arg, const int num_planes);
 #endif
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,

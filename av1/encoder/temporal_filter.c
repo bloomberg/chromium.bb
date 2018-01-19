@@ -296,6 +296,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
                                       int frame_count, int alt_ref_index,
                                       int strength,
                                       struct scale_factors *scale) {
+  const AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   int byte;
   int frame;
   int mb_col, mb_row;
@@ -324,7 +326,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
     predictor = predictor8;
   }
 
-  for (i = 0; i < MAX_MB_PLANE; i++) input_buffer[i] = mbd->plane[i].pre[0].buf;
+  for (i = 0; i < num_planes; i++) input_buffer[i] = mbd->plane[i].pre[0].buf;
 
   for (mb_row = 0; mb_row < mb_rows; mb_row++) {
     // Source frames are extended to 16 pixels. This is different than
@@ -525,7 +527,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   }
 
   // Restore input state
-  for (i = 0; i < MAX_MB_PLANE; i++) mbd->plane[i].pre[0].buf = input_buffer[i];
+  for (i = 0; i < num_planes; i++) mbd->plane[i].pre[0].buf = input_buffer[i];
 }
 
 // Apply buffer limits and context specific adjustments to arnr filter.

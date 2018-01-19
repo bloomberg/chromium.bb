@@ -757,7 +757,8 @@ static INLINE int av1_num_planes(const AV1_COMMON *cm) {
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tran_low_t *dqcoeff) {
-  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+  const int num_planes = av1_num_planes(cm);
+  for (int i = 0; i < num_planes; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
@@ -807,11 +808,12 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 }
 
-static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
+static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
+                                    const int num_planes) {
   int i;
   int row_offset = mi_row;
   int col_offset = mi_col;
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
     // Offset the buffer pointer
     const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
@@ -832,9 +834,10 @@ static INLINE int calc_mi_size(int len) {
   return len + MAX_MIB_SIZE;
 }
 
-static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh) {
+static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh,
+                                const int num_planes) {
   int i;
-  for (i = 0; i < MAX_MB_PLANE; i++) {
+  for (i = 0; i < num_planes; i++) {
     xd->plane[i].width = (bw * MI_SIZE) >> xd->plane[i].subsampling_x;
     xd->plane[i].height = (bh * MI_SIZE) >> xd->plane[i].subsampling_y;
 
@@ -1160,6 +1163,7 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
 
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           int mi_col_start, int mi_col_end) {
+  const int num_planes = av1_num_planes(cm);
   const int width = mi_col_end - mi_col_start;
   const int aligned_width = ALIGN_POWER_OF_TWO(width, cm->mib_size_log2);
 
@@ -1169,8 +1173,10 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   const int width_uv = width_y >> cm->subsampling_x;
 
   av1_zero_array(cm->above_context[0] + offset_y, width_y);
-  av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
-  av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
+  if (num_planes > 1) {
+    av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
+    av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
+  }
 
   av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
 

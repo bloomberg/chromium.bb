@@ -212,6 +212,7 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                            LPF_PICK_METHOD method) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   struct loopfilter *const lf = &cm->lf;
   (void)sd;
 
@@ -274,10 +275,12 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 1);
 
-    lf->filter_level_u = search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 1, 0);
-    lf->filter_level_v = search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2, 0);
+    if (num_planes > 1) {
+      lf->filter_level_u = search_filter_level(
+          sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 1, 0);
+      lf->filter_level_v = search_filter_level(
+          sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2, 0);
+    }
 #else
     lf->filter_level =
         search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);

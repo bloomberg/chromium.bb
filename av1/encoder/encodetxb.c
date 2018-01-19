@@ -58,13 +58,14 @@ typedef struct LevelDownStats {
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
 #if 0
   AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   int mi_block_size = 1 << MI_SIZE_LOG2;
   // TODO(angiebird): Make sure cm->subsampling_x/y is set correctly, and then
   // use precise buffer size according to cm->subsampling_x/y
   int pixel_stride = mi_block_size * cm->mi_cols;
   int pixel_height = mi_block_size * cm->mi_rows;
   int i;
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     CHECK_MEM_ERROR(
         cm, cpi->tcoeff_buf[i],
         aom_malloc(sizeof(*cpi->tcoeff_buf[i]) * pixel_stride * pixel_height));
@@ -84,7 +85,9 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
 void av1_free_txb_buf(AV1_COMP *cpi) {
 #if 0
   int i;
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  for (i = 0; i < num_planes; ++i) {
     aom_free(cpi->tcoeff_buf[i]);
   }
 #else
@@ -94,12 +97,14 @@ void av1_free_txb_buf(AV1_COMP *cpi) {
 
 void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
                           int mi_row, int mi_col) {
-  int mib_size_log2 = cpi->common.mib_size_log2;
-  int stride = (cpi->common.mi_cols >> mib_size_log2) + 1;
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  int mib_size_log2 = cm->mib_size_log2;
+  int stride = (cm->mi_cols >> mib_size_log2) + 1;
   int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
   CB_COEFF_BUFFER *coeff_buf = &cpi->coeff_buffer_base[offset];
   const int txb_offset = x->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
-  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     x->mbmi_ext->tcoeff[plane] = coeff_buf->tcoeff[plane] + x->cb_offset;
     x->mbmi_ext->eobs[plane] = coeff_buf->eobs[plane] + txb_offset;
     x->mbmi_ext->txb_skip_ctx[plane] =
@@ -2335,6 +2340,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                             int mi_row, int mi_col, uint8_t allow_update_cdf) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -2343,16 +2350,17 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   (void)mi_row;
   (void)mi_col;
   if (mbmi->skip) {
-    av1_reset_skip_context(xd, mi_row, mi_col, bsize);
+    av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
     return;
   }
 
   if (!dry_run) {
     av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
-                                  av1_update_and_record_txb_context, &arg);
+                                  av1_update_and_record_txb_context, &arg,
+                                  num_planes);
   } else if (dry_run == DRY_RUN_NORMAL) {
     av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
-                                  av1_update_txb_context_b, &arg);
+                                  av1_update_txb_context_b, &arg, num_planes);
   } else {
     printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
     assert(0);

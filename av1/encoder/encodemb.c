@@ -765,6 +765,8 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                    int mi_row, int mi_col, RUN_TYPE dry_run) {
   (void)dry_run;
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -776,7 +778,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
   if (x->skip) return;
 
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+  for (plane = 0; plane < num_planes; ++plane) {
     const int subsampling_x = xd->plane[plane].subsampling_x;
     const int subsampling_y = xd->plane[plane].subsampling_y;
 

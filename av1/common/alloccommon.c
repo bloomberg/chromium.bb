@@ -109,7 +109,8 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
 #if CONFIG_LOOP_RESTORATION
 // Assumes cm->rst_info[p].restoration_unit_size is already initialized
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
-  for (int p = 0; p < MAX_MB_PLANE; ++p)
+  const int num_planes = av1_num_planes(cm);
+  for (int p = 0; p < num_planes; ++p)
     av1_alloc_restoration_struct(cm, &cm->rst_info[p], p > 0);
   aom_free(cm->rst_tmpbuf);
   CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
@@ -148,7 +149,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   const int use_highbd = cm->use_highbitdepth ? 1 : 0;
 
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+  for (int p = 0; p < num_planes; ++p) {
     const int is_uv = p > 0;
     const int ss_x = is_uv && cm->subsampling_x;
     const int plane_w = ((frame_w + ss_x) >> ss_x) + 2 * RESTORATION_EXTRA_HORZ;
@@ -170,13 +171,14 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
   int p;
-  for (p = 0; p < MAX_MB_PLANE; ++p)
+  for (p = 0; p < num_planes; ++p)
     av1_free_restoration_struct(&cm->rst_info[p]);
   aom_free(cm->rst_tmpbuf);
   cm->rst_tmpbuf = NULL;
 #if CONFIG_STRIPED_LOOP_RESTORATION
-  for (p = 0; p < MAX_MB_PLANE; ++p) {
+  for (p = 0; p < num_planes; ++p) {
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     aom_free(boundaries->stripe_boundary_above);
     aom_free(boundaries->stripe_boundary_below);
@@ -188,6 +190,7 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
 #endif  // CONFIG_LOOP_RESTORATION
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
   int i;
   cm->free_mi(cm);
 
@@ -198,7 +201,7 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
 #if !CONFIG_SEGMENT_PRED_LAST
   free_seg_map(cm);
 #endif
-  for (i = 0; i < MAX_MB_PLANE; i++) {
+  for (i = 0; i < num_planes; i++) {
     aom_free(cm->above_context[i]);
     cm->above_context[i] = NULL;
   }
@@ -208,13 +211,14 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
   aom_free(cm->above_txfm_context);
   cm->above_txfm_context = NULL;
 
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     aom_free(cm->top_txfm_context[i]);
     cm->top_txfm_context[i] = NULL;
   }
 }
 
 int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
+  const int num_planes = av1_num_planes(cm);
   int new_mi_size;
 
   av1_set_mb_mi(cm, width, height);
@@ -250,7 +254,7 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
         ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     int i;
 
-    for (i = 0; i < MAX_MB_PLANE; i++) {
+    for (i = 0; i < num_planes; i++) {
       aom_free(cm->above_context[i]);
       cm->above_context[i] = (ENTROPY_CONTEXT *)aom_calloc(
           aligned_mi_cols << (MI_SIZE_LOG2 - tx_size_wide_log2[0]),
@@ -268,7 +272,7 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
         aligned_mi_cols << TX_UNIT_WIDE_LOG2, sizeof(*cm->above_txfm_context));
     if (!cm->above_txfm_context) goto fail;
 
-    for (i = 0; i < MAX_MB_PLANE; ++i) {
+    for (i = 0; i < num_planes; ++i) {
       aom_free(cm->top_txfm_context[i]);
       cm->top_txfm_context[i] =
           (TXFM_CONTEXT *)aom_calloc(aligned_mi_cols << TX_UNIT_WIDE_LOG2,

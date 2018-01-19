@@ -600,10 +600,11 @@ static const uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 static const uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 
 void aom_qm_init(AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
   int q, c, t;
   int current;
   for (q = 0; q < NUM_QM_LEVELS; ++q) {
-    for (c = 0; c < av1_num_planes(cm); ++c) {
+    for (c = 0; c < num_planes; ++c) {
       current = 0;
       for (t = 0; t < TX_SIZES_ALL; ++t) {
         const int size = tx_size_2d[t];

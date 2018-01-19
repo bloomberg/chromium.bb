@@ -161,7 +161,8 @@ static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
       int plane;
 
       av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
-                           lf_data->frame_buffer, mi_row, mi_col);
+                           lf_data->frame_buffer, mi_row, mi_col,
+                           av1_num_planes(lf_data->cm));
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
 
@@ -207,7 +208,8 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
       sync_read(lf_sync, r, c);
 
       av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
-                           lf_data->frame_buffer, mi_row, mi_col);
+                           lf_data->frame_buffer, mi_row, mi_col,
+                           av1_num_planes(lf_data->cm));
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
 #if CONFIG_EXT_PARTITION_TYPES

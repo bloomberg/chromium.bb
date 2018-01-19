@@ -484,6 +484,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   TileInfo tile;
   struct macroblock_plane *const p = x->plane;
@@ -552,13 +553,14 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   set_first_pass_params(cpi);
   av1_set_quantizer(cm, qindex);
 
-  av1_setup_block_planes(&x->e_mbd, cm->subsampling_x, cm->subsampling_y);
+  av1_setup_block_planes(&x->e_mbd, cm->subsampling_x, cm->subsampling_y,
+                         num_planes);
 
-  av1_setup_src_planes(x, cpi->source, 0, 0);
-  av1_setup_dst_planes(xd->plane, cm->sb_size, new_yv12, 0, 0);
+  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, new_yv12, 0, 0, num_planes);
 
   if (!frame_is_intra_only(cm)) {
-    av1_setup_pre_planes(xd, 0, first_ref_buf, 0, 0, NULL);
+    av1_setup_pre_planes(xd, 0, first_ref_buf, 0, 0, NULL, num_planes);
   }
 
   xd->mi = cm->mi_grid_visible;
@@ -570,7 +572,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 #endif  // CONFIG_CFL
   av1_frame_init_quantizer(cpi);
 
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     p[i].coeff = ctx->coeff[i];
     p[i].qcoeff = ctx->qcoeff[i];
     pd[i].dqcoeff = ctx->dqcoeff[i];
@@ -633,7 +635,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 #endif  // CONFIG_DEPENDENT_HORZTILES
                      cm->mi_rows, cm->mi_cols);
 
-      set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize]);
+      set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize], num_planes);
 
       // Do intra 16x16 prediction.
       xd->mi[0]->mbmi.segment_id = 0;
@@ -1054,7 +1056,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     ++twopass->sr_update_lag;
   }
 
-  aom_extend_frame_borders(new_yv12);
+  aom_extend_frame_borders(new_yv12, num_planes);
 
   // The frame we just compressed now becomes the last frame.
   ref_cnt_fb(pool->frame_bufs,

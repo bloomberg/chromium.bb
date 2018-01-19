@@ -712,7 +712,8 @@ static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
 }
 
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
-                                           int sb_size_log2, int num_planes) {
+                                           int sb_size_log2,
+                                           const int num_planes) {
   // Calculate the maximum number of max superblocks in the image.
   const int shift = sb_size_log2 - 4;
   const int sb_size = 1 << sb_size_log2;

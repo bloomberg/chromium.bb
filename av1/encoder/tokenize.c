@@ -546,6 +546,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                            BLOCK_SIZE bsize, int *rate,
                            uint8_t allow_update_cdf) {
   const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -558,7 +559,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   if (mbmi->skip) {
-    av1_reset_skip_context(xd, mi_row, mi_col, bsize);
+    av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
 #if !CONFIG_LV_MAP
     if (dry_run) *t = t_backup;
 #endif
@@ -570,7 +571,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     *t = t_backup;
 #endif
 
-  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
@@ -634,16 +635,17 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                      const int mi_row, const int mi_col,
                      uint8_t allow_update_cdf) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
   if (mbmi->skip) {
-    av1_reset_skip_context(xd, mi_row, mi_col, bsize);
+    av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
     return;
   }
 
-  const int num_planes = av1_num_planes(&cpi->common);
   if (!dry_run) {
     for (int plane = 0; plane < num_planes; ++plane) {
       if (!is_chroma_reference(mi_row, mi_col, bsize,

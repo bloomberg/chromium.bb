@@ -304,6 +304,8 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->invalid_rate = 0;
   rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_RD_DEBUG
+  // This may run into problems when monochrome video is
+  // encoded, as there will only be 1 plane
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = 0;
     {
@@ -329,6 +331,8 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->invalid_rate = 1;
   rd_stats->ref_rdcost = INT64_MAX;
 #if CONFIG_RD_DEBUG
+  // This may run into problems when monochrome video is
+  // encoded, as there will only be 1 plane
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = INT_MAX;
     {
@@ -354,6 +358,8 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   rd_stats_dst->skip &= rd_stats_src->skip;
   rd_stats_dst->invalid_rate &= rd_stats_src->invalid_rate;
 #if CONFIG_RD_DEBUG
+  // This may run into problems when monochrome video is
+  // encoded, as there will only be 1 plane
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
     {
@@ -446,7 +452,8 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
                           struct buf_2d dst[MAX_MB_PLANE],
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
                           const struct scale_factors *scale,
-                          const struct scale_factors *scale_uv);
+                          const struct scale_factors *scale_uv,
+                          const int num_planes);
 
 int av1_get_intra_cost_penalty(int qindex, int qdelta,
                                aom_bit_depth_t bit_depth);
@@ -455,7 +462,8 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                          FRAME_CONTEXT *fc);
 
 #if CONFIG_LV_MAP
-void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc);
+void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
+                          const int num_planes);
 #endif
 
 void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,

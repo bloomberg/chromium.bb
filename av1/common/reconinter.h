@@ -355,12 +355,12 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, BLOCK_SIZE bsize,
 }
 
 void av1_setup_dst_planes(struct macroblockd_plane *planes, BLOCK_SIZE bsize,
-                          const YV12_BUFFER_CONFIG *src, int mi_row,
-                          int mi_col);
+                          const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
+                          const int num_planes);
 
 void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
-                          const struct scale_factors *sf);
+                          const struct scale_factors *sf, const int num_planes);
 
 // Detect if the block have sub-pixel level motion vectors
 // per component.

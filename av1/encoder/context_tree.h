@@ -81,7 +81,7 @@ typedef struct PC_TREE {
 } PC_TREE;
 
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);
-void av1_free_pc_tree(struct ThreadData *td);
+void av1_free_pc_tree(struct ThreadData *td, const int num_planes);
 
 #ifdef __cplusplus
 }  // extern "C"

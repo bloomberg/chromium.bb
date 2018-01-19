@@ -98,8 +98,8 @@ void mismatch_move_frame_idx_w() {
   }
 }
 
-void mismatch_reset_frame() {
-  for (int plane = 0; plane < 3; ++plane) {
+void mismatch_reset_frame(int num_planes) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     memset(frame_pre[frame_buf_idx_w][plane], 0,
            sizeof(frame_pre[frame_buf_idx_w][plane][0]) * frame_size);
     memset(frame_tx[frame_buf_idx_w][plane], 0,

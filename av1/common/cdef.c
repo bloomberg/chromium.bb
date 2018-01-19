@@ -150,6 +150,7 @@ static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
 
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
+  const int num_planes = av1_num_planes(cm);
   DECLARE_ALIGNED(16, uint16_t, src[CDEF_INBUF_SIZE]);
   uint16_t *linebuf[3];
   uint16_t *colbuf[3];
@@ -163,22 +164,21 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int xdec[3];
   int ydec[3];
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
-  int nplanes = av1_num_planes(cm);
   const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0, num_planes);
   row_cdef = aom_malloc(sizeof(*row_cdef) * (nhfb + 2) * 2);
   memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
   prev_row_cdef = row_cdef + 1;
   curr_row_cdef = prev_row_cdef + nhfb + 2;
-  for (int pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < num_planes; pli++) {
     xdec[pli] = xd->plane[pli].subsampling_x;
     ydec[pli] = xd->plane[pli].subsampling_y;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
   }
   const int stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * CDEF_HBORDER;
-  for (int pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < num_planes; pli++) {
     linebuf[pli] = aom_malloc(sizeof(*linebuf) * CDEF_VBORDER * stride);
     colbuf[pli] =
         aom_malloc(sizeof(*colbuf) *
@@ -186,7 +186,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                    CDEF_HBORDER);
   }
   for (int fbr = 0; fbr < nvfb; fbr++) {
-    for (int pli = 0; pli < nplanes; pli++) {
+    for (int pli = 0; pli < num_planes; pli++) {
       const int block_height =
           (MI_SIZE_64X64 << mi_high_l2[pli]) + 2 * CDEF_VBORDER;
       fill_rect(colbuf[pli], CDEF_HBORDER, block_height, CDEF_HBORDER,
@@ -276,7 +276,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       }
 
       curr_row_cdef[fbc] = 1;
-      for (int pli = 0; pli < nplanes; pli++) {
+      for (int pli = 0; pli < num_planes; pli++) {
         int coffset;
         int rend, cend;
         int pri_damping = cm->cdef_pri_damping;
@@ -423,7 +423,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     }
   }
   aom_free(row_cdef);
-  for (int pli = 0; pli < nplanes; pli++) {
+  for (int pli = 0; pli < num_planes; pli++) {
     aom_free(linebuf[pli]);
     aom_free(colbuf[pli]);
   }

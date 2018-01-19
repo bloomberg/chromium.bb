@@ -85,10 +85,8 @@ void av1_foreach_transformed_block_in_plane(
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
-                                   void *arg) {
-  int plane;
-
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+                                   void *arg, const int num_planes) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y))
@@ -136,14 +134,14 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   }
 }
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize) {
+                            BLOCK_SIZE bsize, const int num_planes) {
   int i;
   int nplanes;
   int chroma_ref;
   chroma_ref =
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y);
-  nplanes = 1 + (MAX_MB_PLANE - 1) * chroma_ref;
+  nplanes = 1 + (num_planes - 1) * chroma_ref;
   for (i = 0; i < nplanes; i++) {
     struct macroblockd_plane *const pd = &xd->plane[i];
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
@@ -155,18 +153,19 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
 }
 
 #if CONFIG_LOOP_RESTORATION
-void av1_reset_loop_restoration(MACROBLOCKD *xd) {
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes) {
+  for (int p = 0; p < num_planes; ++p) {
     set_default_wiener(xd->wiener_info + p);
     set_default_sgrproj(xd->sgrproj_info + p);
   }
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
-void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y) {
+void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
+                            const int num_planes) {
   int i;
 
-  for (i = 0; i < MAX_MB_PLANE; i++) {
+  for (i = 0; i < num_planes; i++) {
     xd->plane[i].plane_type = get_plane_type(i);
     xd->plane[i].subsampling_x = i ? ss_x : 0;
     xd->plane[i].subsampling_y = i ? ss_y : 0;

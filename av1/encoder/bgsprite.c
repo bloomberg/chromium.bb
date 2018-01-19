@@ -943,6 +943,8 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
                           const int *const y_min, const int *const y_max,
                           int pano_x_min, int pano_x_max, int pano_y_min,
                           int pano_y_max, YV12_BUFFER_CONFIG *panorama) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   const int width = pano_x_max - pano_x_min + 1;
   const int height = pano_y_max - pano_y_min + 1;
 
@@ -984,7 +986,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
                          frames[0]->subsampling_x, frames[0]->subsampling_y,
                          frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
                          frames[0]->border, 0);
-  aom_yv12_copy_frame(frames[0], &bgsprite);
+  aom_yv12_copy_frame(frames[0], &bgsprite, num_planes);
   bgsprite.bit_depth = frames[0]->bit_depth;
   resample_panorama(blended_img, center_idx, x_min, y_min, pano_x_min,
                     pano_x_max, pano_y_min, pano_y_max, &bgsprite);
@@ -996,7 +998,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
       &temporal_bgsprite, frames[0]->y_width, frames[0]->y_height,
       frames[0]->subsampling_x, frames[0]->subsampling_y,
       frames[0]->flags & YV12_FLAG_HIGHBITDEPTH, frames[0]->border, 0);
-  aom_yv12_copy_frame(frames[0], &temporal_bgsprite);
+  aom_yv12_copy_frame(frames[0], &temporal_bgsprite, num_planes);
   temporal_bgsprite.bit_depth = frames[0]->bit_depth;
 
   av1_temporal_filter(cpi, &bgsprite, &temporal_bgsprite, distance);
@@ -1033,7 +1035,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
                          frames[0]->subsampling_x, frames[0]->subsampling_y,
                          frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
                          frames[0]->border, 0);
-  aom_yv12_copy_frame(frames[0], &temporal_arf);
+  aom_yv12_copy_frame(frames[0], &temporal_arf, num_planes);
   temporal_arf.bit_depth = frames[0]->bit_depth;
   av1_temporal_filter(cpi, NULL, &temporal_arf, distance);
 

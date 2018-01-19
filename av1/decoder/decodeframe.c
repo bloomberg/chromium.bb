@@ -282,6 +282,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
                         int bh, int x_mis, int y_mis) {
+  const int num_planes = av1_num_planes(cm);
+
   const int offset = mi_row * cm->mi_stride + mi_col;
   const TileInfo *const tile = &xd->tile;
 
@@ -307,8 +309,8 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     idx += cm->mi_stride;
   }
 
-  set_plane_n4(xd, bw, bh);
-  set_skip_context(xd, mi_row, mi_col);
+  set_plane_n4(xd, bw, bh, num_planes);
+  set_skip_context(xd, mi_row, mi_col, num_planes);
 
   // Distance of Mb to the various image edges. These are specified to 8th pel
   // as they are always compared to values that are in 1/8th pel units
@@ -319,7 +321,7 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                  cm->mi_rows, cm->mi_cols);
 
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                       mi_col);
+                       mi_col, num_planes);
 }
 
 static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
@@ -359,6 +361,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                          int mi_col, aom_reader *r,
                                          BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
@@ -380,7 +383,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #else
       const int current_qindex = xd->current_qindex;
 #endif  // CONFIG_EXT_DELTA_Q
-      for (int j = 0; j < av1_num_planes(cm); ++j) {
+      for (int j = 0; j < num_planes; ++j) {
         const int dc_delta_q =
             j == 0 ? cm->y_dc_delta_q
                    : (j == 1 ? cm->u_dc_delta_q : cm->v_dc_delta_q);
@@ -393,10 +396,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-  if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize);
+  if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
 
   if (!is_inter_block(mbmi)) {
-    const int num_planes = av1_num_planes(cm);
     for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
@@ -461,7 +463,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                              "Reference frame has invalid dimensions");
         av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col,
-                             &ref_buf->sf);
+                             &ref_buf->sf, num_planes);
       }
     }
 
@@ -472,7 +474,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     }
 
 #if CONFIG_MISMATCH_DEBUG
-    for (int plane = 0; plane < 3; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       const struct macroblockd_plane *pd = &xd->plane[plane];
       int pixel_c, pixel_r;
       mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, 0, 0,
@@ -505,7 +507,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
       for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
         for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
-          for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+          for (int plane = 0; plane < num_planes; ++plane) {
             const struct macroblockd_plane *const pd = &xd->plane[plane];
             if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                      pd->subsampling_y))
@@ -521,7 +523,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
             int block = 0;
             int step =
                 tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-
             int blk_row, blk_col;
             const int unit_height = ROUND_POWER_OF_TWO(
                 AOMMIN(mu_blocks_high + row, max_blocks_high),
@@ -607,6 +608,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                              int mi_row, int mi_col, aom_reader *r,
                              BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
   const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
   PARTITION_TYPE partition;
@@ -621,7 +623,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
 #if CONFIG_LOOP_RESTORATION
-  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
@@ -820,11 +822,12 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #if CONFIG_LOOP_RESTORATION
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   int all_none = 1, chroma_none = 1;
-  for (int p = 0; p < av1_num_planes(cm); ++p) {
+  for (int p = 0; p < num_planes; ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
     if (aom_rb_read_bit(rb)) {
       rsi->frame_restoration_type =
@@ -840,7 +843,7 @@ static void decode_restoration_mode(AV1_COMMON *cm,
   }
   if (!all_none) {
     const int qsize = RESTORATION_TILESIZE_MAX >> 2;
-    for (int p = 0; p < MAX_MB_PLANE; ++p)
+    for (int p = 0; p < num_planes; ++p)
       cm->rst_info[p].restoration_unit_size = qsize;
 
     RestorationInfo *rsi = &cm->rst_info[0];
@@ -850,11 +853,11 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     }
   } else {
     const int size = RESTORATION_TILESIZE_MAX;
-    for (int p = 0; p < MAX_MB_PLANE; ++p)
+    for (int p = 0; p < num_planes; ++p)
       cm->rst_info[p].restoration_unit_size = size;
   }
 
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
     if (s && !chroma_none) {
       cm->rst_info[1].restoration_unit_size =
@@ -987,6 +990,7 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
@@ -994,7 +998,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_LOOPFILTER_LEVEL
   lf->filter_level[0] = aom_rb_read_literal(rb, 6);
   lf->filter_level[1] = aom_rb_read_literal(rb, 6);
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     if (lf->filter_level[0] || lf->filter_level[1]) {
       lf->filter_level_u = aom_rb_read_literal(rb, 6);
       lf->filter_level_v = aom_rb_read_literal(rb, 6);
@@ -1025,6 +1029,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 }
 
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
@@ -1033,9 +1038,8 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
   for (int i = 0; i < cm->nb_cdef_strengths; i++) {
     cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
-    cm->cdef_uv_strengths[i] = av1_num_planes(cm) > 1
-                                   ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS)
-                                   : 0;
+    cm->cdef_uv_strengths[i] =
+        num_planes > 1 ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS) : 0;
   }
 }
 
@@ -1045,9 +1049,10 @@ static INLINE int read_delta_q(struct aom_read_bit_buffer *rb) {
 
 static void setup_quantization(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
+  const int num_planes = av1_num_planes(cm);
   cm->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
   cm->y_dc_delta_q = read_delta_q(rb);
-  if (av1_num_planes(cm) > 1) {
+  if (num_planes > 1) {
     int diff_uv_delta = 0;
 #if CONFIG_EXT_QM
     if (cm->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
@@ -1916,6 +1921,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end, int startTile,
                                    int endTile) {
   AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
 #if !CONFIG_LOOPFILTER_LEVEL
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 #endif
@@ -2075,7 +2081,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
 #if CONFIG_LOOP_RESTORATION
-      av1_reset_loop_restoration(&td->xd);
+      av1_reset_loop_restoration(&td->xd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
@@ -2122,12 +2128,14 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                               cm->lf.filter_level[0], cm->lf.filter_level[1], 0,
                               0);
-        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                              cm->lf.filter_level_u, cm->lf.filter_level_u, 1,
-                              0);
-        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                              cm->lf.filter_level_v, cm->lf.filter_level_v, 2,
-                              0);
+        if (num_planes > 1) {
+          av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                                cm->lf.filter_level_u, cm->lf.filter_level_u, 1,
+                                0);
+          av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                                cm->lf.filter_level_v, cm->lf.filter_level_v, 2,
+                                0);
+        }
       }
 #else
       av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
@@ -3263,6 +3271,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                                        const uint8_t *data_end,
                                        const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &pbi->mb;
 
 #if CONFIG_BITSTREAM_DEBUG
@@ -3338,7 +3347,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
 
-  av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
+  av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y, num_planes);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (cm->error_resilient_mode || frame_is_intra_only(cm)) {
     // use the default frame context values
@@ -3410,6 +3419,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t **p_data_end, int startTile,
                                     int endTile, int initialize_flag) {
   AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &pbi->mb;
 
   if (initialize_flag) setup_frame_info(pbi);
@@ -3418,7 +3428,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
 #if CONFIG_MONO_VIDEO
   // If the bit stream is monochrome, set the U and V buffers to a constant.
-  if (av1_num_planes(cm) < 3) {
+  if (num_planes < 3) {
     const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
 
     YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;

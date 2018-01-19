@@ -316,7 +316,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int nb_strength_bits;
   int quantizer;
   double lambda;
-  int nplanes = av1_num_planes(cm);
+  const int num_planes = av1_num_planes(cm);
   const int total_strengths = fast ? REDUCED_TOTAL_STRENGTHS : TOTAL_STRENGTHS;
   DECLARE_ALIGNED(32, uint16_t, inbuf[CDEF_INBUF_SIZE]);
   uint16_t *in;
@@ -325,10 +325,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       av1_ac_quant_Q3(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
   lambda = .12 * quantizer * quantizer / 256.;
 
-  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0, num_planes);
   mse[0] = aom_malloc(sizeof(**mse) * nvfb * nhfb);
   mse[1] = aom_malloc(sizeof(**mse) * nvfb * nhfb);
-  for (pli = 0; pli < nplanes; pli++) {
+  for (pli = 0; pli < num_planes; pli++) {
     uint8_t *ref_buffer;
     int ref_stride;
     switch (pli) {
@@ -417,7 +417,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
                                         fbc * MI_SIZE_64X64, dlist);
 #endif
-      for (pli = 0; pli < nplanes; pli++) {
+      for (pli = 0; pli < num_planes; pli++) {
         for (i = 0; i < CDEF_INBUF_SIZE; i++) inbuf[i] = CDEF_VERY_LARGE;
         for (gi = 0; gi < total_strengths; gi++) {
           int threshold;
@@ -469,7 +469,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     int best_lev0[CDEF_MAX_STRENGTHS];
     int best_lev1[CDEF_MAX_STRENGTHS] = { 0 };
     nb_strengths = 1 << i;
-    if (nplanes >= 3)
+    if (num_planes >= 3)
       tot_mse = joint_strength_search_dual(best_lev0, best_lev1, nb_strengths,
                                            mse, sb_count, fast);
     else
@@ -499,7 +499,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     best_gi = 0;
     for (gi = 0; gi < cm->nb_cdef_strengths; gi++) {
       uint64_t curr = mse[0][i][cm->cdef_strengths[gi]];
-      if (nplanes >= 3) curr += mse[1][i][cm->cdef_uv_strengths[gi]];
+      if (num_planes >= 3) curr += mse[1][i][cm->cdef_uv_strengths[gi]];
       if (curr < best_mse) {
         best_gi = gi;
         best_mse = curr;
@@ -525,7 +525,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   cm->cdef_sec_damping = sec_damping;
   aom_free(mse[0]);
   aom_free(mse[1]);
-  for (pli = 0; pli < nplanes; pli++) {
+  for (pli = 0; pli < num_planes; pli++) {
     aom_free(src[pli]);
     aom_free(ref_coeff[pli]);
   }

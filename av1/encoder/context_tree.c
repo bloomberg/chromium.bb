@@ -21,11 +21,12 @@ static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 1] = {
 
 static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
                                PICK_MODE_CONTEXT *ctx) {
+  const int num_planes = av1_num_planes(cm);
   int i;
   const int num_blk = num_pix / 16;
   ctx->num_4x4_blk = num_blk;
 
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     CHECK_MEM_ERROR(cm, ctx->blk_skip[i], aom_calloc(num_blk, sizeof(uint8_t)));
     CHECK_MEM_ERROR(cm, ctx->coeff[i],
                     aom_memalign(32, num_pix * sizeof(*ctx->coeff[i])));
@@ -51,9 +52,9 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
   }
 }
 
-static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
+static void free_mode_context(PICK_MODE_CONTEXT *ctx, const int num_planes) {
   int i;
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     aom_free(ctx->blk_skip[i]);
     ctx->blk_skip[i] = 0;
     aom_free(ctx->coeff[i]);
@@ -112,25 +113,25 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
-static void free_tree_contexts(PC_TREE *tree) {
+static void free_tree_contexts(PC_TREE *tree, const int num_planes) {
 #if CONFIG_EXT_PARTITION_TYPES
   int i;
   for (i = 0; i < 3; i++) {
-    free_mode_context(&tree->horizontala[i]);
-    free_mode_context(&tree->horizontalb[i]);
-    free_mode_context(&tree->verticala[i]);
-    free_mode_context(&tree->verticalb[i]);
+    free_mode_context(&tree->horizontala[i], num_planes);
+    free_mode_context(&tree->horizontalb[i], num_planes);
+    free_mode_context(&tree->verticala[i], num_planes);
+    free_mode_context(&tree->verticalb[i], num_planes);
   }
   for (i = 0; i < 4; ++i) {
-    free_mode_context(&tree->horizontal4[i]);
-    free_mode_context(&tree->vertical4[i]);
+    free_mode_context(&tree->horizontal4[i], num_planes);
+    free_mode_context(&tree->vertical4[i], num_planes);
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
-  free_mode_context(&tree->none);
-  free_mode_context(&tree->horizontal[0]);
-  free_mode_context(&tree->horizontal[1]);
-  free_mode_context(&tree->vertical[0]);
-  free_mode_context(&tree->vertical[1]);
+  free_mode_context(&tree->none, num_planes);
+  free_mode_context(&tree->horizontal[0], num_planes);
+  free_mode_context(&tree->horizontal[1], num_planes);
+  free_mode_context(&tree->vertical[0], num_planes);
+  free_mode_context(&tree->vertical[1], num_planes);
 }
 
 // This function sets up a tree of contexts such that at each square
@@ -193,7 +194,7 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   }
 }
 
-void av1_free_pc_tree(ThreadData *td) {
+void av1_free_pc_tree(ThreadData *td, const int num_planes) {
 #if CONFIG_EXT_PARTITION
   const int tree_nodes_inc = 1024;
 #else
@@ -206,7 +207,8 @@ void av1_free_pc_tree(ThreadData *td) {
   const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
 #endif  // CONFIG_EXT_PARTITION
   int i;
-  for (i = 0; i < tree_nodes; ++i) free_tree_contexts(&td->pc_tree[i]);
+  for (i = 0; i < tree_nodes; ++i)
+    free_tree_contexts(&td->pc_tree[i], num_planes);
   aom_free(td->pc_tree);
   td->pc_tree = NULL;
 }

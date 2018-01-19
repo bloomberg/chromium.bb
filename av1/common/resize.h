@@ -61,7 +61,8 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
                                 uint8_t *ov, int ouv_stride, int oheight,
                                 int owidth, int bd);
 void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                 YV12_BUFFER_CONFIG *dst, int bd);
+                                 YV12_BUFFER_CONFIG *dst, int bd,
+                                 const int num_planes);
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
 void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,

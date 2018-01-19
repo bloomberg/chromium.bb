@@ -488,9 +488,11 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
 }
 
 #if CONFIG_LV_MAP
-void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
+void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
+                          const int num_planes) {
+  const int nplanes = AOMMIN(num_planes, PLANE_TYPES);
   for (int eob_multi_size = 0; eob_multi_size < 7; ++eob_multi_size) {
-    for (int plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (int plane = 0; plane < nplanes; ++plane) {
       LV_MAP_EOB_COST *pcost = &x->eob_costs[eob_multi_size][plane];
 
       for (int ctx = 0; ctx < 2; ++ctx) {
@@ -517,7 +519,7 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
     }
   }
   for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (int plane = 0; plane < PLANE_TYPES; ++plane) {
+    for (int plane = 0; plane < nplanes; ++plane) {
       LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
 
       for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
@@ -937,7 +939,8 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
                           struct buf_2d dst[MAX_MB_PLANE],
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
                           const struct scale_factors *scale,
-                          const struct scale_factors *scale_uv) {
+                          const struct scale_factors *scale_uv,
+                          const int num_planes) {
   int i;
 
   dst[0].buf = src->y_buffer;
@@ -946,7 +949,7 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
   dst[2].buf = src->v_buffer;
   dst[1].stride = dst[2].stride = src->uv_stride;
 
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (i = 0; i < num_planes; ++i) {
     setup_pred_plane(dst + i, xd->mi[0]->mbmi.sb_type, dst[i].buf,
                      i ? src->uv_crop_width : src->y_crop_width,
                      i ? src->uv_crop_height : src->y_crop_height,

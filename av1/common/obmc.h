@@ -14,13 +14,14 @@
 
 typedef void (*overlappable_nb_visitor_t)(MACROBLOCKD *xd, int rel_mi_pos,
                                           uint8_t nb_mi_size, MODE_INFO *nb_mi,
-                                          void *fun_ctxt);
+                                          void *fun_ctxt, const int num_planes);
 
 static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
                                                  MACROBLOCKD *xd, int mi_col,
                                                  int nb_max,
                                                  overlappable_nb_visitor_t fun,
                                                  void *fun_ctxt) {
+  const int num_planes = av1_num_planes(cm);
   if (!xd->up_available) return;
 
   int nb_count = 0;
@@ -49,7 +50,7 @@ static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
     if (is_neighbor_overlappable(above_mbmi)) {
       ++nb_count;
       fun(xd, above_mi_col - mi_col, AOMMIN(xd->n8_w, mi_step), *above_mi,
-          fun_ctxt);
+          fun_ctxt, num_planes);
     }
   }
 }
@@ -59,6 +60,7 @@ static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
                                                 int nb_max,
                                                 overlappable_nb_visitor_t fun,
                                                 void *fun_ctxt) {
+  const int num_planes = av1_num_planes(cm);
   if (!xd->left_available) return;
 
   int nb_count = 0;
@@ -82,7 +84,7 @@ static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
     if (is_neighbor_overlappable(left_mbmi)) {
       ++nb_count;
       fun(xd, left_mi_row - mi_row, AOMMIN(xd->n8_h, mi_step), *left_mi,
-          fun_ctxt);
+          fun_ctxt, num_planes);
     }
   }
 }

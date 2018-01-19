@@ -481,6 +481,7 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
 
   dealloc_context_buffers_ext(cpi);
 
@@ -533,7 +534,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tile_tok[0][0]);
   cpi->tile_tok[0][0] = 0;
 
-  av1_free_pc_tree(&cpi->td);
+  av1_free_pc_tree(&cpi->td, num_planes);
 
   aom_free(cpi->td.mb.palette_buffer);
 }
@@ -803,6 +804,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 
 static void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
 
   av1_alloc_context_buffers(cm, cm->width, cm->height);
 
@@ -815,8 +817,8 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tile_tok[0][0]);
 
   {
-    unsigned int tokens = get_token_alloc(cm->mb_rows, cm->mb_cols,
-                                          MAX_SB_SIZE_LOG2, av1_num_planes(cm));
+    unsigned int tokens =
+        get_token_alloc(cm->mb_rows, cm->mb_cols, MAX_SB_SIZE_LOG2, num_planes);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
   }
@@ -3074,6 +3076,7 @@ void set_compound_tools(AV1_COMMON *cm) {
 
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   RATE_CONTROL *const rc = &cpi->rc;
   MACROBLOCK *const x = &cpi->td.mb;
 
@@ -3179,7 +3182,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height ||
         cm->sb_size != sb_size) {
       av1_free_context_buffers(cm);
-      av1_free_pc_tree(&cpi->td);
+      av1_free_pc_tree(&cpi->td, num_planes);
       alloc_compressor_data(cpi);
       realloc_segmentation_maps(cpi);
       cpi->initial_width = cpi->initial_height = 0;
@@ -3789,6 +3792,8 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   if (!cpi) return;
 
   cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+
   if (cm->current_video_frame > 0) {
 #if CONFIG_ENTROPY_STATS
     if (cpi->oxcf.pass != 1) {
@@ -3893,7 +3898,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td->wsrc_buf);
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
-      av1_free_pc_tree(thread_data->td);
+      av1_free_pc_tree(thread_data->td, num_planes);
       aom_free(thread_data->td);
     }
   }
@@ -3983,9 +3988,10 @@ void av1_update_reference(AV1_COMP *cpi, int ref_frame_upd_flags) {
 
 int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   YV12_BUFFER_CONFIG *cfg = get_ref_frame(cm, idx);
   if (cfg) {
-    aom_yv12_copy_frame(cfg, sd);
+    aom_yv12_copy_frame(cfg, sd, num_planes);
     return 0;
   } else {
     return -1;
@@ -3994,9 +4000,10 @@ int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
 
 int av1_set_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   YV12_BUFFER_CONFIG *cfg = get_ref_frame(cm, idx);
   if (cfg) {
-    aom_yv12_copy_frame(sd, cfg);
+    aom_yv12_copy_frame(sd, cfg, num_planes);
     return 0;
   } else {
     return -1;
@@ -4544,6 +4551,7 @@ static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, int buffer_idx) {
 
 static void scale_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MV_REFERENCE_FRAME ref_frame;
   const AOM_REFFRAME ref_mask[INTER_REFS_PER_FRAME] = {
     AOM_LAST_FLAG, AOM_LAST2_FLAG, AOM_LAST3_FLAG, AOM_GOLD_FLAG,
@@ -4580,8 +4588,8 @@ static void scale_references(AV1_COMP *cpi) {
                   cm->byte_alignment, NULL, NULL, NULL))
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
-          av1_resize_and_extend_frame(ref, &new_fb_ptr->buf,
-                                      (int)cm->bit_depth);
+          av1_resize_and_extend_frame(ref, &new_fb_ptr->buf, (int)cm->bit_depth,
+                                      num_planes);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
         }
@@ -4852,6 +4860,7 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
 // Returns 1 if the assigned width or height was <= 0.
 static int set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   check_initial_width(cpi, cm->use_highbitdepth, cm->subsampling_x,
                       cm->subsampling_y);
 
@@ -4863,7 +4872,7 @@ static int set_size_literal(AV1_COMP *cpi, int width, int height) {
   if (cpi->initial_width && cpi->initial_height &&
       (cm->width > cpi->initial_width || cm->height > cpi->initial_height)) {
     av1_free_context_buffers(cm);
-    av1_free_pc_tree(&cpi->td);
+    av1_free_pc_tree(&cpi->td, num_planes);
     alloc_compressor_data(cpi);
     realloc_segmentation_maps(cpi);
     cpi->initial_width = cpi->initial_height = 0;
@@ -4875,6 +4884,7 @@ static int set_size_literal(AV1_COMP *cpi, int width, int height) {
 
 static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int ref_frame;
 
@@ -4908,7 +4918,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   set_restoration_unit_size(frame_width, frame_height, cm->subsampling_x,
                             cm->subsampling_y, cm->rst_info);
-  for (int i = 0; i < MAX_MB_PLANE; ++i)
+  for (int i = 0; i < num_planes; ++i)
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
 
   av1_alloc_restoration_buffers(cm);
@@ -4928,7 +4938,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
       av1_setup_scale_factors_for_frame(
           &ref_buf->sf, buf->y_crop_width, buf->y_crop_height, cm->width,
           cm->height, (buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0);
-      if (av1_is_scaled(&ref_buf->sf)) aom_extend_frame_borders(buf);
+      if (av1_is_scaled(&ref_buf->sf))
+        aom_extend_frame_borders(buf, num_planes);
     } else {
       ref_buf->buf = NULL;
     }
@@ -5123,6 +5134,7 @@ static void setup_frame_size(AV1_COMP *cpi) {
 #if CONFIG_HORZONLY_FRAME_SUPERRES
 static void superres_post_encode(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
 
   if (av1_superres_unscaled(cm)) return;
 
@@ -5149,13 +5161,14 @@ static void superres_post_encode(AV1_COMP *cpi) {
     assert(cpi->scaled_source.y_crop_width == cm->superres_upscaled_width);
     assert(cpi->scaled_source.y_crop_height == cm->superres_upscaled_height);
     av1_resize_and_extend_frame(cpi->unscaled_source, &cpi->scaled_source,
-                                (int)cm->bit_depth);
+                                (int)cm->bit_depth, num_planes);
     cpi->source = &cpi->scaled_source;
   }
 }
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
   struct loopfilter *lf = &cm->lf;
   int no_loopfilter = 0;
@@ -5218,10 +5231,12 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #if CONFIG_LOOPFILTER_LEVEL
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level[0],
                           lf->filter_level[1], 0, 0);
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u,
-                          lf->filter_level_u, 1, 0);
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v,
-                          lf->filter_level_v, 2, 0);
+    if (num_planes > 1) {
+      av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u,
+                            lf->filter_level_u, 1, 0);
+      av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v,
+                            lf->filter_level_v, 2, 0);
+    }
 
 #else
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
@@ -5269,8 +5284,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #endif  // CONFIG_LOOP_RESTORATION
   // TODO(debargha): Fix mv search range on encoder side
-  // aom_extend_frame_inner_borders(cm->frame_to_show);
-  aom_extend_frame_borders(cm->frame_to_show);
+  // aom_extend_frame_inner_borders(cm->frame_to_show, num_planes);
+  aom_extend_frame_borders(cm->frame_to_show, num_planes);
 }
 
 static void encode_without_recode_loop(AV1_COMP *cpi) {
@@ -6715,6 +6730,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             int64_t *time_end, int flush) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   BufferPool *const pool = cm->buffer_pool;
   RATE_CONTROL *const rc = &cpi->rc;
   struct aom_usec_timer cmptimer;
@@ -6863,7 +6879,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                               NULL, &cpi->alt_ref_buffer,
 #endif  // CONFIG_BGSPRITE
                               arf_src_index);
-        aom_extend_frame_borders(&cpi->alt_ref_buffer);
+        aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
         force_src_buffer = &cpi->alt_ref_buffer;
       }
 
@@ -6908,7 +6924,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             NULL, NULL,
 #endif  // CONFIG_BGSPRITE
                             arf_src_index);
-        aom_extend_frame_borders(&cpi->alt_ref_buffer);
+        aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
         force_src_buffer = &cpi->alt_ref_buffer;
       }
 

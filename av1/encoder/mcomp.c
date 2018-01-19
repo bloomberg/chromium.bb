@@ -1921,6 +1921,8 @@ static const MV search_pos[4] = {
 unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
                                            BLOCK_SIZE bsize, int mi_row,
                                            int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
@@ -1943,8 +1945,9 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
     // Swap out the reference frame for a version that's been scaled to
     // match the resolution of the current frame, allowing the existing
     // motion search code to be used without additional modifications.
-    for (i = 0; i < MAX_MB_PLANE; i++) backup_yv12[i] = xd->plane[i].pre[0];
-    av1_setup_pre_planes(xd, 0, scaled_ref_frame, mi_row, mi_col, NULL);
+    for (i = 0; i < num_planes; i++) backup_yv12[i] = xd->plane[i].pre[0];
+    av1_setup_pre_planes(xd, 0, scaled_ref_frame, mi_row, mi_col, NULL,
+                         num_planes);
   }
 
   {
@@ -1956,7 +1959,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
 
     if (scaled_ref_frame) {
       int i;
-      for (i = 0; i < MAX_MB_PLANE; i++) xd->plane[i].pre[0] = backup_yv12[i];
+      for (i = 0; i < num_planes; i++) xd->plane[i].pre[0] = backup_yv12[i];
     }
     return this_sad;
   }
@@ -2040,7 +2043,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
 
   if (scaled_ref_frame) {
     int i;
-    for (i = 0; i < MAX_MB_PLANE; i++) xd->plane[i].pre[0] = backup_yv12[i];
+    for (i = 0; i < num_planes; i++) xd->plane[i].pre[0] = backup_yv12[i];
   }
 
   return best_sad;

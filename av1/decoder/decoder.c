@@ -175,6 +175,7 @@ static int equal_dimensions(const YV12_BUFFER_CONFIG *a,
 aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi, int idx,
                                        YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
 
   const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, idx);
   if (cfg == NULL) {
@@ -185,13 +186,14 @@ aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi, int idx,
     aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                        "Incorrect buffer dimensions");
   else
-    aom_yv12_copy_frame(cfg, sd);
+    aom_yv12_copy_frame(cfg, sd, num_planes);
 
   return cm->error.error_code;
 }
 
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       YV12_BUFFER_CONFIG *sd) {
+  const int num_planes = av1_num_planes(cm);
   YV12_BUFFER_CONFIG *ref_buf = NULL;
 
   // Get the destination reference buffer.
@@ -207,7 +209,7 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                        "Incorrect buffer dimensions");
   } else {
     // Overwrite the reference frame buffer.
-    aom_yv12_copy_frame(sd, ref_buf);
+    aom_yv12_copy_frame(sd, ref_buf, num_planes);
   }
 
   return cm->error.error_code;
@@ -268,6 +270,7 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
 int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                                 const uint8_t **psource) {
   AV1_COMMON *volatile const cm = &pbi->common;
+  volatile const int num_planes = av1_num_planes(cm);
   BufferPool *volatile const pool = cm->buffer_pool;
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
@@ -406,8 +409,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 #endif  // CONFIG_EXT_TILE
     // TODO(debargha): Fix encoder side mv range, so that we can use the
     // inner border extension. As of now use the larger extension.
-    // aom_extend_frame_inner_borders(cm->frame_to_show);
-    aom_extend_frame_borders(cm->frame_to_show);
+    // aom_extend_frame_inner_borders(cm->frame_to_show, num_planes);
+    aom_extend_frame_borders(cm->frame_to_show, num_planes);
 
   aom_clear_system_state();
 

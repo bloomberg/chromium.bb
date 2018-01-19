@@ -122,6 +122,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
 void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
                             int mi_row, int mi_col, int projected_rate) {
   const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
 
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
   const int xmis = AOMMIN(cm->mi_cols - mi_col, mi_size_wide[bs]);
@@ -148,7 +149,7 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
                                                     MIN_DEFAULT_LV_THRESH)
                                            : DEFAULT_LV_THRESH;
 
-    av1_setup_src_planes(mb, cpi->source, mi_row, mi_col);
+    av1_setup_src_planes(mb, cpi->source, mi_row, mi_col, num_planes);
     logvar = av1_log_block_var(cpi, mb, bs);
 
     segment = AQ_C_SEGMENTS - 1;  // Just in case no break out below.
