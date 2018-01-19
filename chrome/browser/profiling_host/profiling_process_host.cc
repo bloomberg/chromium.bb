@@ -103,6 +103,7 @@ namespace profiling {
 const base::Feature kOOPHeapProfilingFeature{"OOPHeapProfiling",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const char kOOPHeapProfilingFeatureMode[] = "mode";
+const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
 
 bool ProfilingProcessHost::has_started_ = false;
 
@@ -420,16 +421,22 @@ ProfilingProcessHost::Mode ProfilingProcessHost::ConvertStringToMode(
 // static
 profiling::mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  std::string stack_mode;
+
+  // Respect the commandline switch above the field trial.
   if (cmdline->HasSwitch(switches::kMemlogStackMode)) {
-    std::string stack_mode =
-        cmdline->GetSwitchValueASCII(switches::kMemlogStackMode);
-    if (stack_mode == switches::kMemlogStackModeNative)
-      return profiling::mojom::StackMode::NATIVE;
-    if (stack_mode == switches::kMemlogStackModePseudo)
-      return profiling::mojom::StackMode::PSEUDO;
-    if (stack_mode == switches::kMemlogStackModeMixed)
-      return profiling::mojom::StackMode::MIXED;
+    stack_mode = cmdline->GetSwitchValueASCII(switches::kMemlogStackMode);
+  } else {
+    stack_mode = base::GetFieldTrialParamValueByFeature(
+        kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureStackMode);
   }
+
+  if (stack_mode == switches::kMemlogStackModeNative)
+    return profiling::mojom::StackMode::NATIVE;
+  if (stack_mode == switches::kMemlogStackModePseudo)
+    return profiling::mojom::StackMode::PSEUDO;
+  if (stack_mode == switches::kMemlogStackModeMixed)
+    return profiling::mojom::StackMode::MIXED;
   return profiling::mojom::StackMode::NATIVE;
 }
 
