@@ -64,6 +64,7 @@ static_library("router") {
       "discovery",
       "//extensions/browser",
       "//mojo/public/cpp/bindings",
+      "//ui/base:ui_features",
     ]
     sources += [
       "event_page_request_manager.cc",

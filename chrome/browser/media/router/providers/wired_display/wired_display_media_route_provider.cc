@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/i18n/number_formatting.h"
-#include "build/build_config.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,12 +83,14 @@ WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
     : binding_(this, std::move(request)),
       media_router_(std::move(media_router)),
       profile_(profile) {
-  display::Screen::GetScreen()->AddObserver(this);
+  if (PresentationReceiverWindowEnabled())
+    display::Screen::GetScreen()->AddObserver(this);
   ReportSinkAvailability(GetSinks());
 }
 
 WiredDisplayMediaRouteProvider::~WiredDisplayMediaRouteProvider() {
-  display::Screen::GetScreen()->RemoveObserver(this);
+  if (PresentationReceiverWindowEnabled())
+    display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void WiredDisplayMediaRouteProvider::CreateRoute(
@@ -100,12 +102,6 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
     base::TimeDelta timeout,
     bool incognito,
     CreateRouteCallback callback) {
-#if defined(OS_MACOSX)
-  // TODO(https://crbug.com/777654): Support presenting to macOS as well.
-  std::move(callback).Run(base::nullopt, std::string("Not implemented"),
-                          RouteRequestResult::UNKNOWN_ERROR);
-  return;
-#endif
   DCHECK(!base::ContainsKey(presentations_, presentation_id));
   base::Optional<Display> display = GetDisplayBySinkId(sink_id);
   if (!display) {
@@ -288,6 +284,8 @@ void WiredDisplayMediaRouteProvider::OnDisplayMetricsChanged(
 }
 
 std::vector<Display> WiredDisplayMediaRouteProvider::GetAllDisplays() const {
+  if (!PresentationReceiverWindowEnabled())
+    return {};
   return display::Screen::GetScreen()->GetAllDisplays();
 }
 
