@@ -149,17 +149,17 @@ void PutARGBImage(XDisplay* display,
     for (int y = 0; y < data_height; ++y) {
       for (int x = 0; x < data_width; ++x) {
         const uint32_t pixel = *(bitmap_in++);
-        uint16_t out_pixel = ((pixel >> 8) & 0xf800) |
-                             ((pixel >> 5) & 0x07e0) |
-                             ((pixel >> 3) & 0x001f);
+        uint16_t out_pixel = ((pixel >> 8) & 0b1111100000000000) |
+                             ((pixel >> 5) & 0b0000011111100000) |
+                             ((pixel >> 3) & 0b0000000000011111);
         *(bitmap16++) = out_pixel;
       }
     }
 
     image.data = reinterpret_cast<char*>(orig_bitmap16);
-    image.red_mask = 0xf800;
-    image.green_mask = 0x07e0;
-    image.blue_mask = 0x001f;
+    image.red_mask = 0b1111100000000000;
+    image.green_mask = 0b0000011111100000;
+    image.blue_mask = 0b0000000000011111;
 
     XPutImage(display, pixmap, static_cast<GC>(pixmap_gc), &image,
               src_x, src_y, dst_x, dst_y,
