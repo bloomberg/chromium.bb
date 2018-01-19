@@ -34,18 +34,24 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
             new SparseArray<AccessibilityAction>();
     private String mSystemLanguageTag;
     private BroadcastReceiver mBroadcastReceiver;
-    private Context mContext;
 
     LollipopWebContentsAccessibility(Context context, ViewGroup containerView,
-            WebContents webContents, boolean shouldFocusOnPageLoad) {
-        super(context, containerView, webContents, shouldFocusOnPageLoad);
-        mContext = context;
+            WebContents webContents, String productVersion) {
+        super(context, containerView, webContents, productVersion);
+    }
+
+    @Override
+    protected void onNativeInit() {
+        super.onNativeInit();
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 mSystemLanguageTag = Locale.getDefault().toLanguageTag();
             }
         };
+
+        // Register a broadcast receiver for locale change for Lollipop or higher version.
+        if (mView.isAttachedToWindow()) registerLocaleChangeReceiver();
     }
 
     @Override
@@ -153,11 +159,19 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
 
     @Override
     public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (!isNativeInitialized()) return;
         mContext.unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
     public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        registerLocaleChangeReceiver();
+    }
+
+    private void registerLocaleChangeReceiver() {
+        if (!isNativeInitialized()) return;
         try {
             IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
             mContext.registerReceiver(mBroadcastReceiver, filter);

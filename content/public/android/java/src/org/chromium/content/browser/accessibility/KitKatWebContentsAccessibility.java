@@ -24,8 +24,13 @@ public class KitKatWebContentsAccessibility extends WebContentsAccessibility {
     private String mSupportedHtmlElementTypes;
 
     KitKatWebContentsAccessibility(Context context, ViewGroup containerView,
-            WebContents webContents, boolean shouldFocusOnPageLoad) {
-        super(context, containerView, webContents, shouldFocusOnPageLoad);
+            WebContents webContents, String productVersion) {
+        super(context, containerView, webContents, productVersion);
+    }
+
+    @Override
+    protected void onNativeInit() {
+        super.onNativeInit();
         mSupportedHtmlElementTypes = nativeGetSupportedHtmlElementTypes(mNativeObj);
     }
 
