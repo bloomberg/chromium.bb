@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace content {
 
@@ -239,11 +240,11 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   EXPECT_EQ(6, received_data.acceleration_z);
 
   EXPECT_TRUE(received_data.has_rotation_rate_alpha);
-  EXPECT_EQ(7, received_data.rotation_rate_alpha);
+  EXPECT_EQ(gfx::RadToDeg(7.0), received_data.rotation_rate_alpha);
   EXPECT_TRUE(received_data.has_rotation_rate_beta);
-  EXPECT_EQ(8, received_data.rotation_rate_beta);
+  EXPECT_EQ(gfx::RadToDeg(8.0), received_data.rotation_rate_beta);
   EXPECT_TRUE(received_data.has_rotation_rate_gamma);
-  EXPECT_EQ(9, received_data.rotation_rate_gamma);
+  EXPECT_EQ(gfx::RadToDeg(9.0), received_data.rotation_rate_gamma);
 
   motion_pump()->Stop();
 
@@ -281,11 +282,11 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   EXPECT_FALSE(received_data.has_acceleration_z);
 
   EXPECT_TRUE(received_data.has_rotation_rate_alpha);
-  EXPECT_EQ(7, received_data.rotation_rate_alpha);
+  EXPECT_EQ(gfx::RadToDeg(7.0), received_data.rotation_rate_alpha);
   EXPECT_TRUE(received_data.has_rotation_rate_beta);
-  EXPECT_EQ(8, received_data.rotation_rate_beta);
+  EXPECT_EQ(gfx::RadToDeg(8.0), received_data.rotation_rate_beta);
   EXPECT_TRUE(received_data.has_rotation_rate_gamma);
-  EXPECT_EQ(9, received_data.rotation_rate_gamma);
+  EXPECT_EQ(gfx::RadToDeg(9.0), received_data.rotation_rate_gamma);
 
   motion_pump()->Stop();
 
@@ -323,9 +324,9 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   EXPECT_EQ(6, received_data.acceleration_z);
 
   EXPECT_TRUE(received_data.has_rotation_rate_alpha);
-  EXPECT_EQ(7, received_data.rotation_rate_alpha);
+  EXPECT_EQ(gfx::RadToDeg(7.0), received_data.rotation_rate_alpha);
   EXPECT_TRUE(received_data.has_rotation_rate_beta);
-  EXPECT_EQ(8, received_data.rotation_rate_beta);
+  EXPECT_EQ(gfx::RadToDeg(8.0), received_data.rotation_rate_beta);
   EXPECT_FALSE(received_data.has_rotation_rate_gamma);
 
   motion_pump()->Stop();

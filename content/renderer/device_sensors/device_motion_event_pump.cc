@@ -13,6 +13,7 @@
 #include "device/sensors/public/cpp/motion_data.h"
 #include "services/device/public/interfaces/sensor.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace content {
 
@@ -135,9 +136,9 @@ void DeviceMotionEventPump::GetDataFromSharedMemory(device::MotionData* data) {
 
   if (gyroscope_.SensorReadingCouldBeRead() &&
       (gyroscope_active = gyroscope_.reading.timestamp() != 0.0)) {
-    data->rotation_rate_alpha = gyroscope_.reading.gyro.x;
-    data->rotation_rate_beta = gyroscope_.reading.gyro.y;
-    data->rotation_rate_gamma = gyroscope_.reading.gyro.z;
+    data->rotation_rate_alpha = gfx::RadToDeg(gyroscope_.reading.gyro.x);
+    data->rotation_rate_beta = gfx::RadToDeg(gyroscope_.reading.gyro.y);
+    data->rotation_rate_gamma = gfx::RadToDeg(gyroscope_.reading.gyro.z);
     data->has_rotation_rate_alpha =
         !std::isnan(gyroscope_.reading.gyro.x.value());
     data->has_rotation_rate_beta =
