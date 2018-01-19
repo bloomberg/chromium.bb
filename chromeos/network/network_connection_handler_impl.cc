@@ -95,11 +95,13 @@ std::string GetDefaultUserProfilePath(const NetworkState* network) {
 }  // namespace
 
 NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
+    ConnectCallbackMode mode,
     const std::string& service_path,
     const std::string& profile_path,
     const base::Closure& success,
     const network_handler::ErrorCallback& error)
-    : service_path(service_path),
+    : mode(mode),
+      service_path(service_path),
       profile_path(profile_path),
       connect_state(CONNECT_REQUESTED),
       success_callback(success),
@@ -181,7 +183,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback,
-    bool check_error_state) {
+    bool check_error_state,
+    ConnectCallbackMode mode) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   for (auto& observer : observers_)
     observer.ConnectToNetworkRequested(service_path);
@@ -248,20 +251,26 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   if (!network || network->profile_path().empty())
     profile_path = GetDefaultUserProfilePath(network);
 
-  // All synchronous checks passed, add |service_path| to connecting list.
-  pending_requests_.emplace(
-      service_path, ConnectRequest(service_path, profile_path, success_callback,
-                                   error_callback));
+  bool call_connect = false;
 
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
   if (network && network->connectable() && network->type() != shill::kTypeVPN) {
     if (IsNetworkProhibitedByPolicy(network->type(), network->guid(),
                                     network->profile_path())) {
-      ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
+      InvokeConnectErrorCallback(service_path, error_callback,
+                                 kErrorUnmanagedNetwork);
       return;
     }
+    call_connect = true;
+  }
 
+  // All synchronous checks passed, add |service_path| to connecting list.
+  pending_requests_.emplace(service_path,
+                            ConnectRequest(mode, service_path, profile_path,
+                                           success_callback, error_callback));
+
+  if (call_connect) {
     CallShillConnect(service_path);
     return;
   }
@@ -565,9 +574,9 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
   }
 
   NET_LOG_EVENT("Connect Request Queued", service_path);
-  queued_connect_.reset(new ConnectRequest(service_path, request->profile_path,
-                                           request->success_callback,
-                                           request->error_callback));
+  queued_connect_.reset(
+      new ConnectRequest(request->mode, service_path, request->profile_path,
+                         request->success_callback, request->error_callback));
   pending_requests_.erase(service_path);
 
   // Post a delayed task to check to see if certificates have loaded. If they
@@ -607,7 +616,7 @@ void NetworkConnectionHandlerImpl::ConnectToQueuedNetwork() {
 
   NET_LOG_EVENT("Connecting to Queued Network", service_path);
   ConnectToNetwork(service_path, success_callback, error_callback,
-                   false /* check_error_state */);
+                   false /* check_error_state */, queued_connect_->mode);
 }
 
 void NetworkConnectionHandlerImpl::CallShillConnect(
@@ -626,6 +635,7 @@ void NetworkConnectionHandlerImpl::HandleConfigurationFailure(
     const std::string& service_path,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
+  NET_LOG(ERROR) << "Connect configuration failure: " << error_name;
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
     NET_LOG_ERROR("HandleConfigurationFailure called with no pending request.",
@@ -645,6 +655,14 @@ void NetworkConnectionHandlerImpl::HandleShillConnectSuccess(
     NET_LOG_ERROR("HandleShillConnectSuccess called with no pending request.",
                   service_path);
     return;
+  }
+  if (request->mode == ConnectCallbackMode::ON_STARTED) {
+    if (!request->success_callback.is_null())
+      request->success_callback.Run();
+    // Request started; do not invoke success or error callbacks on
+    // completion.
+    request->success_callback = base::Closure();
+    request->error_callback = network_handler::ErrorCallback();
   }
   request->connect_state = ConnectRequest::CONNECT_STARTED;
   NET_LOG_EVENT("Connect Request Acknowledged", service_path);

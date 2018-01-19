@@ -199,7 +199,8 @@ void ShellNetworkController::ConnectIfUnconnected() {
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ShellNetworkController::HandleConnectionError,
                  weak_ptr_factory_.GetWeakPtr()),
-      false /* check_error_state */);
+      false /* check_error_state */,
+      chromeos::ConnectCallbackMode::ON_COMPLETED);
 }
 
 void ShellNetworkController::HandleConnectionSuccess() {

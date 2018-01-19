@@ -206,14 +206,13 @@ class NetworkConnectionHandlerImplTest : public NetworkStateTest {
 
  protected:
   void Connect(const std::string& service_path) {
-    const bool check_error_state = true;
     network_connection_handler_->ConnectToNetwork(
         service_path,
         base::Bind(&NetworkConnectionHandlerImplTest::SuccessCallback,
                    base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
                    base::Unretained(this)),
-        check_error_state);
+        true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
     scoped_task_environment_.RunUntilIdle();
   }
 

@@ -37,6 +37,8 @@ namespace chromeos {
 // available State information, and NetworkConfigurationHandler for any
 // configuration calls.
 
+enum class ConnectCallbackMode { ON_STARTED, ON_COMPLETED };
+
 class CHROMEOS_EXPORT NetworkConnectionHandler {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
@@ -86,7 +88,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   // Certificate load timed out.
   static const char kErrorCertLoadTimeout[];
 
-  // Trying to configure an unmanged network but policy prohibits that
+  // Trying to configure an unmanaged network but policy prohibits that
   static const char kErrorUnmanagedNetwork[];
 
   // Network activation failed.
@@ -131,18 +133,25 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   void SetTetherDelegate(TetherDelegate* tether_delegate);
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
-  // On success, |success_callback| will be called.
-  // On failure, |error_callback| will be called with |error_name| one of the
-  //   constants defined above.
+  // |success_callback| will be called if the connection request succeeds
+  //   or if a request is sent if |mode| is ON_STARTED (see below).
+  // |error_callback| will be called with |error_name| set to one of the
+  //   constants defined above if the connection request fails.
   // |error_message| will contain an additional error string for debugging.
   // If |check_error_state| is true, the current state of the network is
-  //  checked for errors, otherwise current state is ignored (e.g. for recently
-  //  configured networks or repeat attempts).
+  //   checked for errors, otherwise current state is ignored (e.g. for recently
+  //   configured networks or repeat attempts).
+  // If |mode| is ON_STARTED, |success_callback| will be invoked when the
+  //   connect request is successfully made and not when the connection
+  //   completes. Note: This also prevents |error_callback| from being called
+  //   if the connection request is successfully sent but the network does not
+  //   connect.
   virtual void ConnectToNetwork(
       const std::string& service_path,
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback,
-      bool check_error_state) = 0;
+      bool check_error_state,
+      ConnectCallbackMode mode) = 0;
 
   // DisconnectNetwork() will send a Disconnect request to Shill.
   // On success, |success_callback| will be called.

@@ -169,7 +169,8 @@ void NetworkStateHelper::OnCreateConfiguration(
     const std::string& guid) const {
   // Connect to the network.
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      service_path, success_callback, error_callback, false);
+      service_path, success_callback, error_callback,
+      false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
 }
 
 content::StoragePartition* GetSigninPartition() {

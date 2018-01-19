@@ -61,7 +61,8 @@ class TestNetworkConnectionHandler : public chromeos::NetworkConnectionHandler {
       const std::string& service_path,
       const base::Closure& success_callback,
       const chromeos::network_handler::ErrorCallback& error_callback,
-      bool check_error_state) override {}
+      bool check_error_state,
+      chromeos::ConnectCallbackMode mode) override {}
 
   bool HasConnectingNetwork(const std::string& service_path) override {
     return false;
