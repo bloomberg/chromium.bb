@@ -158,6 +158,8 @@ MediaDevicesManager::MediaDevicesManager(
       permission_checker_(std::make_unique<MediaDevicesPermissionChecker>()),
       cache_infos_(NUM_MEDIA_DEVICE_TYPES),
       monitoring_started_(false),
+      salt_and_origin_callback_(
+          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_system_);
@@ -187,6 +189,24 @@ void MediaDevicesManager::EnumerateDevices(
 
   if (all_results_cached)
     ProcessRequests();
+}
+
+void MediaDevicesManager::EnumerateDevices(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& group_id_salt_base,
+    const BoolDeviceTypes& requested_types,
+    EnumerateDevicesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
+      base::BindOnce(salt_and_origin_callback_, render_process_id,
+                     render_frame_id),
+      base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
+                     weak_factory_.GetWeakPtr(), render_process_id,
+                     render_frame_id, group_id_salt_base, requested_types,
+                     base::Passed(&callback)));
 }
 
 void MediaDevicesManager::SubscribeDeviceChangeNotifications(
@@ -316,6 +336,62 @@ void MediaDevicesManager::SetPermissionChecker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(permission_checker);
   permission_checker_ = std::move(permission_checker);
+}
+
+void MediaDevicesManager::CheckPermissionsForEnumerateDevices(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& group_id_salt_base,
+    const BoolDeviceTypes& requested_types,
+    EnumerateDevicesCallback callback,
+    const std::pair<std::string, url::Origin>& salt_and_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  permission_checker_->CheckPermissions(
+      requested_types, render_process_id, render_frame_id,
+      base::BindOnce(&MediaDevicesManager::OnPermissionsCheckDone,
+                     weak_factory_.GetWeakPtr(), group_id_salt_base,
+                     requested_types, base::Passed(&callback),
+                     salt_and_origin.first, salt_and_origin.second));
+}
+
+void MediaDevicesManager::OnPermissionsCheckDone(
+    const std::string& group_id_salt_base,
+    const MediaDevicesManager::BoolDeviceTypes& requested_types,
+    EnumerateDevicesCallback callback,
+    const std::string& device_id_salt,
+    const url::Origin& security_origin,
+    const MediaDevicesManager::BoolDeviceTypes& has_permissions) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EnumerateDevices(
+      requested_types,
+      base::BindRepeating(&MediaDevicesManager::OnDevicesEnumerated,
+                          weak_factory_.GetWeakPtr(), group_id_salt_base,
+                          requested_types, base::Passed(&callback),
+                          device_id_salt, security_origin, has_permissions));
+}
+
+void MediaDevicesManager::OnDevicesEnumerated(
+    const std::string& group_id_salt_base,
+    const MediaDevicesManager::BoolDeviceTypes& requested_types,
+    EnumerateDevicesCallback callback,
+    const std::string& device_id_salt,
+    const url::Origin& security_origin,
+    const MediaDevicesManager::BoolDeviceTypes& has_permissions,
+    const MediaDeviceEnumeration& enumeration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::string group_id_salt = group_id_salt_base + device_id_salt;
+  std::vector<MediaDeviceInfoArray> result(NUM_MEDIA_DEVICE_TYPES);
+  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+    if (!requested_types[i])
+      continue;
+
+    for (const auto& device_info : enumeration[i]) {
+      result[i].push_back(TranslateMediaDeviceInfo(
+          has_permissions[i], device_id_salt, group_id_salt, security_origin,
+          device_info));
+    }
+  }
+  std::move(callback).Run(result);
 }
 
 void MediaDevicesManager::DoEnumerateDevices(MediaDeviceType type) {
