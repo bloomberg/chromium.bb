@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/tablet_power_button_controller.h"
+#include "ash/system/power/convertible_power_button_controller.h"
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -10,8 +10,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/power/convertible_power_button_controller_test_api.h"
 #include "ash/system/power/power_button_test_base.h"
-#include "ash/system/power/tablet_power_button_controller_test_api.h"
+#include "ash/system/power/power_button_util.h"
 #include "ash/test_media_client.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
@@ -33,10 +34,10 @@ constexpr int kNonZeroBrightness = 10;
 
 }  // namespace
 
-class TabletPowerButtonControllerTest : public PowerButtonTestBase {
+class ConvertiblePowerButtonControllerTest : public PowerButtonTestBase {
  public:
-  TabletPowerButtonControllerTest() = default;
-  ~TabletPowerButtonControllerTest() override = default;
+  ConvertiblePowerButtonControllerTest() = default;
+  ~ConvertiblePowerButtonControllerTest() override = default;
 
   void SetUp() override {
     PowerButtonTestBase::SetUp();
@@ -45,7 +46,7 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
     EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
     // Advance a long duration from initialized last resume time in
-    // |tablet_controller_| to avoid cross interference.
+    // |convertible_controller_| to avoid cross interference.
     tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
 
     // Run the event loop so that PowerButtonDisplayController can receive the
@@ -71,15 +72,14 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
   // off is not ignored since we will ignore the repeated power button up if
   // they come too close.
   void AdvanceClockToAvoidIgnoring() {
-    tick_clock_->Advance(
-        TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay +
-        base::TimeDelta::FromMilliseconds(1));
+    tick_clock_->Advance(power_button_util::kIgnoreRepeatedButtonUpDelay +
+                         base::TimeDelta::FromMilliseconds(1));
   }
 
-  DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ConvertiblePowerButtonControllerTest);
 };
 
-TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
+TEST_F(ConvertiblePowerButtonControllerTest, LockScreenIfRequired) {
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
@@ -109,31 +109,31 @@ TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
 
 // Tests that shutdown animation is not started if the power button is released
 // quickly.
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        ReleasePowerButtonBeforeStartingShutdownAnimation) {
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   ReleasePowerButton();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
 // Tests that the shutdown animation is started when the power button is
 // released after the timer fires.
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        ReleasePowerButtonDuringShutdownAnimation) {
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -149,7 +149,7 @@ TEST_F(TabletPowerButtonControllerTest,
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -157,7 +157,8 @@ TEST_F(TabletPowerButtonControllerTest,
 }
 
 // Tests tapping power button when screen is idle off.
-TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenScreenIsIdleOff) {
+TEST_F(ConvertiblePowerButtonControllerTest,
+       TappingPowerButtonWhenScreenIsIdleOff) {
   power_manager_client_->SendBrightnessChanged(0, true);
   PressPowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -168,7 +169,7 @@ TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenScreenIsIdleOff) {
 
 // Tests tapping power button when device is suspended without backlights forced
 // off.
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        TappingPowerButtonWhenSuspendedWithoutBacklightsForcedOff) {
   power_manager_client_->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
@@ -181,25 +182,25 @@ TEST_F(TabletPowerButtonControllerTest,
   // are not forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
 // Tests tapping power button when device is suspended with backlights forced
 // off.
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        TappingPowerButtonWhenSuspendedWithBacklightsForcedOff) {
   PressPowerButton();
   ReleasePowerButton();
@@ -217,25 +218,25 @@ TEST_F(TabletPowerButtonControllerTest,
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
 // For convertible device working on laptop mode, tests keyboard/mouse event
 // when screen is off.
-TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
+TEST_F(ConvertiblePowerButtonControllerTest, ConvertibleOnLaptopMode) {
   EnableTabletMode(false);
 
   // KeyEvent should SetBacklightsForcedOff(false).
@@ -271,7 +272,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
 
 // For convertible device working on tablet mode, keyboard/mouse event should
 // not SetBacklightsForcedOff(false) when screen is off.
-TEST_F(TabletPowerButtonControllerTest, ConvertibleOnTabletMode) {
+TEST_F(ConvertiblePowerButtonControllerTest, ConvertibleOnTabletMode) {
   EnableTabletMode(true);
 
   PressPowerButton();
@@ -287,7 +288,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnTabletMode) {
 
 // Tests that a single set of power button pressed-and-released operation should
 // cause only one SetBacklightsForcedOff call.
-TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
+TEST_F(ConvertiblePowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   ui::KeyEvent power_key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_POWER,
                                  ui::EF_NONE);
   ui::KeyEvent power_key_released(ui::ET_KEY_RELEASED, ui::VKEY_POWER,
@@ -297,22 +298,22 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   // generated for each pressing and releasing, and multiple repeating pressed
   // events depending on holding.
   ASSERT_EQ(0, power_manager_client_->num_set_backlights_forced_off_calls());
-  tablet_test_api_->SendKeyEvent(&power_key_pressed);
-  tablet_test_api_->SendKeyEvent(&power_key_pressed);
+  convertible_test_api_->SendKeyEvent(&power_key_pressed);
+  convertible_test_api_->SendKeyEvent(&power_key_pressed);
   PressPowerButton();
-  tablet_test_api_->SendKeyEvent(&power_key_pressed);
-  tablet_test_api_->SendKeyEvent(&power_key_pressed);
-  tablet_test_api_->SendKeyEvent(&power_key_pressed);
+  convertible_test_api_->SendKeyEvent(&power_key_pressed);
+  convertible_test_api_->SendKeyEvent(&power_key_pressed);
+  convertible_test_api_->SendKeyEvent(&power_key_pressed);
   ReleasePowerButton();
-  tablet_test_api_->SendKeyEvent(&power_key_released);
-  tablet_test_api_->SendKeyEvent(&power_key_released);
+  convertible_test_api_->SendKeyEvent(&power_key_released);
+  convertible_test_api_->SendKeyEvent(&power_key_released);
   EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
 }
 
 // Tests that under (1) tablet power button pressed/released, (2) keyboard/mouse
 // events on laptop mode when screen is off, requesting/stopping backlights
 // forced off should update the global touchscreen enabled status.
-TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
+TEST_F(ConvertiblePowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   // Tests tablet power button.
   ASSERT_TRUE(GetGlobalTouchscreenEnabled());
   PressPowerButton();
@@ -351,7 +352,7 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
 
 // When the screen is turned off automatically, the touchscreen should also be
 // disabled.
-TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenForInactivity) {
+TEST_F(ConvertiblePowerButtonControllerTest, DisableTouchscreenForInactivity) {
   ASSERT_TRUE(GetGlobalTouchscreenEnabled());
 
   // Turn screen off for automated change (e.g. user is inactive).
@@ -368,25 +369,25 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenForInactivity) {
 
 // When user switches convertible device between laptop mode and tablet mode,
 // power button may be pressed and held, which may cause unwanted shutdown.
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        EnterOrLeaveTabletModeWhilePressingPowerButton) {
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnTabletModeStarted();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
+  convertible_controller_->OnTabletModeStarted();
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnTabletModeStarted();
+  convertible_controller_->OnTabletModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2500));
   ReleasePowerButton();
@@ -394,18 +395,18 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnTabletModeEnded();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
+  convertible_controller_->OnTabletModeEnded();
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnTabletModeEnded();
+  convertible_controller_->OnTabletModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(4500));
   ReleasePowerButton();
@@ -414,7 +415,8 @@ TEST_F(TabletPowerButtonControllerTest,
 }
 
 // Tests that repeated power button releases are ignored (crbug.com/675291).
-TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
+TEST_F(ConvertiblePowerButtonControllerTest,
+       IgnoreRepeatedPowerButtonReleases) {
   // Set backlights forced off for starting point.
   PressPowerButton();
   ReleasePowerButton();
@@ -445,7 +447,7 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
 }
 
 // Tests that lid closed/open events stop forcing off backlights.
-TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
+TEST_F(ConvertiblePowerButtonControllerTest, LidEventsStopForcingOff) {
   // Pressing/releasing power button to set backlights forced off.
   PressPowerButton();
   ReleasePowerButton();
@@ -471,7 +473,7 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
 }
 
 // Tests that tablet mode events from powerd stop forcing off backlights.
-TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
+TEST_F(ConvertiblePowerButtonControllerTest, TabletModeEventsStopForcingOff) {
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
@@ -490,7 +492,7 @@ TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
 
 // Tests that with system reboot, the global touchscreen enabled status should
 // be synced with new backlights forced off state from powerd.
-TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {
+TEST_F(ConvertiblePowerButtonControllerTest, SyncTouchscreenEnabled) {
   Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
       false, TouchscreenEnabledSource::GLOBAL);
   ASSERT_FALSE(GetGlobalTouchscreenEnabled());
@@ -510,27 +512,27 @@ TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {
 
 // Tests that tablet power button behavior is enabled on having seen
 // accelerometer update, otherwise it is disabled.
-TEST_F(TabletPowerButtonControllerTest, EnableOnAccelerometerUpdate) {
-  ASSERT_TRUE(tablet_controller_);
+TEST_F(ConvertiblePowerButtonControllerTest, EnableOnAccelerometerUpdate) {
+  ASSERT_TRUE(convertible_controller_);
   ResetPowerButtonController();
-  EXPECT_FALSE(tablet_controller_);
+  EXPECT_FALSE(convertible_controller_);
 
   SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
-  EXPECT_TRUE(tablet_controller_);
+  EXPECT_TRUE(convertible_controller_);
 
   // If clamshell-like power button behavior is requested via a flag, the
-  // TabletPowerButtonController shouldn't be initialized in response to
+  // ConvertiblePowerButtonController shouldn't be initialized in response to
   // accelerometer events.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kForceClamshellPowerButton);
   ResetPowerButtonController();
   SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
-  EXPECT_FALSE(tablet_controller_);
+  EXPECT_FALSE(convertible_controller_);
 }
 
 // Tests that when backlights get forced off due to tablet power button, media
 // sessions should be suspended.
-TEST_F(TabletPowerButtonControllerTest, SuspendMediaSessions) {
+TEST_F(ConvertiblePowerButtonControllerTest, SuspendMediaSessions) {
   TestMediaClient client;
   Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
   ASSERT_FALSE(client.media_sessions_suspended());
@@ -546,7 +548,7 @@ TEST_F(TabletPowerButtonControllerTest, SuspendMediaSessions) {
 // Tests that when system is suspended with backlights forced off, and then
 // system resumes due to power button pressed without power button event fired
 // (crbug.com/735291), that we stop forcing off backlights.
-TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
+TEST_F(ConvertiblePowerButtonControllerTest, SuspendDoneStopsForcingOff) {
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
@@ -561,7 +563,7 @@ TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
 
 // Tests that for tablet power button induced locking screen, locking animations
 // are immediate.
-TEST_F(TabletPowerButtonControllerTest, ImmediateLockAnimations) {
+TEST_F(ConvertiblePowerButtonControllerTest, ImmediateLockAnimations) {
   TestSessionStateAnimator* test_animator = new TestSessionStateAnimator;
   lock_state_controller_->set_animator_for_test(test_animator);
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
@@ -607,7 +609,7 @@ TEST_F(TabletPowerButtonControllerTest, ImmediateLockAnimations) {
 // Tests that updating power button behavior from tablet behavior to clamshell
 // behavior will initially enable touchscreen on global touchscreen enabled
 // status (b/64972736).
-TEST_F(TabletPowerButtonControllerTest, TouchscreenEnabledClamshell) {
+TEST_F(ConvertiblePowerButtonControllerTest, TouchscreenEnabledClamshell) {
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
@@ -628,7 +630,7 @@ TEST_F(TabletPowerButtonControllerTest, TouchscreenEnabledClamshell) {
 
 // Tests that during the interval that the display is turning on, tablet power
 // button should not set display off (crbug.com/735225).
-TEST_F(TabletPowerButtonControllerTest,
+TEST_F(ConvertiblePowerButtonControllerTest,
        IgnoreForcingOffWhenDisplayIsTurningOn) {
   PressPowerButton();
   ReleasePowerButton();
@@ -642,7 +644,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Since display could still be off, ignore forcing off.
-  tick_clock_->Advance(TabletPowerButtonController::kScreenStateChangeDelay -
+  tick_clock_->Advance(power_button_util::kScreenStateChangeDelay -
                        base::TimeDelta::FromMilliseconds(1));
   PressPowerButton();
   ReleasePowerButton();
@@ -659,7 +661,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
 // Tests that a11y alert is sent on tablet power button induced screen state
 // change.
-TEST_F(TabletPowerButtonControllerTest, A11yAlert) {
+TEST_F(ConvertiblePowerButtonControllerTest, A11yAlert) {
   TestAccessibilityControllerClient client;
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
@@ -686,7 +688,7 @@ TEST_F(NoTabletModePowerButtonControllerTest,
   InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableTabletMode));
-  EXPECT_FALSE(tablet_controller_);
+  EXPECT_FALSE(convertible_controller_);
 }
 
 }  // namespace ash
