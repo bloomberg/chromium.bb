@@ -129,12 +129,6 @@ void AwRenderViewHostExt::SmoothScroll(int target_x,
       static_cast<int>(duration_ms)));
 }
 
-void AwRenderViewHostExt::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SetBackgroundColor(
-      web_contents()->GetMainFrame()->GetRoutingID(), background_color_));
-}
-
 void AwRenderViewHostExt::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
@@ -154,6 +148,10 @@ void AwRenderViewHostExt::RenderFrameCreated(
   registry_.AddInterface(
       base::Bind(&web_restrictions::WebRestrictionsMojoImplementation::Create,
                  AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
+  if (!frame_host->GetParent()) {
+    frame_host->Send(new AwViewMsg_SetBackgroundColor(
+        frame_host->GetRoutingID(), background_color_));
+  }
 }
 
 void AwRenderViewHostExt::DidFinishNavigation(
