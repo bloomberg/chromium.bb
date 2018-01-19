@@ -44,6 +44,15 @@ struct OptionalStorageBase {
 
   // When T is not trivially destructible we must call its
   // destructor before deallocating its memory.
+  // Note that this hides the (implicitly declared) move constructor, which
+  // would be used for constexpr move constructor in OptionalStorage<T>.
+  // It is needed iff T is trivially move constructible. However, the current
+  // is_trivially_{copy,move}_constructible implementation requires
+  // is_trivially_destructible (which looks a bug, cf:
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51452 and
+  // http://cplusplus.github.io/LWG/lwg-active.html#2116), so it is not
+  // necessary for this case at the moment. Please see also the destructor
+  // comment in "is_trivially_destructible = true" specialization below.
   ~OptionalStorageBase() {
     if (!is_null_)
       value_.~T();
@@ -77,9 +86,18 @@ struct OptionalStorageBase<T, true /* trivially destructible */> {
       : is_null_(false), value_(std::forward<Args>(args)...) {}
 
   // When T is trivially destructible (i.e. its destructor does nothing) there
-  // is no need to call it. Explicitly defaulting the destructor means it's not
-  // user-provided. Those two together make this destructor trivial.
-  ~OptionalStorageBase() = default;
+  // is no need to call it. Implicitly defined destructor is trivial, because
+  // both members (bool and union containing only variants which are trivially
+  // destructible) are trivially destructible.
+  // Explicitly-defaulted destructor is also trivial, but do not use it here,
+  // because it hides the implicit move constructor. It is needed to implement
+  // constexpr move constructor in OptionalStorage iff T is trivially move
+  // constructible. Note that, if T is trivially move constructible, the move
+  // constructor of OptionalStorageBase<T> is also implicitly defined and it is
+  // trivially move constructor. If T is not trivially move constructible,
+  // "not declaring move constructor without destructor declaration" here means
+  // "delete move constructor", which works because any move constructor of
+  // OptionalStorage will not refer to it in that case.
 
   template <class... Args>
   void Init(Args&&... args) {
