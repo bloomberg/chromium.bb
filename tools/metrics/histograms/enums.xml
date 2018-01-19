@@ -43498,6 +43498,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="113553577" label="certificate_verifier"/>
   <int value="114468207" label="ssl_name_mismatch_lookup"/>
   <int value="115188287" label="chrome_variations_service"/>
+  <int value="115192205" label="cast_socket"/>
   <int value="115907811" label="safe_browsing_cache_collector"/>
   <int value="116426676" label="gaia_auth_log_out"/>
   <int value="116443055" label="renderer_initiated_download"/>
@@ -43526,6 +43527,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="133982351" label="gaia_auth_revoke_token"/>
   <int value="134289752" label="gaia_auth_exchange_cookies"/>
   <int value="134729048" label="chrome_feedback_report_app"/>
+  <int value="134755844" label="cast_keep_alive_delegate"/>
   <int value="135118587" label="parallel_download_job"/>
   <int value="135251783" label="thumbnail_source"/>
   <int value="135636011" label="devtools_handle_front_end_messages"/>

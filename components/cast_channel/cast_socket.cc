@@ -47,6 +47,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 // Helper for logging data with remote host IP and authentication state.
 // Assumes |ip_endpoint_| of type net::IPEndPoint and |channel_auth_| of enum
@@ -455,9 +456,33 @@ int CastSocketImpl::DoAuthChallengeSend() {
                           << CastMessageToString(challenge_message);
 
   ResetConnectLoopCallback();
-  // TODO(https://crbug.com/656607): Add proper annotation.
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("cast_socket", R"(
+        semantics {
+          sender: "Cast Socket"
+          description:
+            "An auth challenge request sent to a Cast device as a part of "
+            "establishing a connection to it."
+          trigger:
+            "A new Cast device has been discovered via mDNS in the local "
+            "network."
+          data:
+            "A serialized protobuf message containing the nonce challenge. No "
+            "user data."
+          destination: OTHER
+          destination_other:
+            "Data will be sent to a Cast device in local network."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be disabled, but it would not be sent if user "
+            "does not connect a Cast device to the local network."
+          policy_exception_justification: "Not implemented."
+        })");
   transport_->SendMessage(challenge_message, connect_loop_callback_.callback(),
-                          NO_TRAFFIC_ANNOTATION_BUG_656607);
+                          traffic_annotation);
 
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
