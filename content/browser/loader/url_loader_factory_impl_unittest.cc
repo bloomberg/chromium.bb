@@ -35,6 +35,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -103,10 +104,10 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
     rdh_.SetLoaderDelegate(&loader_deleate_);
 
-    URLLoaderFactoryImpl::Create(
-        resource_message_filter_->requester_info_for_test(),
-        mojo::MakeRequest(&factory_),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+    mojo::StrongBinding<network::mojom::URLLoaderFactory>::Create(
+        std::make_unique<URLLoaderFactoryImpl>(
+            resource_message_filter_->requester_info_for_test()),
+        mojo::MakeRequest(&factory_));
 
     // Calling this function creates a request context.
     browser_context_->GetResourceContext()->GetRequestContext();
