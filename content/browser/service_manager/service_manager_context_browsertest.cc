@@ -91,10 +91,10 @@ class ServiceInstanceListener
 
 }  // namespace
 
-using ServiceManagerContextTest = ContentBrowserTest;
+using ServiceManagerContextBrowserTest = ContentBrowserTest;
 
 // "MANUAL" tests only run when kRunManualTestsFlag is set.
-IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
+IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
                        MANUAL_TerminateOnServiceQuit) {
   ShellContentBrowserClient::Get()
       ->set_should_terminate_on_service_quit_callback(
@@ -112,21 +112,14 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
   loop.Run();
 }
 
-// Flaky on Chromium OS ASAN: http://crbug.com/803188
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TerminateOnServiceQuit DISABLED_TerminateOnServiceQuit
-#else
-#define MAYBE_TerminateOnServiceQuit TerminateOnServiceQuit
-#endif
 // Verifies that if an important service quits then the browser exits.
-IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
-                       MAYBE_TerminateOnServiceQuit) {
+TEST(ServiceManagerContextTest, TerminateOnServiceQuit) {
   // Run the above test and collect the test output.
   base::CommandLine new_test =
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
   new_test.AppendSwitchASCII(
       base::kGTestFilterFlag,
-      "ServiceManagerContextTest.MANUAL_TerminateOnServiceQuit");
+      "ServiceManagerContextBrowserTest.MANUAL_TerminateOnServiceQuit");
   new_test.AppendSwitch(kRunManualTestsFlag);
   new_test.AppendSwitch(kSingleProcessTestsFlag);
 
@@ -142,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest,
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceManagerContextTest, ServiceProcessReportsPID) {
+IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
+                       ServiceProcessReportsPID) {
   service_manager::mojom::ServiceManagerListenerPtr listener_proxy;
   ServiceInstanceListener listener(mojo::MakeRequest(&listener_proxy));
 
