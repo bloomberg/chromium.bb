@@ -187,6 +187,8 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   virtual void IndexAndStoreAndPublishRulesetIfNeeded(
       const UnindexedRulesetInfo& unindexed_ruleset_info);
 
+  void set_is_after_startup_for_testing() { is_after_startup_ = true; }
+
  private:
   friend class SubresourceFilteringRulesetServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
