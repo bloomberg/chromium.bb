@@ -47,7 +47,7 @@ public class DefaultSearchEnginePromoDialogTest {
                     ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
                             .handleSynchronousStartup();
                 } catch (ProcessInitException e) {
-                    Assert.fail("Failed to initialize Chrome process");
+                    throw new AssertionError("Failed to initialize Chrome process.", e);
                 }
 
                 LocaleManager mockManager = new LocaleManager() {
