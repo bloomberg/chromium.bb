@@ -264,6 +264,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   WaitForCounting();
   EXPECT_EQ(3u, GetResult());
 
+  SetDeletionPeriodPref(browsing_data::TimePeriod::OLDER_THAN_30_DAYS);
+  WaitForCounting();
+  EXPECT_EQ(1u, GetResult());
+
   SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   WaitForCounting();
   EXPECT_EQ(4u, GetResult());
