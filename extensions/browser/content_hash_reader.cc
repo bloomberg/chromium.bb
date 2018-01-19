@@ -4,9 +4,7 @@
 
 #include "extensions/browser/content_hash_reader.h"
 
-#include "base/base64.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
@@ -14,13 +12,8 @@
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
+#include "extensions/browser/content_verifier/content_hash.h"
 #include "extensions/browser/verified_contents.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/file_util.h"
-
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
 
 namespace extensions {
 
@@ -42,29 +35,17 @@ bool ContentHashReader::Init() {
   base::ElapsedTimer timer;
   DCHECK_EQ(status_, NOT_INITIALIZED);
   status_ = FAILURE;
-  base::FilePath verified_contents_path =
-      file_util::GetVerifiedContentsPath(extension_root_);
-  if (!base::PathExists(verified_contents_path))
-    return false;
 
-  VerifiedContents verified_contents(key_.data, key_.size);
-  if (!verified_contents.InitFrom(verified_contents_path) ||
-      !verified_contents.valid_signature() ||
-      verified_contents.version() != extension_version_ ||
-      verified_contents.extension_id() != extension_id_) {
-    return false;
-  }
+  std::unique_ptr<ContentHash> content_hash =
+      ContentHash::Create(ContentHash::ExtensionKey(
+          extension_id_, extension_root_, extension_version_, key_));
 
-  base::FilePath computed_hashes_path =
-      file_util::GetComputedHashesPath(extension_root_);
-  if (!base::PathExists(computed_hashes_path))
-    return false;
-
-  ComputedHashes::Reader reader;
-  if (!reader.InitFromFile(computed_hashes_path))
+  if (!content_hash->succeeded())
     return false;
 
   has_content_hashes_ = true;
+
+  const VerifiedContents& verified_contents = content_hash->verified_contents();
 
   // Extensions sometimes request resources that do not have an entry in
   // verified_contents.json. This can happen when an extension sends an XHR to a
@@ -82,9 +63,11 @@ bool ContentHashReader::Init() {
     return false;
   }
 
+  const ComputedHashes::Reader& reader = content_hash->computed_hashes();
   if (!reader.GetHashes(relative_path_, &block_size_, &hashes_) ||
-      block_size_ % crypto::kSHA256Length != 0)
+      block_size_ % crypto::kSHA256Length != 0) {
     return false;
+  }
 
   std::string root =
       ComputeTreeHashRoot(hashes_, block_size_ / crypto::kSHA256Length);
