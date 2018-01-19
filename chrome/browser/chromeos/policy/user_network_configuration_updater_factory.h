@@ -14,10 +14,6 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace user_manager {
-class User;
-}
-
 class Profile;
 
 namespace policy {
@@ -49,8 +45,6 @@ class UserNetworkConfigurationUpdaterFactory
   bool ServiceIsNULLWhileTesting() const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-
-  static bool AllowTrustedCertsFromPolicy(const user_manager::User* user);
 
   DISALLOW_COPY_AND_ASSIGN(UserNetworkConfigurationUpdaterFactory);
 };
