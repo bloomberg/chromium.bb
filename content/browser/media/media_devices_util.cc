@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/media_switches.h"
@@ -124,6 +125,36 @@ std::pair<std::string, url::Origin> GetMediaDeviceSaltAndOrigin(
       process_host ? process_host->GetBrowserContext()->GetMediaDeviceIDSalt()
                    : std::string(),
       frame_host ? frame_host->GetLastCommittedOrigin() : url::Origin());
+}
+
+MediaDeviceInfo TranslateMediaDeviceInfo(bool has_permission,
+                                         const std::string& device_id_salt,
+                                         const std::string& group_id_salt,
+                                         const url::Origin& security_origin,
+                                         const MediaDeviceInfo& device_info) {
+  return MediaDeviceInfo(
+      GetHMACForMediaDeviceID(device_id_salt, security_origin,
+                              device_info.device_id),
+      has_permission ? device_info.label : std::string(),
+      device_info.group_id.empty()
+          ? std::string()
+          : GetHMACForMediaDeviceID(group_id_salt, security_origin,
+                                    device_info.group_id));
+}
+
+MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
+    bool has_permission,
+    const std::string& device_id_salt,
+    const std::string& group_id_salt,
+    const url::Origin& security_origin,
+    const MediaDeviceInfoArray& device_infos) {
+  MediaDeviceInfoArray result;
+  for (const auto& device_info : device_infos) {
+    result.push_back(TranslateMediaDeviceInfo(has_permission, device_id_salt,
+                                              group_id_salt, security_origin,
+                                              device_info));
+  }
+  return result;
 }
 
 }  // namespace content

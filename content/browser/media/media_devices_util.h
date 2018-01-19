@@ -32,6 +32,26 @@ std::pair<std::string, url::Origin> GetMediaDeviceSaltAndOrigin(
     int render_process_id,
     int render_frame_id);
 
+// Returns a translated version of |device_info| suitable for use in a renderer
+// process.
+// The |device_id| field is hashed using |device_id_salt| and |security_origin|.
+// The |group_id| field is hashed using |group_id_salt| and |security_origin|.
+// The |label| field is removed if |has_permission| is false.
+MediaDeviceInfo TranslateMediaDeviceInfo(bool has_permission,
+                                         const std::string& device_id_salt,
+                                         const std::string& group_id_salt,
+                                         const url::Origin& security_origin,
+                                         const MediaDeviceInfo& device_info);
+
+// Returns a translated version of |device_infos|, with each element translated
+// using TranslateMediaDeviceInfo().
+MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
+    bool has_permission,
+    const std::string& device_id_salt,
+    const std::string& group_id_salt,
+    const url::Origin& security_origin,
+    const MediaDeviceInfoArray& device_infos);
+
 // Type definition to make it easier to use mock alternatives to
 // GetMediaDeviceSaltAndOrigin.
 using MediaDeviceSaltAndOriginCallback =

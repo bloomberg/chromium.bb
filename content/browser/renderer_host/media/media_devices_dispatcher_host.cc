@@ -44,36 +44,6 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const int kFallbackVideoFrameRates[] = {30, 60};
 
-MediaDeviceInfo TranslateDeviceInfo(bool has_permission,
-                                    const std::string& device_id_salt,
-                                    const std::string& group_id_salt,
-                                    const url::Origin& security_origin,
-                                    const MediaDeviceInfo& device_info) {
-  return MediaDeviceInfo(
-      GetHMACForMediaDeviceID(device_id_salt, security_origin,
-                              device_info.device_id),
-      has_permission ? device_info.label : std::string(),
-      device_info.group_id.empty()
-          ? std::string()
-          : GetHMACForMediaDeviceID(group_id_salt, security_origin,
-                                    device_info.group_id));
-}
-
-MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
-    bool has_permission,
-    const std::string& device_id_salt,
-    const std::string& group_id_salt,
-    const url::Origin& security_origin,
-    const MediaDeviceInfoArray& input) {
-  MediaDeviceInfoArray result;
-  for (const auto& device_info : input) {
-    result.push_back(TranslateDeviceInfo(has_permission, device_id_salt,
-                                         group_id_salt, security_origin,
-                                         device_info));
-  }
-  return result;
-}
-
 blink::mojom::FacingMode ToFacingMode(media::VideoFacingMode facing_mode) {
   switch (facing_mode) {
     case media::MEDIA_VIDEO_FACING_NONE:
@@ -131,8 +101,6 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
       group_id_salt_base_(BrowserContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
       num_pending_audio_input_parameters_(0),
-      salt_and_origin_callback_(
-          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -171,14 +139,9 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
-      base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id_),
-      base::BindOnce(
-          &MediaDevicesDispatcherHost::CheckPermissionsForEnumerateDevices,
-          weak_factory_.GetWeakPtr(), devices_to_enumerate,
-          base::Passed(&client_callback)));
+  media_stream_manager_->media_devices_manager()->EnumerateDevices(
+      render_process_id_, render_frame_id_, group_id_salt_base_,
+      devices_to_enumerate, std::move(client_callback));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
@@ -186,8 +149,9 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
-      base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id_),
+      base::BindOnce(media_stream_manager_->media_devices_manager()
+                         ->salt_and_origin_callback(),
+                     render_process_id_, render_frame_id_),
       base::BindOnce(&MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(&client_callback)));
@@ -213,8 +177,9 @@ void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
     GetAudioInputCapabilitiesCallback client_callback) {
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
-      base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id_),
+      base::BindOnce(media_stream_manager_->media_devices_manager()
+                         ->salt_and_origin_callback(),
+                     render_process_id_, render_frame_id_),
       base::BindOnce(&MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(&client_callback)));
@@ -296,9 +261,10 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
       return;
   }
 
-  const auto& salt_and_origin =
-      salt_and_origin_callback_.Run(render_process_id_, render_frame_id_);
-  std::string group_id_salt = ComputeGroupIDSalt(salt_and_origin.first);
+  const auto& salt_and_origin = media_stream_manager_->media_devices_manager()
+                                    ->salt_and_origin_callback()
+                                    .Run(render_process_id_, render_frame_id_);
+  std::string group_id_salt = group_id_salt_base_ + salt_and_origin.first;
   for (uint32_t subscription_id : subscriptions) {
     bool has_permission = media_stream_manager_->media_devices_manager()
                               ->media_devices_permission_checker()
@@ -316,59 +282,6 @@ void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
     blink::mojom::MediaDevicesListenerPtr listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   device_change_listener_ = std::move(listener);
-}
-
-void MediaDevicesDispatcherHost::CheckPermissionsForEnumerateDevices(
-    const MediaDevicesManager::BoolDeviceTypes& requested_types,
-    EnumerateDevicesCallback client_callback,
-    const std::pair<std::string, url::Origin>& salt_and_origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media_stream_manager_->media_devices_manager()
-      ->media_devices_permission_checker()
-      ->CheckPermissions(
-          requested_types, render_process_id_, render_frame_id_,
-          base::BindOnce(&MediaDevicesDispatcherHost::DoEnumerateDevices,
-                         weak_factory_.GetWeakPtr(), requested_types,
-                         base::Passed(&client_callback), salt_and_origin.first,
-                         salt_and_origin.second));
-}
-
-void MediaDevicesDispatcherHost::DoEnumerateDevices(
-    const MediaDevicesManager::BoolDeviceTypes& requested_types,
-    EnumerateDevicesCallback client_callback,
-    std::string device_id_salt,
-    const url::Origin& security_origin,
-    const MediaDevicesManager::BoolDeviceTypes& has_permissions) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  media_stream_manager_->media_devices_manager()->EnumerateDevices(
-      requested_types,
-      base::Bind(&MediaDevicesDispatcherHost::DevicesEnumerated,
-                 weak_factory_.GetWeakPtr(), requested_types,
-                 base::Passed(&client_callback), std::move(device_id_salt),
-                 security_origin, has_permissions));
-}
-
-void MediaDevicesDispatcherHost::DevicesEnumerated(
-    const MediaDevicesManager::BoolDeviceTypes& requested_types,
-    EnumerateDevicesCallback client_callback,
-    const std::string& device_id_salt,
-    const url::Origin& security_origin,
-    const MediaDevicesManager::BoolDeviceTypes& has_permissions,
-    const MediaDeviceEnumeration& enumeration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::string group_id_salt = ComputeGroupIDSalt(device_id_salt);
-  std::vector<std::vector<MediaDeviceInfo>> result(NUM_MEDIA_DEVICE_TYPES);
-  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
-    if (!requested_types[i])
-      continue;
-
-    for (const auto& device_info : enumeration[i]) {
-      result[i].push_back(TranslateDeviceInfo(has_permissions[i],
-                                              device_id_salt, group_id_salt,
-                                              security_origin, device_info));
-    }
-  }
-  std::move(client_callback).Run(result);
 }
 
 void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
@@ -441,8 +354,9 @@ void MediaDevicesDispatcherHost::GetVideoInputDeviceFormats(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
-      base::BindOnce(salt_and_origin_callback_, render_process_id_,
-                     render_frame_id_),
+      base::BindOnce(media_stream_manager_->media_devices_manager()
+                         ->salt_and_origin_callback(),
+                     render_process_id_, render_frame_id_),
       base::BindOnce(
           &MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats,
           weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
@@ -621,11 +535,6 @@ void MediaDevicesDispatcherHost::FinalizeGetAudioInputCapabilities() {
 
   current_audio_input_capabilities_.clear();
   pending_audio_input_capabilities_requests_.clear();
-}
-
-std::string MediaDevicesDispatcherHost::ComputeGroupIDSalt(
-    const std::string& device_id_salt) {
-  return group_id_salt_base_ + device_id_salt;
 }
 
 }  // namespace content

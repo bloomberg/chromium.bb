@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/system_monitor/system_monitor.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
 #include "media/audio/audio_device_description.h"
@@ -60,6 +61,8 @@ class CONTENT_EXPORT MediaDevicesManager
 
   using EnumerationCallback =
       base::Callback<void(const MediaDeviceEnumeration&)>;
+  using EnumerateDevicesCallback =
+      base::OnceCallback<void(const std::vector<MediaDeviceInfoArray>&)>;
 
   MediaDevicesManager(
       media::AudioSystem* audio_system,
@@ -76,6 +79,18 @@ class CONTENT_EXPORT MediaDevicesManager
   // IO thread.
   void EnumerateDevices(const BoolDeviceTypes& requested_types,
                         const EnumerationCallback& callback);
+
+  // Performs a possibly cached device enumeration for the requested device
+  // types and reports the results to |callback|. The enumeration results are
+  // translated for use by the renderer process and frame identified with
+  // |render_process_id| and |render_frame_id|, based on the frame origin's
+  // permissions, an internal media-device salt, and the given
+  // |group_id_salt_base|.
+  void EnumerateDevices(int render_process_id,
+                        int render_frame_id,
+                        const std::string& group_id_salt_base,
+                        const BoolDeviceTypes& requested_types,
+                        EnumerateDevicesCallback callback);
 
   // Subscribes |subscriber| to receive device-change notifications for devices
   // of type |type|. If |subscriber| is already subscribed, this function has
@@ -115,9 +130,17 @@ class CONTENT_EXPORT MediaDevicesManager
 
   MediaDevicesPermissionChecker* media_devices_permission_checker();
 
+  const MediaDeviceSaltAndOriginCallback& salt_and_origin_callback() const {
+    return salt_and_origin_callback_;
+  }
+
   // Used for testing only.
   void SetPermissionChecker(
       std::unique_ptr<MediaDevicesPermissionChecker> permission_checker);
+  void set_salt_and_origin_callback_for_testing(
+      MediaDeviceSaltAndOriginCallback callback) {
+    salt_and_origin_callback_ = std::move(callback);
+  }
 
  private:
   friend class MediaDevicesManagerTest;
@@ -136,6 +159,30 @@ class CONTENT_EXPORT MediaDevicesManager
 
   // Manually sets a caching policy for a given device type.
   void SetCachePolicy(MediaDeviceType type, CachePolicy policy);
+
+  // Helpers to handle enumeration results for a renderer process.
+  void CheckPermissionsForEnumerateDevices(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& group_id_salt_base,
+      const BoolDeviceTypes& requested_types,
+      EnumerateDevicesCallback callback,
+      const std::pair<std::string, url::Origin>& salt_and_origin);
+  void OnPermissionsCheckDone(
+      const std::string& group_id_salt_base,
+      const MediaDevicesManager::BoolDeviceTypes& requested_types,
+      EnumerateDevicesCallback callback,
+      const std::string& device_id_salt,
+      const url::Origin& security_origin,
+      const MediaDevicesManager::BoolDeviceTypes& has_permissions);
+  void OnDevicesEnumerated(
+      const std::string& group_id_salt_base,
+      const MediaDevicesManager::BoolDeviceTypes& requested_types,
+      EnumerateDevicesCallback callback,
+      const std::string& device_id_salt,
+      const url::Origin& security_origin,
+      const MediaDevicesManager::BoolDeviceTypes& has_permissions,
+      const MediaDeviceEnumeration& enumeration);
 
   // Helpers to issue low-level device enumerations.
   void DoEnumerateDevices(MediaDeviceType type);
@@ -190,6 +237,9 @@ class CONTENT_EXPORT MediaDevicesManager
 
   std::vector<MediaDeviceChangeSubscriber*>
       device_change_subscribers_[NUM_MEDIA_DEVICE_TYPES];
+
+  // Callback used to obtain the current device ID salt and security origin.
+  MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaDevicesManager> weak_factory_;
 

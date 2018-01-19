@@ -114,9 +114,10 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
         std::move(video_capture_provider));
     host_ = std::make_unique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, media_stream_manager_.get());
-    host_->set_salt_and_origin_callback_for_testing(
-        base::Bind(&MediaDevicesDispatcherHostTest::GetSaltAndOrigin,
-                   base::Unretained(this)));
+    media_stream_manager_->media_devices_manager()
+        ->set_salt_and_origin_callback_for_testing(base::BindRepeating(
+            &MediaDevicesDispatcherHostTest::GetSaltAndOrigin,
+            base::Unretained(this)));
   }
   ~MediaDevicesDispatcherHostTest() override { audio_manager_->Shutdown(); }
 

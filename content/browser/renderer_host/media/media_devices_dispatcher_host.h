@@ -65,34 +65,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void SetDeviceChangeListenerForTesting(
       blink::mojom::MediaDevicesListenerPtr listener);
 
-  void set_salt_and_origin_callback_for_testing(
-      MediaDeviceSaltAndOriginCallback callback) {
-    salt_and_origin_callback_ = std::move(callback);
-  }
-
  private:
   using GetVideoInputDeviceFormatsCallback =
       GetAllVideoInputDeviceFormatsCallback;
-
-  void CheckPermissionsForEnumerateDevices(
-      const MediaDevicesManager::BoolDeviceTypes& requested_types,
-      EnumerateDevicesCallback client_callback,
-      const std::pair<std::string, url::Origin>& salt_and_origin);
-
-  void DoEnumerateDevices(
-      const MediaDevicesManager::BoolDeviceTypes& requested_types,
-      EnumerateDevicesCallback client_callback,
-      std::string device_id_salt,
-      const url::Origin& security_origin,
-      const MediaDevicesManager::BoolDeviceTypes& has_permissions);
-
-  void DevicesEnumerated(
-      const MediaDevicesManager::BoolDeviceTypes& requested_types,
-      EnumerateDevicesCallback client_callback,
-      const std::string& device_id_salt,
-      const url::Origin& security_origin,
-      const MediaDevicesManager::BoolDeviceTypes& has_permissions,
-      const MediaDeviceEnumeration& enumeration);
 
   void GetDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
@@ -154,8 +129,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                                     MediaDeviceType type,
                                     const MediaDeviceInfoArray& device_infos);
 
-  std::string ComputeGroupIDSalt(const std::string& device_id_salt);
-
   // The following const fields can be accessed on any thread.
   const int render_process_id_;
   const int render_frame_id_;
@@ -179,9 +152,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   size_t num_pending_audio_input_parameters_;
   std::vector<blink::mojom::AudioInputDeviceCapabilities>
       current_audio_input_capabilities_;
-
-  // Callback used to obtain the current device ID salt and security origin.
-  MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_;
 
