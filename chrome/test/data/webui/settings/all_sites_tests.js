@@ -70,6 +70,7 @@ const prefsMixedOriginAndPattern = {
     sound: [],
     unsandboxed_plugins: [],
     clipboard: [],
+    sensors: [],
   }
 };
 
@@ -134,6 +135,7 @@ const prefsVarious = {
     sound: [],
     unsandboxed_plugins: [],
     clipboard: [],
+    sensors: [],
   }
 };
 

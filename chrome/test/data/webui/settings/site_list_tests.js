@@ -54,6 +54,7 @@ const prefsGeolocation = {
     sound: [],
     unsandboxed_plugins: [],
     clipboard: [],
+    sensors: [],
   }
 };
 

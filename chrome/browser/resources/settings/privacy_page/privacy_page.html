@@ -360,6 +360,22 @@
           </settings-subpage>
         </template>
       </template>
+      <template is="dom-if" if="[[enableSensorsContentSetting_]]"
+          no-search>
+        <template is="dom-if" route-path="/content/sensors" no-search>
+         <settings-subpage page-title="$i18n{siteSettingsSensors}">
+           <category-default-setting
+               toggle-off-label="$i18n{siteSettingsSensorsBlock}"
+               toggle-on-label="$i18n{siteSettingsSensorsAllow}"
+               category="{{ContentSettingsTypes.SENSORS}}">
+           </category-default-setting>
+           <category-setting-exceptions
+               category="{{ContentSettingsTypes.SENSORS}}" read-only-list
+               block-header="$i18n{siteSettingsBlock}">
+           </category-setting-exceptions>
+         </settings-subpage>
+        </template>
+      </template>
       <template is="dom-if" route-path="/content/microphone" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryMicrophone}">
           <media-picker label="$i18n{siteSettingsMicrophoneLabel}" type="mic">
