@@ -130,9 +130,9 @@ class HostBrowserLauncher {
 
     /** Deletes the internal storage. */
     private void deleteInternalStorage() {
-        WebApkUtils.deletePath(mContext.getCacheDir());
-        WebApkUtils.deletePath(mContext.getFilesDir());
-        WebApkUtils.deletePath(
+        DexLoader.deletePath(mContext.getCacheDir());
+        DexLoader.deletePath(mContext.getFilesDir());
+        DexLoader.deletePath(
                 mContext.getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 

@@ -211,7 +211,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
   # _CheckPathMatchesClassName() fails on some of it, and it's not really much
   # benefit.
   for java_file in java_files:
-    if 'third_party' in java_file:
+    if 'third_party' in java_file or not options.chromium_code:
       incremental = False
     else:
       _CheckPathMatchesClassName(java_file)

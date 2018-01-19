@@ -1,5 +1,4 @@
 include_rules = [
   "+chrome/android/webapk/test",
-  "+chrome/android/webapk/libs/runtime_library",
   "+testing",
 ]
