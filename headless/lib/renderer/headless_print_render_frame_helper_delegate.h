@@ -16,11 +16,11 @@ class HeadlessPrintRenderFrameHelperDelegate
   HeadlessPrintRenderFrameHelperDelegate();
   ~HeadlessPrintRenderFrameHelperDelegate() override;
 
-  // PrintRenderFrameHelper Delegate implementation.
+ private:
+  // printing::PrintRenderFrameHelper::Delegate:
   bool CancelPrerender(content::RenderFrame* render_frame) override;
   bool IsPrintPreviewEnabled() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
-  bool IsAskPrintSettingsEnabled() override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessPrintRenderFrameHelperDelegate);

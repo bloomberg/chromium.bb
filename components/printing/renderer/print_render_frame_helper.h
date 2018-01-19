@@ -99,10 +99,6 @@ class PrintRenderFrameHelper
 
     virtual bool IsPrintPreviewEnabled() = 0;
 
-    // If true, the user can be asked to provide print settings.
-    // The default implementation returns |true|.
-    virtual bool IsAskPrintSettingsEnabled();
-
     // If false, window.print() won't do anything.
     // The default implementation returns |true|.
     virtual bool IsScriptedPrintEnabled();

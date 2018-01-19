@@ -5,20 +5,23 @@
 #ifndef CHROME_RENDERER_PRINTING_CHROME_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
 #define CHROME_RENDERER_PRINTING_CHROME_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
 
+#include "base/macros.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 
 class ChromePrintRenderFrameHelperDelegate
     : public printing::PrintRenderFrameHelper::Delegate {
  public:
+  ChromePrintRenderFrameHelperDelegate();
   ~ChromePrintRenderFrameHelperDelegate() override;
 
+ private:
+  // printing::PrintRenderFrameHelper::Delegate:
   bool CancelPrerender(content::RenderFrame* render_frame) override;
-
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
-
   bool IsPrintPreviewEnabled() override;
-
   bool OverridePrint(blink::WebLocalFrame* frame) override;
-};  // class ChromePrintRenderFrameHelperDelegate
+
+  DISALLOW_COPY_AND_ASSIGN(ChromePrintRenderFrameHelperDelegate);
+};
 
 #endif  // CHROME_RENDERER_PRINTING_CHROME_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
