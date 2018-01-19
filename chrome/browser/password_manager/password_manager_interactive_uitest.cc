@@ -54,9 +54,9 @@ void SimulateUserDeletingFieldContent(content::WebContents* web_contents,
 
 namespace password_manager {
 
-// This is a test fixture, just to enable the kEnableManualSaving feature. The
+// This is a test fixture, just to enable the kManualSaving feature. The
 // fixture should be replaced by PasswordManagerBrowserTestBase once the
-// kEnableManualSaving feature is deleted.
+// kManualSaving feature is deleted.
 class PasswordManagerBrowserTestForManualSaving
     : public PasswordManagerBrowserTestBase {
  public:
@@ -65,7 +65,7 @@ class PasswordManagerBrowserTestForManualSaving
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnableManualSaving);
+        password_manager::features::kManualSaving);
     PasswordManagerBrowserTestBase::SetUp();
   }
 
