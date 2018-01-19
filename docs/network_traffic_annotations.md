@@ -418,10 +418,12 @@ modification of the annotation value, like the ones used by mojo interfaces
 where after serialization, the annotation object is first created, then receives
 value. In these cases, `net::MutableNetworkTrafficAnnotationTag` and
 `net::MutablePartialNetworkTrafficAnnotationTag` can be used which do not have
-this limitation. It is strongly suggested that mutable annotations would be used
-only if there is no other way around it. Use cases are checked with the
-`traffic_annotation_auditor` to ensure proper values for the mutable
-annotations.
+this limitation.
+Mutable annotations have a run time check before being converted into normal
+annotations to ensure their content is valid. Therefore it is suggested that
+they would be used only if there is no other way around it. Use cases are
+checked with the `traffic_annotation_auditor` to ensure proper initialization
+values for the mutable annotations.
 
 
 ## Mojo Interfaces (Advanced)
