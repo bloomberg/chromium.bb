@@ -127,6 +127,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     ContentSettingsType content_settings_type;
     ChooserContextBase* (*get_context)(Profile*);
     int label_string_id;
+    int secondary_label_string_id;
     int delete_tooltip_string_id;
     const char* ui_name_key;
   };

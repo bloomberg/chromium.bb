@@ -168,7 +168,7 @@ class PageInfoUI {
       const GURL& url);
 
   // Returns the color to use for the permission decision reason strings.
-  static SkColor GetPermissionDecisionTextColor();
+  static SkColor GetSecondaryTextColor();
 
   // Returns the UI string describing the given object |info|.
   static base::string16 ChosenObjectToUIString(const ChosenObjectInfo& info);

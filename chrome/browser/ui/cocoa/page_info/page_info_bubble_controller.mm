@@ -1228,8 +1228,8 @@ bool IsInternalURL(const GURL& url) {
       [label setFrameOrigin:point];
     }
 
-    label.textColor = skia::SkColorToSRGBNSColor(
-        PageInfoUI::GetPermissionDecisionTextColor());
+    label.textColor =
+        skia::SkColorToSRGBNSColor(PageInfoUI::GetSecondaryTextColor());
     point.y += NSHeight(label.frame);
   }
 

@@ -298,7 +298,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
       api_->permissions_view()->child_at(kExpectedChildren));
-  EXPECT_EQ(3, object_view->child_count());
+  EXPECT_EQ(4, object_view->child_count());
 
   const int kLabelIndex = 1;
   views::Label* label =
