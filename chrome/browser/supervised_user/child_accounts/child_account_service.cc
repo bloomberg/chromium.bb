@@ -150,8 +150,8 @@ ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
                                           kGaiaCookieManagerSource)) {
     return AuthState::PENDING;
   }
-  return accounts.empty() ? AuthState::NOT_AUTHENTICATED
-                          : AuthState::AUTHENTICATED;
+  return (accounts.empty() || !accounts[0].valid) ? AuthState::NOT_AUTHENTICATED
+                                                  : AuthState::AUTHENTICATED;
 }
 
 std::unique_ptr<base::CallbackList<void()>::Subscription>
