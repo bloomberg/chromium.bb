@@ -194,11 +194,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       const blink::WebGestureEvent& gesture_event);
 
-  // |mouse_event| is in the coord-space of |target|.
+  // |mouse_event| is in the coord-space of |root_view|.
   void DispatchMouseEvent(RenderWidgetHostViewBase* root_view,
                           RenderWidgetHostViewBase* target,
                           const blink::WebMouseEvent& mouse_event,
-                          const ui::LatencyInfo& latency);
+                          const ui::LatencyInfo& latency,
+                          const base::Optional<gfx::PointF>& target_location);
   // |mouse_wheel_event| is in the coord-space of |root_view|.
   void DispatchMouseWheelEvent(
       RenderWidgetHostViewBase* root_view,
