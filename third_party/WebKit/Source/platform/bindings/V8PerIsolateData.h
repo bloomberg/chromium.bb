@@ -277,9 +277,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   // Contains lists of eternal names, such as dictionary keys.
   HashMap<const void*, Vector<v8::Eternal<v8::Name>>> eternal_name_cache_;
 
-  // Members required for the V8 context snapshot.
-  // v8::Context is created from this blob data image.
-  v8::StartupData startup_data_;
   // When taking a V8 context snapshot, we can't keep V8 objects with eternal
   // handles. So we use a special interface map that doesn't use eternal handles
   // instead of the default V8FunctionTemplateMap.

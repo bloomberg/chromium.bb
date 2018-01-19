@@ -169,39 +169,35 @@ void InitializeFieldTrialAndFeatureList(
 }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-void LoadV8ContextSnapshotFile() {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::FileDescriptorStore& file_descriptor_store =
-      base::FileDescriptorStore::GetInstance();
-  base::MemoryMappedFile::Region region;
-  base::ScopedFD fd = file_descriptor_store.MaybeTakeFD(
-      kV8ContextSnapshotDataDescriptor, &region);
-  if (fd.is_valid()) {
-    gin::V8Initializer::LoadV8ContextSnapshotFromFD(fd.get(), region.offset,
-                                                    region.size);
-    return;
-  }
-#endif  // OS_POSIX && !OS_MACOSX
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  gin::V8Initializer::LoadV8ContextSnapshot();
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
-}
 
 void LoadV8SnapshotFile() {
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+  static constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+      gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
+  static const char* snapshot_data_descriptor =
+      kV8ContextSnapshotDataDescriptor;
+#else
+  static constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+      gin::V8Initializer::V8SnapshotFileType::kDefault;
+  static const char* snapshot_data_descriptor = kV8SnapshotDataDescriptor;
+#endif  // USE_V8_CONTEXT_SNAPSHOT
+  ALLOW_UNUSED_LOCAL(kSnapshotType);
+  ALLOW_UNUSED_LOCAL(snapshot_data_descriptor);
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptorStore& file_descriptor_store =
       base::FileDescriptorStore::GetInstance();
   base::MemoryMappedFile::Region region;
   base::ScopedFD fd =
-      file_descriptor_store.MaybeTakeFD(kV8SnapshotDataDescriptor, &region);
+      file_descriptor_store.MaybeTakeFD(snapshot_data_descriptor, &region);
   if (fd.is_valid()) {
     gin::V8Initializer::LoadV8SnapshotFromFD(fd.get(), region.offset,
-                                             region.size);
+                                             region.size, kSnapshotType);
     return;
   }
 #endif  // OS_POSIX && !OS_MACOSX
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
 
@@ -232,7 +228,6 @@ void InitializeV8IfNeeded(const base::CommandLine& command_line,
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   LoadV8SnapshotFile();
   LoadV8NativesFile();
-  LoadV8ContextSnapshotFile();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 }
 

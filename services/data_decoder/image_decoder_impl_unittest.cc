@@ -28,6 +28,16 @@ namespace {
 
 const int64_t kTestMaxImageSize = 128 * 1024;
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
+#else
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kDefault;
+#endif
+#endif
+
 bool CreateJPEGImage(int width,
                      int height,
                      SkColor color,
@@ -72,11 +82,8 @@ class BlinkInitializer : public blink::Platform {
       : main_thread_(
             blink::scheduler::WebThreadBase::InitializeUtilityThread()) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-    gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
     gin::V8Initializer::LoadV8Natives();
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-    gin::V8Initializer::LoadV8ContextSnapshot();
-#endif  // USE_V8_CONTEXT_SNAPSHOT
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
     service_manager::BinderRegistry empty_registry;

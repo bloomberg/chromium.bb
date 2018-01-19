@@ -53,20 +53,21 @@ class GIN_EXPORT IsolateHolder {
     kStableAndExperimentalV8Extras,
   };
 
+  // Indicates how the Isolate instance will be created.
+  enum class IsolateCreationMode {
+    kNormal,
+    kCreateSnapshot,
+  };
+
   explicit IsolateHolder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 AccessMode access_mode);
-  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                AccessMode access_mode,
-                AllowAtomicsWaitMode atomics_wait_mode,
-                v8::StartupData* startup_data);
-
-  // This constructor is to create V8 snapshot for Blink.
-  // Note this constructor calls isolate->Enter() internally.
-  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                v8::StartupData* existing_blob);
-
+  IsolateHolder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      AccessMode access_mode,
+      AllowAtomicsWaitMode atomics_wait_mode,
+      IsolateCreationMode isolate_creation_mode = IsolateCreationMode::kNormal);
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
