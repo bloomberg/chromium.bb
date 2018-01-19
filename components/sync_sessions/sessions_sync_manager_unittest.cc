@@ -1098,6 +1098,87 @@ TEST_F(SessionsSyncManagerTest, PreserveTabbedDataCustomTab) {
   VerifyLocalHeaderChange(out[1], 2, 2);
 }
 
+// Create a placeholder and a non-placeholder that have the same sync ids. Only
+// the non-placeholder should survive. This state should be impossible for up
+// to date clients to enter.
+TEST_F(SessionsSyncManagerTest, ConflictingSyncIdsWithPlaceholder) {
+  syncer::SyncDataList in;
+  syncer::SyncChangeList out;
+
+  // First sync with one tab and one window.
+  TestSyncedWindowDelegate* window = AddWindow();
+  AddTab(window->GetSessionId(), kFoo1);
+  InitWithSyncDataTakeOutput(in, &out);
+
+  in = GetDataFromChanges(out);
+  int conflicting_sync_id =
+      out[1].sync_data().GetSpecifics().session().tab_node_id();
+  out.clear();
+  // There should be two entities, a header and a tab.
+  ASSERT_EQ(2U, in.size());
+
+  manager()->StopSyncing(syncer::SESSIONS);
+
+  // The main window's tab is now a placeholder, and we have a conflicting id
+  // for the custom tab. They should both have their tab ids reset, but the
+  // placeholder cannot be fixed, and will be dropped. Only the custom tab will
+  // show up now.
+  PlaceholderTabDelegate tab2(SessionID().id(), conflicting_sync_id);
+  window->OverrideTabAt(0, &tab2);
+
+  TestSyncedWindowDelegate* window2 = AddWindow();
+  SessionID new_window_id;
+  window2->OverrideWindowId(new_window_id.id());
+  window2->OverrideWindowTypeToCustomTab();
+  TestSyncedTabDelegate* tab3 = AddTab(window2->GetSessionId(), kBar1);
+  tab3->SetSyncId(conflicting_sync_id);
+  window2->OverrideTabAt(0, tab3);
+
+  InitWithSyncDataTakeOutput(ConvertToRemote(in), &out);
+
+  ASSERT_TRUE(ChangeTypeMatches(
+      out, {SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE}));
+  VerifyLocalTabChange(out[0], 1, kBar1);
+  VerifyLocalHeaderChange(out[1], 1, 1);
+}
+
+// Create two tabs with the same sync id, which is an invalid state. The manager
+// should strip both of the sync ids, and then new ones should be generated.
+// This state should be impossible for up to date clients to enter.
+TEST_F(SessionsSyncManagerTest, ConflictingSyncIdsBothReal) {
+  syncer::SyncDataList in;
+  syncer::SyncChangeList out;
+
+  TestSyncedWindowDelegate* window = AddWindow();
+  TestSyncedTabDelegate* tab1 = AddTab(window->GetSessionId(), kFoo1);
+  TestSyncedTabDelegate* tab2 = AddTab(window->GetSessionId(), kBar1);
+
+  // The pool wants to start vending numbers 0, 1, 2, ... etc. So we're
+  // guaranteed that when the manager clears the sync ids, it will be replaced
+  // with smaller values.
+  int dupe_sync_id = 13;
+  tab1->SetSyncId(dupe_sync_id);
+  tab2->SetSyncId(dupe_sync_id);
+
+  InitWithSyncDataTakeOutput(in, &out);
+  // Header creation, two tab creations, and header update.
+  ASSERT_TRUE(ChangeTypeMatches(
+      out, {SyncChange::ACTION_ADD, SyncChange::ACTION_ADD,
+            SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE}));
+  VerifyLocalHeaderChange(out[0], 0, 0);
+  VerifyLocalTabChange(out[1], 1, kFoo1);
+  VerifyLocalTabChange(out[2], 1, kBar1);
+  VerifyLocalHeaderChange(out[3], 1, 2);
+
+  // The sync ids should have been fixed.
+  EXPECT_NE(dupe_sync_id,
+            out[1].sync_data().GetSpecifics().session().tab_node_id());
+  EXPECT_NE(dupe_sync_id,
+            out[2].sync_data().GetSpecifics().session().tab_node_id());
+  EXPECT_NE(out[1].sync_data().GetSpecifics().session().tab_node_id(),
+            out[2].sync_data().GetSpecifics().session().tab_node_id());
+}
+
 // Tests MergeDataAndStartSyncing with sync data but no local data.
 TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
   std::vector<SessionID::id_type> tab_list1(std::begin(kTabIds1),
@@ -2532,9 +2613,10 @@ TEST_F(SessionsSyncManagerTest, RestoredPlacholderTabNodeDeleted) {
 }
 
 // Check the behavior for a placeholder tab in one window being mapped to the
-// same sync entity as a tab in another window. If the placeholder is associated
-// last, the original tab should be unmapped from the first window, and reused
-// by the placeholder in the new window..
+// same sync entity as a tab in another window. The order should not matter.
+// Instead, they both should have their sync data discarded, sync ids reset, and
+// then re-created where possible (not possible for the placeholder). Assuming a
+// well behaved client, this should never happen.
 TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
   syncer::SyncDataList in;
   syncer::SyncChangeList out;
@@ -2559,25 +2641,18 @@ TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
   out.clear();
   InitWithSyncDataTakeOutput(in, &out);
 
-  // The tab entity will be overwritten twice. Once with the information for
-  // tab 1 and then again with the information for tab 2. This will be followed
-  // by a header change reflecting only the final tab.
-  ASSERT_TRUE(
-      ChangeTypeMatches(out,
-                        {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE,
-                         SyncChange::ACTION_UPDATE}));
-  VerifyLocalHeaderChange(out[2], 2, 1);
+  // The two tabs have the same sync id, which is not allowed. They will have
+  // their ids stripped and re-generated. But the placeholder cannot survive
+  // this and will not show up in results. Because we have potentially new sync
+  // ids, the essentially re-created tab will be an ADD.
+  ASSERT_TRUE(ChangeTypeMatches(
+      out, {SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE}));
+  VerifyLocalHeaderChange(out[1], 1, 1);
   VerifyLocalTabChange(out[0], 1, kFoo1);
-  EXPECT_EQ(sync_id, out[0].sync_data().GetSpecifics().session().tab_node_id());
   EXPECT_EQ(tab1->GetSessionId(),
             out[0].sync_data().GetSpecifics().session().tab().tab_id());
-  // Because tab 2 is a placeholder, tab 1's URL will be preserved.
-  VerifyLocalTabChange(out[1], 1, kFoo1);
-  EXPECT_EQ(sync_id, out[1].sync_data().GetSpecifics().session().tab_node_id());
-  EXPECT_EQ(tab2.GetSessionId(),
-            out[1].sync_data().GetSpecifics().session().tab().tab_id());
-  EXPECT_EQ(window2->GetSessionId(),
-            out[1].sync_data().GetSpecifics().session().tab().window_id());
+  EXPECT_EQ(tab1->GetSyncId(),
+            out[0].sync_data().GetSpecifics().session().tab_node_id());
 }
 
 // Tests that task ids are generated for navigations on local tabs.
