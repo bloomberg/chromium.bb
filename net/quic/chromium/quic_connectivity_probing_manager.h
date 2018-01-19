@@ -117,6 +117,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   std::unique_ptr<QuicChromiumPacketReader> reader_;
 
   int64_t retry_count_;
+  base::TimeTicks probe_start_time_;
   base::TimeDelta initial_timeout_;
   base::OneShotTimer retransmit_timer_;
 

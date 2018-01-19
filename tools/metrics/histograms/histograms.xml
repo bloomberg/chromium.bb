@@ -46455,6 +46455,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ProbingRetryCountUntilSuccess" units="retries">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    Number of retries to send connectivity probing packet on new path until
+    success.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.ProbingTimeInMillisecondsUntilSuccess"
+    units="ms">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The wait time to receive a matched probing response to mark connectivity
+    probing as successful.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PublicResetAddressMismatch"
     enum="QuicAddressMismatch">
   <owner>wtc@chromium.org</owner>
