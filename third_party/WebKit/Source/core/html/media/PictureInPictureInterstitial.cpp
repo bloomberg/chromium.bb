@@ -12,8 +12,8 @@
 #include "public/platform/WebLocalizedString.h"
 namespace {
 
-constexpr double kStyleChangeTransSeconds = 0.2;
-constexpr double kHiddenAnimationSeconds = 0.3;
+constexpr double kPictureInPictureStyleChangeTransSeconds = 0.2;
+constexpr double kPictureInPictureHiddenAnimationSeconds = 0.3;
 
 }  // namespace
 
@@ -52,7 +52,8 @@ void PictureInPictureInterstitial::Show() {
     interstitial_timer_.Stop();
   should_be_visible_ = true;
   RemoveInlineStyleProperty(CSSPropertyDisplay);
-  interstitial_timer_.StartOneShot(kStyleChangeTransSeconds, FROM_HERE);
+  interstitial_timer_.StartOneShot(kPictureInPictureStyleChangeTransSeconds,
+                                   FROM_HERE);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -63,7 +64,8 @@ void PictureInPictureInterstitial::Hide() {
   should_be_visible_ = false;
   SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
-  interstitial_timer_.StartOneShot(kHiddenAnimationSeconds, FROM_HERE);
+  interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
+                                   FROM_HERE);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
