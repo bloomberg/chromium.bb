@@ -29,8 +29,8 @@ import java.util.Arrays;
 @TargetApi(Build.VERSION_CODES.O)
 public class OWebContentsAccessibility extends LollipopWebContentsAccessibility {
     OWebContentsAccessibility(Context context, ViewGroup containerView, WebContents webContents,
-            boolean shouldFocusOnPageLoad) {
-        super(context, containerView, webContents, shouldFocusOnPageLoad);
+            String productVersion) {
+        super(context, containerView, webContents, productVersion);
     }
 
     @Override
