@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 
@@ -140,8 +141,16 @@ bool TestPasswordStore::FillBlacklistLogins(
 std::vector<std::unique_ptr<autofill::PasswordForm>>
 TestPasswordStore::FillLoginsForSameOrganizationName(
     const std::string& signon_realm) {
-  NOTIMPLEMENTED();
-  return {};
+  // Note: To keep TestPasswordStore simple, and because no tests currently
+  // require anything more complex, this is a simplistic implementation which
+  // assumes that that the signon_realm is a serialised URL.
+  return FillMatchingLogins(FormDigest(autofill::PasswordForm::SCHEME_HTML,
+                                       signon_realm, GURL(signon_realm)));
+}
+
+std::vector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
+    const GURL& origin_domain) {
+  return std::vector<InteractionsStats>();
 }
 
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
@@ -194,12 +203,6 @@ void TestPasswordStore::RemoveSiteStatsImpl(const GURL& origin_domain) {
 }
 
 std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
-  NOTIMPLEMENTED();
-  return std::vector<InteractionsStats>();
-}
-
-std::vector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
-    const GURL& origin_domain) {
   NOTIMPLEMENTED();
   return std::vector<InteractionsStats>();
 }
