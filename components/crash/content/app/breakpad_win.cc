@@ -4,12 +4,13 @@
 
 #include "components/crash/content/app/breakpad_win.h"
 
-#include <windows.h>
+#include <crtdbg.h>
 #include <intrin.h>
 #include <shellapi.h>
 #include <stddef.h>
 #include <tchar.h>
 #include <userenv.h>
+#include <windows.h>
 #include <winnt.h>
 
 #include <algorithm>
