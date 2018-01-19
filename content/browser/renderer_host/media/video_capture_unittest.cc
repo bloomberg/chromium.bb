@@ -75,6 +75,13 @@ ACTION_P2(ExitMessageLoop, task_runner, quit_closure) {
   task_runner->PostTask(FROM_HERE, quit_closure);
 }
 
+class MockRenderProcessHostDelegate
+    : public VideoCaptureHost::RenderProcessHostDelegate {
+ public:
+  MOCK_METHOD0(NotifyStreamAdded, void());
+  MOCK_METHOD0(NotifyStreamRemoved, void());
+};
+
 // This is an integration test of VideoCaptureHost in conjunction with
 // MediaStreamManager, VideoCaptureManager, VideoCaptureController, and
 // VideoCaptureDevice.
@@ -349,6 +356,28 @@ TEST_F(VideoCaptureTest, CloseSessionWithoutStopping) {
   EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::ENDED));
   CloseSession();
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests if RenderProcessHostDelegate methods are called as often as as
+// expected.
+TEST_F(VideoCaptureTest, IncrementMatchesDecrementCalls) {
+  std::unique_ptr<MockRenderProcessHostDelegate> mock_delegate =
+      std::make_unique<MockRenderProcessHostDelegate>();
+  MockRenderProcessHostDelegate* const mock_delegate_ptr = mock_delegate.get();
+  std::unique_ptr<VideoCaptureHost> host =
+      std::make_unique<VideoCaptureHost>(std::move(mock_delegate), nullptr);
+
+  const int kNumNotifyCalls = 3;
+  EXPECT_CALL(*mock_delegate_ptr, NotifyStreamAdded()).Times(kNumNotifyCalls);
+  EXPECT_CALL(*mock_delegate_ptr, NotifyStreamRemoved()).Times(kNumNotifyCalls);
+
+  EXPECT_EQ(0u, host->number_of_active_streams_);
+  for (int i = 0; i < kNumNotifyCalls; ++i)
+    host->NotifyStreamAdded();
+  EXPECT_EQ(kNumNotifyCalls, static_cast<int>(host->number_of_active_streams_));
+  host->NotifyStreamRemoved();
+  host->NotifyAllStreamsRemoved();
+  EXPECT_EQ(0u, host->number_of_active_streams_);
 }
 
 }  // namespace content
