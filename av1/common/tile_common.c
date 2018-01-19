@@ -25,7 +25,7 @@ void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
 #if !CONFIG_MAX_TILE
   (void)row;
 #endif
-  tile->tg_horz_boundary = 0;
+  tile->tg_horz_boundary = (row == 0);
 #else
   const int tg_start_row = cm->tile_group_start_row[row][col];
   const int tg_start_col = cm->tile_group_start_col[row][col];
