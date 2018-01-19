@@ -195,6 +195,7 @@ class MoveBlinkSource(object):
 
 Update file contents without moving files.
 
+NOAUTOREVERT=true
 Bug: 768828
 """)
 
@@ -235,6 +236,7 @@ Bug: 768828
 
 Move and rename files.
 
+NOAUTOREVERT=true
 Bug: 768828
 """)
 
