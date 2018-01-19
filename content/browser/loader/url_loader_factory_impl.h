@@ -37,8 +37,6 @@ class CONTENT_EXPORT URLLoaderFactoryImpl final
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
  private:
-  void OnConnectionError();
-
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   scoped_refptr<ResourceRequesterInfo> requester_info_;
