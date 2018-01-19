@@ -61,11 +61,6 @@ std::string GetMessageString() {
     case ProfilingProcessHost::Mode::kGpu:
       return std::string("Memory logging is enabled for just the gpu process.");
 
-    case ProfilingProcessHost::Mode::kManual:
-      return std::string(
-          "Memory logging must be manually enabled for each process via "
-          "chrome://memory-internals.");
-
     case ProfilingProcessHost::Mode::kMinimal:
       return std::string(
           "Memory logging is enabled for the browser and GPU processes.");
@@ -76,14 +71,11 @@ std::string GetMessageString() {
           "processes. This UI is disabled.");
 
     case ProfilingProcessHost::Mode::kNone:
+    case ProfilingProcessHost::Mode::kManual:
     default:
-      return base::StringPrintf(
-          "Memory logging is not enabled. Start with --%s=%s"
-          " to log all processes, or --%s=%s to log only the browser and GPU "
-          "processes. "
-          "Other options available in chrome://flags",
-          switches::kMemlog, switches::kMemlogModeAll, switches::kMemlog,
-          switches::kMemlogModeMinimal);
+      return std::string(
+          "Memory logging must be manually enabled for each process via "
+          "chrome://memory-internals.");
   }
 #elif defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   return "Memory logging is not available in this build because a memory "
