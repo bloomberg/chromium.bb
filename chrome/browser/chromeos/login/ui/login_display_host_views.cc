@@ -17,10 +17,29 @@
 
 namespace chromeos {
 
-LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {}
+namespace {
+
+void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
+  for (auto& callback : callbacks) {
+    if (callback.is_null())
+      continue;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  }
+}
+
+}  // namespace
+
+LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {
+  DCHECK(default_host() == nullptr);
+  default_host_ = this;
+}
 
 LoginDisplayHostViews::~LoginDisplayHostViews() {
+  DCHECK_EQ(default_host_, this);
+  default_host_ = nullptr;
   LoginScreenClient::Get()->SetDelegate(nullptr);
+  ScheduleCompletionCallbacks(std::move(completion_callbacks_));
 }
 
 LoginDisplay* LoginDisplayHostViews::CreateLoginDisplay(
@@ -48,7 +67,8 @@ void LoginDisplayHostViews::BeforeSessionStart() {
 }
 
 void LoginDisplayHostViews::Finalize(base::OnceClosure completion_callback) {
-  NOTIMPLEMENTED();
+  completion_callbacks_.push_back(std::move(completion_callback));
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void LoginDisplayHostViews::SetStatusAreaVisible(bool visible) {
@@ -66,7 +86,7 @@ WizardController* LoginDisplayHostViews::GetWizardController() {
 
 void LoginDisplayHostViews::StartUserAdding(
     base::OnceClosure completion_callback) {
-  NOTIMPLEMENTED();
+  completion_callbacks_.push_back(std::move(completion_callback));
 }
 
 void LoginDisplayHostViews::CancelUserAdding() {

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
@@ -77,9 +78,7 @@ void ActiveDirectoryPasswordChangeScreenHandler::HandleCancel() {
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::ShowScreen(
-    const std::string& username,
-    SigninScreenHandlerDelegate* delegate) {
-  delegate_ = delegate;
+    const std::string& username) {
   base::DictionaryValue data;
   data.SetString(kUsernameKey, username);
   ShowScreenWithData(OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE,
@@ -105,16 +104,16 @@ void ActiveDirectoryPasswordChangeScreenHandler::OnAuthFinished(
              !account_info.account_id().empty());
       const AccountId account_id = user_manager::known_user::GetAccountId(
           username, account_info.account_id(), AccountType::ACTIVE_DIRECTORY);
-      DCHECK(delegate_);
-      delegate_->SetDisplayAndGivenName(account_info.display_name(),
-                                        account_info.given_name());
+      DCHECK(LoginDisplayHost::default_host());
+      LoginDisplayHost::default_host()->SetDisplayAndGivenName(
+          account_info.display_name(), account_info.given_name());
       UserContext user_context(account_id);
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
       user_context.SetIsUsingOAuth(false);
       user_context.SetUserType(
           user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
-      delegate_->CompleteLogin(user_context);
+      LoginDisplayHost::default_host()->CompleteLogin(user_context);
       break;
     }
     case authpolicy::ERROR_BAD_PASSWORD:
@@ -132,7 +131,7 @@ void ActiveDirectoryPasswordChangeScreenHandler::OnAuthFinished(
       break;
     default:
       NOTREACHED() << "Unhandled error: " << error;
-      ShowScreen(username, delegate_);
+      ShowScreen(username);
       core_oobe_view_->ShowSignInError(
           0, l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR), std::string(),
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);

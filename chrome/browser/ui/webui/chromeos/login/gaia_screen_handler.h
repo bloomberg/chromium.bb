@@ -29,7 +29,6 @@ namespace chromeos {
 class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
 class SigninScreenHandler;
-class SigninScreenHandlerDelegate;
 
 // A class that handles WebUI hooks in Gaia screen.
 class GaiaScreenHandler : public BaseScreenHandler,
@@ -193,8 +192,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Are we on a restrictive proxy?
   bool IsRestrictiveProxy() const;
-
-  SigninScreenHandlerDelegate* Delegate();
 
   // Returns temporary unused device Id.
   std::string GetTemporaryDeviceId();

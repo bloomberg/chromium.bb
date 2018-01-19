@@ -112,6 +112,32 @@ class LoginDisplayHost {
   // Returns whether current host is for voice interaction OOBE.
   virtual bool IsVoiceInteractionOobe() = 0;
 
+  // Confirms sign in by provided credentials in |user_context|.
+  // Used for new user login via GAIA extension.
+  void CompleteLogin(const UserContext& user_context);
+
+  // Notify the backend controller when the GAIA UI is finished loading.
+  void OnGaiaScreenReady();
+
+  // Sets the displayed email for the next login attempt. If it succeeds,
+  // user's displayed email value will be updated to |email|.
+  void SetDisplayEmail(const std::string& email);
+
+  // Sets the displayed name and given name for the next login attempt. If it
+  // succeeds, user's displayed name and give name values will be updated to
+  // |display_name| and |given_name|.
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name);
+
+  // Load wallpaper for given |account_id|.
+  void LoadWallpaper(const AccountId& account_id);
+
+  // Loads the default sign-in wallpaper.
+  void LoadSigninWallpaper();
+
+  // Returns true if user is allowed to log in by domain policy.
+  bool IsUserWhitelisted(const AccountId& account_id);
+
  protected:
   // Default LoginDisplayHost. Child class sets the reference.
   static LoginDisplayHost* default_host_;
