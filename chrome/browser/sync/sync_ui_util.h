@@ -68,15 +68,6 @@ MessageType GetStatusLabels(Profile* profile,
                             base::string16* link_label,
                             ActionType* action_type);
 
-// Same as above but for use specifically on the New Tab Page.
-// |status_label| may contain an HTML-formatted link.
-MessageType GetStatusLabelsForNewTabPage(
-    Profile* profile,
-    browser_sync::ProfileSyncService* service,
-    const SigninManagerBase& signin,
-    base::string16* status_label,
-    base::string16* link_label);
-
 #if !defined(OS_CHROMEOS)
 // Gets the error message and button label for the sync errors that should be
 // exposed to the user through the titlebar avatar button.
