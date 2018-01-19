@@ -15,10 +15,19 @@ namespace chromeos {
 
 namespace tether {
 
-// This value is quite large because first time
-// setup can take a long time.
+// When setup is not required, allow a 30-second timeout. If a host device is on
+// a slow data connection, enabling the tether hotspot may take a significant
+// amount of time because most phones must send a "provisioning" request to
+// the mobile provider to ask the provider whether tethering is allowed.
 // static
-uint32_t ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds = 90;
+const uint32_t
+    ConnectTetheringOperation::kSetupNotRequiredResponseTimeoutSeconds = 30;
+
+// When setup is required, the timeout is extended another 90 seconds because
+// setup requires that the user interact with a notification on the Tether host.
+// static
+const uint32_t ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds =
+    120;
 
 // static
 ConnectTetheringOperation::Factory*
@@ -120,6 +129,9 @@ void ConnectTetheringOperation::OnMessageReceived(
       tether_host_response_recorder_->RecordSuccessfulConnectTetheringResponse(
           remote_device);
 
+      // Save the response values here, but do not notify observers until
+      // OnOperationFinished(). Notifying observers at this point can cause this
+      // object to be deleted, resulting in a crash.
       ssid_to_return_ = response->ssid();
       password_to_return_ = response->password();
     } else {
@@ -148,19 +160,15 @@ void ConnectTetheringOperation::OnMessageReceived(
 }
 
 void ConnectTetheringOperation::OnOperationFinished() {
-  // Notify observers of the results of this operation in OnOperationFinished()
-  // instead of in OnMessageReceived() because observers may delete this
-  // ConnectTetheringOperation instance. If this happens, the UnregisterDevice()
-  // call in OnMessageReceived() will cause a crash.
-
-  if (!ssid_to_return_.empty()) {
-    NotifyObserversOfSuccessfulResponse(ssid_to_return_, password_to_return_);
-  } else {
-    // At this point, either the operation finished with a failed response or
-    // no connection succeeded at all. In these cases, notify observers of a
-    // failure.
+  // If |ssid_to_return_| has not been set, either the operation finished with a
+  // failed response or no connection succeeded at all. In these cases, notify
+  // observers of a failure.
+  if (ssid_to_return_.empty()) {
     NotifyObserversOfConnectionFailure(error_code_to_return_);
+    return;
   }
+
+  NotifyObserversOfSuccessfulResponse(ssid_to_return_, password_to_return_);
 }
 
 MessageType ConnectTetheringOperation::GetMessageTypeForConnection() {
@@ -195,9 +203,10 @@ void ConnectTetheringOperation::NotifyObserversOfConnectionFailure(
 }
 
 uint32_t ConnectTetheringOperation::GetTimeoutSeconds() {
-  return (setup_required_)
+  return setup_required_
              ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
-             : MessageTransferOperation::GetTimeoutSeconds();
+             : ConnectTetheringOperation::
+                   kSetupNotRequiredResponseTimeoutSeconds;
 }
 
 void ConnectTetheringOperation::SetClockForTest(

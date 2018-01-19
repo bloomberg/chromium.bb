@@ -93,9 +93,10 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
   void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
 
-  // The amount of time this operation will wait for if first time setup is
-  // required on the host device.
-  static uint32_t kSetupRequiredResponseTimeoutSeconds;
+  // The amount of time this operation will wait for a response. The timeout
+  // values are different depending on whether setup is needed on the host.
+  static const uint32_t kSetupNotRequiredResponseTimeoutSeconds;
+  static const uint32_t kSetupRequiredResponseTimeoutSeconds;
 
   cryptauth::RemoteDevice remote_device_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
