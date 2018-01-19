@@ -48,7 +48,7 @@ class AXListBoxOption final : public AXLayoutObject {
 
   bool IsAXListBoxOption() const override { return true; }
   AccessibilityRole DetermineAccessibilityRole() final;
-  bool IsSelected() const override;
+  AccessibilitySelectedState IsSelected() const override;
   bool IsSelectedOptionActive() const override;
   bool OnNativeSetSelectedAction(bool) override;
 

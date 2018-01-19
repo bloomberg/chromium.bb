@@ -1028,12 +1028,13 @@ bool WebAXObjectProxy::IsModal() {
 
 bool WebAXObjectProxy::IsSelected() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsSelected();
+  return accessibility_object_.IsSelected() == blink::kWebAXSelectedStateTrue;
 }
 
 bool WebAXObjectProxy::IsSelectable() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.CanSetSelectedAttribute();
+  return accessibility_object_.IsSelected() !=
+         blink::kWebAXSelectedStateUndefined;
 }
 
 bool WebAXObjectProxy::IsMultiLine() {

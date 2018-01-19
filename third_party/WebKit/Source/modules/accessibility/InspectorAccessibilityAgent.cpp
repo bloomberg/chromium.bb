@@ -145,13 +145,6 @@ bool RoleAllowsSort(AccessibilityRole role) {
   return role == kColumnHeaderRole || role == kRowHeaderRole;
 }
 
-bool RoleAllowsSelected(AccessibilityRole role) {
-  return role == kCellRole || role == kListBoxOptionRole || role == kRowRole ||
-         role == kTabRole || role == kColumnHeaderRole ||
-         role == kMenuItemRadioRole || role == kRadioButtonRole ||
-         role == kRowHeaderRole || role == kTreeItemRole;
-}
-
 void FillWidgetProperties(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
@@ -286,10 +279,20 @@ void FillWidgetStates(AXObject& ax_object,
       break;
   }
 
-  if (RoleAllowsSelected(role)) {
-    properties.addItem(
-        CreateProperty(AXPropertyNameEnum::Selected,
-                       CreateBooleanValue(ax_object.IsSelected())));
+  AccessibilitySelectedState selected = ax_object.IsSelected();
+  switch (selected) {
+    case kSelectedStateUndefined:
+      break;
+    case kSelectedStateFalse:
+      properties.addItem(CreateProperty(
+          AXPropertyNameEnum::Selected,
+          CreateBooleanValue(false, AXValueTypeEnum::BooleanOrUndefined)));
+      break;
+    case kSelectedStateTrue:
+      properties.addItem(CreateProperty(
+          AXPropertyNameEnum::Selected,
+          CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+      break;
   }
 
   if (RoleAllowsModal(role)) {

@@ -51,15 +51,15 @@ class AXARIAGridCell final : public AXTableCell {
       std::pair<unsigned, unsigned>& column_range) const override;
   AccessibilityRole ScanToDecideHeaderRole() final;
   AXRestriction Restriction() const final;
-  bool CanSetSelectedAttribute() const final {
-    return Restriction() != kDisabled;
-  }
 
  protected:
   bool IsAriaColumnHeader() const;
   bool IsAriaRowHeader() const;
   AXObject* ParentTable() const override;
   AXObject* ParentRow() const override;
+  bool CanSetSelectedAttribute() const final {
+    return Restriction() != kDisabled;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(AXARIAGridCell);
 };

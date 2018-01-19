@@ -196,6 +196,12 @@ enum AccessibilityExpanded {
   kExpandedExpanded,
 };
 
+enum AccessibilitySelectedState {
+  kSelectedStateUndefined = 0,
+  kSelectedStateFalse,
+  kSelectedStateTrue,
+};
+
 enum AriaCurrentState {
   kAriaCurrentStateUndefined = 0,
   kAriaCurrentStateFalse,

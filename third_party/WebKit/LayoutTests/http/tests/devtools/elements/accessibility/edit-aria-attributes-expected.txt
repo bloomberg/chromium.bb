@@ -5,5 +5,5 @@ checkbox "ARIA checkbox" invalid="false" checked="true"
 === After attribute modification ===
 checkbox "ARIA checkbox" invalid="false" checked="false"
 === After role modification ===
-radio "ARIA checkbox" invalid="false" checked="false" selected="false"
+radio "ARIA checkbox" invalid="false" checked="false"
 

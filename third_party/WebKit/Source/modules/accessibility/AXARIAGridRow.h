@@ -48,9 +48,6 @@ class AXARIAGridRow final : public AXTableRow {
   ~AXARIAGridRow() override;
 
   void HeaderObjectsForRow(AXObjectVector&) override;
-  bool CanSetSelectedAttribute() const final {
-    return Restriction() != kDisabled;
-  }
   AXObject* ParentTable() const final;
 
   void AddChildren() final;
@@ -62,6 +59,11 @@ class AXARIAGridRow final : public AXTableRow {
     UpdateChildrenIfNecessary();
     return cells_;
   };
+
+ protected:
+  bool CanSetSelectedAttribute() const final {
+    return Restriction() != kDisabled;
+  }
 
  private:
   bool IsARIARow() const final;

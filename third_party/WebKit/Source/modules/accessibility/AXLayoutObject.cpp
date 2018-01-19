@@ -431,29 +431,31 @@ bool AXLayoutObject::IsFocused() const {
   return false;
 }
 
-bool AXLayoutObject::IsSelected() const {
+AccessibilitySelectedState AXLayoutObject::IsSelected() const {
   if (!GetLayoutObject() || !GetNode() || !CanSetSelectedAttribute())
-    return false;
+    return kSelectedStateUndefined;
 
   // aria-selected overrides automatic behaviors
   bool is_selected;
   if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected, is_selected))
-    return is_selected;
+    return is_selected ? kSelectedStateTrue : kSelectedStateFalse;
 
   // Tab item with focus in the associated tab
   if (IsTabItem() && IsTabItemSelected())
-    return true;
+    return kSelectedStateTrue;
 
   // Selection follows focus, but ONLY in single selection containers,
   // and only if aria-selected was not present to override
 
   AXObject* container = ContainerWidget();
   if (!container || container->IsMultiSelectable())
-    return false;
+    return kSelectedStateFalse;
 
   AXObject* focused_object = AXObjectCache().FocusedObject();
-  return focused_object == this ||
-         (focused_object && focused_object->ActiveDescendant() == this);
+  return (focused_object == this ||
+          (focused_object && focused_object->ActiveDescendant() == this))
+             ? kSelectedStateTrue
+             : kSelectedStateFalse;
 }
 
 //
