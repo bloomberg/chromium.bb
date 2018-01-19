@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/events/ozone/evdev/event_auto_repeat_handler.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
@@ -28,7 +29,8 @@ enum class DomCode;
 // one logical keyboard, applying modifiers & implementing key repeat.
 //
 // It also currently also applies the layout.
-class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev
+    : public EventAutoRepeatHandler::Delegate {
  public:
   KeyboardEvdev(EventModifiers* modifiers,
                 KeyboardLayoutEngine* keyboard_layout_engine,
@@ -65,20 +67,13 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void UpdateModifier(int modifier_flag, bool down);
   void RefreshModifiers();
   void UpdateCapsLockLed();
-  void UpdateKeyRepeat(unsigned int key,
-                       bool down,
-                       bool suppress_auto_repeat,
-                       int device_id);
-  void StartKeyRepeat(unsigned int key, int device_id);
-  void StopKeyRepeat();
-  void ScheduleKeyRepeat(const base::TimeDelta& delay);
-  void OnRepeatTimeout(unsigned int sequence);
-  void OnRepeatCommit(unsigned int sequence);
+
+  // EventAutoRepeatHandler::Delegate
   void DispatchKey(unsigned int key,
                    bool down,
                    bool repeat,
                    base::TimeTicks timestamp,
-                   int device_id);
+                   int device_id) override;
 
   // Aggregated key state. There is only one bit of state per key; we do not
   // attempt to count presses of the same key on multiple keyboards.
@@ -98,13 +93,8 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Shared layout engine.
   KeyboardLayoutEngine* keyboard_layout_engine_;
 
-  // Key repeat state.
-  bool auto_repeat_enabled_ = true;
-  unsigned int repeat_key_ = KEY_RESERVED;
-  unsigned int repeat_sequence_ = 0;
-  int repeat_device_id_ = 0;
-  base::TimeDelta repeat_delay_;
-  base::TimeDelta repeat_interval_;
+  // Key repeat handler.
+  EventAutoRepeatHandler auto_repeat_handler_;
 
   base::WeakPtrFactory<KeyboardEvdev> weak_ptr_factory_;
 
