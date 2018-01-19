@@ -39,8 +39,10 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   bool IsOverscrollAllowed() const override;
   bool IsDragHandle(const gfx::Vector2d& offset,
                     const gfx::Size& keyboard_size) const override;
-  void SavePosition(const gfx::Point& position) override;
-  void HandlePointerEvent(const ui::LocatedEvent& event) override;
+  void SavePosition(const gfx::Rect& keyboard_bounds,
+                    const gfx::Size& screen_size) override;
+  void HandlePointerEvent(const ui::LocatedEvent& event,
+                          const gfx::Rect& display_bounds) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
