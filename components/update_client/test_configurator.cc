@@ -109,8 +109,9 @@ std::string TestConfigurator::GetDownloadPreference() const {
   return download_preference_;
 }
 
-net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
-  return context_.get();
+scoped_refptr<net::URLRequestContextGetter> TestConfigurator::RequestContext()
+    const {
+  return context_;
 }
 
 std::unique_ptr<service_manager::Connector>

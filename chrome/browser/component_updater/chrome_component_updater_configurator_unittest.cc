@@ -47,8 +47,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestDisablePings) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "disable-pings");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
 
   const std::vector<GURL> pingUrls = config->PingUrl();
   EXPECT_TRUE(pingUrls.empty());
@@ -58,8 +58,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "fast-update");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
 
   CHECK_EQ(10, config->InitialDelay());
   CHECK_EQ(5 * 60 * 60, config->NextCheckDelay());
@@ -77,8 +77,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {
   val.append(overrideUrl);
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, val.c_str());
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
 
   const std::vector<GURL> urls = config->UpdateUrl();
 
@@ -90,16 +90,16 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestSwitchRequestParam) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "test-request");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
 
   EXPECT_FALSE(config->ExtraRequestParams().empty());
 }
 
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
   const auto urls = config->UpdateUrl();
 
   // Expect the default url to be cryptographically secure.
@@ -109,8 +109,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
 
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledCupSigning) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
 
   EXPECT_TRUE(config->EnabledCupSigning());
 }
@@ -118,7 +118,7 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledCupSigning) {
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   const auto config(
-      MakeChromeComponentUpdaterConfigurator(cmdline, nullptr, pref_service()));
+      MakeChromeComponentUpdaterConfigurator(cmdline, pref_service()));
 
   const auto urls = config->UpdateUrl();
   ASSERT_EQ(2u, urls.size());
@@ -130,7 +130,7 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
   // Use the configurator implementation to test the filtering of
   // unencrypted URLs.
   {
-    const ConfiguratorImpl config(cmdline, nullptr, true);
+    const ConfiguratorImpl config(cmdline, true);
     const auto urls = config.UpdateUrl();
     ASSERT_EQ(1u, urls.size());
     ASSERT_STREQ(kUpdaterDefaultUrlAlt, urls[0].spec().c_str());
@@ -138,7 +138,7 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
   }
 
   {
-    const ConfiguratorImpl config(cmdline, nullptr, false);
+    const ConfiguratorImpl config(cmdline, false);
     const auto urls = config.UpdateUrl();
     ASSERT_EQ(2u, urls.size());
     ASSERT_STREQ(kUpdaterDefaultUrlAlt, urls[0].spec().c_str());
@@ -149,8 +149,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
 
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
   // Tests the default is set to |true| and the component updates are enabled.
   EXPECT_TRUE(config->EnabledComponentUpdates());
 
@@ -175,8 +175,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
 
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestProdId) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
-                                                           pref_service()));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(&cmdline, pref_service()));
   EXPECT_STREQ(update_client::UpdateQueryParams::GetProdIdString(
                    update_client::UpdateQueryParams::ProdId::CHROME),
                config->GetProdId().c_str());

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,7 +44,7 @@ const uint8_t jebg_hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,
                              0x6e, 0x05, 0x6b, 0xe8, 0x73, 0x47, 0xf6, 0xc4,
                              0x11, 0x9f, 0xbc, 0xb3, 0x09, 0xb3, 0x5b, 0x40};
 // component 1 public key (base64 encoded):
-const std::string jebg_public_key =
+const char jebg_public_key[] =
     "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC68bW8i/RzSaeXOcNLuBw0SP9+1bdo5ysLqH"
     "qfLqZs6XyJWEyL0U6f1axPR6LwViku21kgdc6PI524eb8Cr+a/iXGgZ8SdvZTcfQ/g/ukwlblF"
     "mtqYfDoVpz03U8rDQ9b6DxeJBF4r48TNlFORggrAiNR26qbf1i178Au12AzWtwIDAQAB";
@@ -85,7 +86,7 @@ class TestConfigurator : public Configurator {
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  net::URLRequestContextGetter* RequestContext() const override;
+  scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;

@@ -4094,8 +4094,7 @@ void ComponentUpdaterPolicyTest::BeginTest() {
   cus_ = g_browser_process->component_updater();
 
   const auto config = component_updater::MakeChromeComponentUpdaterConfigurator(
-      base::CommandLine::ForCurrentProcess(), nullptr,
-      g_browser_process->local_state());
+      base::CommandLine::ForCurrentProcess(), g_browser_process->local_state());
   const auto urls = config->UpdateUrl();
   ASSERT_TRUE(urls.size());
   const GURL url = urls.front();

@@ -42,7 +42,7 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
     const std::string& protocol_request,
     net::URLFetcherDelegate* url_fetcher_delegate,
-    net::URLRequestContextGetter* url_request_context_getter) {
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("component_updater_utils", R"(
         semantics {
@@ -79,7 +79,7 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
   url_fetcher->SetUploadData("application/xml", protocol_request);
-  url_fetcher->SetRequestContext(url_request_context_getter);
+  url_fetcher->SetRequestContext(url_request_context_getter.get());
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SAVE_COOKIES |
                             net::LOAD_DISABLE_CACHE);
