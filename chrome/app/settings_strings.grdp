@@ -3838,7 +3838,7 @@
     <message name="IDS_SETTINGS_RESET_CLEANUP_TITLE_ERROR_SCANNING_FAILED" desc="Title of error message that could appear during the cleanup of harmful software.">
       Scanning failed
     </message>
-    <message name="IDS_SETTINGS_RESET_CLEANUP_TRY_AGAIN_BUTTON_LABEL" desc="Generic button that appears next to a message indicating that an operation failed during the cleanup of harmful software.">
+    <message name="IDS_SETTINGS_RESET_CLEANUP_TRY_AGAIN_BUTTON_LABEL" desc="Generic button that appears next to a message indicating that an operation failed during the cleanup of harmful software." meaning="Button referred to in the string 'Click Try Again, and accept the prompt on your computer', IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_PERMISSIONS_NEEDED">
       Try again
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_LOGS_PERMISSION_EXPLANATION" desc="Description for the 'Report details to Google' option. Subject, 'Details', is omitted. Although the plural subject would indicate usage of the plural verb, here, we use the plural form of the verb, 'includes', to avoid the impression that 'include' is an infinitive verb. 'Includes' is a present tense main verb. ">
