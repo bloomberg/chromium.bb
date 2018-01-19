@@ -66,23 +66,16 @@ CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
 
 CSSImageGeneratorValue::~CSSImageGeneratorValue() = default;
 
-void CSSImageGeneratorValue::AddClient(const ImageResourceObserver* client,
-                                       const LayoutSize& size) {
+void CSSImageGeneratorValue::AddClient(const ImageResourceObserver* client) {
   DCHECK(client);
   if (clients_.IsEmpty()) {
     DCHECK(!keep_alive_);
     keep_alive_ = this;
   }
 
-  cached_images_.AddSize(size);
-
-  ClientSizeCountMap::iterator it = clients_.find(client);
-  if (it == clients_.end()) {
-    clients_.insert(client, SizeAndCount(size, 1));
-  } else {
-    SizeAndCount& size_count = it->value;
-    ++size_count.count;
-  }
+  SizeAndCount& size_count =
+      clients_.insert(client, SizeAndCount()).stored_value->value;
+  size_count.count++;
 }
 
 CSSImageGeneratorValue* CSSImageGeneratorValue::ValueWithURLsMadeAbsolute() {
