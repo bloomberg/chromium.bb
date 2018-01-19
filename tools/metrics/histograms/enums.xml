@@ -17517,7 +17517,7 @@ Called by update_net_error_codes.py.-->
   <int value="2184" label="CrossOriginWorkerTextHtml"/>
   <int value="2185" label="CrossOriginWorkerTextPlain"/>
   <int value="2186" label="CrossOriginWorkerTextXml"/>
-  <int value="2187" label="ImageCaptureSetOptions"/>
+  <int value="2187" label="OBSOLETE_ImageCaptureSetOptions"/>
   <int value="2188" label="PerformanceObserverForWindow"/>
   <int value="2189" label="PerformanceObserverForWorker"/>
   <int value="2190" label="PaintTimingObserved"/>

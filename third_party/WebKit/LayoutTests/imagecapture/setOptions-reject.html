@@ -14,7 +14,7 @@ let context = canvas.getContext('2d');
 context.fillStyle = 'red';
 context.fillRect(0, 0, 10, 10);
 
-// This test verifies that ImageCapture.setOptions() rejects if any passed
+// This test verifies that ImageCapture.takePhoto() rejects if any passed
 // option is unsupported or outside its allowed range.
 function makePromiseTest(getOption) {
   promise_test(async function() {
@@ -26,8 +26,8 @@ function makePromiseTest(getOption) {
     const options = getOption(mockImageCapture.state());
 
     try {
-      await capturer.setOptions(options);
-      assert_unreached('expected setOptions to reject');
+      await capturer.takePhoto(options);
+      assert_unreached('expected takePhoto to reject');
     } catch (error) {
       assert_equals(error.name, 'NotSupportedError');
     }
@@ -46,7 +46,7 @@ const optionsGenerators = [
 for (key in optionsGenerators) {
   generate_tests(
       makePromiseTest,
-      [[ 'ImageCapture.setOptions(options) rejects with bad options, #' + key,
+      [[ 'ImageCapture.takePhoto(options) rejects with bad options, #' + key,
          optionsGenerators[key] ]]);
 }
 
