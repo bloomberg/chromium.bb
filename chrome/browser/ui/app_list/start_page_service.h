@@ -19,7 +19,6 @@
 #include "base/strings/string16.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -43,23 +42,16 @@ class SpeechRecognizer;
 
 namespace app_list {
 
-class SpeechAuthHelper;
-class StartPageObserver;
-
 // StartPageService collects data to be displayed in app list's start page
 // and hosts the start page contents.
 class StartPageService : public KeyedService,
                          public content::WebContentsObserver,
-                         public net::URLFetcherDelegate,
-                         public SpeechRecognizerDelegate {
+                         public net::URLFetcherDelegate {
  public:
   typedef std::vector<scoped_refptr<const extensions::Extension> >
       ExtensionList;
   // Gets the instance for the given profile. May return nullptr.
   static StartPageService* Get(Profile* profile);
-
-  void AddObserver(StartPageObserver* observer);
-  void RemoveObserver(StartPageObserver* observer);
 
   void Init();
 
@@ -69,31 +61,17 @@ class StartPageService : public KeyedService,
   void AppListShown();
   void AppListHidden();
 
-  void StartSpeechRecognition(
-      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
-  void StopSpeechRecognition();
-
   // Called when the WebUI has finished loading.
   void WebUILoaded();
 
   // They return essentially the same web contents but might return NULL when
   // some flag disables the feature.
   content::WebContents* GetStartPageContents();
-  content::WebContents* GetSpeechRecognitionContents();
 
   void set_search_engine_is_google(bool search_engine_is_google) {
     search_engine_is_google_ = search_engine_is_google;
   }
   Profile* profile() { return profile_; }
-  SpeechRecognizerState state() { return state_; }
-
-  // Overridden from app_list::SpeechRecognizerDelegate:
-  void OnSpeechResult(const base::string16& query, bool is_final) override;
-  void OnSpeechSoundLevelChanged(int16_t level) override;
-  void OnSpeechRecognitionStateChanged(
-      SpeechRecognizerState new_state) override;
-  void GetSpeechAuthParameters(std::string* auth_scope,
-                               std::string* auth_token) override {}
 
  protected:
   // Protected for testing.
@@ -111,10 +89,6 @@ class StartPageService : public KeyedService,
   // The WebContentsDelegate implementation for the start page. This allows
   // getUserMedia() request from the web contents.
   class StartPageWebContentsDelegate;
-
-  // This class observes the change of audio input device availability and
-  // checks if currently the system has valid audio input.
-  class AudioStatus;
 
   // This class observes network change events and disables/enables voice search
   // based on network connectivity.
@@ -139,37 +113,21 @@ class StartPageService : public KeyedService,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Change the known microphone availability. |available| should be true if
-  // the microphone exists and is available for use.
-  void OnMicrophoneChanged(bool available);
   // Change the known network connectivity state. |available| should be true if
   // at least one network is connected to.
   void OnNetworkChanged(bool available);
-  // Enables/disables voice recognition based on network and microphone state.
-  void UpdateRecognitionState();
-  // Determines whether speech recognition should be enabled, based on the
-  // current state of the StartPageService.
-  bool ShouldEnableSpeechRecognition() const;
 
   Profile* profile_;
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<StartPageWebContentsDelegate> contents_delegate_;
   std::unique_ptr<ProfileDestroyObserver> profile_destroy_observer_;
-  SpeechRecognizerState state_;
-  base::ObserverList<StartPageObserver> observers_;
-  bool speech_button_toggled_manually_;
-  bool speech_result_obtained_;
 
   bool webui_finished_loading_;
   std::vector<base::Closure> pending_webui_callbacks_;
 
   base::DefaultClock clock_;
-  std::unique_ptr<SpeechRecognizer> speech_recognizer_;
-  std::unique_ptr<SpeechAuthHelper> speech_auth_helper_;
 
   bool network_available_;
-  bool microphone_available_;
-  std::unique_ptr<AudioStatus> audio_status_;
   std::unique_ptr<NetworkChangeObserver> network_change_observer_;
 
   bool search_engine_is_google_;

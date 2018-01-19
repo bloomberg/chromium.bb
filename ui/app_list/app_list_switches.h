@@ -24,8 +24,6 @@ bool APP_LIST_EXPORT IsAppListSyncEnabled();
 
 bool APP_LIST_EXPORT IsFolderUIEnabled();
 
-bool APP_LIST_EXPORT IsVoiceSearchEnabled();
-
 bool APP_LIST_EXPORT IsTouchableAppContextMenuEnabled();
 
 // Determines whether the app list should not be dismissed on focus loss.

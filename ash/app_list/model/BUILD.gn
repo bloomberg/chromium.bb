@@ -49,25 +49,9 @@ component("search_model") {
   defines = [ "APP_LIST_MODEL_IMPLEMENTATION" ]
 
   deps = [
-    ":speech_ui_model",
     "//ash/public/cpp:cpp",
     "//base:i18n",
     "//ui/base",
-    "//ui/gfx",
-  ]
-}
-
-component("speech_ui_model") {
-  sources = [
-    "speech/speech_ui_model.cc",
-    "speech/speech_ui_model.h",
-    "speech/speech_ui_model_observer.h",
-  ]
-
-  defines = [ "APP_LIST_MODEL_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
     "//ui/gfx",
   ]
 }

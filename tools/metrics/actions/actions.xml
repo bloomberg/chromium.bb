@@ -1894,16 +1894,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="AppList_SearchedBySpeech">
+  <obsolete>App list doesn't have voice search anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="AppList_VoiceSearchCanceled">
+  <obsolete>App list doesn't have voice search anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="AppList_VoiceSearchStartedManually">
+  <obsolete>App list doesn't have voice search anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

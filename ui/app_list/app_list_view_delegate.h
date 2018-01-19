@@ -31,7 +31,6 @@ class AppListModel;
 class AppListViewDelegateObserver;
 class SearchModel;
 class SearchResult;
-class SpeechUIModel;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
@@ -45,9 +44,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
   // Note: Don't call this method under //chrome/browser/.
   virtual SearchModel* GetSearchModel() = 0;
-
-  // Gets the SpeechUIModel for the app list. Owned by the AppListViewDelegate.
-  virtual SpeechUIModel* GetSpeechUI() = 0;
 
   // Invoked to start a new search. This collects a list of search results
   // matching the raw query, which is an unhandled string typed into the search
@@ -74,16 +70,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
-  // Invoked to toggle the status of speech recognition.
-  virtual void StartSpeechRecognition() = 0;
-  virtual void StopSpeechRecognition() = 0;
-
   // Creates the web view for the start page. The caller takes the ownership of
   // the returned view.
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) = 0;
-
-  // Returns true if the delegate supports speech recognition.
-  virtual bool IsSpeechRecognitionEnabled() = 0;
 
   // Gets the wallpaper prominent colors.
   virtual void GetWallpaperProminentColors(std::vector<SkColor>* colors) = 0;

@@ -11,7 +11,6 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_box_model_observer.h"
 #include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
@@ -44,7 +43,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
                                       public views::TextfieldController,
                                       public views::ButtonListener,
                                       public SearchBoxModelObserver,
-                                      public SpeechUIModelObserver,
                                       public AppListViewDelegateObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
@@ -184,14 +182,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
                           const ui::GestureEvent& gesture_event) override;
 
   // Overridden from SearchBoxModelObserver:
-  void SpeechRecognitionButtonPropChanged() override;
   void HintTextChanged() override;
   void SelectionModelChanged() override;
   void Update() override;
-
-  // Overridden from SpeechUIModelObserver:
-  void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) override;
 
   // Overridden from AppListViewDelegateObserver:
   void OnWallpaperColorsChanged() override;
@@ -207,7 +200,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   views::View* content_container_;
   views::ImageView* search_icon_ = nullptr;
   SearchBoxImageButton* back_button_ = nullptr;
-  SearchBoxImageButton* speech_button_ = nullptr;
   SearchBoxImageButton* close_button_ = nullptr;
   views::Textfield* search_box_;
   views::View* search_box_right_space_ = nullptr;

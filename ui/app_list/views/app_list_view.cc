@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -30,7 +29,6 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
-#include "ui/app_list/views/speech_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
@@ -65,9 +63,6 @@ namespace app_list {
 
 namespace {
 
-// The margin from the edge to the speech UI.
-constexpr int kSpeechUIMargin = 12;
-
 // The height of the half app list from the bottom of the screen.
 constexpr int kHalfAppListHeight = 561;
 
@@ -92,9 +87,6 @@ constexpr int kAppListBlurRadius = 30;
 // The size of app info dialog in fullscreen app list.
 constexpr int kAppInfoDialogWidth = 512;
 constexpr int kAppInfoDialogHeight = 384;
-
-// The vertical position for the appearing animation of the speech UI.
-constexpr float kSpeechUIAppearingPosition = 12;
 
 // The animation duration for app list movement.
 constexpr float kAppListAnimationDurationTestMs = 0;
@@ -257,7 +249,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()) {
   CHECK(delegate);
-  delegate_->GetSpeechUI()->AddObserver(this);
 
   if (is_fullscreen_app_list_enabled_) {
     display_observer_.Add(display::Screen::GetScreen());
@@ -269,7 +260,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
 }
 
 AppListView::~AppListView() {
-  delegate_->GetSpeechUI()->RemoveObserver(this);
   if (is_fullscreen_app_list_enabled_)
     delegate_->RemoveObserver(this);
 
@@ -459,16 +449,6 @@ void AppListView::InitContents(int initial_apps_page) {
   app_list_main_view_->Init(
       is_fullscreen_app_list_enabled_ ? 0 : initial_apps_page,
       search_box_view_);
-
-  // Speech recognition is available only when the start page exists.
-  if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
-    speech_view_ = new SpeechView(delegate_);
-    speech_view_->SetVisible(false);
-    speech_view_->SetPaintToLayer();
-    speech_view_->layer()->SetFillsBoundsOpaquely(false);
-    speech_view_->layer()->SetOpacity(0.0f);
-    AddChildView(speech_view_);
-  }
 }
 
 void AppListView::InitChildWidgets() {
@@ -1106,8 +1086,7 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 void AppListView::Layout() {
   const gfx::Rect contents_bounds = GetContentsBounds();
 
-  // Make sure to layout |app_list_main_view_| and |speech_view_| at the
-  // center of the widget.
+  // Make sure to layout |app_list_main_view_| at the center of the widget.
   gfx::Rect centered_bounds = contents_bounds;
   ContentsView* contents_view = app_list_main_view_->contents_view();
   centered_bounds.ClampToCenteredSize(
@@ -1117,16 +1096,6 @@ void AppListView::Layout() {
                 contents_bounds.height()));
 
   app_list_main_view_->SetBoundsRect(centered_bounds);
-
-  if (speech_view_) {
-    gfx::Rect speech_bounds = centered_bounds;
-    int preferred_height = speech_view_->GetPreferredSize().height();
-    speech_bounds.Inset(kSpeechUIMargin, kSpeechUIMargin);
-    speech_bounds.set_height(
-        std::min(speech_bounds.height(), preferred_height));
-    speech_bounds.Inset(-speech_view_->GetInsets());
-    speech_view_->SetBoundsRect(speech_bounds);
-  }
 
   if (!is_fullscreen_app_list_enabled_)
     return;
@@ -1446,75 +1415,6 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
     // Insert it into search box if the key event is a character. Released
     // key should not be handled to prevent inserting duplicate character.
     search_box->InsertChar(*event);
-  }
-}
-
-void AppListView::OnSpeechRecognitionStateChanged(
-    SpeechRecognitionState new_state) {
-  if (!speech_view_)
-    return;
-
-  bool will_appear = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||
-                      new_state == SPEECH_RECOGNITION_IN_SPEECH ||
-                      new_state == SPEECH_RECOGNITION_NETWORK_ERROR);
-  // No change for this class.
-  if (speech_view_->visible() == will_appear)
-    return;
-
-  if (will_appear)
-    speech_view_->Reset();
-
-  animation_observer_->set_frame(GetBubbleFrameView());
-  gfx::Transform speech_transform;
-  speech_transform.Translate(0, SkFloatToMScalar(kSpeechUIAppearingPosition));
-  if (will_appear)
-    speech_view_->layer()->SetTransform(speech_transform);
-
-  {
-    ui::ScopedLayerAnimationSettings main_settings(
-        app_list_main_view_->layer()->GetAnimator());
-    if (will_appear) {
-      animation_observer_->SetTarget(app_list_main_view_);
-      main_settings.AddObserver(animation_observer_.get());
-    }
-    app_list_main_view_->layer()->SetOpacity(will_appear ? 0.0f : 1.0f);
-  }
-
-  {
-    ui::ScopedLayerAnimationSettings search_box_settings(
-        search_box_widget_->GetLayer()->GetAnimator());
-    search_box_widget_->GetLayer()->SetOpacity(will_appear ? 0.0f : 1.0f);
-  }
-
-  {
-    ui::ScopedLayerAnimationSettings speech_settings(
-        speech_view_->layer()->GetAnimator());
-    if (!will_appear) {
-      animation_observer_->SetTarget(speech_view_);
-      speech_settings.AddObserver(animation_observer_.get());
-    }
-
-    speech_view_->layer()->SetOpacity(will_appear ? 1.0f : 0.0f);
-    if (will_appear)
-      speech_view_->layer()->SetTransform(gfx::Transform());
-    else
-      speech_view_->layer()->SetTransform(speech_transform);
-  }
-
-  // Prevent the search box from receiving events when hidden.
-  search_box_view_->SetEnabled(!will_appear);
-
-  if (will_appear) {
-    speech_view_->SetVisible(true);
-  } else {
-    app_list_main_view_->SetVisible(true);
-
-    // Refocus the search box. However, if the app list widget does not
-    // have focus, it means another window has already taken focus, and we
-    // *must not* focus the search box (or we would steal focus back into
-    // the app list).
-    if (GetWidget()->IsActive())
-      search_box_view_->search_box()->RequestFocus();
   }
 }
 
