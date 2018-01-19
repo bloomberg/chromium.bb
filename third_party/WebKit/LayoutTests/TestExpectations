@@ -3443,3 +3443,8 @@ crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js
 
 # This test is flaking on mac_chromium_rel_ng.
 crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Failure ]
+
+# Sheriff failures 2018-01-19
+# This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
+# WebKit Linux Trusty (dbg).
+crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-restored-breakpoint.js [ Pass Failure ]
