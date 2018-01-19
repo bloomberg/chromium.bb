@@ -560,6 +560,10 @@ void CompareURLRequestContexts(
     EXPECT_NE(extension_context->reporting_service(),
               main_context->reporting_service());
   }
+  if (extension_context->network_error_logging_delegate()) {
+    EXPECT_NE(extension_context->network_error_logging_delegate(),
+              main_context->network_error_logging_delegate());
+  }
 
   // Check that the ChannelIDService in the HttpNetworkSession is the same as
   // the one directly on the URLRequestContext.
@@ -583,7 +587,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kReporting);
+  feature_list.InitWithFeatures(
+      {features::kReporting, features::kNetworkErrorLogging}, {});
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
@@ -623,7 +628,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kReporting);
+  feature_list.InitWithFeatures(
+      {features::kReporting, features::kNetworkErrorLogging}, {});
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
