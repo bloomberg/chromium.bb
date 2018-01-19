@@ -55,4 +55,23 @@ public class ProfilingProcessHostAndroidTest {
         TestAndroidShim profilingProcessHost = new TestAndroidShim();
         Assert.assertTrue(profilingProcessHost.runTestForMode("browser", true, true));
     }
+
+    // Non-browser processes must be profiled with a command line flag, since
+    // otherwise, profiling will start after the relevant processes have been
+    // created, thus that process will be not be profiled.
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"memlog=all-renderers", "memlog-stack-mode=pseudo"})
+    public void testModeRendererPseudo() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("all-renderers", false, true));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"memlog=gpu", "memlog-stack-mode=pseudo"})
+    public void testModeGpuPseudo() throws Exception {
+        TestAndroidShim profilingProcessHost = new TestAndroidShim();
+        Assert.assertTrue(profilingProcessHost.runTestForMode("gpu", false, true));
+    }
 }

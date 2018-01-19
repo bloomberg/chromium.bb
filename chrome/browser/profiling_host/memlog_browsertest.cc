@@ -106,8 +106,9 @@ std::vector<TestParam> GetParams() {
     }
   }
 
-  // There's no way to tell when profiling has started for a renderer, so it
-  // must be started as soon as chrome has started.
+  // Non-browser processes must be profiled with a command line flag, since
+  // otherwise, profiling will start after the relevant processes have been
+  // created, thus that process will be not be profiled.
   std::vector<ProfilingProcessHost::Mode> command_line_start_modes;
   command_line_start_modes.push_back(ProfilingProcessHost::Mode::kAll);
   command_line_start_modes.push_back(ProfilingProcessHost::Mode::kAllRenderers);
