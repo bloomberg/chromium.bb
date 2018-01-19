@@ -1384,7 +1384,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     // |params->filter_image| was populated.
     params->source_needs_flip = kBottomLeft_GrSurfaceOrigin == origin;
   } else if (params->contents_texture) {
-    gl_->BindTexture(GL_TEXTURE_2D, params->contents_texture->id());
+    params->contents_texture->BindForSampling();
     params->contents_and_bypass_color_space =
         params->contents_texture->color_space();
     params->source_needs_flip = params->flip_texture;
@@ -2671,6 +2671,7 @@ void GLRenderer::FinishDrawingQuadList() {
 
 void GLRenderer::GenerateMipmap() {
   DCHECK(current_framebuffer_texture_);
+  current_framebuffer_texture_->set_generate_mipmap();
 }
 
 void GLRenderer::SetEnableDCLayers(bool enable) {

@@ -31,11 +31,13 @@ class VIZ_SERVICE_EXPORT ScopedRenderPassTexture {
 
   ScopedRenderPassTexture(ScopedRenderPassTexture&& other);
   ScopedRenderPassTexture& operator=(ScopedRenderPassTexture&& other);
+  void BindForSampling();
 
   GLuint id() const { return gl_id_; }
   const gfx::Size& size() const { return size_; }
   bool mipmap() const { return mipmap_; }
   const gfx::ColorSpace& color_space() const { return color_space_; }
+  void set_generate_mipmap() { mipmap_state_ = GENERATE; }
 
  private:
   void Free();
@@ -51,6 +53,8 @@ class VIZ_SERVICE_EXPORT ScopedRenderPassTexture {
   // TODO(xing.xu): Remove this and set the color space when we draw the
   // RenderPassDrawQuad.
   gfx::ColorSpace color_space_;
+  enum MipmapState { INVALID, GENERATE, VALID };
+  MipmapState mipmap_state_ = INVALID;
 };
 
 }  // namespace viz

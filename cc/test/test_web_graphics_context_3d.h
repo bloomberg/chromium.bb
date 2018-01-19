@@ -363,6 +363,9 @@ class TestWebGraphicsContext3D {
   void set_support_texture_storage_image(bool support) {
     test_capabilities_.texture_storage_image = support;
   }
+  void set_support_texture_npot(bool support) {
+    test_capabilities_.texture_npot = support;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {
