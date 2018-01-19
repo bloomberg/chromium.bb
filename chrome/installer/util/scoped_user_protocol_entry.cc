@@ -5,14 +5,13 @@
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/registry_entry.h"
 #include "chrome/installer/util/shell_util.h"
 
 ScopedUserProtocolEntry::ScopedUserProtocolEntry(const wchar_t* protocol) {
-  entries_.push_back(base::MakeUnique<RegistryEntry>(
+  entries_.push_back(std::make_unique<RegistryEntry>(
       base::FilePath(ShellUtil::kRegClasses).Append(protocol).value(),
       ShellUtil::kRegUrlProtocol, base::string16()));
   if (!entries_.back()->KeyExistsInRegistry(RegistryEntry::LOOK_IN_HKCU) &&

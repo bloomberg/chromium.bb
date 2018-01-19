@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
@@ -575,7 +574,7 @@ class LegacyCleanupsTest : public ::testing::Test {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     installer_state_ =
-        base::MakeUnique<FakeInstallerState>(temp_dir_.GetPath());
+        std::make_unique<FakeInstallerState>(temp_dir_.GetPath());
     // Create the state to be cleared.
     ASSERT_TRUE(base::win::RegKey(HKEY_CURRENT_USER, kBinariesClientsKeyPath,
                                   KEY_WRITE | KEY_WOW64_32KEY)
@@ -646,7 +645,7 @@ class LegacyCleanupsTest : public ::testing::Test {
       operation_ = InstallerState::SINGLE_INSTALL_OR_UPDATE;
       target_path_ = target_path;
       state_key_ = dist->GetStateKey();
-      product_ = base::MakeUnique<Product>(dist);
+      product_ = std::make_unique<Product>(dist);
       level_ = InstallerState::USER_LEVEL;
       root_key_ = HKEY_CURRENT_USER;
     }

@@ -5,7 +5,6 @@
 #include "chrome/installer/setup/setup_install_details.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_constants.h"
@@ -66,7 +65,7 @@ std::unique_ptr<install_static::PrimaryInstallDetails> MakeInstallDetails(
     const base::CommandLine& command_line,
     const installer::MasterPreferences& master_preferences) {
   std::unique_ptr<install_static::PrimaryInstallDetails> details(
-      base::MakeUnique<install_static::PrimaryInstallDetails>());
+      std::make_unique<install_static::PrimaryInstallDetails>());
 
   // The mode is determined by brand-specific command line switches.
   const install_static::InstallConstants* const mode =
