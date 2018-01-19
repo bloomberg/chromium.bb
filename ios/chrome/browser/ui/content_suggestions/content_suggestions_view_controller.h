@@ -70,6 +70,8 @@
 - (NSInteger)numberOfSectionsAbove:(NSInteger)section;
 // Updates the constraints of the collection.
 - (void)updateConstraints;
+// Clear the overscroll actions.
+- (void)clearOverscroll;
 
 // Returns the accessibility identifier of the collection.
 + (NSString*)collectionAccessibilityIdentifier;

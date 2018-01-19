@@ -19,15 +19,13 @@ class ChromeBrowserState;
 @class RecentTabsTableViewController;
 @protocol UrlLoader;
 
-// This is the controller for the Recent Tabs panel on the New Tab Page.
 // RecentTabsTableCoordinator controls the RecentTabTableViewDataSource, based
 // on the user's signed-in and chrome-sync states.
 //
 // RecentTabsTableCoordinator listens for notifications about Chrome Sync
 // and ChromeToDevice and changes/updates the view accordingly.
 //
-@interface RecentTabsTableCoordinator
-    : ChromeCoordinator<NewTabPagePanelProtocol>
+@interface RecentTabsTableCoordinator : ChromeCoordinator
 
 // Command handler for the command sent when the device is a handset. Nil
 // otherwise.

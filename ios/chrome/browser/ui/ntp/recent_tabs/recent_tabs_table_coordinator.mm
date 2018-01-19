@@ -56,8 +56,6 @@
 @implementation RecentTabsTableCoordinator
 
 @synthesize handsetCommandHandler = _handsetCommandHandler;
-// Property declared in NewTabPagePanelProtocol.
-@synthesize delegate = _delegate;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
@@ -89,8 +87,13 @@
 }
 
 - (void)stop {
+  [_tableViewController dismissModals];
   [_tableViewController setDelegate:nil];
   [self deallocObservers];
+}
+
+- (UIViewController*)viewController {
+  return _tableViewController;
 }
 
 #pragma mark - Exposed to the SyncedSessionsObserver
@@ -115,52 +118,6 @@
 
 - (void)tabRestoreServiceDestroyed:(sessions::TabRestoreService*)service {
   [_tableViewController setTabRestoreService:nullptr];
-}
-
-#pragma mark - NewTabPagePanelProtocol
-
-- (void)dismissModals {
-  [_tableViewController dismissModals];
-}
-
-- (void)dismissKeyboard {
-}
-
-- (void)reload {
-  [self reloadSessions];
-}
-
-- (void)wasShown {
-  [[_tableViewController tableView] reloadData];
-  [self initObservers];
-}
-
-- (void)wasHidden {
-  [self deallocObservers];
-}
-
-- (void)setScrollsToTop:(BOOL)enabled {
-  [_tableViewController setScrollsToTop:enabled];
-}
-
-- (CGFloat)alphaForBottomShadow {
-  UITableView* tableView = [_tableViewController tableView];
-  CGFloat contentHeight = tableView.contentSize.height;
-  CGFloat scrollViewHeight = tableView.frame.size.height;
-  CGFloat offsetY = tableView.contentOffset.y;
-
-  CGFloat pixelsBelowFrame = contentHeight - offsetY - scrollViewHeight;
-  CGFloat alpha = pixelsBelowFrame / kNewTabPageDistanceToFadeShadow;
-  alpha = MIN(MAX(alpha, 0), 1);
-  return alpha;
-}
-
-- (UIView*)view {
-  return [_tableViewController view];
-}
-
-- (UIViewController*)viewController {
-  return _tableViewController;
 }
 
 #pragma mark - Private
@@ -246,10 +203,6 @@
 }
 
 #pragma mark - RecentTabsTableViewControllerDelegate
-
-- (void)recentTabsTableViewContentMoved:(UITableView*)tableView {
-  [self.delegate updateNtpBarShadowForPanelController:self];
-}
 
 - (void)refreshSessionsViewRecentTabsTableViewController:
     (RecentTabsTableViewController*)controller {
