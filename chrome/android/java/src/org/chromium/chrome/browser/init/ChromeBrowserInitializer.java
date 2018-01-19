@@ -48,6 +48,7 @@ import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
 import java.util.Locale;
@@ -409,6 +410,8 @@ public class ChromeBrowserInitializer {
                         Log.e(TAG, "Killing process because of locale change.");
                         Process.killProcess(Process.myPid());
                     }
+
+                    DeviceFormFactor.resetValuesIfNeeded(mApplication);
                 }
             }
         };

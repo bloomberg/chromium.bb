@@ -11,16 +11,22 @@ import android.view.WindowManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.ui.R;
 
 /**
  * UI utilities for accessing form factor information.
  */
 public class DeviceFormFactor {
+
     /**
      * The minimum width that would classify the device as a tablet or a large tablet.
      */
     public static final int MINIMUM_TABLET_WIDTH_DP = 600;
+    private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
+
+    private static Boolean sIsTablet;
+    private static Boolean sIsLargeTablet;
+    private static Integer sMinimumTabletWidthPx;
+    private static Float sDensity;
 
     /**
      * @return Whether the app should treat the device as a tablet for layout. This method is not
@@ -28,21 +34,22 @@ public class DeviceFormFactor {
      */
     @CalledByNative
     public static boolean isTablet() {
-        // On some devices, OEM modifications have been made to the resource loader that cause the
-        // DeviceFormFactor calculation of whether a device is using tablet resources to be
-        // incorrect. Check which resources were actually loaded rather than look at screen size.
-        // See crbug.com/662338.
-        return ContextUtils.getApplicationContext().getResources().getBoolean(R.bool.is_tablet);
+        if (sIsTablet == null) {
+            sIsTablet = getSmallestDeviceWidthDp() >= MINIMUM_TABLET_WIDTH_DP;
+        }
+        return sIsTablet;
     }
 
     /**
      * @param context {@link Context} used to get the Application Context.
      * @return True if the app should treat the device as a large (> 720dp) tablet for layout. This
-     * method is not affected by Android N multi-window.
+     *         method is not affected by Android N multi-window.
      */
     public static boolean isLargeTablet(Context context) {
-        return ContextUtils.getApplicationContext().getResources().getBoolean(
-                R.bool.is_large_tablet);
+        if (sIsLargeTablet == null) {
+            sIsLargeTablet = getSmallestDeviceWidthDp() >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+        }
+        return sIsLargeTablet;
     }
 
     /**
@@ -81,7 +88,34 @@ public class DeviceFormFactor {
      *         layout.
      */
     public static int getMinimumTabletWidthPx(Context context) {
-        return Math.round(
-                MINIMUM_TABLET_WIDTH_DP * context.getResources().getDisplayMetrics().density);
+        if (sMinimumTabletWidthPx == null) {
+            sMinimumTabletWidthPx = Math.round(MINIMUM_TABLET_WIDTH_DP
+                    * context.getResources().getDisplayMetrics().density);
+        }
+        return sMinimumTabletWidthPx;
+    }
+
+    /**
+     * Resets all cached values if the display density has changed.
+     */
+    public static void resetValuesIfNeeded(Context context) {
+        float currentDensity = context.getResources().getDisplayMetrics().density;
+        if (sDensity != null && sDensity != currentDensity) {
+            sIsTablet = null;
+            sIsLargeTablet = null;
+            sMinimumTabletWidthPx = null;
+        }
+        sDensity = currentDensity;
+    }
+
+    /**
+     * Sets whether the device is a tablet.
+     * @param isTablet Whether the app should treat the device as a tablet for layout.
+     * @param isLargeTablet Whether the app should treat the device as a large tablet for layout.
+     *                      If this is true, isTablet should also be true.
+     */
+    public static void setIsTablet(boolean isTablet, boolean isLargeTablet) {
+        sIsTablet = isTablet;
+        sIsLargeTablet = isLargeTablet;
     }
 }
