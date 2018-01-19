@@ -540,6 +540,10 @@ bool LocalFrameView::DidFirstLayout() const {
   return !first_layout_;
 }
 
+bool LocalFrameView::LifecycleUpdatesActive() const {
+  return !lifecycle_updates_throttled_;
+}
+
 void LocalFrameView::InvalidateRect(const IntRect& rect) {
   auto* layout_object = frame_->OwnerLayoutObject();
   if (!layout_object)
