@@ -158,6 +158,8 @@ class WindowTreeTestApi {
   bool ProcessSwapDisplayRoots(int64_t display_id1, int64_t display_id2) {
     return tree_->ProcessSwapDisplayRoots(display_id1, display_id2);
   }
+  size_t event_queue_size() const { return tree_->event_queue_.size(); }
+  bool HasEventInFlight() const { return tree_->event_ack_id_ != 0u; }
 
  private:
   WindowTree* tree_;
