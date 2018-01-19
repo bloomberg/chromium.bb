@@ -92,7 +92,16 @@ class ProfilingTestDriver {
   bool ValidateRendererAllocations(base::Value* dump_json);
 
   bool ShouldProfileBrowser();
+  bool ShouldProfileRenderer();
   bool HasPseudoFrames();
+
+  void WaitForProfilingToStartForAllRenderersUIThread();
+
+  // Android does not support nested RunLoops. Instead, it signals
+  // |wait_for_ui_thread_| when finished.
+  void WaitForProfilingToStartForAllRenderersUIThreadAndSignal();
+  void WaitForProfilingToStartForAllRenderersUIThreadCallback(
+      std::vector<base::ProcessId> results);
 
   Options options_;
 
