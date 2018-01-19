@@ -1817,8 +1817,6 @@ component("net") {
         "reporting/reporting_delivery_agent.h",
         "reporting/reporting_endpoint_manager.cc",
         "reporting/reporting_endpoint_manager.h",
-        "reporting/reporting_feature.cc",
-        "reporting/reporting_feature.h",
         "reporting/reporting_garbage_collector.cc",
         "reporting/reporting_garbage_collector.h",
         "reporting/reporting_header_parser.cc",
