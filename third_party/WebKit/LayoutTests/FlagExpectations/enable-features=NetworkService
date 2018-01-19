@@ -241,3 +241,10 @@ Bug(none) http/tests/devtools/audits2/audits2-successful-run.js [ Failure ]
 
 # Started failing @ r529490
 Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
+
+# http://crbug.com/803958: Tests failing on bot but not in local checkout.
+crbug.com/803958 external/wpt/websockets/cookies/001.html?wss [ Failure ]
+crbug.com/803958 external/wpt/websockets/cookies/002.html?wss [ Failure ]
+crbug.com/803958 external/wpt/websockets/cookies/003.html?wss [ Failure ]
+crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
+crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
