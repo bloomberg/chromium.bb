@@ -39,7 +39,6 @@ namespace storage {
 class BlobDataBuilder;
 class BlobDataHandle;
 class BlobDataSnapshot;
-class ShareableBlobDataItem;
 
 // This class handles the logistics of blob storage within the browser process.
 // This class is not threadsafe, access on IO thread. In Chromium there is one
@@ -136,6 +135,10 @@ class STORAGE_EXPORT BlobStorageContext {
     return ptr_factory_.GetWeakPtr();
   }
 
+  void set_limits_for_testing(const BlobStorageLimits& limits) {
+    mutable_memory_controller()->set_limits_for_testing(limits);
+  }
+
  protected:
   friend class content::BlobDispatcherHost;
   friend class content::BlobDispatcherHostTest;
@@ -145,87 +148,10 @@ class STORAGE_EXPORT BlobStorageContext {
   friend class BlobTransportHost;
   friend class BlobDataHandle;
   friend class BlobDataHandle::BlobDataHandleShared;
-  friend class BlobFlattenerTest;
   friend class BlobRegistryImplTest;
-  friend class BlobSliceTest;
   friend class BlobStorageContextTest;
 
   enum class TransportQuotaType { MEMORY, FILE };
-
-  // Transforms a BlobDataBuilder into a BlobEntry with no blob references.
-  // BlobSlice is used to flatten out these references. Records the total size
-  // and items for memory and file quota requests.
-  // Exposed in the header file for testing.
-  struct STORAGE_EXPORT BlobFlattener {
-    BlobFlattener(const BlobDataBuilder& input_builder,
-                  BlobEntry* output_blob,
-                  BlobStorageRegistry* registry);
-    ~BlobFlattener();
-
-    // This can be:
-    // * PENDING_QUOTA if we need memory quota, if we're populated and don't
-    // need quota.
-    // * PENDING_INTERNALS if we're waiting on dependent blobs or we're done.
-    // * INVALID_CONSTRUCTION_ARGUMENTS if we have invalid input.
-    // * REFERENCED_BLOB_BROKEN if one of the referenced blobs is broken or we
-    //   reference ourself.
-    BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
-
-    bool contains_unpopulated_transport_items = false;
-
-    // This is the total size of the blob, including all memory, files, etc.
-    uint64_t total_size = 0;
-    // Total memory size of the blob (not including files, etc).
-    uint64_t total_memory_size = 0;
-
-    std::vector<std::pair<std::string, BlobEntry*>> dependent_blobs;
-
-    TransportQuotaType transport_quota_type = TransportQuotaType::MEMORY;
-    uint64_t transport_quota_needed = 0;
-    std::vector<scoped_refptr<ShareableBlobDataItem>> pending_transport_items;
-    // Hold a separate vector of pointers to declare them as populated.
-    std::vector<ShareableBlobDataItem*> transport_items;
-
-    // Copy quota is always memory quota.
-    uint64_t copy_quota_needed = 0;
-    std::vector<scoped_refptr<ShareableBlobDataItem>> pending_copy_items;
-
-    // These record all future copies we'll need to do from referenced blobs.
-    // This happens when we do a partial slice from a pending data or file
-    // item.
-    std::vector<BlobEntry::ItemCopyEntry> copies;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(BlobFlattener);
-  };
-
-  // Used when a blob reference has a size and offset. Records the source items
-  // and memory we need to copy if either side of slice intersects an item.
-  // Exposed in the header file for testing.
-  struct STORAGE_EXPORT BlobSlice {
-    BlobSlice(const BlobEntry& source,
-              uint64_t slice_offset,
-              uint64_t slice_size);
-    ~BlobSlice();
-
-    // Size of memory copying from the source blob.
-    base::CheckedNumeric<size_t> copying_memory_size = 0;
-    // Size of all memory for UMA stats.
-    base::CheckedNumeric<size_t> total_memory_size = 0;
-
-    size_t first_item_slice_offset = 0;
-    // Populated if our first slice item is a temporary item that we'll copy to
-    // later from this |first_source_item|, at offset |first_item_slice_offset|.
-    scoped_refptr<ShareableBlobDataItem> first_source_item;
-    // Populated if our last slice item is a temporary item that we'll copy to
-    // later from this |last_source_item|.
-    scoped_refptr<ShareableBlobDataItem> last_source_item;
-
-    std::vector<scoped_refptr<ShareableBlobDataItem>> dest_items;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(BlobSlice);
-  };
 
   void IncrementBlobRefCount(const std::string& uuid);
   void DecrementBlobRefCount(const std::string& uuid);

@@ -22,10 +22,10 @@ TEST(BlobDataBuilderTest, TestFutureFiles) {
 
   BlobDataBuilder builder(kId);
   builder.AppendFutureFile(0, 10, 0);
-  EXPECT_TRUE(
-      BlobDataBuilder::IsFutureFileItem(builder.items_[0]->data_element()));
+  EXPECT_TRUE(BlobDataBuilder::IsFutureFileItem(
+      builder.items()[0]->item()->data_element()));
   EXPECT_EQ(0ull, BlobDataBuilder::GetFutureFileID(
-                      builder.items_[0]->data_element()));
+                      builder.items()[0]->item()->data_element()));
 }
 
 }  // namespace storage

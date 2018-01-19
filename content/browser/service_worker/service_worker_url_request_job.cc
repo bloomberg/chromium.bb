@@ -606,7 +606,8 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   auto blob_builder =
       std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
   for (const network::DataElement& element : (*body_->elements())) {
-    blob_builder->AppendIPCDataElement(element, nullptr);  // TODO
+    blob_builder->AppendIPCDataElement(element, nullptr,
+                                       blob_storage_context_->registry());
   }
 
   *blob_uuid = blob_builder->uuid();

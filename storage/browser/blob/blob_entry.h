@@ -101,6 +101,8 @@ class STORAGE_EXPORT BlobEntry {
 
   // Appends the given shared blob data item to this object.
   void AppendSharedBlobItem(scoped_refptr<ShareableBlobDataItem> item);
+  void SetSharedBlobItems(
+      std::vector<scoped_refptr<ShareableBlobDataItem>> items);
 
   // Returns if we're a pending blob that can finish building.
   bool CanFinishBuilding() const {
