@@ -33,8 +33,4 @@ bool HeadlessPrintRenderFrameHelperDelegate::OverridePrint(
   return false;
 }
 
-bool HeadlessPrintRenderFrameHelperDelegate::IsAskPrintSettingsEnabled() {
-  return true;
-}
-
 }  // namespace headless
