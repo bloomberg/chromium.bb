@@ -105,6 +105,11 @@ void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
       unindexed_ruleset_info);
 }
 
+void ContentRulesetService::SetIsAfterStartupForTesting() {
+  DCHECK(ruleset_service_);
+  ruleset_service_->set_is_after_startup_for_testing();
+}
+
 void ContentRulesetService::Observe(
     int type,
     const content::NotificationSource& source,

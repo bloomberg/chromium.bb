@@ -77,6 +77,8 @@ class ContentRulesetService : public RulesetServiceDelegate,
     return ruleset_dealer_.get();
   }
 
+  void SetIsAfterStartupForTesting();
+
  private:
   // content::NotificationObserver:
   void Observe(int type,
