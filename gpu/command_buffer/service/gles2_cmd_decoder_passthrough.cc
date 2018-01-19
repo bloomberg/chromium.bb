@@ -1164,6 +1164,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.image_ycbcr_420v_disabled_for_video_frames =
       group_->gpu_preferences()
           .disable_biplanar_gpu_memory_buffers_for_video_frames;
+  caps.image_xr30 = feature_info_->feature_flags().chromium_image_xr30;
   caps.max_copy_texture_chromium_size =
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =

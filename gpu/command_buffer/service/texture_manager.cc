@@ -361,6 +361,11 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
     return true;
   }
 
+  if (feature_info->feature_flags().chromium_image_xr30 &&
+      internal_format == GL_RGB10_A2_EXT) {
+    return true;
+  }
+
   // TODO(dshwang): check if it's possible to remove
   // CHROMIUM_color_buffer_float_rgb. crbug.com/329605
   if (feature_info->feature_flags().chromium_color_buffer_float_rgb &&
