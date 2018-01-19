@@ -90,7 +90,7 @@ bool PreSigninPolicyFetcher::ForceTimeoutForTesting() {
 
 void PreSigninPolicyFetcher::OnMountTemporaryUserHome(
     base::Optional<cryptohome::BaseReply> reply) {
-  if (BaseReplyToMountError(reply) != cryptohome::MOUNT_ERROR_NONE) {
+  if (MountExReplyToMountError(reply) != cryptohome::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Temporary user home mount failed.";
     NotifyCallback(PolicyFetchResult::ERROR, nullptr);
     return;

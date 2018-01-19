@@ -17,23 +17,37 @@
 
 namespace cryptohome {
 
-MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply) {
+namespace {
+
+bool IsEmpty(const base::Optional<BaseReply>& reply) {
   if (!reply.has_value()) {
-    LOGIN_LOG(ERROR) << "MountEx failed with no reply.";
-    return MOUNT_ERROR_FATAL;
+    LOGIN_LOG(ERROR) << "Cryptohome call failed with empty reply.";
+    return true;
   }
+  return false;
+}
+
+}  // namespace
+
+MountError MountExReplyToMountError(const base::Optional<BaseReply>& reply) {
+  if (IsEmpty(reply))
+    return MOUNT_ERROR_FATAL;
+
   if (!reply->HasExtension(MountReply::reply)) {
     LOGIN_LOG(ERROR) << "MountEx failed with no MountReply extension in reply.";
     return MOUNT_ERROR_FATAL;
   }
-  if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
-    LOGIN_LOG(ERROR) << "MountEx failed (CryptohomeErrorCode): "
-                     << reply->error();
-  }
   return CryptohomeErrorToMountError(reply->error());
 }
 
-const std::string& BaseReplyToMountHash(const BaseReply& reply) {
+MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply) {
+  if (IsEmpty(reply))
+    return MOUNT_ERROR_FATAL;
+
+  return CryptohomeErrorToMountError(reply->error());
+}
+
+const std::string& MountExReplyToMountHash(const BaseReply& reply) {
   return reply.GetExtension(MountReply::reply).sanitized_username();
 }
 

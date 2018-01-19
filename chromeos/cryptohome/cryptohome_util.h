@@ -21,11 +21,17 @@ namespace cryptohome {
 CHROMEOS_EXPORT MountError
 BaseReplyToMountError(const base::Optional<BaseReply>& reply);
 
+// Returns a MountError code from the MountEx |reply| returning
+// MOUNT_ERROR_NONE if the reply is well-formed and there is no error.
+CHROMEOS_EXPORT MountError
+MountExReplyToMountError(const base::Optional<BaseReply>& reply);
+
 // Extracts the mount hash from |reply|.
 // This method assumes |reply| is well-formed. To check if a reply
 // is well-formed, callers can check if BaseReplyToMountError returns
 // MOUNT_ERROR_NONE.
-CHROMEOS_EXPORT const std::string& BaseReplyToMountHash(const BaseReply& reply);
+CHROMEOS_EXPORT const std::string& MountExReplyToMountHash(
+    const BaseReply& reply);
 
 // Creates an AuthorizationRequest from the given secret and label.
 CHROMEOS_EXPORT AuthorizationRequest

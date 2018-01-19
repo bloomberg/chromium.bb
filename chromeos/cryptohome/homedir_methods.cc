@@ -82,15 +82,6 @@ class HomedirMethodsImpl : public HomedirMethods {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RenameCryptohome(const Identification& id_from,
-                        const Identification& id_to,
-                        const Callback& callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->RenameCryptohome(
-        id_from, id_to,
-        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
   void GetAccountDiskUsage(
       const Identification& id,
       const GetAccountDiskUsageCallback& callback) override {
