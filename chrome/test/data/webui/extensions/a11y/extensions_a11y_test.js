@@ -226,7 +226,7 @@ AccessibilityTest.define('CrExtensionsErrorConsoleA11yTest', {
   /** @override */
   tests: {
     'Accessible Error Console': function() {
-      assertTrue(!!document.querySelector('* /deep/ #errors-list'));
+      assertTrue(!!document.querySelector('* /deep/ #errorsList'));
     },
   },
 });

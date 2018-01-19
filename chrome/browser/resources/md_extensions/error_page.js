@@ -84,6 +84,9 @@ cr.define('extensions', function() {
       /** @private {!Array<!(ManifestError|RuntimeError)>} */
       entries_: Array,
 
+      /** @private {?chrome.developerPrivate.RequestFileSourceResponse} */
+      code_: Object,
+
       /**
        * Index into |entries_|.
        * @private
@@ -191,10 +194,10 @@ cr.define('extensions', function() {
      * @private
      */
     onSelectedErrorChanged_: function() {
-      if (this.selectedEntry_ < 0) {
-        this.$['code-section'].code = null;
+      this.code_ = null;
+
+      if (this.selectedEntry_ < 0)
         return;
-      }
 
       const error = this.getSelectedError();
       const args = {
@@ -218,9 +221,7 @@ cr.define('extensions', function() {
               null;
           break;
       }
-      this.delegate.requestFileSource(args).then(code => {
-        this.$['code-section'].code = code;
-      });
+      this.delegate.requestFileSource(args).then(code => this.code_ = code);
     },
 
     /**
@@ -296,9 +297,7 @@ cr.define('extensions', function() {
             pathSuffix: getRelativeUrl(frame.url, selectedError),
             lineNumber: frame.lineNumber,
           })
-          .then(code => {
-            this.$['code-section'].code = code;
-          });
+          .then(code => this.code_ = code);
     },
 
     /** @private */
@@ -345,7 +344,7 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!{model: !{index: number}}} e
+     * @param {!{type: string, code: string, model: !{index: number}}} e
      * @private
      */
     onErrorItemAction_: function(e) {

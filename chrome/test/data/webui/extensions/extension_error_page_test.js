@@ -94,7 +94,7 @@ cr.define('extension_error_page_tests', function() {
       var testIsVisible = extension_test_util.isVisible.bind(null, errorPage);
       expectTrue(testIsVisible('#close-button'));
       expectTrue(testIsVisible('#heading'));
-      expectTrue(testIsVisible('#errors-list'));
+      expectTrue(testIsVisible('#errorsList'));
 
       var errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
       expectEquals(1, errorElements.length);

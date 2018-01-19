@@ -72,7 +72,7 @@
         margin: 0 10px;
       }
 
-      #errors-list {
+      #errorsList {
         min-height: 100px;
       }
 
@@ -131,7 +131,7 @@
         background: var(--google-blue-100);
       }
 
-      .dev-tool-button {
+      .devtool-button {
         margin-bottom: 20px;
         max-width: 300px;
       }
@@ -139,6 +139,7 @@
       extensions-code-section {
         background: white;
         height: 200px;
+        margin-bottom: 20px;
       }
 
       /* TODO(scottchen): extract to shared location from settings. */
@@ -184,10 +185,7 @@
           </paper-button>
         </div>
         <div class="section">
-          <extensions-code-section id="code-section"
-              could-not-display-code="$i18n{noErrorsToShow}">
-          </extensions-code-section>
-          <div id="errors-list">
+          <div id="errorsList">
             <template is="dom-repeat" items="[[entries_]]">
               <div class="item-container">
                 <div class$="error-item
@@ -201,8 +199,7 @@
                     <div id$="[[item.id]]" class="error-message">
                       [[item.message]]
                     </div>
-                    <div class$="cr-icon [[iconName_(index, selectedEntry_)]]"
-                        hidden="[[!computeIsRuntimeError_(item)]]">
+                    <div class$="cr-icon [[iconName_(index, selectedEntry_)]]">
                     </div>
                   </div>
                   <div class="separator"></div>
@@ -213,9 +210,10 @@
                       on-keydown="onDeleteErrorAction_">
                   </button>
                 </div>
-                <template is="dom-if" if="[[computeIsRuntimeError_(item)]]">
-                  <iron-collapse opened="[[isOpened_(index, selectedEntry_)]]">
-                    <div class="devtools-controls">
+                <iron-collapse opened="[[isOpened_(index, selectedEntry_)]]">
+                  <div class="devtools-controls">
+                    <template is="dom-if"
+                        if="[[computeIsRuntimeError_(item)]]">
                       <div class="details-heading">
                         $i18n{errorContext}
                       </div>
@@ -236,14 +234,21 @@
                           </li>
                         </template>
                       </ul>
-                      <paper-button class="devtool-button action-button"
-                          disabled="[[!item.canInspect]]"
-                          on-tap="onDevToolButtonTap_">
-                        $i18n{openInDevtool}
-                      </paper-button>
-                    </div>
-                  </iron-collapse>
-                </template>
+                    </template>
+                    <template is="dom-if"
+                        if="[[isOpened_(index, selectedEntry_)]]">
+                      <extensions-code-section code="[[code_]]"
+                          could-not-display-code="$i18n{noErrorsToShow}">
+                      </extensions-code-section>
+                    </template>
+                    <paper-button class="devtool-button action-button"
+                        hidden$="[[!computeIsRuntimeError_(item)]]"
+                        disabled="[[!item.canInspect]]"
+                        on-tap="onDevToolButtonTap_">
+                      $i18n{openInDevtool}
+                    </paper-button>
+                  </div>
+                </iron-collapse>
               </div>
             </template>
           </div>
