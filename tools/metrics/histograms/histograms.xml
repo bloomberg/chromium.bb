@@ -34595,6 +34595,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Engagement.PreloadList.LoadTime" units="ms">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Time taken to load the Media Engagement Preloaded List. It should be
+    recorded once per load of the list which will be once per start up with
+    additional loads when the list is updated while running.
+  </summary>
+</histogram>
+
+<histogram name="Media.Engagement.PreloadList.LookupTime" units="ms">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Time taken to lookup an entry in the Media Engagement Preloaded List. This
+    is recorded for every lookup, regardless of its success.
+  </summary>
+</histogram>
+
 <histogram name="Media.Engagement.ScoreAtPlayback" units="%">
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
