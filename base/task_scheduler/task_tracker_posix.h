@@ -27,7 +27,7 @@ struct Task;
 // TaskTracker can run tasks.
 class BASE_EXPORT TaskTrackerPosix : public TaskTracker {
  public:
-  TaskTrackerPosix(StringPiece name = StringPiece());
+  TaskTrackerPosix(StringPiece name);
   ~TaskTrackerPosix() override;
 
   // Sets the MessageLoopForIO with which to setup FileDescriptorWatcher in the

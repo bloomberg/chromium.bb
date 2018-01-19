@@ -111798,6 +111798,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="TaskSchedulerName" separator=".">
+  <suffix base="true" name="Browser"
+      label="TaskScheduler for the browser process."/>
   <suffix base="true" name="Renderer"
       label="TaskSchedulers for renderer processes."/>
   <suffix base="true" name="ContentChild"
@@ -111916,13 +111918,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       Deprecated 01/2018. In favor of TaskSchedulerName suffix.
     </obsolete>
   </suffix>
-  <affected-histogram name="TaskScheduler.DetachDuration"/>
+  <affected-histogram name="TaskScheduler.DetachDuration">
+    <obsolete>
+      Deprecated 01/2018. In favor of explicit .Browser suffix.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="TaskScheduler.DetachDuration.Browser"/>
   <affected-histogram name="TaskScheduler.DetachDuration.ContentChild"/>
   <affected-histogram name="TaskScheduler.DetachDuration.Renderer"/>
-  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach"/>
+  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach">
+    <obsolete>
+      Deprecated 01/2018. In favor of explicit .Browser suffix.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="TaskScheduler.NumTasksBeforeDetach.Browser"/>
   <affected-histogram name="TaskScheduler.NumTasksBeforeDetach.ContentChild"/>
   <affected-histogram name="TaskScheduler.NumTasksBeforeDetach.Renderer"/>
-  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits"/>
+  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits">
+    <obsolete>
+      Deprecated 01/2018. In favor of explicit .Browser suffix.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="TaskScheduler.NumTasksBetweenWaits.Browser"/>
   <affected-histogram name="TaskScheduler.NumTasksBetweenWaits.ContentChild"/>
   <affected-histogram name="TaskScheduler.NumTasksBetweenWaits.Renderer"/>
   <affected-histogram name="TaskScheduler.TaskLatency">

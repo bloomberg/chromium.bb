@@ -150,7 +150,7 @@ class TaskSchedulerWorkerPoolTest
 
   std::unique_ptr<SchedulerWorkerPool> worker_pool_;
 
-  TaskTracker task_tracker_;
+  TaskTracker task_tracker_ = {"Test"};
   Thread service_thread_;
   DelayedTaskManager delayed_task_manager_;
 

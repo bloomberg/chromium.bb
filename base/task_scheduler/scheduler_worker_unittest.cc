@@ -255,7 +255,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     EXPECT_LE(num_run_tasks_, created_sequences_.size());
   }
 
-  TaskTracker task_tracker_;
+  TaskTracker task_tracker_ = {"Test"};
 
   // Synchronizes access to all members below.
   mutable SchedulerLock lock_;
@@ -512,7 +512,7 @@ class MockedControllableCleanupDelegate : public ControllableCleanupDelegate {
 // Verify that calling SchedulerWorker::Cleanup() from GetWork() causes
 // the SchedulerWorker's thread to exit.
 TEST(TaskSchedulerWorkerTest, WorkerCleanupFromGetWork) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   MockedControllableCleanupDelegate* delegate =
       new StrictMock<MockedControllableCleanupDelegate>(&task_tracker);
@@ -530,7 +530,7 @@ TEST(TaskSchedulerWorkerTest, WorkerCleanupFromGetWork) {
 }
 
 TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringWork) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   // No mock here as that's reasonably covered by other tests and the delegate
   // may destroy on a different thread. Mocks aren't designed with that in mind.
@@ -554,7 +554,7 @@ TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringWork) {
 }
 
 TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringWait) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   // No mock here as that's reasonably covered by other tests and the delegate
   // may destroy on a different thread. Mocks aren't designed with that in mind.
@@ -575,7 +575,7 @@ TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringWait) {
 }
 
 TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringShutdown) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   // No mock here as that's reasonably covered by other tests and the delegate
   // may destroy on a different thread. Mocks aren't designed with that in mind.
@@ -601,7 +601,7 @@ TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringShutdown) {
 
 // Verify that Start() is a no-op after Cleanup().
 TEST(TaskSchedulerWorkerTest, CleanupBeforeStart) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   // No mock here as that's reasonably covered by other tests and the delegate
   // may destroy on a different thread. Mocks aren't designed with that in mind.
@@ -648,7 +648,7 @@ class CallJoinFromDifferentThread : public SimpleThread {
 }  // namespace
 
 TEST(TaskSchedulerWorkerTest, WorkerCleanupDuringJoin) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   // Will be owned by SchedulerWorker.
   // No mock here as that's reasonably covered by other tests and the
   // delegate may destroy on a different thread. Mocks aren't designed with that
@@ -729,7 +729,7 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
 }  // namespace
 
 TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
 
   std::unique_ptr<ExpectThreadPriorityDelegate> delegate(
       new ExpectThreadPriorityDelegate);
@@ -793,7 +793,7 @@ class CoInitializeDelegate : public SchedulerWorkerDefaultDelegate {
 }  // namespace
 
 TEST(TaskSchedulerWorkerTest, BackwardCompatibilityEnabled) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   auto delegate = std::make_unique<CoInitializeDelegate>();
   CoInitializeDelegate* const delegate_raw = delegate.get();
 
@@ -820,7 +820,7 @@ TEST(TaskSchedulerWorkerTest, BackwardCompatibilityEnabled) {
 }
 
 TEST(TaskSchedulerWorkerTest, BackwardCompatibilityDisabled) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   auto delegate = std::make_unique<CoInitializeDelegate>();
   CoInitializeDelegate* const delegate_raw = delegate.get();
 

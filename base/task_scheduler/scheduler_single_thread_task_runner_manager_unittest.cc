@@ -65,7 +65,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
 
   std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
       single_thread_task_runner_manager_;
-  TaskTracker task_tracker_;
+  TaskTracker task_tracker_ = {"Test"};
 
  private:
   Thread service_thread_;

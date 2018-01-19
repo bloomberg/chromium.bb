@@ -107,7 +107,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
 
   std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
 
-  TaskTracker task_tracker_;
+  TaskTracker task_tracker_ = {"Test"};
   Thread service_thread_;
 
  private:
@@ -779,7 +779,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
 }
 
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   DelayedTaskManager delayed_task_manager;
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
@@ -800,7 +800,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
 TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   constexpr size_t worker_capacity = 3;
 
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   DelayedTaskManager delayed_task_manager;
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
@@ -1322,7 +1322,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
 TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
   constexpr size_t kWorkerCapacity = 3;
 
-  TaskTracker task_tracker;
+  TaskTracker task_tracker("Test");
   DelayedTaskManager delayed_task_manager;
   scoped_refptr<TaskRunner> service_thread_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
