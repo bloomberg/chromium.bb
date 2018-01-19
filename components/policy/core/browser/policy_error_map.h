@@ -83,7 +83,7 @@ class POLICY_EXPORT PolicyErrorMap {
   // space. Returns an empty string if there are no errors for |policy|.
   base::string16 GetErrors(const std::string& policy);
 
-  bool empty();
+  bool empty() const;
   size_t size();
 
   const_iterator begin();

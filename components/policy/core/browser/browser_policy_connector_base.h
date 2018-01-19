@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -63,6 +64,9 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
       ConfigurationPolicyProvider* provider);
   ConfigurationPolicyProvider* GetPolicyProviderForTesting();
 
+  // Adds a callback that is notified the the ResourceBundle is loaded.
+  void NotifyWhenResourceBundleReady(base::OnceClosure closure);
+
  protected:
   // Builds an uninitialized BrowserPolicyConnectorBase. SetPolicyProviders()
   // should be called to create and start the policy components.
@@ -73,6 +77,10 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
   // called once.
   void SetPolicyProviders(
       std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers);
+
+  // Must be called when ui::ResourceBundle has been loaded, results in running
+  // any callbacks scheduled in NotifyWhenResourceBundleReady().
+  void OnResourceBundleCreated();
 
  private:
   // Returns the providers to pass to the PolicyService. Generally this is the
@@ -102,6 +110,9 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
 
   // Must be deleted before all the policy providers.
   std::unique_ptr<PolicyServiceImpl> policy_service_;
+
+  // Callbacks scheduled via NotifyWhenResourceBundleReady().
+  std::vector<base::OnceClosure> resource_bundle_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnectorBase);
 };

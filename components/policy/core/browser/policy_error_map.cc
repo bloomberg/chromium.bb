@@ -197,9 +197,10 @@ base::string16 PolicyErrorMap::GetErrors(const std::string& policy) {
   return base::JoinString(list, base::ASCIIToUTF16("\n"));
 }
 
-bool PolicyErrorMap::empty() {
-  CheckReadyAndConvert();
-  return map_.empty();
+bool PolicyErrorMap::empty() const {
+  // This doesn't call CheckReadyAndConvert() to allow code to destroy empty
+  // PolicyErrorMaps rather than having to wait for ResourceBundle to be ready.
+  return pending_.empty() && map_.empty();
 }
 
 size_t PolicyErrorMap::size() {

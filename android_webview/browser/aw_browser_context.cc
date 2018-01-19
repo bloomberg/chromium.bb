@@ -233,6 +233,7 @@ void AwBrowserContext::InitUserPrefService() {
       base::MakeRefCounted<InMemoryPrefStore>());
   pref_service_factory.set_managed_prefs(
       base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
+          browser_policy_connector_.get(),
           browser_policy_connector_->GetPolicyService(),
           browser_policy_connector_->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY));
