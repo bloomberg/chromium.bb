@@ -32,7 +32,6 @@
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
@@ -807,9 +806,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   LayoutBlock* containing_block = ContainingBlock();
   // The location container for boxes is not always the containing block.
   LayoutObject* location_container =
-      IsLayoutInline() || IsTableCell()
-          ? Container()
-          : ToLayoutBox(this)->LocationContainer();
+      IsLayoutInline() ? Container() : ToLayoutBox(this)->LocationContainer();
   // Skip anonymous containing blocks.
   while (containing_block->IsAnonymous()) {
     containing_block = containing_block->ContainingBlock();
