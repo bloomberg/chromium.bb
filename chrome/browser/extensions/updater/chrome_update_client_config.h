@@ -44,7 +44,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  net::URLRequestContextGetter* RequestContext() const override;
+  scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -61,6 +61,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   ~ChromeUpdateClientConfig() override;
 
  private:
+  content::BrowserContext* context_ = nullptr;
   component_updater::ConfiguratorImpl impl_;
   PrefService* pref_service_;
   std::unique_ptr<update_client::ActivityDataService> activity_data_service_;

@@ -967,7 +967,6 @@ BrowserProcessImpl::component_updater() {
   component_updater_ = component_updater::ComponentUpdateServiceFactory(
       component_updater::MakeChromeComponentUpdaterConfigurator(
           base::CommandLine::ForCurrentProcess(),
-          io_thread()->system_url_request_context_getter(),
           g_browser_process->local_state()));
 
   return component_updater_.get();

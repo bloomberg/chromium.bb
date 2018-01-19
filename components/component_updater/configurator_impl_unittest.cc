@@ -32,8 +32,8 @@ class ComponentUpdaterConfiguratorImplTest : public testing::Test {
 TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdate) {
   // Test the default timing values when no command line argument is present.
   base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
-  std::unique_ptr<ConfiguratorImpl> config(
-      new ConfiguratorImpl(&cmdline, nullptr, false));
+  std::unique_ptr<ConfiguratorImpl> config =
+      std::make_unique<ConfiguratorImpl>(&cmdline, false);
   CHECK_EQ(6 * kDelayOneMinute, config->InitialDelay());
   CHECK_EQ(5 * kDelayOneHour, config->NextCheckDelay());
   CHECK_EQ(30 * kDelayOneMinute, config->OnDemandDelay());
@@ -41,7 +41,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdate) {
 
   // Test the fast-update timings.
   cmdline.AppendSwitchASCII("--component-updater", "fast-update");
-  config.reset(new ConfiguratorImpl(&cmdline, nullptr, false));
+  config = std::make_unique<ConfiguratorImpl>(&cmdline, false);
   CHECK_EQ(10, config->InitialDelay());
   CHECK_EQ(5 * kDelayOneHour, config->NextCheckDelay());
   CHECK_EQ(2, config->OnDemandDelay());

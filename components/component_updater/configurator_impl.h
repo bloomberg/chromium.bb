@@ -18,10 +18,6 @@ class CommandLine;
 class Version;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace component_updater {
 
 // Helper class for the implementations of update_client::Configurator.
@@ -29,7 +25,6 @@ namespace component_updater {
 class ConfiguratorImpl {
  public:
   ConfiguratorImpl(const base::CommandLine* cmdline,
-                   net::URLRequestContextGetter* url_request_getter,
                    bool require_encryption);
 
   ~ConfiguratorImpl();
@@ -71,9 +66,6 @@ class ConfiguratorImpl {
   // download urls are returned.
   std::string GetDownloadPreference() const;
 
-  // The source of contexts for all the url requests.
-  net::URLRequestContextGetter* RequestContext() const;
-
   // True means that this client can handle delta updates.
   bool EnabledDeltas() const;
 
@@ -91,7 +83,6 @@ class ConfiguratorImpl {
   std::vector<uint8_t> GetRunActionKeyHash() const;
 
  private:
-  net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;
   GURL url_source_override_;
   bool fast_update_;

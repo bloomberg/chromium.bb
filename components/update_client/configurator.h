@@ -10,16 +10,13 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class GURL;
 class PrefService;
 
 namespace base {
 class Version;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace service_manager {
@@ -96,7 +93,8 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   virtual std::string GetDownloadPreference() const = 0;
 
   // The source of contexts for all the url requests.
-  virtual net::URLRequestContextGetter* RequestContext() const = 0;
+  virtual scoped_refptr<net::URLRequestContextGetter> RequestContext()
+      const = 0;
 
   // Returns a new connector to the service manager. That connector is not bound
   // to any thread yet.

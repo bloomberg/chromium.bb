@@ -25,8 +25,7 @@ namespace {
 
 class IOSConfigurator : public update_client::Configurator {
  public:
-  IOSConfigurator(const base::CommandLine* cmdline,
-                  net::URLRequestContextGetter* url_request_getter);
+  explicit IOSConfigurator(const base::CommandLine* cmdline);
 
   // update_client::Configurator overrides.
   int InitialDelay() const override;
@@ -43,7 +42,7 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  net::URLRequestContextGetter* RequestContext() const override;
+  scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -66,10 +65,8 @@ class IOSConfigurator : public update_client::Configurator {
 // Allows the component updater to use non-encrypted communication with the
 // update backend. The security of the update checks is enforced using
 // a custom message signing protocol and it does not depend on using HTTPS.
-IOSConfigurator::IOSConfigurator(
-    const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* url_request_getter)
-    : configurator_impl_(cmdline, url_request_getter, false) {}
+IOSConfigurator::IOSConfigurator(const base::CommandLine* cmdline)
+    : configurator_impl_(cmdline, false) {}
 
 int IOSConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();
@@ -130,8 +127,9 @@ std::string IOSConfigurator::GetDownloadPreference() const {
   return configurator_impl_.GetDownloadPreference();
 }
 
-net::URLRequestContextGetter* IOSConfigurator::RequestContext() const {
-  return configurator_impl_.RequestContext();
+scoped_refptr<net::URLRequestContextGetter> IOSConfigurator::RequestContext()
+    const {
+  return GetApplicationContext()->GetSystemURLRequestContext();
 }
 
 std::unique_ptr<service_manager::Connector>
@@ -175,9 +173,8 @@ std::vector<uint8_t> IOSConfigurator::GetRunActionKeyHash() const {
 }  // namespace
 
 scoped_refptr<update_client::Configurator> MakeIOSComponentUpdaterConfigurator(
-    const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* context_getter) {
-  return base::MakeRefCounted<IOSConfigurator>(cmdline, context_getter);
+    const base::CommandLine* cmdline) {
+  return base::MakeRefCounted<IOSConfigurator>(cmdline);
 }
 
 }  // namespace component_updater

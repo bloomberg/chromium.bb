@@ -268,7 +268,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -427,7 +427,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -659,7 +659,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -924,7 +924,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -1206,7 +1206,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -1474,7 +1474,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -1720,7 +1720,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -1935,7 +1935,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2078,7 +2078,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2238,7 +2238,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2323,7 +2323,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2372,7 +2372,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return nullptr;
     }
 
@@ -2497,7 +2497,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2734,7 +2734,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -2898,7 +2898,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -3019,7 +3019,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
@@ -3161,7 +3161,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter) {
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
       return std::make_unique<FakeCrxDownloader>();
     }
 
