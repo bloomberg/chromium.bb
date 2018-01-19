@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -70,6 +71,11 @@ public final class PasswordUIView implements PasswordManagerHandler {
         nativeHandleRemoveSavedPasswordException(mNativePasswordUIViewAndroid, index);
     }
 
+    @Override
+    public void serializePasswords(Callback<String> callback) {
+        nativeHandleSerializePasswords(mNativePasswordUIViewAndroid, callback);
+    }
+
     /**
      * Returns the URL for the website for managing one's passwords without the need to use Chrome
      * with the user's profile signed in.
@@ -111,4 +117,6 @@ public final class PasswordUIView implements PasswordManagerHandler {
 
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 
+    private native void nativeHandleSerializePasswords(
+            long nativePasswordUIViewAndroid, Callback<String> callback);
 }
