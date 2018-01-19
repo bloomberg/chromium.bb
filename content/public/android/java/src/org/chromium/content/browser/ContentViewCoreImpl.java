@@ -588,10 +588,12 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     public void onAttachedToWindow() {
         mAttachedToWindow = true;
         addDisplayAndroidObserverIfNeeded();
-        if (mWebContents != null) updateTextSelectionUI(true);
+        if (mWebContents != null) {
+            updateTextSelectionUI(true);
+            getImeAdapter().onViewAttachedToWindow();
+        }
         GamepadList.onAttachedToWindow(mContext);
         mSystemCaptioningBridge.addListener(this);
-        getImeAdapter().onViewAttachedToWindow();
         mWebContentsAccessibility.onAttachedToWindow();
     }
 
