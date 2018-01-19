@@ -15,6 +15,8 @@
       return '<' + typeof(value) + '>';
     if (typeof value === 'string' && value.indexOf('/dom-snapshot/') !== -1)
       value = '<value>';
+    if (typeof value === 'string' && value.indexOf('file://') !== -1)
+      value = '<string>' + value.substr(value.indexOf("WebKit/"));
     return value;
   }
 
