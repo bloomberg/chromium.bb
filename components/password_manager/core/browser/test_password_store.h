@@ -53,10 +53,12 @@ class TestPasswordStore : public PasswordStore {
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool FillBlacklistLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
-
-  // Unused portions of PasswordStore interface
   std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillLoginsForSameOrganizationName(const std::string& signon_realm) override;
+  std::vector<InteractionsStats> GetSiteStatsImpl(
+      const GURL& origin_domain) override;
+
+  // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
   PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
@@ -78,8 +80,6 @@ class TestPasswordStore : public PasswordStore {
   void AddSiteStatsImpl(const InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
-  std::vector<InteractionsStats> GetSiteStatsImpl(
-      const GURL& origin_domain) override;
 
  private:
   PasswordMap stored_passwords_;
