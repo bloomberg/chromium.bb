@@ -152,28 +152,23 @@ class ChromeAppSortingInitialize : public PrefsPrepopulatedTestBase {
     const char kPrefPageIndexDeprecated[] = "page_index";
 
     // Setup the deprecated preferences.
-    ExtensionScopedPrefs* scoped_prefs =
-        static_cast<ExtensionScopedPrefs*>(prefs());
-    scoped_prefs->UpdateExtensionPref(extension1()->id(),
-                                      kPrefAppLaunchIndexDeprecated,
-                                      std::make_unique<base::Value>(0));
-    scoped_prefs->UpdateExtensionPref(extension1()->id(),
-                                      kPrefPageIndexDeprecated,
-                                      std::make_unique<base::Value>(0));
+    prefs()->UpdateExtensionPref(extension1()->id(),
+                                 kPrefAppLaunchIndexDeprecated,
+                                 std::make_unique<base::Value>(0));
+    prefs()->UpdateExtensionPref(extension1()->id(), kPrefPageIndexDeprecated,
+                                 std::make_unique<base::Value>(0));
 
-    scoped_prefs->UpdateExtensionPref(extension2()->id(),
-                                      kPrefAppLaunchIndexDeprecated,
-                                      std::make_unique<base::Value>(1));
-    scoped_prefs->UpdateExtensionPref(extension2()->id(),
-                                      kPrefPageIndexDeprecated,
-                                      std::make_unique<base::Value>(0));
+    prefs()->UpdateExtensionPref(extension2()->id(),
+                                 kPrefAppLaunchIndexDeprecated,
+                                 std::make_unique<base::Value>(1));
+    prefs()->UpdateExtensionPref(extension2()->id(), kPrefPageIndexDeprecated,
+                                 std::make_unique<base::Value>(0));
 
-    scoped_prefs->UpdateExtensionPref(extension3()->id(),
-                                      kPrefAppLaunchIndexDeprecated,
-                                      std::make_unique<base::Value>(0));
-    scoped_prefs->UpdateExtensionPref(extension3()->id(),
-                                      kPrefPageIndexDeprecated,
-                                      std::make_unique<base::Value>(1));
+    prefs()->UpdateExtensionPref(extension3()->id(),
+                                 kPrefAppLaunchIndexDeprecated,
+                                 std::make_unique<base::Value>(0));
+    prefs()->UpdateExtensionPref(extension3()->id(), kPrefPageIndexDeprecated,
+                                 std::make_unique<base::Value>(1));
 
     // We insert the ids in reverse order so that we have to deal with the
     // element on the 2nd page before the 1st page is seen.
@@ -259,14 +254,11 @@ class ChromeAppSortingMigrateAppIndexInvalid
     const char kPrefPageIndexDeprecated[] = "page_index";
 
     // Setup the deprecated preference.
-    ExtensionScopedPrefs* scoped_prefs =
-        static_cast<ExtensionScopedPrefs*>(prefs());
-    scoped_prefs->UpdateExtensionPref(extension1()->id(),
-                                      kPrefAppLaunchIndexDeprecated,
-                                      std::make_unique<base::Value>(0));
-    scoped_prefs->UpdateExtensionPref(extension1()->id(),
-                                      kPrefPageIndexDeprecated,
-                                      std::make_unique<base::Value>(-1));
+    prefs()->UpdateExtensionPref(extension1()->id(),
+                                 kPrefAppLaunchIndexDeprecated,
+                                 std::make_unique<base::Value>(0));
+    prefs()->UpdateExtensionPref(extension1()->id(), kPrefPageIndexDeprecated,
+                                 std::make_unique<base::Value>(-1));
   }
   void Verify() override {
     // Make sure that the invalid page_index wasn't converted over.
