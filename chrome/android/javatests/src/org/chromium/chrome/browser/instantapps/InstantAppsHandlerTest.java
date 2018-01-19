@@ -199,7 +199,8 @@ public class InstantAppsHandlerTest {
                         mActivityTestRule.getActivity()
                                 .getTabModelSelector()
                                 .getCurrentTab()
-                                .getWebContents()));
+                                .getWebContents(),
+                        false));
             }
         });
 
