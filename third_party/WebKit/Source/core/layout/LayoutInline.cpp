@@ -655,6 +655,14 @@ void LayoutInline::Paint(const PaintInfo& paint_info,
 
 template <typename GeneratorContext>
 void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragmentOf(*this)) {
+    const auto& descendants =
+        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
+    for (const auto& descendant : descendants)
+      yield(descendant.RectInContainerBox().ToLayoutRect());
+    return;
+  }
   if (!AlwaysCreateLineBoxes()) {
     GenerateCulledLineBoxRects(yield, this);
   } else if (InlineFlowBox* curr = FirstLineBox()) {
