@@ -102,7 +102,7 @@ public class ProcessIsolationTest {
                 }
             }
         } catch (IOException ioe) {
-            Assert.fail("Failed to read ps output.");
+            throw new AssertionError("Failed to read ps output.", ioe);
         } finally {
             if (reader != null) {
                 try {
