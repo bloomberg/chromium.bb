@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -34,6 +35,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -48,6 +50,21 @@ bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
 
 constexpr SkColor GetInfobarTextColor() {
   return SK_ColorBLACK;
+}
+
+int GetElementSpacing() {
+  return ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+}
+
+gfx::Insets GetCloseButtonSpacing() {
+  auto* provider = ChromeLayoutProvider::Get();
+  const gfx::Insets vector_button_insets =
+      provider->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON);
+  return gfx::Insets(
+             provider->GetDistanceMetric(DISTANCE_TOAST_CONTROL_VERTICAL),
+             GetElementSpacing()) -
+         vector_button_insets;
 }
 
 }  // namespace
@@ -92,21 +109,31 @@ InfoBarView::~InfoBarView() {
 }
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
-  views::Label* label = new views::Label(text);
+  views::Label* label = new views::Label(text, CONTEXT_BODY_TEXT_LARGE);
   label->SizeToPreferredSize();
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(GetInfobarTextColor());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetProperty(
+      views::kMarginsKey,
+      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_TOAST_LABEL_VERTICAL),
+                      0));
   return label;
 }
 
 views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
-  views::Link* link = new views::Link(text);
+  views::Link* link = new views::Link(text, CONTEXT_BODY_TEXT_LARGE);
   link->SizeToPreferredSize();
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_listener(listener);
   link->SetBackgroundColor(background()->get_color());
+  link->SetProperty(
+      views::kMarginsKey,
+      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_TOAST_LABEL_VERTICAL),
+                      0));
   return link;
 }
 
@@ -123,28 +150,24 @@ void InfoBarView::Layout() {
   // |child_container_| should be the only child.
   DCHECK_EQ(1, child_count());
 
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-
-  const int related_control_distance = layout_provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  const int unrelated_control_distance =
-      layout_provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
-
   // Even though other views are technically grandchildren, we'll lay them out
   // here on behalf of |child_container_|.
-  int start_x = related_control_distance;
-  if (icon_ != NULL) {
-    icon_->SetPosition(gfx::Point(start_x, OffsetY(icon_)));
-    start_x = icon_->bounds().right() + related_control_distance;
+  const int spacing = GetElementSpacing();
+  int start_x = 0;
+  if (icon_) {
+    icon_->SetPosition(gfx::Point(spacing, OffsetY(icon_)));
+    start_x = icon_->bounds().right();
   }
 
-  int content_minimum_width = ContentMinimumWidth();
+  const int content_minimum_width = ContentMinimumWidth();
+  if (content_minimum_width > 0)
+    start_x += spacing + content_minimum_width;
+
+  const gfx::Insets close_button_spacing = GetCloseButtonSpacing();
   close_button_->SizeToPreferredSize();
   close_button_->SetPosition(gfx::Point(
-      std::max(
-          start_x + content_minimum_width +
-              ((content_minimum_width > 0) ? unrelated_control_distance : 0),
-          width() - related_control_distance - close_button_->width()),
+      std::max(start_x + close_button_spacing.left(),
+               width() - close_button_spacing.right() - close_button_->width()),
       OffsetY(close_button_)));
 
   // For accessibility reasons, the close button should come last.
@@ -162,6 +185,11 @@ void InfoBarView::ViewHierarchyChanged(
       icon_ = new views::ImageView;
       icon_->SetImage(image.ToImageSkia());
       icon_->SizeToPreferredSize();
+      icon_->SetProperty(
+          views::kMarginsKey,
+          new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                              DISTANCE_TOAST_LABEL_VERTICAL),
+                          0));
       child_container_->AddChildView(icon_);
     }
 
@@ -171,19 +199,24 @@ void InfoBarView::ViewHierarchyChanged(
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusForPlatform();
+    gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+    close_button_->SetProperty(
+        views::kMarginsKey, new gfx::Insets(close_button_spacing.top(), 0,
+                                            close_button_spacing.bottom(), 0));
     // Subclasses should already be done adding child views by this point (see
     // related DCHECK in Layout()).
     child_container_->AddChildView(close_button_);
   }
 
   // Ensure the infobar is tall enough to display its contents.
-  int height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
-  const int kMinimumVerticalPadding = 6;
+  int height = 0;
   for (int i = 0; i < child_container_->child_count(); ++i) {
-    const int child_height = child_container_->child_at(i)->height();
-    height = std::max(height, child_height + kMinimumVerticalPadding);
+    View* child = child_container_->child_at(i);
+    const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
+    const int margin_height = margins ? margins->height() : 0;
+    height = std::max(height, child->height() + margin_height);
   }
-  SetBarTargetHeight(height);
+  SetBarTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
@@ -204,14 +237,12 @@ int InfoBarView::StartX() const {
   // Ensure we don't return a value greater than EndX(), so children can safely
   // set something's width to "EndX() - StartX()" without risking that being
   // negative.
-  const int padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  return std::min((icon_ ? icon_->bounds().right() : 0) + padding, EndX());
+  return std::min((icon_ ? icon_->bounds().right() : 0) + GetElementSpacing(),
+                  EndX());
 }
 
 int InfoBarView::EndX() const {
-  return close_button_->x() - ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                  DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  return close_button_->x() - GetCloseButtonSpacing().left();
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
@@ -282,18 +313,18 @@ void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::Size InfoBarView::CalculatePreferredSize() const {
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+  int width = 0;
 
-  const int related_control_spacing = layout_provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  const int unrelated_control_spacing =
-      layout_provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  const int spacing = GetElementSpacing();
+  if (icon_)
+    width += spacing + icon_->width();
+
+  const int content_width = ContentMinimumWidth();
+  if (content_width)
+    width += spacing + content_width;
 
   return gfx::Size(
-      related_control_spacing +
-          (icon_ ? (icon_->width() + related_control_spacing) : 0) +
-          ContentMinimumWidth() + unrelated_control_spacing +
-          close_button_->width() + related_control_spacing,
+      width + GetCloseButtonSpacing().width() + close_button_->width(),
       total_height());
 }
 

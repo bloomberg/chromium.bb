@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
-class ConfirmInfoBarDelegate;
 class ElevationIconSetter;
 
 namespace views {
@@ -40,6 +40,9 @@ class ConfirmInfoBar : public InfoBarView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   ConfirmInfoBarDelegate* GetDelegate();
+
+  // Creates a button suitable for use as either OK or Cancel.
+  views::MdTextButton* CreateButton(ConfirmInfoBarDelegate::InfoBarButton type);
 
   // Returns the width of all content other than the label and link.  Layout()
   // uses this to determine how much space the label and link can take.
