@@ -25770,6 +25770,7 @@ from previous Chrome versions.
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
+  <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-670188266" label="enable-zip-archiver-unpacker"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
@@ -26249,6 +26250,7 @@ from previous Chrome versions.
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
   <int value="637452937" label="ChromeHomeSurvey:enabled"/>
+  <int value="642037198" label="SoleIntegration:disabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644189071" label="PermissionsBlacklist:enabled"/>
   <int value="646252875" label="ReadItLaterInMenu:enabled"/>

@@ -3673,6 +3673,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebAuth)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"enable-sole-integration", flag_descriptions::kSoleIntegrationName,
+     flag_descriptions::kSoleIntegrationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kSoleIntegration)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

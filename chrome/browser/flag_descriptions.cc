@@ -1340,6 +1340,11 @@ const char kSoftwareRasterizerName[] = "3D software rasterizer";
 const char kSoftwareRasterizerDescription[] =
     "Fall back to a 3D software rasterizer when the GPU cannot be used.";
 
+const char kSoleIntegrationName[] = "Sole integration";
+const char kSoleIntegrationDescription[] =
+    "Enable Sole integration for browser customization. You must restart "
+    "the browser twice for changes to take effect.";
+
 const char kSoundContentSettingName[] = "Sound content setting";
 const char kSoundContentSettingDescription[] =
     "Enable site-wide muting in content settings and tab strip context menu.";
