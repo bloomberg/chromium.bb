@@ -47,5 +47,5 @@ const char* BubbleSyncPromoView::GetClassName() const {
 void BubbleSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
-  delegate_->OnSignInLinkClicked();
+  delegate_->ShowBrowserSignin();
 }

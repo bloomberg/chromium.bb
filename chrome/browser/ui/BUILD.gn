@@ -2923,6 +2923,15 @@ split_static_library("ui") {
       deps += [ "//ui/views/mus" ]
     }
 
+    if (enable_dice_support) {
+      sources += [
+        "views/sync/dice_bubble_sync_promo_view.cc",
+        "views/sync/dice_bubble_sync_promo_view.h",
+        "views/sync/dice_signin_button.cc",
+        "views/sync/dice_signin_button.h",
+      ]
+    }
+
     if (!is_mac || mac_views_browser) {
       sources += [
         "javascript_dialogs/javascript_dialog.cc",

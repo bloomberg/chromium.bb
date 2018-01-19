@@ -5,10 +5,17 @@
 #ifndef CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_
 
+#include "components/signin/core/browser/account_info.h"
+
 class BubbleSyncPromoDelegate {
  public:
   virtual ~BubbleSyncPromoDelegate() {}
-  virtual void OnSignInLinkClicked() = 0;
+
+  // Shows the chrome sign-in page.
+  virtual void ShowBrowserSignin() = 0;
+
+  // Enables sync for |account|.
+  virtual void EnableSync(const AccountInfo& account) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_

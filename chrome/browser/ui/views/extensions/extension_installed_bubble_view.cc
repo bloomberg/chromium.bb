@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
+#include "components/signin/core/browser/account_info.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
@@ -137,7 +138,8 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   void Init() override;
 
   // BubbleSyncPromoDelegate:
-  void OnSignInLinkClicked() override;
+  void ShowBrowserSignin() override;
+  void EnableSync(const AccountInfo& account_info) override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -282,11 +284,16 @@ void ExtensionInstalledBubbleView::Init() {
   }
 }
 
-void ExtensionInstalledBubbleView::OnSignInLinkClicked() {
+void ExtensionInstalledBubbleView::ShowBrowserSignin() {
   chrome::ShowBrowserSignin(
       browser(),
       signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
+}
+
+void ExtensionInstalledBubbleView::EnableSync(const AccountInfo& account) {
+  NOTREACHED() << "Extension installl bubble does not display the DICE "
+               << "personalized sign-in promo asking the user to enable sync.";
 }
 
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,

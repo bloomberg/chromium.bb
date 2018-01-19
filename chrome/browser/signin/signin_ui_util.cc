@@ -4,11 +4,14 @@
 
 #include "chrome/browser/signin/signin_ui_util.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
@@ -20,7 +23,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/font_list.h"
@@ -74,6 +79,38 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
     return account_id;
   }
   return email;
+}
+
+// TODO(tangltom): Add a unit test for this function.
+std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
+  // Fetch account ids for accounts that have a token.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  std::vector<std::string> account_ids = token_service->GetAccounts();
+  // Fetch accounts in the Gaia cookies.
+  GaiaCookieManagerService* cookie_manager_service =
+      GaiaCookieManagerServiceFactory::GetForProfile(profile);
+  std::vector<gaia::ListedAccount> cookie_accounts;
+  bool gaia_accounts_stale = !cookie_manager_service->ListAccounts(
+      &cookie_accounts, nullptr, "ProfileChooserView");
+  UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
+                        gaia_accounts_stale);
+  // Fetch account information for each id and make sure that the first account
+  // in the list matches the first account in the Gaia cookies (if available).
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  std::string gaia_default_account_id =
+      cookie_accounts.empty() ? "" : cookie_accounts[0].id;
+  std::vector<AccountInfo> accounts;
+  for (const std::string& account_id : account_ids) {
+    AccountInfo account_info =
+        account_tracker_service->GetAccountInfo(account_id);
+    if (account_id == gaia_default_account_id)
+      accounts.insert(accounts.begin(), account_info);
+    else
+      accounts.push_back(account_info);
+  }
+  return accounts;
 }
 
 }  // namespace signin_ui_util
