@@ -372,11 +372,12 @@ void ProcessesEventRouter::UpdateRefreshTypesFlagsBasedOnListeners() {
     refresh_types |= GetRefreshTypesFlagOnlyEssentialData();
   }
 
+  const int64_t on_updated_types = GetRefreshTypesForProcessOptionalData();
   if (HasEventListeners(api::processes::OnUpdated::kEventName))
-    refresh_types |= GetRefreshTypesForProcessOptionalData();
+    refresh_types |= on_updated_types;
 
   if (HasEventListeners(api::processes::OnUpdatedWithMemory::kEventName))
-    refresh_types |= task_manager::REFRESH_TYPE_MEMORY;
+    refresh_types |= (on_updated_types | task_manager::REFRESH_TYPE_MEMORY);
 
   SetRefreshTypesFlags(refresh_types);
 }
