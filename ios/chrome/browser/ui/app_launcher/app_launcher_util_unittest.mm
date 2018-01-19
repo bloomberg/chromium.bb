@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/external_app_launcher_util.h"
+#import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

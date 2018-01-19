@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_EXTERNAL_APP_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_EXTERNAL_APP_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_APP_LAUNCHER_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_APP_LAUNCHER_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_
 
 #include "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
@@ -34,4 +34,4 @@ selectedHandler:(nullable OpenMailtoHandlerSelectedHandler)selectedHandler
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_EXTERNAL_APP_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_APP_LAUNCHER_OPEN_MAIL_HANDLER_VIEW_CONTROLLER_H_

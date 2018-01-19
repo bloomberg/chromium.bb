@@ -40,6 +40,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -82,7 +83,6 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
-#import "ios/chrome/browser/web/external_app_launcher_tab_helper.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
@@ -471,10 +471,10 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
       return NO;
   }
 
-  ExternalAppLauncherTabHelper* externalAppLauncherTabHelper =
-      ExternalAppLauncherTabHelper::FromWebState(self.webState);
-  if (externalAppLauncherTabHelper->RequestToOpenUrl(finalURL, sourceURL,
-                                                     linkClicked)) {
+  AppLauncherTabHelper* appLauncherTabHelper =
+      AppLauncherTabHelper::FromWebState(self.webState);
+  if (appLauncherTabHelper->RequestToLaunchApp(finalURL, sourceURL,
+                                               linkClicked)) {
     // Clears pending navigation history after successfully launching the
     // external app.
     DCHECK([self navigationManager]);
