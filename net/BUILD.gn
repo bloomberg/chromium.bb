@@ -2629,6 +2629,8 @@ static_library("test_support") {
     "test/net_test_suite.h",
     "test/scoped_disable_exit_on_dfatal.cc",
     "test/scoped_disable_exit_on_dfatal.h",
+    "test/tcp_socket_proxy.cc",
+    "test/tcp_socket_proxy.h",
     "test/test_certificate_data.h",
     "test/test_data_directory.cc",
     "test/test_data_directory.h",
@@ -2687,26 +2689,24 @@ static_library("test_support") {
       "test/spawned_test_server/base_test_server.h",
       "test/spawned_test_server/spawned_test_server.h",
     ]
+  }
 
-    if (use_remote_test_server) {
-      sources += [
-        "test/spawned_test_server/remote_test_server.cc",
-        "test/spawned_test_server/remote_test_server.h",
-        "test/spawned_test_server/remote_test_server_config.cc",
-        "test/spawned_test_server/remote_test_server_config.h",
-        "test/spawned_test_server/remote_test_server_proxy.cc",
-        "test/spawned_test_server/remote_test_server_proxy.h",
-        "test/spawned_test_server/remote_test_server_spawner_request.cc",
-        "test/spawned_test_server/remote_test_server_spawner_request.h",
-      ]
-    } else {
-      sources += [
-        "test/spawned_test_server/local_test_server.cc",
-        "test/spawned_test_server/local_test_server.h",
-        "test/spawned_test_server/local_test_server_posix.cc",
-        "test/spawned_test_server/local_test_server_win.cc",
-      ]
-    }
+  if (use_remote_test_server) {
+    sources += [
+      "test/spawned_test_server/remote_test_server.cc",
+      "test/spawned_test_server/remote_test_server.h",
+      "test/spawned_test_server/remote_test_server_config.cc",
+      "test/spawned_test_server/remote_test_server_config.h",
+      "test/spawned_test_server/remote_test_server_spawner_request.cc",
+      "test/spawned_test_server/remote_test_server_spawner_request.h",
+    ]
+  } else if (!is_ios) {
+    sources += [
+      "test/spawned_test_server/local_test_server.cc",
+      "test/spawned_test_server/local_test_server.h",
+      "test/spawned_test_server/local_test_server_posix.cc",
+      "test/spawned_test_server/local_test_server_win.cc",
+    ]
   }
 
   if (enable_python_utils) {
@@ -5265,6 +5265,7 @@ test("net_unittests") {
     "test/embedded_test_server/http_request_unittest.cc",
     "test/embedded_test_server/http_response_unittest.cc",
     "test/run_all_unittests.cc",
+    "test/tcp_socket_proxy_unittest.cc",
     "third_party/nist-pkits/pkits_testcases-inl.h",
     "tools/content_decoder_tool/content_decoder_tool.cc",
     "tools/content_decoder_tool/content_decoder_tool.h",
@@ -5434,11 +5435,6 @@ test("net_unittests") {
       "ntlm/ntlm_test_data.h",
       "ntlm/ntlm_unittest.cc",
     ]
-  }
-
-  if (use_remote_test_server) {
-    sources +=
-        [ "test/spawned_test_server/remote_test_server_proxy_unittests.cc" ]
   }
 
   if (enable_python_utils) {

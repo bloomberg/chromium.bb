@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/spawned_test_server/remote_test_server_proxy.h"
+#include "net/test/tcp_socket_proxy.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
@@ -18,9 +18,9 @@ using net::test::IsOk;
 
 namespace net {
 
-class RemoteTestServerProxyTest : public testing::Test {
+class TcpSocketProxyTest : public testing::Test {
  public:
-  RemoteTestServerProxyTest() : io_thread_("RemoteTestServer IO Thread") {
+  TcpSocketProxyTest() : io_thread_("TcpSocketProxyTest IO Thread") {
     EXPECT_TRUE(io_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
@@ -35,7 +35,9 @@ class RemoteTestServerProxyTest : public testing::Test {
     result = listen_socket_->GetLocalAddress(&address);
     EXPECT_THAT(result, IsOk());
 
-    proxy_ = std::make_unique<RemoteTestServerProxy>(io_thread_.task_runner());
+    proxy_ = std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
+    EXPECT_TRUE(proxy_->Initialize());
+
     proxy_address_ =
         IPEndPoint(IPAddress::IPv4Localhost(), proxy_->local_port());
     proxy_->Start(address);
@@ -94,15 +96,15 @@ class RemoteTestServerProxyTest : public testing::Test {
  protected:
   base::Thread io_thread_;
 
-  // Server socket that simulates testserver that RemoteTestServerProxy normally
+  // Server socket that simulates testserver that TcpSocketProxy normally
   // would connect to.
   std::unique_ptr<TCPServerSocket> listen_socket_;
 
-  std::unique_ptr<RemoteTestServerProxy> proxy_;
+  std::unique_ptr<TcpSocketProxy> proxy_;
   IPEndPoint proxy_address_;
 };
 
-TEST_F(RemoteTestServerProxyTest, SendAndReceive) {
+TEST_F(TcpSocketProxyTest, SendAndReceive) {
   std::unique_ptr<StreamSocket> client_socket;
   std::unique_ptr<StreamSocket> server_socket;
   MakeConnection(&client_socket, &server_socket);
@@ -110,7 +112,7 @@ TEST_F(RemoteTestServerProxyTest, SendAndReceive) {
   SendAndReceiveData(server_socket.get(), client_socket.get());
 }
 
-TEST_F(RemoteTestServerProxyTest, TwoConnections) {
+TEST_F(TcpSocketProxyTest, TwoConnections) {
   std::unique_ptr<StreamSocket> client_socket1;
   std::unique_ptr<StreamSocket> server_socket1;
   MakeConnection(&client_socket1, &server_socket1);
@@ -127,7 +129,7 @@ TEST_F(RemoteTestServerProxyTest, TwoConnections) {
 
 // Close socket on the server side and verify that it's closed on the client
 // side.
-TEST_F(RemoteTestServerProxyTest, DisconnectServer) {
+TEST_F(TcpSocketProxyTest, DisconnectServer) {
   std::unique_ptr<StreamSocket> client_socket;
   std::unique_ptr<StreamSocket> server_socket;
   MakeConnection(&client_socket, &server_socket);
@@ -137,12 +139,19 @@ TEST_F(RemoteTestServerProxyTest, DisconnectServer) {
 
 // Close socket on the client side and verify that it's closed on the server
 // side.
-TEST_F(RemoteTestServerProxyTest, DisconnectClient) {
+TEST_F(TcpSocketProxyTest, DisconnectClient) {
   std::unique_ptr<StreamSocket> client_socket;
   std::unique_ptr<StreamSocket> server_socket;
   MakeConnection(&client_socket, &server_socket);
   client_socket.reset();
   ExpectClosed(server_socket.get());
+}
+
+// Initialize() must fail if the port is in use.
+TEST_F(TcpSocketProxyTest, PortInUse) {
+  // Try initializing second proxy on the same port.
+  auto proxy2 = std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
+  EXPECT_FALSE(proxy2->Initialize(proxy_->local_port()));
 }
 
 }  // namespace net

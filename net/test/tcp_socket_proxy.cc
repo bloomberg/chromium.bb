@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/spawned_test_server/remote_test_server_proxy.h"
+#include "net/test/tcp_socket_proxy.h"
 
 #include <memory>
 #include <vector>
@@ -112,13 +112,13 @@ class ConnectionProxy {
   explicit ConnectionProxy(std::unique_ptr<StreamSocket> local_socket);
   ~ConnectionProxy();
 
-  void Start(const IPEndPoint& remote_address,
+  void Start(const IPEndPoint& remote_endpoint,
              base::OnceClosure on_done_callback);
 
  private:
   void Close();
 
-  void HandleConnectResult(const IPEndPoint& remote_address, int result);
+  void HandleConnectResult(const IPEndPoint& remote_endpoint, int result);
 
   base::OnceClosure on_done_callback_;
 
@@ -142,28 +142,28 @@ ConnectionProxy::~ConnectionProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void ConnectionProxy::Start(const IPEndPoint& remote_address,
+void ConnectionProxy::Start(const IPEndPoint& remote_endpoint,
                             base::OnceClosure on_done_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   on_done_callback_ = std::move(on_done_callback);
   remote_socket_ = std::make_unique<TCPClientSocket>(
-      AddressList(remote_address), nullptr, nullptr, NetLogSource());
+      AddressList(remote_endpoint), nullptr, nullptr, NetLogSource());
   int result = remote_socket_->Connect(
       base::Bind(&ConnectionProxy::HandleConnectResult, base::Unretained(this),
-                 remote_address));
+                 remote_endpoint));
   if (result != ERR_IO_PENDING)
-    HandleConnectResult(remote_address, result);
+    HandleConnectResult(remote_endpoint, result);
 }
 
-void ConnectionProxy::HandleConnectResult(const IPEndPoint& remote_address,
+void ConnectionProxy::HandleConnectResult(const IPEndPoint& remote_endpoint,
                                           int result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!incoming_pump_);
   DCHECK(!outgoing_pump_);
 
   if (result < 0) {
-    LOG(ERROR) << "Connection to " << remote_address.ToString()
+    LOG(ERROR) << "Connection to " << remote_endpoint.ToString()
                << " failed: " << ErrorToString(result);
     Close();
     return;
@@ -194,20 +194,14 @@ void ConnectionProxy::Close() {
 
 }  // namespace
 
-// RemoteTestServerProxy implementation that runs on a background IO thread.
-class RemoteTestServerProxy::Core {
+// TcpSocketProxy implementation that runs on a background IO thread.
+class TcpSocketProxy::Core {
  public:
   Core();
   ~Core();
 
-  // Creates local socket for accepting incoming connections and binds it to a
-  // port. local_port() comes valid after this call is complete.
-  void Initialize(base::WaitableEvent* initialized_event);
-
-  // Starts accepting incoming connections and redirecting them to
-  // remote_address. Must be called only after Initialize().
-  void Start(const IPEndPoint& remote_address);
-
+  void Initialize(int local_port, base::WaitableEvent* initialized_event);
+  void Start(const IPEndPoint& remote_endpoint);
   uint16_t local_port() const { return local_port_; }
 
  private:
@@ -216,11 +210,11 @@ class RemoteTestServerProxy::Core {
   void HandleAcceptResult(int result);
   void OnConnectionClosed(ConnectionProxy* connection);
 
-  IPEndPoint remote_address_;
+  IPEndPoint remote_endpoint_;
 
   std::unique_ptr<TCPServerSocket> socket_;
 
-  uint16_t local_port_;
+  uint16_t local_port_ = 0;
   std::vector<std::unique_ptr<ConnectionProxy>> connections_;
 
   std::unique_ptr<StreamSocket> accepted_socket_;
@@ -228,35 +222,46 @@ class RemoteTestServerProxy::Core {
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-RemoteTestServerProxy::Core::Core() {}
+TcpSocketProxy::Core::Core() {}
 
-void RemoteTestServerProxy::Core::Initialize(
-    base::WaitableEvent* initialized_event) {
-  CHECK(!socket_);
+void TcpSocketProxy::Core::Initialize(int local_port,
+                                      base::WaitableEvent* initialized_event) {
+  DCHECK(!socket_);
+
+  local_port_ = 0;
 
   socket_ = std::make_unique<TCPServerSocket>(nullptr, net::NetLogSource());
-  int result = socket_->Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 5);
-  CHECK_EQ(result, OK);
+  int result =
+      socket_->Listen(IPEndPoint(IPAddress::IPv4Localhost(), local_port), 5);
+  if (result != OK) {
+    LOG(ERROR) << "TcpServerSocket::Listen() returned "
+               << ErrorToString(result);
+  } else {
+    // Get local port number.
+    IPEndPoint address;
+    result = socket_->GetLocalAddress(&address);
+    if (result != OK) {
+      LOG(ERROR) << "TcpServerSocket::GetLocalAddress() returned "
+                 << ErrorToString(result);
+    } else {
+      local_port_ = address.port();
+    }
+  }
 
-  // Get local port number.
-  IPEndPoint address;
-  result = socket_->GetLocalAddress(&address);
-  CHECK_EQ(result, OK);
-  local_port_ = address.port();
-
-  initialized_event->Signal();
+  if (initialized_event)
+    initialized_event->Signal();
 }
 
-void RemoteTestServerProxy::Core::Start(const IPEndPoint& remote_address) {
-  CHECK(socket_);
+void TcpSocketProxy::Core::Start(const IPEndPoint& remote_endpoint) {
+  DCHECK(socket_);
 
-  remote_address_ = remote_address;
+  remote_endpoint_ = remote_endpoint;
   DoAcceptLoop();
 }
 
-RemoteTestServerProxy::Core::~Core() {}
+TcpSocketProxy::Core::~Core() {}
 
-void RemoteTestServerProxy::Core::DoAcceptLoop() {
+void TcpSocketProxy::Core::DoAcceptLoop() {
   int result = OK;
   while (result == OK) {
     result = socket_->Accept(
@@ -267,13 +272,13 @@ void RemoteTestServerProxy::Core::DoAcceptLoop() {
   }
 }
 
-void RemoteTestServerProxy::Core::OnAcceptResult(int result) {
+void TcpSocketProxy::Core::OnAcceptResult(int result) {
   HandleAcceptResult(result);
   if (result == OK)
     DoAcceptLoop();
 }
 
-void RemoteTestServerProxy::Core::HandleAcceptResult(int result) {
+void TcpSocketProxy::Core::HandleAcceptResult(int result) {
   DCHECK_NE(result, ERR_IO_PENDING);
 
   if (result < 0) {
@@ -290,13 +295,12 @@ void RemoteTestServerProxy::Core::HandleAcceptResult(int result) {
   // Start() may invoke the callback so it needs to be called after the
   // connection is pushed to connections_.
   connection_proxy_ptr->Start(
-      remote_address_,
+      remote_endpoint_,
       base::BindOnce(&Core::OnConnectionClosed, base::Unretained(this),
                      connection_proxy_ptr));
 }
 
-void RemoteTestServerProxy::Core::OnConnectionClosed(
-    ConnectionProxy* connection) {
+void TcpSocketProxy::Core::OnConnectionClosed(ConnectionProxy* connection) {
   for (auto it = connections_.begin(); it != connections_.end(); ++it) {
     if (it->get() == connection) {
       connections_.erase(it);
@@ -306,30 +310,40 @@ void RemoteTestServerProxy::Core::OnConnectionClosed(
   NOTREACHED();
 }
 
-RemoteTestServerProxy::RemoteTestServerProxy(
+TcpSocketProxy::TcpSocketProxy(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner), core_(std::make_unique<Core>()) {
-  base::WaitableEvent intialized_event(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Core::Initialize, base::Unretained(core_.get()),
-                     &intialized_event));
-  intialized_event.Wait();
+    : io_task_runner_(io_task_runner), core_(std::make_unique<Core>()) {}
+
+bool TcpSocketProxy::Initialize(int local_port) {
+  DCHECK(!local_port_);
+
+  if (io_task_runner_->BelongsToCurrentThread()) {
+    core_->Initialize(local_port, nullptr);
+  } else {
+    base::WaitableEvent initialized_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Core::Initialize, base::Unretained(core_.get()),
+                       local_port, &initialized_event));
+    initialized_event.Wait();
+  }
 
   local_port_ = core_->local_port();
+
+  return local_port_ != 0;
 }
 
-RemoteTestServerProxy::~RemoteTestServerProxy() {
+TcpSocketProxy::~TcpSocketProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  io_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+  io_task_runner_->DeleteSoon(FROM_HERE, std::move(core_));
 }
 
-void RemoteTestServerProxy::Start(const IPEndPoint& remote_address) {
+void TcpSocketProxy::Start(const IPEndPoint& remote_endpoint) {
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get()),
-                                remote_address));
+                                remote_endpoint));
 }
 
 }  // namespace net

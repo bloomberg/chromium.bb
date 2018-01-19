@@ -15,7 +15,7 @@
 namespace net {
 
 class RemoteTestServerSpawnerRequest;
-class RemoteTestServerProxy;
+class TcpSocketProxy;
 
 // The RemoteTestServer runs an external Python-based test server in another
 // machine that is different from the machine that executes the tests. It is
@@ -92,8 +92,8 @@ class RemoteTestServer : public BaseTestServer {
   // Server port. Non-zero when the server is running.
   int remote_port_ = 0;
 
-  std::unique_ptr<RemoteTestServerProxy> test_server_proxy_;
-  std::unique_ptr<RemoteTestServerProxy> ocsp_proxy_;
+  std::unique_ptr<TcpSocketProxy> test_server_proxy_;
+  std::unique_ptr<TcpSocketProxy> ocsp_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteTestServer);
 };
