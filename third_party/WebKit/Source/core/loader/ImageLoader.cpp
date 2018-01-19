@@ -761,6 +761,8 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  UseCounter::Count(GetElement()->GetDocument(), WebFeature::kImageDecodeAPI);
+
   auto* request =
       new DecodeRequest(this, ScriptPromiseResolver::Create(script_state));
   Microtask::EnqueueMicrotask(

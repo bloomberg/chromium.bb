@@ -1851,6 +1851,8 @@ enum WebFeature {
   kScrollToFragmentFailWithMixed = 2344,
   kScrollToFragmentFailWithInvalidEncoding = 2345,
   kRTCPeerConnectionWithActiveCsp = 2346,
+  kImageDecodingAttribute = 2347,
+  kImageDecodeAPI = 2348,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -23,6 +23,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/StyleChangeReason.h"
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/svg_names.h"
@@ -155,6 +156,7 @@ void SVGImageElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == SVGNames::decodingAttr &&
       RuntimeEnabledFeatures::ImageDecodingAttributeEnabled()) {
+    UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else {
     SVGElement::ParseAttribute(params);
