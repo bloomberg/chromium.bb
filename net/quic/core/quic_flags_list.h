@@ -109,15 +109,6 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, false)
 // If true, enable QUIC v43.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_43, false)
 
-// If true, allows one address change when UDP proxying.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_allow_address_change_for_udp_proxy,
-          true)
-
-// Explicitly send a connection close if the TLP count is greater than 0 when
-// idle timeout occurs.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp, true)
-
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
@@ -131,7 +122,7 @@ QUIC_FLAG(bool,
 // If true, allow stream data and control frames to be acked multiple times.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2,
-          false)
+          true)
 
 // If true, calculate stream sequencer buffer block count in a way that
 // guaranteed to be 2048.
@@ -168,3 +159,17 @@ QUIC_FLAG(bool,
 // If true, QuicStreamSendBuffer keeps track of the slice which next write
 // should get data from if writing new data.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, false)
+
+// If true, when WINDOW_UPDATE is received, add stream to session's write
+// blocked list and let session unblock it later.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_streams_unblocked_by_session,
+          false)
+
+// If true, inspects CHLO packets for indicator tags to allow early session
+// creation.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags, false)
+
+// When true, ignore the specified ack delay if it causes the RTT sample to be
+// less than min_rtt.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, false)

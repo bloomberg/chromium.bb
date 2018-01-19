@@ -822,6 +822,15 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
   EXPECT_TRUE(session_.GetOrCreateDynamicStream(kTestStreamId));
 }
 
+TEST_P(QuicSessionTestServer, DoNotSendGoAwayTwice) {
+  EXPECT_CALL(*connection_,
+              SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away."))
+      .Times(1);
+  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
+  EXPECT_TRUE(session_.goaway_sent());
+  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
+}
+
 TEST_P(QuicSessionTestServer, InvalidGoAway) {
   QuicGoAwayFrame go_away(kInvalidControlFrameId, QUIC_PEER_GOING_AWAY,
                           session_.next_outgoing_stream_id(), "");

@@ -653,6 +653,14 @@ bool QuicConfig::negotiated() const {
          max_streams_per_connection_.negotiated();
 }
 
+void QuicConfig::SetCreateSessionTagIndicators(QuicTagVector tags) {
+  create_session_tag_indicators_ = std::move(tags);
+}
+
+const QuicTagVector& QuicConfig::create_session_tag_indicators() const {
+  return create_session_tag_indicators_;
+}
+
 void QuicConfig::SetDefaults() {
   idle_network_timeout_seconds_.set(kMaximumIdleTimeoutSecs,
                                     kDefaultIdleTimeoutSecs);

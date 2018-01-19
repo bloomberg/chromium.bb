@@ -47,6 +47,14 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt32(uint32_t value);
   bool WriteUInt64(uint64_t value);
 
+  // Write an unsigned-integer value per the IETF QUIC/Variable Length
+  // Integer encoding rules (see draft-ietf-quic-transport-08.txt).
+  // IETF Variable Length Integers have 62 significant bits, so the
+  // value to write must be in the range of 0...(2^62)-1. Returns
+  // false if the value is out of range or if there is no room in the
+  // buffer.
+  bool WriteVarInt62(uint64_t value);
+
   // Writes |value| to the position |offset| from the start of the data.
   // |offset| must be less than the current length of the writer.
   bool WriteUInt8AtOffset(uint8_t value, size_t offset);

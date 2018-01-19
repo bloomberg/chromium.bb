@@ -258,9 +258,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   typedef QuicLinkedHashMap<QuicPacketNumber, TransmissionType>
       PendingRetransmissionMap;
 
-  // Updates the least_packet_awaited_by_peer.
-  void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);
-
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const QuicAckFrame& ack_frame);
 
@@ -366,9 +363,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   LossDetectionInterface* loss_algorithm_;
   GeneralLossAlgorithm general_loss_algorithm_;
   bool n_connection_simulation_;
-
-  // Least packet number which the peer is still waiting for.
-  QuicPacketNumber least_packet_awaited_by_peer_;
 
   // Tracks the first RTO packet.  If any packet before that packet gets acked,
   // it indicates the RTO was spurious and should be reversed(F-RTO).

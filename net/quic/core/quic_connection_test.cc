@@ -1170,9 +1170,7 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
   QuicIpAddress host;
   host.FromString("1.1.1.1");
   QuicSocketAddress self_address(host, 123);
-  if (GetQuicReloadableFlag(quic_allow_address_change_for_udp_proxy)) {
-    EXPECT_CALL(visitor_, AllowSelfAddressChange()).WillOnce(Return(false));
-  }
+  EXPECT_CALL(visitor_, AllowSelfAddressChange()).WillOnce(Return(false));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_ERROR_MIGRATING_ADDRESS, _, _));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);
@@ -1280,11 +1278,13 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
 
   // Process a padded PING packet with no peer address change on server side
   // will be ignored.
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
           &peer_creator_));
-  std::unique_ptr<QuicReceivedPacket> received(
-      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
 
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
@@ -1319,11 +1319,13 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   const QuicSocketAddress kNewPeerAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
           &peer_creator_));
-  std::unique_ptr<QuicReceivedPacket> received(
-      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
 
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
   if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
@@ -1367,11 +1369,13 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
   const QuicSocketAddress kNewPeerAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
           &peer_creator_));
-  std::unique_ptr<QuicReceivedPacket> received(
-      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
   if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
     EXPECT_EQ(kPeerAddress, connection_.peer_address());
@@ -1412,11 +1416,13 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
   EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
   EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
           &peer_creator_));
-  std::unique_ptr<QuicReceivedPacket> received(
-      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
   ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
 
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
@@ -1447,11 +1453,13 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
   const QuicSocketAddress kNewSelfAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
           &peer_creator_));
-  std::unique_ptr<QuicReceivedPacket> received(
-      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  std::unique_ptr<QuicReceivedPacket> received(ConstructReceivedPacket(
+      QuicEncryptedPacket(probing_packet->encrypted_buffer,
+                          probing_packet->encrypted_length),
+      clock_.Now()));
   ProcessReceivedPacket(kNewSelfAddress, kPeerAddress, *received);
 
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
@@ -3773,7 +3781,6 @@ TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseAndTLP) {
-  SetQuicReloadableFlag(quic_explicit_close_after_tlp, true);
   // Same test as above, but complete a handshake which enables silent close,
   // but sending TLPs causes the connection close to be sent.
   EXPECT_TRUE(connection_.connected());
@@ -3828,7 +3835,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseAndTLP) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseWithOpenStreams) {
-  SetQuicReloadableFlag(quic_explicit_close_after_tlp, true);
   // Same test as above, but complete a handshake which enables silent close,
   // but having open streams causes the connection close to be sent.
   EXPECT_TRUE(connection_.connected());
@@ -5285,15 +5291,6 @@ TEST_P(QuicConnectionTest, BlockedFrameInstigateAcks) {
   // Ensure that this has caused the ACK alarm to be set.
   QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
   EXPECT_TRUE(ack_alarm->IsSet());
-}
-
-TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {
-  EXPECT_FALSE(connection_.goaway_sent());
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away.");
-  EXPECT_TRUE(connection_.goaway_sent());
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
-  connection_.SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away.");
 }
 
 TEST_P(QuicConnectionTest, ReevaluateTimeUntilSendOnAck) {

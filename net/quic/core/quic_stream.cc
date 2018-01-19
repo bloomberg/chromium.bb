@@ -508,12 +508,20 @@ void QuicStream::OnClose() {
 
 void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
-    // Writing can be done again!
-    // TODO(rjshade): This does not respect priorities (e.g. multiple
-    //                outstanding POSTs are unblocked on arrival of
-    //                SHLO with initial window).
-    // As long as the connection is not flow control blocked, write on!
-    OnCanWrite();
+    if (session_->session_unblocks_stream()) {
+      if (HasBufferedData()) {
+        QUIC_FLAG_COUNT(quic_reloadable_flag_quic_streams_unblocked_by_session);
+        // Let session unblock this stream.
+        session_->MarkConnectionLevelWriteBlocked(id_);
+      }
+    } else {
+      // Writing can be done again!
+      // TODO(rjshade): This does not respect priorities (e.g. multiple
+      //                outstanding POSTs are unblocked on arrival of
+      //                SHLO with initial window).
+      // As long as the connection is not flow control blocked, write on!
+      OnCanWrite();
+    }
   }
 }
 

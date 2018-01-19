@@ -461,6 +461,12 @@ string QuicTestClient::SendSynchronousRequest(const string& uri) {
   return SendCustomSynchronousRequest(headers, "");
 }
 
+void QuicTestClient::SendConnectivityProbing() {
+  QuicConnection* connection = client()->client_session()->connection();
+  connection->SendConnectivityProbingPacket(connection->writer(),
+                                            connection->peer_address());
+}
+
 void QuicTestClient::SetLatestCreatedStream(QuicSpdyClientStream* stream) {
   latest_created_stream_ = stream;
   if (latest_created_stream_ != nullptr) {

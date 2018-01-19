@@ -140,7 +140,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
       const ParsedQuicVersionVector& supported_versions);
 
   // Creates a connectivity probing packet.
-  std::unique_ptr<QuicEncryptedPacket> SerializeConnectivityProbingPacket();
+  OwningSerializedPacketPointer SerializeConnectivityProbingPacket();
 
   // Re-serializes frames with the original packet's packet number length.
   // Used for retransmitting packets to ensure they aren't too long.

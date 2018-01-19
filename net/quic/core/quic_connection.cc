@@ -269,8 +269,6 @@ QuicConnection::QuicConnection(
       packets_between_mtu_probes_(kPacketsBetweenMtuProbesBase),
       next_mtu_probe_at_(kPacketsBetweenMtuProbesBase),
       largest_received_packet_size_(0),
-      goaway_sent_(false),
-      goaway_received_(false),
       write_error_occurred_(false),
       no_stop_waiting_frames_(false),
       consecutive_num_packets_with_no_retransmittable_frames_(0),
@@ -956,7 +954,6 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
                   << " and error: " << QuicErrorCodeToString(frame.error_code)
                   << " and reason: " << frame.reason_phrase;
 
-  goaway_received_ = true;
   visitor_->OnGoAway(frame);
   visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
@@ -1411,8 +1408,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     if (self_address_.port() != last_packet_destination_address_.port() ||
         self_address_.host().Normalized() !=
             last_packet_destination_address_.host().Normalized()) {
-      if (!GetQuicReloadableFlag(quic_allow_address_change_for_udp_proxy) ||
-          !visitor_->AllowSelfAddressChange()) {
+      if (!visitor_->AllowSelfAddressChange()) {
         CloseConnection(
             QUIC_ERROR_MIGRATING_ADDRESS,
             "Self address migration is not supported at the server.",
@@ -2168,11 +2164,6 @@ void QuicConnection::CancelAllAlarms() {
 void QuicConnection::SendGoAway(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason) {
-  if (goaway_sent_) {
-    return;
-  }
-  goaway_sent_ = true;
-
   QUIC_DLOG(INFO) << ENDPOINT << "Going away with error "
                   << QuicErrorCodeToString(error) << " (" << error << ")";
 
@@ -2252,11 +2243,9 @@ void QuicConnection::CheckForTimeout() {
   if (idle_duration >= idle_network_timeout_) {
     const string error_details = "No recent network activity.";
     QUIC_DVLOG(1) << ENDPOINT << error_details;
-    if (GetQuicReloadableFlag(quic_explicit_close_after_tlp) &&
-        (sent_packet_manager_.GetConsecutiveTlpCount() > 0 ||
+    if ((sent_packet_manager_.GetConsecutiveTlpCount() > 0 ||
          sent_packet_manager_.GetConsecutiveRtoCount() > 0 ||
          visitor_->HasOpenDynamicStreams())) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_explicit_close_after_tlp);
       CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, error_details,
                       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     } else {
@@ -2520,17 +2509,32 @@ bool QuicConnection::SendConnectivityProbingPacket(
   QUIC_DLOG(INFO) << ENDPOINT << "Sending connectivity probing packet for "
                   << "connection_id = " << connection_id_;
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       packet_generator_.SerializeConnectivityProbingPacket());
+  DCHECK_EQ(IsRetransmittable(*probing_packet), NO_RETRANSMITTABLE_DATA);
 
   WriteResult result = probing_writer->WritePacket(
-      probing_packet->data(), probing_packet->length(), self_address().host(),
-      peer_address, per_packet_options_);
+      probing_packet->encrypted_buffer, probing_packet->encrypted_length,
+      self_address().host(), peer_address, per_packet_options_);
 
   if (result.status == WRITE_STATUS_ERROR) {
     QUIC_DLOG(INFO) << "Write probing packet not finished with error = "
                     << result.error_code;
     return false;
+  }
+
+  // Call OnPacketSent regardless of the write result. This treats a blocked
+  // write the same as a packet loss.
+  sent_packet_manager_.OnPacketSent(
+      probing_packet.get(), probing_packet->original_packet_number,
+      clock_->Now(), probing_packet->transmission_type,
+      NO_RETRANSMITTABLE_DATA);
+
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    visitor_->OnWriteBlocked();
+    if (probing_writer->IsWriteBlockedDataBuffered()) {
+      QUIC_BUG << "Write probing packet blocked";
+    }
   }
 
   return true;

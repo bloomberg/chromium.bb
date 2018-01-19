@@ -27,10 +27,10 @@
 #include "net/quic/test_tools/simple_quic_framer.h"
 
 using std::string;
+using testing::_;
 using testing::InSequence;
 using testing::Return;
 using testing::StrictMock;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -110,10 +110,7 @@ class TestPacketGenerator : public QuicPacketGenerator {
                       QuicRandom* random_generator,
                       DelegateInterface* delegate,
                       SimpleDataProducer* producer)
-      : QuicPacketGenerator(connection_id,
-                            framer,
-                            random_generator,
-                            delegate),
+      : QuicPacketGenerator(connection_id, framer, random_generator, delegate),
         producer_(producer) {}
 
   QuicConsumedData ConsumeDataFastPath(QuicStreamId id,
@@ -938,10 +935,11 @@ TEST_F(QuicPacketGeneratorTest, SetMaxPacketLength_MidpacketFlush) {
 TEST_F(QuicPacketGeneratorTest, GenerateConnectivityProbingPacket) {
   delegate_.SetCanWriteAnything();
 
-  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+  OwningSerializedPacketPointer probing_packet(
       generator_.SerializeConnectivityProbingPacket());
 
-  ASSERT_TRUE(simple_framer_.ProcessPacket(*probing_packet));
+  ASSERT_TRUE(simple_framer_.ProcessPacket(QuicEncryptedPacket(
+      probing_packet->encrypted_buffer, probing_packet->encrypted_length)));
 
   EXPECT_EQ(2u, simple_framer_.num_frames());
   EXPECT_EQ(1u, simple_framer_.ping_frames().size());

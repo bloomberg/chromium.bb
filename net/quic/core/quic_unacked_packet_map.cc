@@ -136,8 +136,13 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
     QuicPacketNumber packet_number) const {
   DCHECK_GE(packet_number, least_unacked_);
   DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
-  return !unacked_packets_[packet_number - least_unacked_]
-              .retransmittable_frames.empty();
+  return HasRetransmittableFrames(
+      unacked_packets_[packet_number - least_unacked_]);
+}
+
+bool QuicUnackedPacketMap::HasRetransmittableFrames(
+    const QuicTransmissionInfo& info) const {
+  return !info.retransmittable_frames.empty();
 }
 
 void QuicUnackedPacketMap::RemoveRetransmittability(
@@ -149,7 +154,7 @@ void QuicUnackedPacketMap::RemoveRetransmittability(
   }
 
   if (info->has_crypto_handshake) {
-    DCHECK(!info->retransmittable_frames.empty());
+    DCHECK(HasRetransmittableFrames(*info));
     DCHECK_LT(0u, pending_crypto_packet_count_);
     --pending_crypto_packet_count_;
     info->has_crypto_handshake = false;
@@ -190,7 +195,7 @@ bool QuicUnackedPacketMap::IsPacketUsefulForRetransmittableData(
     const QuicTransmissionInfo& info) const {
   // Packet may have retransmittable frames, or the data may have been
   // retransmitted with a new packet number.
-  return !info.retransmittable_frames.empty() ||
+  return HasRetransmittableFrames(info) ||
          // Allow for an extra 1 RTT before stopping to track old packets.
          info.retransmission > largest_observed_;
 }
@@ -312,7 +317,7 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
   for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
        it != unacked_packets_.rend(); ++it) {
-    if (it->in_flight && !it->retransmittable_frames.empty()) {
+    if (it->in_flight && HasRetransmittableFrames(*it)) {
       return true;
     }
   }

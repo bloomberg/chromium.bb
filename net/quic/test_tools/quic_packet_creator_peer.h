@@ -39,8 +39,8 @@ class QuicPacketCreatorPeer {
                                              const QuicFrames& frames,
                                              char* buffer,
                                              size_t buffer_len);
-  static std::unique_ptr<QuicEncryptedPacket>
-  SerializeConnectivityProbingPacket(QuicPacketCreator* creator);
+  static OwningSerializedPacketPointer SerializeConnectivityProbingPacket(
+      QuicPacketCreator* creator);
   static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
   static QuicFramer* framer(QuicPacketCreator* creator);
 

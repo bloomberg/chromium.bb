@@ -1165,6 +1165,32 @@ TEST_F(QuicStreamTest, CannotBundleLostFin) {
   stream_->OnCanWrite();
 }
 
+TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
+  // Set a small initial control window size.
+  set_initial_flow_control_window_bytes(100);
+  Initialize(kShouldProcessData);
+
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*connection_, SendBlocked(stream_->id()));
+  string data(1024, '.');
+  stream_->WriteOrBufferData(data, false, nullptr);
+  EXPECT_FALSE(HasWriteBlockedStreams());
+
+  QuicWindowUpdateFrame window_update(kInvalidControlFrameId, stream_->id(),
+                                      1234);
+
+  stream_->OnWindowUpdateFrame(window_update);
+  if (session_->session_unblocks_stream()) {
+    // Verify stream is marked connection level write blocked.
+    EXPECT_TRUE(HasWriteBlockedStreams());
+    EXPECT_TRUE(stream_->HasBufferedData());
+  } else {
+    EXPECT_FALSE(HasWriteBlockedStreams());
+    EXPECT_FALSE(stream_->HasBufferedData());
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

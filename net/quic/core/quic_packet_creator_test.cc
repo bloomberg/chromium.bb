@@ -26,12 +26,12 @@
 #include "net/quic/test_tools/simple_data_producer.h"
 
 using std::string;
+using testing::_;
 using testing::DoAll;
 using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -680,7 +680,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
 
     creator_.set_encryption_level(level);
 
-    std::unique_ptr<QuicEncryptedPacket> encrypted(
+    OwningSerializedPacketPointer encrypted(
         creator_.SerializeConnectivityProbingPacket());
     {
       InSequence s;
@@ -694,7 +694,8 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
       EXPECT_CALL(framer_visitor_, OnPacketComplete());
     }
     // QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
-    server_framer_.ProcessPacket(*encrypted);
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
   }
 }
 
