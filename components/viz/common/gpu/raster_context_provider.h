@@ -74,6 +74,8 @@ class VIZ_COMMON_EXPORT RasterContextProvider {
 
   // Returns the lock that should be held if using this context from multiple
   // threads. This can be called on any thread.
+  // Returns null if the context does not support locking and must be used from
+  // the same thread.
   // NOTE: Helper method for ScopedContextLock. Use that instead of calling this
   // directly.
   virtual base::Lock* GetLock() = 0;

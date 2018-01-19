@@ -212,7 +212,7 @@ class GPUImageDecodeTestMockContextProvider : public TestContextProvider {
       : TestContextProvider(std::move(support),
                             std::move(gl),
                             std::move(context),
-                            false) {}
+                            true) {}
 };
 
 gfx::ColorSpace DefaultColorSpace() {
@@ -230,7 +230,11 @@ class GpuImageDecodeCacheTest
         &discardable_manager_, &transfer_cache_helper_);
     discardable_manager_.SetGLES2Interface(context_provider_->TestContextGL());
     context_provider_->BindToCurrentThread();
-    transfer_cache_helper_.SetGrContext(context_provider_->GrContext());
+    {
+      viz::RasterContextProvider::ScopedRasterContextLock context_lock(
+          context_provider_.get());
+      transfer_cache_helper_.SetGrContext(context_provider_->GrContext());
+    }
     use_transfer_cache_ = GetParam().second;
     color_type_ = GetParam().first;
   }

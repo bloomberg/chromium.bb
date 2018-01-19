@@ -7827,7 +7827,6 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
     viz::ContextProvider* context_provider =
         host_impl->layer_tree_frame_sink()->context_provider();
     ASSERT_TRUE(context_provider);
-    viz::ContextProvider::ScopedContextLock context_lock(context_provider);
 
     GrContext* gr_context = context_provider->GrContext();
     ASSERT_TRUE(gr_context);

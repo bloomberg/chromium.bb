@@ -29,6 +29,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "cc/test/skia_common.h"
+#include "cc/test/stub_decode_cache.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -126,6 +128,22 @@ class FakePlatformSupport : public TestingPlatformSupport {
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
 };
 
+class ImageTrackingDecodeCache : public cc::StubDecodeCache {
+ public:
+  ImageTrackingDecodeCache(std::vector<cc::DrawImage>* decoded_images)
+      : decoded_images_(decoded_images) {}
+  ~ImageTrackingDecodeCache() override = default;
+
+  cc::DecodedDrawImage GetDecodedImageForDraw(
+      const cc::DrawImage& image) override {
+    decoded_images_->push_back(image);
+    return cc::StubDecodeCache::GetDecodedImageForDraw(image);
+  }
+
+ private:
+  std::vector<cc::DrawImage>* decoded_images_;
+};
+
 }  // anonymous namespace
 
 class Canvas2DLayerBridgeTest : public Test {
@@ -140,18 +158,22 @@ class Canvas2DLayerBridgeTest : public Test {
     return bridge;
   }
   void SetUp() override {
-    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
+    auto factory = [](FakeGLES2Interface* gl,
+                      std::vector<cc::DrawImage>* decoded_images,
+                      bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
-      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
+      return std::make_unique<FakeWebGraphicsContext3DProvider>(
+          gl, std::make_unique<ImageTrackingDecodeCache>(decoded_images));
     };
-    SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
+    SharedGpuContext::SetContextProviderFactoryForTesting(WTF::BindRepeating(
+        factory, WTF::Unretained(&gl_), WTF::Unretained(&decoded_images_)));
   }
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 
  protected:
   MockGLES2InterfaceWithImageSupport gl_;
+  std::vector<cc::DrawImage> decoded_images_;
 
   void FullLifecycleTest() {
     Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
@@ -1240,6 +1262,56 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
   release_callback = nullptr;
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
+  auto color_params =
+      CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
+  ASSERT_FALSE(color_params.NeedsSkColorSpaceXformCanvas());
+
+  Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, Canvas2DLayerBridge::kEnableAcceleration,
+      color_params)));
+  std::vector<cc::DrawImage> images = {
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                    SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
+                    SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
+                    0u, color_params.GetStorageGfxColorSpace())};
+
+  bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
+  bridge->Canvas()->drawImageRect(
+      images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
+      nullptr, cc::PaintCanvas::kFast_SrcRectConstraint);
+  bridge->NewImageSnapshot(kPreferAcceleration);
+
+  EXPECT_EQ(decoded_images_, images);
+}
+
+TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
+  auto color_params = CanvasColorParams(kSRGBCanvasColorSpace,
+                                        kRGBA8CanvasPixelFormat, kOpaque);
+  ASSERT_TRUE(color_params.NeedsSkColorSpaceXformCanvas());
+
+  Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
+      IntSize(300, 300), 0, Canvas2DLayerBridge::kEnableAcceleration,
+      color_params)));
+  std::vector<cc::DrawImage> images = {
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                    SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
+                    SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
+                    0u, color_params.GetStorageGfxColorSpace())};
+
+  bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
+  bridge->Canvas()->drawImageRect(
+      images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
+      nullptr, cc::PaintCanvas::kFast_SrcRectConstraint);
+  bridge->NewImageSnapshot(kPreferAcceleration);
+
+  EXPECT_EQ(decoded_images_, images);
 }
 
 }  // namespace blink

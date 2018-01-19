@@ -111,7 +111,7 @@ class VideoFrameSubmitterTest : public ::testing::Test {
       : now_src_(new base::SimpleTestTickClock()),
         begin_frame_source_(new viz::FakeExternalBeginFrameSource(0.f, false)),
         provider_(new StrictMock<MockVideoFrameProvider>()),
-        context_provider_(cc::TestContextProvider::Create()) {
+        context_provider_(cc::TestContextProvider::CreateWorker()) {
     context_provider_->BindToCurrentThread();
   }
 

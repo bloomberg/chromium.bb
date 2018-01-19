@@ -187,6 +187,8 @@ void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
 }
 
 base::Lock* InProcessContextProvider::GetLock() {
+  if (!support_locking_)
+    return nullptr;
   return &context_lock_;
 }
 

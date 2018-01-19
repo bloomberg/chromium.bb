@@ -1133,6 +1133,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
       web_attributes.support_stencil || web_attributes.support_antialias;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
+  attributes.enable_raster_interface = web_attributes.enable_raster_interface;
   // Prefer discrete GPU for WebGL.
   attributes.gpu_preference = gl::PreferDiscreteGpu;
 
