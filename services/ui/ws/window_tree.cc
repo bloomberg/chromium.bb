@@ -1942,6 +1942,14 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     if (GetDisplay(target)) {
       DispatchInputEventImpl(target, *event, event_location,
                              std::move(callback));
+    } else {
+      // If the window is no longer valid (or not in a display), then there is
+      // no point in dispatching to the client, but we need to run the callback
+      // so that WindowManagerState isn't still waiting for an ack. We only
+      // need run the last callback as they should all target the same
+      // WindowManagerState and WindowManagerState is at most waiting on one
+      // ack.
+      std::move(callback).Run(mojom::EventResult::UNHANDLED);
     }
   }
 }
