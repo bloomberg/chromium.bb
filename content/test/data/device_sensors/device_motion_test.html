@@ -3,6 +3,7 @@
     <title>DeviceMotion test</title>
     <script type="text/javascript">
       let expectedInterval = Math.floor(1000 / 60);
+      let kRadiansToDegrees = 180 / Math.PI;
       function checkMotionEvent(event) {
         return event.acceleration.x == 1 &&
                event.acceleration.y == 2 &&
@@ -10,9 +11,9 @@
                event.accelerationIncludingGravity.x == 4 &&
                event.accelerationIncludingGravity.y == 5 &&
                event.accelerationIncludingGravity.z == 6 &&
-               event.rotationRate.alpha == 7 &&
-               event.rotationRate.beta == 8 &&
-               event.rotationRate.gamma == 9 &&
+               event.rotationRate.alpha == 7 * kRadiansToDegrees &&
+               event.rotationRate.beta == 8 * kRadiansToDegrees &&
+               event.rotationRate.gamma == 9 * kRadiansToDegrees &&
                event.interval == expectedInterval;
       }
 
