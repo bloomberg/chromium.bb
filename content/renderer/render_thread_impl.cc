@@ -705,8 +705,7 @@ void RenderThreadImpl::Init(
       new NotificationDispatcher(thread_safe_sender());
   AddFilter(notification_dispatcher_->GetFilter());
 
-  resource_dispatcher_.reset(
-      new ResourceDispatcher(message_loop()->task_runner()));
+  resource_dispatcher_.reset(new ResourceDispatcher());
   quota_dispatcher_.reset(new QuotaDispatcher(message_loop()->task_runner()));
   url_loader_throttle_provider_ =
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
@@ -1249,16 +1248,6 @@ void RenderThreadImpl::InitializeWebKit(
   main_input_callback_.Reset(
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
                  base::Unretained(this)));
-
-  scoped_refptr<base::SingleThreadTaskRunner> resource_task_queue2;
-  if (resource_task_queue) {
-    resource_task_queue2 = resource_task_queue;
-  } else {
-    resource_task_queue2 = renderer_scheduler_->LoadingTaskRunner();
-  }
-  // The ResourceDispatcher needs to use the same queue to ensure tasks are
-  // executed in the expected order.
-  resource_dispatcher_->SetThreadTaskRunner(resource_task_queue2);
 
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();

@@ -28,10 +28,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
-void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
-    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
-  resource_dispatcher_ =
-      std::make_unique<ResourceDispatcher>(std::move(loading_task_runner));
+void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
+  resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
 
   url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
 }

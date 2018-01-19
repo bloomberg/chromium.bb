@@ -69,8 +69,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   // CORS preflight requests.
   static int MakeRequestID();
 
-  explicit ResourceDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner);
+  ResourceDispatcher();
   virtual ~ResourceDispatcher();
 
   // Call this method to load the resource synchronously (i.e., in one shot).
@@ -136,11 +135,6 @@ class CONTENT_EXPORT ResourceDispatcher {
   // delegate have a longer lifetime than the ResourceDispatcher.
   void set_delegate(ResourceDispatcherDelegate* delegate) {
     delegate_ = delegate;
-  }
-
-  void SetThreadTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner) {
-    thread_task_runner_ = thread_task_runner;
   }
 
   base::WeakPtr<ResourceDispatcher> GetWeakPtr() {
@@ -232,8 +226,6 @@ class CONTENT_EXPORT ResourceDispatcher {
   PendingRequestMap pending_requests_;
 
   ResourceDispatcherDelegate* delegate_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 

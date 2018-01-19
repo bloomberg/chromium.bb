@@ -110,11 +110,8 @@ int ResourceDispatcher::MakeRequestID() {
   return sequence.GetNext();  // We start at zero.
 }
 
-ResourceDispatcher::ResourceDispatcher(
-    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
-    : delegate_(nullptr),
-      thread_task_runner_(thread_task_runner),
-      weak_factory_(this) {}
+ResourceDispatcher::ResourceDispatcher()
+    : delegate_(nullptr), weak_factory_(this) {}
 
 ResourceDispatcher::~ResourceDispatcher() {
 }
