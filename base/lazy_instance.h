@@ -34,11 +34,12 @@
 // requires that Type be a complete type so we can determine the size.
 //
 // Example usage:
-//   static LazyInstance<MyClass>::Leaky inst = LAZY_INSTANCE_INITIALIZER;
+//   // Does not generate a dynamic initializer.
+//   LazyInstance<MyClass>::Leaky my_lazy_instance;
 //   void SomeMethod() {
-//     inst.Get().SomeMethod();  // MyClass::SomeMethod()
+//     my_lazy_instance.Get().SomeMethod();  // MyClass::SomeMethod()
 //
-//     MyClass* ptr = inst.Pointer();
+//     MyClass* ptr = my_lazy_instance.Pointer();
 //     ptr->DoDoDo();  // MyClass::DoDoDo
 //   }
 
@@ -52,9 +53,11 @@
 #include "base/lazy_instance_helpers.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
-// LazyInstance uses its own struct initializer-list style static
-// initialization, which does not require a constructor.
+// To support the old initialization pattern for LazyInstance, i.e.:
+// LazyInstance<MyClass>::Leaky my_lazy_instance = LAZY_INSTANCE_INITIALIZER;
+// TODO(gab): Remove this.
 #define LAZY_INSTANCE_INITIALIZER {0}
 
 namespace base {
@@ -131,6 +134,10 @@ template <
         internal::ErrorMustSelectLazyOrDestructorAtExitForLazyInstance<Type>>
 class LazyInstance {
  public:
+  // kLazyInstanceInitializer shouldn't be used (it is there to absorb the
+  // LAZY_INSTANCE_INITIALIZER param when constructed with it).
+  constexpr LazyInstance(int kLazyInstanceInitializer = 0) {}
+
   // Do not define a destructor, as doing so makes LazyInstance a
   // non-POD-struct. We don't want that because then a static initializer will
   // be created to register the (empty) destructor with atexit() under MSVC, for
@@ -169,26 +176,6 @@ class LazyInstance {
     return 0 != subtle::NoBarrier_Load(&private_instance_);
   }
 
-  // MSVC gives a warning that the alignment expands the size of the
-  // LazyInstance struct to make the size a multiple of the alignment. This
-  // is expected in this case.
-#if defined(OS_WIN)
-#pragma warning(push)
-#pragma warning(disable: 4324)
-#endif
-
-  // Effectively private: member data is only public to allow the linker to
-  // statically initialize it and to maintain a POD class. DO NOT USE FROM
-  // OUTSIDE THIS CLASS.
-  subtle::AtomicWord private_instance_;
-
-  // Preallocated space for the Type instance.
-  alignas(Type) char private_buf_[sizeof(Type)];
-
-#if defined(OS_WIN)
-#pragma warning(pop)
-#endif
-
  private:
   Type* instance() {
     return reinterpret_cast<Type*>(subtle::NoBarrier_Load(&private_instance_));
@@ -203,6 +190,23 @@ class LazyInstance {
     Traits::Delete(me->instance());
     subtle::NoBarrier_Store(&me->private_instance_, 0);
   }
+
+// MSVC gives a warning that the alignment expands the size of the
+// LazyInstance struct to make the size a multiple of the alignment. This
+// is expected in this case.
+#if defined(COMPILER_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4324)
+#endif
+
+  subtle::AtomicWord private_instance_ = 0;
+
+  // Preallocated space for the Type instance.
+  alignas(Type) char private_buf_[sizeof(Type)] = {};
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 };
 
 }  // namespace base
