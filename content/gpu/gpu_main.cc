@@ -87,7 +87,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
-#include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #endif
 
@@ -98,14 +97,6 @@
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
-
-#if defined(OS_MACOSX)
-extern "C" {
-void _LSSetApplicationLaunchServicesServerConnectionStatus(
-    uint64_t flags,
-    bool (^connection_allowed)(CFDictionaryRef));
-};
-#endif  // defined(OS_MACOSX)
 
 namespace content {
 
@@ -177,7 +168,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
 #elif defined(OS_MACOSX)
-    return sandbox::Seatbelt::IsSandboxed();
+    return service_manager::SandboxMac::IsCurrentlyActive();
 #else
     return false;
 #endif
@@ -274,9 +265,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     // https://crbug.com/312462#c51 and https://crbug.com/783298
     std::unique_ptr<base::MessagePump> pump(new base::MessagePumpNSRunLoop());
     main_message_loop.reset(new base::MessageLoop(std::move(pump)));
-
-    // Tell LaunchServices to continue without a connection to the daemon.
-    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
     main_message_loop.reset(
         new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));

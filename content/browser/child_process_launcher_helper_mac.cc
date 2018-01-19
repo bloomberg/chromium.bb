@@ -80,7 +80,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     case service_manager::SANDBOX_TYPE_NACL_LOADER:
     case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
     case service_manager::SANDBOX_TYPE_PROFILING:
-    case service_manager::SANDBOX_TYPE_GPU:
       v2_process = true;
       break;
     default:
