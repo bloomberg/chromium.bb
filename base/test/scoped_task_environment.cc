@@ -233,7 +233,9 @@ void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
 }
 
 ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
-    : can_run_tasks_cv_(&lock_), task_completed_(&lock_) {}
+    : internal::TaskSchedulerImpl::TaskTrackerImpl("ScopedTaskEnvironment"),
+      can_run_tasks_cv_(&lock_),
+      task_completed_(&lock_) {}
 
 void ScopedTaskEnvironment::TestTaskTracker::AllowRunTasks() {
   AutoLock auto_lock(lock_);

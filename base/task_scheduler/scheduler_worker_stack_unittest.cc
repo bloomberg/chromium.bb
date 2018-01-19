@@ -62,7 +62,7 @@ class TaskSchedulerWorkerStackTest : public testing::Test {
   scoped_refptr<SchedulerWorker> worker_c_;
 
  private:
-  TaskTracker task_tracker_;
+  TaskTracker task_tracker_ = {"Test"};
 };
 
 }  // namespace

@@ -632,7 +632,7 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
   if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
     // Use an empty string as TaskScheduler name to match the suffix of browser
     // process TaskScheduler histograms.
-    base::TaskScheduler::Create("");
+    base::TaskScheduler::Create("Browser");
   }
 }
 

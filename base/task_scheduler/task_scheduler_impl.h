@@ -51,7 +51,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 #endif
 
   // Creates a TaskSchedulerImpl with a production TaskTracker.
-  //|histogram_label| is used to label histograms.
+  //|histogram_label| is used to label histograms, it must not be empty.
   explicit TaskSchedulerImpl(StringPiece histogram_label);
 
   // For testing only. Creates a TaskSchedulerImpl with a custom TaskTracker.

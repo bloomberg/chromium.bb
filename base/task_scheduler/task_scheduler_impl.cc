@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_util.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
@@ -30,6 +31,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(
       task_tracker_(std::move(task_tracker)),
       single_thread_task_runner_manager_(task_tracker_.get(),
                                          &delayed_task_manager_) {
+  DCHECK(!histogram_label.empty());
+
   static_assert(arraysize(worker_pools_) == ENVIRONMENT_COUNT,
                 "The size of |worker_pools_| must match ENVIRONMENT_COUNT.");
   static_assert(
@@ -38,13 +41,10 @@ TaskSchedulerImpl::TaskSchedulerImpl(
 
   for (int environment_type = 0; environment_type < ENVIRONMENT_COUNT;
        ++environment_type) {
-    std::string worker_pool_histogram_label(histogram_label);
-    if (!worker_pool_histogram_label.empty())
-      worker_pool_histogram_label += ".";
-    worker_pool_histogram_label +=
-        kEnvironmentParams[environment_type].name_suffix;
     worker_pools_[environment_type] = std::make_unique<SchedulerWorkerPoolImpl>(
-        std::move(worker_pool_histogram_label),
+        JoinString(
+            {histogram_label, kEnvironmentParams[environment_type].name_suffix},
+            "."),
         kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint, task_tracker_.get(),
         &delayed_task_manager_);
