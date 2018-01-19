@@ -112,6 +112,20 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleCloseFileCallback, &callback);
   }
 
+  void ReadFile(int32_t mount_id,
+                int32_t file_id,
+                int64_t offset,
+                int32_t length,
+                ReadFileCallback callback) override {
+    smbprovider::ReadFileOptions options;
+    options.set_mount_id(mount_id);
+    options.set_file_id(file_id);
+    options.set_offset(offset);
+    options.set_length(length);
+    CallMethod(smbprovider::kReadFileMethod, options,
+               &SmbProviderClientImpl::HandleReadFileCallback, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -200,9 +214,33 @@ class SmbProviderClientImpl : public SmbProviderClient {
     if (!response) {
       DLOG(ERROR) << "CloseFile: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+      return;
     }
     dbus::MessageReader reader(response);
     std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus callback for ReadFile.
+  void HandleReadFileCallback(ReadFileCallback callback,
+                              dbus::Response* response) {
+    base::ScopedFD fd;
+    if (!response) {
+      LOG(ERROR) << "ReadFile: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, fd);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    smbprovider::ErrorType error = GetErrorFromReader(&reader);
+    if (error != smbprovider::ERROR_OK) {
+      std::move(callback).Run(error, fd);
+      return;
+    }
+    if (!reader.PopFileDescriptor(&fd)) {
+      LOG(ERROR) << "ReadFile: failed to parse file descriptor";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, fd);
+      return;
+    }
+    std::move(callback).Run(smbprovider::ERROR_OK, fd);
   }
 
   // Handles D-Bus responses for methods that return an error and a protobuf
