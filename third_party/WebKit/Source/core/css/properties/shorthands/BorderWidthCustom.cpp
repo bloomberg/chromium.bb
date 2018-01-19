@@ -6,6 +6,8 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -18,6 +20,17 @@ bool BorderWidth::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4Longhands(
       borderWidthShorthand(), important, context, range, properties);
+}
+
+const CSSValue* BorderWidth::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForSidesShorthand(
+      borderWidthShorthand(), style, layout_object, styled_node,
+      allow_visited_style);
 }
 
 }  // namespace CSSShorthand

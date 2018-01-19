@@ -3833,14 +3833,14 @@
         "border-image-source", "border-image-slice", "border-image-width",
         "border-image-outset", "border-image-repeat"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-bottom",
       longhands: [
         "border-bottom-width", "border-bottom-style", "border-bottom-color"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-color",
@@ -3848,7 +3848,7 @@
         "border-top-color", "border-right-color", "border-bottom-color",
         "border-left-color"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-image",
@@ -3863,7 +3863,7 @@
       longhands: [
         "border-left-width", "border-left-style", "border-left-color"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-radius",
@@ -3878,7 +3878,7 @@
       longhands: [
         "border-right-width", "border-right-style", "border-right-color"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-spacing",
@@ -3893,14 +3893,14 @@
         "border-top-style", "border-right-style", "border-bottom-style",
         "border-left-style"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       keywords: ["none"],
       typedom_types: ["Image"],
     },
     {
       name: "border-top",
       longhands: ["border-top-width", "border-top-style", "border-top-color"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-width",
@@ -3908,17 +3908,17 @@
         "border-top-width", "border-right-width", "border-bottom-width",
         "border-left-width"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "flex",
       longhands: ["flex-grow", "flex-shrink", "flex-basis"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "flex-flow",
       longhands: ["flex-direction", "flex-wrap"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "font",
@@ -3935,7 +3935,7 @@
         "font-variant-ligatures", "font-variant-caps",
         "font-variant-numeric", "font-variant-east-asian"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
     },
     {
@@ -3944,22 +3944,22 @@
         "grid-template-rows", "grid-template-columns", "grid-template-areas",
         "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"
       ],
-      property_methods: ["ParseShorthand", "IsLayoutDependent"],
+      property_methods: ["ParseShorthand", "IsLayoutDependent", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "place-content",
       longhands: ["align-content", "justify-content"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "place-items",
       longhands: ["align-items", "justify-items"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "place-self",
       longhands: ["align-self", "justify-self"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "grid-area",
@@ -3967,39 +3967,39 @@
         "grid-row-start", "grid-column-start", "grid-row-end",
         "grid-column-end"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "grid-column",
       longhands: ["grid-column-start", "grid-column-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "grid-gap",
       longhands: ["grid-row-gap", "grid-column-gap"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "grid-row",
       longhands: ["grid-row-start", "grid-row-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "grid-template",
       longhands: [
         "grid-template-rows", "grid-template-columns", "grid-template-areas"
       ],
-      property_methods: ["ParseShorthand", "IsLayoutDependent"],
+      property_methods: ["ParseShorthand", "IsLayoutDependent", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "list-style",
       longhands: ["list-style-type", "list-style-position", "list-style-image"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "margin",
       longhands: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
-      property_methods: ["ParseShorthand", "IsLayoutDependent"],
+      property_methods: ["ParseShorthand", "IsLayoutDependent", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "marker",
@@ -4017,7 +4017,7 @@
     {
       name: "outline",
       longhands: ["outline-color", "outline-style", "outline-width"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "overflow",
@@ -4035,7 +4035,7 @@
       longhands: [
         "padding-top", "padding-right", "padding-bottom", "padding-left"
       ],
-      property_methods: ["ParseShorthand", "IsLayoutDependent"],
+      property_methods: ["ParseShorthand", "IsLayoutDependent", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "page-break-after",
@@ -4055,19 +4055,19 @@
     {
       name: "scroll-margin",
       longhands: ["scroll-margin-top", "scroll-margin-right", "scroll-margin-bottom", "scroll-margin-left"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-margin-block",
       longhands: ["scroll-margin-block-start", "scroll-margin-block-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-margin-inline",
       longhands: ["scroll-margin-inline-start", "scroll-margin-inline-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -4076,25 +4076,25 @@
         "scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom",
         "scroll-padding-left"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-block",
       longhands: ["scroll-padding-block-start", "scroll-padding-block-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-inline",
       longhands: ["scroll-padding-inline-start", "scroll-padding-inline-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "text-decoration",
       longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "transition",
@@ -4172,12 +4172,12 @@
       longhands: [
         "column-rule-width", "column-rule-style", "column-rule-color"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "columns",
       longhands: ["column-width", "column-count"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "-webkit-margin-collapse",

@@ -6,6 +6,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
@@ -28,6 +29,17 @@ bool Padding::IsLayoutDependent(const ComputedStyle* style,
          (!style || !style->PaddingBottom().IsFixed() ||
           !style->PaddingTop().IsFixed() || !style->PaddingLeft().IsFixed() ||
           !style->PaddingRight().IsFixed());
+}
+
+const CSSValue* Padding::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForSidesShorthand(paddingShorthand(), style,
+                                                     layout_object, styled_node,
+                                                     allow_visited_style);
 }
 
 }  // namespace CSSShorthand

@@ -93,6 +93,8 @@ class CSSProperty : public CSSUnresolvedProperty {
                                                             const LayoutObject*,
                                                             Node*,
                                                             bool allow_visited_style) const { return nullptr; }
+  // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and
+  // remove this non-const Node parameter.
   const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
                                             const LayoutObject*,
                                             Node*,
