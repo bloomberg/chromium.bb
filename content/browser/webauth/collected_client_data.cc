@@ -22,7 +22,6 @@ namespace {
 constexpr char kTypeKey[] = "type";
 constexpr char kChallengeKey[] = "challenge";
 constexpr char kOriginKey[] = "origin";
-constexpr char kHashAlgorithm[] = "hashAlgorithm";
 constexpr char kTokenBindingKey[] = "tokenBinding";
 }  // namespace
 
@@ -43,7 +42,7 @@ CollectedClientData CollectedClientData::Create(
   // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
   // communicate with the origin.
   return CollectedClientData(std::move(type), std::move(encoded_challenge),
-                             std::move(relying_party_id), "SHA-256", "unused");
+                             std::move(relying_party_id), "unused");
 }
 
 CollectedClientData::CollectedClientData() = default;
@@ -51,12 +50,10 @@ CollectedClientData::CollectedClientData() = default;
 CollectedClientData::CollectedClientData(std::string type,
                                          std::string base64_encoded_challenge,
                                          std::string origin,
-                                         std::string hash_algorithm,
                                          std::string token_binding_id)
     : type_(std::move(type)),
       base64_encoded_challenge_(std::move(base64_encoded_challenge)),
       origin_(std::move(origin)),
-      hash_algorithm_(std::move(hash_algorithm)),
       token_binding_id_(std::move(token_binding_id)) {}
 
 CollectedClientData::CollectedClientData(CollectedClientData&& other) = default;
@@ -72,10 +69,6 @@ std::string CollectedClientData::SerializeToJson() const {
 
   // The serialization of callerOrigin.
   client_data.SetKey(kOriginKey, base::Value(origin_));
-
-  // The recognized algorithm name of the hash algorithm selected by the client
-  // for generating the hash of the serialized client data.
-  client_data.SetKey(kHashAlgorithm, base::Value(hash_algorithm_));
 
   client_data.SetKey(kTokenBindingKey, base::Value(token_binding_id_));
 
