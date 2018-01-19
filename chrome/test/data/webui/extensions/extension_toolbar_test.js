@@ -9,6 +9,7 @@ cr.define('extension_toolbar_tests', function() {
     Layout: 'layout',
     ClickHandlers: 'click handlers',
     DevModeToggle: 'dev mode toggle',
+    KioskMode: 'kiosk mode button'
   };
 
   var suiteName = 'ExtensionToolbarTest';
@@ -91,12 +92,24 @@ cr.define('extension_toolbar_tests', function() {
         MockInteractions.tap(toolbar.$$('#update-now'));
         return mockDelegate.whenCalled('updateAllExtensions');
       }).then(function() {
-        var listener = new extension_test_util.ListenerMock();
-        listener.addListener(toolbar, 'pack-tap');
+        const whenTapped = test_util.eventToPromise('pack-tap', toolbar);
         MockInteractions.tap(toolbar.$$('#pack-extensions'));
-        listener.verify();
+        return whenTapped;
       });
     });
+
+    if (cr.isChromeOS) {
+      test(assert(TestNames.KioskMode), function() {
+        const button = toolbar.$$('#kiosk-extensions');
+        expectTrue(button.hidden);
+        toolbar.kioskEnabled = true;
+        expectFalse(button.hidden);
+
+        const whenTapped = test_util.eventToPromise('kiosk-tap', toolbar);
+        MockInteractions.tap(button);
+        return whenTapped;
+      });
+    }
   });
 
   return {
