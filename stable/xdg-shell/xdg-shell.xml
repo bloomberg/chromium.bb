@@ -555,7 +555,7 @@
     <request name="set_parent">
       <description summary="set the parent of this surface">
 	Set the "parent" of this surface. This surface should be stacked
-	this above the parent surface and all other ancestor surfaces.
+	above the parent surface and all other ancestor surfaces.
 
 	Parent windows should be set on dialogs, toolboxes, or other
 	"auxiliary" surfaces, so that the parent is raised when the dialog
