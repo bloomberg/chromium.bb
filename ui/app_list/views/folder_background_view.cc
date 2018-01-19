@@ -24,9 +24,7 @@ const int kBubbleTransitionDurationMs = 200;
 }  // namespace
 
 FolderBackgroundView::FolderBackgroundView()
-    : folder_view_(NULL),
-      show_state_(NO_BUBBLE),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+    : folder_view_(NULL), show_state_(NO_BUBBLE) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
@@ -93,7 +91,7 @@ void FolderBackgroundView::OnImplicitAnimationsCompleted() {
 }
 
 float FolderBackgroundView::GetBubbleOpacity() const {
-  return is_fullscreen_app_list_enabled_ ? kFolderBubbleOpacity : 1.0f;
+  return kFolderBubbleOpacity;
 }
 
 }  // namespace app_list

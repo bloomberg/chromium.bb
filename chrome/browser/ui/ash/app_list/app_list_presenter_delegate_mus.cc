@@ -15,32 +15,6 @@
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/wm/core/window_util.h"
 
-namespace {
-
-// Gets the point at the center of the display. The calculation should exclude
-// the virtual keyboard area. If the height of the display area is less than
-// |minimum_height|, its bottom will be extended to that height (so that the
-// app list never starts above the top of the screen).
-gfx::Point GetCenterOfDisplay(int64_t display_id, int minimum_height) {
-  // TODO(mfomitchev): account for virtual keyboard.
-  std::vector<display::Display> displays =
-      display::Screen::GetScreen()->GetAllDisplays();
-  auto it = std::find_if(displays.begin(), displays.end(),
-                         [display_id](const display::Display& display) {
-                           return display.id() == display_id;
-                         });
-  DCHECK(it != displays.end());
-  gfx::Rect bounds = it->bounds();
-
-  // Apply the |minimum_height|.
-  if (bounds.height() < minimum_height)
-    bounds.set_height(minimum_height);
-
-  return bounds.CenterPoint();
-}
-
-}  // namespace
-
 AppListPresenterDelegateMus::AppListPresenterDelegateMus(
     app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
@@ -72,9 +46,6 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
   params.is_side_shelf = true;
   view->Initialize(params);
 
-  view->MaybeSetAnchorPoint(
-      GetCenterOfDisplay(display_id, GetMinimumBoundsHeightForAppList(view)));
-
   // TODO(mfomitchev): Setup updating bounds on keyboard bounds change.
   // TODO(mfomitchev): Setup dismissing on maximize (touch-view) mode start/end.
   // TODO(mfomitchev): Setup DnD.
@@ -91,13 +62,6 @@ void AppListPresenterDelegateMus::OnDismissed() {
   views::MusClient::Get()->pointer_watcher_event_router()->RemovePointerWatcher(
       this);
   DCHECK(!presenter_->GetTargetVisibility());
-}
-
-void AppListPresenterDelegateMus::UpdateBounds() {
-  if (!view_ || !presenter_->GetTargetVisibility())
-    return;
-
-  view_->UpdateBounds();
 }
 
 gfx::Vector2d AppListPresenterDelegateMus::GetVisibilityAnimationOffset(

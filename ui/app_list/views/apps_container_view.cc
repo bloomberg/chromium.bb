@@ -36,15 +36,10 @@ constexpr int kSearchBoxPeekingTopPadding = 24;
 constexpr int kSearchBoxMinimumTopPadding = 24;
 
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
-                                     AppListModel* model)
-    : is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+                                     AppListModel* model) {
   apps_grid_view_ =
       new AppsGridView(app_list_main_view->contents_view(), nullptr);
-  if (is_fullscreen_app_list_enabled_) {
-    apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
-  } else {
-    apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
-  }
+  apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
   AddChildView(apps_grid_view_);
 
   folder_background_view_ = new FolderBackgroundView();
@@ -174,9 +169,6 @@ gfx::Rect AppsContainerView::GetSearchBoxBounds() const {
 
 gfx::Rect AppsContainerView::GetSearchBoxBoundsForState(
     AppListModel::State state) const {
-  if (!is_fullscreen_app_list_enabled_)
-    return AppListPage::GetSearchBoxBounds();
-
   gfx::Rect search_box_bounds(contents_view()->GetDefaultSearchBoxBounds());
   bool is_in_drag = false;
   if (contents_view()->app_list_view())
@@ -196,12 +188,6 @@ gfx::Rect AppsContainerView::GetSearchBoxBoundsForState(
 gfx::Rect AppsContainerView::GetPageBoundsForState(
     AppListModel::State state) const {
   gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
-
-  if (!is_fullscreen_app_list_enabled_) {
-    if (state == AppListModel::STATE_APPS)
-      return onscreen_bounds;
-    return GetBelowContentsOffscreenBounds(onscreen_bounds.size());
-  }
 
   // Both STATE_START and STATE_APPS are AppsContainerView page.
   if (state == AppListModel::STATE_APPS || state == AppListModel::STATE_START) {

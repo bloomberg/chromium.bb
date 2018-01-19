@@ -30,7 +30,6 @@ namespace {
 constexpr int kPreferredWidth = 360;
 constexpr int kPreferredHeight = 48;
 constexpr int kBottomSeparatorHeight = 1;
-constexpr int kMaxFolderNameWidth = 300;
 constexpr int kMaxFolderNameWidthFullScreen = 236;
 
 }  // namespace
@@ -57,23 +56,18 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
-      folder_name_visible_(true),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      folder_name_visible_(true) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList font_list = rb.GetFontList(ui::ResourceBundle::MediumFont);
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::NullBorder());
-  if (is_fullscreen_app_list_enabled_) {
-    // Make folder name font size 14px.
-    folder_name_view_->SetFontList(font_list.DeriveWithSizeDelta(-1));
-    folder_name_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
-    folder_name_view_->SetTextColor(kGridTitleColor);
-  } else {
-    folder_name_view_->SetFontList(font_list);
-    folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
-    folder_name_view_->SetTextColor(kFolderTitleColor);
-  }
+
+  // Make folder name font size 14px.
+  folder_name_view_->SetFontList(font_list.DeriveWithSizeDelta(-1));
+  folder_name_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  folder_name_view_->SetTextColor(kGridTitleColor);
+
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);
 }
@@ -155,11 +149,9 @@ bool FolderHeaderView::IsFolderNameEnabledForTest() const {
 }
 
 gfx::Size FolderHeaderView::CalculatePreferredSize() const {
-  const int preferred_height = is_fullscreen_app_list_enabled_
-                                   ? kPreferredHeight +
-                                         kBottomSeparatorBottomPadding +
-                                         AppsGridView::GetTilePadding().top()
-                                   : kPreferredHeight;
+  const int preferred_height = kPreferredHeight +
+                               kBottomSeparatorBottomPadding +
+                               AppsGridView::GetTilePadding().top();
   return gfx::Size(kPreferredWidth, preferred_height);
 }
 
@@ -168,8 +160,7 @@ views::View* FolderHeaderView::GetFolderNameViewForTest() const {
 }
 
 int FolderHeaderView::GetMaxFolderNameWidth() const {
-  return is_fullscreen_app_list_enabled_ ? kMaxFolderNameWidthFullScreen
-                                         : kMaxFolderNameWidth;
+  return kMaxFolderNameWidthFullScreen;
 }
 
 base::string16 FolderHeaderView::GetElidedFolderName(
@@ -222,20 +213,15 @@ void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   // Draw bottom separator line.
-  rect.Inset(is_fullscreen_app_list_enabled_
-                 ? kAppsGridLeftRightPadding +
-                       (-AppsGridView::GetTilePadding().left()) +
-                       kBottomSeparatorLeftRightPadding
-                 : kAppsGridPadding,
+  rect.Inset(kAppsGridLeftRightPadding +
+                 (-AppsGridView::GetTilePadding().left()) +
+                 kBottomSeparatorLeftRightPadding,
              0);
   int extra_bottom_padding =
-      is_fullscreen_app_list_enabled_
-          ? kBottomSeparatorBottomPadding + AppsGridView::GetTilePadding().top()
-          : 0;
+      kBottomSeparatorBottomPadding + AppsGridView::GetTilePadding().top();
   rect.set_y(rect.bottom() - kBottomSeparatorHeight - extra_bottom_padding);
   rect.set_height(kBottomSeparatorHeight);
-  SkColor color = is_fullscreen_app_list_enabled_ ? kBottomSeparatorColor
-                                                  : kBottomSeparatorColor;
+  SkColor color = kBottomSeparatorColor;
   canvas->FillRect(rect, color);
 }
 

@@ -641,9 +641,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   std::unique_ptr<FadeoutLayerDelegate> fadeout_layer_delegate_;
 
-  // True if the fullscreen app list feature is enabled.
-  const bool is_fullscreen_app_list_enabled_;
-
   // Delay in milliseconds of when |page_flip_timer_| should fire after user
   // drags an item near the edges.
   int page_flip_delay_in_ms_;

@@ -146,9 +146,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
     delegate_->ActivateItem(item->id(), event_flags);
-    UMA_HISTOGRAM_BOOLEAN(features::IsFullscreenAppListEnabled()
-                              ? kAppListAppLaunchedFullscreen
-                              : kAppListAppLaunched,
+    UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
                           false /*not a suggested app*/);
   }
 }

@@ -31,7 +31,6 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/indicator_chip_view.h"
-#include "ui/app_list/views/page_switcher_horizontal.h"
 #include "ui/app_list/views/page_switcher_vertical.h"
 #include "ui/app_list/views/pulsing_block_view.h"
 #include "ui/app_list/views/search_box_view.h"
@@ -81,22 +80,12 @@ constexpr int kDragBufferPx = 20;
 // Padding space in pixels between pages.
 constexpr int kPagePadding = 40;
 
-// Preferred tile size when showing in fixed layout.
-constexpr int kPreferredTileWidth = 100;
-constexpr int kPreferredTileHeight = 100;
-
 // Padding on each side of a tile.
-constexpr int kTileLeftRightPadding = 10;
-constexpr int kTileBottomPadding = 6;
-constexpr int kTileTopPadding = 6;
 constexpr int kTileHorizontalPadding = 12;
 constexpr int kTileVerticalPadding = 6;
 
 // Width in pixels of the area on the sides that triggers a page flip.
 constexpr int kPageFlipZoneSize = 40;
-
-// Delay in milliseconds to do the page flip.
-constexpr int kPageFlipDelayInMs = 1000;
 
 // Delay in milliseconds to do the page flip in fullscreen app list.
 constexpr int kPageFlipDelayInMsFullscreen = 500;
@@ -158,9 +147,7 @@ constexpr base::TimeDelta kIgnoreScrollEventsDurationMs =
 
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
-  if (features::IsFullscreenAppListEnabled())
-    return gfx::Size(kGridTileWidth, kGridTileHeight);
-  return gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+  return gfx::Size(kGridTileWidth, kGridTileHeight);
 }
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
@@ -354,10 +341,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     : folder_delegate_(folder_delegate),
       contents_view_(contents_view),
       bounds_animator_(this),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
-      page_flip_delay_in_ms_(is_fullscreen_app_list_enabled_
-                                 ? kPageFlipDelayInMsFullscreen
-                                 : kPageFlipDelayInMs),
+      page_flip_delay_in_ms_(kPageFlipDelayInMsFullscreen),
       pagination_animation_metrics_reporter_(
           std::make_unique<PaginationAnimationMetricsReporter>()),
       pagination_animation_start_frame_number_(0) {
@@ -368,7 +352,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   layer()->SetMasksToBounds(true);
   layer()->SetFillsBoundsOpaquely(false);
 
-  if (is_fullscreen_app_list_enabled_ && !folder_delegate_) {
+  if (!folder_delegate_) {
     suggestions_container_ =
         new SuggestionsContainerView(contents_view_, &pagination_model_);
     AddChildView(suggestions_container_);
@@ -394,15 +378,9 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
 
   pagination_model_.AddObserver(this);
 
-  if (is_fullscreen_app_list_enabled_) {
-    page_switcher_view_ = new PageSwitcherVertical(&pagination_model_);
-    pagination_controller_.reset(new PaginationController(
-        &pagination_model_, PaginationController::SCROLL_AXIS_VERTICAL));
-  } else {
-    page_switcher_view_ = new PageSwitcherHorizontal(&pagination_model_);
-    pagination_controller_.reset(new PaginationController(
-        &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
-  }
+  page_switcher_view_ = new PageSwitcherVertical(&pagination_model_);
+  pagination_controller_.reset(new PaginationController(
+      &pagination_model_, PaginationController::SCROLL_AXIS_VERTICAL));
   AddChildView(page_switcher_view_);
 }
 
@@ -429,11 +407,6 @@ AppsGridView::~AppsGridView() {
 void AppsGridView::SetLayout(int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
-
-  if (!is_fullscreen_app_list_enabled_) {
-    SetBorder(
-        views::CreateEmptyBorder(0, kAppsGridPadding, 0, kAppsGridPadding));
-  }
 }
 
 // static
@@ -452,26 +425,15 @@ gfx::Size AppsGridView::GetTotalTileSize() {
 
 // static
 gfx::Insets AppsGridView::GetTilePadding() {
-  static gfx::Insets tile_padding;
   static gfx::Insets tile_padding_full_screen;
 
   // Full screen mode.
-  if (features::IsFullscreenAppListEnabled()) {
-    if (!tile_padding_full_screen.IsEmpty())
-      return tile_padding_full_screen;
-    tile_padding_full_screen =
-        gfx::Insets(-kTileVerticalPadding, -kTileHorizontalPadding,
-                    -kTileVerticalPadding, -kTileHorizontalPadding);
+  if (!tile_padding_full_screen.IsEmpty())
     return tile_padding_full_screen;
-  }
-
-  // Non full screen mode.
-  if (!tile_padding.IsEmpty()) {
-    return tile_padding;
-  }
-  tile_padding = gfx::Insets(-kTileTopPadding, -kTileLeftRightPadding,
-                             -kTileBottomPadding, -kTileLeftRightPadding);
-  return tile_padding;
+  tile_padding_full_screen =
+      gfx::Insets(-kTileVerticalPadding, -kTileHorizontalPadding,
+                  -kTileVerticalPadding, -kTileHorizontalPadding);
+  return tile_padding_full_screen;
 }
 
 void AppsGridView::ResetForShowApps() {
@@ -864,21 +826,10 @@ bool AppsGridView::IsAnimatingView(AppListItemView* view) {
 }
 
 gfx::Size AppsGridView::CalculatePreferredSize() const {
-  if (is_fullscreen_app_list_enabled_) {
-    gfx::Size size =
-        gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
-    // Add padding to both side of the apps grid to keep it horizontally
-    // centered since we place page switcher on the right side.
-    size.Enlarge(kAppsGridLeftRightPadding * 2, 0);
-    return size;
-  }
-
-  gfx::Size size = GetTileGridSize();
-  const gfx::Insets insets(GetInsets());
-  // If we are in a folder, ignore the page switcher for height calculations.
-  int page_switcher_height =
-      folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().height();
-  size.Enlarge(insets.width(), insets.height() + page_switcher_height);
+  gfx::Size size = gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
+  // Add padding to both side of the apps grid to keep it horizontally
+  // centered since we place page switcher on the right side.
+  size.Enlarge(kAppsGridLeftRightPadding * 2, 0);
   return size;
 }
 
@@ -910,11 +861,9 @@ void AppsGridView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  if (is_fullscreen_app_list_enabled_) {
-    if (fadeout_layer_delegate_)
-      fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
-    rect.Inset(0, kSearchBoxBottomPadding, 0, 0);
-  }
+  if (fadeout_layer_delegate_)
+    fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
+  rect.Inset(0, kSearchBoxBottomPadding, 0, 0);
 
   gfx::Rect indicator_rect(rect);
   gfx::Rect arrow_rect(rect);
@@ -963,25 +912,15 @@ void AppsGridView::Layout() {
   }
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
-  if (is_fullscreen_app_list_enabled_) {
-    const int page_switcher_width =
-        page_switcher_view_->GetPreferredSize().width();
-    rect.set_x(rect.right() - page_switcher_width);
-    rect.set_width(page_switcher_width);
-  } else {
-    const int page_switcher_height =
-        page_switcher_view_->GetPreferredSize().height();
-    rect.set_y(rect.bottom() - page_switcher_height);
-    rect.set_height(page_switcher_height);
-  }
+  const int page_switcher_width =
+      page_switcher_view_->GetPreferredSize().width();
+  rect.set_x(rect.right() - page_switcher_width);
+  rect.set_width(page_switcher_width);
   page_switcher_view_->SetBoundsRect(rect);
 }
 
 void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
                                            bool is_in_drag) {
-  if (!is_fullscreen_app_list_enabled_)
-    return;
-
   const bool fullscreen_apps_in_drag =
       app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag;
   if (all_apps_indicator_)
@@ -1077,7 +1016,7 @@ void AppsGridView::UpdateSuggestions() {
 }
 
 int AppsGridView::TilesPerPage(int page) const {
-  if (is_fullscreen_app_list_enabled_ && page == 0)
+  if (page == 0)
     return cols_ * (rows_per_page_ - 1);
   return cols_ * rows_per_page_;
 }
@@ -1246,78 +1185,58 @@ void AppsGridView::MoveSelected(int page_delta,
   const Index& selected = GetIndexOfView(selected_view_);
   int target_slot = selected.slot + slot_x_delta + slot_y_delta * cols_;
 
-  if (!is_fullscreen_app_list_enabled_) {
-    if (selected.slot % cols_ == 0 && slot_x_delta == -1) {
-      if (selected.page > 0) {
-        page_delta = -1;
-        target_slot = selected.slot + cols_ - 1;
-      } else {
-        target_slot = selected.slot;
-      }
-    }
-
-    if (selected.slot % cols_ == cols_ - 1 && slot_x_delta == 1) {
-      if (selected.page < pagination_model_.total_pages() - 1) {
-        page_delta = 1;
-        target_slot = selected.slot - cols_ + 1;
-      } else {
-        target_slot = selected.slot;
-      }
-    }
-  } else {
-    // Moving left from the first slot of all apps tiles should move focus to
-    // the last slot of previous page or last tile of suggested apps.
-    if (selected.slot == 0 && slot_x_delta == -1) {
-      if (selected.page == 0) {
-        ClearSelectedView(selected_view_);
-        if (!suggestions_container_)
-          return;
-        suggestions_container_->SetSelectedIndex(
-            suggestions_container_->num_results() - 1);
+  // Moving left from the first slot of all apps tiles should move focus to
+  // the last slot of previous page or last tile of suggested apps.
+  if (selected.slot == 0 && slot_x_delta == -1) {
+    if (selected.page == 0) {
+      ClearSelectedView(selected_view_);
+      if (!suggestions_container_)
         return;
-      } else {
-        page_delta = -1;
-        target_slot = LastIndexOfPage(selected.page + page_delta);
-      }
+      suggestions_container_->SetSelectedIndex(
+          suggestions_container_->num_results() - 1);
+      return;
+    } else {
+      page_delta = -1;
+      target_slot = LastIndexOfPage(selected.page + page_delta);
     }
+  }
 
-    // Moving right from last slot should flip to next page and focus on the
-    // first tile.
-    if (selected.slot == LastIndexOfPage(selected.page) && slot_x_delta == 1) {
+  // Moving right from last slot should flip to next page and focus on the
+  // first tile.
+  if (selected.slot == LastIndexOfPage(selected.page) && slot_x_delta == 1) {
+    page_delta = 1;
+    target_slot = 0;
+  }
+
+  // Moving up from the first row of all apps tiles should move focus to the
+  // last row of previous page or suggested apps.
+  if (selected.slot / cols_ == 0 && slot_y_delta == -1) {
+    if (selected.page == 0) {
+      ClearSelectedView(selected_view_);
+      if (!suggestions_container_)
+        return;
+      const int max_suggestion_index =
+          suggestions_container_->num_results() - 1;
+      int selected_index = std::min(max_suggestion_index, selected.slot);
+      suggestions_container_->SetSelectedIndex(selected_index);
+      return;
+    } else {
+      page_delta = -1;
+      target_slot = LastIndexOfPage(selected.page + page_delta) -
+                    (cols_ - 1 - selected.slot);
+    }
+  }
+
+  // Moving down from the last row of all apps tiles should move focus to the
+  // first row of next page if it exists.
+  if (LastIndexOfPage(selected.page) - selected.slot < cols_ &&
+      slot_y_delta == 1) {
+    if (selected.page < pagination_model_.total_pages() - 1) {
       page_delta = 1;
-      target_slot = 0;
-    }
-
-    // Moving up from the first row of all apps tiles should move focus to the
-    // last row of previous page or suggested apps.
-    if (selected.slot / cols_ == 0 && slot_y_delta == -1) {
-      if (selected.page == 0) {
-        ClearSelectedView(selected_view_);
-        if (!suggestions_container_)
-          return;
-        const int max_suggestion_index =
-            suggestions_container_->num_results() - 1;
-        int selected_index = std::min(max_suggestion_index, selected.slot);
-        suggestions_container_->SetSelectedIndex(selected_index);
-        return;
-      } else {
-        page_delta = -1;
-        target_slot = LastIndexOfPage(selected.page + page_delta) -
-                      (cols_ - 1 - selected.slot);
-      }
-    }
-
-    // Moving down from the last row of all apps tiles should move focus to the
-    // first row of next page if it exists.
-    if (LastIndexOfPage(selected.page) - selected.slot < cols_ &&
-        slot_y_delta == 1) {
-      if (selected.page < pagination_model_.total_pages() - 1) {
-        page_delta = 1;
-        target_slot =
-            (cols_ - 1) - (LastIndexOfPage(selected.page) - selected.slot);
-      } else {
-        target_slot = selected.slot;
-      }
+      target_slot =
+          (cols_ - 1) - (LastIndexOfPage(selected.page) - selected.slot);
+    } else {
+      target_slot = selected.slot;
     }
   }
 
@@ -2496,12 +2415,11 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   view_model_.Add(view, index);
   AddChildView(view);
 
-  if (is_fullscreen_app_list_enabled_) {
-    // Ensure that AppListItems that are added to the AppListItemList are not
-    // shown while in PEEKING. The visibility of the app icons will be updated
-    // on drag/animation from PEEKING.
-    view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
-  }
+  // Ensure that AppListItems that are added to the AppListItemList are not
+  // shown while in PEEKING. The visibility of the app icons will be updated
+  // on drag/animation from PEEKING.
+  view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
+
   UpdatePaging();
   UpdatePulsingBlockViews();
   Layout();
@@ -2615,25 +2533,18 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   int col = base::ClampToRange(
       (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
   int row = rows_per_page_;
-  bool show_suggested_apps =
-      is_fullscreen_app_list_enabled_ && current_page == 0;
+  bool show_suggested_apps = current_page == 0;
   row = base::ClampToRange((point.y() - bounds.y()) / total_tile_size.height(),
                            0, rows_per_page_ - (show_suggested_apps ? 2 : 1));
   return Index(current_page, row * cols_ + col);
 }
 
 gfx::Size AppsGridView::GetTileGridSize() const {
-  if (is_fullscreen_app_list_enabled_)
-    return gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
-
-  gfx::Rect bounds = GetExpectedTileBounds(Index(0, 0));
-  bounds.Union(GetExpectedTileBounds(Index(0, rows_per_page_ * cols_ - 1)));
-  bounds.Inset(GetTilePadding());
-  return bounds.size();
+  return gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
 }
 
 int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
-  if (!is_fullscreen_app_list_enabled_ || folder_delegate_)
+  if (folder_delegate_)
     return 0;
 
   if (page == 0) {
@@ -2649,9 +2560,7 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(const Index& index) const {
   gfx::Rect bounds(GetContentsBounds());
-  if (is_fullscreen_app_list_enabled_) {
-    bounds.Offset(kAppsGridLeftRightPadding - kTileHorizontalPadding, 0);
-  }
+  bounds.Offset(kAppsGridLeftRightPadding - kTileHorizontalPadding, 0);
   bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(index.page), 0, 0);
   int row = index.slot / cols_;
   int col = index.slot % cols_;
