@@ -71,7 +71,7 @@ public class CustomTabsTestUtils {
             Assert.assertTrue(connection.warmup(0));
             startupCallbackHelper.waitForCallback(0);
         } catch (TimeoutException | InterruptedException e) {
-            Assert.fail();
+            throw new AssertionError("Unexpected exception.", e);
         } finally {
             connection.setWarmupCompletedCallbackForTesting(null);
         }
