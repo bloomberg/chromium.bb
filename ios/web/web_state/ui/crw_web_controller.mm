@@ -4729,11 +4729,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
     didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
-  web::NavigationItem* lastCommittedNavigationItem =
-      _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
-  if (navigationItem == lastCommittedNavigationItem) {
+  web::NavigationItem* visibleItem =
+      _webStateImpl->GetNavigationManager()->GetVisibleItem();
+  if (navigationItem == visibleItem)
     _webStateImpl->DidChangeVisibleSecurityState();
-  }
 }
 
 #pragma mark -
