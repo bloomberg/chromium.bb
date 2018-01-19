@@ -32,6 +32,10 @@ def FetchBuildStatus(db, buildbucket_id=None, cidb_id=None):
   else:
     raise ValueError('Must set buildbucket_id or cidb_id.')
 
+  if not build_status:
+    logging.error('Build not found. Perhaps not started?')
+    raise SystemExit(2)
+
   # Exit if the build isn't finished yet.
   FINISHED_STATUSES = ('fail', 'pass', 'missing', 'aborted', 'skipped',
                        'forgiven')
