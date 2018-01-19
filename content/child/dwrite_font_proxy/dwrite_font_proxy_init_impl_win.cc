@@ -14,6 +14,7 @@
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/child/dwrite_font_proxy/font_fallback_win.h"
 #include "content/child/font_warmup_win.h"
+#include "content/public/common/service_names.mojom.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -44,12 +45,7 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
 
 }  // namespace
 
-void UpdateDWriteFontProxySender(mojom::DWriteFontProxyPtrInfo proxy) {
-  if (g_font_collection)
-    g_font_collection->SetProxy(std::move(proxy));
-}
-
-void InitializeDWriteFontProxy() {
+void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   mswr::ComPtr<IDWriteFactory> factory;
 
   CreateDirectWriteFactory(&factory);
@@ -58,7 +54,12 @@ void InitializeDWriteFontProxy() {
     mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (g_connection_callback_override) {
       dwrite_font_proxy = g_connection_callback_override->Run();
+    } else if (connector) {
+      connector->BindInterface(mojom::kBrowserServiceName,
+                               mojo::MakeRequest(&dwrite_font_proxy));
     }
+    // If |connector| is not provided, the connection to the browser will be
+    // created on demand.
     DWriteFontCollectionProxy::Create(&g_font_collection, factory.Get(),
                                       std::move(dwrite_font_proxy));
   }

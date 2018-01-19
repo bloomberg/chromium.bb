@@ -266,6 +266,8 @@ HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
   factory_ = factory;
   if (proxy)
     SetProxy(std::move(proxy));
+  else
+    main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   HRESULT hr = factory->RegisterFontCollectionLoader(this);
   DCHECK(SUCCEEDED(hr));
@@ -361,8 +363,18 @@ void DWriteFontCollectionProxy::SetProxy(mojom::DWriteFontProxyPtrInfo proxy) {
 mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
   if (!font_proxy_) {
     mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
-    ChildThread::Get()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, mojo::MakeRequest(&dwrite_font_proxy));
+    if (main_task_runner_->RunsTasksInCurrentSequence()) {
+      ChildThread::Get()->GetConnector()->BindInterface(
+          mojom::kBrowserServiceName, mojo::MakeRequest(&dwrite_font_proxy));
+    } else {
+      main_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(
+                         [](mojom::DWriteFontProxyRequest request) {
+                           ChildThread::Get()->GetConnector()->BindInterface(
+                               mojom::kBrowserServiceName, std::move(request));
+                         },
+                         mojo::MakeRequest(&dwrite_font_proxy)));
+    }
     SetProxy(std::move(dwrite_font_proxy));
   }
   return **font_proxy_;
