@@ -35,6 +35,10 @@ LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
 
 LocalCaretRect LocalSelectionRectOfPosition(const PositionWithAffinity&);
 
+// Exposed to tests only. Implemented in LocalCaretRectTest.cpp.
+bool operator==(const LocalCaretRect&, const LocalCaretRect&);
+std::ostream& operator<<(std::ostream&, const LocalCaretRect&);
+
 }  // namespace blink
 
 #endif  // LocalCaretRect_h

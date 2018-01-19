@@ -7,8 +7,18 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/testing/EditingTestBase.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
+
+bool operator==(const LocalCaretRect& rect1, const LocalCaretRect& rect2) {
+  return rect1.layout_object == rect2.layout_object && rect1.rect == rect2.rect;
+}
+
+std::ostream& operator<<(std::ostream& out, const LocalCaretRect& caret_rect) {
+  return out << "layout_object = " << caret_rect.layout_object->GetNode()
+             << ", rect = " << caret_rect.rect;
+}
 
 class LocalCaretRectTest : public EditingTestBase {};
 
@@ -29,9 +39,7 @@ TEST_F(LocalCaretRectTest, DOMAndFlatTrees) {
       LocalCaretRectOfPosition(PositionInFlatTree(one->firstChild(), 0));
 
   EXPECT_FALSE(caret_rect_from_dom_tree.IsEmpty());
-  EXPECT_EQ(caret_rect_from_dom_tree.layout_object,
-            caret_rect_from_flat_tree.layout_object);
-  EXPECT_EQ(caret_rect_from_dom_tree.rect, caret_rect_from_flat_tree.rect);
+  EXPECT_EQ(caret_rect_from_dom_tree, caret_rect_from_flat_tree);
 }
 
 TEST_F(LocalCaretRectTest, SimpleText) {
@@ -43,21 +51,17 @@ TEST_F(LocalCaretRectTest, SimpleText) {
   const Node* foo = GetElementById("div")->firstChild();
 
   EXPECT_EQ(
-      LayoutRect(0, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(10, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(10, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(20, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(20, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(29, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, MixedHeightText) {
@@ -69,21 +73,17 @@ TEST_F(LocalCaretRectTest, MixedHeightText) {
   const Node* foo = GetElementById("div")->firstChild();
 
   EXPECT_EQ(
-      LayoutRect(0, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(10, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(10, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(20, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(20, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(29, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, RtlText) {
@@ -96,21 +96,17 @@ TEST_F(LocalCaretRectTest, RtlText) {
   const Node* foo = GetElementById("bdo")->firstChild();
 
   EXPECT_EQ(
-      LayoutRect(29, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(20, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(20, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(10, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(10, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(0, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, VerticalText) {
@@ -123,21 +119,17 @@ TEST_F(LocalCaretRectTest, VerticalText) {
   const Node* foo = GetElementById("div")->firstChild();
 
   EXPECT_EQ(
-      LayoutRect(0, 0, 10, 1),
-      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 10, 1)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(0, 10, 10, 1),
-      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 10, 10, 1)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(0, 20, 10, 1),
-      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 20, 10, 1)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(0, 29, 10, 1),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 29, 10, 1)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
@@ -151,39 +143,31 @@ TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
 
   // First line
   EXPECT_EQ(
-      LayoutRect(0, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(10, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(10, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(20, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(20, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(29, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kUpstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kUpstream}));
 
   // Second line
   EXPECT_EQ(
-      LayoutRect(0, 10, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(10, 10, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 4), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(10, 10, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 4), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(20, 10, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 5), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(20, 10, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 5), TextAffinity::kDownstream}));
   EXPECT_EQ(
-      LayoutRect(29, 10, 1, 10),
-      LocalCaretRectOfPosition({Position(foo, 6), TextAffinity::kDownstream})
-          .rect);
+      LocalCaretRect(foo->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 6), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, Images) {
@@ -199,27 +183,23 @@ TEST_F(LocalCaretRectTest, Images) {
 
   const Element& img1 = *GetElementById("img1");
 
-  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::BeforeNode(img1), TextAffinity::kDownstream})
-                .rect);
-  EXPECT_EQ(LayoutRect(9, 0, 1, 10),
+                {Position::BeforeNode(img1), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::AfterNode(img1), TextAffinity::kDownstream})
-                .rect);
+                {Position::AfterNode(img1), TextAffinity::kDownstream}));
 
   const Element& img2 = *GetElementById("img2");
 
   // Box-anchored LocalCaretRect is local to the box itself, instead of its
   // containing block.
-  EXPECT_EQ(LayoutRect(0, 0, 1, 10),
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::BeforeNode(img2), TextAffinity::kDownstream})
-                .rect);
-  EXPECT_EQ(LayoutRect(9, 0, 1, 10),
+                {Position::BeforeNode(img2), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::AfterNode(img2), TextAffinity::kDownstream})
-                .rect);
+                {Position::AfterNode(img2), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, TextAndImageMixedHeight) {
@@ -236,32 +216,26 @@ TEST_F(LocalCaretRectTest, TextAndImageMixedHeight) {
   const Node* text1 = img.previousSibling();
   const Node* text2 = img.nextSibling();
 
-  EXPECT_EQ(
-      LayoutRect(0, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(text1, 0), TextAffinity::kDownstream})
-          .rect);
-  EXPECT_EQ(
-      LayoutRect(10, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(text1, 1), TextAffinity::kDownstream})
-          .rect);
-
-  EXPECT_EQ(LayoutRect(0, -5, 1, 10),
+  EXPECT_EQ(LocalCaretRect(text1->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::BeforeNode(img), TextAffinity::kDownstream})
-                .rect);
-  EXPECT_EQ(LayoutRect(9, -5, 1, 10),
+                {Position(text1, 0), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(text1->GetLayoutObject(), LayoutRect(10, 0, 1, 10)),
             LocalCaretRectOfPosition(
-                {Position::AfterNode(img), TextAffinity::kDownstream})
-                .rect);
+                {Position(text1, 1), TextAffinity::kDownstream}));
 
-  EXPECT_EQ(
-      LayoutRect(20, 5, 1, 10),
-      LocalCaretRectOfPosition({Position(text2, 0), TextAffinity::kDownstream})
-          .rect);
-  EXPECT_EQ(
-      LayoutRect(29, 0, 1, 10),
-      LocalCaretRectOfPosition({Position(text2, 1), TextAffinity::kDownstream})
-          .rect);
+  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, -5, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(img), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(9, -5, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(img), TextAffinity::kDownstream}));
+
+  EXPECT_EQ(LocalCaretRect(text2->GetLayoutObject(), LayoutRect(20, 5, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position(text2, 0), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(text2->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                {Position(text2, 1), TextAffinity::kDownstream}));
 }
 
 }  // namespace blink
