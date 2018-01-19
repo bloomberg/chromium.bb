@@ -45,6 +45,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   app_list::AppListViewState StateFullscreen() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
+  size_t BadgedItemCount() override;
   // For SearchModel:
   bool TabletMode() override;
   bool SearchEngineIsGoogle() override;
