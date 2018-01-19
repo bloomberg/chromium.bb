@@ -344,7 +344,9 @@ void ConnectionFactoryImpl::InitHandler() {
     event_tracker_.WriteToLoginRequest(&login_request);
   }
 
-  connection_handler_->Init(login_request, socket_handle_.socket());
+  // TODO(crbug.com/656607): Add Proper annotation
+  connection_handler_->Init(login_request, NO_TRAFFIC_ANNOTATION_BUG_656607,
+                            socket_handle_.socket());
 }
 
 std::unique_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(

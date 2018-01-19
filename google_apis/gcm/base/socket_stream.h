@@ -18,6 +18,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -160,7 +161,9 @@ class GCM_EXPORT SocketOutputStream
   };
 
   // |socket| should already be connected.
-  explicit SocketOutputStream(net::StreamSocket* socket);
+  SocketOutputStream(
+      net::StreamSocket* socket,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~SocketOutputStream() override;
 
   // ZeroCopyOutputStream implementation.
@@ -196,6 +199,11 @@ class GCM_EXPORT SocketOutputStream
   // If < net::ERR_IO_PENDING, the last net error received.
   // Note: last_error_ == net::ERR_IO_PENDING implies GetState() == FLUSHING.
   net::Error last_error_;
+
+  // Network traffic annotation for downstream socket write. SocketOutputStream
+  // is not reused, hence annotation can be added in constructor and used in all
+  // subsequent writes.
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<SocketOutputStream> weak_ptr_factory_;
 
