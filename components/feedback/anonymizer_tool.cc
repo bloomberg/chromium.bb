@@ -4,9 +4,9 @@
 
 #include "components/feedback/anonymizer_tool.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -260,7 +260,7 @@ RE2* AnonymizerTool::GetRegExp(const std::string& pattern) {
     RE2::Options options;
     // set_multiline of pcre is not supported by RE2, yet.
     options.set_dot_nl(true);  // Dot matches a new line.
-    std::unique_ptr<RE2> re = base::MakeUnique<RE2>(pattern, options);
+    std::unique_ptr<RE2> re = std::make_unique<RE2>(pattern, options);
     DCHECK_EQ(re2::RE2::NoError, re->error_code())
         << "Failed to parse:\n" << pattern << "\n" << re->error();
     regexp_cache_[pattern] = std::move(re);

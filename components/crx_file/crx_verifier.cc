@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/crx_file/crx3.pb.h"
 #include "components/crx_file/crx_file.h"
@@ -161,7 +160,7 @@ VerifierResult VerifyCrx3(
       std::vector<uint8_t> key_hash(crypto::kSHA256Length);
       crypto::SHA256HashString(key, key_hash.data(), key_hash.size());
       required_key_set.erase(key_hash);
-      auto v = base::MakeUnique<crypto::SignatureVerifier>();
+      auto v = std::make_unique<crypto::SignatureVerifier>();
       static_assert(sizeof(unsigned char) == sizeof(uint8_t),
                     "Unsupported char size.");
       if (!v->VerifyInit(
@@ -221,7 +220,7 @@ VerifierResult VerifyCrx2(
       static_cast<int>(sig_size))
     return VerifierResult::ERROR_HEADER_INVALID;
   std::vector<std::unique_ptr<crypto::SignatureVerifier>> verifiers;
-  verifiers.push_back(base::MakeUnique<crypto::SignatureVerifier>());
+  verifiers.push_back(std::make_unique<crypto::SignatureVerifier>());
   if (!verifiers[0]->VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
                                 sig.data(), sig.size(), key.data(),
                                 key.size())) {

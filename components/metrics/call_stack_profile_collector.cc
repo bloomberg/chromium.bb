@@ -7,7 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -25,7 +26,7 @@ void CallStackProfileCollector::Create(
     CallStackProfileParams::Process expected_process,
     mojom::CallStackProfileCollectorRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<CallStackProfileCollector>(expected_process),
+      std::make_unique<CallStackProfileCollector>(expected_process),
       std::move(request));
 }
 

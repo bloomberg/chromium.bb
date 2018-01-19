@@ -4,9 +4,9 @@
 
 #include "components/cryptauth/fake_connection.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/cryptauth/wire_message.h"
 
 namespace cryptauth {
@@ -90,7 +90,7 @@ void FakeConnection::SendMessageImpl(std::unique_ptr<WireMessage> message) {
 std::unique_ptr<WireMessage> FakeConnection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   *is_incomplete_message = false;
-  return base::MakeUnique<WireMessage>(pending_payload_, pending_feature_);
+  return std::make_unique<WireMessage>(pending_payload_, pending_feature_);
 }
 
 }  // namespace cryptauth

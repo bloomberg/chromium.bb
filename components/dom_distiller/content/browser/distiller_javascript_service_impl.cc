@@ -4,9 +4,9 @@
 
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
@@ -35,7 +35,7 @@ void CreateDistillerJavaScriptService(
     DistillerUIHandle* distiller_ui_handle,
     mojom::DistillerJavaScriptServiceRequest request,
     content::RenderFrameHost* render_frame_host) {
-  mojo::MakeStrongBinding(base::MakeUnique<DistillerJavaScriptServiceImpl>(
+  mojo::MakeStrongBinding(std::make_unique<DistillerJavaScriptServiceImpl>(
                               render_frame_host, distiller_ui_handle),
                           std::move(request));
 }

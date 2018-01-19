@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/page_usage_data.h"
@@ -235,7 +235,7 @@ VisitSegmentDatabase::QuerySegmentUsage(
   while (statement.Step()) {
     SegmentID segment_id = statement.ColumnInt64(0);
     if (segment_id != previous_segment_id) {
-      segments.push_back(base::MakeUnique<PageUsageData>(segment_id));
+      segments.push_back(std::make_unique<PageUsageData>(segment_id));
       previous_segment_id = segment_id;
     }
 

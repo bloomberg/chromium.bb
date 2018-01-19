@@ -4,6 +4,7 @@
 
 #include "components/cryptauth/secure_channel.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -165,13 +166,13 @@ class CryptAuthSecureChannelTest : public testing::Test {
   void SetUp() override {
     has_verified_gatt_services_event_ = false;
 
-    test_authenticator_factory_ = base::MakeUnique<TestAuthenticatorFactory>();
+    test_authenticator_factory_ = std::make_unique<TestAuthenticatorFactory>();
     DeviceToDeviceAuthenticator::Factory::SetInstanceForTesting(
         test_authenticator_factory_.get());
 
     fake_secure_context_ = nullptr;
 
-    fake_cryptauth_service_ = base::MakeUnique<FakeCryptAuthService>();
+    fake_cryptauth_service_ = std::make_unique<FakeCryptAuthService>();
 
     fake_connection_ =
         new FakeConnection(test_device_, /* should_auto_connect */ false);
@@ -182,7 +183,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
     EXPECT_EQ(static_cast<size_t>(1), fake_connection_->observers().size());
     EXPECT_EQ(secure_channel_.get(), fake_connection_->observers()[0]);
 
-    test_observer_ = base::MakeUnique<TestObserver>(secure_channel_.get());
+    test_observer_ = std::make_unique<TestObserver>(secure_channel_.get());
     secure_channel_->AddObserver(test_observer_.get());
   }
 

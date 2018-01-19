@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "components/assist_ranker/generic_logistic_regression_inference.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/ranker_model.h"
@@ -37,7 +36,7 @@ std::unique_ptr<BinaryClassifierPredictor> BinaryClassifierPredictor::Create(
   const GURL& model_url = predictor->GetModelUrl();
   DVLOG(1) << "Creating predictor instance for " << predictor->GetModelName();
   DVLOG(1) << "Model URL: " << model_url;
-  auto model_loader = base::MakeUnique<RankerModelLoaderImpl>(
+  auto model_loader = std::make_unique<RankerModelLoaderImpl>(
       base::BindRepeating(&BinaryClassifierPredictor::ValidateModel),
       base::BindRepeating(&BinaryClassifierPredictor::OnModelAvailable,
                           base::Unretained(predictor.get())),

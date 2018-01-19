@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -204,10 +206,10 @@ class SingleTreeTrackerTest : public ::testing::Test {
 
  protected:
   void CreateTreeTracker() {
-    log_dns_client_ = base::MakeUnique<LogDnsClient>(
+    log_dns_client_ = std::make_unique<LogDnsClient>(
         mock_dns_.CreateDnsClient(), net_log_with_source_, 1);
 
-    tree_tracker_ = base::MakeUnique<SingleTreeTracker>(
+    tree_tracker_ = std::make_unique<SingleTreeTracker>(
         log_, log_dns_client_.get(), &host_resolver_, &net_log_);
   }
 

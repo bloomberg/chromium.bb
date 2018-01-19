@@ -4,9 +4,9 @@
 
 #include "components/content_settings/core/browser/content_settings_global_value_map.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -51,7 +51,7 @@ std::unique_ptr<RuleIterator> GlobalValueMap::GetRuleIterator(
   if (it == settings_.end())
     return nullptr;
 
-  return base::MakeUnique<RuleIteratorSimple>(it->second);
+  return std::make_unique<RuleIteratorSimple>(it->second);
 }
 
 void GlobalValueMap::SetContentSetting(ContentSettingsType content_type,

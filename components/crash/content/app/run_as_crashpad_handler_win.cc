@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -82,7 +81,7 @@ int RunAsCrashpadHandler(const base::CommandLine& command_line,
     // will be invoked for any registered process' crashes, but information only
     // exists for instrumented browser processes.
     user_stream_data_sources.push_back(
-        base::MakeUnique<browser_watcher::StabilityReportUserStreamDataSource>(
+        std::make_unique<browser_watcher::StabilityReportUserStreamDataSource>(
             user_data_dir));
   }
 

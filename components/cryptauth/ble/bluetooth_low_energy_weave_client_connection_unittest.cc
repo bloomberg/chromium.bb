@@ -352,18 +352,18 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     mock_bluetooth_device_ =
-        base::MakeUnique<NiceMock<device::MockBluetoothDevice>>(
+        std::make_unique<NiceMock<device::MockBluetoothDevice>>(
             adapter_.get(), 0, kTestRemoteDeviceName,
             kTestRemoteDeviceBluetoothAddress, false, false);
-    service_ = base::MakeUnique<NiceMock<device::MockBluetoothGattService>>(
+    service_ = std::make_unique<NiceMock<device::MockBluetoothGattService>>(
         mock_bluetooth_device_.get(), kServiceID, service_uuid_, true, false);
     tx_characteristic_ =
-        base::MakeUnique<NiceMock<device::MockBluetoothGattCharacteristic>>(
+        std::make_unique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             service_.get(), kTXCharacteristicID, tx_characteristic_uuid_, false,
             kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
     rx_characteristic_ =
-        base::MakeUnique<NiceMock<device::MockBluetoothGattCharacteristic>>(
+        std::make_unique<NiceMock<device::MockBluetoothGattCharacteristic>>(
             service_.get(), kRXCharacteristicID, rx_characteristic_uuid_, false,
             kCharacteristicProperties,
             device::BluetoothRemoteGattCharacteristic::PERMISSION_NONE);
@@ -464,7 +464,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
             Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
     create_gatt_connection_success_callback_.Run(
-        base::MakeUnique<NiceMock<device::MockBluetoothGattConnection>>(
+        std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
             adapter_, kTestRemoteDeviceBluetoothAddress));
 
     EXPECT_EQ(connection->sub_status(), SubStatus::WAITING_CHARACTERISTICS);
@@ -691,7 +691,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        CreateAndDestroyWithoutConnectCallDoesntCrash) {
   std::unique_ptr<BluetoothLowEnergyWeaveClientConnection> connection =
-      base::MakeUnique<BluetoothLowEnergyWeaveClientConnection>(
+      std::make_unique<BluetoothLowEnergyWeaveClientConnection>(
           remote_device_, adapter_, service_uuid_, mock_bluetooth_device_.get(),
           true /* should_set_low_connection_latency */);
 
@@ -968,7 +968,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   connection->SendMessage(
-      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
+      std::make_unique<FakeWireMessage>(kSmallMessage, kTestFeature));
 
   EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
 
@@ -1001,7 +1001,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   connection->SendMessage(
-      base::MakeUnique<FakeWireMessage>(kLargeMessage, kTestFeature));
+      std::make_unique<FakeWireMessage>(kLargeMessage, kTestFeature));
 
   EXPECT_EQ(last_value_written_on_tx_characteristic_, kLargePackets0);
   std::vector<uint8_t> bytes_received(
@@ -1050,7 +1050,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   connection->SendMessage(
-      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
+      std::make_unique<FakeWireMessage>(kSmallMessage, kTestFeature));
 
   for (int i = 0; i < kMaxNumberOfTries; i++) {
     EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
@@ -1141,7 +1141,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   connection->SendMessage(
-      base::MakeUnique<FakeWireMessage>(kLargeMessage, kTestFeature));
+      std::make_unique<FakeWireMessage>(kLargeMessage, kTestFeature));
 
   connection->GattCharacteristicValueChanged(
       adapter_.get(), rx_characteristic_.get(), kErroneousPacket);
@@ -1220,7 +1220,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   connection->SendMessage(
-      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
+      std::make_unique<FakeWireMessage>(kSmallMessage, kTestFeature));
   EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
 
   RunWriteCharacteristicSuccessCallback();
@@ -1321,7 +1321,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
           Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
   create_gatt_connection_success_callback_.Run(
-      base::MakeUnique<NiceMock<device::MockBluetoothGattConnection>>(
+      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           adapter_, kTestRemoteDeviceBluetoothAddress));
 
   CharacteristicsFound(connection.get());
@@ -1366,7 +1366,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
           Return(new NiceMock<MockBluetoothLowEnergyCharacteristicsFinder>)));
 
   create_gatt_connection_success_callback_.Run(
-      base::MakeUnique<NiceMock<device::MockBluetoothGattConnection>>(
+      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           adapter_, kTestRemoteDeviceBluetoothAddress));
 
   CharacteristicsFound(connection.get());

@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/shared_temp_dir.h"
@@ -299,7 +299,7 @@ void FileImpl::Dup(mojom::FileRequest file, DupCallback callback) {
 
   if (file.is_pending()) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<FileImpl>(path_, std::move(new_file), temp_dir_,
+        std::make_unique<FileImpl>(path_, std::move(new_file), temp_dir_,
                                    lock_table_),
         std::move(file));
   }

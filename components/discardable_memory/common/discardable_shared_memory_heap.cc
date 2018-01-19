@@ -5,6 +5,7 @@
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/format_macros.h"
@@ -131,7 +132,7 @@ DiscardableSharedMemoryHeap::Grow(
   num_blocks_ += span->length_;
 
   // Start tracking if segment is resident by adding it to |memory_segments_|.
-  memory_segments_.push_back(base::MakeUnique<ScopedMemorySegment>(
+  memory_segments_.push_back(std::make_unique<ScopedMemorySegment>(
       this, std::move(shared_memory), size, id, deleted_callback));
 
   return span;

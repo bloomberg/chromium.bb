@@ -4,6 +4,8 @@
 
 #include "components/metrics/file_metrics_provider.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
@@ -11,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -299,7 +300,7 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
 
   base::Time now_time = base::Time::Now();
   if (!source->found_files) {
-    source->found_files = base::MakeUnique<SourceInfo::FoundFiles>();
+    source->found_files = std::make_unique<SourceInfo::FoundFiles>();
     base::FileEnumerator file_iter(source->directory, /*recursive=*/false,
                                    base::FileEnumerator::FILES);
     SourceInfo::FoundFile found_file;
@@ -537,7 +538,7 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
 
   // Map the file and validate it.
   std::unique_ptr<base::PersistentMemoryAllocator> memory_allocator =
-      base::MakeUnique<base::FilePersistentMemoryAllocator>(
+      std::make_unique<base::FilePersistentMemoryAllocator>(
           std::move(mapped), 0, 0, base::StringPiece(), read_only);
   if (memory_allocator->GetMemoryState() ==
       base::PersistentMemoryAllocator::MEMORY_DELETED) {
@@ -545,7 +546,7 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
   }
 
   // Create an allocator for the mapped file. Ownership passes to the allocator.
-  source->allocator = base::MakeUnique<base::PersistentHistogramAllocator>(
+  source->allocator = std::make_unique<base::PersistentHistogramAllocator>(
       std::move(memory_allocator));
 
   // Check that an "independent" file has the necessary information present.

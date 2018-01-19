@@ -111,7 +111,7 @@ class FakeDeviceLoader final : public cryptauth::RemoteDeviceLoader {
       EXPECT_EQ(std::string(kTestUserId), user_id);
       EXPECT_EQ(std::string(kTestUserPrivateKey), user_private_key);
       std::unique_ptr<FakeDeviceLoader> device_loader =
-          base::MakeUnique<FakeDeviceLoader>();
+          std::make_unique<FakeDeviceLoader>();
       device_loader->remote_device_loader_factory_ = this;
       return std::move(device_loader);
     }
@@ -175,16 +175,16 @@ class RemoteDeviceProviderImplTest : public testing::Test {
             this,
             &RemoteDeviceProviderImplTest::mock_device_manager_sync_devices));
     fake_secure_message_delegate_factory_ =
-        base::MakeUnique<FakeSecureMessageDelegateFactory>();
+        std::make_unique<FakeSecureMessageDelegateFactory>();
     test_device_loader_factory_ =
-        base::MakeUnique<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>();
+        std::make_unique<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>();
     cryptauth::RemoteDeviceLoader::Factory::SetInstanceForTesting(
         test_device_loader_factory_.get());
-    test_observer_ = base::MakeUnique<TestObserver>();
+    test_observer_ = std::make_unique<TestObserver>();
   }
 
   void CreateRemoteDeviceProvider() {
-    remote_device_provider_ = base::MakeUnique<RemoteDeviceProviderImpl>(
+    remote_device_provider_ = std::make_unique<RemoteDeviceProviderImpl>(
         mock_device_manager_.get(), kTestUserId, kTestUserPrivateKey,
         fake_secure_message_delegate_factory_.get());
     remote_device_provider_->AddObserver(test_observer_.get());

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/constrained_window/constrained_window_views_client.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/display/display.h"
@@ -217,7 +216,7 @@ TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
   test_views_delegate()->set_use_desktop_native_widgets(true);
 
   SetConstrainedWindowViewsClient(
-      base::MakeUnique<TestConstrainedWindowViewsClient>());
+      std::make_unique<TestConstrainedWindowViewsClient>());
   DialogContents* contents = new DialogContents;
   contents->set_modal_type(ui::MODAL_TYPE_WINDOW);
   views::Widget* widget = CreateBrowserModalDialogViews(contents, nullptr);

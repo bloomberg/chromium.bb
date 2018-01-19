@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -96,7 +96,7 @@ DomainReliabilityScheduler::DomainReliabilityScheduler(
 
   for (size_t i = 0; i < num_collectors; ++i) {
     collectors_.push_back(
-        base::MakeUnique<net::BackoffEntry>(&backoff_policy_, time_));
+        std::make_unique<net::BackoffEntry>(&backoff_policy_, time_));
   }
 }
 

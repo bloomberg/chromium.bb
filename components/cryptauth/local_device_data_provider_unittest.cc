@@ -4,11 +4,11 @@
 
 #include "components/cryptauth/local_device_data_provider.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
@@ -124,12 +124,12 @@ class LocalDeviceDataProviderTest : public testing::Test {
     mock_device_manager_ =
         base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
     fake_cryptauth_gcm_manager_ =
-        base::MakeUnique<FakeCryptAuthGCMManager>("registrationId");
+        std::make_unique<FakeCryptAuthGCMManager>("registrationId");
     mock_enrollment_manager_ =
         base::WrapUnique(new NiceMock<MockCryptAuthEnrollmentManager>(
             fake_cryptauth_gcm_manager_.get()));
 
-    fake_cryptauth_service_ = base::MakeUnique<FakeCryptAuthService>();
+    fake_cryptauth_service_ = std::make_unique<FakeCryptAuthService>();
     fake_cryptauth_service_->set_cryptauth_device_manager(
         mock_device_manager_.get());
     fake_cryptauth_service_->set_cryptauth_enrollment_manager(

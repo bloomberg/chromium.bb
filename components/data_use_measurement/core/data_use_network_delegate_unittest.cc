@@ -4,7 +4,8 @@
 
 #include "components/data_use_measurement/core/data_use_network_delegate.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -33,7 +34,7 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
 
   static void MarkAsUserRequest(net::URLRequest* request) {
     request->SetUserData(kUserDataKey,
-                         base::MakeUnique<TestURLRequestClassifier>());
+                         std::make_unique<TestURLRequestClassifier>());
   }
 
   DataUseUserData::DataUseContentType GetContentType(
@@ -112,7 +113,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
   } else {
     request->SetUserData(
         data_use_measurement::DataUseUserData::kUserDataKey,
-        base::MakeUnique<data_use_measurement::DataUseUserData>(
+        std::make_unique<data_use_measurement::DataUseUserData>(
             data_use_measurement::DataUseUserData::SUGGESTIONS,
             data_use_measurement::DataUseUserData::FOREGROUND));
   }
@@ -125,9 +126,9 @@ class DataUseNetworkDelegateTest : public testing::Test {
  public:
   DataUseNetworkDelegateTest()
       : context_(true),
-        data_use_network_delegate_(base::MakeUnique<net::TestNetworkDelegate>(),
+        data_use_network_delegate_(std::make_unique<net::TestNetworkDelegate>(),
                                    &test_data_use_ascriber_,
-                                   base::MakeUnique<TestURLRequestClassifier>(),
+                                   std::make_unique<TestURLRequestClassifier>(),
                                    metrics::UpdateUsagePrefCallbackType()) {
     context_.set_client_socket_factory(&mock_socket_factory_);
     context_.set_network_delegate(&data_use_network_delegate_);

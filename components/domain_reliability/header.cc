@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
@@ -169,7 +171,7 @@ bool ParseReportUri(const std::vector<base::StringPiece> in,
     GURL url(unquoted);
     if (!url.is_valid() || !content::IsOriginSecure(url))
       return false;
-    out->push_back(base::MakeUnique<GURL>(url));
+    out->push_back(std::make_unique<GURL>(url));
   }
 
   return true;

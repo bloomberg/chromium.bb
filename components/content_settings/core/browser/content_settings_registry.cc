@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -373,7 +372,7 @@ void ContentSettingsRegistry::Register(
     return;
 
   DCHECK(!base::ContainsKey(content_settings_info_, type));
-  content_settings_info_[type] = base::MakeUnique<ContentSettingsInfo>(
+  content_settings_info_[type] = std::make_unique<ContentSettingsInfo>(
       website_settings_info, whitelisted_schemes, valid_settings,
       incognito_behavior);
 }

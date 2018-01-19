@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -388,13 +388,13 @@ class CryptAuthDeviceManagerTest
     CryptAuthDeviceManager::RegisterPrefs(pref_service_.registry());
     pref_service_.SetUserPref(
         prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure,
-        base::MakeUnique<base::Value>(false));
+        std::make_unique<base::Value>(false));
     pref_service_.SetUserPref(
         prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds,
-        base::MakeUnique<base::Value>(kLastSyncTimeSeconds));
+        std::make_unique<base::Value>(kLastSyncTimeSeconds));
     pref_service_.SetUserPref(
         prefs::kCryptAuthDeviceSyncReason,
-        base::MakeUnique<base::Value>(INVOCATION_REASON_UNKNOWN));
+        std::make_unique<base::Value>(INVOCATION_REASON_UNKNOWN));
 
     std::unique_ptr<base::DictionaryValue> device_dictionary(
         new base::DictionaryValue());
@@ -416,7 +416,7 @@ class CryptAuthDeviceManagerTest
                                      bluetooth_address_b64);
     device_dictionary->SetBoolean("unlock_key", kStoredUnlockKey);
     device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    device_dictionary->Set("beacon_seeds", base::MakeUnique<base::ListValue>());
+    device_dictionary->Set("beacon_seeds", std::make_unique<base::ListValue>());
     device_dictionary->SetBoolean("mobile_hotspot_supported",
                                   kStoredMobileHotspotSupported);
     {
@@ -460,7 +460,7 @@ class CryptAuthDeviceManagerTest
         static_cast<SyncScheduler::Delegate*>(device_manager_.get());
 
     std::unique_ptr<SyncScheduler::SyncRequest> sync_request =
-        base::MakeUnique<SyncScheduler::SyncRequest>(
+        std::make_unique<SyncScheduler::SyncRequest>(
             device_manager_->GetSyncScheduler());
     EXPECT_CALL(*this, OnSyncStartedProxy());
     delegate->OnSyncRequested(std::move(sync_request));
@@ -557,9 +557,8 @@ TEST_F(CryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
   CryptAuthDeviceManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthDeviceManager device_manager(
-      &clock,
-      base::MakeUnique<MockCryptAuthClientFactory>(
-          MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS),
+      &clock, std::make_unique<MockCryptAuthClientFactory>(
+                  MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS),
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(

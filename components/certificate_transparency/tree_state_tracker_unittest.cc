@@ -7,8 +7,9 @@
 #include <string>
 #include <utility>
 
+#include <memory>
+
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -81,7 +82,7 @@ TEST_F(TreeStateTrackerTest, TestDelegatesCorrectly) {
   feature_list.InitAndEnableFeature(kCTLogAuditing);
 
   tree_tracker_ =
-      base::MakeUnique<TreeStateTracker>(verifiers, &host_resolver_, &net_log_);
+      std::make_unique<TreeStateTracker>(verifiers, &host_resolver_, &net_log_);
 
   // Add a cache entry for kHostname that indicates it was looked up over DNS.
   // SingleTreeTracker requires this before it will request an inclusion proof,

@@ -68,7 +68,7 @@ class TiclInvalidationServiceTestDelegate {
     gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         "TestUserAgent",
-        base::MakeUnique<FakeIdentityProvider>(&token_service_),
+        std::make_unique<FakeIdentityProvider>(&token_service_),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
         gcm_driver_.get(), nullptr));
   }

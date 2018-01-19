@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -174,13 +175,13 @@ std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
     const notifier::NotifierOptions& notifier_options) {
   std::unique_ptr<notifier::PushClient> push_client(
       notifier::PushClient::CreateDefaultOnIOThread(notifier_options));
-  return base::MakeUnique<PushClientChannel>(std::move(push_client));
+  return std::make_unique<PushClientChannel>(std::move(push_client));
 }
 
 std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
-  return base::MakeUnique<GCMNetworkChannel>(request_context_getter,
+  return std::make_unique<GCMNetworkChannel>(request_context_getter,
                                              std::move(delegate));
 }
 

@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -371,7 +370,7 @@ void ContentSettingsPref::UpdatePref(
     if (!found && value) {
       settings_dictionary =
           pattern_pairs_settings->SetDictionaryWithoutPathExpansion(
-              pattern_str, base::MakeUnique<base::DictionaryValue>());
+              pattern_str, std::make_unique<base::DictionaryValue>());
     }
 
     if (settings_dictionary) {
@@ -386,7 +385,7 @@ void ContentSettingsPref::UpdatePref(
           resource_dictionary =
               settings_dictionary->SetDictionaryWithoutPathExpansion(
                   kPerResourceIdentifierPrefName,
-                  base::MakeUnique<base::DictionaryValue>());
+                  std::make_unique<base::DictionaryValue>());
         }
         // Update resource dictionary.
         if (value == nullptr) {

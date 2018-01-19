@@ -2030,7 +2030,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   WebInputElement* input_element = ToWebInputElement(&control_elements[3]);
   const base::string16 element_value = input_element->Value().Utf16();
   user_input[control_elements[3]] =
-      std::make_pair(base::MakeUnique<base::string16>(element_value),
+      std::make_pair(std::make_unique<base::string16>(element_value),
                      FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(

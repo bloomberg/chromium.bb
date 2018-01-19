@@ -11,7 +11,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
@@ -143,7 +142,7 @@ void RankerModelLoaderImplTest::SetUp() {
 // static
 std::unique_ptr<RankerModel> RankerModelLoaderImplTest::Clone(
     const RankerModel& model) {
-  auto copy = base::MakeUnique<RankerModel>();
+  auto copy = std::make_unique<RankerModel>();
   *copy->mutable_proto() = model.proto();
   return copy;
 }
@@ -168,7 +167,7 @@ bool RankerModelLoaderImplTest::IsEquivalent(const RankerModel& m1,
 
 bool RankerModelLoaderImplTest::DoLoaderTest(const base::FilePath& model_path,
                                              const GURL& model_url) {
-  auto loader = base::MakeUnique<RankerModelLoaderImpl>(
+  auto loader = std::make_unique<RankerModelLoaderImpl>(
       base::Bind(&RankerModelLoaderImplTest::ValidateModel,
                  base::Unretained(this)),
       base::Bind(&RankerModelLoaderImplTest::OnModelAvailable,

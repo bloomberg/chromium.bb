@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -44,7 +43,7 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
 
   static void MarkAsUserRequest(net::URLRequest* request) {
     request->SetUserData(kUserDataKey,
-                         base::MakeUnique<TestURLRequestClassifier>());
+                         std::make_unique<TestURLRequestClassifier>());
   }
 
   DataUseUserData::DataUseContentType GetContentType(
@@ -143,7 +142,7 @@ class DataUseMeasurementTest : public testing::Test {
     } else {
       request->SetUserData(
           data_use_measurement::DataUseUserData::kUserDataKey,
-          base::MakeUnique<data_use_measurement::DataUseUserData>(
+          std::make_unique<data_use_measurement::DataUseUserData>(
               data_use_measurement::DataUseUserData::SUGGESTIONS,
               data_use_measurement_.CurrentAppState()));
     }

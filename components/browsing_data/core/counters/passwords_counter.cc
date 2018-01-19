@@ -4,6 +4,8 @@
 
 #include "components/browsing_data/core/counters/passwords_counter.h"
 
+#include <memory>
+
 #include "components/browsing_data/core/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -60,7 +62,7 @@ void PasswordsCounter::OnGetPasswordStoreResults(
       [start](const std::unique_ptr<autofill::PasswordForm>& form) {
         return form->date_created >= start;
       });
-  ReportResult(base::MakeUnique<SyncResult>(this, num_passwords,
+  ReportResult(std::make_unique<SyncResult>(this, num_passwords,
                                             sync_tracker_.IsSyncActive()));
 }
 

@@ -12,6 +12,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -23,7 +24,6 @@
 #include "base/linux_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
@@ -135,7 +135,7 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
 
 void CrashHandlerHostLinux::StartUploaderThread() {
   uploader_thread_ =
-      base::MakeUnique<base::Thread>(process_type_ + "_crash_uploader");
+      std::make_unique<base::Thread>(process_type_ + "_crash_uploader");
   uploader_thread_->Start();
 }
 
@@ -165,13 +165,13 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   struct msghdr msg = {nullptr};
   struct iovec iov[kCrashIovSize];
 
-  auto crash_context = base::MakeUnique<char[]>(kCrashContextSize);
+  auto crash_context = std::make_unique<char[]>(kCrashContextSize);
 #if defined(ADDRESS_SANITIZER)
-  auto asan_report = base::MakeUnique<char[]>(kMaxAsanReportSize + 1);
+  auto asan_report = std::make_unique<char[]>(kMaxAsanReportSize + 1);
 #endif
 
   auto crash_keys =
-      base::MakeUnique<crash_reporter::internal::TransitionalCrashKeyStorage>();
+      std::make_unique<crash_reporter::internal::TransitionalCrashKeyStorage>();
   google_breakpad::SerializedNonAllocatingMap* serialized_crash_keys;
   size_t crash_keys_size = crash_keys->Serialize(
       const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
@@ -365,7 +365,7 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
       reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context.get());
   bad_context->tid = crashing_tid;
 
-  auto info = base::MakeUnique<BreakpadInfo>();
+  auto info = std::make_unique<BreakpadInfo>();
   info->fd = -1;
   info->process_type_length = process_type_.length();
   // Freed in CrashDumpTask().

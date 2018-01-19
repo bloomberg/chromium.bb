@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -196,14 +195,13 @@ void HistoryBackend::Init(
     InitImpl(history_database_params);
   delegate_->DBLoaded();
   if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
-    typed_url_sync_bridge_ = base::MakeUnique<TypedURLSyncBridge>(
-        this, db_.get(),
-        base::BindRepeating(&ModelTypeChangeProcessor::Create,
-                            base::RepeatingClosure()));
+    typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
+        this, db_.get(), base::BindRepeating(&ModelTypeChangeProcessor::Create,
+                                             base::RepeatingClosure()));
     typed_url_sync_bridge_->Init();
   } else {
     typed_url_syncable_service_ =
-        base::MakeUnique<TypedUrlSyncableService>(this);
+        std::make_unique<TypedUrlSyncableService>(this);
   }
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
@@ -2574,7 +2572,7 @@ void HistoryBackend::ProcessDBTask(
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   bool scheduled = !queued_history_db_tasks_.empty();
-  queued_history_db_tasks_.push_back(base::MakeUnique<QueuedHistoryDBTask>(
+  queued_history_db_tasks_.push_back(std::make_unique<QueuedHistoryDBTask>(
       std::move(task), origin_loop, is_canceled));
   if (!scheduled)
     ProcessDBTaskImpl();

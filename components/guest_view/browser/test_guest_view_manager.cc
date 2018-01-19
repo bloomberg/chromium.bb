@@ -4,9 +4,9 @@
 
 #include "components/guest_view/browser/test_guest_view_manager.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 
@@ -112,7 +112,7 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
   GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
 
   guest_web_contents_watchers_.push_back(
-      base::MakeUnique<content::WebContentsDestroyedWatcher>(
+      std::make_unique<content::WebContentsDestroyedWatcher>(
           guest_web_contents));
 
   if (created_message_loop_runner_.get())

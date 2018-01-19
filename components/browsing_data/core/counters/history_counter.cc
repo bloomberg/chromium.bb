@@ -6,8 +6,8 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/pref_names.h"
 
@@ -176,7 +176,7 @@ void HistoryCounter::MergeResults() {
   if (!local_counting_finished_ || !web_counting_finished_)
     return;
 
-  ReportResult(base::MakeUnique<HistoryResult>(
+  ReportResult(std::make_unique<HistoryResult>(
       this, local_result_, sync_tracker_.IsSyncActive(), has_synced_visits_));
 }
 

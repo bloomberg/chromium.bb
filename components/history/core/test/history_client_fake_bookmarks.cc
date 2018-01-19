@@ -5,9 +5,9 @@
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -185,7 +185,7 @@ void HistoryClientFakeBookmarks::NotifyProfileError(
 
 std::unique_ptr<HistoryBackendClient>
 HistoryClientFakeBookmarks::CreateBackendClient() {
-  return base::MakeUnique<HistoryBackendClientFakeBookmarks>(bookmarks_);
+  return std::make_unique<HistoryBackendClientFakeBookmarks>(bookmarks_);
 }
 
 }  // namespace history

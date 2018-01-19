@@ -590,11 +590,11 @@ static std::unique_ptr<DomainReliabilityConfig> CreateGoogleConfig(
     GURL::Replacements replacements;
     replacements.SetPathStr(kGoogleOriginSpecificCollectorPathString);
     config->collectors.push_back(
-        base::MakeUnique<GURL>(config->origin.ReplaceComponents(replacements)));
+        std::make_unique<GURL>(config->origin.ReplaceComponents(replacements)));
   }
   for (size_t i = 0; i < arraysize(kGoogleStandardCollectors); i++)
     config->collectors.push_back(
-        base::MakeUnique<GURL>(kGoogleStandardCollectors[i]));
+        std::make_unique<GURL>(kGoogleStandardCollectors[i]));
   config->success_sample_rate = 0.05;
   config->failure_sample_rate = 1.00;
   config->path_prefixes.clear();

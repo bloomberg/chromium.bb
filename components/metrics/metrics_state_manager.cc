@@ -7,9 +7,10 @@
 #include <stddef.h>
 #include <utility>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -162,7 +163,7 @@ MetricsStateManager::~MetricsStateManager() {
 }
 
 std::unique_ptr<MetricsProvider> MetricsStateManager::GetProvider() {
-  return base::MakeUnique<MetricsStateMetricsProvider>(
+  return std::make_unique<MetricsStateMetricsProvider>(
       local_state_, metrics_ids_were_reset_, previous_client_id_);
 }
 
@@ -238,7 +239,7 @@ void MetricsStateManager::CheckForClonedInstall() {
   if (!MachineIdProvider::HasId())
     return;
 
-  cloned_install_detector_ = base::MakeUnique<ClonedInstallDetector>();
+  cloned_install_detector_ = std::make_unique<ClonedInstallDetector>();
   cloned_install_detector_->CheckForClonedInstall(local_state_);
 }
 

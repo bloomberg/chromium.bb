@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -218,7 +218,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   if (is_guest_profile)
     pref_provider_->ClearPrefs();
 
-  auto default_provider = base::MakeUnique<content_settings::DefaultProvider>(
+  auto default_provider = std::make_unique<content_settings::DefaultProvider>(
       prefs_, is_incognito_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
@@ -689,7 +689,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
     const content_settings::Rule& rule = rule_iterator->Next();
     settings->push_back(ContentSettingPatternSource(
         rule.primary_pattern, rule.secondary_pattern,
-        base::MakeUnique<base::Value>(rule.value->Clone()),
+        std::make_unique<base::Value>(rule.value->Clone()),
         kProviderNamesSourceMap[provider_type].provider_name, incognito));
   }
 }

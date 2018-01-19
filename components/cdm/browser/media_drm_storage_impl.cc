@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/value_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -75,7 +74,7 @@ class OriginData {
   base::Time provision_time() const { return provision_time_; }
 
   std::unique_ptr<base::DictionaryValue> ToDictValue() const {
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
 
     dict->Set(kOriginId, base::CreateUnguessableTokenValue(origin_id_));
     dict->SetDouble(kCreationTime, provision_time_.ToDoubleT());
@@ -121,7 +120,7 @@ class SessionData {
   base::Time creation_time() const { return creation_time_; }
 
   std::unique_ptr<base::DictionaryValue> ToDictValue() const {
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
 
     dict->SetString(
         kKeySetId,

@@ -4,8 +4,9 @@
 
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/remote_device.h"
@@ -90,8 +91,8 @@ class CryptAuthRemoteBeaconSeedFetcherTest : public testing::Test {
       : fake_info1_(CreateFakeInfo1()), fake_info2_(CreateFakeInfo2()) {}
 
   void SetUp() override {
-    mock_device_manager_ = base::MakeUnique<MockDeviceManager>();
-    fetcher_ = base::MakeUnique<StrictMock<RemoteBeaconSeedFetcher>>(
+    mock_device_manager_ = std::make_unique<MockDeviceManager>();
+    fetcher_ = std::make_unique<StrictMock<RemoteBeaconSeedFetcher>>(
         mock_device_manager_.get());
   }
 

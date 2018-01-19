@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/proto/securemessage.pb.h"
@@ -52,7 +51,7 @@ class InvertedSessionKeys : public SessionKeys {
 class ProximityAuthDeviceToDeviceSecureContextTest : public testing::Test {
  protected:
   ProximityAuthDeviceToDeviceSecureContextTest()
-      : secure_context_(base::MakeUnique<FakeSecureMessageDelegate>(),
+      : secure_context_(std::make_unique<FakeSecureMessageDelegate>(),
                         SessionKeys(kSymmetricKey),
                         kResponderAuthMessage,
                         kProtocolVersion) {}
@@ -95,7 +94,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, EncodeAndDecode) {
   // Initialize second secure channel with the same parameters as the first.
   InvertedSessionKeys inverted_session_keys(kSymmetricKey);
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<FakeSecureMessageDelegate>(), inverted_session_keys,
+      std::make_unique<FakeSecureMessageDelegate>(), inverted_session_keys,
       kResponderAuthMessage, kProtocolVersion);
   std::string message = "encrypt this message";
 
@@ -122,7 +121,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest,
        DecodeInvalidSequenceNumber) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<FakeSecureMessageDelegate>(),
+      std::make_unique<FakeSecureMessageDelegate>(),
       InvertedSessionKeys(kSymmetricKey), kResponderAuthMessage,
       kProtocolVersion);
 

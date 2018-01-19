@@ -236,9 +236,9 @@ TEST_F(KeepAliveDelegateTest, TestLivenessTimerResetAfterSendingMessage) {
       mock_time_task_runner->GetMockTickClock();
 
   std::unique_ptr<base::Timer> liveness_timer =
-      base::MakeUnique<base::Timer>(true, false, tick_clock.get());
+      std::make_unique<base::Timer>(true, false, tick_clock.get());
   std::unique_ptr<base::Timer> ping_timer =
-      base::MakeUnique<base::Timer>(true, false, tick_clock.get());
+      std::make_unique<base::Timer>(true, false, tick_clock.get());
   ping_timer->SetTaskRunner(mock_time_task_runner);
   liveness_timer->SetTaskRunner(mock_time_task_runner);
   keep_alive_->SetTimersForTest(std::move(ping_timer),

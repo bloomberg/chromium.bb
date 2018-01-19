@@ -4,9 +4,9 @@
 
 #include "components/metrics/single_sample_metrics.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/single_sample_metrics.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/single_sample_metrics_factory_impl.h"
@@ -55,7 +55,7 @@ class MojoSingleSampleMetricsProvider
       int32_t flags,
       mojom::SingleSampleMetricRequest request) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    mojo::MakeStrongBinding(base::MakeUnique<MojoSingleSampleMetric>(
+    mojo::MakeStrongBinding(std::make_unique<MojoSingleSampleMetric>(
                                 histogram_name, min, max, bucket_count, flags),
                             std::move(request));
   }
@@ -71,14 +71,14 @@ class MojoSingleSampleMetricsProvider
 // static
 void InitializeSingleSampleMetricsFactory(CreateProviderCB create_provider_cb) {
   base::SingleSampleMetricsFactory::SetFactory(
-      base::MakeUnique<SingleSampleMetricsFactoryImpl>(
+      std::make_unique<SingleSampleMetricsFactoryImpl>(
           std::move(create_provider_cb)));
 }
 
 // static
 void CreateSingleSampleMetricsProvider(
     mojom::SingleSampleMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<MojoSingleSampleMetricsProvider>(),
+  mojo::MakeStrongBinding(std::make_unique<MojoSingleSampleMetricsProvider>(),
                           std::move(request));
 }
 

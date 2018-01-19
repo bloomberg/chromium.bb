@@ -4,7 +4,8 @@
 
 #include "components/content_settings/core/common/content_settings_utils.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 
 namespace content_settings {
@@ -41,7 +42,7 @@ std::unique_ptr<base::Value> ContentSettingToValue(ContentSetting setting) {
       setting >= CONTENT_SETTING_NUM_SETTINGS) {
     return nullptr;
   }
-  return base::MakeUnique<base::Value>(setting);
+  return std::make_unique<base::Value>(setting);
 }
 
 }  // namespace content_settings

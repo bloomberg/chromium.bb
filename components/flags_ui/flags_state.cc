@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -198,9 +197,9 @@ std::unique_ptr<base::Value> CreateOptionsData(
          entry.type == FeatureEntry::ENABLE_DISABLE_VALUE ||
          entry.type == FeatureEntry::FEATURE_VALUE ||
          entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
-  auto result = base::MakeUnique<base::ListValue>();
+  auto result = std::make_unique<base::ListValue>();
   for (int i = 0; i < entry.num_options; ++i) {
-    auto value = base::MakeUnique<base::DictionaryValue>();
+    auto value = std::make_unique<base::DictionaryValue>();
     const std::string name = entry.NameForOption(i);
     value->SetString("internal_name", name);
     value->SetString("description", entry.DescriptionForOption(i));
@@ -532,7 +531,7 @@ void FlagsState::GetFlagFeatureEntries(
     data->SetString("description",
                     base::StringPiece(entry.visible_description));
 
-    auto supported_platforms = base::MakeUnique<base::ListValue>();
+    auto supported_platforms = std::make_unique<base::ListValue>();
     AddOsStrings(entry.supported_platforms, supported_platforms.get());
     data->Set("supported_platforms", std::move(supported_platforms));
     // True if the switch is not currently passed.

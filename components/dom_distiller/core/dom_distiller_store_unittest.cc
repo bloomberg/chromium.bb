@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -352,7 +353,7 @@ TEST_F(DomDistillerStoreTest, TestAttachments) {
   article_proto.set_title("A title");
   attachments.set_distilled_article(article_proto);
   store_->UpdateAttachments(
-      entry.entry_id(), base::MakeUnique<ArticleAttachmentsData>(attachments),
+      entry.entry_id(), std::make_unique<ArticleAttachmentsData>(attachments),
       callbacks.UpdateCallback());
   EXPECT_CALL(callbacks, Update(true));
   base::RunLoop().RunUntilIdle();

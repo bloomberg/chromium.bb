@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/values.h"
 #include "components/cloud_devices/common/description_items.h"
@@ -128,9 +127,9 @@ template <class Option, class Traits>
 void SelectionCapability<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
-  auto options_list = base::MakeUnique<base::ListValue>();
+  auto options_list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < options_.size(); ++i) {
-    auto option_value = base::MakeUnique<base::DictionaryValue>();
+    auto option_value = std::make_unique<base::DictionaryValue>();
     if (base::checked_cast<int>(i) == default_idx_)
       option_value->SetBoolean(json::kKeyIsDefault, true);
     Traits::Save(options_[i], option_value.get());

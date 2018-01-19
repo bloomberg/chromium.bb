@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -99,7 +98,7 @@ void JSONSchemaValidatorTestBase::TestComplex() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
   instance->Remove(instance->GetSize() - 1, nullptr);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
-  instance->Append(base::MakeUnique<base::DictionaryValue>());
+  instance->Append(std::make_unique<base::DictionaryValue>());
   ExpectNotValid(
       TEST_SOURCE, instance.get(), schema.get(), nullptr, "1",
       JSONSchemaValidator::FormatErrorMessage(
@@ -150,7 +149,7 @@ void JSONSchemaValidatorTestBase::TestEnum() {
   ExpectNotValid(
       TEST_SOURCE, std::unique_ptr<base::Value>(new base::Value("42")).get(),
       schema.get(), nullptr, std::string(), JSONSchemaValidator::kInvalidEnum);
-  ExpectNotValid(TEST_SOURCE, base::MakeUnique<base::Value>().get(),
+  ExpectNotValid(TEST_SOURCE, std::make_unique<base::Value>().get(),
                  schema.get(), nullptr, std::string(),
                  JSONSchemaValidator::kInvalidEnum);
 }
@@ -159,7 +158,7 @@ void JSONSchemaValidatorTestBase::TestChoices() {
   std::unique_ptr<base::DictionaryValue> schema(
       LoadDictionary("choices_schema.json"));
 
-  ExpectValid(TEST_SOURCE, base::MakeUnique<base::Value>().get(), schema.get(),
+  ExpectValid(TEST_SOURCE, std::make_unique<base::Value>().get(), schema.get(),
               nullptr);
   ExpectValid(TEST_SOURCE,
               std::unique_ptr<base::Value>(new base::Value(42)).get(),
@@ -249,7 +248,7 @@ void JSONSchemaValidatorTestBase::TestObject() {
 
   // Test additional properties.
   base::DictionaryValue* additional_properties = schema->SetDictionary(
-      schema::kAdditionalProperties, base::MakeUnique<base::DictionaryValue>());
+      schema::kAdditionalProperties, std::make_unique<base::DictionaryValue>());
   additional_properties->SetString(schema::kType, schema::kAny);
 
   instance->SetBoolean("extra", true);
@@ -278,7 +277,7 @@ void JSONSchemaValidatorTestBase::TestObject() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
   instance->Remove("bar", nullptr);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
-  instance->Set("bar", base::MakeUnique<base::Value>());
+  instance->Set("bar", std::make_unique<base::Value>());
   ExpectNotValid(
       TEST_SOURCE, instance.get(), schema.get(), nullptr, "bar",
       JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
@@ -386,7 +385,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), nullptr, "1",
                  JSONSchemaValidator::kArrayItemRequired);
 
-  instance->Set(0, base::MakeUnique<base::Value>(42));
+  instance->Set(0, std::make_unique<base::Value>(42));
   instance->AppendInteger(42);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), nullptr, "0",
                  JSONSchemaValidator::FormatErrorMessage(
@@ -394,12 +393,12 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
                      schema::kInteger));
 
   base::DictionaryValue* additional_properties = schema->SetDictionary(
-      schema::kAdditionalProperties, base::MakeUnique<base::DictionaryValue>());
+      schema::kAdditionalProperties, std::make_unique<base::DictionaryValue>());
   additional_properties->SetString(schema::kType, schema::kAny);
-  instance->Set(0, base::MakeUnique<base::Value>("42"));
+  instance->Set(0, std::make_unique<base::Value>("42"));
   instance->AppendString("anything");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
-  instance->Set(2, base::MakeUnique<base::ListValue>());
+  instance->Set(2, std::make_unique<base::ListValue>());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
 
   additional_properties->SetString(schema::kType, schema::kBoolean);
@@ -407,7 +406,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
       TEST_SOURCE, instance.get(), schema.get(), nullptr, "2",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kInvalidType, schema::kBoolean, schema::kArray));
-  instance->Set(2, base::MakeUnique<base::Value>(false));
+  instance->Set(2, std::make_unique<base::Value>(false));
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
 
   base::ListValue* items_schema = nullptr;
@@ -419,9 +418,9 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
   // TODO(aa): I think this is inconsistent with the handling of NULL+optional
   // for objects.
-  instance->Set(0, base::MakeUnique<base::Value>());
+  instance->Set(0, std::make_unique<base::Value>());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), nullptr);
-  instance->Set(0, base::MakeUnique<base::Value>(42));
+  instance->Set(0, std::make_unique<base::Value>(42));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), nullptr, "0",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType, schema::kString,
@@ -582,7 +581,7 @@ void JSONSchemaValidatorTestBase::TestTypeClassifier() {
           std::unique_ptr<base::Value>(new base::DictionaryValue()).get()));
   EXPECT_EQ(std::string(schema::kNull),
             JSONSchemaValidator::GetJSONSchemaType(
-                base::MakeUnique<base::Value>().get()));
+                std::make_unique<base::Value>().get()));
 }
 
 void JSONSchemaValidatorTestBase::TestTypes() {
@@ -648,7 +647,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
               schema.get(), nullptr);
 
   schema->SetString(schema::kType, schema::kNull);
-  ExpectValid(TEST_SOURCE, base::MakeUnique<base::Value>().get(), schema.get(),
+  ExpectValid(TEST_SOURCE, std::make_unique<base::Value>().get(), schema.get(),
               nullptr);
 
   // not valid
@@ -661,7 +660,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kObject);
   ExpectNotValid(
-      TEST_SOURCE, base::MakeUnique<base::Value>().get(), schema.get(), nullptr,
+      TEST_SOURCE, std::make_unique<base::Value>().get(), schema.get(), nullptr,
       std::string(),
       JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
                                               schema::kObject, schema::kNull));

@@ -4,8 +4,9 @@
 
 #include "components/favicon/core/favicon_driver_impl.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -33,12 +34,12 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
     return;
 
   if (kEnableTouchIcon) {
-    handlers_.push_back(base::MakeUnique<FaviconHandler>(
+    handlers_.push_back(std::make_unique<FaviconHandler>(
         favicon_service_, this, FaviconDriverObserver::NON_TOUCH_LARGEST));
-    handlers_.push_back(base::MakeUnique<FaviconHandler>(
+    handlers_.push_back(std::make_unique<FaviconHandler>(
         favicon_service_, this, FaviconDriverObserver::TOUCH_LARGEST));
   } else {
-    handlers_.push_back(base::MakeUnique<FaviconHandler>(
+    handlers_.push_back(std::make_unique<FaviconHandler>(
         favicon_service_, this, FaviconDriverObserver::NON_TOUCH_16_DIP));
   }
 }

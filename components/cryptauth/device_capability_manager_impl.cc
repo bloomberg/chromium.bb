@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/device_capability_manager_impl.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
@@ -48,7 +50,7 @@ void DeviceCapabilityManagerImpl::SetCapabilityEnabled(
     bool enabled,
     const base::Closure& success_callback,
     const base::Callback<void(const std::string&)>& error_callback) {
-  pending_requests_.emplace(base::MakeUnique<Request>(
+  pending_requests_.emplace(std::make_unique<Request>(
       RequestType::SET_CAPABILITY_ENABLED, Capability::CAPABILITY_UNLOCK_KEY,
       public_key, enabled, success_callback, error_callback));
   ProcessRequestQueue();
@@ -60,7 +62,7 @@ void DeviceCapabilityManagerImpl::FindEligibleDevicesForCapability(
                               const std::vector<IneligibleDevice>&)>&
         success_callback,
     const base::Callback<void(const std::string&)>& error_callback) {
-  pending_requests_.emplace(base::MakeUnique<Request>(
+  pending_requests_.emplace(std::make_unique<Request>(
       RequestType::FIND_ELIGIBLE_DEVICES_FOR_CAPABILITY,
       Capability::CAPABILITY_UNLOCK_KEY, success_callback, error_callback));
   ProcessRequestQueue();
@@ -71,7 +73,7 @@ void DeviceCapabilityManagerImpl::IsCapabilityPromotable(
     Capability capability,
     const base::Callback<void(bool)>& success_callback,
     const base::Callback<void(const std::string&)>& error_callback) {
-  pending_requests_.emplace(base::MakeUnique<Request>(
+  pending_requests_.emplace(std::make_unique<Request>(
       RequestType::IS_CAPABILITY_PROMOTABLE, capability, public_key,
       success_callback, error_callback));
   ProcessRequestQueue();

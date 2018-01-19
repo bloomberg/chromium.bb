@@ -4,19 +4,20 @@
 
 #include "components/assist_ranker/ranker_model.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 
 namespace assist_ranker {
 
-RankerModel::RankerModel() : proto_(base::MakeUnique<RankerModelProto>()) {}
+RankerModel::RankerModel() : proto_(std::make_unique<RankerModelProto>()) {}
 
 RankerModel::~RankerModel() {}
 
 // static
 std::unique_ptr<RankerModel> RankerModel::FromString(const std::string& data) {
-  auto model = base::MakeUnique<RankerModel>();
+  auto model = std::make_unique<RankerModel>();
   if (!model->mutable_proto()->ParseFromString(data))
     return nullptr;
   return model;

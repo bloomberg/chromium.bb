@@ -4,12 +4,12 @@
 
 #include "components/domain_reliability/monitor.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"
@@ -273,7 +273,7 @@ DomainReliabilityMonitor::CreateContextForConfig(
   DCHECK(config);
   DCHECK(config->IsValid());
 
-  return base::MakeUnique<DomainReliabilityContext>(
+  return std::make_unique<DomainReliabilityContext>(
       time_.get(), scheduler_params_, upload_reporter_string_,
       &last_network_change_time_, upload_allowed_callback_, &dispatcher_,
       uploader_.get(), std::move(config));
