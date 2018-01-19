@@ -1511,9 +1511,6 @@ extern const char kArcUsbHostDescription[];
 extern const char kArcVpnName[];
 extern const char kArcVpnDescription[];
 
-extern const char kAshDisableV1AppBackButtonName[];
-extern const char kAshDisableV1AppBackButtonDescription[];
-
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 
