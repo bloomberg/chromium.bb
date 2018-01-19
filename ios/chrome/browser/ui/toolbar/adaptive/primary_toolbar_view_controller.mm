@@ -6,6 +6,9 @@
 
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,6 +34,12 @@
   } else {
     self.view.topSafeAnchor = self.topLayoutGuide.bottomAnchor;
   }
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
+  self.view.toolsMenuButton.constraintPriority = kPrimaryToolbarButtonPriority;
 }
 
 #pragma mark - Property accessors
