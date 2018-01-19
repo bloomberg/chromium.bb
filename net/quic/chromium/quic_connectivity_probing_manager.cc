@@ -4,6 +4,7 @@
 
 #include "net/quic/chromium/quic_connectivity_probing_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
@@ -46,6 +47,7 @@ QuicConnectivityProbingManager::QuicConnectivityProbingManager(
     : delegate_(delegate),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       retry_count_(0),
+      probe_start_time_(base::TimeTicks()),
       task_runner_(task_runner),
       weak_factory_(this) {
   retransmit_timer_.SetTaskRunner(task_runner_);
@@ -94,6 +96,7 @@ void QuicConnectivityProbingManager::CancelProbingIfAny() {
   writer_.reset();
   reader_.reset();
   retry_count_ = 0;
+  probe_start_time_ = base::TimeTicks();
   initial_timeout_ = base::TimeDelta();
   retransmit_timer_.Stop();
 }
@@ -121,6 +124,7 @@ void QuicConnectivityProbingManager::StartProbing(
   socket_ = std::move(socket);
   writer_ = std::move(writer);
   net_log_ = net_log;
+  probe_start_time_ = base::TimeTicks::Now();
 
   // |this| will listen to all socket write events for the probing
   // packet writer.
@@ -165,7 +169,12 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
       base::Bind(&NetLogQuicConnectivityProbingResponseCallback, network_,
                  &local_address, &peer_address_));
 
-  // TODO(zhongyi): add metrics collection.
+  UMA_HISTOGRAM_COUNTS_100("Net.QuicSession.ProbingRetryCountUntilSuccess",
+                           retry_count_);
+
+  UMA_HISTOGRAM_TIMES("Net.QuicSession.ProbingTimeInMillisecondsUntilSuccess",
+                      base::TimeTicks::Now() - probe_start_time_);
+
   // Notify the delegate that the probe succeeds and reset everything.
   delegate_->OnProbeNetworkSucceeded(network_, self_address, std::move(socket_),
                                      std::move(writer_), std::move(reader_));
