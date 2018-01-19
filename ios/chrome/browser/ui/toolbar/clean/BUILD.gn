@@ -120,6 +120,7 @@ source_set("toolbar_components_ui") {
     "//ios/chrome/browser/ui/toolbar:resource_macros",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
+    "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_components_ios",

@@ -50,6 +50,14 @@ extern const CGFloat kBackButtonImageInset;
 extern const CGFloat kForwardButtonImageInset;
 extern const CGFloat kLeadingLocationBarButtonImageInset;
 
+// Priorities for the constraints between the buttons and their layout guide.
+// The constraint priorities for the different toolbars' buttons are not the
+// same to prevent conflicting constraints when a layout guide is changing the
+// button to which it is constrained (there might be a short time during which
+// it is constrained to both buttons).
+extern const UILayoutPriority kPrimaryToolbarButtonPriority;
+extern const UILayoutPriority kSecondaryToolbarButtonPriority;
+
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;
 
