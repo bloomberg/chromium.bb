@@ -152,16 +152,20 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
       ciphertext.substr(strlen(kEncryptionVersionPrefix));
 
   crypto::SymmetricKey* encryption_key = GetEncryptionKey();
-  if (!encryption_key)
+  if (!encryption_key) {
+    VLOG(1) << "Decryption failed: could not get the key";
     return false;
+  }
 
   std::string iv(kCCBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(encryption_key, crypto::Encryptor::CBC, iv))
     return false;
 
-  if (!encryptor.Decrypt(raw_ciphertext, plaintext))
+  if (!encryptor.Decrypt(raw_ciphertext, plaintext)) {
+    VLOG(1) << "Decryption failed";
     return false;
+  }
 
   return true;
 }
