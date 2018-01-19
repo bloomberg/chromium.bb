@@ -12,7 +12,8 @@
 
 namespace device {
 
-// Must match VRViewerType in enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class VrViewerType {
   GVR_UNKNOWN = 0,
   GVR_CARDBOARD = 1,
@@ -23,6 +24,14 @@ enum class VrViewerType {
   OPENVR_VIVE = 21,
   OPENVR_RIFT_CV1 = 22,
   VIEWER_TYPE_COUNT,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class XrRuntimeAvailable {
+  NONE = 0,
+  OPENVR = 1,
+  COUNT,
 };
 
 const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
