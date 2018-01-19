@@ -18,6 +18,7 @@
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
 
@@ -85,7 +86,7 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RG_88:
       return GL_RG;
     case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_8888:  // See https://crbug.com/595948.
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
       return GL_RGBA;
@@ -93,8 +94,9 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::BGRX_1010102:
-      // CGLTexImageIOSurface2D() (and OpenGL ES 3.0, for the case) support only
-      // GL_RGBA despite the hardware ignoring it.
+      // Technically we should use GL_RGB but CGLTexImageIOSurface2D() (and
+      // OpenGL ES 3.0, for the case) support only GL_RGBA (the hardware ignores
+      // the alpha channel anyway), see https://crbug.com/797347.
       return GL_RGBA;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
@@ -123,7 +125,7 @@ GLenum DataFormat(gfx::BufferFormat format) {
       return GL_RG;
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBA_8888:  // See https://crbug.com/533677#c6.
     case gfx::BufferFormat::BGRX_1010102:
       return GL_BGRA;
     case gfx::BufferFormat::RGBA_F16:
@@ -140,7 +142,7 @@ GLenum DataFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
 
@@ -175,7 +177,7 @@ GLenum DataType(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
 
@@ -219,7 +221,8 @@ bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
   DCHECK(!io_surface_);
 
   if (!ValidInternalFormat(internalformat_)) {
-    LOG(ERROR) << "Invalid internalformat: " << internalformat_;
+    LOG(ERROR) << "Invalid internalformat: "
+               << GLEnums::GetStringEnum(internalformat_);
     return false;
   }
 
