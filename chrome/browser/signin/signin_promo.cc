@@ -275,17 +275,10 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
 }
 
 GURL GetSigninURLForDice(Profile* profile, const std::string& email) {
-  GURL url;
-  if (signin::GetAccountConsistencyMethod() ==
-      signin::AccountConsistencyMethod::kDicePrepareMigration) {
-    // Add account does not support an email hint, so the email will not be
-    // autofilled when the Dice prepare migration is enabled.
-    url = GaiaUrls::GetInstance()->add_account_url();
-  } else {
-    url = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
-    if (!email.empty())
-      url = net::AppendQueryParameter(url, "email_hint", email);
-  }
+  DCHECK(signin::IsDicePrepareMigrationEnabled());
+  GURL url = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
+  if (!email.empty())
+    url = net::AppendQueryParameter(url, "email_hint", email);
   // Pass www.gooogle.com as the continue URL as otherwise Gaia navigates to
   // myaccount which may be very confusing for the user.
   return net::AppendQueryParameter(

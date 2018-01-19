@@ -438,29 +438,6 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
   EXPECT_EQ(account_id, enable_sync_account_id_);
 }
 
-// Checks that the delegate is always called to enable sync as soon as the
-// refresh token is fetched when prepare DICE migration is enabled.
-TEST_F(DiceResponseHandlerTest, SigninEnableSyncAlwaysForPrepareDiceMigration) {
-  signin::ScopedAccountConsistencyDicePrepareMigration scoped_dice;
-  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
-  const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = account_tracker_service_.PickAccountIdForAccount(
-      account_info.gaia_id, account_info.email);
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(account_id));
-  dice_response_handler_->ProcessDiceHeader(
-      dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
-  // Check that a GaiaAuthFetcher has been created.
-  ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
-  // Simulate GaiaAuthFetcher success.
-  signin_client_.consumer_->OnClientOAuthSuccess(
-      GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10,
-                                          false /* is_child_account */));
-  // Check that the token has been inserted in the token service.
-  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
-  // Check that delegate was not called to enable sync.
-  EXPECT_EQ(account_id, enable_sync_account_id_);
-}
-
 TEST_F(DiceResponseHandlerTest, Timeout) {
   signin::ScopedAccountConsistencyDice scoped_dice;
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);

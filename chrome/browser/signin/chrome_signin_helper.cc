@@ -298,7 +298,7 @@ void ProcessDiceHeaderUIThread(
   bool is_sync_signin_tab = false;
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
   if (signin::IsDicePrepareMigrationEnabled() && tab_helper) {
-    is_sync_signin_tab = tab_helper->should_start_sync_after_web_signin();
+    is_sync_signin_tab = true;
     access_point = tab_helper->signin_access_point();
     reason = tab_helper->signin_reason();
   }

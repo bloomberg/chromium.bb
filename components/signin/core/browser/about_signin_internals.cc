@@ -173,9 +173,6 @@ std::string GetAccountConsistencyDescription() {
     case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
       return "DICE fixing auth errors";
     case signin::AccountConsistencyMethod::kDicePrepareMigration:
-      return "DICE preparing migration";
-    case signin::AccountConsistencyMethod::
-        kDicePrepareMigrationChromeSyncEndpoint:
       return "DICE preparing migration with Chrome sync Gaia endpoint";
     case signin::AccountConsistencyMethod::kDiceMigration:
       return "DICE migration";

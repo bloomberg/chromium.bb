@@ -148,13 +148,9 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
       dice_response_handler_(dice_response_handler),
       timeout_closure_(
           base::Bind(&DiceResponseHandler::DiceTokenFetcher::OnTimeout,
-                     base::Unretained(this))) {
+                     base::Unretained(this))),
+      should_enable_sync_(false) {
   DCHECK(dice_response_handler_);
-  // When DICE migration is enabled, Chrome is not using the Gaia chrome sync
-  // endpoint when the user is signing in to Chrome. So the delegate must be
-  // asked to start syncing as soon as the refresh token is received.
-  should_enable_sync_ = signin::GetAccountConsistencyMethod() ==
-                        signin::AccountConsistencyMethod::kDicePrepareMigration;
   if (signin::IsDicePrepareMigrationEnabled()) {
     account_reconcilor_lock_ =
         base::MakeUnique<AccountReconcilor::Lock>(account_reconcilor);
