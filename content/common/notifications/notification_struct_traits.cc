@@ -171,4 +171,13 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
          ValidateData(platform_notification_data->data);
 }
 
+// static
+bool StructTraits<blink::mojom::NotificationResourcesDataView,
+                  content::NotificationResources>::
+    Read(blink::mojom::NotificationResourcesDataView in,
+         content::NotificationResources* out) {
+  return in.ReadImage(&out->image) && in.ReadIcon(&out->notification_icon) &&
+         in.ReadBadge(&out->badge) && in.ReadActionIcons(&out->action_icons);
+}
+
 }  // namespace mojo

@@ -44,7 +44,9 @@ class NotificationManager final
       V8NotificationPermissionCallback* deprecated_callback);
 
   // Shows a notification that is not tied to any service worker.
-  void DisplayNonPersistentNotification(const WebNotificationData&);
+  void DisplayNonPersistentNotification(
+      const WebNotificationData&,
+      std::unique_ptr<WebNotificationResources>);
 
   virtual void Trace(blink::Visitor*);
 

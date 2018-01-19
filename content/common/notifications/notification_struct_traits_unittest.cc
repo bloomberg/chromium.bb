@@ -12,9 +12,28 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/notifications/notification.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+SkBitmap CreateBitmap(int width, int height, SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  return bitmap;
+}
+
+// Returns true if |lhs| and |rhs| have the same width and height and the
+// pixel at position (0, 0) is the same color in both.
+bool ImagesShareDimensionsAndColor(const SkBitmap& lhs, const SkBitmap& rhs) {
+  return lhs.width() == rhs.width() && lhs.height() == rhs.height() &&
+         lhs.getColor(0, 0) == rhs.getColor(0, 0);
+}
+
+}  // namespace
 
 TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   PlatformNotificationData notification_data;
@@ -187,4 +206,45 @@ TEST(NotificationStructTraitsTest, DataExceedsMaximumSize) {
       mojo::test::SerializeAndDeserialize<blink::mojom::NotificationData>(
           &notification_data, &platform_notification_data));
 }
+
+TEST(NotificationStructTraitsTest, NotificationResourcesRoundtrip) {
+  NotificationResources resources;
+
+  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
+  resources.notification_icon = CreateBitmap(100, 50, SK_ColorGREEN);
+  resources.badge = CreateBitmap(20, 10, SK_ColorBLUE);
+
+  resources.action_icons.resize(2);
+  resources.action_icons[0] = CreateBitmap(10, 10, SK_ColorLTGRAY);
+  resources.action_icons[1] = CreateBitmap(11, 11, SK_ColorDKGRAY);
+
+  NotificationResources roundtrip_resources;
+
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<blink::mojom::NotificationResources>(
+          &resources, &roundtrip_resources));
+
+  ASSERT_FALSE(roundtrip_resources.image.empty());
+  EXPECT_TRUE(ImagesShareDimensionsAndColor(resources.image,
+                                            roundtrip_resources.image));
+
+  ASSERT_FALSE(roundtrip_resources.notification_icon.empty());
+  EXPECT_TRUE(ImagesShareDimensionsAndColor(
+      resources.notification_icon, roundtrip_resources.notification_icon));
+
+  ASSERT_FALSE(roundtrip_resources.badge.empty());
+  EXPECT_TRUE(ImagesShareDimensionsAndColor(resources.badge,
+                                            roundtrip_resources.badge));
+
+  ASSERT_EQ(resources.action_icons.size(),
+            roundtrip_resources.action_icons.size());
+
+  for (size_t i = 0; i < roundtrip_resources.action_icons.size(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Action icon index: %zd", i));
+    ASSERT_FALSE(roundtrip_resources.action_icons[i].empty());
+    EXPECT_TRUE(ImagesShareDimensionsAndColor(
+        resources.action_icons[i], roundtrip_resources.action_icons[i]));
+  }
+}
+
 }  // namespace content

@@ -15,6 +15,8 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/notification.mojom-blink.h"
+#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
 
@@ -106,6 +108,31 @@ struct PLATFORM_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
 
   static bool Read(blink::mojom::NotificationDataDataView,
                    blink::WebNotificationData* output);
+};
+
+template <>
+struct PLATFORM_EXPORT StructTraits<blink::mojom::NotificationResourcesDataView,
+                                    blink::WebNotificationResources> {
+  static const SkBitmap& image(
+      const blink::WebNotificationResources& resources) {
+    return resources.image;
+  }
+
+  static const SkBitmap& icon(
+      const blink::WebNotificationResources& resources) {
+    return resources.icon;
+  }
+
+  static const SkBitmap& badge(
+      const blink::WebNotificationResources& resources) {
+    return resources.badge;
+  }
+
+  static base::span<const SkBitmap> action_icons(
+      const blink::WebNotificationResources&);
+
+  static bool Read(blink::mojom::NotificationResourcesDataView,
+                   blink::WebNotificationResources* output);
 };
 
 }  // namespace mojo

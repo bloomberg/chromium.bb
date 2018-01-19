@@ -12,6 +12,7 @@
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/common/string16_struct_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/WebKit/public/platform/modules/notifications/notification.mojom.h"
 #include "url/gurl.h"
 #include "url/mojo/url_gurl_struct_traits.h"
@@ -149,6 +150,32 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
   static bool Read(
       blink::mojom::NotificationDataDataView notification_data,
       content::PlatformNotificationData* platform_notification_data);
+};
+
+template <>
+struct CONTENT_EXPORT StructTraits<blink::mojom::NotificationResourcesDataView,
+                                   content::NotificationResources> {
+  static const SkBitmap& image(
+      const content::NotificationResources& resources) {
+    return resources.image;
+  }
+
+  static const SkBitmap& icon(const content::NotificationResources& resources) {
+    return resources.notification_icon;
+  }
+
+  static const SkBitmap& badge(
+      const content::NotificationResources& resources) {
+    return resources.badge;
+  }
+
+  static const std::vector<SkBitmap>& action_icons(
+      const content::NotificationResources& resources) {
+    return resources.action_icons;
+  }
+
+  static bool Read(blink::mojom::NotificationResourcesDataView in,
+                   content::NotificationResources* out);
 };
 
 }  // namespace mojo

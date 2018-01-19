@@ -256,4 +256,32 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
   return true;
 }
 
+// static
+base::span<const SkBitmap>
+StructTraits<blink::mojom::NotificationResourcesDataView,
+             blink::WebNotificationResources>::
+    action_icons(const blink::WebNotificationResources& resources) {
+  return base::make_span(resources.action_icons.Data(),
+                         resources.action_icons.size());
+}
+
+// static
+bool StructTraits<blink::mojom::NotificationResourcesDataView,
+                  blink::WebNotificationResources>::
+    Read(blink::mojom::NotificationResourcesDataView notification_resources,
+         blink::WebNotificationResources* out) {
+  // Cannot read to |out| directly because it expects a WebVector (see above).
+  Vector<SkBitmap> action_icons;
+
+  if (!notification_resources.ReadImage(&out->image) ||
+      !notification_resources.ReadIcon(&out->icon) ||
+      !notification_resources.ReadBadge(&out->badge) ||
+      !notification_resources.ReadActionIcons(&action_icons)) {
+    return false;
+  }
+
+  out->action_icons = action_icons;
+  return true;
+}
+
 }  // namespace mojo
