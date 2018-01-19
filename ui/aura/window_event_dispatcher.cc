@@ -204,15 +204,22 @@ void WindowEventDispatcher::HoldPointerMoves() {
 void WindowEventDispatcher::ReleasePointerMoves() {
   --move_hold_count_;
   DCHECK_GE(move_hold_count_, 0);
-  if (!move_hold_count_ && held_move_event_) {
-    // We don't want to call DispatchHeldEvents directly, because this might be
-    // called from a deep stack while another event, in which case dispatching
-    // another one may not be safe/expected.  Instead we post a task, that we
-    // may cancel if HoldPointerMoves is called again before it executes.
-    base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-        FROM_HERE, base::Bind(
-          base::IgnoreResult(&WindowEventDispatcher::DispatchHeldEvents),
-          held_event_factory_.GetWeakPtr()));
+  if (!move_hold_count_) {
+    if (held_move_event_) {
+      // We don't want to call DispatchHeldEvents directly, because this might
+      // be called from a deep stack while another event, in which case
+      // dispatching another one may not be safe/expected.  Instead we post a
+      // task, that we may cancel if HoldPointerMoves is called again before it
+      // executes.
+      base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+          FROM_HERE,
+          base::BindOnce(
+              base::IgnoreResult(&WindowEventDispatcher::DispatchHeldEvents),
+              held_event_factory_.GetWeakPtr()));
+    } else {
+      if (did_dispatch_held_move_event_callback_)
+        base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
+    }
   }
   TRACE_EVENT_ASYNC_END0("ui", "WindowEventDispatcher::HoldPointerMoves", this);
 }
@@ -765,8 +772,11 @@ void WindowEventDispatcher::OnWindowInitialized(Window* window) {
 // WindowEventDispatcher, private:
 
 ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
-  if (!held_repostable_event_ && !held_move_event_)
+  if (!held_repostable_event_ && !held_move_event_) {
+    if (did_dispatch_held_move_event_callback_)
+      base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
     return DispatchDetails();
+  }
 
   CHECK(!dispatching_held_event_);
 
@@ -798,8 +808,12 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
       held_move_event_.reset();
   }
 
-  if (!dispatch_details.dispatcher_destroyed)
+  if (!dispatch_details.dispatcher_destroyed) {
     dispatching_held_event_ = nullptr;
+    if (did_dispatch_held_move_event_callback_)
+      base::ResetAndReturn(&did_dispatch_held_move_event_callback_).Run();
+  }
+
   return dispatch_details;
 }
 

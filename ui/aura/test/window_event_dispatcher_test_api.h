@@ -19,6 +19,10 @@ class WindowEventDispatcherTestApi {
 
   bool HoldingPointerMoves() const;
 
+  // If pointer moves are being held, this method waits until they're
+  // dispatched.
+  void WaitUntilPointerMovesDispatched();
+
  private:
   WindowEventDispatcher* dispatcher_;
 

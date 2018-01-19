@@ -293,6 +293,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   bool skip_ime_;
 
+  // This callback is called when the held move event is dispatched, or when
+  // pointer moves are released and there is no held move event.
+  base::OnceClosure did_dispatch_held_move_event_callback_;
+
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_;
 
