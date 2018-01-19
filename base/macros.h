@@ -70,6 +70,16 @@ namespace base {
 // Use these to declare and define a static local variable (static T;) so that
 // it is leaked so that its destructors are not called at exit.  This is
 // thread-safe.
+//
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DEPRECATED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Please don't use this macro. Use a function-local static of type
+// base::NoDestructor<T> instead:
+//
+// Factory& Factory::GetInstance() {
+//   static base::NoDestructor<Factory> instance;
+//   return *instance;
+// }
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define CR_DEFINE_STATIC_LOCAL(type, name, arguments) \
   static type& name = *new type arguments
 
