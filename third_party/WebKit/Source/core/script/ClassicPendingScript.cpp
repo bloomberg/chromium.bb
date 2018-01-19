@@ -148,6 +148,8 @@ void ClassicPendingScript::CancelStreaming() {
   streamer_->Cancel();
   streamer_ = nullptr;
   streamer_done_.Reset();
+  is_currently_streaming_ = false;
+  DCHECK(!IsCurrentlyStreaming());
 }
 
 void ClassicPendingScript::NotifyFinished(Resource* resource) {
@@ -323,6 +325,13 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
   }
 
   // Streaming-related post conditions:
+
+  // To help diagnose crbug.com/78426, we'll temporarily add some DCHECKs
+  // that are a subset of the DCHECKs below:
+  if (IsCurrentlyStreaming()) {
+    DCHECK(streamer_);
+    DCHECK(!streamer_->IsFinished());
+  }
 
   // IsCurrentlyStreaming should match what streamer_ thinks.
   DCHECK_EQ(IsCurrentlyStreaming(), streamer_ && !streamer_->IsFinished());
