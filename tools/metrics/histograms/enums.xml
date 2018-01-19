@@ -17679,6 +17679,8 @@ Called by update_net_error_codes.py.-->
   <int value="2344" label="ScrollToFragmentFailWithMixed"/>
   <int value="2345" label="ScrollToFragmentFailWithInvalidEncoding"/>
   <int value="2346" label="RTCPeerConnectionWithActiveCsp"/>
+  <int value="2347" label="ImageDecodingAttribute"/>
+  <int value="2348" label="ImageDecodeAPI"/>
 </enum>
 
 <enum name="FeedbackSource">

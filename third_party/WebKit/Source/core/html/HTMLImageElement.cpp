@@ -276,6 +276,7 @@ void HTMLImageElement::ParseAttribute(
     }
   } else if (name == decodingAttr &&
              RuntimeEnabledFeatures::ImageDecodingAttributeEnabled()) {
+    UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else {
     HTMLElement::ParseAttribute(params);
