@@ -34,7 +34,8 @@ namespace ntp_snippets {
 // to the content suggestions server and does the bookkeeping for the data used
 // for subscription. Bookkeeping is required to detect any change (e.g. the
 // token render invalid), and resubscribe accordingly.
-class SubscriptionManagerImpl : public SubscriptionManager {
+class SubscriptionManagerImpl : public SubscriptionManager,
+                                public SigninManagerBase::Observer {
  public:
   SubscriptionManagerImpl(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
@@ -64,7 +65,11 @@ class SubscriptionManagerImpl : public SubscriptionManager {
   static void ClearProfilePrefs(PrefService* pref_service);
 
  private:
-  class SigninObserver;
+  // SigninManagerBase::Observer implementation.
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   void SigninStatusChanged();
 
@@ -100,7 +105,6 @@ class SubscriptionManagerImpl : public SubscriptionManager {
 
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;
-  std::unique_ptr<SigninObserver> signin_observer_;
   OAuth2TokenService* access_token_service_;
 
   const std::string locale_;

@@ -30,34 +30,6 @@ const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 }  // namespace
 
-class SubscriptionManagerImpl::SigninObserver
-    : public SigninManagerBase::Observer {
- public:
-  SigninObserver(SigninManagerBase* signin_manager,
-                 const base::Closure& signin_status_changed_callback)
-      : signin_manager_(signin_manager),
-        signin_status_changed_callback_(signin_status_changed_callback) {
-    signin_manager_->AddObserver(this);
-  }
-
-  ~SigninObserver() override { signin_manager_->RemoveObserver(this); }
-
- private:
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override {
-    signin_status_changed_callback_.Run();
-  }
-
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override {
-    signin_status_changed_callback_.Run();
-  }
-
-  SigninManagerBase* const signin_manager_;
-  base::Closure signin_status_changed_callback_;
-};
-
 SubscriptionManagerImpl::SubscriptionManagerImpl(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
@@ -72,17 +44,17 @@ SubscriptionManagerImpl::SubscriptionManagerImpl(
       pref_service_(pref_service),
       variations_service_(variations_service),
       signin_manager_(signin_manager),
-      signin_observer_(std::make_unique<SigninObserver>(
-          signin_manager,
-          base::Bind(&SubscriptionManagerImpl::SigninStatusChanged,
-                     base::Unretained(this)))),
       access_token_service_(access_token_service),
       locale_(locale),
       api_key_(api_key),
       subscribe_url_(subscribe_url),
-      unsubscribe_url_(unsubscribe_url) {}
+      unsubscribe_url_(unsubscribe_url) {
+  signin_manager_->AddObserver(this);
+}
 
-SubscriptionManagerImpl::~SubscriptionManagerImpl() = default;
+SubscriptionManagerImpl::~SubscriptionManagerImpl() {
+  signin_manager_->RemoveObserver(this);
+}
 
 void SubscriptionManagerImpl::Subscribe(const std::string& subscription_token) {
   // If there is a request in flight, cancel it.
@@ -261,6 +233,17 @@ void SubscriptionManagerImpl::DidUnsubscribe(const std::string& new_token,
       // TODO(mamir): Handle failure.
       break;
   }
+}
+
+void SubscriptionManagerImpl::GoogleSigninSucceeded(
+    const std::string& account_id,
+    const std::string& username) {
+  SigninStatusChanged();
+}
+
+void SubscriptionManagerImpl::GoogleSignedOut(const std::string& account_id,
+                                              const std::string& username) {
+  SigninStatusChanged();
 }
 
 void SubscriptionManagerImpl::SigninStatusChanged() {
