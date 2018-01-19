@@ -566,10 +566,6 @@ if (is_android) {
       "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
-    data = [
-      "$root_out_dir/v8_context_snapshot.bin",
-    ]
-
     if (is_win) {
       deps += [ "//sandbox" ]
 

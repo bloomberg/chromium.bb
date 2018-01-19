@@ -29,6 +29,18 @@
 #include "gin/v8_initializer.h"
 #endif
 
+namespace {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
+#else
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kDefault;
+#endif
+#endif
+}
+
 class TestBlinkPlatformSupport : public blink::Platform {
  public:
   TestBlinkPlatformSupport()
@@ -84,11 +96,8 @@ void BlinkMediaTestSuite::Initialize() {
   media::InitializeMediaLibrary();
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
   gin::V8Initializer::LoadV8Natives();
-#endif
-#ifdef USE_V8_CONTEXT_SNAPSHOT
-  gin::V8Initializer::LoadV8ContextSnapshot();
 #endif
 
 // Initialize mojo firstly to enable Blink initialization to use it.

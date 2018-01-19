@@ -32,6 +32,18 @@
 
 namespace content {
 
+namespace {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
+#else
+constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+    gin::V8Initializer::V8SnapshotFileType::kDefault;
+#endif
+#endif
+}
+
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
     : base::TestSuite(argc, argv) {
 }
@@ -40,12 +52,8 @@ void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
   gin::V8Initializer::LoadV8Natives();
-#endif
-
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-  gin::V8Initializer::LoadV8ContextSnapshot();
 #endif
 
 #if defined(OS_ANDROID) && !defined(USE_AURA)

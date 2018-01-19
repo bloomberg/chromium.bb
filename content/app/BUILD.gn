@@ -16,6 +16,7 @@ template("implement_content_app") {
   extra_configs = [
     "//build/config/compiler:wexit_time_destructors",
     "//content:content_implementation",
+    "//tools/v8_context_snapshot:use_v8_context_snapshot",
     "//v8:external_startup_data",
   ]
 
