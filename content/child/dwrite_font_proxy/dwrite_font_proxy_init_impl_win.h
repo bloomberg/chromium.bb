@@ -21,10 +21,6 @@ CONTENT_EXPORT void SetDWriteFontProxySenderForTesting(
 // Cleans up the fake dwrite font proxy connection factory.
 CONTENT_EXPORT void ClearDWriteFontProxySenderForTesting();
 
-// Allows ChildThreadImpl to register a thread safe sender to DWriteFontProxy
-// so we don't depend on being on the main thread to use DWriteFontProxy.
-CONTENT_EXPORT void UpdateDWriteFontProxySender(mojom::DWriteFontProxyPtrInfo);
-
 }  // namespace content
 
 #endif  // CONTENT_CHILD_DWRITE_FONT_PROXY_DWRITE_FONT_PROXY_INIT_IMPL_WIN_H_
