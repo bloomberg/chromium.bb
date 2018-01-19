@@ -109,6 +109,12 @@ void StreamTextureWrapperImpl::ForwardStreamTextureForSurfaceRequest(
   stream_texture_proxy_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
+void StreamTextureWrapperImpl::ClearReceivedFrameCBOnAnyThread() {
+  // Safely stop StreamTextureProxy from signaling the arrival of new frames.
+  if (stream_texture_proxy_)
+    stream_texture_proxy_->ClearReceivedFrameCB();
+}
+
 void StreamTextureWrapperImpl::SetCurrentFrameInternal(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
@@ -176,15 +182,9 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
 }
 
 void StreamTextureWrapperImpl::Destroy() {
-  // Safely stop StreamTextureProxy from signaling the arrival of new frames.
-  // |stream_texture_proxy_| will be cleared on the main task runner, and its
-  // deleter will destroy the underlying object on the right task runner.
-  if (stream_texture_proxy_)
-    stream_texture_proxy_->ClearReceivedFrameCB();
-
   if (!main_task_runner_->BelongsToCurrentThread()) {
     // base::Unretained is safe here because this function is the only one that
-    // can can call delete.
+    // can call delete.
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&StreamTextureWrapperImpl::Destroy, base::Unretained(this)));

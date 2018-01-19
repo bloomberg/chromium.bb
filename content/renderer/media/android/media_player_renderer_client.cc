@@ -22,7 +22,13 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
       compositor_task_runner_(std::move(compositor_task_runner)),
       weak_factory_(this) {}
 
-MediaPlayerRendererClient::~MediaPlayerRendererClient() {}
+MediaPlayerRendererClient::~MediaPlayerRendererClient() {
+  // Clearing the STW's callback into |this| must happen first. Otherwise, the
+  // underlying StreamTextureProxy can callback into OnFrameAvailable() on the
+  // |compositor_task_runner_|, while we are destroying |this|.
+  // See https://crbug.com/688466.
+  stream_texture_wrapper_->ClearReceivedFrameCBOnAnyThread();
+}
 
 void MediaPlayerRendererClient::Initialize(
     media::MediaResource* media_resource,

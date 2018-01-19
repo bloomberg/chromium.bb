@@ -83,6 +83,10 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token) override;
 
+  // Clears the |received_frame_cb| passed in Initialize().
+  // Should be safe to call from any thread.
+  void ClearReceivedFrameCBOnAnyThread() override;
+
  private:
   StreamTextureWrapperImpl(
       bool enable_texture_copy,

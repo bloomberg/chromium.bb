@@ -41,6 +41,10 @@ class MEDIA_EXPORT StreamTextureWrapper {
   virtual void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token) = 0;
 
+  // Clears the |received_frame_cb| passed in Initialize().
+  // Should be safe to call from any thread.
+  virtual void ClearReceivedFrameCBOnAnyThread() = 0;
+
   struct Deleter {
     inline void operator()(StreamTextureWrapper* ptr) const { ptr->Destroy(); }
   };
