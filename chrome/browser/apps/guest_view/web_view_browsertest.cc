@@ -3685,13 +3685,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInaccessibleResource) {
 
 // Tests that a webview inside an iframe can load and that it is destroyed when
 // the iframe is detached.
-// Flakily times out under MSan. crbug.com/793422
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_LoadWebviewInsideIframe DISABLED_LoadWebviewInsideIframe
-#else
-#define MAYBE_LoadWebviewInsideIframe LoadWebviewInsideIframe
-#endif
-IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_LoadWebviewInsideIframe) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInsideIframe) {
   TestHelper("testLoadWebviewInsideIframe",
              "web_view/load_webview_inside_iframe", NEEDS_TEST_SERVER);
 
