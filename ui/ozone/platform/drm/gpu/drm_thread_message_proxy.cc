@@ -26,10 +26,6 @@ void DrmThreadMessageProxy::SetDrmThread(DrmThread* thread) {
 
 void DrmThreadMessageProxy::OnFilterAdded(IPC::Channel* channel) {
   sender_ = channel;
-
-  // The DRM thread needs to be started late since we need to wait for the
-  // sandbox to start.
-  drm_thread_->Start();
 }
 
 bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {

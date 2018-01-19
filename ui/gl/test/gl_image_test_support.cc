@@ -24,6 +24,7 @@ void GLImageTestSupport::InitializeGL(
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
+  params.using_mojo = true;
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
