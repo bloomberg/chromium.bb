@@ -302,6 +302,9 @@
     <message name="IDS_PAGE_INFO_USB_DEVICE_LABEL" desc="The label used to describe a USB device that the user has granted the site permission to access.">
       <ph name="DEVICE_NAME">$1<ex>Android Phone</ex></ph>
     </message>
+    <message name="IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL" desc="The label displayed underneath IDS_PAGE_INFO_USB_DEVICE_LABEL to inform the user that the device name listed is a USB device.">
+      USB device
+    </message>
     <message name="IDS_PAGE_INFO_DELETE_USB_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a USB device that the user previously granted to the site.">
       Revoke access
     </message>

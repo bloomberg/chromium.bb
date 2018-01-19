@@ -319,7 +319,7 @@ PermissionSelectorRow::PermissionSelectorRow(
     layout->SkipColumns(1);
     views::Label* permission_decision_reason = new views::Label(reason);
     permission_decision_reason->SetEnabledColor(
-        PageInfoUI::GetPermissionDecisionTextColor());
+        PageInfoUI::GetSecondaryTextColor());
 
     views::ColumnSet* column_set =
         layout->GetColumnSet(PageInfoBubbleView::kPermissionColumnSetId);
