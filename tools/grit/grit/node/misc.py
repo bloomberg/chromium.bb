@@ -335,7 +335,6 @@ class GritNode(base.Node):
       'source_lang_id' : 'en',
       'enc_check' : constants.ENCODING_CHECK,
       'tc_project' : 'NEED_TO_SET_tc_project_ATTRIBUTE',
-      'output_all_resource_defines': 'true',
       'rc_header_format': None
     }
 
@@ -426,18 +425,6 @@ class GritNode(base.Node):
     """Returns the base directory, as set in the .grd file.
     """
     return self.attrs['base_dir']
-
-  def SetShouldOutputAllResourceDefines(self, value):
-    """Overrides the value of output_all_resource_defines found in the grd file.
-    """
-    self.attrs['output_all_resource_defines'] = 'true' if value else 'false'
-
-  def ShouldOutputAllResourceDefines(self):
-    """Returns true if all resource defines should be output, false if
-    defines for resources not emitted to resource files should be
-    skipped.
-    """
-    return self.attrs['output_all_resource_defines'] == 'true'
 
   def GetRcHeaderFormat(self):
     return self.attrs['rc_header_format']

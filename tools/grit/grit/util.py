@@ -320,7 +320,7 @@ def PathFromRoot(path):
 
 
 def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
-                        run_gatherers=False, output_all_resource_defines=True):
+                        run_gatherers=False):
   '''Parse a skeleton .grd file and return it, for use in unit tests.
 
   Args:
@@ -335,9 +335,7 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     base_dir = PathFromRoot('.')
   lines = ['<?xml version="1.0" encoding="UTF-8"?>']
   lines.append(('<grit latest_public_release="2" current_release="3" '
-                'source_lang_id="en" base_dir="{}" '
-                'output_all_resource_defines="{}">').format(
-                base_dir, str(output_all_resource_defines).lower()))
+                'source_lang_id="en" base_dir="{}">').format(base_dir))
   if '<outputs>' in body:
     lines.append(body)
   else:

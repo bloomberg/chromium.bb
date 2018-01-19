@@ -119,12 +119,6 @@ def DoMain(argv):
   parser.add_option("-E", action="append", dest="build_env", default=[])
   parser.add_option("-p", action="store", dest="predetermined_ids_file")
   parser.add_option("-w", action="append", dest="whitelist_files", default=[])
-  parser.add_option("--output-all-resource-defines", action="store_true",
-                    dest="output_all_resource_defines", default=True,
-                    help="Unused")
-  parser.add_option("--no-output-all-resource-defines", action="store_false",
-                    dest="output_all_resource_defines", default=True,
-                    help="Unused")
   parser.add_option("-f", dest="ids_file", default="")
   parser.add_option("-t", dest="target_platform", default=None)
 
