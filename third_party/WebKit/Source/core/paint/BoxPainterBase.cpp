@@ -608,6 +608,40 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                            scrolled_paint_rect);
 }
 
+void BoxPainterBase::PaintFillLayerTextFillBox(
+    GraphicsContext& context,
+    const BoxPainterBase::FillLayerInfo& info,
+    Image* image,
+    SkBlendMode composite_op,
+    const BackgroundImageGeometry& geometry,
+    const LayoutRect& rect,
+    const LayoutRect& scrolled_paint_rect) {
+  // First figure out how big the mask has to be. It should be no bigger
+  // than what we need to actually render, so we should intersect the dirty
+  // rect with the border box of the background.
+  IntRect mask_rect = PixelSnappedIntRect(rect);
+
+  // We draw the background into a separate layer, to be later masked with
+  // yet another layer holding the text content.
+  GraphicsContextStateSaver background_clip_state_saver(context, false);
+  background_clip_state_saver.Save();
+  context.Clip(mask_rect);
+  context.BeginLayer(1, composite_op);
+
+  PaintFillLayerBackground(context, info, image, SkBlendMode::kSrcOver,
+                           geometry, scrolled_paint_rect);
+
+  // Create the text mask layer and draw the text into the mask. We do this by
+  // painting using a special paint phase that signals to InlineTextBoxes that
+  // they should just add their contents to the clip.
+  context.BeginLayer(1, SkBlendMode::kDstIn);
+
+  PaintTextClipMask(context, mask_rect, scrolled_paint_rect.Location());
+
+  context.EndLayer();  // Text mask layer.
+  context.EndLayer();  // Background layer.
+}
+
 FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
     const BoxPainterBase::FillLayerInfo& info,
     const FillLayer& bg_layer,

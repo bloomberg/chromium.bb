@@ -71,33 +71,9 @@ bool BoxModelObjectPainter::
          box_model_ == paint_info.PaintContainer();
 }
 
-void BoxModelObjectPainter::PaintFillLayerTextFillBox(
-    GraphicsContext& context,
-    const BoxPainterBase::FillLayerInfo& info,
-    Image* image,
-    SkBlendMode composite_op,
-    const BackgroundImageGeometry& geometry,
-    const LayoutRect& rect,
-    LayoutRect scrolled_paint_rect) {
-  // First figure out how big the mask has to be. It should be no bigger
-  // than what we need to actually render, so we should intersect the dirty
-  // rect with the border box of the background.
-  IntRect mask_rect = PixelSnappedIntRect(rect);
-
-  // We draw the background into a separate layer, to be later masked with
-  // yet another layer holding the text content.
-  GraphicsContextStateSaver background_clip_state_saver(context, false);
-  background_clip_state_saver.Save();
-  context.Clip(mask_rect);
-  context.BeginLayer(1, composite_op);
-
-  PaintFillLayerBackground(context, info, image, SkBlendMode::kSrcOver,
-                           geometry, scrolled_paint_rect);
-
-  // Create the text mask layer and draw the text into the mask. We do this by
-  // painting using a special paint phase that signals to InlineTextBoxes that
-  // they should just add their contents to the clip.
-  context.BeginLayer(1, SkBlendMode::kDstIn);
+void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
+                                              const IntRect& mask_rect,
+                                              const LayoutPoint& paint_offset) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
@@ -107,19 +83,16 @@ void BoxModelObjectPainter::PaintFillLayerTextFillBox(
       local_offset -= LogicalOffsetOnLine(*flow_box_);
     }
     const RootInlineBox& root = flow_box_->Root();
-    flow_box_->Paint(paint_info, scrolled_paint_rect.Location() - local_offset,
-                     root.LineTop(), root.LineBottom());
+    flow_box_->Paint(paint_info, paint_offset - local_offset, root.LineTop(),
+                     root.LineBottom());
   } else {
     // FIXME: this should only have an effect for the line box list within
     // |box_model_|. Change this to create a LineBoxListPainter directly.
     LayoutSize local_offset = box_model_.IsBox()
                                   ? ToLayoutBox(&box_model_)->LocationOffset()
                                   : LayoutSize();
-    box_model_.Paint(paint_info, scrolled_paint_rect.Location() - local_offset);
+    box_model_.Paint(paint_info, paint_offset - local_offset);
   }
-
-  context.EndLayer();  // Text mask layer.
-  context.EndLayer();  // Background layer.
 }
 
 FloatRoundedRect BoxModelObjectPainter::GetBackgroundRoundedRect(

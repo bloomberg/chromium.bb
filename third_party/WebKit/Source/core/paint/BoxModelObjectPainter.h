@@ -17,7 +17,6 @@ class InlineFlowBox;
 class LayoutRect;
 struct PaintInfo;
 class LayoutBoxModelObject;
-class Image;
 
 // BoxModelObjectPainter is a class that can paint either a LayoutBox or a
 // LayoutInline and allows code sharing between block and inline block painting.
@@ -39,13 +38,9 @@ class BoxModelObjectPainter : public BoxPainterBase {
       const FillLayer&,
       BackgroundBleedAvoidance) const override;
 
-  void PaintFillLayerTextFillBox(GraphicsContext&,
-                                 const BoxPainterBase::FillLayerInfo&,
-                                 Image*,
-                                 SkBlendMode composite_op,
-                                 const BackgroundImageGeometry&,
-                                 const LayoutRect&,
-                                 LayoutRect scrolled_paint_rect) override;
+  void PaintTextClipMask(GraphicsContext&,
+                         const IntRect& mask_rect,
+                         const LayoutPoint& paint_offset) override;
   LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                       const BoxPainterBase::FillLayerInfo&,
                                       const LayoutRect&) override;

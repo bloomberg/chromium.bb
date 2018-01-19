@@ -537,40 +537,13 @@ bool NGBoxFragmentPainter::IntersectsPaintRect(
   return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
 }
 
-void NGBoxFragmentPainter::PaintFillLayerTextFillBox(
-    GraphicsContext& context,
-    const BoxPainterBase::FillLayerInfo& info,
-    Image* image,
-    SkBlendMode composite_op,
-    const BackgroundImageGeometry& geometry,
-    const LayoutRect& rect,
-    LayoutRect scrolled_paint_rect) {
-  // First figure out how big the mask has to be. It should be no bigger
-  // than what we need to actually render, so we should intersect the dirty
-  // rect with the border box of the background.
-  IntRect mask_rect = PixelSnappedIntRect(rect);
-
-  // We draw the background into a separate layer, to be later masked with
-  // yet another layer holding the text content.
-  GraphicsContextStateSaver background_clip_state_saver(context, false);
-  background_clip_state_saver.Save();
-  context.Clip(mask_rect);
-  context.BeginLayer();
-
-  PaintFillLayerBackground(context, info, image, composite_op, geometry,
-                           scrolled_paint_rect);
-
-  // Create the text mask layer and draw the text into the mask. We do this by
-  // painting using a special paint phase that signals to InlineTextBoxes that
-  // they should just add their contents to the clip.
-  context.BeginLayer(1, SkBlendMode::kDstIn);
+void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
+                                             const IntRect& mask_rect,
+                                             const LayoutPoint& paint_offset) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
 
   // TODO(eae): Paint text child fragments.
-
-  context.EndLayer();  // Text mask layer.
-  context.EndLayer();  // Background layer.
 }
 
 LayoutRect NGBoxFragmentPainter::AdjustForScrolledContent(
