@@ -100,10 +100,6 @@ class CORE_EXPORT EventPath final
   void CalculateAdjustedTargets();
   void CalculateTreeOrderAndSetNearestAncestorClosedTree();
 
-  bool ShouldStopEventPath(EventTarget& current_target,
-                           EventTarget& current_related_target,
-                           const Node& target);
-
   void Shrink(size_t new_size) {
     DCHECK(!window_event_context_);
     node_event_contexts_.Shrink(new_size);
@@ -111,7 +107,8 @@ class CORE_EXPORT EventPath final
 
   void RetargetRelatedTarget(const Node& related_target_node);
 
-  void ShrinkForRelatedTarget(const Node& target);
+  void ShrinkForRelatedTarget(const Node& event_target_node,
+                              const Node& event_related_target_node);
 
   void AdjustTouchList(const TouchList*,
                        HeapVector<Member<TouchList>> adjusted_touch_list,
