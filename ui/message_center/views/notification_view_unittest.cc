@@ -671,6 +671,7 @@ TEST_F(NotificationViewTest, SlideOutPinned) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   notification()->set_pinned(true);
+  notification_view()->SetIsNested();
   UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
@@ -682,12 +683,11 @@ TEST_F(NotificationViewTest, SlideOutPinned) {
   EXPECT_FALSE(IsRemoved(notification_id));
 }
 
-TEST_F(NotificationViewTest, SlideOutForceDisablePinned) {
+TEST_F(NotificationViewTest, PopupsCantPin) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   notification()->set_pinned(true);
-  notification_view()->set_force_disable_pinned();
   UpdateNotificationViews();
   std::string notification_id = notification()->id();
 
@@ -711,13 +711,14 @@ TEST_F(NotificationViewTest, SlideOutForceDisablePinned) {
 }
 
 TEST_F(NotificationViewTest, Pinned) {
+  // Notifications are popups by default (can't be pinned).
   notification()->set_pinned(true);
   UpdateNotificationViews();
-  EXPECT_EQ(NULL, GetCloseButton());
-
-  notification_view()->set_force_disable_pinned();
-  UpdateNotificationViews();
   EXPECT_TRUE(GetCloseButton());
+
+  notification_view()->SetIsNested();
+  UpdateNotificationViews();
+  EXPECT_FALSE(GetCloseButton());
 }
 
 #endif // defined(OS_CHROMEOS)

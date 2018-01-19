@@ -170,10 +170,6 @@ void MessagePopupCollection::UpdateWidgets() {
     // Create top-level notification.
     MessageView* view = MessageViewFactory::Create(notification, true);
     observed_views_.Add(view);
-#if defined(OS_CHROMEOS)
-    // Disable pinned feature since this is a popup.
-    view->set_force_disable_pinned();
-#endif  // defined(OS_CHROMEOS)
     view->SetExpanded(true);
 
 #if !defined(OS_CHROMEOS)

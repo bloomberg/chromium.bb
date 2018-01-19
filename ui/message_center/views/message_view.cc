@@ -96,8 +96,7 @@ MessageView::MessageView(const Notification& notification)
   UpdateWithNotification(notification);
 }
 
-MessageView::~MessageView() {
-}
+MessageView::~MessageView() {}
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
@@ -274,7 +273,9 @@ void MessageView::OnSlideOut() {
 }
 
 bool MessageView::GetPinned() const {
-  return pinned_ && !force_disable_pinned_;
+  // Only nested notifications can be pinned. Standalones (i.e. popups) can't
+  // be.
+  return pinned_ && is_nested_;
 }
 
 void MessageView::OnCloseButtonPressed() {
