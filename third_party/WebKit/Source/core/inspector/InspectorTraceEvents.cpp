@@ -42,6 +42,7 @@
 #include "platform/wtf/DynamicAnnotations.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextPosition.h"
+#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
@@ -687,6 +688,8 @@ std::unique_ptr<TracedValue> InspectorSendRequestEvent::Data(
     LocalFrame* frame,
     const ResourceRequest& request) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
+  if (request.GetFrameType() != network::mojom::RequestContextFrameType::kNone)
+    request_id = IdentifiersFactory::LoaderId(loader);
 
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
