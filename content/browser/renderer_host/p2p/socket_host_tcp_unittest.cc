@@ -13,6 +13,7 @@
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,15 +99,18 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_.ip_address, packet3, options, 0);
+  socket_host_->Send(dest_.ip_address, packet3, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet1.size()));
@@ -131,15 +135,18 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_.ip_address, packet3, options, 0);
+  socket_host_->Send(dest_.ip_address, packet3, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string received_data;
   received_data.append(IntToSize(packet1.size()));
@@ -178,7 +185,8 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_.ip_address, packet, options, 0);
+  socket_host_->Send(dest_.ip_address, packet, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -189,7 +197,8 @@ TEST_F(P2PSocketHostTcpTest, SetOptionAfterError) {
   EXPECT_CALL(sender_,
               Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
-  socket_host_->Send(dest_.ip_address, {1, 2, 3, 4}, rtc::PacketOptions(), 0);
+  socket_host_->Send(dest_.ip_address, {1, 2, 3, 4}, rtc::PacketOptions(), 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Verify that SetOptions() fails, but doesn't crash.
@@ -219,7 +228,8 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   // Now we should be able to send any data to |dest_|.
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_.ip_address, packet, options, 0);
+  socket_host_->Send(dest_.ip_address, packet, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet.size()));
@@ -244,11 +254,13 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
 
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   base::RunLoop().RunUntilIdle();
 
@@ -279,7 +291,8 @@ TEST_F(P2PSocketHostTcpTest, PacketIdIsPropagated) {
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
 
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   base::RunLoop().RunUntilIdle();
 
@@ -313,7 +326,8 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   CreateRandomPacket(&packet);
   // Make it a RTP packet.
   *reinterpret_cast<uint16_t*>(&*packet.begin()) = base::HostToNet16(0x8000);
-  socket_host_->Send(dest_.ip_address, packet, options, 0);
+  socket_host_->Send(dest_.ip_address, packet, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string expected_data;
   expected_data.append(IntToSize(packet.size()));
@@ -334,15 +348,18 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_.ip_address, packet3, options, 0);
+  socket_host_->Send(dest_.ip_address, packet3, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string expected_data;
   expected_data.append(packet1.begin(), packet1.end());
@@ -364,15 +381,18 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest_.ip_address, packet3, options, 0);
+  socket_host_->Send(dest_.ip_address, packet3, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::string received_data;
   received_data.append(packet1.begin(), packet1.end());
@@ -408,7 +428,8 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest_.ip_address, packet, options, 0);
+  socket_host_->Send(dest_.ip_address, packet, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(0U, sent_data_.size());
 }
@@ -428,11 +449,13 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+  socket_host_->Send(dest_.ip_address, packet1, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest_.ip_address, packet2, options, 0);
+  socket_host_->Send(dest_.ip_address, packet2, options, 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
 
   base::RunLoop().RunUntilIdle();
 

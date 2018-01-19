@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -251,15 +252,15 @@ TEST_F(P2PSocketHostUdpTest, SendStunNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest1_, packet1, options, 0);
+  socket_host_->Send(dest1_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest1_, packet2, options, 0);
+  socket_host_->Send(dest1_, packet2, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest1_, packet3, options, 0);
+  socket_host_->Send(dest1_, packet3, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(sent_packets_.size(), 3U);
   ASSERT_EQ(sent_packets_[0].second, packet1);
@@ -277,7 +278,7 @@ TEST_F(P2PSocketHostUdpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(sent_packets_.size(), 0U);
 }
@@ -288,7 +289,8 @@ TEST_F(P2PSocketHostUdpTest, SetOptionAfterError) {
   EXPECT_CALL(sender_,
               Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
-  socket_host_->Send(dest1_, {1, 2, 3, 4}, rtc::PacketOptions(), 0);
+  socket_host_->Send(dest1_, {1, 2, 3, 4}, rtc::PacketOptions(), 0,
+                     TRAFFIC_ANNOTATION_FOR_TESTS);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Verify that SetOptions() fails, but doesn't crash.
@@ -315,7 +317,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunRequest) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(1U, sent_packets_.size());
   ASSERT_EQ(dest1_, sent_packets_[0].first);
@@ -341,7 +343,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponse) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   ASSERT_EQ(1U, sent_packets_.size());
   ASSERT_EQ(dest1_, sent_packets_[0].first);
@@ -365,7 +367,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
   EXPECT_CALL(sender_,
               Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 // Verify throttler not allowing unlimited sending of ICE messages to
@@ -381,12 +383,12 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimit) {
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size() * 2);
-  socket_host_->Send(dest1_, packet1, options, 0);
-  socket_host_->Send(dest2_, packet1, options, 0);
+  socket_host_->Send(dest1_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2222);
   // This packet must be dropped by the throttler.
-  socket_host_->Send(dest3, packet1, options, 0);
+  socket_host_->Send(dest3, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   ASSERT_EQ(sent_packets_.size(), 2U);
 }
 
@@ -412,21 +414,21 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size());
   // |dest1_| is known address, throttling will not be applied.
-  socket_host_->Send(dest1_, packet1, options, 0);
+  socket_host_->Send(dest1_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   // Trying to send the packet to dest1_ in the same window. It should go.
-  socket_host_->Send(dest1_, packet1, options, 0);
+  socket_host_->Send(dest1_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Throttler should allow this packet to go through.
-  socket_host_->Send(dest2_, packet1, options, 0);
+  socket_host_->Send(dest2_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2223);
   // This packet will be dropped, as limit only for a single packet.
-  socket_host_->Send(dest3, packet1, options, 0);
+  socket_host_->Send(dest3, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   net::IPEndPoint dest4 = ParseAddress(kTestIpAddress1, 2224);
   // This packet should also be dropped.
-  socket_host_->Send(dest4, packet1, options, 0);
+  socket_host_->Send(dest4, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   // |dest1| is known, we can send as many packets to it.
-  socket_host_->Send(dest1_, packet1, options, 0);
+  socket_host_->Send(dest1_, packet1, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   ASSERT_EQ(sent_packets_.size(), 4U);
 }
 
@@ -451,42 +453,42 @@ TEST_F(P2PSocketHostUdpTest, MAYBE_ThrottlingStopsAtExpectedTimes) {
   CreateStunRequest(&packet);
   // Limit of 2 packets per second.
   throttler_.SetSendIceBandwidth(packet.size() * 2);
-  socket_host_->Send(dest1_, packet, options, 0);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(2U, sent_packets_.size());
 
   // These packets must be dropped by the throttler since the limit was hit and
   // the time hasn't advanced.
-  socket_host_->Send(dest1_, packet, options, 0);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(2U, sent_packets_.size());
 
   // Advance the time to 0.999 seconds; throttling should still just barely be
   // active.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 999);
-  socket_host_->Send(dest1_, packet, options, 0);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(2U, sent_packets_.size());
 
   // After hitting the second mark, we should be able to send again.
   // Add an extra millisecond to account for rounding errors.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1001);
-  socket_host_->Send(dest1_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(3U, sent_packets_.size());
 
   // This time, hit the limit in the middle of the period.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1500);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(4U, sent_packets_.size());
 
   // Again, throttling should be active until the next second mark.
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 1999);
-  socket_host_->Send(dest1_, packet, options, 0);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(4U, sent_packets_.size());
   fake_clock_.SetTimeNanos(rtc::kNumNanosecsPerMillisec * 2002);
-  socket_host_->Send(dest1_, packet, options, 0);
-  socket_host_->Send(dest2_, packet, options, 0);
+  socket_host_->Send(dest1_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
+  socket_host_->Send(dest2_, packet, options, 0, TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(6U, sent_packets_.size());
 }
 
