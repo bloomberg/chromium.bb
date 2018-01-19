@@ -52,23 +52,13 @@ cr.define('extensions', function() {
       canLoadUnpacked: Boolean,
 
       /** @private */
-      expanded_: {
-        type: Boolean,
-        value: false,
-      },
+      expanded_: Boolean,
     },
 
     behaviors: [I18nBehavior],
 
     hostAttributes: {
       role: 'banner',
-    },
-
-    /** @override */
-    ready: function() {
-      this.$.devDrawer.addEventListener('transitionend', () => {
-        this.delegate.setProfileInDevMode(this.$['dev-mode'].checked);
-      });
     },
 
     /**
@@ -79,26 +69,42 @@ cr.define('extensions', function() {
       return this.devModeControlledByPolicy || this.isSupervised;
     },
 
-    /** @private */
-    onDevModeToggleChange_: function() {
-      const drawer = this.$.devDrawer;
-      if (drawer.hidden) {
-        drawer.hidden = false;
-        // Requesting the offsetTop will cause a reflow (to account for hidden).
-        /** @suppress {suspiciousCode} */ drawer.offsetTop;
-      }
-      this.expanded_ = !this.expanded_;
-
+    /**
+     * @param {!CustomEvent} e
+     * @private
+     */
+    onDevModeToggleChange_: function(e) {
+      this.delegate.setProfileInDevMode(/** @type {boolean} */ (e.detail));
       chrome.metricsPrivate.recordUserAction(
-          'Options_ToggleDeveloperMode_' +
-          (this.expanded_ ? 'Enabled' : 'Disabled'));
+          'Options_ToggleDeveloperMode_' + (e.detail ? 'Enabled' : 'Disabled'));
     },
 
-    /** @private */
-    onInDevModeChanged_: function() {
-      // Set the initial state.
-      this.expanded_ = this.inDevMode;
-      this.$.devDrawer.hidden = !this.inDevMode;
+    /**
+     * @param {boolean} current
+     * @param {boolean} previous
+     * @private
+     */
+    onInDevModeChanged_: function(current, previous) {
+      const drawer = this.$.devDrawer;
+      if (this.inDevMode) {
+        if (drawer.hidden) {
+          drawer.hidden = false;
+          // Requesting the offsetTop will cause a reflow (to account for
+          // hidden).
+          /** @suppress {suspiciousCode} */ drawer.offsetTop;
+        }
+      } else {
+        if (previous == undefined) {
+          drawer.hidden = true;
+          return;
+        }
+
+        listenOnce(drawer, 'transitionend', e => {
+          if (!this.inDevMode)
+            drawer.hidden = true;
+        });
+      }
+      this.expanded_ = !this.expanded_;
     },
 
     /** @private */
