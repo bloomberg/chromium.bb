@@ -36,6 +36,7 @@
 #include "platform/bindings/DOMWrapperMap.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
@@ -133,7 +134,12 @@ class DOMDataStore {
     DCHECK(!wrapper.IsEmpty());
     if (is_main_world_)
       return object->SetWrapper(isolate, wrapper_type_info, wrapper);
-    return wrapper_map_->Set(object, wrapper_type_info, wrapper);
+    bool updated = wrapper_map_->Set(object, wrapper_type_info, wrapper);
+    if (updated) {
+      ScriptWrappableVisitor::WriteBarrier(isolate, &wrapper_map_.value(),
+                                           object);
+    }
+    return updated;
   }
 
   void MarkWrapper(ScriptWrappable* script_wrappable) {

@@ -6,6 +6,7 @@
 
 #include "platform/Supplementable.h"
 #include "platform/bindings/ActiveScriptWrappableBase.h"
+#include "platform/bindings/DOMWrapperMap.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -232,6 +233,23 @@ void ScriptWrappableVisitor::WriteBarrier(
   visitor->TraceWrappers(dst_object);
 }
 
+void ScriptWrappableVisitor::WriteBarrier(
+    v8::Isolate* isolate,
+    DOMWrapperMap<ScriptWrappable>* wrapper_map,
+    ScriptWrappable* key) {
+  ScriptWrappableVisitor* visitor = CurrentVisitor(isolate);
+  if (!visitor->WrapperTracingInProgress())
+    return;
+  // Conservatively assume that the source object key is marked.
+  visitor->TraceWrappers(wrapper_map, key);
+}
+
+void ScriptWrappableVisitor::TraceWrappers(
+    DOMWrapperMap<ScriptWrappable>* wrapper_map,
+    ScriptWrappable* key) {
+  Visit(wrapper_map, key);
+}
+
 void ScriptWrappableVisitor::Visit(
     const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const {
   // The write barrier may try to mark a wrapper because cleanup is still
@@ -257,6 +275,11 @@ void ScriptWrappableVisitor::Visit(
     verifier_deque_.push_back(WrapperMarkingData(wrapper_descriptor));
   }
 #endif
+}
+
+void ScriptWrappableVisitor::Visit(DOMWrapperMap<ScriptWrappable>* wrapper_map,
+                                   ScriptWrappable* key) {
+  wrapper_map->MarkWrapper(key);
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(
