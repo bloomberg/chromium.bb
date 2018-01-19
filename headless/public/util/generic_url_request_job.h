@@ -143,6 +143,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
+  int64_t GetTotalReceivedBytes() const override;
 
   // URLFetcher::ResultListener implementation:
   void OnFetchStartError(net::Error error) override;
@@ -150,7 +151,8 @@ class HEADLESS_EXPORT GenericURLRequestJob
                        scoped_refptr<net::HttpResponseHeaders> response_headers,
                        const char* body,
                        size_t body_size,
-                       const net::LoadTimingInfo& load_timing_info) override;
+                       const net::LoadTimingInfo& load_timing_info,
+                       size_t total_received_bytes) override;
 
  protected:
   // Request implementation:
@@ -187,6 +189,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
   net::LoadTimingInfo load_timing_info_;
+  size_t total_received_bytes_ = 0;
 
   base::WeakPtrFactory<GenericURLRequestJob> weak_factory_;
 

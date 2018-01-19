@@ -136,12 +136,14 @@ void GenericURLRequestJob::OnFetchComplete(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size,
-    const net::LoadTimingInfo& load_timing_info) {
+    const net::LoadTimingInfo& load_timing_info,
+    size_t total_received_bytes) {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   response_headers_ = response_headers;
   body_ = body;
   body_size_ = body_size;
   load_timing_info_ = load_timing_info;
+  total_received_bytes_ = total_received_bytes;
 
   // Save any cookies from the response.
   if (!(request_->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES) &&
@@ -214,6 +216,10 @@ bool GenericURLRequestJob::GetCharset(std::string* charset) {
 void GenericURLRequestJob::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
   *load_timing_info = load_timing_info_;
+}
+
+int64_t GenericURLRequestJob::GetTotalReceivedBytes() const {
+  return total_received_bytes_;
 }
 
 uint64_t GenericURLRequestJob::GenericURLRequestJob::GetRequestId() const {

@@ -45,7 +45,8 @@ class HEADLESS_EXPORT URLFetcher {
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         const char* body,
         size_t body_size,
-        const net::LoadTimingInfo& load_timing_info) = 0;
+        const net::LoadTimingInfo& load_timing_info,
+        size_t total_received_bytes) = 0;
 
     // Helper function which extracts the headers from |response_data| and calls
     // OnFetchComplete.
@@ -53,7 +54,8 @@ class HEADLESS_EXPORT URLFetcher {
         const GURL& final_url,
         const char* response_data,
         size_t response_data_size,
-        const net::LoadTimingInfo& load_timing_info);
+        const net::LoadTimingInfo& load_timing_info,
+        size_t total_received_bytes);
 
    protected:
     virtual ~ResultListener() {}
