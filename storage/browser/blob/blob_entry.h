@@ -26,9 +26,8 @@ class ShareableBlobDataItem;
 // Represents a blob in BlobStorageRegistry. Exported only for unit tests.
 class STORAGE_EXPORT BlobEntry {
  public:
-  using TransportAllowedCallback =
-      base::Callback<void(BlobStatus,
-                          std::vector<BlobMemoryController::FileCreationInfo>)>;
+  using TransportAllowedCallback = base::OnceCallback<
+      void(BlobStatus, std::vector<BlobMemoryController::FileCreationInfo>)>;
 
   // Records a copy from a referenced blob. Copies happen after referenced blobs
   // are complete & quota for the copies is granted.

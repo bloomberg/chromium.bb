@@ -101,22 +101,22 @@ BlobStatus BlobDataHandle::GetBlobStatus() const {
   return shared_->context_->GetBlobStatus(shared_->uuid_);
 }
 
-void BlobDataHandle::RunOnConstructionComplete(const BlobStatusCallback& done) {
+void BlobDataHandle::RunOnConstructionComplete(BlobStatusCallback done) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (!shared_->context_.get()) {
-    done.Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
+    std::move(done).Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
     return;
   }
-  shared_->context_->RunOnConstructionComplete(shared_->uuid_, done);
+  shared_->context_->RunOnConstructionComplete(shared_->uuid_, std::move(done));
 }
 
-void BlobDataHandle::RunOnConstructionBegin(const BlobStatusCallback& done) {
+void BlobDataHandle::RunOnConstructionBegin(BlobStatusCallback done) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (!shared_->context_.get()) {
-    done.Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
+    std::move(done).Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
     return;
   }
-  shared_->context_->RunOnConstructionBegin(shared_->uuid_, done);
+  shared_->context_->RunOnConstructionBegin(shared_->uuid_, std::move(done));
 }
 
 std::unique_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {
