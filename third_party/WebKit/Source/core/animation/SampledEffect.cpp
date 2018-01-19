@@ -16,6 +16,8 @@ void SampledEffect::Clear() {
   interpolations_.clear();
 }
 
+// Design doc:
+// https://docs.google.com/document/d/1NomOWRrGQHlynQGO64CgdqRPAAEHhi3fSa8sf0Ip6xE
 bool SampledEffect::WillNeverChange() const {
   return !effect_ || !effect_->GetAnimation();
 }
