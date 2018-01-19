@@ -33,7 +33,7 @@ BlobEntry::BuildingState::BuildingState(
     TransportAllowedCallback transport_allowed_callback,
     size_t num_building_dependent_blobs)
     : transport_items_present(transport_items_present),
-      transport_allowed_callback(transport_allowed_callback),
+      transport_allowed_callback(std::move(transport_allowed_callback)),
       num_building_dependent_blobs(num_building_dependent_blobs) {}
 
 BlobEntry::BuildingState::~BuildingState() {

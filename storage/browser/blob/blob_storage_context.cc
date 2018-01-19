@@ -475,30 +475,32 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildPreregisteredBlob(
     const BlobDataBuilder& content,
-    const TransportAllowedCallback& transport_allowed_callback) {
+    TransportAllowedCallback transport_allowed_callback) {
   BlobEntry* entry = registry_.GetEntry(content.uuid());
   DCHECK(entry);
   DCHECK_EQ(BlobStatus::PENDING_CONSTRUCTION, entry->status());
   entry->set_size(0);
 
-  return BuildBlobInternal(entry, content, transport_allowed_callback);
+  return BuildBlobInternal(entry, content,
+                           std::move(transport_allowed_callback));
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
     const BlobDataBuilder& content,
-    const TransportAllowedCallback& transport_allowed_callback) {
+    TransportAllowedCallback transport_allowed_callback) {
   DCHECK(!registry_.HasEntry(content.uuid_));
 
   BlobEntry* entry = registry_.CreateEntry(
       content.uuid(), content.content_type_, content.content_disposition_);
 
-  return BuildBlobInternal(entry, content, transport_allowed_callback);
+  return BuildBlobInternal(entry, content,
+                           std::move(transport_allowed_callback));
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
     BlobEntry* entry,
     const BlobDataBuilder& content,
-    const TransportAllowedCallback& transport_allowed_callback) {
+    TransportAllowedCallback transport_allowed_callback) {
   // This flattens all blob references in the transportion content out and
   // stores the complete item representation in the internal data.
   BlobFlattener flattener(content, entry, &registry_);
@@ -547,8 +549,8 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
 
   auto previous_building_state = std::move(entry->building_state_);
   entry->set_building_state(std::make_unique<BlobEntry::BuildingState>(
-      !flattener.pending_transport_items.empty(), transport_allowed_callback,
-      num_building_dependent_blobs));
+      !flattener.pending_transport_items.empty(),
+      std::move(transport_allowed_callback), num_building_dependent_blobs));
   BlobEntry::BuildingState* building_state = entry->building_state_.get();
   std::swap(building_state->copies, flattener.copies);
   std::swap(building_state->dependent_blobs, dependent_blobs);
@@ -562,9 +564,9 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
     std::swap(building_state->build_completion_callbacks,
               previous_building_state->build_completion_callbacks);
     auto runner = base::ThreadTaskRunnerHandle::Get();
-    for (const auto& callback :
-         previous_building_state->build_started_callbacks)
-      runner->PostTask(FROM_HERE, base::BindOnce(callback, entry->status()));
+    for (auto& callback : previous_building_state->build_started_callbacks)
+      runner->PostTask(FROM_HERE,
+                       base::BindOnce(std::move(callback), entry->status()));
   }
 
   // Break ourselves if we have an error. BuildingState must be set first so the
@@ -683,28 +685,27 @@ BlobStatus BlobStorageContext::GetBlobStatus(const std::string& uuid) const {
   return entry->status();
 }
 
-void BlobStorageContext::RunOnConstructionComplete(
-    const std::string& uuid,
-    const BlobStatusCallback& done) {
+void BlobStorageContext::RunOnConstructionComplete(const std::string& uuid,
+                                                   BlobStatusCallback done) {
   BlobEntry* entry = registry_.GetEntry(uuid);
   DCHECK(entry);
   if (BlobStatusIsPending(entry->status())) {
-    entry->building_state_->build_completion_callbacks.push_back(done);
+    entry->building_state_->build_completion_callbacks.push_back(
+        std::move(done));
     return;
   }
-  done.Run(entry->status());
+  std::move(done).Run(entry->status());
 }
 
-void BlobStorageContext::RunOnConstructionBegin(
-    const std::string& uuid,
-    const BlobStatusCallback& done) {
+void BlobStorageContext::RunOnConstructionBegin(const std::string& uuid,
+                                                BlobStatusCallback done) {
   BlobEntry* entry = registry_.GetEntry(uuid);
   DCHECK(entry);
   if (entry->status() == BlobStatus::PENDING_CONSTRUCTION) {
-    entry->building_state_->build_started_callbacks.push_back(done);
+    entry->building_state_->build_started_callbacks.push_back(std::move(done));
     return;
   }
-  done.Run(entry->status());
+  std::move(done).Run(entry->status());
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::CreateHandle(
@@ -735,20 +736,19 @@ void BlobStorageContext::CancelBuildingBlobInternal(BlobEntry* entry,
   if (entry->building_state_ &&
       entry->building_state_->transport_allowed_callback) {
     transport_allowed_callback =
-        entry->building_state_->transport_allowed_callback;
-    entry->building_state_->transport_allowed_callback.Reset();
+        std::move(entry->building_state_->transport_allowed_callback);
   }
   if (entry->building_state_ &&
       entry->status() == BlobStatus::PENDING_CONSTRUCTION) {
     auto runner = base::ThreadTaskRunnerHandle::Get();
-    for (const auto& callback : entry->building_state_->build_started_callbacks)
-      runner->PostTask(FROM_HERE, base::BindOnce(callback, reason));
+    for (auto& callback : entry->building_state_->build_started_callbacks)
+      runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), reason));
   }
   ClearAndFreeMemory(entry);
   entry->set_status(reason);
   if (transport_allowed_callback) {
-    transport_allowed_callback.Run(
-        reason, std::vector<BlobMemoryController::FileCreationInfo>());
+    std::move(transport_allowed_callback)
+        .Run(reason, std::vector<BlobMemoryController::FileCreationInfo>());
   }
   FinishBuilding(entry);
 }
@@ -825,8 +825,9 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
   memory_controller_.NotifyMemoryItemsUsed(entry->items());
 
   auto runner = base::ThreadTaskRunnerHandle::Get();
-  for (const auto& callback : callbacks)
-    runner->PostTask(FROM_HERE, base::Bind(callback, entry->status()));
+  for (auto& callback : callbacks)
+    runner->PostTask(FROM_HERE,
+                     base::BindOnce(std::move(callback), entry->status()));
 
   for (const auto& shareable_item : entry->items()) {
     DCHECK_NE(network::DataElement::TYPE_BYTES_DESCRIPTION,

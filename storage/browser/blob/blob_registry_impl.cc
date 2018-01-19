@@ -374,9 +374,9 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
     }
   }
 
-  BlobStorageContext::TransportAllowedCallback callback =
-      base::Bind(&BlobUnderConstruction::OnReadyForTransport,
-                 weak_ptr_factory_.GetWeakPtr());
+  auto callback =
+      base::BindRepeating(&BlobUnderConstruction::OnReadyForTransport,
+                          weak_ptr_factory_.GetWeakPtr());
 
   // OnReadyForTransport can be called synchronously, which can call
   // MarkAsFinishedAndDeleteSelf synchronously, so don't access any members

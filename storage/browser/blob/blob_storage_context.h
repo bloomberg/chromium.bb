@@ -99,7 +99,7 @@ class STORAGE_EXPORT BlobStorageContext {
   //   referencing ourself.
   std::unique_ptr<BlobDataHandle> BuildBlob(
       const BlobDataBuilder& input_builder,
-      const TransportAllowedCallback& transport_allowed_callback);
+      TransportAllowedCallback transport_allowed_callback);
 
   // Similar to BuildBlob, but this merely registers a blob that will be built
   // in the future. The caller must later call either BuildPreregisteredBlob
@@ -118,7 +118,7 @@ class STORAGE_EXPORT BlobStorageContext {
   // AddFutureBlob.
   std::unique_ptr<BlobDataHandle> BuildPreregisteredBlob(
       const BlobDataBuilder& input_builder,
-      const TransportAllowedCallback& transport_allowed_callback);
+      TransportAllowedCallback transport_allowed_callback);
 
   // This breaks a blob that is currently being built by using the BuildBlob
   // method above. Any callbacks waiting on this blob, including the
@@ -243,12 +243,12 @@ class STORAGE_EXPORT BlobStorageContext {
 
   // Runs |done| when construction completes with the final status of the blob.
   void RunOnConstructionComplete(const std::string& uuid,
-                                 const BlobStatusCallback& done_callback);
+                                 BlobStatusCallback done_callback);
 
   // Runs |done| when construction begins (when the blob is no longer
   // PENDING_CONSTRUCTION) with the new status of the blob.
   void RunOnConstructionBegin(const std::string& uuid,
-                              const BlobStatusCallback& done_callback);
+                              BlobStatusCallback done_callback);
 
   BlobStorageRegistry* mutable_registry() { return &registry_; }
 
@@ -260,7 +260,7 @@ class STORAGE_EXPORT BlobStorageContext {
   std::unique_ptr<BlobDataHandle> BuildBlobInternal(
       BlobEntry* entry,
       const BlobDataBuilder& input_builder,
-      const TransportAllowedCallback& transport_allowed_callback);
+      TransportAllowedCallback transport_allowed_callback);
 
   std::unique_ptr<BlobDataHandle> CreateHandle(const std::string& uuid,
                                                BlobEntry* entry);

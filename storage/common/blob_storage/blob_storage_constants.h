@@ -131,7 +131,7 @@ enum class BlobStatus {
   LAST = LAST_PENDING
 };
 
-using BlobStatusCallback = base::Callback<void(BlobStatus)>;
+using BlobStatusCallback = base::OnceCallback<void(BlobStatus)>;
 
 // Returns if the status is an error code.
 STORAGE_COMMON_EXPORT bool BlobStatusIsError(BlobStatus status);
