@@ -41,6 +41,7 @@ class PartnerBookmarksReader {
       const base::android::JavaParamRef<jbyteArray>& favicon,
       const base::android::JavaParamRef<jbyteArray>& touchicon,
       jboolean fetch_uncached_favicons_from_server,
+      jint desired_favicon_size_px,
       // Callback<FaviconFetchResult>
       const base::android::JavaParamRef<jobject>& j_callback);
   void PartnerBookmarksCreationComplete(
@@ -83,23 +84,28 @@ class PartnerBookmarksReader {
   void GetFavicon(const GURL& page_url,
                   Profile* profile,
                   bool fallback_to_server,
+                  int desired_favicon_size_px,
                   FaviconFetchedCallback callback);
   void GetFaviconImpl(const GURL& page_url,
                       Profile* profile,
                       bool fallback_to_server,
+                      int desired_favicon_size_px,
                       FaviconFetchedCallback callback);
   void GetFaviconFromCacheOrServer(const GURL& page_url,
                                    bool fallback_to_server,
                                    bool from_server,
+                                   int desired_favicon_size_px,
                                    FaviconFetchedCallback callback);
   void OnGetFaviconFromCacheFinished(
       const GURL& page_url,
       FaviconFetchedCallback callback,
       bool fallback_to_server,
       bool from_server,
+      int desired_favicon_size_px,
       const favicon_base::LargeIconResult& result);
   void OnGetFaviconFromServerFinished(
       const GURL& page_url,
+      int desired_favicon_size_px,
       FaviconFetchedCallback callback,
       favicon_base::GoogleFaviconServerRequestStatus status);
   void OnFaviconFetched(const base::android::JavaRef<jobject>& j_callback,
