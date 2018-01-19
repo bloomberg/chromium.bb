@@ -952,7 +952,7 @@ html[dir='rtl'] #dialog #dialog-close-button {
 }
 
 #dialog #dialog-msg {
-  -webkit-user-select: initial;  /* Allow copying the message. */
+  -webkit-user-select: text;  /* Allow copying the message. */
   cursor: text;
   font-size: 120%;
   max-height: 320px;
