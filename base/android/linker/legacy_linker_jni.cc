@@ -454,6 +454,11 @@ bool LegacyLinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   if (!InitSDKVersionInfo(env))
     return false;
 
+// Disable debugger support when needed. See https://crbug.com/796938
+#if defined(LEGACY_LINKER_DISABLE_DEBUGGER_SUPPORT)
+  crazy_set_debugger_support(false);
+#endif
+
   // Register native methods.
   jclass linker_class;
   if (!InitClassReference(env,

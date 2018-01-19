@@ -197,6 +197,17 @@ class RDebug {
 
   r_debug* GetAddress() { return r_debug_; }
 
+  // Debugger support, which is the default, implies calling the special
+  // hook function r_brk(). Unfortunately, this sometimes results in rare
+  // runtime crashes (see https://crbug.com/796938). This method allows the
+  // client to disable this operation. If |enabled| is false, shared
+  // libraries loaded through the crazy linker will *not* be visible to GDB
+  // (but will continue to appear in stack traces).
+  void SetDebuggerSupport(bool enabled);
+
+  // Return the state of debugger support.
+  bool GetDebuggerSupport() const;
+
  private:
   // Try to find the address of the global _r_debug variable, even
   // though there is no symbol for it. Returns true on success.
@@ -234,12 +245,20 @@ class RDebug {
       (*handler)(this, entry);
   }
 
+  // Call the debugger hook function |r_debug_->r_brk|.
+  // |state| is the value to write to |r_debug_->r_state|
+  // before that. This is done to coordinate with the
+  // debugger when modifications of the global |r_debug_|
+  // list are performed.
+  void CallRBrk(int state);
+
   RDebug(const RDebug&);
   RDebug& operator=(const RDebug&);
 
   r_debug* r_debug_;
   bool init_;
   bool readonly_entries_;
+  bool call_r_brk_;
   rdebug_callback_poster_t post_for_later_execution_;
   void* post_for_later_execution_context_;
 };
