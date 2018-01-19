@@ -11,17 +11,35 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
+#include "public/platform/modules/notifications/WebNotificationResources.h"
 #include "public/platform/modules/notifications/notification.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+
+namespace blink {
 
 namespace {
 
 const char kNotificationBaseUrl[] = "https://example.com/directory/";
+
+SkBitmap CreateBitmap(int width, int height, SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  return bitmap;
 }
 
-namespace blink {
+// Returns true if |lhs| and |rhs| have the same width and height and the
+// pixel at position (0, 0) is the same color in both.
+bool ImagesShareDimensionsAndColor(const SkBitmap& lhs, const SkBitmap& rhs) {
+  return lhs.width() == rhs.width() && lhs.height() == rhs.height() &&
+         lhs.getColor(0, 0) == rhs.getColor(0, 0);
+}
 
-TEST(NotificationStructTraitsTest, Roundtrip) {
+}  // namespace
+
+TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   WebNotificationData notification_data;
   notification_data.title = "Notification Title";
   notification_data.direction = WebNotificationData::kDirectionRightToLeft;
@@ -108,6 +126,49 @@ TEST(NotificationStructTraitsTest, Roundtrip) {
               roundtrip_notification_data.actions[i].icon);
     EXPECT_EQ(notification_data.actions[i].placeholder,
               roundtrip_notification_data.actions[i].placeholder);
+  }
+}
+
+TEST(NotificationStructTraitsTest, NotificationResourcesRoundtrip) {
+  WebNotificationResources resources;
+
+  resources.image = CreateBitmap(300, 100, SK_ColorCYAN);
+  resources.icon = CreateBitmap(80, 100, SK_ColorRED);
+  resources.badge = CreateBitmap(50, 40, SK_ColorGREEN);
+
+  WebVector<SkBitmap> action_icons(static_cast<size_t>(2));
+  action_icons[0] = CreateBitmap(10, 10, SK_ColorLTGRAY);
+  action_icons[1] = CreateBitmap(11, 11, SK_ColorDKGRAY);
+
+  resources.action_icons = action_icons;
+
+  WebNotificationResources roundtrip_resources;
+
+  ASSERT_TRUE(mojom::blink::NotificationResources::Deserialize(
+      mojom::blink::NotificationResources::Serialize(&resources),
+      &roundtrip_resources));
+
+  ASSERT_FALSE(roundtrip_resources.image.empty());
+  EXPECT_TRUE(ImagesShareDimensionsAndColor(resources.image,
+                                            roundtrip_resources.image));
+
+  ASSERT_FALSE(roundtrip_resources.icon.empty());
+  EXPECT_TRUE(
+      ImagesShareDimensionsAndColor(resources.icon, roundtrip_resources.icon));
+
+  ASSERT_FALSE(roundtrip_resources.badge.empty());
+  EXPECT_TRUE(ImagesShareDimensionsAndColor(resources.badge,
+                                            roundtrip_resources.badge));
+
+  ASSERT_EQ(resources.action_icons.size(),
+            roundtrip_resources.action_icons.size());
+
+  for (size_t i = 0; i < roundtrip_resources.action_icons.size(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Action icon index: %zd", i));
+
+    ASSERT_FALSE(roundtrip_resources.action_icons[i].empty());
+    EXPECT_TRUE(ImagesShareDimensionsAndColor(
+        resources.action_icons[i], roundtrip_resources.action_icons[i]));
   }
 }
 

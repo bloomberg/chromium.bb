@@ -350,6 +350,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
   EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
+
+  // Small images (badges) are only supported on Android.
   EXPECT_TRUE(all_options_notification.small_image().IsEmpty());
 
   EXPECT_THAT(all_options_notification.vibration_pattern(),
@@ -1072,7 +1074,18 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   EXPECT_TRUE(notification.never_timeout());
   EXPECT_DOUBLE_EQ(621046800000., notification.timestamp().ToJsTime());
 
-  // TODO(https://crbug.com/595685): Pass resources via mojo and test them here.
+#if !defined(OS_MACOSX)
+  EXPECT_FALSE(notification.image().IsEmpty());
+  EXPECT_EQ(kIconWidth, notification.image().Width());
+  EXPECT_EQ(kIconHeight, notification.image().Height());
+#endif
+
+  EXPECT_FALSE(notification.icon().IsEmpty());
+  EXPECT_EQ(kIconWidth, notification.icon().Width());
+  EXPECT_EQ(kIconHeight, notification.icon().Height());
+
+  // Small images (badges) are only supported on Android.
+  EXPECT_TRUE(notification.small_image().IsEmpty());
 
   // Test that notifications with the same tag replace each other and have
   // identical ids.
