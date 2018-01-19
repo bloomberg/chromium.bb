@@ -51,9 +51,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void UpdateStyleToIndicateDefaultStatus() override;
   void StateChanged(ButtonState old_state) override;
 
- private:
+ protected:
   MdTextButton(ButtonListener* listener, int button_context);
 
+ private:
   void UpdatePadding();
   void UpdateColors();
 

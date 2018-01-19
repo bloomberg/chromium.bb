@@ -24,7 +24,8 @@ class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
   ~BookmarkBubbleSignInDelegate() override;
 
   // BubbleSyncPromoDelegate:
-  void OnSignInLinkClicked() override;
+  void ShowBrowserSignin() override;
+  void EnableSync(const AccountInfo& account) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

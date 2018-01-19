@@ -59,7 +59,7 @@ void BookmarkBubbleSignInDelegateTest::ReplaceBlank(Browser* browser) {
 void BookmarkBubbleSignInDelegateTest::SignInBrowser(Browser* browser) {
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser));
-  delegate->OnSignInLinkClicked();
+  delegate->ShowBrowserSignin();
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
   browser()->tab_strip_model()->CloseAllTabs();
   content::RunAllPendingInMessageLoop();
 
-  delegate->OnSignInLinkClicked();
+  delegate->ShowBrowserSignin();
 
   int tab_count = extra_browser->tab_strip_model()->count();
 #if !defined(OS_CHROMEOS)

@@ -185,41 +185,6 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(const Profile* profile) {
                             : BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR;
 }
 
-// Returns the list of all accounts that have a token. The default account in
-// the Gaia cookies will be the first account in the list.
-// TODO(tangltom): Move this code to chrome/browser/ui/signin and add a unit
-// test.
-std::vector<AccountInfo> GetAccountsForProfile(Profile* profile) {
-  // Fetch account ids for accounts that have a token.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  std::vector<std::string> account_ids = token_service->GetAccounts();
-  // Fetch accounts in the Gaia cookies.
-  GaiaCookieManagerService* cookie_manager_service =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
-  std::vector<gaia::ListedAccount> cookie_accounts;
-  bool gaia_accounts_stale = !cookie_manager_service->ListAccounts(
-      &cookie_accounts, nullptr, "ProfileChooserView");
-  UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
-                        gaia_accounts_stale);
-  // Fetch account information for each id and make sure that the first account
-  // in the list matches the first account in the Gaia cookies (if available).
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  std::string gaia_default_account_id =
-      cookie_accounts.empty() ? "" : cookie_accounts[0].id;
-  std::vector<AccountInfo> accounts;
-  for (const std::string& account_id : account_ids) {
-    AccountInfo account_info =
-        account_tracker_service->GetAccountInfo(account_id);
-    if (account_id == gaia_default_account_id)
-      accounts.insert(accounts.begin(), account_info);
-    else
-      accounts.push_back(account_info);
-  }
-  return accounts;
-}
-
 }  // namespace
 
 // A title card with one back button left aligned and one label center aligned.
@@ -1039,7 +1004,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 views::View* ProfileChooserView::CreateDiceSigninView() {
   // Fetch signed in GAIA web accounts.
   std::vector<AccountInfo> accounts =
-      GetAccountsForProfile(browser_->profile());
+      signin_ui_util::GetAccountsForDicePromos(browser_->profile());
 
   // Create a view that holds an illustration and a promo, which includes a
   // button. The illustration should slightly overlap with the promo at the
