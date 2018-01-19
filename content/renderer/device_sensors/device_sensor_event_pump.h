@@ -178,12 +178,12 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
       default_config.set_frequency(kDefaultPumpFrequencyHz);
 
-      sensor.set_connection_error_handler(
-          base::Bind(&SensorEntry::HandleSensorError, base::Unretained(this)));
+      sensor.set_connection_error_handler(base::BindOnce(
+          &SensorEntry::HandleSensorError, base::Unretained(this)));
       sensor->ConfigureReadingChangeNotifications(false /* disabled */);
       sensor->AddConfiguration(
-          default_config, base::Bind(&SensorEntry::OnSensorAddConfiguration,
-                                     base::Unretained(this)));
+          default_config, base::BindOnce(&SensorEntry::OnSensorAddConfiguration,
+                                         base::Unretained(this)));
     }
 
     // Mojo callback for Sensor::AddConfiguration().
@@ -233,9 +233,9 @@ class CONTENT_EXPORT DeviceSensorEventPump
     void Start(device::mojom::SensorProvider* sensor_provider) {
       if (sensor_state == SensorState::NOT_INITIALIZED) {
         sensor_state = SensorState::INITIALIZING;
-        sensor_provider->GetSensor(
-            type,
-            base::Bind(&SensorEntry::OnSensorCreated, base::Unretained(this)));
+        sensor_provider->GetSensor(type,
+                                   base::BindOnce(&SensorEntry::OnSensorCreated,
+                                                  base::Unretained(this)));
       } else if (sensor_state == SensorState::SUSPENDED) {
         sensor->Resume();
         sensor_state = SensorState::ACTIVE;
