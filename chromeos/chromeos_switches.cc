@@ -662,9 +662,9 @@ bool IsZipArchiverUnpackerEnabled() {
 }
 
 bool IsZipArchiverPackerEnabled() {
-  // Enabled by default.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableZipArchiverPacker);
+  // Disabled by default.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableZipArchiverPacker);
 }
 
 bool IsSigninFrameClientCertsEnabled() {

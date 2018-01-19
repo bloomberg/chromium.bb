@@ -348,8 +348,8 @@ var CommandHandler = function(fileManager, selectionHandler) {
       this.updateAvailability.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
-      'disable-zip-archiver-packer', function(disabled) {
-        CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
+      'enable-zip-archiver-packer', function(enabled) {
+        CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = enabled;
       }.bind(this));
 };
 
