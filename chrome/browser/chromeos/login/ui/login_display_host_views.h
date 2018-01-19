@@ -70,6 +70,10 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   AuthenticateUserCallback on_authenticated_;
 
   std::unique_ptr<ExistingUserController> existing_user_controller_;
+
+  // Called after host deletion.
+  std::vector<base::OnceClosure> completion_callbacks_;
+
   base::WeakPtrFactory<LoginDisplayHostViews> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostViews);
