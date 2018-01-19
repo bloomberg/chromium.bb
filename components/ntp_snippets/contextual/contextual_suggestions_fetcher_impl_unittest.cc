@@ -20,6 +20,7 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,14 +118,16 @@ class ContextualSuggestionsFetcherTest
     fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
         std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
+    identity_manager_ = std::make_unique<identity::IdentityManager>(
+        test_utils_.fake_signin_manager(), fake_token_service_.get());
     fetcher_ = std::make_unique<ContextualSuggestionsFetcherImpl>(
-        test_utils_.fake_signin_manager(), fake_token_service_.get(),
-        std::move(request_context_getter), test_utils_.pref_service(),
-        base::Bind(&ParseJson));
+        identity_manager_.get(), std::move(request_context_getter),
+        test_utils_.pref_service(), base::BindRepeating(&ParseJson));
     fake_token_service_->AddDiagnosticsObserver(this);
   }
 
   ~ContextualSuggestionsFetcherTest() override {
+    identity_manager_.reset();
     fake_token_service_->RemoveDiagnosticsObserver(this);
   }
 
@@ -133,12 +136,8 @@ class ContextualSuggestionsFetcherTest
   }
 
   void InitializeFakeCredentials() {
-#if defined(OS_CHROMEOS)
-    test_utils_.fake_signin_manager()->SignIn(kTestEmail);
-#else
-    test_utils_.fake_signin_manager()->SignIn(kTestEmail, "user", "password");
-#endif
-    fake_token_service_->GetDelegate()->UpdateCredentials(kTestEmail, "token");
+    identity_manager_->SetPrimaryAccountSynchronouslyForTests(
+        kTestEmail, kTestEmail, "token");
   }
 
   void IssueOAuth2Token() {
@@ -180,6 +179,9 @@ class ContextualSuggestionsFetcherTest
   }
 
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
+
+  // TODO(blundell): Convert this test to use IdentityTestEnvironment.
+  std::unique_ptr<identity::IdentityManager> identity_manager_;
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   std::unique_ptr<ContextualSuggestionsFetcherImpl> fetcher_;
   MockSuggestionsAvailableCallback mock_suggestions_available_callback_;

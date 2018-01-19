@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -110,13 +111,11 @@ bool AddSuggestionsFromListValue(bool content_suggestions_api,
 }  // namespace
 
 ContextualSuggestionsFetcherImpl::ContextualSuggestionsFetcherImpl(
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* token_service,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
     const ParseJSONCallback& parse_json_callback)
-    : signin_manager_(signin_manager),
-      token_service_(token_service),
+    : identity_manager_(identity_manager),
       url_request_context_getter_(std::move(url_request_context_getter)),
       parse_json_callback_(parse_json_callback),
       fetch_url_(GetFetchEndpoint()) {}
@@ -152,7 +151,7 @@ void ContextualSuggestionsFetcherImpl::StartRequest(
     SuggestionsAvailableCallback callback,
     const std::string& oauth_access_token) {
   builder.SetUrl(fetch_url_)
-      .SetAuthentication(signin_manager_->GetAuthenticatedAccountId(),
+      .SetAuthentication(identity_manager_->GetPrimaryAccountInfo().account_id,
                          base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                             oauth_access_token.c_str()));
   DVLOG(1) << "ContextualSuggestionsFetcherImpl::StartRequest";
@@ -170,8 +169,8 @@ void ContextualSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      "ntp_snippets", signin_manager_, token_service_, scopes,
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      "ntp_snippets", scopes,
       base::BindOnce(
           &ContextualSuggestionsFetcherImpl::AccessTokenFetchFinished,
           base::Unretained(this)),
