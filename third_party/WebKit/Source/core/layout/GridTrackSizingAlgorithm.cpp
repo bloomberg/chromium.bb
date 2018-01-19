@@ -484,8 +484,15 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
       if (i > 0 && span.StartLine() <= flexible_sized_tracks_index[i - 1])
         continue;
 
-      flex_fraction = std::max(
-          flex_fraction, FindFrUnitSize(span, MaxContentForChild(*grid_item)));
+      // Removing gutters from the max-content contribution of the item,
+      // so they are not taken into account in FindFrUnitSize().
+      LayoutUnit left_over_space =
+          MaxContentForChild(*grid_item) -
+          GetLayoutGrid()->GuttersSize(algorithm_.GetGrid(), direction,
+                                       span.StartLine(), span.IntegerSpan(),
+                                       AvailableSpace());
+      flex_fraction =
+          std::max(flex_fraction, FindFrUnitSize(span, left_over_space));
     }
   }
 
@@ -1255,6 +1262,8 @@ double GridTrackSizingAlgorithm::FindFrUnitSize(
       flex_factor_sum += track_size.MaxTrackBreadth().Flex();
     }
   }
+  // We don't remove the gutters from left_over_space here, because that was
+  // already done before.
 
   // The function is not called if we don't have <flex> grid tracks.
   DCHECK(!flexible_tracks_indexes.IsEmpty());
