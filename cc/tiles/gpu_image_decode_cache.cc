@@ -560,7 +560,10 @@ GpuImageDecodeCache::GpuImageDecodeCache(viz::RasterContextProvider* context,
   // Acquire the context_lock so that we can safely retrieve
   // |max_texture_size_|.
   {
-    viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
+    base::Optional<viz::RasterContextProvider::ScopedRasterContextLock>
+        context_lock;
+    if (context_->GetLock())
+      context_lock.emplace(context_);
     max_texture_size_ = context_->GrContext()->caps()->maxTextureSize();
   }
 
@@ -703,7 +706,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
 
   // We are being called during raster. The context lock must already be
   // acquired by the caller.
-  context_->GetLock()->AssertAcquired();
+  CheckContextLockAcquiredIfNecessary();
 
   // If we're skipping the image, then the filter quality doesn't matter.
   if (SkipImage(draw_image))
@@ -775,7 +778,7 @@ void GpuImageDecodeCache::DrawWithImageFinished(
 
   // We are being called during raster. The context lock must already be
   // acquired by the caller.
-  context_->GetLock()->AssertAcquired();
+  CheckContextLockAcquiredIfNecessary();
 
   if (SkipImage(draw_image))
     return;
@@ -798,10 +801,12 @@ void GpuImageDecodeCache::ReduceCacheUsage() {
   // This is typically called when no tasks are running (between scheduling
   // tasks). Try to lock and run pending operations if possible, but don't
   // block on it.
-  if (context_->GetLock()->Try()) {
-    RunPendingContextThreadOperations();
+  if (context_->GetLock() && !context_->GetLock()->Try())
+    return;
+
+  RunPendingContextThreadOperations();
+  if (context_->GetLock())
     context_->GetLock()->Release();
-  }
 }
 
 void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
@@ -810,7 +815,11 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
                "GpuImageDecodeCache::SetShouldAggressivelyFreeResources",
                "agressive_free_resources", aggressively_free_resources);
   if (aggressively_free_resources) {
-    viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
+    base::Optional<viz::RasterContextProvider::ScopedRasterContextLock>
+        context_lock;
+    if (context_->GetLock())
+      context_lock.emplace(context_);
+
     base::AutoLock lock(lock_);
     aggressively_freeing_resources_ = aggressively_free_resources;
     EnsureCapacity(0);
@@ -956,7 +965,11 @@ void GpuImageDecodeCache::DecodeImage(const DrawImage& draw_image,
 void GpuImageDecodeCache::UploadImage(const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UploadImage");
-  viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
+  base::Optional<viz::RasterContextProvider::ScopedRasterContextLock>
+      context_lock;
+  if (context_->GetLock())
+    context_lock.emplace(context_);
+
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);
@@ -1339,7 +1352,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
 
 void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
                                                  ImageData* image_data) {
-  context_->GetLock()->AssertAcquired();
+  CheckContextLockAcquiredIfNecessary();
   lock_.AssertAcquired();
 
   // We are about to upload a new image and are holding the context lock.
@@ -1483,7 +1496,7 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
 // we need to call GlIdFromSkImage, which flushes pending IO on the image,
 // rather than just using a cached GL ID.
 void GpuImageDecodeCache::RunPendingContextThreadOperations() {
-  context_->GetLock()->AssertAcquired();
+  CheckContextLockAcquiredIfNecessary();
   lock_.AssertAcquired();
 
   for (auto* image : images_pending_complete_lock_) {
@@ -1689,6 +1702,12 @@ bool GpuImageDecodeCache::SupportsColorSpaces() const {
     default:
       return false;
   }
+}
+
+void GpuImageDecodeCache::CheckContextLockAcquiredIfNecessary() {
+  if (!context_->GetLock())
+    return;
+  context_->GetLock()->AssertAcquired();
 }
 
 }  // namespace cc

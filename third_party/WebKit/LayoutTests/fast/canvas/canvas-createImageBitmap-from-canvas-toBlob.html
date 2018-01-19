@@ -11,15 +11,15 @@ var imageData3;
 var canvas1 = document.createElement("canvas");
 var ctx1 = canvas1.getContext("2d");
 ctx1.fillStyle = "#FF0000";
-ctx1.fillRect(0, 0, 150, 75);
+ctx1.fillRect(0, 0, 300, 150);
 
 var newImg = new Image();
 newImg.onload = function() {
     var canvas3 = document.createElement("canvas");
     var ctx3 = canvas3.getContext("2d");
-    ctx3.drawImage(newImg, 0, 0, 150, 75);
+    ctx3.drawImage(newImg, 0, 0, 300, 150);
 
-    imageData3 = ctx3.getImageData(0, 0, 150, 75).data;
+    imageData3 = ctx3.getImageData(0, 0, 300, 150).data;
     var imageMatched = true;
     for (var i = 1; i < imageData2.length; i++) {
         if (imageData2[i] != imageData3[i]) {
@@ -38,8 +38,8 @@ canvas1.toBlob(function(blob) {
     createImageBitmap(blob).then(imageBitmap => {
         var canvas2 = document.createElement("canvas");
         var ctx2 = canvas2.getContext("2d");
-        ctx2.drawImage(imageBitmap, 0, 0, 150, 75);
-        imageData2 = ctx2.getImageData(0, 0, 150, 75).data;
+        ctx2.drawImage(imageBitmap, 0, 0, 300, 150);
+        imageData2 = ctx2.getImageData(0, 0, 300, 150).data;
         url = URL.createObjectURL(blob);
         newImg.src = url;
     });

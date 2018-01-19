@@ -35,6 +35,10 @@
 
 class GrContext;
 
+namespace cc {
+class ImageDecodeCache;
+}  // namespace cc
+
 namespace gpu {
 struct Capabilities;
 struct GpuFeatureInfo;
@@ -74,6 +78,7 @@ class WebGraphicsContext3DProvider {
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char* msg, int32_t id)>) = 0;
   virtual void SignalQuery(uint32_t, base::OnceClosure) = 0;
+  virtual cc::ImageDecodeCache* ImageDecodeCache() = 0;
 };
 
 }  // namespace blink

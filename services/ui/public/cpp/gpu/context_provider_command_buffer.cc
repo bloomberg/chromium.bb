@@ -462,7 +462,8 @@ void ContextProviderCommandBuffer::SetDefaultTaskRunner(
 }
 
 base::Lock* ContextProviderCommandBuffer::GetLock() {
-  DCHECK(support_locking_);
+  if (!support_locking_)
+    return nullptr;
   return &context_lock_;
 }
 

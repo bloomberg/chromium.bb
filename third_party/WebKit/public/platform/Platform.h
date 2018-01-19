@@ -522,6 +522,9 @@ class BLINK_PLATFORM_EXPORT Platform {
     bool support_depth = false;
     bool support_antialias = false;
     bool support_stencil = false;
+
+    // Offscreen contexts created for WebGL should not need the RasterInterface.
+    bool enable_raster_interface = false;
   };
   struct GraphicsInfo {
     unsigned vendor_id = 0;

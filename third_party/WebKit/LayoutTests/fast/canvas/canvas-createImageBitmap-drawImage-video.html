@@ -133,17 +133,17 @@ function checkNoCrop(imageBitmap) {
     ctx1.drawImage(video, 0, 0);
     compareTwoCanvases(0, 0, 352, 288, ctx, ctx1);
 
-    // shrunk to (0, 0), (100, 100)
+    // shrunk to (0, 0), (500, 500)
     clearContext(ctx, ctx1);
-    ctx.drawImage(imageBitmap, 0, 0, 100, 100);
-    ctx1.drawImage(video, 0, 0, 100, 100);
-    compareTwoCanvases(0, 0, 100, 100, ctx, ctx1);
+    ctx.drawImage(imageBitmap, 0, 0, 500, 500);
+    ctx1.drawImage(video, 0, 0, 500, 500);
+    compareTwoCanvases(0, 0, 500, 500, ctx, ctx1);
 
-    // shrunk to (100, 100), (250, 200)
+    // shrunk to (100, 100), (380, 380)
     clearContext(ctx, ctx1);
-    ctx.drawImage(imageBitmap, 100, 100, 150, 100);
-    ctx1.drawImage(video, 100, 100, 150, 100);
-    compareTwoCanvases(100, 100, 150, 100, ctx, ctx1); 
+    ctx.drawImage(imageBitmap, 100, 100, 380, 380);
+    ctx1.drawImage(video, 100, 100, 380, 380);
+    compareTwoCanvases(100, 100, 380, 380, ctx, ctx1); 
 
     // black should be drawn to (100, 100), (200, 200)
     clearContext(ctx, ctx1);

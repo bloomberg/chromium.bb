@@ -55,6 +55,7 @@ static void CreateContextProviderOnMainThread(
 
   Platform::ContextAttributes context_attributes;
   context_attributes.web_gl_version = 1;  // GLES2
+  context_attributes.enable_raster_interface = true;
 
   *gpu_compositing_disabled = Platform::Current()->IsGpuCompositingDisabled();
   if (*gpu_compositing_disabled && only_if_gpu_compositing) {

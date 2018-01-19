@@ -295,6 +295,8 @@ void TestContextProvider::InvalidateGrContext(uint32_t state) {
 }
 
 base::Lock* TestContextProvider::GetLock() {
+  if (!support_locking_)
+    return nullptr;
   return &context_lock_;
 }
 

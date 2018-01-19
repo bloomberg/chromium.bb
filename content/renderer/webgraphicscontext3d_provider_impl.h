@@ -11,6 +11,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 
+namespace cc {
+class ImageDecodeCache;
+}  // namespace cc
+
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -49,6 +53,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
   void SignalQuery(uint32_t, base::OnceClosure) override;
+  cc::ImageDecodeCache* ImageDecodeCache() override;
 
   ui::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();
@@ -62,6 +67,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   std::unique_ptr<viz::GLHelper> gl_helper_;
   const bool software_rendering_;
   base::RepeatingClosure context_lost_callback_;
+  std::unique_ptr<cc::ImageDecodeCache> image_decode_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGraphicsContext3DProviderImpl);
 };

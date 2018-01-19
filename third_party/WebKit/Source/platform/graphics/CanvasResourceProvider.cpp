@@ -5,6 +5,7 @@
 #include "platform/graphics/CanvasResourceProvider.h"
 
 #include "cc/paint/skia_paint_canvas.h"
+#include "cc/raster/playback_image_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -322,12 +323,20 @@ SkSurface* CanvasResourceProvider::GetSkSurface() const {
 
 PaintCanvas* CanvasResourceProvider::Canvas() {
   if (!canvas_) {
+    std::unique_ptr<cc::ImageProvider> image_provider;
+    if (ImageDecodeCache()) {
+      image_provider = std::make_unique<cc::PlaybackImageProvider>(
+          ImageDecodeCache(), ColorParams().GetStorageGfxColorSpace(),
+          cc::PlaybackImageProvider::Settings());
+    }
+
     if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
-          GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace());
+          GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace(),
+          std::move(image_provider));
     } else {
-      canvas_ =
-          std::make_unique<cc::SkiaPaintCanvas>(GetSkSurface()->getCanvas());
+      canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
+          GetSkSurface()->getCanvas(), std::move(image_provider));
     }
   }
   return canvas_.get();
@@ -431,6 +440,13 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
   // Needs to be implemented in subclasses that use resource recycling.
   NOTREACHED();
   return nullptr;
+}
+
+cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
+  // TODO(khushalsagar): Hook up a software cache.
+  if (!context_provider_wrapper_)
+    return nullptr;
+  return context_provider_wrapper_->ContextProvider()->ImageDecodeCache();
 }
 
 }  // namespace blink
