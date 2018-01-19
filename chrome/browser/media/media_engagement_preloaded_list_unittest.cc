@@ -129,6 +129,10 @@ class MediaEngagementPreloadedListTest : public ::testing::Test {
         MediaEngagementPreloadedList::LoadResult::kParseProtoFailed);
   }
 
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
  protected:
   void ExpectLoadResult(MediaEngagementPreloadedList::LoadResult result) {
     histogram_tester_.ExpectBucketCount(
@@ -274,4 +278,81 @@ TEST_F(MediaEngagementPreloadedListTest, CheckOriginIsPresent_UnsecureSchemes) {
   ExpectCheckResultTotal(6);
   ExpectCheckResultFoundHttpsOnlyCount(1);
   ExpectCheckResultFoundHttpsButWasHttpOnlyCount(1);
+}
+
+TEST_F(MediaEngagementPreloadedListTest, RecordsLoadTimeOnSuccess) {
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 0);
+
+  ASSERT_TRUE(LoadFromFile(GetFilePathRelativeToModule(kSampleDataPath)));
+  EXPECT_TRUE(IsLoaded());
+  EXPECT_FALSE(IsEmpty());
+
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 1);
+}
+
+TEST_F(MediaEngagementPreloadedListTest, RecordsLoadTimeOnFailure) {
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 0);
+
+  ASSERT_FALSE(LoadFromFile(GetFilePathRelativeToModule(kBadFormatFilePath)));
+  EXPECT_FALSE(IsLoaded());
+  EXPECT_TRUE(IsEmpty());
+
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 1);
+}
+
+TEST_F(MediaEngagementPreloadedListTest, RecordsLoadTimeWhenEmpty) {
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 0);
+
+  ASSERT_TRUE(LoadFromFile(GetFilePathRelativeToModule(kEmptyFilePath)));
+  EXPECT_TRUE(IsLoaded());
+  EXPECT_TRUE(IsEmpty());
+
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLoadTimeName, 1);
+}
+
+TEST_F(MediaEngagementPreloadedListTest, RecordsLookupTime) {
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLookupTimeName, 0);
+
+  ASSERT_TRUE(LoadFromFile(GetFilePathRelativeToModule(kSampleDataPath)));
+
+  histogram_tester().ExpectTotalCount(
+      MediaEngagementPreloadedList::kHistogramLookupTimeName, 0);
+
+  {
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://example.com")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://example.org:1234")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://test--3ya.com")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("http://123.123.123.123")));
+
+    histogram_tester().ExpectTotalCount(
+        MediaEngagementPreloadedList::kHistogramLookupTimeName, 4);
+  }
+
+  // Histograms recorded when checking the same values.
+  {
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://example.com")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://example.org:1234")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("https://test--3ya.com")));
+    EXPECT_TRUE(CheckOriginIsPresent(GURL("http://123.123.123.123")));
+
+    histogram_tester().ExpectTotalCount(
+        MediaEngagementPreloadedList::kHistogramLookupTimeName, 8);
+  }
+
+  // Histograms recorded when checking values that are not present.
+  {
+    EXPECT_FALSE(CheckOriginIsPresent(GURL("https://example.org")));
+    EXPECT_FALSE(CheckOriginIsPresent(GURL("http://example.com")));
+    EXPECT_FALSE(CheckOriginIsPresent(GURL("http://123.123.123.124")));
+
+    histogram_tester().ExpectTotalCount(
+        MediaEngagementPreloadedList::kHistogramLookupTimeName, 11);
+  }
 }
