@@ -18,6 +18,7 @@ namespace signin {
 
 ScopedAccountConsistency::ScopedAccountConsistency(
     AccountConsistencyMethod method) {
+  DCHECK_NE(AccountConsistencyMethod::kDisabled, method);
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK_NE(AccountConsistencyMethod::kDice, method);
   DCHECK_NE(AccountConsistencyMethod::kDiceFixAuthErrors, method);
@@ -29,12 +30,6 @@ ScopedAccountConsistency::ScopedAccountConsistency(
 #endif
 
   signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
-
-  if (method == AccountConsistencyMethod::kDisabled) {
-    scoped_feature_list_.InitAndDisableFeature(kAccountConsistencyFeature);
-    DCHECK_EQ(method, GetAccountConsistencyMethod());
-    return;
-  }
 
   // Set up the account consistency method.
   std::string feature_value;
@@ -50,10 +45,6 @@ ScopedAccountConsistency::ScopedAccountConsistency(
       break;
     case AccountConsistencyMethod::kDicePrepareMigration:
       feature_value = kAccountConsistencyFeatureMethodDicePrepareMigration;
-      break;
-    case AccountConsistencyMethod::kDicePrepareMigrationChromeSyncEndpoint:
-      feature_value =
-          kAccountConsistencyFeatureMethodDicePrepareMigrationChromeSyncEndpoint;
       break;
     case AccountConsistencyMethod::kDiceMigration:
       feature_value = kAccountConsistencyFeatureMethodDiceMigration;

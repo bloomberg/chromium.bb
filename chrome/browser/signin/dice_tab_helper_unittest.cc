@@ -27,7 +27,6 @@ TEST(DiceTabHelperTest, Initialization) {
             dice_tab_helper->signin_access_point());
   EXPECT_EQ(signin_metrics::Reason::REASON_UNKNOWN_REASON,
             dice_tab_helper->signin_reason());
-  EXPECT_TRUE(dice_tab_helper->should_start_sync_after_web_signin());
 
   // Initialize the signin flow.
   signin_metrics::AccessPoint access_point =

@@ -311,9 +311,9 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED:
-        // Pre-DICE, the refresh token is copied to the new profile and the user
-        // does not need to autehnticate in the new profile.
-        CopyCredentialsToNewProfileAndFinishSignin(new_profile);
+      // Pre-DICE, the refresh token is copied to the new profile and the user
+      // does not need to autehnticate in the new profile.
+      CopyCredentialsToNewProfileAndFinishSignin(new_profile);
       break;
     case Profile::CREATE_STATUS_REMOTE_FAIL:
     case Profile::CREATE_STATUS_CANCELED:
