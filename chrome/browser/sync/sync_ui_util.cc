@@ -345,46 +345,6 @@ MessageType GetStatusInfo(Profile* profile,
   return result_type;
 }
 
-// Returns the status info for use on the new tab page, where we want slightly
-// different information than in the settings panel.
-MessageType GetStatusInfoForNewTabPage(Profile* profile,
-                                       ProfileSyncService* service,
-                                       const SigninManagerBase& signin,
-                                       base::string16* status_label,
-                                       base::string16* link_label) {
-  DCHECK(status_label);
-  DCHECK(link_label);
-
-  if (service->IsFirstSetupComplete() && service->IsPassphraseRequired()) {
-    if (service->passphrase_required_reason() == syncer::REASON_ENCRYPTION) {
-      // First machine migrating to passwords.  Show as a promotion.
-      if (status_label && link_label) {
-        status_label->assign(
-            l10n_util::GetStringFUTF16(
-                IDS_SYNC_NTP_PASSWORD_PROMO,
-                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-        link_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_NTP_PASSWORD_ENABLE));
-      }
-      return SYNC_PROMO;
-    } else {
-      // NOT first machine.
-      // Show a link and present as an error ("needs attention").
-      if (status_label && link_label) {
-        status_label->assign(base::string16());
-        link_label->assign(
-            l10n_util::GetStringUTF16(IDS_SYNC_CONFIGURE_ENCRYPTION));
-      }
-      return SYNC_ERROR;
-    }
-  }
-
-  // Fallback to default.
-  ActionType action_type = NO_ACTION;
-  return GetStatusInfo(profile, service, signin, WITH_HTML, status_label,
-                       link_label, &action_type);
-}
-
 }  // namespace
 
 MessageType GetStatusLabels(Profile* profile,
@@ -398,17 +358,6 @@ MessageType GetStatusLabels(Profile* profile,
   DCHECK(link_label);
   return sync_ui_util::GetStatusInfo(profile, service, signin, style,
                                      status_label, link_label, action_type);
-}
-
-MessageType GetStatusLabelsForNewTabPage(Profile* profile,
-                                         ProfileSyncService* service,
-                                         const SigninManagerBase& signin,
-                                         base::string16* status_label,
-                                         base::string16* link_label) {
-  DCHECK(status_label);
-  DCHECK(link_label);
-  return sync_ui_util::GetStatusInfoForNewTabPage(profile, service, signin,
-                                                  status_label, link_label);
 }
 
 #if !defined(OS_CHROMEOS)
