@@ -200,7 +200,8 @@ class ConnectTetheringOperationTest : public testing::Test {
     uint32_t expected_response_timeout_seconds =
         setup_required
             ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
-            : MessageTransferOperation::kDefaultTimeoutSeconds;
+            : ConnectTetheringOperation::
+                  kSetupNotRequiredResponseTimeoutSeconds;
 
     EXPECT_EQ(expected_response_timeout_seconds,
               operation_->GetTimeoutSeconds());
