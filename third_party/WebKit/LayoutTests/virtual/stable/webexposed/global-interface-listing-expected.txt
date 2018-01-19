@@ -3267,7 +3267,6 @@ interface ImageCapture
     method getPhotoCapabilities
     method getPhotoSettings
     method grabFrame
-    method setOptions
     method takePhoto
 interface ImageData
     attribute @@toStringTag
