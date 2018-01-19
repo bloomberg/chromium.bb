@@ -54,6 +54,9 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
   void AddFakeService(const std::string& peripheral_address,
                       const device::BluetoothUUID& service_uuid,
                       AddFakeServiceCallback callback) override;
+  void RemoveFakeService(const std::string& identifier,
+                         const std::string& peripheral_address,
+                         RemoveFakeServiceCallback callback) override;
   void AddFakeCharacteristic(const device::BluetoothUUID& characteristic_uuid,
                              mojom::CharacteristicPropertiesPtr properties,
                              const std::string& service_id,

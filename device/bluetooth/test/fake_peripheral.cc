@@ -88,6 +88,16 @@ std::string FakePeripheral::AddFakeService(
   return it->second->GetIdentifier();
 }
 
+bool FakePeripheral::RemoveFakeService(const std::string& identifier) {
+  auto it = gatt_services_.find(identifier);
+  if (it == gatt_services_.end()) {
+    return false;
+  }
+
+  gatt_services_.erase(it);
+  return true;
+}
+
 uint32_t FakePeripheral::GetBluetoothClass() const {
   NOTREACHED();
   return 0;
