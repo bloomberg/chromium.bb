@@ -19,7 +19,7 @@
   var networkProject2 = Bindings.NetworkProject.forTarget(target2);
   var subframe = TestRunner.mainFrame().childFrames[0];
 
-  var sourcesNavigatorView = new Sources.SourcesNavigatorView();
+  var sourcesNavigatorView = new Sources.NetworkNavigatorView();
   sourcesNavigatorView.show(UI.inspectorView.element);
   var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
   contentScriptsNavigatorView.show(UI.inspectorView.element);

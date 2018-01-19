@@ -14,7 +14,7 @@
   }
 
   function createNavigatorView() {
-    var navigatorView = new Sources.SourcesNavigatorView();
+    var navigatorView = new Sources.NetworkNavigatorView();
     navigatorView.show(UI.inspectorView.element);
     return navigatorView;
   }

@@ -6,7 +6,6 @@
   TestRunner.addResult(`Verify that navigator view removes mapped UISourceCodes.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('bindings_test_runner');
-  Runtime.experiments.enableForTest('persistence2');
 
   var filesNavigator = new Sources.FilesNavigatorView();
   filesNavigator.show(UI.inspectorView.element);
