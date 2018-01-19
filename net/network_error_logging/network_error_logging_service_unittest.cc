@@ -10,13 +10,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #include "net/socket/next_proto.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,8 +85,14 @@ class TestReportingService : public ReportingService {
     return true;
   }
 
+  const ReportingPolicy& GetPolicy() const override {
+    NOTREACHED();
+    return dummy_policy_;
+  }
+
  private:
   std::vector<Report> reports_;
+  ReportingPolicy dummy_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReportingService);
 };
@@ -94,7 +100,6 @@ class TestReportingService : public ReportingService {
 class NetworkErrorLoggingServiceTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingServiceTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
     service_ = NetworkErrorLoggingService::Create();
     CreateReportingService();
   }
@@ -158,22 +163,12 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const GURL kReferrer_ = GURL("https://referrer.com/");
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<NetworkErrorLoggingService> service_;
   std::unique_ptr<TestReportingService> reporting_service_;
 };
 
-TEST_F(NetworkErrorLoggingServiceTest, FeatureDisabled) {
-  // N.B. This test does not actually use the test fixture.
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kNetworkErrorLogging);
-
-  auto service = NetworkErrorLoggingService::Create();
-  EXPECT_FALSE(service);
-}
-
-TEST_F(NetworkErrorLoggingServiceTest, FeatureEnabled) {
+TEST_F(NetworkErrorLoggingServiceTest, CreateService) {
+  // Service is created by default in the test fixture..
   EXPECT_TRUE(service());
 }
 

@@ -82,6 +82,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
+#include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -948,6 +949,12 @@ class MockReportingService : public net::ReportingService {
   bool RequestIsUpload(const net::URLRequest& request) override {
     NOTREACHED();
     return true;
+  }
+
+  const net::ReportingPolicy& GetPolicy() const override {
+    static net::ReportingPolicy dummy_policy_;
+    NOTREACHED();
+    return dummy_policy_;
   }
 
   int remove_calls() const { return remove_calls_; }
