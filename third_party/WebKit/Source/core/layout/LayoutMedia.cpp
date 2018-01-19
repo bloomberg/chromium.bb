@@ -59,19 +59,21 @@ void LayoutMedia::UpdateLayout() {
 // overlap checking, see LayoutVTTCue.
 #if DCHECK_IS_ON()
   bool seen_text_track_container = false;
-  bool seen_media_remoting_interstitial = false;
+  bool seen_interstitial = false;
 #endif
   for (LayoutObject* child = children_.LastChild(); child;
        child = child->PreviousSibling()) {
 #if DCHECK_IS_ON()
     if (child->GetNode()->IsMediaControls()) {
       DCHECK(!seen_text_track_container);
-      DCHECK(!seen_media_remoting_interstitial);
+      DCHECK(!seen_interstitial);
     } else if (child->GetNode()->IsTextTrackContainer()) {
       seen_text_track_container = true;
-      DCHECK(!seen_media_remoting_interstitial);
-    } else if (child->GetNode()->IsMediaRemotingInterstitial()) {
-      seen_media_remoting_interstitial = true;
+      DCHECK(!seen_interstitial);
+    } else if (child->GetNode()->IsMediaRemotingInterstitial() ||
+               child->GetNode()->IsPictureInPictureInterstitial()) {
+      // Only one interstitial can be shown at a time.
+      seen_interstitial = true;
     } else {
       NOTREACHED();
     }
@@ -122,7 +124,8 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
     return child->IsFlexibleBox();
 
   if (child->GetNode()->IsTextTrackContainer() ||
-      child->GetNode()->IsMediaRemotingInterstitial())
+      child->GetNode()->IsMediaRemotingInterstitial() ||
+      child->GetNode()->IsPictureInPictureInterstitial())
     return true;
 
   return false;

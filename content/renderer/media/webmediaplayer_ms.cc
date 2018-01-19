@@ -502,6 +502,8 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
 }
 
+void WebMediaPlayerMS::PictureInPicture() {}
+
 void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,

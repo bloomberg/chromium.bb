@@ -24,6 +24,15 @@ function castButton(videoElement) {
     return button;
 }
 
+function pictureInPictureButton(videoElement) {
+    var controlID = '-internal-media-controls-picture-in-picture-button';
+
+    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    if (!button)
+        throw 'Failed to find picture in picture button';
+    return button;
+}
+
 function downloadButton(videoElement) {
     var controlID = '-internal-media-controls-download-button';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
@@ -321,6 +330,23 @@ function mediaControlsOverlayPlayButtonInternal(videoElement) {
   return element;
 }
 
+function pictureInPictureInterstitial(videoElement) {
+  var controlID = '-internal-picture-in-picture-interstitial';
+
+  var interstitial = getElementByPseudoId(window.internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!interstitial)
+      throw 'Failed to find picture in picture interstitial';
+  return interstitial;
+}
+
+function checkPictureInPictureInterstitialDoesNotExist(videoElement) {
+  var controlID = '-internal-picture-in-picture-interstitial';
+
+  var interstitial = getElementByPseudoId(internals.oldestShadowRoot(videoElement), controlID);
+  if (interstitial)
+      throw 'Should not have a picture in picture interstitial';
+}
+
 function doubleTapAtCoordinates(x, y, timeout, callback) {
   if (timeout == undefined)
     timeout = 100;
@@ -360,4 +386,48 @@ function enableDoubleTapToJumpForTest(t) {
     internals.runtimeFlags.doubleTapToJumpOnVideoEnabled =
         doubleTapToJumpOnVideoEnabledValue;
   });
+}
+
+function enablePictureInPictureForTest(t) {
+  var pictureInPictureEnabledValue =
+      internals.runtimeFlags.pictureInPictureEnabled;
+  internals.runtimeFlags.pictureInPictureEnabled = true;
+
+  t.add_cleanup(() => {
+    internals.runtimeFlags.pictureInPictureEnabled =
+        pictureInPictureEnabledValue;
+  });
+}
+
+function traverseNextNode(node, stayWithin) {
+    var nextNode = node.firstChild;
+    if (nextNode)
+        return nextNode;
+
+    if (stayWithin && node === stayWithin)
+        return null;
+
+    nextNode = node.nextSibling;
+    if (nextNode)
+        return nextNode;
+
+    nextNode = node;
+    while (nextNode && !nextNode.nextSibling && (!stayWithin || !nextNode.parentNode || nextNode.parentNode !== stayWithin))
+        nextNode = nextNode.parentNode;
+    if (!nextNode)
+        return null;
+
+    return nextNode.nextSibling;
+}
+
+function getElementByPseudoId(root, pseudoId) {
+    if (!window.internals)
+        return null;
+    var node = root;
+    while (node) {
+        if (node.nodeType === Node.ELEMENT_NODE && internals.shadowPseudoId(node) === pseudoId)
+            return node;
+        node = traverseNextNode(node, root);
+    }
+    return null;
 }

@@ -1,0 +1,91 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/html/media/PictureInPictureInterstitial.h"
+
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/Document.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/media/HTMLVideoElement.h"
+#include "platform/text/PlatformLocale.h"
+#include "public/platform/WebLocalizedString.h"
+namespace {
+
+constexpr double kStyleChangeTransSeconds = 0.2;
+constexpr double kHiddenAnimationSeconds = 0.3;
+
+}  // namespace
+
+namespace blink {
+
+PictureInPictureInterstitial::PictureInPictureInterstitial(
+    HTMLVideoElement& videoElement)
+    : HTMLDivElement(videoElement.GetDocument()),
+      interstitial_timer_(
+          videoElement.GetDocument().GetTaskRunner(TaskType::kUnthrottled),
+          this,
+          &PictureInPictureInterstitial::ToggleInterstitialTimerFired),
+      video_element_(&videoElement) {
+  SetShadowPseudoId(AtomicString("-internal-picture-in-picture-interstitial"));
+  background_image_ = HTMLImageElement::Create(GetDocument());
+  background_image_->SetShadowPseudoId(
+      AtomicString("-internal-picture-in-picture-background-image"));
+  background_image_->SetSrc(videoElement.getAttribute(HTMLNames::posterAttr));
+  AppendChild(background_image_);
+
+  HTMLDivElement* message_element_ = HTMLDivElement::Create(GetDocument());
+  message_element_->SetShadowPseudoId(
+      AtomicString("-internal-picture-in-picture-message"));
+  message_element_->setInnerText(
+      GetVideoElement().GetLocale().QueryString(
+          WebLocalizedString::kPictureInPictureInterstitialText),
+      ASSERT_NO_EXCEPTION);
+  AppendChild(message_element_);
+}
+
+void PictureInPictureInterstitial::Show() {
+  if (should_be_visible_)
+    return;
+
+  if (interstitial_timer_.IsActive())
+    interstitial_timer_.Stop();
+  should_be_visible_ = true;
+  RemoveInlineStyleProperty(CSSPropertyDisplay);
+  interstitial_timer_.StartOneShot(kStyleChangeTransSeconds, FROM_HERE);
+}
+
+void PictureInPictureInterstitial::Hide() {
+  if (!should_be_visible_)
+    return;
+  if (interstitial_timer_.IsActive())
+    interstitial_timer_.Stop();
+  should_be_visible_ = false;
+  SetInlineStyleProperty(CSSPropertyOpacity, 0,
+                         CSSPrimitiveValue::UnitType::kNumber);
+  interstitial_timer_.StartOneShot(kHiddenAnimationSeconds, FROM_HERE);
+}
+
+void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
+  interstitial_timer_.Stop();
+  if (should_be_visible_) {
+    SetInlineStyleProperty(CSSPropertyOpacity, 1,
+                           CSSPrimitiveValue::UnitType::kNumber);
+  } else {
+    SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  }
+}
+
+void PictureInPictureInterstitial::OnPosterImageChanged() {
+  background_image_->SetSrc(
+      GetVideoElement().getAttribute(HTMLNames::posterAttr));
+}
+
+void PictureInPictureInterstitial::Trace(blink::Visitor* visitor) {
+  visitor->Trace(video_element_);
+  visitor->Trace(background_image_);
+  visitor->Trace(message_element_);
+  HTMLDivElement::Trace(visitor);
+}
+
+}  // namespace blink

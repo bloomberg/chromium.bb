@@ -527,6 +527,8 @@ class WebMediaPlayerMSTest
       const blink::WebString& remote_device_friendly_name) override {}
   void MediaRemotingStopped(
       blink::WebLocalizedString::Name error_msg) override {}
+  void PictureInPictureStarted() override {}
+  void PictureInPictureStopped() override {}
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

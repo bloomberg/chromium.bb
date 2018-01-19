@@ -2574,6 +2574,11 @@ double HTMLMediaElement::EffectiveMediaVolume() const {
   return volume_;
 }
 
+void HTMLMediaElement::pictureInPicture() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->PictureInPicture();
+}
+
 // The spec says to fire periodic timeupdate events (those sent while playing)
 // every "15 to 250ms", we choose the slowest frequency
 static const TimeDelta kMaxTimeupdateEventFrequency =
@@ -3602,11 +3607,11 @@ bool HTMLMediaElement::TextTracksVisible() const {
 // static
 void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
 #if DCHECK_IS_ON()
-  // There can be up to three children: media remoting interstitial, text track
-  // container, and media controls. The media controls has to be the last child
-  // if presend, and has to be the next sibling of the text track container if
-  // both present. When present, media remoting interstitial has to be the first
-  // child.
+  // There can be up to three children: an interstitial (media remoting or
+  // picture in picture), text track container, and media controls. The media
+  // controls has to be the last child if presend, and has to be the next
+  // sibling of the text track container if both present. When present, media
+  // remoting interstitial has to be the first child.
   unsigned number_of_children = shadow_root.CountChildren();
   DCHECK_LE(number_of_children, 3u);
   Node* first_child = shadow_root.firstChild();
@@ -3614,16 +3619,19 @@ void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
   if (number_of_children == 1) {
     DCHECK(first_child->IsTextTrackContainer() ||
            first_child->IsMediaControls() ||
-           first_child->IsMediaRemotingInterstitial());
+           first_child->IsMediaRemotingInterstitial() ||
+           first_child->IsPictureInPictureInterstitial());
   } else if (number_of_children == 2) {
     DCHECK(first_child->IsTextTrackContainer() ||
-           first_child->IsMediaRemotingInterstitial());
+           first_child->IsMediaRemotingInterstitial() ||
+           first_child->IsPictureInPictureInterstitial());
     DCHECK(last_child->IsTextTrackContainer() || last_child->IsMediaControls());
     if (first_child->IsTextTrackContainer())
       DCHECK(last_child->IsMediaControls());
   } else if (number_of_children == 3) {
     Node* second_child = first_child->nextSibling();
-    DCHECK(first_child->IsMediaRemotingInterstitial());
+    DCHECK(first_child->IsMediaRemotingInterstitial() ||
+           first_child->IsPictureInPictureInterstitial());
     DCHECK(second_child->IsTextTrackContainer());
     DCHECK(last_child->IsMediaControls());
   }

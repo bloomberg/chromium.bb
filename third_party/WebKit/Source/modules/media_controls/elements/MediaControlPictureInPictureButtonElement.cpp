@@ -43,7 +43,9 @@ const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
 
 void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     Event* event) {
-  // TODO(apacible): On click, trigger picture in picture.
+  if (event->type() == EventTypeNames::click)
+    MediaElement().pictureInPicture();
+
   MediaControlInputElement::DefaultEventHandler(event);
 }
 

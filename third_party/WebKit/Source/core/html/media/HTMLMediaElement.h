@@ -310,6 +310,8 @@ class CORE_EXPORT HTMLMediaElement
   // Returns the "effective media volume" value as specified in the HTML5 spec.
   double EffectiveMediaVolume() const;
 
+  void pictureInPicture();
+
   // Predicates also used when dispatching wrapper creation (cf.
   // [SpecialWrapFor] IDL attribute usage.)
   virtual bool IsHTMLAudioElement() const { return false; }
