@@ -100,6 +100,9 @@ class Text : public TexturedElement {
   // texture size, relative to the upper-left corner of the element.
   gfx::RectF GetCursorBounds() const;
 
+  // This causes the text to become uniformly shadowed.
+  void SetShadowsEnabled(bool enabled);
+
   void OnSetSize(const gfx::SizeF& size) override;
   void UpdateElementSize() override;
 

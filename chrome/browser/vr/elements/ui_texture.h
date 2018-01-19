@@ -85,6 +85,9 @@ class UiTexture {
     WrappingBehavior wrapping_behavior = kWrappingBehaviorNoWrap;
     bool cursor_enabled = false;
     int cursor_position = 0;
+    bool shadows_enabled = false;
+    SkColor shadow_color = SK_ColorBLACK;
+    float shadow_size = 10.0f;
   };
 
  protected:
@@ -125,7 +128,10 @@ class UiTexture {
       const base::string16& text,
       const gfx::FontList& font_list,
       SkColor color,
-      TextAlignment text_alignment);
+      TextAlignment text_alignment,
+      bool shadows_enabled,
+      SkColor shadow_color,
+      float shadow_size);
 
   static bool IsRTL();
   static void SetForceFontFallbackFailureForTesting(bool force);

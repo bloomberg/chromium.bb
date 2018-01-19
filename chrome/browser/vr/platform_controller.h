@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_PLATFORM_CONTROLLER_H_
 #define CHROME_BROWSER_VR_PLATFORM_CONTROLLER_H_
 
+#include "base/time/time.h"
+
 namespace vr {
 
 // This class is not platform-specific.  It will be backed by platform-specific
@@ -29,12 +31,18 @@ class PlatformController {
     kSwipeDirectionDown,
   };
 
+  enum Handedness {
+    kRightHanded,
+    kLeftHanded,
+  };
+
   virtual ~PlatformController() {}
 
   virtual bool IsButtonDown(ButtonType type) const = 0;
   virtual base::TimeTicks GetLastOrientationTimestamp() const = 0;
   virtual base::TimeTicks GetLastTouchTimestamp() const = 0;
   virtual base::TimeTicks GetLastButtonTimestamp() const = 0;
+  virtual Handedness GetHandedness() const = 0;
 };
 
 }  // namespace vr

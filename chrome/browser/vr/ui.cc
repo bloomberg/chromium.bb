@@ -273,6 +273,8 @@ void Ui::OnControllerUpdated(const ControllerModel& controller_model,
   model_->controller = controller_model;
   model_->reticle = reticle_model;
   model_->controller.quiescent = input_manager_->controller_quiescent();
+  model_->controller.resting_in_viewport =
+      input_manager_->controller_resting_in_viewport();
 }
 
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {

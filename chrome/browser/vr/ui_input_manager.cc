@@ -22,13 +22,25 @@ namespace vr {
 
 namespace {
 
-static constexpr gfx::PointF kInvalidTargetPoint =
+constexpr gfx::PointF kInvalidTargetPoint =
     gfx::PointF(std::numeric_limits<float>::max(),
                 std::numeric_limits<float>::max());
-static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
 
-static constexpr float kControllerQuiescenceAngularThresholdDegrees = 3.5f;
-static constexpr float kControllerQuiescenceTemporalThresholdSeconds = 1.2f;
+constexpr float kControllerQuiescenceAngularThresholdDegrees = 3.5f;
+constexpr float kControllerQuiescenceTemporalThresholdSeconds = 1.2f;
+constexpr float kControllerFocusThresholdSeconds = 1.0f;
+
+bool IsCentroidInViewport(const gfx::Transform& view_proj_matrix,
+                          const gfx::Transform& world_matrix) {
+  if (world_matrix.IsIdentity()) {
+    // Uninitialized matrices are considered out of the viewport.
+    return false;
+  }
+  gfx::Transform m = view_proj_matrix * world_matrix;
+  gfx::Point3F o;
+  m.TransformPoint(&o);
+  return o.x() > -1.0f && o.x() < 1.0f && o.y() > -1.0f && o.y() < 1.0f;
+}
 
 bool IsScrollEvent(const GestureList& list) {
   if (list.empty()) {
@@ -84,10 +96,12 @@ UiInputManager::UiInputManager(UiScene* scene) : scene_(scene) {}
 UiInputManager::~UiInputManager() {}
 
 void UiInputManager::HandleInput(base::TimeTicks current_time,
+                                 const RenderInfo& render_info,
                                  const ControllerModel& controller_model,
                                  ReticleModel* reticle_model,
                                  GestureList* gesture_list) {
   UpdateQuiescenceState(current_time, controller_model);
+  UpdateControllerFocusState(current_time, render_info, controller_model);
   reticle_model->target_element_id = 0;
   reticle_model->target_local_point = kInvalidTargetPoint;
   GetVisualTargetElement(controller_model, reticle_model);
@@ -114,7 +128,6 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
     auto* captured = scene_->GetUiElementById(input_capture_element_id_);
     if (captured) {
       HitTestRequest request;
-      request.ray_origin = kOrigin;
       request.ray_target = reticle_model->target_point;
       request.max_distance_to_plane = 2 * scene_->background_distance();
       HitTestResult result;
@@ -361,10 +374,11 @@ void UiInputManager::GetVisualTargetElement(
   // more intuitive. For testing, however, we occasionally hit test along the
   // laser precisely since this geometric accuracy is important and we are not
   // dealing with a physical controller.
-  gfx::Point3F ray_origin =
-      hit_test_strategy_ == HitTestStrategy::PROJECT_TO_WORLD_ORIGIN
-          ? kOrigin
-          : controller_model.laser_origin;
+  gfx::Point3F ray_origin;
+  if (hit_test_strategy_ == HitTestStrategy::PROJECT_TO_LASER_ORIGIN_FOR_TEST) {
+    ray_origin = controller_model.laser_origin;
+  }
+
   float distance_limit = (reticle_model->target_point - ray_origin).Length();
 
   HitTestRequest request;
@@ -402,6 +416,24 @@ void UiInputManager::UpdateQuiescenceState(
              kControllerQuiescenceTemporalThresholdSeconds) {
     controller_quiescent_ = true;
   }
+}
+
+void UiInputManager::UpdateControllerFocusState(
+    base::TimeTicks current_time,
+    const RenderInfo& render_info,
+    const ControllerModel& controller_model) {
+  if (!IsCentroidInViewport(render_info.left_eye_model.view_proj_matrix,
+                            controller_model.transform) &&
+      !IsCentroidInViewport(render_info.right_eye_model.view_proj_matrix,
+                            controller_model.transform)) {
+    last_controller_outside_viewport_time_ = current_time;
+    controller_resting_in_viewport_ = false;
+    return;
+  }
+
+  controller_resting_in_viewport_ =
+      (current_time - last_controller_outside_viewport_time_).InSecondsF() >
+      kControllerFocusThresholdSeconds;
 }
 
 void UiInputManager::UnfocusFocusedElement() {

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/numerics/math_constants.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/audio_permission_prompt.h"
@@ -413,6 +414,59 @@ std::unique_ptr<UiElement> CreateSnackbar(
   snackbar_root->set_hit_testable(false);
   snackbar_root->AddChild(std::move(scaler));
   return snackbar_root;
+}
+
+std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
+                                                 float z_offset,
+                                                 const base::string16& text,
+                                                 Model* model) {
+  auto layout = Create<LinearLayout>(name, kPhaseNone, LinearLayout::kLeft);
+  layout->set_hit_testable(false);
+  layout->set_margin(kControllerLabelLayoutMargin);
+  layout->SetTranslate(0, 0, z_offset);
+  layout->AddBinding(VR_BIND_FUNC(
+      LayoutAlignment, Model, model,
+      model->controller.handedness == PlatformController::kRightHanded ? LEFT
+                                                                       : RIGHT,
+      LinearLayout, layout.get(), set_x_centering));
+  layout->AddBinding(VR_BIND_FUNC(
+      LinearLayout::Direction, Model, model,
+      model->controller.handedness == PlatformController::kRightHanded
+          ? LinearLayout::kRight
+          : LinearLayout::kLeft,
+      LinearLayout, layout.get(), set_direction));
+
+  auto spacer = std::make_unique<UiElement>();
+  spacer->SetVisible(true);
+  spacer->set_hit_testable(false);
+  spacer->set_requires_layout(true);
+  spacer->SetSize(kControllerLabelSpacerSize, kControllerLabelSpacerSize);
+
+  auto callout = Create<Rect>(kNone, kPhaseForeground);
+  callout->SetVisible(true);
+  callout->set_hit_testable(false);
+  callout->SetColor(SK_ColorWHITE);
+  callout->SetSize(kControllerLabelCalloutWidth, kControllerLabelCalloutHeight);
+  callout->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+
+  auto label =
+      Create<Text>(kNone, kPhaseForeground, kControllerLabelFontHeight);
+  label->SetText(text);
+  label->SetColor(model->color_scheme().controller_label_callout);
+  label->SetVisible(true);
+  label->set_hit_testable(false);
+  label->SetAlignment(UiTexture::kTextAlignmentRight);
+  label->SetLayoutMode(kSingleLineFixedHeight);
+  label->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  label->SetShadowsEnabled(true);
+  label->SetScale(kControllerLabelScale, kControllerLabelScale,
+                  kControllerLabelScale);
+
+  layout->AddChild(std::move(spacer));
+  layout->AddChild(std::move(callout));
+  layout->AddChild(std::move(label));
+
+  return layout;
 }
 
 }  // namespace
@@ -1238,6 +1292,28 @@ void UiSceneCreator::CreateController() {
   controller->AddBinding(VR_BIND_FUNC(float, Model, model_,
                                       model->controller.opacity, Controller,
                                       controller.get(), SetOpacity));
+
+  auto callout_group = Create<UiElement>(kNone, kPhaseNone);
+  callout_group->SetVisible(false);
+  callout_group->set_hit_testable(false);
+  callout_group->SetTransitionedProperties({OPACITY});
+  callout_group->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kControllerLabelTransitionDurationMs));
+  VR_BIND_VISIBILITY(callout_group, model->controller.resting_in_viewport);
+
+  callout_group->AddChild(CreateControllerLabel(
+      kControllerTrackpadLabel, kControllerTrackpadOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_TRACKPAD), model_));
+
+  auto exit_button_label = CreateControllerLabel(
+      kControllerExitButtonLabel, kControllerExitButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_EXIT), model_);
+
+  VR_BIND_VISIBILITY(exit_button_label, model->fullscreen_enabled());
+  callout_group->AddChild(std::move(exit_button_label));
+
+  controller->AddChild(std::move(callout_group));
+
   scene_->AddUiElement(kControllerGroup, std::move(controller));
 
   auto laser = std::make_unique<Laser>(model_);

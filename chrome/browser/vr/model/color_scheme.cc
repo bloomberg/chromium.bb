@@ -140,6 +140,8 @@ void InitializeColorSchemes() {
   normal_scheme.snackbar_button_colors.background_hover = 0xDD2D2D2D;
   normal_scheme.snackbar_button_colors.background_down = 0xDD2D2D2D;
 
+  normal_scheme.controller_label_callout = SK_ColorWHITE;
+
   normal_scheme.normal_factor = 1.0f;
   normal_scheme.incognito_factor = 0.0f;
   normal_scheme.fullscreen_factor = 0.0f;

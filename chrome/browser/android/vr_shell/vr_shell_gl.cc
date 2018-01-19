@@ -611,11 +611,11 @@ void VrShellGl::InitializeRenderer() {
                              GetWebVrFrameTransportOptions());
 }
 
-void VrShellGl::UpdateController(const gfx::Transform& head_pose,
+void VrShellGl::UpdateController(const vr::RenderInfo& render_info,
                                  base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
   gvr::Mat4f gvr_head_pose;
-  TransformToGvrMat(head_pose, &gvr_head_pose);
+  TransformToGvrMat(render_info.head_pose, &gvr_head_pose);
   controller_->UpdateState(gvr_head_pose);
   gfx::Point3F laser_origin = controller_->GetPointerStart();
 
@@ -624,13 +624,13 @@ void VrShellGl::UpdateController(const gfx::Transform& head_pose,
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose),
-                        current_time);
+  HandleControllerInput(laser_origin, render_info, current_time);
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
-                                      const gfx::Vector3dF& head_direction,
+                                      const vr::RenderInfo& render_info,
                                       base::TimeTicks current_time) {
+  gfx::Vector3dF head_direction = vr::GetForwardVector(render_info.head_pose);
   if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
@@ -682,10 +682,11 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.opacity = controller_->GetOpacity();
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = laser_origin;
+  controller_model.handedness = controller_->GetHandedness();
   controller_model_ = controller_model;
 
   vr::ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(current_time, controller_model,
+  ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
                                     &reticle_model, &gesture_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
@@ -897,7 +898,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())
-    UpdateController(render_info_primary_.head_pose, current_time);
+    UpdateController(render_info_primary_, current_time);
 
   bool textures_changed = ui_->scene()->UpdateTextures();
 
@@ -1280,9 +1281,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
     // like app button presses, update the controller here, but not in
     // DrawFrame.
-    gfx::Transform head_pose;
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
-    UpdateController(head_pose, frame_time);
+    device::GvrDelegate::GetGvrPoseWithNeckModel(
+        gvr_api_.get(), &render_info_primary_.head_pose);
+    UpdateController(render_info_primary_, frame_time);
   } else {
     DrawFrame(-1, frame_time);
   }

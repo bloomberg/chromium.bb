@@ -148,12 +148,12 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController(const gfx::Transform& head_pose,
+  void UpdateController(const vr::RenderInfo& render_info,
                         base::TimeTicks current_time);
 
   void SendImmediateExitRequestIfNecessary();
   void HandleControllerInput(const gfx::Point3F& laser_origin,
-                             const gfx::Vector3dF& head_direction,
+                             const vr::RenderInfo& render_info,
                              base::TimeTicks current_time);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);

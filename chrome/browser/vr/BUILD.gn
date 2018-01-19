@@ -137,6 +137,7 @@ static_library("vr_common") {
     "model/camera_model.h",
     "model/color_scheme.cc",
     "model/color_scheme.h",
+    "model/controller_model.cc",
     "model/controller_model.h",
     "model/modal_prompt_type.cc",
     "model/modal_prompt_type.h",
