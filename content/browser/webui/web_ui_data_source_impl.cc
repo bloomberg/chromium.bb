@@ -115,22 +115,21 @@ WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 void WebUIDataSourceImpl::AddString(const std::string& name,
                                     const base::string16& value) {
   // TODO(dschuyler): Share only one copy of these strings.
-  localized_strings_.SetString(name, value);
+  localized_strings_.SetKey(name, base::Value(value));
   replacements_[name] = base::UTF16ToUTF8(value);
 }
 
 void WebUIDataSourceImpl::AddString(const std::string& name,
                                     const std::string& value) {
-  localized_strings_.SetString(name, value);
+  localized_strings_.SetKey(name, base::Value(value));
   replacements_[name] = value;
 }
 
-void WebUIDataSourceImpl::AddLocalizedString(const std::string& name,
-                                             int ids) {
-  localized_strings_.SetString(
-      name, GetContentClient()->GetLocalizedString(ids));
-  replacements_[name] =
+void WebUIDataSourceImpl::AddLocalizedString(const std::string& name, int ids) {
+  std::string utf8_str =
       base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(ids));
+  localized_strings_.SetKey(name, base::Value(utf8_str));
+  replacements_[name] = utf8_str;
 }
 
 void WebUIDataSourceImpl::AddLocalizedStrings(
