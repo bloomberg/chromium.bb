@@ -281,6 +281,22 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
       return false;
     bytes = ashmem_bytes;
   }
+
+  // Sanity check. This shall catch invalid uses of the SharedMemory APIs
+  // but will not protect against direct mmap() attempts.
+  if (shm_.IsReadOnly()) {
+    // Use a DCHECK() to call writable mappings with read-only descriptors
+    // in debug builds immediately. Return an error for release builds
+    // or during unit-testing (assuming a ScopedLogAssertHandler was installed).
+    DCHECK(read_only_)
+        << "Trying to map a region writable with a read-only descriptor.";
+    if (!read_only_) {
+      return false;
+    }
+    if (!shm_.SetRegionReadOnly()) {  // Ensure the region is read-only.
+      return false;
+    }
+  }
 #endif
 
   memory_ = mmap(nullptr, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
@@ -326,6 +342,7 @@ SharedMemoryHandle SharedMemory::TakeHandle() {
   return handle_copy;
 }
 
+#if !defined(OS_ANDROID)
 void SharedMemory::Close() {
   if (shm_.IsValid()) {
     shm_.Close();
@@ -337,7 +354,6 @@ void SharedMemory::Close() {
   }
 }
 
-#if !defined(OS_ANDROID)
 // For the given shmem named |mem_name|, return a filename to mmap()
 // (and possibly create).  Modifies |filename|.  Return false on
 // error, or true of we are happy.
@@ -361,11 +377,11 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   *path = temp_dir.AppendASCII(name_base + mem_name);
   return true;
 }
-#endif  // !defined(OS_ANDROID)
 
 SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   CHECK(readonly_shm_.IsValid());
   return readonly_shm_.Duplicate();
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace base

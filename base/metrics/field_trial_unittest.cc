@@ -20,6 +20,8 @@
 #include "base/test/gtest_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_shared_memory_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -75,7 +77,7 @@ class TestFieldTrialObserver : public FieldTrialList::Observer {
 
 }  // namespace
 
-class FieldTrialTest : public testing::Test {
+class FieldTrialTest : public ::testing::Test {
  public:
   FieldTrialTest() : trial_list_(nullptr) {}
 
@@ -1382,5 +1384,26 @@ TEST(FieldTrialListTest, SerializeSharedMemoryHandleMetadata) {
   EXPECT_FALSE(deserialized.GetGUID().is_empty());
 }
 #endif  // !defined(OS_NACL)
+
+// Verify that the field trial shared memory handle is really read-only, and
+// does not allow writable mappings. Test disabled on NaCl, Windows and Fuchsia
+// which don't support/implement GetFieldTrialHandle(). For Fuchsia, see
+// crbug.com/752368
+#if !defined(OS_NACL) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
+TEST(FieldTrialListTest, CheckReadOnlySharedMemoryHandle) {
+  FieldTrialList field_trial_list(nullptr);
+  FieldTrialList::CreateFieldTrial("Trial1", "Group1");
+
+  test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
+
+  FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
+
+  SharedMemoryHandle handle = FieldTrialList::GetFieldTrialHandle();
+  ASSERT_TRUE(handle.IsValid());
+
+  ASSERT_TRUE(CheckReadOnlySharedMemoryHandleForTesting(handle));
+}
+#endif  // !OS_NACL && !OS_WIN && !OS_FUCHSIA
 
 }  // namespace base

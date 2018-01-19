@@ -43,6 +43,15 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(device::SensorReadingSharedBuffer) *
         static_cast<uint64_t>(device::mojom::SensorType::LAST));
+
+    if (!shared_buffer_handle_.is_valid())
+      return;
+
+    // Create read/write mapping now, to ensure it is kept writable
+    // after the region is sealed read-only on Android.
+    shared_buffer_mapping_ = shared_buffer_handle_->MapAtOffset(
+        device::mojom::SensorInitParams::kReadBufferSizeForTests,
+        GetBufferOffset());
   }
 
   ~FakeAmbientLightSensor() override = default;
@@ -98,13 +107,8 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
   }
 
   void SensorReadingChanged() {
-    if (!shared_buffer_handle_.is_valid())
+    if (!shared_buffer_mapping_.get())
       return;
-
-    mojo::ScopedSharedBufferMapping shared_buffer =
-        shared_buffer_handle_->MapAtOffset(
-            device::mojom::SensorInitParams::kReadBufferSizeForTests,
-            GetBufferOffset());
 
     device::SensorReading reading;
     reading.als.timestamp =
@@ -112,7 +116,8 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
     reading.als.value = 50;
 
     device::SensorReadingSharedBuffer* buffer =
-        static_cast<device::SensorReadingSharedBuffer*>(shared_buffer.get());
+        static_cast<device::SensorReadingSharedBuffer*>(
+            shared_buffer_mapping_.get());
     auto& seqlock = buffer->seqlock.value();
     seqlock.WriteBegin();
     buffer->reading = reading;
@@ -124,6 +129,7 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
 
  private:
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
+  mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
   device::mojom::SensorClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAmbientLightSensor);

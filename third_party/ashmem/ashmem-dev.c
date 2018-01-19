@@ -72,6 +72,11 @@ int ashmem_set_prot_region(int fd, int prot)
 	return ioctl(fd, ASHMEM_SET_PROT_MASK, prot);
 }
 
+int ashmem_get_prot_region(int fd)
+{
+	return ioctl(fd, ASHMEM_GET_PROT_MASK);
+}
+
 int ashmem_pin_region(int fd, size_t offset, size_t len)
 {
 	struct ashmem_pin pin = { offset, len };

@@ -117,6 +117,8 @@ static_library("test_support") {
     "test_pending_task.h",
     "test_reg_util_win.cc",
     "test_reg_util_win.h",
+    "test_shared_memory_util.cc",
+    "test_shared_memory_util.h",
     "test_shortcut_win.cc",
     "test_shortcut_win.h",
     "test_simple_task_runner.cc",

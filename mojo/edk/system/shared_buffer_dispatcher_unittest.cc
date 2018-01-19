@@ -217,12 +217,15 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
                                 SharedBufferDispatcher::kDefaultCreateOptions,
                                 nullptr, 100, &dispatcher1));
 
+  // NOTE: On Android, once a region has been mapped read-only, it cannot
+  //       be mapped writable anymore, so ensure that the READ_ONLY case
+  //       appears last in the options[] table below.
   MojoDuplicateBufferHandleOptions options[] = {
+      {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u},
       {sizeof(MojoDuplicateBufferHandleOptions),
        MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE},
       {sizeof(MojoDuplicateBufferHandleOptions),
-       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY},
-      {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u}};
+       MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY}};
   for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(

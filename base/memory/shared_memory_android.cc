@@ -33,18 +33,10 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     return false;
   }
 
-  int err = ashmem_set_prot_region(shm_.GetHandle(),
-                                   PROT_READ | PROT_WRITE | PROT_EXEC);
+  int flags = PROT_READ | PROT_WRITE | (options.executable ? PROT_EXEC : 0);
+  int err = ashmem_set_prot_region(shm_.GetHandle(), flags);
   if (err < 0) {
     DLOG(ERROR) << "Error " << err << " when setting protection of ashmem";
-    return false;
-  }
-
-  // Android doesn't appear to have a way to drop write access on an ashmem
-  // segment for a single descriptor.  http://crbug.com/320865
-  readonly_shm_ = shm_.Duplicate();
-  if (!readonly_shm_.IsValid()) {
-    DPLOG(ERROR) << "dup() failed";
     return false;
   }
 
@@ -63,6 +55,21 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   // ashmem doesn't support name mapping
   NOTIMPLEMENTED();
   return false;
+}
+
+void SharedMemory::Close() {
+  if (shm_.IsValid()) {
+    shm_.Close();
+    shm_ = SharedMemoryHandle();
+  }
+}
+
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
+  // There are no read-only Ashmem descriptors on Android.
+  // Instead, the protection mask is a property of the region itself.
+  SharedMemoryHandle handle = shm_.Duplicate();
+  handle.SetReadOnly();
+  return handle;
 }
 
 }  // namespace base

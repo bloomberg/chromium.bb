@@ -263,7 +263,7 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
   serialized_state->guid_low = guid.GetLowForSerialization();
   serialized_state->padding = 0;
 
-  handles[0] = shared_buffer_->DuplicatePlatformHandle();
+  handles[0] = shared_buffer_->DuplicatePlatformHandleForIPC();
   if (!handles[0].is_valid()) {
     shared_buffer_ = nullptr;
     return false;
