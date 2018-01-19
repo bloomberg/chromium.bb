@@ -599,12 +599,6 @@ RendererSchedulerImpl::IPCTaskRunner() {
   return ipc_task_queue_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::LoadingTaskRunner() {
-  helper_.CheckOnValidThread();
-  return default_loading_task_queue_;
-}
-
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::DefaultTaskQueue() {
   return helper_.DefaultMainThreadTaskQueue();
 }

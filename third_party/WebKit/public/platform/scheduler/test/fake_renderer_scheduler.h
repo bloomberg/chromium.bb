@@ -23,7 +23,6 @@ class FakeRendererScheduler : public RendererScheduler {
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
