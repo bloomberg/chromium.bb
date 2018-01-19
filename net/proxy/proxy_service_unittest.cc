@@ -1858,7 +1858,7 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
   ProxyConfig config;
   config.proxy_rules().ParseFromString("http=foopy1:8080;socks=foopy2:1080");
   config.set_auto_detect(false);
-  EXPECT_EQ(ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+  EXPECT_EQ(ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
             config.proxy_rules().type);
 
   {

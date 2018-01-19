@@ -906,10 +906,10 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
                        const std::string& onc_scheme,
                        base::DictionaryValue* dict) {
   const net::ProxyList* proxy_list = nullptr;
-  if (proxy_rules.type == net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY) {
+  if (proxy_rules.type == net::ProxyConfig::ProxyRules::Type::PROXY_LIST) {
     proxy_list = &proxy_rules.single_proxies;
   } else if (proxy_rules.type ==
-             net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME) {
+             net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME) {
     proxy_list = proxy_rules.MapUrlSchemeToProxyList(scheme);
   }
   if (!proxy_list || proxy_list->IsEmpty())

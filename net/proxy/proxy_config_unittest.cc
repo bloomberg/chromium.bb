@@ -50,14 +50,14 @@ TEST(ProxyConfigTest, Equals) {
 
   // Test |ProxyConfig::proxy_rules|.
 
-  config2.proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+  config2.proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
   config2.proxy_rules().single_proxies.SetSingleProxyServer(
       ProxyServer::FromURI("myproxy:80", ProxyServer::SCHEME_HTTP));
 
   EXPECT_FALSE(config1.Equals(config2));
   EXPECT_FALSE(config2.Equals(config1));
 
-  config1.proxy_rules().type = ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+  config1.proxy_rules().type = ProxyConfig::ProxyRules::Type::PROXY_LIST;
   config1.proxy_rules().single_proxies.SetSingleProxyServer(
       ProxyServer::FromURI("myproxy:100", ProxyServer::SCHEME_HTTP));
 
@@ -111,7 +111,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "myproxy:80",
 
-      ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST,
       "PROXY myproxy:80",
       NULL,
       NULL,
@@ -123,7 +123,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "myproxy:80,https://myotherproxy",
 
-      ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST,
       "PROXY myproxy:80;HTTPS myotherproxy:443",
       NULL,
       NULL,
@@ -135,7 +135,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=myproxy:80",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY myproxy:80",
       NULL,
@@ -147,7 +147,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "ftp=ftp-proxy ; https=socks4://foopy",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       NULL,
       "SOCKS foopy:1080",
@@ -157,11 +157,11 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
     // Give a scheme-specific proxy as well as a non-scheme specific.
     // The first entry "foopy" takes precedance marking this list as
-    // TYPE_SINGLE_PROXY.
+    // Type::PROXY_LIST.
     {
       "foopy ; ftp=ftp-proxy",
 
-      ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST,
       "PROXY foopy:80",
       NULL,
       NULL,
@@ -171,11 +171,11 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
     // Give a scheme-specific proxy as well as a non-scheme specific.
     // The first entry "ftp=ftp-proxy" takes precedance marking this list as
-    // TYPE_PROXY_PER_SCHEME.
+    // Type::PROXY_LIST_PER_SCHEME.
     {
       "ftp=ftp-proxy ; foopy",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       NULL,
       NULL,
@@ -187,7 +187,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "ftp=ftp1,ftp2,ftp3",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       NULL,
       NULL,
@@ -199,7 +199,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=http1,http2; http=http3",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY http1:80;PROXY http2:80;PROXY http3:80",
       NULL,
@@ -211,7 +211,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "ftp=ftp1,ftp2,ftp3 ; http=http1,http2; ",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY http1:80;PROXY http2:80",
       NULL,
@@ -223,7 +223,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=https://secure_proxy; ftp=socks4://socks_proxy; https=socks://foo",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "HTTPS secure_proxy:443",
       "SOCKS5 foo:1080",
@@ -235,7 +235,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "socks=foopy",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       NULL,
       NULL,
@@ -247,7 +247,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=httpproxy ; https=httpsproxy ; ftp=ftpproxy ; socks=foopy ",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY httpproxy:80",
       "PROXY httpsproxy:80",
@@ -260,7 +260,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=httpproxy ; https=httpsproxy ; socks=socks5://foopy ",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY httpproxy:80",
       "PROXY httpsproxy:80",
@@ -272,7 +272,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "crazy=foopy ; foo=bar ; https=myhttpsproxy",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       NULL,
       "PROXY myhttpsproxy:80",
@@ -284,7 +284,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=direct://,myhttpproxy; https=direct://",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "DIRECT;PROXY myhttpproxy:80",
       "DIRECT",
@@ -296,7 +296,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
     {
       "http=myhttpproxy,direct://",
 
-      ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME,
+      ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
       NULL,
       "PROXY myhttpproxy:80;DIRECT",
       NULL,

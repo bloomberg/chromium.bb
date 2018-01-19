@@ -63,14 +63,14 @@ network::mojom::ProxyRulesType
 EnumTraits<network::mojom::ProxyRulesType, net::ProxyConfig::ProxyRules::Type>::
     ToMojom(net::ProxyConfig::ProxyRules::Type net_proxy_rules_type) {
   switch (net_proxy_rules_type) {
-    case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
-      return network::mojom::ProxyRulesType::TYPE_NO_RULES;
-    case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
-      return network::mojom::ProxyRulesType::TYPE_SINGLE_PROXY;
-    case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
-      return network::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME;
+    case net::ProxyConfig::ProxyRules::Type::EMPTY:
+      return network::mojom::ProxyRulesType::EMPTY;
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST:
+      return network::mojom::ProxyRulesType::PROXY_LIST;
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
+      return network::mojom::ProxyRulesType::PROXY_LIST_PER_SCHEME;
   }
-  return network::mojom::ProxyRulesType::TYPE_NO_RULES;
+  return network::mojom::ProxyRulesType::EMPTY;
 }
 
 bool EnumTraits<network::mojom::ProxyRulesType,
@@ -78,14 +78,14 @@ bool EnumTraits<network::mojom::ProxyRulesType,
     FromMojom(network::mojom::ProxyRulesType mojo_proxy_rules_type,
               net::ProxyConfig::ProxyRules::Type* out) {
   switch (mojo_proxy_rules_type) {
-    case network::mojom::ProxyRulesType::TYPE_NO_RULES:
-      *out = net::ProxyConfig::ProxyRules::TYPE_NO_RULES;
+    case network::mojom::ProxyRulesType::EMPTY:
+      *out = net::ProxyConfig::ProxyRules::Type::EMPTY;
       return true;
-    case network::mojom::ProxyRulesType::TYPE_SINGLE_PROXY:
-      *out = net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+    case network::mojom::ProxyRulesType::PROXY_LIST:
+      *out = net::ProxyConfig::ProxyRules::Type::PROXY_LIST;
       return true;
-    case network::mojom::ProxyRulesType::TYPE_PROXY_PER_SCHEME:
-      *out = net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+    case network::mojom::ProxyRulesType::PROXY_LIST_PER_SCHEME:
+      *out = net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       return true;
   }
   return false;

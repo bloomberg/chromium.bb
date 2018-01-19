@@ -19,9 +19,9 @@ struct ProxyList {
 
 // This corresponds to net::ProxyConfig::ProxyRules::Type.
 enum ProxyRulesType {
-  TYPE_NO_RULES,
-  TYPE_SINGLE_PROXY,
-  TYPE_PROXY_PER_SCHEME,
+  EMPTY,
+  PROXY_LIST,
+  PROXY_LIST_PER_SCHEME,
 };
 
 // These fields mirror those of net::ProxyConfig::ProxyRules.

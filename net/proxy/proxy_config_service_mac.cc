@@ -77,7 +77,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesFTPPort);
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().proxies_for_ftp.SetSingleProxyServer(proxy_server);
     }
   }
@@ -91,7 +91,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesHTTPPort);
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().proxies_for_http.SetSingleProxyServer(proxy_server);
     }
   }
@@ -105,7 +105,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesHTTPSPort);
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().proxies_for_https.
           SetSingleProxyServer(proxy_server);
     }
@@ -120,7 +120,7 @@ void GetCurrentProxyConfig(ProxyConfig* config) {
                                     kSCPropNetProxiesSOCKSPort);
     if (proxy_server.is_valid()) {
       config->proxy_rules().type =
-          ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+          ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
       config->proxy_rules().fallback_proxies.SetSingleProxyServer(proxy_server);
     }
   }

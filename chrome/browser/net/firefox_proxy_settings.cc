@@ -203,7 +203,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
 
   *config = net::ProxyConfig();
   config->proxy_rules().type =
-      net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+      net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
 
   if (!http_proxy().empty()) {
     config->proxy_rules().proxies_for_http.SetSingleProxyServer(

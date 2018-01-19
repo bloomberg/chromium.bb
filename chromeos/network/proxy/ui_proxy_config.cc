@@ -57,7 +57,7 @@ bool UIProxyConfig::FromNetProxyConfig(const net::ProxyConfig& net_config) {
   *this = UIProxyConfig();  // Reset to default.
   const net::ProxyConfig::ProxyRules& rules = net_config.proxy_rules();
   switch (rules.type) {
-    case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
+    case net::ProxyConfig::ProxyRules::Type::EMPTY:
       if (!net_config.HasAutomaticSettings()) {
         mode = UIProxyConfig::MODE_DIRECT;
       } else if (net_config.auto_detect()) {
@@ -69,14 +69,14 @@ bool UIProxyConfig::FromNetProxyConfig(const net::ProxyConfig& net_config) {
         return false;
       }
       return true;
-    case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST:
       if (rules.single_proxies.IsEmpty())
         return false;
       mode = MODE_SINGLE_PROXY;
       single_proxy.server = rules.single_proxies.Get();
       bypass_rules = rules.bypass_rules;
       return true;
-    case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
       // Make sure we have valid server for at least one of the protocols.
       if (rules.proxies_for_http.IsEmpty() &&
           rules.proxies_for_https.IsEmpty() &&
