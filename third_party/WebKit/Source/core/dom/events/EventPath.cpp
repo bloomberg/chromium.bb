@@ -269,13 +269,13 @@ void EventPath::AdjustForRelatedTarget(Node& target,
                                        EventTarget* related_target) {
   if (!related_target)
     return;
-  Node* related_node = related_target->ToNode();
-  if (!related_node)
+  Node* related_target_node = related_target->ToNode();
+  if (!related_target_node)
     return;
-  if (target.GetDocument() != related_node->GetDocument())
+  if (target.GetDocument() != related_target_node->GetDocument())
     return;
-  RetargetRelatedTarget(*related_node);
-  ShrinkForRelatedTarget(target);
+  RetargetRelatedTarget(*related_target_node);
+  ShrinkForRelatedTarget(target, *related_target_node);
 }
 
 void EventPath::RetargetRelatedTarget(const Node& related_target_node) {
@@ -290,22 +290,37 @@ void EventPath::RetargetRelatedTarget(const Node& related_target_node) {
   }
 }
 
-bool EventPath::ShouldStopEventPath(EventTarget& current_target,
-                                    EventTarget& current_related_target,
-                                    const Node& target) {
-  if (&current_target != &current_related_target)
+namespace {
+
+bool ShouldStopEventPath(EventTarget& adjusted_target,
+                         EventTarget& adjusted_related_target,
+                         const Node& event_target_node,
+                         const Node& event_related_target_node) {
+  if (&adjusted_target != &adjusted_related_target)
     return false;
-  if (event_->isTrusted())
-    return true;
-  Node* current_target_node = current_target.ToNode();
-  if (!current_target_node)
+  Node* adjusted_target_node = adjusted_target.ToNode();
+  if (!adjusted_target_node)
     return false;
-  return current_target_node->GetTreeScope() != target.GetTreeScope();
+  Node* adjusted_related_target_node = adjusted_related_target.ToNode();
+  if (!adjusted_related_target_node)
+    return false;
+  // Events should be dispatched at least until its root even when event's
+  // target and related_target are identical.
+  if (adjusted_target_node->GetTreeScope() ==
+          event_target_node.GetTreeScope() &&
+      adjusted_related_target_node->GetTreeScope() ==
+          event_related_target_node.GetTreeScope())
+    return false;
+  return true;
 }
 
-void EventPath::ShrinkForRelatedTarget(const Node& target) {
+}  // anonymous namespace
+
+void EventPath::ShrinkForRelatedTarget(const Node& event_target_node,
+                                       const Node& event_related_target_node) {
   for (size_t i = 0; i < size(); ++i) {
-    if (ShouldStopEventPath(*at(i).Target(), *at(i).RelatedTarget(), target)) {
+    if (ShouldStopEventPath(*at(i).Target(), *at(i).RelatedTarget(),
+                            event_target_node, event_related_target_node)) {
       Shrink(i);
       break;
     }
