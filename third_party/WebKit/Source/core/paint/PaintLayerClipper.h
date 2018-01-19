@@ -219,8 +219,8 @@ class CORE_EXPORT PaintLayerClipper {
   ALWAYS_INLINE void InitializeCommonClipRectState(
       const ClipRectsContext&,
       const FragmentData&,
-      PropertyTreeState& descendant_property_tree_state,
-      PropertyTreeState& ancestor_property_tree_state) const;
+      PropertyTreeState** source_property_tree_state,
+      PropertyTreeState& destination_property_tree_state) const;
 
   // Same as calculateRects, but using GeometryMapper.
   ALWAYS_INLINE void CalculateRectsWithGeometryMapper(
