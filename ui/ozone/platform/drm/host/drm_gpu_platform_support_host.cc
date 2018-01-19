@@ -117,6 +117,14 @@ bool DrmGpuPlatformSupportHost::IsConnected() {
   return host_id_ >= 0 && channel_established_;
 }
 
+void DrmGpuPlatformSupportHost::OnGpuServiceLaunched(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    GpuHostBindInterfaceCallback binder) {
+  NOTREACHED() << "DrmGpuPlatformSupportHost::OnGpuServiceLaunched shouldn't "
+                  "be used with pre-mojo IPC";
+}
+
 void DrmGpuPlatformSupportHost::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
