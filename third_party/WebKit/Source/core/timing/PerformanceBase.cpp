@@ -365,7 +365,14 @@ WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
         redirect_chain.back().GetResourceLoadTiming()->ReceiveHeadersEnd();
 
     if (!result.allow_redirect_details) {
-      result.start_time = final_response.GetResourceLoadTiming()->RequestTime();
+      // TODO(https://crbug.com/803913): There was previously a DCHECK that
+      // |final_timing| is non-null. However, it clearly can be null: removing
+      // this check caused https://crbug.com/803811. Figure out how this can
+      // happen so test coverage can be added.
+      if (ResourceLoadTiming* final_timing =
+              final_response.GetResourceLoadTiming()) {
+        result.start_time = final_timing->RequestTime();
+      }
     }
   } else {
     result.allow_redirect_details = false;
