@@ -153,16 +153,6 @@ bool VisitSegmentDatabase::UpdateSegmentRepresentationURL(SegmentID segment_id,
   return statement.Run();
 }
 
-URLID VisitSegmentDatabase::GetSegmentRepresentationURL(SegmentID segment_id) {
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT url_id FROM segments WHERE id = ?"));
-  statement.BindInt64(0, segment_id);
-
-  if (statement.Step())
-    return statement.ColumnInt64(0);
-  return 0;
-}
-
 SegmentID VisitSegmentDatabase::CreateSegment(URLID url_id,
                                               const std::string& segment_name) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -290,14 +280,6 @@ VisitSegmentDatabase::QuerySegmentUsage(
   }
 
   return results;
-}
-
-bool VisitSegmentDatabase::DeleteSegmentData(base::Time older_than) {
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "DELETE FROM segment_usage WHERE time_slot < ?"));
-  statement.BindInt64(0, older_than.LocalMidnight().ToInternalValue());
-
-  return statement.Run();
 }
 
 bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
