@@ -47,6 +47,7 @@ source_set("common") {
     "android/media_metadata_android.h",
     "android/sync_compositor_statics.cc",
     "android/sync_compositor_statics.h",
+    "android/use_zoom_for_dsf_policy_android.cc",
     "appcache_interfaces.cc",
     "appcache_interfaces.h",
     "associated_interface_provider_impl.cc",

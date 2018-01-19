@@ -104,7 +104,8 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual void SetMemoryPolicy(size_t bytes_limit) = 0;
 
   // Should be called by the embedder after the embedder had modified the
-  // scroll offset of the root layer.
+  // scroll offset of the root layer. |root_offset| must be in physical pixel
+  // scale if --use-zoom-for-dsf is enabled. Otherwise, it must be in DIP scale.
   virtual void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) = 0;
 

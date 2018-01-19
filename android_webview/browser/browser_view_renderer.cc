@@ -361,17 +361,21 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   SkPictureRecorder recorder;
   SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
   if (compositor_) {
+    gfx::Vector2dF scroll_offset =
+        content::UseZoomForDSFEnabled()
+            ? gfx::ScaleVector2d(scroll_offset_dip_, dip_scale_)
+            : scroll_offset_dip_;
     {
       // Reset scroll back to the origin, will go back to the old
       // value when scroll_reset is out of scope.
-      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
+      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset,
                                                    gfx::Vector2dF());
       compositor_->DidChangeRootLayerScrollOffset(
-          gfx::ScrollOffset(scroll_offset_dip_));
+          gfx::ScrollOffset(scroll_offset));
       CompositeSW(rec_canvas);
     }
     compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset_dip_));
+        gfx::ScrollOffset(scroll_offset));
   }
   return recorder.finishRecordingAsPicture();
 }
@@ -551,8 +555,12 @@ void BrowserViewRenderer::SetActiveCompositorID(
           FindCompositor(compositor_id)) {
     compositor_ = compositor;
     UpdateMemoryPolicy();
+    gfx::Vector2dF scroll_offset =
+        content::UseZoomForDSFEnabled()
+            ? gfx::ScaleVector2d(scroll_offset_dip_, dip_scale_)
+            : scroll_offset_dip_;
     compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset_dip_));
+        gfx::ScrollOffset(scroll_offset));
   } else {
     compositor_ = nullptr;
   }
@@ -609,8 +617,8 @@ void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
                scroll_offset_dip.y());
 
   if (compositor_) {
-    compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset_dip_));
+    compositor_->DidChangeRootLayerScrollOffset(gfx::ScrollOffset(
+        content::UseZoomForDSFEnabled() ? scroll_offset : scroll_offset_dip_));
   }
 }
 

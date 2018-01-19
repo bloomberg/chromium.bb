@@ -226,11 +226,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   gfx::SizeF scrollable_size_dip_;
 
-  // Current scroll offset in CSS pixels.
   // TODO(miletus): Make scroll_offset_dip_ a gfx::ScrollOffset.
   gfx::Vector2dF scroll_offset_dip_;
 
-  // Max scroll offset in CSS pixels.
   // TODO(miletus): Make max_scroll_offset_dip_ a gfx::ScrollOffset.
   gfx::Vector2dF max_scroll_offset_dip_;
 

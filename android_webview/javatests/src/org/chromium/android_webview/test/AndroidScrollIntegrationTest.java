@@ -32,6 +32,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -45,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(AwJUnit4ClassRunner.class)
 public class AndroidScrollIntegrationTest {
+    private static final double EPSILON = 1e-5;
+
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
         @Override
@@ -255,15 +258,18 @@ public class AndroidScrollIntegrationTest {
     }
 
     private void assertScrollInJs(final AwContents awContents,
-            final TestAwContentsClient contentsClient,
-            final int xCss, final int yCss) throws Exception {
+            final TestAwContentsClient contentsClient, final double xCss, final double yCss)
+            throws Exception {
         AwActivityTestRule.pollInstrumentationThread(() -> {
             String x = mActivityTestRule.executeJavaScriptAndWaitForResult(
                     awContents, contentsClient, "window.scrollX");
             String y = mActivityTestRule.executeJavaScriptAndWaitForResult(
                     awContents, contentsClient, "window.scrollY");
-            return (Integer.toString(xCss).equals(x)
-                    && Integer.toString(yCss).equals(y));
+
+            double scrollX = Double.parseDouble(x);
+            double scrollY = Double.parseDouble(y);
+
+            return Math.abs(xCss - scrollX) < EPSILON && Math.abs(yCss - scrollY) < EPSILON;
         });
     }
 
@@ -460,8 +466,12 @@ public class AndroidScrollIntegrationTest {
         // Make sure we can't hit these values simply as a result of scrolling.
         assert (maxScrollXPix % dragStepSize) != 0;
         assert (maxScrollYPix % dragStepSize) != 0;
-        final int maxScrollXCss = (int) Math.round(maxScrollXPix / deviceDIPScale);
-        final int maxScrollYCss = (int) Math.round(maxScrollYPix / deviceDIPScale);
+        double maxScrollXCss = maxScrollXPix / deviceDIPScale;
+        double maxScrollYCss = maxScrollYPix / deviceDIPScale;
+        if (!UseZoomForDSFPolicy.isUseZoomForDSFEnabled()) {
+            maxScrollXCss = Math.round(maxScrollXCss);
+            maxScrollYCss = Math.round(maxScrollYCss);
+        }
 
         setMaxScrollOnMainSync(testContainerView, maxScrollXPix, maxScrollYPix);
 
