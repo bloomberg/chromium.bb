@@ -1110,6 +1110,9 @@ void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
   // In the browser process call ::SetParent() directly.
   if (!gpu_channel_manager_delegate_) {
     ::SetParent(child_window, parent_window);
+    // Move D3D window behind Chrome's window to avoid losing some messages.
+    ::SetWindowPos(child_window, HWND_BOTTOM, 0, 0, 0, 0,
+                   SWP_NOMOVE | SWP_NOSIZE);
     return;
   }
 
