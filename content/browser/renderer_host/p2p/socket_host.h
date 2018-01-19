@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/datagram_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace IPC {
 class Sender;
@@ -61,10 +62,12 @@ class CONTENT_EXPORT P2PSocketHost {
                     const P2PHostAndIPEndPoint& remote_address) = 0;
 
   // Sends |data| on the socket to |to|.
-  virtual void Send(const net::IPEndPoint& to,
-                    const std::vector<char>& data,
-                    const rtc::PacketOptions& options,
-                    uint64_t packet_id) = 0;
+  virtual void Send(
+      const net::IPEndPoint& to,
+      const std::vector<char>& data,
+      const rtc::PacketOptions& options,
+      uint64_t packet_id,
+      const net::NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   virtual std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,

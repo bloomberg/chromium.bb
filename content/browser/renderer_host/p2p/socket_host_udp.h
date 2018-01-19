@@ -24,6 +24,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/udp_server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
 namespace net {
@@ -58,7 +59,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   void Send(const net::IPEndPoint& to,
             const std::vector<char>& data,
             const rtc::PacketOptions& options,
-            uint64_t packet_id) override;
+            uint64_t packet_id,
+            const net::NetworkTrafficAnnotationTag traffic_annotation) override;
   std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
       int id) override;
@@ -73,7 +75,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
     PendingPacket(const net::IPEndPoint& to,
                   const std::vector<char>& content,
                   const rtc::PacketOptions& options,
-                  uint64_t id);
+                  uint64_t id,
+                  const net::NetworkTrafficAnnotationTag traffic_annotation);
     PendingPacket(const PendingPacket& other);
     ~PendingPacket();
     net::IPEndPoint to;
@@ -81,6 +84,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
     int size;
     rtc::PacketOptions packet_options;
     uint64_t id;
+    const net::NetworkTrafficAnnotationTag traffic_annotation;
   };
 
   void OnError();
