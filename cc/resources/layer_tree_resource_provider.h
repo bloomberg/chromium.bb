@@ -144,6 +144,11 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
     return gpu_memory_buffer_manager_;
   }
 
+  bool IsLost(viz::ResourceId id);
+
+  void LoseResourceForTesting(viz::ResourceId id);
+  void EnableReadLockFencesForTesting(viz::ResourceId id);
+
   // The following lock classes are part of the ResourceProvider API and are
   // needed to read and write the resource contents. The user must ensure
   // that they only use GL locks on GL resources, etc, and this is enforced

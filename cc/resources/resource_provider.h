@@ -70,18 +70,11 @@ class CC_EXPORT ResourceProvider
   explicit ResourceProvider(viz::ContextProvider* compositor_context_provider);
   ~ResourceProvider() override;
 
-  void Initialize();
-
   bool IsSoftware() const { return !compositor_context_provider_; }
 
   void DidLoseContextProvider() { lost_context_provider_ = true; }
 
   size_t num_resources() const { return resources_.size(); }
-
-  bool IsLost(viz::ResourceId id);
-
-  void LoseResourceForTesting(viz::ResourceId id);
-  void EnableReadLockFencesForTesting(viz::ResourceId id);
 
   GLenum GetResourceTextureTarget(viz::ResourceId id);
 
@@ -116,27 +109,13 @@ class CC_EXPORT ResourceProvider
 
   ResourceMap resources_;
 
-  // Keep track of whether deleted resources should be batched up or returned
-  // immediately.
-  bool batch_return_resources_ = false;
-  // Maps from a child id to the set of resources to be returned to it.
-  base::small_map<std::map<int, ResourceIdArray>> batched_returning_resources_;
-
   viz::ContextProvider* compositor_context_provider_;
-  int next_child_;
 
   bool lost_context_provider_;
 
   THREAD_CHECKER(thread_checker_);
 
-#if defined(OS_ANDROID)
-  // Set of resource Ids that would like to be notified about promotion hints.
-  viz::ResourceIdSet wants_promotion_hints_set_;
-#endif
-
  private:
-  bool IsGLContextLost() const;
-
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.
   int tracing_id_;

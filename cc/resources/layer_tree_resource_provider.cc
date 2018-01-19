@@ -818,6 +818,24 @@ viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
   }
 }
 
+bool LayerTreeResourceProvider::IsLost(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  return resource->lost;
+}
+
+void LayerTreeResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  DCHECK(resource);
+  resource->lost = true;
+}
+
+void LayerTreeResourceProvider::EnableReadLockFencesForTesting(
+    viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  DCHECK(resource);
+  resource->read_lock_fences_enabled = true;
+}
+
 LayerTreeResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
     LayerTreeResourceProvider* resource_provider,
     viz::ResourceId resource_id)
