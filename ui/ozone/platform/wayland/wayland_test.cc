@@ -8,7 +8,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
-#include "ui/ozone/platform/wayland/mock_wayland_xkb_keyboard_layout_engine.h"
+#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
 #else
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
@@ -21,7 +21,7 @@ namespace ui {
 WaylandTest::WaylandTest() {
 #if BUILDFLAG(USE_XKBCOMMON)
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-      std::make_unique<WaylandXkbKeyboardLayoutEngineImpl>(
+      std::make_unique<WaylandXkbKeyboardLayoutEngine>(
           xkb_evdev_code_converter_));
 #else
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
