@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -23,6 +24,7 @@ class Point;
 }
 
 class StatusBubbleMacTest;
+@class StatusBubbleWindow;
 
 class StatusBubbleMac : public StatusBubble {
  public:
@@ -91,7 +93,7 @@ class StatusBubbleMac : public StatusBubble {
 
   // Is the status bubble attached to the browser window? It should be attached
   // when shown and during any fades, but should be detached when hidden.
-  bool is_attached() { return [window_ parentWindow] != nil; }
+  bool is_attached();
 
   // Begins fading the status bubble window in or out depending on the value
   // of |show|.  This must be called from the appropriate fade state,
@@ -146,6 +148,9 @@ class StatusBubbleMac : public StatusBubble {
   // concerns.
   unsigned long OSDependentCornerFlags(NSRect window_frame);
 
+  // Returns the status bubble window as an NSWindow. For use in tests.
+  NSWindow* GetWindow();
+
   // The window we attach ourselves to.
   NSWindow* parent_;  // WEAK
 
@@ -153,7 +158,7 @@ class StatusBubbleMac : public StatusBubble {
   id delegate_;  // WEAK
 
   // The window we own.
-  NSWindow* window_;
+  base::scoped_nsobject<StatusBubbleWindow> window_;
 
   // The status text we want to display when there are no URLs to display.
   NSString* status_text_;

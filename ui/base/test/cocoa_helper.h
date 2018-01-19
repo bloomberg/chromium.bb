@@ -32,6 +32,10 @@
 // NSWindowDidChangeOcclusionStateNotification.
 @property(nonatomic) BOOL pretendIsOccluded;
 
+// Value to return for -isOnActiveSpace. Posts
+// NSWorkspaceActiveSpaceDidChangeNotification when set.
+@property(nonatomic) BOOL pretendIsOnActiveSpace;
+
 // Whether to handle the key view loop as if full keyboard access is enabled.
 @property(nonatomic) BOOL pretendFullKeyboardAccessIsEnabled;
 
