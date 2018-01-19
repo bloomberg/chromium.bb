@@ -204,7 +204,8 @@ def _CheckPathMatchesClassName(java_file):
                     (java_file, expected_path_suffix))
 
 
-def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
+def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
+                classpath):
   incremental = options.incremental
   # Don't bother enabling incremental compilation for third_party code, since
   # _CheckPathMatchesClassName() fails on some of it, and it's not really much
@@ -274,12 +275,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
         # Add the extracted files to the classpath. This is required because
         # when compiling only a subset of files, classes that haven't changed
         # need to be findable.
-        try:
-          classpath_idx = javac_cmd.index('-classpath')
-          javac_cmd[classpath_idx + 1] += ':' + classes_dir
-        except ValueError:
-          # If there is no class path in the command line then add the arg
-          javac_cmd.extend(["-classpath", classes_dir])
+        classpath.append(classes_dir)
 
       # Can happen when a target goes from having no sources, to having sources.
       # It's created by the call to build_utils.Touch() below.
@@ -289,7 +285,20 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
 
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
-      cmd = javac_cmd + ['-d', classes_dir] + java_files
+      cmd = javac_cmd + ['-d', classes_dir]
+
+      # Pass classpath and source paths as response files to avoid extremely
+      # long command lines that are tedius to debug.
+      if classpath:
+        classpath_rsp_path = os.path.join(temp_dir, 'classpath.txt')
+        with open(classpath_rsp_path, 'w') as f:
+          f.write(':'.join(classpath))
+        cmd += ['-classpath', '@' + classpath_rsp_path]
+
+      java_files_rsp_path = os.path.join(temp_dir, 'files_list.txt')
+      with open(java_files_rsp_path, 'w') as f:
+        f.write(' '.join(java_files))
+      cmd += ['@' + java_files_rsp_path]
 
       # JMake prints out some diagnostic logs that we want to ignore.
       # This assumes that all compiler output goes through stderr.
@@ -493,8 +502,9 @@ def main(argv):
   # Annotation processors crash when given interface jars.
   active_classpath = (
       options.classpath if options.processors else options.interface_classpath)
+  classpath = []
   if active_classpath:
-    javac_cmd.extend(['-classpath', ':'.join(active_classpath)])
+    classpath.extend(active_classpath)
 
   if options.processorpath:
     javac_cmd.extend(['-processorpath', ':'.join(options.processorpath)])
@@ -525,11 +535,11 @@ def main(argv):
   # of them does not change what gets written to the depsfile.
   build_utils.CallAndWriteDepfileIfStale(
       lambda changes: _OnStaleMd5(changes, options, javac_cmd, java_files,
-                                  classpath_inputs),
+                                  classpath_inputs, classpath),
       options,
       depfile_deps=depfile_deps,
       input_paths=input_paths,
-      input_strings=javac_cmd,
+      input_strings=javac_cmd + classpath,
       output_paths=output_paths,
       force=force,
       pass_changes=True)
