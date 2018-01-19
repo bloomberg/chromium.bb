@@ -1981,6 +1981,8 @@ experimental domain DOMSnapshot
       optional boolean isClickable
       # Details of the node's event listeners, if any.
       optional array of DOMDebugger.EventListener eventListeners
+      # The selected url for nodes with a srcset attribute.
+      optional string currentSourceURL
 
   # Details of post layout rendered text positions. The exact layout should not be regarded as
   # stable and may change between versions.
