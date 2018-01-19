@@ -86,7 +86,7 @@ void CheckboxInputType::DidDispatchClick(Event* event,
     GetElement().setIndeterminate(state.indeterminate);
     GetElement().setChecked(state.checked);
   } else {
-    GetElement().DispatchChangeEventIfNeeded();
+    GetElement().DispatchInputAndChangeEventIfNeeded();
   }
   is_in_click_handler_ = false;
   // The work we did in willDispatchClick was default handling.

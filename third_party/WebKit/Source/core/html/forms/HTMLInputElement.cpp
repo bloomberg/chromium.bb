@@ -960,6 +960,14 @@ void HTMLInputElement::DispatchChangeEventIfNeeded() {
     DispatchChangeEvent();
 }
 
+void HTMLInputElement::DispatchInputAndChangeEventIfNeeded() {
+  if (isConnected() &&
+      input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
+    DispatchInputEvent();
+    DispatchChangeEvent();
+  }
+}
+
 bool HTMLInputElement::checked() const {
   input_type_->ReadingChecked();
   return is_checked_;
