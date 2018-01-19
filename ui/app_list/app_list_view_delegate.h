@@ -63,6 +63,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when the app list UI is created.
   virtual void ViewInitialized() = 0;
 
+  // Invoked when the app list is shown.
+  virtual void ViewShown() = 0;
+
   // Invoked to dismiss app list. This may leave the view open but hidden from
   // the user.
   virtual void Dismiss() = 0;

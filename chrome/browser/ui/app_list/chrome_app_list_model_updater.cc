@@ -201,6 +201,10 @@ ChromeAppListModelUpdater::GetIdToAppListIndexMap() {
   return id_to_app_list_index;
 }
 
+size_t ChromeAppListModelUpdater::BadgedItemCount() {
+  return model_->top_level_item_list()->BadgedItemCount();
+}
+
 app_list::AppListFolderItem*
 ChromeAppListModelUpdater::ResolveOemFolderPosition(
     const std::string& oem_folder_id,

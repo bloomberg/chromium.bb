@@ -4,8 +4,8 @@
 
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 
-#include "ash/app_list/model/app_list_model.h"
-#include "base/metrics/histogram_functions.h"
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
@@ -95,13 +95,7 @@ void AppListPresenterImpl::Show(int64_t display_id) {
     SetView(view);
   }
   presenter_delegate_->OnShown(display_id);
-
-  base::RecordAction(base::UserMetricsAction("Launcher_Show"));
-  base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
-                           presenter_delegate_->GetViewDelegate()
-                               ->GetModel()
-                               ->top_level_item_list()
-                               ->BadgedItemCount());
+  presenter_delegate_->GetViewDelegate()->ViewShown();
 }
 
 void AppListPresenterImpl::Dismiss() {

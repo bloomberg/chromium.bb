@@ -14,6 +14,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -238,6 +239,12 @@ void AppListViewDelegate::ViewInitialized() {
   if (service) {
     service->AppListShown();
   }
+}
+
+void AppListViewDelegate::ViewShown() {
+  base::RecordAction(base::UserMetricsAction("Launcher_Show"));
+  base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
+                           model_updater_->BadgedItemCount());
 }
 
 void AppListViewDelegate::Dismiss() {

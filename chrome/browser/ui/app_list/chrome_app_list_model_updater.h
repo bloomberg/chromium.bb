@@ -77,6 +77,7 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   app_list::AppListViewState StateFullscreen() override;
   bool SearchEngineIsGoogle() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
+  size_t BadgedItemCount() override;
   ui::MenuModel* GetContextMenuModel(const std::string& id);
 
   // Methods for AppListSyncableService:

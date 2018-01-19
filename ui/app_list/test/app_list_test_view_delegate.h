@@ -53,6 +53,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
                                 int action_index,
                                 int event_flags) override {}
   void ViewInitialized() override {}
+  void ViewShown() override {}
   void Dismiss() override;
   void ViewClosing() override {}
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
