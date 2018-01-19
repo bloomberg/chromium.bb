@@ -124,9 +124,15 @@ class MockFetcher : public URLFetcher {
     const base::Value* response_data_value = reply_dictionary->FindKey("data");
     ASSERT_THAT(response_data_value, NotNull());
     response_data_ = response_data_value->GetString();
+    const base::Value* total_received_bytes_value =
+        reply_dictionary->FindKey("total_received_bytes");
+    int total_received_bytes = 0;
+    if (total_received_bytes_value)
+      total_received_bytes = total_received_bytes_value->GetInt();
     result_listener->OnFetchComplete(
         GURL(final_url_value->GetString()), std::move(response_headers),
-        response_data_.c_str(), response_data_.size(), load_timing_info);
+        response_data_.c_str(), response_data_.size(), load_timing_info,
+        total_received_bytes);
   }
 
  private:
@@ -391,7 +397,8 @@ TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
-        }
+        },
+        "total_received_bytes": 100
       })";
 
   std::unique_ptr<net::URLRequest> request(
@@ -403,6 +410,7 @@ TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
   EXPECT_TRUE(request->Read(buffer.get(), kBufferSize, &bytes_read));
   EXPECT_EQ(5, bytes_read);
   EXPECT_EQ("Reply", std::string(buffer->data(), 5));
+  EXPECT_EQ(100, request->GetTotalReceivedBytes());
 
   net::LoadTimingInfo load_timing_info;
   request->GetLoadTimingInfo(&load_timing_info);
