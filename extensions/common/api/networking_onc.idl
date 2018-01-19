@@ -997,7 +997,9 @@ namespace networking.onc {
     // |networkGuid|: The GUID of the network to connect to.
     // |callback|: Called when the connect request has been sent. Note: the
     //     connection may not have completed. Observe $(ref:onNetworksChanged)
-    //     to be notified when a network state changes.
+    //     to be notified when a network state changes. If the connect request
+    //     immediately failed (e.g. the network is unconfigured),
+    //     $(ref:runtime.lastError) will be set with a failure reason.
     static void startConnect(DOMString networkGuid,
                              optional VoidCallback callback);
 

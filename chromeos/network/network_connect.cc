@@ -254,7 +254,7 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& network_id,
                  weak_factory_.GetWeakPtr(), network_id),
       base::Bind(&NetworkConnectImpl::OnConnectFailed,
                  weak_factory_.GetWeakPtr(), network_id),
-      check_error_state);
+      check_error_state, ConnectCallbackMode::ON_COMPLETED);
 }
 
 void NetworkConnectImpl::OnActivateFailed(

@@ -904,7 +904,7 @@ namespace networkingPrivate {
   callback GetGlobalPolicyCallback = void(GlobalPolicy result);
   callback GetCertificateListsCallback = void(CertificateLists result);
 
-  // These functions all report failures via chrome.runtime.lastError.
+  // These functions all report failures via $(ref:runtime.lastError).
   interface Functions {
     // Gets all the properties of the network with id networkGuid. Includes all
     // properties of the network (read-only and read/write values).
@@ -1012,7 +1012,9 @@ namespace networkingPrivate {
     // |networkGuid|: The GUID of the network to connect to.
     // |callback|: Called when the connect request has been sent. Note: the
     //     connection may not have completed. Observe $(ref:onNetworksChanged)
-    //     to be notified when a network state changes.
+    //     to be notified when a network state changes. If the connect request
+    //     immediately failed (e.g. the network is unconfigured),
+    //     $(ref:runtime.lastError) will be set with a failure reason.
     static void startConnect(DOMString networkGuid,
                              optional VoidCallback callback);
 
@@ -1120,7 +1122,7 @@ namespace networkingPrivate {
     // the operation will fail. This will not lock the SIM; that is handled
     // automatically by the device. NOTE: If the SIM is locked, it must first be
     // unlocked with unlockCellularSim() before this can be called (otherwise it
-    // will fail and chrome.runtime.lastError will be set to Error.SimLocked).
+    // will fail and $(ref:runtime.lastError) will be set to Error.SimLocked).
     // |networkGuid|: The GUID of the cellular network to set the SIM state of.
     //     If empty, the default cellular device will be used.
     // |simState|: The SIM state to set.
