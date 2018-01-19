@@ -372,8 +372,8 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
   ProtoDatabase<TestProto>::KeyEntryVector data_set(
           {{"0", test_proto}, {"1", test_proto}, {"2", test_proto}});
   db->UpdateEntries(
-      base::MakeUnique<ProtoDatabase<TestProto>::KeyEntryVector>(data_set),
-      base::MakeUnique<std::vector<std::string>>(), expect_update_success);
+      std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>(data_set),
+      std::make_unique<std::vector<std::string>>(), expect_update_success);
   run_update_entries.Run();
 
   base::RunLoop run_load_keys;

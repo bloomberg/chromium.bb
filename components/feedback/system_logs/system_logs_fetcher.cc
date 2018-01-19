@@ -4,11 +4,11 @@
 
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,7 +48,7 @@ void Anonymize(feedback::AnonymizerTool* anonymizer,
 }  // namespace
 
 SystemLogsFetcher::SystemLogsFetcher(bool scrub_data)
-    : response_(base::MakeUnique<SystemLogsResponse>()),
+    : response_(std::make_unique<SystemLogsResponse>()),
       num_pending_requests_(0),
       task_runner_for_anonymizer_(base::CreateSequencedTaskRunnerWithTraits(
           {// User visible because this is called when the user is looking at
@@ -57,7 +57,7 @@ SystemLogsFetcher::SystemLogsFetcher(bool scrub_data)
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   if (scrub_data)
-    anonymizer_ = base::MakeUnique<feedback::AnonymizerTool>();
+    anonymizer_ = std::make_unique<feedback::AnonymizerTool>();
 }
 
 SystemLogsFetcher::~SystemLogsFetcher() {

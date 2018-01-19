@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/assist_ranker/fake_ranker_model_loader.h"
@@ -83,8 +82,8 @@ RankerModelStatus FakePredictor::ValidateModel(const RankerModel& model) {
 std::unique_ptr<FakePredictor> FakePredictor::Create() {
   std::unique_ptr<FakePredictor> predictor(
       new FakePredictor(kTestPredictorConfig));
-  auto ranker_model = base::MakeUnique<RankerModel>();
-  auto fake_model_loader = base::MakeUnique<FakeRankerModelLoader>(
+  auto ranker_model = std::make_unique<RankerModel>();
+  auto fake_model_loader = std::make_unique<FakeRankerModelLoader>(
       base::BindRepeating(&FakePredictor::ValidateModel),
       base::BindRepeating(&FakePredictor::OnModelAvailable,
                           base::Unretained(predictor.get())),

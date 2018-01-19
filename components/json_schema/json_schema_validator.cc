@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -612,7 +613,7 @@ void JSONSchemaValidator::ValidateObject(const base::DictionaryValue* instance,
   if (schema->GetDictionary(schema::kPatternProperties, &pattern_properties)) {
     for (base::DictionaryValue::Iterator it(*pattern_properties); !it.IsAtEnd();
          it.Advance()) {
-      auto prop_pattern = base::MakeUnique<re2::RE2>(it.key());
+      auto prop_pattern = std::make_unique<re2::RE2>(it.key());
       if (!prop_pattern->ok()) {
         LOG(WARNING) << "Regular expression /" << it.key()
                      << "/ is invalid: " << prop_pattern->error() << ".";

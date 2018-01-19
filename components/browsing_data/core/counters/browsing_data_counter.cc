@@ -4,9 +4,9 @@
 
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -89,7 +89,7 @@ void BrowsingDataCounter::Restart() {
 }
 
 void BrowsingDataCounter::ReportResult(ResultInt value) {
-  ReportResult(base::MakeUnique<FinishedResult>(this, value));
+  ReportResult(std::make_unique<FinishedResult>(this, value));
 }
 
 void BrowsingDataCounter::ReportResult(std::unique_ptr<Result> result) {
@@ -138,7 +138,7 @@ void BrowsingDataCounter::TransitionToShowCalculating() {
   state_ = State::SHOW_CALCULATING;
   state_transitions_.push_back(state_);
 
-  callback_.Run(base::MakeUnique<Result>(this));
+  callback_.Run(std::make_unique<Result>(this));
   timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kDelayUntilReadyToShowResultMs),

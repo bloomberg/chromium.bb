@@ -4,9 +4,9 @@
 
 #include "components/domain_reliability/beacon.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/net_errors.h"
@@ -26,7 +26,7 @@ std::unique_ptr<Value> DomainReliabilityBeacon::ToValue(
     base::TimeTicks last_network_change_time,
     const GURL& collector_url,
     const std::vector<std::unique_ptr<std::string>>& path_prefixes) const {
-  auto beacon_value = base::MakeUnique<DictionaryValue>();
+  auto beacon_value = std::make_unique<DictionaryValue>();
   DCHECK(url.is_valid());
   GURL sanitized_url = SanitizeURLForReport(url, collector_url, path_prefixes);
   beacon_value->SetString("url", sanitized_url.spec());
@@ -34,7 +34,7 @@ std::unique_ptr<Value> DomainReliabilityBeacon::ToValue(
   if (!quic_error.empty())
     beacon_value->SetString("quic_error", quic_error);
   if (chrome_error != net::OK) {
-    auto failure_value = base::MakeUnique<DictionaryValue>();
+    auto failure_value = std::make_unique<DictionaryValue>();
     failure_value->SetString("custom_error",
                              net::ErrorToString(chrome_error));
     beacon_value->Set("failure_data", std::move(failure_value));

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,7 +128,7 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadDevicesWithAndWithoutBeaconSeeds) {
       1, CreateDeviceInfo("0"));
 
   RemoteDeviceLoader loader1(device_infos, user_private_key_, kUserId,
-                             base::MakeUnique<FakeSecureMessageDelegate>());
+                             std::make_unique<FakeSecureMessageDelegate>());
   EXPECT_CALL(*this, LoadCompleted());
   loader1.Load(
       false /* should_load_beacon_seeds */,
@@ -138,7 +137,7 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadDevicesWithAndWithoutBeaconSeeds) {
   RemoteDevice remote_device_without_beacon_seed = remote_devices_[0];
 
   RemoteDeviceLoader loader2(device_infos, user_private_key_, kUserId,
-                             base::MakeUnique<FakeSecureMessageDelegate>());
+                             std::make_unique<FakeSecureMessageDelegate>());
   EXPECT_CALL(*this, LoadCompleted());
   loader2.Load(
       true /* should_load_beacon_seeds */,

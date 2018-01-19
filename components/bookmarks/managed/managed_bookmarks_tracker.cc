@@ -4,6 +4,7 @@
 
 #include "components/bookmarks/managed/managed_bookmarks_tracker.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"

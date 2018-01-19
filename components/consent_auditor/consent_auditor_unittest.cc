@@ -67,10 +67,10 @@ void LoadEntriesFromLocalConsentRecord(const base::Value* consents,
 class ConsentAuditorTest : public testing::Test {
  public:
   void SetUp() override {
-    pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    user_event_service_ = base::MakeUnique<syncer::FakeUserEventService>();
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
     ConsentAuditor::RegisterProfilePrefs(pref_service_->registry());
-    consent_auditor_ = base::MakeUnique<ConsentAuditor>(
+    consent_auditor_ = std::make_unique<ConsentAuditor>(
         pref_service_.get(), user_event_service_.get(), kCurrentAppVersion,
         kCurrentAppLocale);
   }
@@ -80,7 +80,7 @@ class ConsentAuditorTest : public testing::Test {
     // We'll have to recreate |consent_auditor| in order to update the version
     // and locale. This is not a problem, as in reality we'd have to restart
     // Chrome to update both, let alone just recreate this class.
-    consent_auditor_ = base::MakeUnique<ConsentAuditor>(
+    consent_auditor_ = std::make_unique<ConsentAuditor>(
         pref_service_.get(), user_event_service_.get(), new_product_version,
         new_app_locale);
   }

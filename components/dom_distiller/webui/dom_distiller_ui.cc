@@ -4,7 +4,8 @@
 
 #include "components/dom_distiller/webui/dom_distiller_ui.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/webui/dom_distiller_handler.h"
@@ -53,7 +54,7 @@ DomDistillerUi::DomDistillerUi(content::WebUI* web_ui,
 
   // Add message handler.
   web_ui->AddMessageHandler(
-      base::MakeUnique<DomDistillerHandler>(service, scheme));
+      std::make_unique<DomDistillerHandler>(service, scheme));
 }
 
 DomDistillerUi::~DomDistillerUi() {}

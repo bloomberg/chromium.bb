@@ -308,8 +308,8 @@ template <typename T>
 void ProtoDatabaseImpl<T>::LoadKeys(
     typename ProtoDatabase<T>::LoadKeysCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto success = base::MakeUnique<bool>(false);
-  auto keys = base::MakeUnique<std::vector<std::string>>();
+  auto success = std::make_unique<bool>(false);
+  auto keys = std::make_unique<std::vector<std::string>>();
   auto load_task =
       base::Bind(LoadKeysFromTaskRunner, base::Unretained(db_.get()),
                  keys.get(), success.get());

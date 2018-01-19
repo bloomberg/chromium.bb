@@ -43,7 +43,7 @@ void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
   base::FilePath path = temp_dir->GetPath();
   scoped_refptr<SharedTempDir> shared_temp_dir =
       new SharedTempDir(std::move(temp_dir));
-  mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
+  mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
   std::move(callback).Run(mojom::FileError::OK);
@@ -60,7 +60,7 @@ void FileSystemImpl::OpenPersistentFileSystem(
   scoped_refptr<SharedTempDir> shared_temp_dir =
       new SharedTempDir(std::move(temp_dir));
 
-  mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
+  mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
   std::move(callback).Run(mojom::FileError::OK);

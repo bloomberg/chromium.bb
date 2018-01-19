@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -57,7 +56,7 @@ void FileSystemApp::OnBindInterface(
 void FileSystemApp::Create(mojom::FileSystemRequest request,
                            const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<FileSystemImpl>(source_info.identity, GetUserDataDir(),
+      std::make_unique<FileSystemImpl>(source_info.identity, GetUserDataDir(),
                                        lock_table_),
       std::move(request));
 }

@@ -7,9 +7,10 @@
 #include <map>
 #include <string>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/grpc_support/include/bidirectional_stream_c.h"
@@ -141,7 +142,7 @@ class TestBidirectionalStreamCallback {
 
   void AddWriteData(const std::string& data) { AddWriteData(data, true); }
   void AddWriteData(const std::string& data, bool flush) {
-    write_data.push_back(base::MakeUnique<WriteData>(data, flush));
+    write_data.push_back(std::make_unique<WriteData>(data, flush));
   }
 
   virtual void MaybeWriteNextData(bidirectional_stream* stream) {

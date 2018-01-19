@@ -9,10 +9,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -88,7 +88,7 @@ ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
        it != to_register.end(); ++it) {
     if (!base::ContainsKey(registration_statuses_, *it)) {
       registration_statuses_[*it] =
-          base::MakeUnique<RegistrationStatus>(*it, this);
+          std::make_unique<RegistrationStatus>(*it, this);
     }
     if (!IsIdRegistered(*it)) {
       TryRegisterId(*it, false /* is-retry */);

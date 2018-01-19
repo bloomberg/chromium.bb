@@ -4,10 +4,10 @@
 
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
@@ -61,7 +61,7 @@ void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
   if (!load_active_)
     return;
   mojo::MakeStrongBinding(
-      base::MakeUnique<DistillerPageNotifierServiceImpl>(this),
+      std::make_unique<DistillerPageNotifierServiceImpl>(this),
       std::move(request));
 }
 

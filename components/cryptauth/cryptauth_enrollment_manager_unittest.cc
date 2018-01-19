@@ -4,11 +4,11 @@
 
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -166,13 +166,13 @@ class CryptAuthEnrollmentManagerTest
     CryptAuthEnrollmentManager::RegisterPrefs(pref_service_.registry());
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentIsRecoveringFromFailure,
-        base::MakeUnique<base::Value>(false));
+        std::make_unique<base::Value>(false));
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
-        base::MakeUnique<base::Value>(kLastEnrollmentTimeSeconds));
+        std::make_unique<base::Value>(kLastEnrollmentTimeSeconds));
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentReason,
-        base::MakeUnique<base::Value>(INVOCATION_REASON_UNKNOWN));
+        std::make_unique<base::Value>(INVOCATION_REASON_UNKNOWN));
 
     std::string public_key_b64, private_key_b64;
     base::Base64UrlEncode(public_key_,
@@ -217,7 +217,7 @@ class CryptAuthEnrollmentManagerTest
         Enroll(public_key_, private_key_, _, expected_invocation_reason, _))
         .WillOnce(SaveArg<4>(&completion_callback));
 
-    auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+    auto sync_request = std::make_unique<SyncScheduler::SyncRequest>(
         enrollment_manager_.GetSyncScheduler());
     EXPECT_CALL(*this, OnEnrollmentStartedProxy());
 
@@ -303,8 +303,8 @@ TEST_F(CryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
   CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthEnrollmentManager enrollment_manager(
-      &clock, base::MakeUnique<MockCryptAuthEnrollerFactory>(),
-      base::MakeUnique<FakeSecureMessageDelegate>(), device_info_,
+      &clock, std::make_unique<MockCryptAuthEnrollerFactory>(),
+      std::make_unique<FakeSecureMessageDelegate>(), device_info_,
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
@@ -331,7 +331,7 @@ TEST_F(CryptAuthEnrollmentManagerTest, InitWithExistingPrefs) {
 TEST_F(CryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
   pref_service_.SetUserPref(
       prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
-      base::MakeUnique<base::Value>(kLastExpiredEnrollmentTimeSeconds));
+      std::make_unique<base::Value>(kLastExpiredEnrollmentTimeSeconds));
 
   EXPECT_CALL(*sync_scheduler(),
               Start(clock_.Now() - base::Time::FromDoubleT(
@@ -404,7 +404,7 @@ TEST_F(CryptAuthEnrollmentManagerTest,
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+  auto sync_request = std::make_unique<SyncScheduler::SyncRequest>(
       enrollment_manager_.GetSyncScheduler());
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));
@@ -440,7 +440,7 @@ TEST_F(CryptAuthEnrollmentManagerTest, GCMRegistrationFails) {
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
-  auto sync_request = base::MakeUnique<SyncScheduler::SyncRequest>(
+  auto sync_request = std::make_unique<SyncScheduler::SyncRequest>(
       enrollment_manager_.GetSyncScheduler());
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(std::move(sync_request));

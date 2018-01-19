@@ -4,6 +4,8 @@
 
 #include "components/metrics/single_sample_metrics_factory_impl.h"
 
+#include <memory>
+
 #include "base/threading/thread_checker.h"
 
 namespace metrics {
@@ -65,7 +67,7 @@ SingleSampleMetricsFactoryImpl::CreateMetric(const std::string& histogram_name,
   GetProvider()->AcquireSingleSampleMetric(histogram_name, min, max,
                                            bucket_count, flags,
                                            mojo::MakeRequest(&metric));
-  return base::MakeUnique<SingleSampleMetricImpl>(std::move(metric));
+  return std::make_unique<SingleSampleMetricImpl>(std::move(metric));
 }
 
 mojom::SingleSampleMetricsProvider*

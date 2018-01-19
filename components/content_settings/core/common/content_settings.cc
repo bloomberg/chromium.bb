@@ -5,6 +5,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -124,7 +125,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
   primary_pattern = other.primary_pattern;
   secondary_pattern = other.secondary_pattern;
   if (other.setting_value)
-    setting_value = base::MakeUnique<base::Value>(other.setting_value->Clone());
+    setting_value = std::make_unique<base::Value>(other.setting_value->Clone());
   source = other.source;
   incognito = other.incognito;
   return *this;

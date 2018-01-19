@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -202,7 +201,7 @@ std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
   auto* const component = GetComponent(it->second);
   if (!component)
     return nullptr;
-  return base::MakeUnique<ComponentInfo>(
+  return std::make_unique<ComponentInfo>(
       GetCrxComponentID(*component), component->fingerprint,
       base::UTF8ToUTF16(component->name), component->version);
 }
@@ -437,7 +436,7 @@ std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config) {
   DCHECK(config);
   auto update_client = update_client::UpdateClientFactory(config);
-  return base::MakeUnique<CrxUpdateService>(config, std::move(update_client));
+  return std::make_unique<CrxUpdateService>(config, std::move(update_client));
 }
 
 }  // namespace component_updater

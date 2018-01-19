@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -252,7 +253,7 @@ void CastSocketImpl::Connect() {
   DCHECK_EQ(ReadyState::NONE, ready_state_);
   DCHECK_EQ(ConnectionState::START_CONNECT, connect_state_);
 
-  delegate_ = base::MakeUnique<CastSocketMessageDelegate>(this);
+  delegate_ = std::make_unique<CastSocketMessageDelegate>(this);
 
   SetReadyState(ReadyState::CONNECTING);
   SetConnectState(ConnectionState::TCP_CONNECT);

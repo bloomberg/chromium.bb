@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "components/assist_ranker/fake_ranker_model_loader.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/ranker_model.h"
@@ -76,7 +75,7 @@ BinaryClassifierPredictorTest::GetSimpleLogisticRegressionModel() {
 // TODO(hamelphi): Test BinaryClassifierPredictor::Create.
 
 TEST_F(BinaryClassifierPredictorTest, EmptyRankerModel) {
-  auto ranker_model = base::MakeUnique<RankerModel>();
+  auto ranker_model = std::make_unique<RankerModel>();
   auto predictor = InitPredictor(std::move(ranker_model), GetConfig());
   EXPECT_FALSE(predictor->IsReady());
 
@@ -90,7 +89,7 @@ TEST_F(BinaryClassifierPredictorTest, EmptyRankerModel) {
 }
 
 TEST_F(BinaryClassifierPredictorTest, NoInferenceModuleForModel) {
-  auto ranker_model = base::MakeUnique<RankerModel>();
+  auto ranker_model = std::make_unique<RankerModel>();
   // TranslateRankerModel does not have an inference module. Validation will
   // fail.
   ranker_model->mutable_proto()
@@ -110,7 +109,7 @@ TEST_F(BinaryClassifierPredictorTest, NoInferenceModuleForModel) {
 }
 
 TEST_F(BinaryClassifierPredictorTest, GenericLogisticRegressionModel) {
-  auto ranker_model = base::MakeUnique<RankerModel>();
+  auto ranker_model = std::make_unique<RankerModel>();
   *ranker_model->mutable_proto()->mutable_logistic_regression() =
       GetSimpleLogisticRegressionModel();
   auto predictor = InitPredictor(std::move(ranker_model), GetConfig());

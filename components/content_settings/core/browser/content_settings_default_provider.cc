@@ -4,12 +4,12 @@
 
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -272,7 +272,7 @@ std::unique_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
     NOTREACHED();
     return nullptr;
   }
-  return base::MakeUnique<DefaultRuleIterator>(it->second.get());
+  return std::make_unique<DefaultRuleIterator>(it->second.get());
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(

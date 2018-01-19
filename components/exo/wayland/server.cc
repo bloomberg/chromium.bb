@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -4350,7 +4351,7 @@ void pointer_gestures_get_pinch_gesture(wl_client* client,
       client, &zwp_pointer_gesture_pinch_v1_interface, 1, id);
   SetImplementation(pointer_gesture_pinch_resource,
                     &pointer_gesture_pinch_implementation,
-                    base::MakeUnique<WaylandPointerGesturePinchDelegate>(
+                    std::make_unique<WaylandPointerGesturePinchDelegate>(
                         pointer_gesture_pinch_resource, pointer));
 }
 

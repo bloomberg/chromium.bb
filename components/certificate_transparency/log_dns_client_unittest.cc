@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -102,7 +101,7 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
 
   std::unique_ptr<LogDnsClient> CreateLogDnsClient(
       size_t max_concurrent_queries) {
-    return base::MakeUnique<LogDnsClient>(mock_dns_.CreateDnsClient(),
+    return std::make_unique<LogDnsClient>(mock_dns_.CreateDnsClient(),
                                           net::NetLogWithSource(),
                                           max_concurrent_queries);
   }

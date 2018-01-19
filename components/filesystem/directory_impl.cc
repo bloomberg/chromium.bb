@@ -4,6 +4,7 @@
 
 #include "components/filesystem/directory_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file.h"
@@ -11,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/filesystem/file_impl.h"
 #include "components/filesystem/lock_table.h"
@@ -82,7 +82,7 @@ void DirectoryImpl::OpenFile(const std::string& raw_path,
 
   if (file.is_pending()) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<FileImpl>(path, std::move(base_file), temp_dir_,
+        std::make_unique<FileImpl>(path, std::move(base_file), temp_dir_,
                                    lock_table_),
         std::move(file));
   }
@@ -146,7 +146,7 @@ void DirectoryImpl::OpenDirectory(const std::string& raw_path,
 
   if (directory.is_pending()) {
     mojo::MakeStrongBinding(
-        base::MakeUnique<DirectoryImpl>(path, temp_dir_, lock_table_),
+        std::make_unique<DirectoryImpl>(path, temp_dir_, lock_table_),
         std::move(directory));
   }
 
@@ -295,7 +295,7 @@ void DirectoryImpl::StatFile(const std::string& raw_path,
 
 void DirectoryImpl::Clone(mojom::DirectoryRequest directory) {
   if (directory.is_pending()) {
-    mojo::MakeStrongBinding(base::MakeUnique<DirectoryImpl>(
+    mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
                                 directory_path_, temp_dir_, lock_table_),
                             std::move(directory));
   }

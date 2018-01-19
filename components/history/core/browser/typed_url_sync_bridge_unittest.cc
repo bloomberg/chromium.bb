@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/typed_url_sync_bridge.h"
 
+#include <memory>
+
 #include "base/big_endian.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -237,7 +239,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
     fake_history_backend_->Init(
         false, TestHistoryDatabaseParamsForPath(test_dir_.GetPath()));
     std::unique_ptr<TypedURLSyncBridge> bridge =
-        base::MakeUnique<TypedURLSyncBridge>(
+        std::make_unique<TypedURLSyncBridge>(
             fake_history_backend_.get(), fake_history_backend_->db(),
             RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_,
                                                                     false));

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -190,7 +191,7 @@ GCMInvalidationBridge::~GCMInvalidationBridge() {
 std::unique_ptr<syncer::GCMNetworkChannelDelegate>
 GCMInvalidationBridge::CreateDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::MakeUnique<Core>(weak_factory_.GetWeakPtr(),
+  return std::make_unique<Core>(weak_factory_.GetWeakPtr(),
                                 base::ThreadTaskRunnerHandle::Get());
 }
 

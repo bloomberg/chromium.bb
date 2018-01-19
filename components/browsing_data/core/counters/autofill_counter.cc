@@ -5,10 +5,10 @@
 #include "components/browsing_data/core/counters/autofill_counter.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -179,7 +179,7 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   if (suggestions_query_ || credit_cards_query_ || addresses_query_)
     return;
 
-  auto reported_result = base::MakeUnique<AutofillResult>(
+  auto reported_result = std::make_unique<AutofillResult>(
       this, num_suggestions_, num_credit_cards_, num_addresses_,
       sync_tracker_.IsSyncActive());
   ReportResult(std::move(reported_result));

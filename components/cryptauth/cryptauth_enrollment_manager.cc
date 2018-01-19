@@ -4,10 +4,10 @@
 
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64url.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/cryptauth/cryptauth_enroller.h"
@@ -44,7 +44,7 @@ const char kDeviceSoftwarePackage[] = "com.google.chrome.cryptauth";
 
 std::unique_ptr<SyncScheduler> CreateSyncScheduler(
     SyncScheduler::Delegate* delegate) {
-  return base::MakeUnique<SyncSchedulerImpl>(
+  return std::make_unique<SyncSchedulerImpl>(
       delegate, base::TimeDelta::FromDays(kEnrollmentRefreshPeriodDays),
       base::TimeDelta::FromMinutes(kEnrollmentBaseRecoveryPeriodMinutes),
       kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");

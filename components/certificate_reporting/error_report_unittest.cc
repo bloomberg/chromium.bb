@@ -7,9 +7,10 @@
 #include <set>
 #include <string>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
@@ -221,8 +222,8 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
   TestingPrefServiceSimple pref_service;
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
   network_time::NetworkTimeTracker network_time_tracker(
-      base::MakeUnique<base::DefaultClock>(),
-      base::MakeUnique<base::DefaultTickClock>(), &pref_service,
+      std::make_unique<base::DefaultClock>(),
+      std::make_unique<base::DefaultTickClock>(), &pref_service,
       new net::TestURLRequestContextGetter(io_thread.task_runner()));
 
   // Serialize a report containing information about the network time querying

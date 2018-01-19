@@ -4,8 +4,9 @@
 
 #include "components/certificate_transparency/tree_state_tracker.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "components/certificate_transparency/log_dns_client.h"
 #include "components/certificate_transparency/single_tree_tracker.h"
 #include "net/base/network_change_notifier.h"
@@ -41,7 +42,7 @@ TreeStateTracker::TreeStateTracker(
 
   std::unique_ptr<net::DnsClient> dns_client =
       net::DnsClient::CreateClient(net_log);
-  dns_client_ = base::MakeUnique<LogDnsClient>(
+  dns_client_ = std::make_unique<LogDnsClient>(
       std::move(dns_client),
       net::NetLogWithSource::Make(net_log,
                                   net::NetLogSourceType::CT_TREE_STATE_TRACKER),

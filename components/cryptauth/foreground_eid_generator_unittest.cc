@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -133,7 +132,7 @@ class CryptAuthForegroundEidGeneratorTest : public testing::Test {
     SetTestTime(kDefaultCurrentTime);
 
     eid_generator_.reset(new ForegroundEidGenerator(
-        base::MakeUnique<TestRawEidGenerator>(), &test_clock_));
+        std::make_unique<TestRawEidGenerator>(), &test_clock_));
   }
 
   // TODO(khorimoto): Is there an easier way to do this?
@@ -335,7 +334,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
   // Use real RawEidGenerator implementation instead of test version.
   eid_generator_.reset(new ForegroundEidGenerator(
-      base::MakeUnique<RawEidGeneratorImpl>(), &test_clock_));
+      std::make_unique<RawEidGeneratorImpl>(), &test_clock_));
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(

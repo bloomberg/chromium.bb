@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace login {
 
@@ -179,7 +178,7 @@ bool ScreenContext::Set(const KeyType& key, base::Value* value) {
   if (in_storage && new_value->Equals(current_value))
     return false;
 
-  changes_.Set(key, base::MakeUnique<base::Value>(new_value->Clone()));
+  changes_.Set(key, std::make_unique<base::Value>(new_value->Clone()));
   storage_.Set(key, std::move(new_value));
   return true;
 }

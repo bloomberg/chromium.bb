@@ -4,7 +4,7 @@
 
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 namespace cryptauth {
 
@@ -22,13 +22,13 @@ MockForegroundEidGenerator::GenerateBackgroundScanFilter(
 
   std::unique_ptr<DataWithTimestamp> adjacent_data;
   if (background_scan_filter_->adjacent_data) {
-    adjacent_data = base::MakeUnique<DataWithTimestamp>(
+    adjacent_data = std::make_unique<DataWithTimestamp>(
         background_scan_filter_->adjacent_data->data,
         background_scan_filter_->adjacent_data->start_timestamp_ms,
         background_scan_filter_->adjacent_data->end_timestamp_ms);
   }
 
-  return base::MakeUnique<EidData>(background_scan_filter_->current_data,
+  return std::make_unique<EidData>(background_scan_filter_->current_data,
                                    std::move(adjacent_data));
 }
 
@@ -40,7 +40,7 @@ MockForegroundEidGenerator::GenerateAdvertisement(
     return nullptr;
   }
 
-  return base::MakeUnique<DataWithTimestamp>(advertisement_->data,
+  return std::make_unique<DataWithTimestamp>(advertisement_->data,
                                              advertisement_->start_timestamp_ms,
                                              advertisement_->end_timestamp_ms);
 }

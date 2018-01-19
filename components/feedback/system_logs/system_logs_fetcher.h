@@ -36,8 +36,8 @@ using SysLogsFetcherCallback =
 //   }
 //   void GetLogs() {
 //     SystemLogsFetcher* fetcher = new SystemLogsFetcher(/*scrub_data=*/ true);
-//     fetcher->AddSource(base::MakeUnique<LogSourceOne>());
-//     fetcher->AddSource(base::MakeUnique<LogSourceTwo>());
+//     fetcher->AddSource(std::make_unique<LogSourceOne>());
+//     fetcher->AddSource(std::make_unique<LogSourceTwo>());
 //     fetcher->Fetch(base::Bind(&Example::ProcessLogs, this));
 //   }
 // };

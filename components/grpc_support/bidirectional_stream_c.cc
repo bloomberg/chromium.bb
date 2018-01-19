@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -118,7 +117,7 @@ BidirectionalStreamAdapter::BidirectionalStreamAdapter(
     bidirectional_stream_callback* callback)
     : request_context_getter_(
           reinterpret_cast<net::URLRequestContextGetter*>(engine->obj)),
-      c_stream_(base::MakeUnique<bidirectional_stream>()),
+      c_stream_(std::make_unique<bidirectional_stream>()),
       c_callback_(callback) {
   DCHECK(request_context_getter_);
   bidirectional_stream_ =

@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/secure_channel.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_service.h"
@@ -90,7 +92,7 @@ int SecureChannel::SendMessage(const std::string& feature,
   next_sequence_number_++;
 
   queued_messages_.emplace(
-      base::MakeUnique<PendingMessage>(feature, payload, sequence_number));
+      std::make_unique<PendingMessage>(feature, payload, sequence_number));
   ProcessMessageQueue();
 
   return sequence_number;
@@ -274,7 +276,7 @@ void SecureChannel::ProcessMessageQueue() {
 void SecureChannel::OnMessageEncoded(const std::string& feature,
                                      int sequence_number,
                                      const std::string& encoded_message) {
-  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_->SendMessage(std::make_unique<cryptauth::WireMessage>(
       encoded_message, feature, sequence_number));
 }
 

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -14,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/md5.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -118,8 +118,8 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
                            const PrepopulatedPageList& prepopulated_pages,
                            const CanAddURLToHistoryFn& can_add_url_to_history)
     : backend_(nullptr),
-      cache_(base::MakeUnique<TopSitesCache>()),
-      thread_safe_cache_(base::MakeUnique<TopSitesCache>()),
+      cache_(std::make_unique<TopSitesCache>()),
+      thread_safe_cache_(std::make_unique<TopSitesCache>()),
       prepopulated_pages_(prepopulated_pages),
       pref_service_(pref_service),
       history_service_(history_service),
@@ -281,7 +281,7 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto dummy = base::MakeUnique<base::Value>();
+  auto dummy = std::make_unique<base::Value>();
   {
     DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();

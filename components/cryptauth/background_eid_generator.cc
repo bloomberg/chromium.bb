@@ -5,8 +5,8 @@
 #include "components/cryptauth/background_eid_generator.h"
 
 #include <cstring>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -43,7 +43,7 @@ const BeaconSeed* GetBeaconSeedForTimestamp(
 }  // namespace
 
 BackgroundEidGenerator::BackgroundEidGenerator()
-    : BackgroundEidGenerator(base::MakeUnique<RawEidGeneratorImpl>(),
+    : BackgroundEidGenerator(std::make_unique<RawEidGeneratorImpl>(),
                              base::DefaultClock::GetInstance()) {}
 
 BackgroundEidGenerator::~BackgroundEidGenerator() {}
@@ -88,7 +88,7 @@ std::unique_ptr<DataWithTimestamp> BackgroundEidGenerator::GenerateEid(
   std::string eid = raw_eid_generator_->GenerateEid(
       beacon_seed->data(), start_of_period_ms, nullptr);
 
-  return base::MakeUnique<DataWithTimestamp>(eid, start_of_period_ms,
+  return std::make_unique<DataWithTimestamp>(eid, start_of_period_ms,
                                              start_of_period_ms + kEidPeriodMs);
 }
 

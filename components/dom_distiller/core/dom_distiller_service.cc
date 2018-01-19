@@ -4,11 +4,11 @@
 
 #include "components/dom_distiller/core/dom_distiller_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
@@ -249,7 +249,7 @@ bool DomDistillerService::GetOrCreateTaskTrackerForEntry(
 TaskTracker* DomDistillerService::CreateTaskTracker(const ArticleEntry& entry) {
   TaskTracker::CancelCallback cancel_callback =
       base::Bind(&DomDistillerService::CancelTask, base::Unretained(this));
-  tasks_.push_back(base::MakeUnique<TaskTracker>(entry, cancel_callback,
+  tasks_.push_back(std::make_unique<TaskTracker>(entry, cancel_callback,
                                                  content_store_.get()));
   return tasks_.back().get();
 }

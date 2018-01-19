@@ -8,11 +8,11 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/favicon_base/favicon_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -245,7 +245,7 @@ gfx::ImageSkia CreateFaviconImageSkia(
     return gfx::ImageSkia(gfx::ImageSkiaRep(bitmaps[index], 1.0f));
   }
 
-  auto image_source = base::MakeUnique<FaviconImageSource>();
+  auto image_source = std::make_unique<FaviconImageSource>();
 
   for (size_t i = 0; i < results.size(); ++i) {
     size_t index = results[i].index;

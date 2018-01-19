@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/stl_util.h"
@@ -48,15 +50,15 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
         fake_advertisement_("advertisement1", 1000L, 2000L) {}
 
   void SetUp() override {
-    mock_seed_fetcher_ = base::MakeUnique<MockRemoteBeaconSeedFetcher>();
+    mock_seed_fetcher_ = std::make_unique<MockRemoteBeaconSeedFetcher>();
     std::vector<BeaconSeed> device_0_beacon_seeds =
         CreateFakeBeaconSeedsForDevice(fake_device_);
     mock_seed_fetcher_->SetSeedsForDeviceId(fake_device_.GetDeviceId(),
                                             &device_0_beacon_seeds);
 
-    mock_local_data_provider_ = base::MakeUnique<MockLocalDeviceDataProvider>();
+    mock_local_data_provider_ = std::make_unique<MockLocalDeviceDataProvider>();
     mock_local_data_provider_->SetPublicKey(
-        base::MakeUnique<std::string>(kFakePublicKey));
+        std::make_unique<std::string>(kFakePublicKey));
 
     generator_ = base::WrapUnique(new BleAdvertisementGenerator());
 
@@ -93,7 +95,7 @@ TEST_F(CryptAuthBleAdvertisementGeneratorTest, TestCannotFetchPublicKey) {
 }
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, EmptyPublicKey) {
-  mock_local_data_provider_->SetPublicKey(base::MakeUnique<std::string>(""));
+  mock_local_data_provider_->SetPublicKey(std::make_unique<std::string>(""));
   EXPECT_EQ(nullptr, GenerateBleAdvertisement());
 }
 
@@ -116,7 +118,7 @@ TEST_F(CryptAuthBleAdvertisementGeneratorTest, CannotGenerateAdvertisement) {
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, AdvertisementGenerated) {
   mock_eid_generator_->set_advertisement(
-      base::MakeUnique<DataWithTimestamp>(fake_advertisement_));
+      std::make_unique<DataWithTimestamp>(fake_advertisement_));
   EXPECT_EQ(fake_advertisement_, *GenerateBleAdvertisement());
 }
 

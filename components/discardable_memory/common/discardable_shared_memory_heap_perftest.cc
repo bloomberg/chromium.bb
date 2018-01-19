@@ -8,12 +8,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/discardable_shared_memory.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -73,7 +73,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
       std::unique_ptr<DiscardableSharedMemoryHeap::Span> span =
           heap.SearchFreeLists(random_blocks[i], slack);
       if (span) {
-        spans.push_back(base::MakeUnique<base::ScopedClosureRunner>(
+        spans.push_back(std::make_unique<base::ScopedClosureRunner>(
             base::Bind(&DiscardableSharedMemoryHeap::MergeIntoFreeLists,
                        base::Unretained(&heap), base::Passed(&span))));
       } else if (!spans.empty()) {

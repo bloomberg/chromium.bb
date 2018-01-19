@@ -4,11 +4,11 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -228,7 +228,7 @@ void GuestViewBase::InitWithWebContents(
   // an observer to the owner WebContents. This observer will be responsible
   // for destroying the guest WebContents if the owner goes away.
   owner_contents_observer_ =
-      base::MakeUnique<OwnerContentsObserver>(this, owner_web_contents_);
+      std::make_unique<OwnerContentsObserver>(this, owner_web_contents_);
 
   WebContentsObserver::Observe(guest_web_contents);
   guest_web_contents->SetDelegate(this);
@@ -263,13 +263,13 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
     return;
 
   // Dispatch the onResize event.
-  auto args = base::MakeUnique<base::DictionaryValue>();
+  auto args = std::make_unique<base::DictionaryValue>();
   args->SetInteger(kOldWidth, old_size.width());
   args->SetInteger(kOldHeight, old_size.height());
   args->SetInteger(kNewWidth, new_size.width());
   args->SetInteger(kNewHeight, new_size.height());
   DispatchEventToGuestProxy(
-      base::MakeUnique<GuestViewEvent>(kEventResize, std::move(args)));
+      std::make_unique<GuestViewEvent>(kEventResize, std::move(args)));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {
@@ -501,7 +501,7 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
     opener_ = guest->weak_ptr_factory_.GetWeakPtr();
     if (!attached()) {
       opener_lifetime_observer_ =
-          base::MakeUnique<OpenerLifetimeObserver>(this);
+          std::make_unique<OpenerLifetimeObserver>(this);
     }
     return;
   }
@@ -534,7 +534,7 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
     DCHECK_EQ(owner_contents_observer_->web_contents(), owner_web_contents_);
     owner_web_contents_ = embedder_web_contents;
     owner_contents_observer_ =
-        base::MakeUnique<OwnerContentsObserver>(this, embedder_web_contents);
+        std::make_unique<OwnerContentsObserver>(this, embedder_web_contents);
     SetOwnerHost();
   }
 
