@@ -32,6 +32,14 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // an access token value of "access_token".
   void SetAutomaticIssueOfAccessTokens(bool grant);
 
+  // Waits for an access token request to occur and issues |token| in response.
+  // NOTE: The implementation currently issues tokens in response to *all*
+  // pending access token requests. If you need finer granularity, contact
+  // blundell@chromium.org
+  void WaitForAccessTokenRequestAndRespondWithToken(
+      const std::string& token,
+      const base::Time& expiration);
+
   // Waits for an access token request to occur and issues |error| in response.
   // NOTE: The implementation currently issues errors in response to *all*
   // pending access token requests. If you need finer granularity, contact
