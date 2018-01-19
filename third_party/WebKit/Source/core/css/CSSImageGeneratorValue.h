@@ -59,8 +59,7 @@ class GeneratedImageCache {
 
 struct SizeAndCount {
   DISALLOW_NEW();
-  SizeAndCount(LayoutSize new_size = LayoutSize(), int new_count = 0)
-      : size(new_size), count(new_count) {}
+  SizeAndCount() : size(), count(0) {}
 
   LayoutSize size;
   int count;
@@ -72,7 +71,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  public:
   ~CSSImageGeneratorValue();
 
-  void AddClient(const ImageResourceObserver*, const LayoutSize&);
+  void AddClient(const ImageResourceObserver*);
   void RemoveClient(const ImageResourceObserver*);
   // The |container_size| is the container size with subpixel snapping.
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
