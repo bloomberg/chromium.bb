@@ -98,8 +98,8 @@ public class FloatLabelLayout extends LinearLayout {
         mLabel.setVisibility(INVISIBLE);
         mLabel.setText(mHint);
         mLabel.setFocusable(true);
-        ViewCompat.setPivotX(mLabel, 0f);
-        ViewCompat.setPivotY(mLabel, 0f);
+        mLabel.setPivotX(0f);
+        mLabel.setPivotY(0f);
 
         ApiCompatibilityUtils.setTextAppearance(mLabel,
                 a.getResourceId(R.styleable.FloatLabelLayout_floatLabelTextAppearance,
@@ -240,8 +240,8 @@ public class FloatLabelLayout extends LinearLayout {
             ViewCompat.setTranslationY(mLabel, mLabel.getHeight());
 
             float scale = mEditText.getTextSize() / mLabel.getTextSize();
-            ViewCompat.setScaleX(mLabel, scale);
-            ViewCompat.setScaleY(mLabel, scale);
+            mLabel.setScaleX(scale);
+            mLabel.setScaleY(scale);
 
             ViewCompat.animate(mLabel)
                     .translationY(0f)
@@ -263,8 +263,8 @@ public class FloatLabelLayout extends LinearLayout {
     private void hideLabel(boolean animate) {
         if (animate) {
             float scale = mEditText.getTextSize() / mLabel.getTextSize();
-            ViewCompat.setScaleX(mLabel, 1f);
-            ViewCompat.setScaleY(mLabel, 1f);
+            mLabel.setScaleX(1f);
+            mLabel.setScaleY(1f);
             ViewCompat.setTranslationY(mLabel, 0f);
 
             ViewCompat.animate(mLabel)
