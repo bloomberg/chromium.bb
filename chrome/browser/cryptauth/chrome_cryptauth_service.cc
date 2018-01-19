@@ -44,12 +44,10 @@
 
 namespace {
 
-PrefService* GetLocalState() {
-  return g_browser_process ? g_browser_process->local_state() : nullptr;
-}
-
 std::string GetDeviceId() {
-  PrefService* local_state = GetLocalState();
+  PrefService* local_state =
+      g_browser_process ? g_browser_process->local_state() : nullptr;
+
   if (!local_state)
     return std::string();
 
