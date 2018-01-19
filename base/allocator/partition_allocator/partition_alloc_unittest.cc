@@ -859,7 +859,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   }
 
   // Too large allocation.
-  requested_size = INT_MAX;
+  requested_size = kGenericMaxDirectMapped + 1;
   predicted_size = generic_allocator.root()->ActualSize(requested_size);
   EXPECT_EQ(requested_size, predicted_size);
 }
@@ -1385,9 +1385,9 @@ TEST_F(PartitionAllocDeathTest, LargeAllocs) {
   EXPECT_DEATH(
       generic_allocator.root()->Alloc(static_cast<size_t>(-1), type_name), "");
   // And the smallest allocation we expect to die.
-  EXPECT_DEATH(generic_allocator.root()->Alloc(static_cast<size_t>(INT_MAX) + 1,
-                                               type_name),
-               "");
+  EXPECT_DEATH(
+      generic_allocator.root()->Alloc(kGenericMaxDirectMapped + 1, type_name),
+      "");
 }
 
 // Check that our immediate double-free detection works.
