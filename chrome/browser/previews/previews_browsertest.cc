@@ -169,8 +169,16 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
+// Flaky in all platforms except Android. See crbug.com/803626 for detail.
+#if defined(OS_ANDROID)
+#define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
+  NoScriptPreviewsEnabledButNoTransformDirective
+#else
+#define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
+  DISABLED_NoScriptPreviewsEnabledButNoTransformDirective
+#endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       NoScriptPreviewsEnabledButNoTransformDirective) {
+                       MAYBE_NoScriptPreviewsEnabledButNoTransformDirective) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
 
