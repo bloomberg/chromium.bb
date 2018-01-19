@@ -6,8 +6,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
-#include "ash/system/power/convertible_power_button_controller.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -30,10 +30,10 @@ constexpr base::TimeDelta
     PowerButtonScreenshotController::kScreenshotChordDelay;
 
 PowerButtonScreenshotController::PowerButtonScreenshotController(
-    ConvertiblePowerButtonController* convertible_controller,
+    TabletPowerButtonController* tablet_controller,
     base::TickClock* tick_clock,
     bool force_clamshell_power_button)
-    : convertible_controller_(convertible_controller),
+    : tablet_controller_(tablet_controller),
       tick_clock_(tick_clock),
       force_clamshell_power_button_(force_clamshell_power_button) {
   DCHECK(tick_clock_);
@@ -113,11 +113,11 @@ void PowerButtonScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
   if (key_code == ui::VKEY_VOLUME_UP)
     volume_up_key_pressed_ = event->type() == ui::ET_KEY_PRESSED;
 
-  // When volume key is pressed, cancel the ongoing convertible power button
+  // When volume key is pressed, cancel the ongoing tablet power button
   // behavior.
   if ((volume_down_key_pressed_ || volume_up_key_pressed_) &&
-      convertible_controller_) {
-    convertible_controller_->CancelTabletPowerButton();
+      tablet_controller_) {
+    tablet_controller_->CancelTabletPowerButton();
   }
 
   // On volume down key pressed while power button not pressed yet state, do not

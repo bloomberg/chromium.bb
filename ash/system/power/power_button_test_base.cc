@@ -9,8 +9,8 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
-#include "ash/system/power/convertible_power_button_controller_test_api.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/tablet_power_button_controller_test_api.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -69,17 +69,15 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
 
   if (send_accelerometer_update) {
     SendAccelerometerUpdate(kSidewaysVector, kUpVector);
-    convertible_controller_ =
-        power_button_controller_
-            ->convertible_power_button_controller_for_test();
-    convertible_test_api_ =
-        std::make_unique<ConvertiblePowerButtonControllerTestApi>(
-            convertible_controller_);
+    tablet_controller_ =
+        power_button_controller_->tablet_power_button_controller_for_test();
+    tablet_test_api_ = std::make_unique<TabletPowerButtonControllerTestApi>(
+        tablet_controller_);
     screenshot_controller_ =
         power_button_controller_->screenshot_controller_for_test();
   } else {
-    convertible_test_api_ = nullptr;
-    convertible_controller_ = nullptr;
+    tablet_test_api_ = nullptr;
+    tablet_controller_ = nullptr;
     screenshot_controller_ = nullptr;
   }
 }
@@ -95,8 +93,8 @@ void PowerButtonTestBase::SendAccelerometerUpdate(
               keyboard.y(), keyboard.z());
 
   power_button_controller_->OnAccelerometerUpdated(update);
-  convertible_controller_ =
-      power_button_controller_->convertible_power_button_controller_for_test();
+  tablet_controller_ =
+      power_button_controller_->tablet_power_button_controller_for_test();
   screenshot_controller_ =
       power_button_controller_->screenshot_controller_for_test();
 }
