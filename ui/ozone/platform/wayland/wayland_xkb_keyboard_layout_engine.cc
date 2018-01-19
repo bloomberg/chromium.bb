@@ -9,11 +9,7 @@
 
 namespace ui {
 
-WaylandXkbKeyboardLayoutEngineImpl::WaylandXkbKeyboardLayoutEngineImpl(
-    const XkbKeyCodeConverter& converter)
-    : WaylandXkbKeyboardLayoutEngine(converter) {}
-
-void WaylandXkbKeyboardLayoutEngineImpl::SetKeymap(xkb_keymap* keymap) {
+void WaylandXkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
   XkbKeyboardLayoutEngine::SetKeymap(keymap);
 
   xkb_mod_indexes_.control =
@@ -23,11 +19,10 @@ void WaylandXkbKeyboardLayoutEngineImpl::SetKeymap(xkb_keymap* keymap) {
   xkb_mod_indexes_.caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
 }
 
-void WaylandXkbKeyboardLayoutEngineImpl::UpdateModifiers(
-    uint32_t depressed_mods,
-    uint32_t latched_mods,
-    uint32_t locked_mods,
-    uint32_t group) {
+void WaylandXkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed_mods,
+                                                     uint32_t latched_mods,
+                                                     uint32_t locked_mods,
+                                                     uint32_t group) {
   xkb_state_update_mask(xkb_state_.get(), depressed_mods, latched_mods,
                         locked_mods, 0, 0, group);
 
@@ -55,7 +50,7 @@ void WaylandXkbKeyboardLayoutEngineImpl::UpdateModifiers(
     event_modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, false);
 }
 
-void WaylandXkbKeyboardLayoutEngineImpl::SetEventModifiers(
+void WaylandXkbKeyboardLayoutEngine::SetEventModifiers(
     EventModifiers* event_modifiers) {
   event_modifiers_ = event_modifiers;
 }
