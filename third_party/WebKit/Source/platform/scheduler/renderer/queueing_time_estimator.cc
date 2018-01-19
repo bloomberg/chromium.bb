@@ -109,8 +109,6 @@ const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
   switch (queue_type) {
     case MainThreadTaskQueue::QueueType::kDefault:
       return TASK_QUEUE_PREFIX "Default";
-    case MainThreadTaskQueue::QueueType::kDefaultLoading:
-      return TASK_QUEUE_PREFIX "DefaultLoading";
     case MainThreadTaskQueue::QueueType::kUnthrottled:
       return TASK_QUEUE_PREFIX "Unthrottled";
     case MainThreadTaskQueue::QueueType::kFrameLoading:
