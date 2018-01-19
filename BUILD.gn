@@ -947,7 +947,10 @@ if (!is_ios) {
     }
 
     if (is_fuchsia) {
-      data_deps += [ "//content/shell:content_shell_fuchsia" ]
+      data_deps += [
+        "//content/shell:content_shell_fuchsia",
+        "//build/fuchsia/layout_test_proxy:layout_test_proxy_runner",
+      ]
     }
 
     data = [
