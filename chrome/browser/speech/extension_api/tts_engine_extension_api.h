@@ -39,6 +39,17 @@ class TtsExtensionEngine : public TtsEngineDelegate {
   bool LoadBuiltInTtsExtension(
       content::BrowserContext* browser_context) override;
 };
+
+// Function that allows tts engines to update its list of supported voices at
+// runtime.
+class ExtensionTtsEngineUpdateVoicesFunction
+    : public UIThreadExtensionFunction {
+ private:
+  ~ExtensionTtsEngineUpdateVoicesFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("ttsEngine.updateVoices", TTSENGINE_UPDATEVOICES)
+};
+
 // Hidden/internal extension function used to allow TTS engine extensions
 // to send events back to the client that's calling tts.speak().
 class ExtensionTtsEngineSendTtsEventFunction

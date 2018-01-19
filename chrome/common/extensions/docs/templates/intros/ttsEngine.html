@@ -46,6 +46,9 @@ it provides in the extension manifest, like this:</p>
 
 <p>An extension can specify any number of voices.</p>
 
+<p>Once loaded, an extension can replace the list of declared voices
+  by calling <code>chrome.ttsEngine.updateVoices</code></p>
+
 <p>The <code>voice_name</code> parameter is required. The name should be
 descriptive enough that it identifies the name of the voice and the
 engine used. In the unlikely event that two extensions register voices

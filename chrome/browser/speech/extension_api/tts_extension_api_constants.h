@@ -44,6 +44,7 @@ extern const char kEventTypeSentence[];
 extern const char kEventTypeStart[];
 extern const char kEventTypeWord[];
 
+extern const char kErrorExtensionIdMismatch[];
 extern const char kErrorInvalidGender[];
 extern const char kErrorInvalidLang[];
 extern const char kErrorInvalidPitch[];
