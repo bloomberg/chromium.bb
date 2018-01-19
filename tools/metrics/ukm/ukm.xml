@@ -2541,4 +2541,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="XR.PageSession" singular="True">
+  <owner>offenwanger@chromium.org</owner>
+  <summary>
+    Records properties of page use in XR, including VR browsing and WebXR
+    presentation.
+  </summary>
+  <metric name="EnteredFullscreen">
+    <summary>
+      A boolean that is set to 1 if the user requested fullscreen while in XR on
+      some element on the page.
+    </summary>
+  </metric>
+  <metric name="TimeOnPage">
+    <summary>
+      The aproximate amount of time the user spends on a page in XR in seconds.
+      Times are reported accurately when low, for example, under a minute, and
+      get rounded to minutes and then hours as they get larger.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

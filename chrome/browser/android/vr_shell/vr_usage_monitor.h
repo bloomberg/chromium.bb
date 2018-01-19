@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace vr_shell {
 
@@ -65,6 +66,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
       const MediaPlayerInfo& media_info,
       const MediaPlayerId&,
       WebContentsObserver::MediaStoppedReason reason) override;
+  void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
@@ -78,6 +80,10 @@ class VrMetricsHelper : public content::WebContentsObserver {
   std::unique_ptr<SessionTimer> session_timer_;
 
   vr::Mode mode_ = vr::Mode::kNoVr;
+
+  // The last collected source id
+  ukm::SourceId last_source_id_;
+  base::Time time_on_page_start_;
 
   // state that gets translated into vr_mode:
   bool is_fullscreen_ = false;
