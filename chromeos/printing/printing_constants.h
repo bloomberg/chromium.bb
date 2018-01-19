@@ -12,6 +12,20 @@ namespace chromeos {
 // arbitrary, we just don't want to try to handle ridiculously huge files.
 constexpr size_t kMaxPpdSizeBytes = 250 * 1024;
 
+// Printing protocol schemes.
+constexpr char kIppScheme[] = "ipp";
+constexpr char kIppsScheme[] = "ipps";
+constexpr char kUsbScheme[] = "usb";
+constexpr char kHttpScheme[] = "http";
+constexpr char kHttpsScheme[] = "https";
+constexpr char kSocketScheme[] = "socket";
+constexpr char kLpdScheme[] = "lpd";
+
+constexpr int kIppPort = 631;
+// IPPS commonly uses the HTTPS port despite the spec saying it should use the
+// IPP port.
+constexpr int kIppsPort = 443;
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_PRINTING_PRINTING_CONSTANTS_H_

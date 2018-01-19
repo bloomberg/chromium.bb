@@ -9,15 +9,25 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "net/base/host_port_pair.h"
+#include "url/third_party/mozilla/url_parse.h"
+
+#include "chromeos/printing/uri_components.h"
 
 namespace net {
 class IPEndPoint;
 }  // namespace net
 
 namespace chromeos {
+
+// Parses |printer_uri| into its components and returns an optional
+// UriComponents depending on whether or not |printer_uri| was parsed
+// successfully.
+CHROMEOS_EXPORT base::Optional<UriComponents> ParseUri(
+    const std::string& printer_uri);
 
 class CHROMEOS_EXPORT Printer {
  public:
@@ -148,6 +158,14 @@ class CHROMEOS_EXPORT Printer {
 
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
+
+  // Get the URI that we want for talking to cups.
+  std::string UriForCups() const;
+
+  // Parses the printers's uri into its components and returns an optional
+  // containing a UriComponents object depending on whether or not the uri was
+  // successfully parsed.
+  base::Optional<UriComponents> GetUriComponents() const;
 
  private:
   // Globally unique identifier. Empty indicates a new printer.
