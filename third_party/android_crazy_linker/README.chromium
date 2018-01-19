@@ -92,3 +92,4 @@ Local Modifications:
 - Add custom operator new(size_t) and operator delete(void*) in order to
   reduce the size of the final binaries (24 kiB on ARM, 64 kiB on AARCH4).
 
+- Allow client disable debugger support.

@@ -35,6 +35,13 @@ extern "C" {
 // Maximum path length of a file in a zip file.
 const size_t kMaxFilePathLengthInZip = 256;
 
+// Enable or disable debugger support. Disabling debugger support makes
+// shared libraries loaded by the crazy linker invisible to GDB (though they
+// will still be visible in stack traces and Breakpad minidumps), but allows
+// rare runtime crashes on certain Android devices. For more details, see
+// https://crbug.com/796938.
+void crazy_set_debugger_support(bool enabled) _CRAZY_PUBLIC;
+
 // Status values returned by crazy linker functions to indicate
 // success or failure. They were chosen to match boolean values,
 // this allows one to test for failures with:

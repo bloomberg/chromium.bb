@@ -65,6 +65,11 @@ void crazy_context_t::ResetSearchPaths() {
 
 extern "C" {
 
+void crazy_set_debugger_support(bool enabled) {
+  ScopedGlobalLock lock;
+  Globals::GetRDebug()->SetDebuggerSupport(enabled);
+}
+
 void crazy_set_sdk_build_version(int sdk_build_version) {
   *Globals::GetSDKBuildVersion() = sdk_build_version;
 }

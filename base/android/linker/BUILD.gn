@@ -6,6 +6,17 @@ import("//build/config/android/config.gni")
 
 assert(is_android)
 
+declare_args() {
+  # Set this variable to true to enable GDB support in release builds.
+  #
+  # The default is to disable it to reduce the likelyhood of runtime crashes
+  # on devices that use machine translation (i.e. that run ARM binaries on
+  # x86 CPUs with a translation layer like Intel's Houdini). For full details
+  # see https://crbug.com/796938.
+  #
+  chromium_android_linker_enable_release_debugging = false
+}
+
 shared_library("chromium_android_linker") {
   sources = [
     "android_dlext.h",
@@ -14,6 +25,11 @@ shared_library("chromium_android_linker") {
     "linker_jni.cc",
     "linker_jni.h",
   ]
+
+  # Disable GDB support for release builds, unless explicitly wanted.
+  if (!is_debug && !chromium_android_linker_enable_release_debugging) {
+    defines = [ "LEGACY_LINKER_DISABLE_DEBUGGER_SUPPORT" ]
+  }
 
   # The NDK contains the crazy_linker here:
   #   '<(android_ndk_root)/crazy_linker.gyp:crazy_linker'
