@@ -30,7 +30,7 @@ TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
 }
 
 ScriptPromise TextDetector::DoDetect(ScriptPromiseResolver* resolver,
-                                     skia::mojom::blink::BitmapPtr bitmap) {
+                                     SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!text_service_) {
     resolver->Reject(DOMException::Create(

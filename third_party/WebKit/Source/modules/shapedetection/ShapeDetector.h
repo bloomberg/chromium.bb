@@ -12,6 +12,7 @@
 #include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "skia/public/interfaces/bitmap.mojom-blink.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -26,8 +27,7 @@ class MODULES_EXPORT ShapeDetector : public ScriptWrappable {
   ScriptPromise DetectShapesOnImageElement(ScriptPromiseResolver*,
                                            const HTMLImageElement*);
 
-  virtual ScriptPromise DoDetect(ScriptPromiseResolver*,
-                                 skia::mojom::blink::BitmapPtr) = 0;
+  virtual ScriptPromise DoDetect(ScriptPromiseResolver*, SkBitmap) = 0;
 };
 
 }  // namespace blink
