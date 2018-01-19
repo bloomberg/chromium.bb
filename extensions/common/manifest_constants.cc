@@ -519,8 +519,7 @@ const char kInvalidLinkedAppIconURL[] =
     "Invalid 'url' for linked app icon. Must be a string that is a valid URL";
 const char kInvalidLinkedAppIcons[] =
     "Invalid 'app.linked_icons'. Must be an array";
-const char kInvalidManifest[] =
-    "Manifest file is invalid.";
+const char kInvalidManifest[] = "Manifest file is invalid";
 const char kInvalidManifestVersion[] =
     "Invalid value for 'manifest_version'. Must be an integer greater than "
     "zero.";
@@ -715,8 +714,7 @@ const char kLocalesTreeMissing[] =
     "Default locale was specified, but _locales subtree is missing.";
 const char kManifestParseError[] =
     "Manifest is not valid JSON.";
-const char kManifestUnreadable[] =
-    "Manifest file is missing or unreadable.";
+const char kManifestUnreadable[] = "Manifest file is missing or unreadable";
 const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char kMultipleOverrides[] =

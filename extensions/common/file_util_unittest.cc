@@ -298,7 +298,7 @@ TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
       install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get() == NULL);
   ASSERT_FALSE(error.empty());
-  ASSERT_STREQ("Manifest file is missing or unreadable.", error.c_str());
+  ASSERT_EQ(manifest_errors::kManifestUnreadable, error);
 }
 
 TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
@@ -312,10 +312,9 @@ TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnBadManifest) {
       install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get() == NULL);
   ASSERT_FALSE(error.empty());
-  ASSERT_STREQ(
-      "Manifest is not valid JSON.  "
-      "Line: 2, column: 16, Syntax error.",
-      error.c_str());
+  ASSERT_EQ(manifest_errors::kManifestParseError +
+                std::string("  Line: 2, column: 16, Syntax error."),
+            error);
 }
 
 TEST_F(FileUtilTest, ValidateThemeUTF8) {

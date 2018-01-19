@@ -164,10 +164,10 @@
         Localization used, but default_locale wasn't specified in the manifest.
       </message>
       <message name="IDS_EXTENSION_MANIFEST_UNREADABLE" desc="">
-        Manifest file is missing or unreadable.
+        Manifest file is missing or unreadable
       </message>
       <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
-        Manifest file is invalid.
+        Manifest file is invalid
       </message>
       <message name="IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR" desc="Message for when an error occurs while trying to create the temporary directory needed to unzip a packaged extension or app.">
         Could not create directory for unzipping: '<ph name="DIRECTORY_PATH">$1<ex>profile/Extensions/CRX_INSTALL</ex></ph>'

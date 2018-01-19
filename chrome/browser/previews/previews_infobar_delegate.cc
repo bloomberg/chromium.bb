@@ -210,7 +210,9 @@ base::string16 PreviewsInfoBarDelegate::GetMessageText() const {
   base::string16 timestamp = GetTimestampText();
   if (timestamp.empty())
     return message_text_;
-  return message_text_ + base::ASCIIToUTF16(" ") + timestamp;
+  // This string concatenation wouldn't fly for l10n, but this is only a hack
+  // for Chromium devs and not expected to ever appear for users.
+  return message_text_ + base::ASCIIToUTF16(" - ") + timestamp;
 #endif
 }
 

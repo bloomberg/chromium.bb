@@ -18,7 +18,6 @@ chrome.webstorePrivate.beginInstallWithManifest3(
   assertNoLastError();
   assertEq("", result);
 
-  var expectedError = "Manifest file is invalid.";
   chrome.webstorePrivate.completeInstall(extensionId,
                                          callbackPass());
 });

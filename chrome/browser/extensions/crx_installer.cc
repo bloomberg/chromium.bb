@@ -443,7 +443,7 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
       // TODO(erikkay) Apply this rule for paid extensions and themes as well.
       if (ManifestURL::UpdatesFromGallery(extension)) {
         return CrxInstallError(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
+            IDS_EXTENSION_INSTALL_GALLERY_ONLY,
             l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
       }
 
