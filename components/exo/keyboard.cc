@@ -134,6 +134,11 @@ bool IsReservedAccelerator(const ui::KeyEvent* event) {
   return false;
 }
 
+// Returns false if an accelerator is not reserved or it's not enabled.
+bool ProcessAcceleratorIfReserved(Surface* surface, ui::KeyEvent* event) {
+  return IsReservedAccelerator(event) && ProcessAccelerator(surface, event);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +223,17 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       delegate_->OnKeyboardModifiers(modifier_flags_);
   }
 
+  // Process reserved accelerators before sending it to client.
+  if (focus_ && ProcessAcceleratorIfReserved(focus_, event)) {
+    // Discard a key press event if it's a reserved accelerator and it's
+    // enabled.
+    event->SetHandled();
+    // Send leave/enter event instead of key event, so the client can know the
+    // actual state of the keyboard.
+    SetFocus(focus_);
+    return;
+  }
+
   // When IME ate a key event, we use the event only for tracking key states and
   // ignore for further processing. Otherwise it is handled in two places (IME
   // and client) and causes undesired behavior.
@@ -225,7 +241,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 
   switch (event->type()) {
     case ui::ET_KEY_PRESSED:
-      if (focus_ && !consumed_by_ime && !IsReservedAccelerator(event)) {
+      if (focus_ && !consumed_by_ime && !event->handled()) {
         uint32_t serial =
             delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
         if (are_keyboard_key_acks_needed_) {
@@ -238,7 +254,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       }
       break;
     case ui::ET_KEY_RELEASED:
-      if (focus_ && !consumed_by_ime && !IsReservedAccelerator(event)) {
+      if (focus_ && !consumed_by_ime && !event->handled()) {
         uint32_t serial =
             delegate_->OnKeyboardKey(event->time_stamp(), event->code(), false);
         if (are_keyboard_key_acks_needed_) {
