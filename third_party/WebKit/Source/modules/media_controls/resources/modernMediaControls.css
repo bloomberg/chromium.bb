@@ -521,7 +521,7 @@ audio::-internal-media-controls-overflow-button {
 .state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i],
 .use-default-poster div[pseudo="-internal-media-controls-button-panel" i],
 .use-default-poster input[pseudo="-webkit-media-controls-timeline" i] {
-  display: none;
+  visibility: hidden;
 }
 
 /**
