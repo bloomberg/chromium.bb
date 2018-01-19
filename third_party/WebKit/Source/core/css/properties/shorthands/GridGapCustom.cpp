@@ -7,6 +7,8 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -33,6 +35,17 @@ bool GridGap::ParseShorthand(
       CSSPropertyGridColumnGap, CSSPropertyGridGap, *column_gap, important,
       CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
   return true;
+}
+
+const CSSValue* GridGap::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForShorthandProperty(
+      gridGapShorthand(), style, layout_object, styled_node,
+      allow_visited_style);
 }
 
 }  // namespace CSSShorthand

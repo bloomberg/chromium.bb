@@ -7,6 +7,8 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -39,6 +41,19 @@ bool PlaceSelf::ParseShorthand(
       properties);
 
   return true;
+}
+
+const CSSValue* PlaceSelf::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  // TODO (jfernandez): The spec states that we should return the specified
+  // value.
+  return ComputedStyleUtils::ValuesForShorthandProperty(
+      placeSelfShorthand(), style, layout_object, styled_node,
+      allow_visited_style);
 }
 
 }  // namespace CSSShorthand

@@ -4,6 +4,7 @@
 
 #include "core/css/properties/ComputedStyleUtils.h"
 
+#include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
@@ -2112,6 +2113,167 @@ bool ComputedStyleUtils::WidthOrHeightShouldReturnUsedValue(
   // which 'width' or 'height' can be said to apply) too? We don't return the
   // used value for other geometric properties ('x', 'y' et.c.)
   return !object->IsSVGChild();
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (size_t i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        shorthand.properties()[i]->CSSValueFromComputedStyle(
+            style, layout_object, styled_node, allow_visited_style);
+    DCHECK(value);
+    list->Append(*value);
+  }
+  return list;
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+  for (size_t i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        shorthand.properties()[i]->CSSValueFromComputedStyle(
+            style, layout_object, styled_node, allow_visited_style);
+    DCHECK(value);
+    list->Append(*value);
+  }
+  return list;
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  // Assume the properties are in the usual order top, right, bottom, left.
+  const CSSValue* top_value =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* right_value =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* bottom_value =
+      shorthand.properties()[2]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* left_value =
+      shorthand.properties()[3]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+
+  // All 4 properties must be specified.
+  if (!top_value || !right_value || !bottom_value || !left_value)
+    return nullptr;
+
+  bool show_left = !DataEquivalent(right_value, left_value);
+  bool show_bottom = !DataEquivalent(top_value, bottom_value) || show_left;
+  bool show_right = !DataEquivalent(top_value, right_value) || show_bottom;
+
+  list->Append(*top_value);
+  if (show_right)
+    list->Append(*right_value);
+  if (show_bottom)
+    list->Append(*bottom_value);
+  if (show_left)
+    list->Append(*left_value);
+
+  return list;
+}
+
+CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  const CSSValue* start_value =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* end_value =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  // Both properties must be specified.
+  if (!start_value || !end_value)
+    return nullptr;
+
+  CSSValuePair* pair = CSSValuePair::Create(start_value, end_value,
+                                            CSSValuePair::kDropIdenticalValues);
+  return pair;
+}
+
+static CSSValue* ExpandNoneLigaturesValue() {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoCommonLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoDiscretionaryLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoHistoricalLigatures));
+  list->Append(*CSSIdentifierValue::Create(CSSValueNoContextual));
+  return list;
+}
+
+CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  enum VariantShorthandCases {
+    kAllNormal,
+    kNoneLigatures,
+    kConcatenateNonNormal
+  };
+  StylePropertyShorthand shorthand = fontVariantShorthand();
+  VariantShorthandCases shorthand_case = kAllNormal;
+  for (size_t i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        shorthand.properties()[i]->CSSValueFromComputedStyle(
+            style, layout_object, styled_node, allow_visited_style);
+
+    if (shorthand_case == kAllNormal && value->IsIdentifierValue() &&
+        ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone &&
+        shorthand.properties()[i]->IDEquals(CSSPropertyFontVariantLigatures)) {
+      shorthand_case = kNoneLigatures;
+    } else if (!(value->IsIdentifierValue() &&
+                 ToCSSIdentifierValue(value)->GetValueID() == CSSValueNormal)) {
+      shorthand_case = kConcatenateNonNormal;
+      break;
+    }
+  }
+
+  switch (shorthand_case) {
+    case kAllNormal:
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    case kNoneLigatures:
+      return CSSIdentifierValue::Create(CSSValueNone);
+    case kConcatenateNonNormal: {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      for (size_t i = 0; i < shorthand.length(); ++i) {
+        const CSSValue* value =
+            shorthand.properties()[i]->CSSValueFromComputedStyle(
+                style, layout_object, styled_node, allow_visited_style);
+        DCHECK(value);
+        if (value->IsIdentifierValue() &&
+            ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone) {
+          list->Append(*ExpandNoneLigaturesValue());
+        } else if (!(value->IsIdentifierValue() &&
+                     ToCSSIdentifierValue(value)->GetValueID() ==
+                         CSSValueNormal)) {
+          list->Append(*value);
+        }
+      }
+      return list;
+    }
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 }  // namespace blink

@@ -4,10 +4,13 @@
 
 #include "core/css/properties/shorthands/GridTemplate.h"
 
+#include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 #include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -49,6 +52,17 @@ bool GridTemplate::ParseShorthand(
 bool GridTemplate::IsLayoutDependent(const ComputedStyle* style,
                                      LayoutObject* layout_object) const {
   return layout_object && layout_object->IsLayoutGrid();
+}
+
+const CSSValue* GridTemplate::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForGridShorthand(
+      gridTemplateShorthand(), style, layout_object, styled_node,
+      allow_visited_style);
 }
 
 }  // namespace CSSShorthand

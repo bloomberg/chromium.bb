@@ -8,6 +8,7 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -169,6 +170,31 @@ class ComputedStyleUtils {
   static CSSValue* ValueForPageBreakInside(EBreakInside);
   static CSSValue* ValueForWebkitColumnBreakInside(EBreakInside);
   static bool WidthOrHeightShouldReturnUsedValue(const LayoutObject*);
+  static CSSValueList* ValuesForShorthandProperty(const StylePropertyShorthand&,
+                                                  const ComputedStyle&,
+                                                  const LayoutObject*,
+                                                  Node*,
+                                                  bool allow_visited_style);
+  static CSSValueList* ValuesForGridShorthand(const StylePropertyShorthand&,
+                                              const ComputedStyle&,
+                                              const LayoutObject*,
+                                              Node*,
+                                              bool allow_visited_style);
+  static CSSValueList* ValuesForSidesShorthand(const StylePropertyShorthand&,
+                                               const ComputedStyle&,
+                                               const LayoutObject*,
+                                               Node*,
+                                               bool allow_visited_style);
+  static CSSValuePair* ValuesForInlineBlockShorthand(
+      const StylePropertyShorthand&,
+      const ComputedStyle&,
+      const LayoutObject*,
+      Node*,
+      bool allow_visited_style);
+  static CSSValue* ValuesForFontVariantProperty(const ComputedStyle&,
+                                                const LayoutObject*,
+                                                Node*,
+                                                bool allow_visited_style);
 };
 
 }  // namespace blink

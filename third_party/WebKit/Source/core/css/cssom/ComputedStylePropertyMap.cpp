@@ -53,9 +53,9 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return nullptr;
-  return ComputedStyleCSSValueMapping::Get(CSSProperty::Get(property_id),
-                                           *style, nullptr /* layout_object */,
-                                           StyledNode());
+  return CSSProperty::Get(property_id)
+      .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
+                                 StyledNode(), false);
 }
 
 const CSSValue* ComputedStylePropertyMap::GetCustomProperty(
@@ -77,8 +77,8 @@ void ComputedStylePropertyMap::ForEachProperty(
        CSSComputedStyleDeclaration::ComputableProperties()) {
     DCHECK(property);
     DCHECK(!property->IDEquals(CSSPropertyVariable));
-    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-        *property, *style, nullptr /* layout_object */, StyledNode());
+    const CSSValue* value = property->CSSValueFromComputedStyle(
+        *style, nullptr /* layout_object */, StyledNode(), false);
     if (value)
       callback(property->GetPropertyName(), *value);
   }

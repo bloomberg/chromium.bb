@@ -13,7 +13,7 @@ namespace CSSLonghand {
 const CSSValue* TextDecorationStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
-    const LayoutObject*,
+    const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForTextDecorationStyle(
