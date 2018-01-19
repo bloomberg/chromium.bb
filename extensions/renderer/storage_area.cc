@@ -195,8 +195,7 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
 
   // The context may have been invalidated, as in the case where this could be
   // a reference to an object from a removed frame.
-  // TODO(devlin): Should we throw an error here?
-  if (!binding::IsContextValid(context))
+  if (!binding::IsContextValidOrThrowError(context))
     return;
 
   std::string full_method_name = "storage." + method_name;

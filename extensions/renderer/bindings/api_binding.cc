@@ -65,7 +65,7 @@ std::string GetJSEnumEntryName(const std::string& original) {
 void RunAPIBindingHandlerCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
-  if (!binding::IsContextValid(args.isolate()->GetCurrentContext()))
+  if (!binding::IsContextValidOrThrowError(args.isolate()->GetCurrentContext()))
     return;
 
   v8::Local<v8::External> external;
@@ -508,7 +508,7 @@ void APIBinding::GetEventObject(
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  if (!binding::IsContextValid(context))
+  if (!binding::IsContextValidOrThrowError(context))
     return;
 
   CHECK(info.Data()->IsExternal());
