@@ -24,7 +24,7 @@
       .then(onInjected);
 
   function onInjected() {
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    var sourcesNavigator = new Sources.NetworkNavigatorView();
     SourcesTestRunner.dumpNavigatorView(sourcesNavigator);
     TestRunner.completeTest();
   }

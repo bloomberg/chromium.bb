@@ -7,7 +7,7 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('bindings_test_runner');
 
-  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  var sourcesNavigator = new Sources.NetworkNavigatorView();
   sourcesNavigator.show(UI.inspectorView.element);
 
   TestRunner.markStep('dumpInitialNavigator');

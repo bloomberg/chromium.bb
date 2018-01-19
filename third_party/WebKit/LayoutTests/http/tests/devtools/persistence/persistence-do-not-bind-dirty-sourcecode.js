@@ -9,7 +9,6 @@
   await TestRunner.loadModule('bindings_test_runner');
   await TestRunner.addScriptTag('resources/foo.js');
 
-  Runtime.experiments.enableForTest('persistence2');
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   BindingsTestRunner.addFooJSFile(fs);

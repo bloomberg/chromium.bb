@@ -76,9 +76,7 @@
     function testFileSystems(next) {
       TestRunner.addResult('Adding first file system.');
       var fs1 = new BindingsTestRunner.TestFileSystem('file:///var/www');
-      fs1.addFileMapping('http://localhost/', '/localhost/');
       var fs2 = new BindingsTestRunner.TestFileSystem('file:///foo/bar');
-      fs2.addFileMapping('http://www.example.com/', '/');
       TestRunner.addResult('Adding second file system.');
 
       TestRunner.addResult('Adding files to file systems.');

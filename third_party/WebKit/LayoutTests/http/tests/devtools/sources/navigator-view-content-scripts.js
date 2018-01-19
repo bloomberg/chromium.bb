@@ -9,7 +9,7 @@
   await TestRunner.showPanel('sources');
 
   var rootURL = 'http://localhost:8080/LayoutTests/inspector/debugger/';
-  var sourcesNavigatorView = new Sources.SourcesNavigatorView();
+  var sourcesNavigatorView = new Sources.NetworkNavigatorView();
   sourcesNavigatorView.show(UI.inspectorView.element);
 
   TestRunner.addResult('\n\n================================================');
