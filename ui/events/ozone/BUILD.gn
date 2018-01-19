@@ -70,6 +70,8 @@ if (use_ozone) {
     sources = [
       "evdev/device_event_dispatcher_evdev.cc",
       "evdev/device_event_dispatcher_evdev.h",
+      "evdev/event_auto_repeat_handler.cc",
+      "evdev/event_auto_repeat_handler.h",
       "evdev/event_converter_evdev.cc",
       "evdev/event_converter_evdev.h",
       "evdev/event_converter_evdev_impl.cc",
