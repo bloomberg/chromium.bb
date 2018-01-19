@@ -39,6 +39,10 @@ class MockVRDisplay {
     });
   }
 
+  getSubmitFrameCount() {
+    return this.presentation_provider_.submit_frame_count_;
+  }
+
   forceActivate(reason) {
     this.displayClient_.onActivate(reason);
   }
@@ -64,6 +68,7 @@ class MockVRPresentationProvider {
   constructor() {
     this.binding_ = new mojo.Binding(device.mojom.VRPresentationProvider, this);
     this.pose_ = null;
+    this.submit_frame_count_ = 0;
   }
 
   bind(client, request) {
@@ -73,6 +78,8 @@ class MockVRPresentationProvider {
   }
 
   submitFrame(frameId, mailboxHolder, timeWaited) {
+    this.submit_frame_count_++;
+
     // Trigger the submit completion callbacks here. WARNING: The
     // Javascript-based mojo mocks are *not* re-entrant. It's OK to
     // wait for these notifications on the next frame, but waiting

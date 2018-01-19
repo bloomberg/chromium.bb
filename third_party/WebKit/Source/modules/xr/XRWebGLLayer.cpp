@@ -11,6 +11,7 @@
 #include "modules/webgl/WebGLFramebuffer.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "modules/xr/XRDevice.h"
+#include "modules/xr/XRFrameProvider.h"
 #include "modules/xr/XRSession.h"
 #include "modules/xr/XRView.h"
 #include "modules/xr/XRViewport.h"
@@ -170,6 +171,8 @@ void XRWebGLLayer::UpdateViewports() {
         new XRViewport(framebuffer_width * 0.5 * viewport_scale_, 0,
                        framebuffer_width * 0.5 * viewport_scale_,
                        framebuffer_height * viewport_scale_);
+
+    session()->device()->frameProvider()->UpdateWebGLLayerViewports(this);
   } else {
     left_viewport_ = new XRViewport(0, 0, framebuffer_width * viewport_scale_,
                                     framebuffer_height * viewport_scale_);
@@ -178,10 +181,19 @@ void XRWebGLLayer::UpdateViewports() {
 
 void XRWebGLLayer::OnFrameStart() {
   framebuffer_->MarkOpaqueBufferComplete(true);
+  framebuffer_->SetContentsChanged(false);
 }
 
 void XRWebGLLayer::OnFrameEnd() {
   framebuffer_->MarkOpaqueBufferComplete(false);
+  // Exit early if the framebuffer contents have not changed.
+  if (!framebuffer_->HaveContentsChanged())
+    return;
+
+  // Submit the frame to the XR compositor.
+  if (session()->exclusive()) {
+    session()->device()->frameProvider()->SubmitWebGLLayer(this);
+  }
 }
 
 void XRWebGLLayer::OnResize() {

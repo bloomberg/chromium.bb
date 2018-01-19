@@ -101,6 +101,9 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   bool HasStencilBuffer() const;
 
+  bool HaveContentsChanged() { return contents_changed_; }
+  void SetContentsChanged(bool changed) { contents_changed_ = changed; }
+
   bool Opaque() const { return opaque_; }
   void MarkOpaqueBufferComplete(bool complete) { opaque_complete_ = complete; }
 
@@ -156,6 +159,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   bool has_ever_been_bound_;
   bool web_gl1_depth_stencil_consistent_;
+  bool contents_changed_ = false;
   const bool opaque_;
   bool opaque_complete_ = false;
 
