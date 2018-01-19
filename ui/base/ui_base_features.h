@@ -17,6 +17,8 @@ UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 
 UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 
+UI_BASE_EXPORT extern const base::Feature kTouchableChrome;
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_
