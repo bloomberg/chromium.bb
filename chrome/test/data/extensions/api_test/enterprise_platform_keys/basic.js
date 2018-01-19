@@ -607,7 +607,7 @@ function runTests(userToken, systemToken) {
   var testsIndependentOfKeys =
       bindTestsToToken(testsIndependentOfKeysWithTokenParameter, userToken);
   if (systemToken) {
-    testsIndependentOfKeys.concat(bindTestsToToken(
+    testsIndependentOfKeys = testsIndependentOfKeys.concat(bindTestsToToken(
         testsIndependentOfKeysWithTokenParameter, systemToken));
   }
 

@@ -185,7 +185,7 @@ class GenerateRSAKeyState : public NSSOperationState {
 class SignRSAState : public NSSOperationState {
  public:
   SignRSAState(const std::string& data,
-               const std::string& public_key,
+               const std::string& public_key_spki_der,
                bool sign_direct_pkcs_padded,
                HashAlgorithm hash_algorithm,
                const subtle::SignCallback& callback);
@@ -207,7 +207,7 @@ class SignRSAState : public NSSOperationState {
   const std::string data_;
 
   // Must be the DER encoding of a SubjectPublicKeyInfo.
-  const std::string public_key_;
+  const std::string public_key_spki_der_;
 
   // If true, |data_| will not be hashed before signing. Only PKCS#1 v1.5
   // padding will be applied before signing.
@@ -349,6 +349,32 @@ class GetTokensState : public NSSOperationState {
   GetTokensCallback callback_;
 };
 
+class GetKeyLocationsState : public NSSOperationState {
+ public:
+  GetKeyLocationsState(const std::string& public_key_spki_der,
+                       const GetKeyLocationsCallback& callback);
+  ~GetKeyLocationsState() override {}
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, std::vector<std::string>(), error_message);
+  }
+
+  void CallBack(const base::Location& from,
+                const std::vector<std::string>& token_ids,
+                const std::string& error_message) {
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(callback_, token_ids, error_message));
+  }
+
+  // Must be a DER encoding of a SubjectPublicKeyInfo.
+  const std::string public_key_spki_der_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  GetKeyLocationsCallback callback_;
+};
+
 NSSOperationState::NSSOperationState()
     : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
 }
@@ -360,16 +386,15 @@ GenerateRSAKeyState::GenerateRSAKeyState(
 }
 
 SignRSAState::SignRSAState(const std::string& data,
-                           const std::string& public_key,
+                           const std::string& public_key_spki_der,
                            bool sign_direct_pkcs_padded,
                            HashAlgorithm hash_algorithm,
                            const subtle::SignCallback& callback)
     : data_(data),
-      public_key_(public_key),
+      public_key_spki_der_(public_key_spki_der),
       sign_direct_pkcs_padded_(sign_direct_pkcs_padded),
       hash_algorithm_(hash_algorithm),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 SelectCertificatesState::SelectCertificatesState(
     const std::string& username_hash,
@@ -402,6 +427,11 @@ RemoveCertificateState::RemoveCertificateState(
 GetTokensState::GetTokensState(const GetTokensCallback& callback)
     : callback_(callback) {
 }
+
+GetKeyLocationsState::GetKeyLocationsState(
+    const std::string& public_key_spki_der,
+    const GetKeyLocationsCallback& callback)
+    : public_key_spki_der_(public_key_spki_der), callback_(callback) {}
 
 // Does the actual key generation on a worker thread. Used by
 // GenerateRSAKeyWithDB().
@@ -454,9 +484,9 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
 // Does the actual signing on a worker thread. Used by SignRSAWithDB().
 void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
   const uint8_t* public_key_uint8 =
-      reinterpret_cast<const uint8_t*>(state->public_key_.data());
+      reinterpret_cast<const uint8_t*>(state->public_key_spki_der_.data());
   std::vector<uint8_t> public_key_vector(
-      public_key_uint8, public_key_uint8 + state->public_key_.size());
+      public_key_uint8, public_key_uint8 + state->public_key_spki_der_.size());
 
   crypto::ScopedSECKEYPrivateKey rsa_key;
   if (state->slot_) {
@@ -736,6 +766,37 @@ void GetTokensWithDB(std::unique_ptr<GetTokensState> state,
                   std::string() /* no error */);
 }
 
+// Does the actual work to determine which key is on which token.
+void GetKeyLocationsWithDB(std::unique_ptr<GetKeyLocationsState> state,
+                           net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::vector<std::string> token_ids;
+
+  const uint8_t* public_key_uint8 =
+      reinterpret_cast<const uint8_t*>(state->public_key_spki_der_.data());
+  std::vector<uint8_t> public_key_vector(
+      public_key_uint8, public_key_uint8 + state->public_key_spki_der_.size());
+
+  if (cert_db->GetPrivateSlot().get()) {
+    crypto::ScopedSECKEYPrivateKey rsa_key =
+        crypto::FindNSSKeyFromPublicKeyInfoInSlot(
+            public_key_vector, cert_db->GetPrivateSlot().get());
+    if (rsa_key)
+      token_ids.push_back(kTokenIdUser);
+  }
+  if (cert_db->GetSystemSlot().get()) {
+    crypto::ScopedSECKEYPrivateKey rsa_key =
+        crypto::FindNSSKeyFromPublicKeyInfoInSlot(
+            public_key_vector, cert_db->GetSystemSlot().get());
+    if (rsa_key)
+      token_ids.push_back(kTokenIdSystem);
+  }
+
+  state->CallBack(FROM_HERE, std::move(token_ids),
+                  std::string() /* no error */);
+}
+
 }  // namespace
 
 namespace subtle {
@@ -763,14 +824,14 @@ void GenerateRSAKey(const std::string& token_id,
 
 void SignRSAPKCS1Digest(const std::string& token_id,
                         const std::string& data,
-                        const std::string& public_key,
+                        const std::string& public_key_spki_der,
                         HashAlgorithm hash_algorithm,
                         const SignCallback& callback,
                         content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<SignRSAState> state(
-      new SignRSAState(data, public_key, false /* digest before signing */,
-                       hash_algorithm, callback));
+  std::unique_ptr<SignRSAState> state(new SignRSAState(
+      data, public_key_spki_der, false /* digest before signing */,
+      hash_algorithm, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
@@ -783,12 +844,12 @@ void SignRSAPKCS1Digest(const std::string& token_id,
 
 void SignRSAPKCS1Raw(const std::string& token_id,
                      const std::string& data,
-                     const std::string& public_key,
+                     const std::string& public_key_spki_der,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<SignRSAState> state(new SignRSAState(
-      data, public_key, true /* sign directly without hashing */,
+      data, public_key_spki_der, true /* sign directly without hashing */,
       HASH_ALGORITHM_NONE, callback));
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -949,6 +1010,20 @@ void GetTokens(const GetTokensCallback& callback,
                   base::Bind(&GetTokensWithDB, base::Passed(&state)),
                   browser_context,
                   state_ptr);
+}
+
+void GetKeyLocations(const std::string& public_key_spki_der,
+                     const GetKeyLocationsCallback& callback,
+                     content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto state =
+      std::make_unique<GetKeyLocationsState>(public_key_spki_der, callback);
+  NSSOperationState* state_ptr = state.get();
+
+  GetCertDatabase(
+      std::string() /* don't get any specific slot - we need all slots */,
+      base::BindRepeating(&GetKeyLocationsWithDB, base::Passed(&state)),
+      browser_context, state_ptr);
 }
 
 }  // namespace platform_keys
