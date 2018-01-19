@@ -68,11 +68,12 @@ config("base_flags") {
       # This is required solely for base/third_party/dmg_fp/dtoa_wrapper.cc.
       "-Wno-char-subscripts",
 
-      # Ideally all product code (but no test code) in chrome would have this
-      # flag. But this isn't trivial so start with //base as a minimum
+      # Ideally all product code (but no test code) in chrome would have these
+      # flags. But this isn't trivial so start with //base as a minimum
       # requirement.
       # https://groups.google.com/a/chromium.org/d/topic/chromium-dev/B9Q5KTD7iCo/discussion
       "-Wglobal-constructors",
+      "-Wexit-time-destructors",
     ]
   }
 }
