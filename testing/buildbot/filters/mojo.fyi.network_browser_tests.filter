@@ -480,15 +480,6 @@
 -ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload
 -DNSErrorPageTest.StaleCacheStatus
 
-# Switch test from using a net::URLRequestFileJob that adds load timing to
-# to using a test URLLoaderFactory via SetNetworkFactoryForTesting.
--LoadTimingBrowserTest.Basic
--LoadTimingBrowserTest.EverythingAtOnce
--LoadTimingBrowserTest.Preconnect
--LoadTimingBrowserTest.PreconnectProxySsl
--LoadTimingBrowserTest.ReuseSocket
--LoadTimingBrowserTest.Ssl
-
 # Switch test from using a net::URLRequestInterceptor to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
 -PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
