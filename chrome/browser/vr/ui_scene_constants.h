@@ -260,6 +260,19 @@ static constexpr float kSnackbarHeightDMM = 0.08f;
 static constexpr float kSnackbarMoveInAngle = -base::kPiFloat / 10;
 static constexpr int kSnackbarTransitionDurationMs = 300;
 
+static constexpr float kControllerLabelSpacerSize = 0.003f;
+static constexpr float kControllerLabelLayoutMargin = 0.005f;
+static constexpr float kControllerLabelCalloutWidth = 0.025f;
+static constexpr float kControllerLabelCalloutHeight = 0.001f;
+static constexpr float kControllerLabelFontHeight = 0.05f;
+static constexpr float kControllerLabelScale = 0.2f;
+
+// TODO(vollick): these should be encoded in the controller mesh.
+static constexpr float kControllerTrackpadOffset = -0.035f;
+static constexpr float kControllerExitButtonOffset = -0.008f;
+
+static constexpr int kControllerLabelTransitionDurationMs = 700;
+
 static constexpr float kSkyDistance = 1000.0f;
 static constexpr float kGridOpacity = 0.5f;
 

@@ -11098,6 +11098,12 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_COMPONENT_APPLY" desc="Text to be shown on the button to apply a new component update.">
         Apply
       </message>
+      <message name="IDS_VR_BUTTON_TRACKPAD" desc="The label for the trackpad on the VR controller.">
+        Scroll / Click
+      </message>
+      <message name="IDS_VR_BUTTON_EXIT" desc="The label for the exit button on the VR controller.">
+        Exit Fullscreen
+      </message>
     </if>
   </messages>
  </release>

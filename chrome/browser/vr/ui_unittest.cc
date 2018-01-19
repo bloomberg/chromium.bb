@@ -1065,4 +1065,23 @@ TEST_F(UiTest, TextureBackgroundAfterAssetLoaded) {
   EXPECT_FALSE(IsVisible(k2dBrowsingDefaultBackground));
 }
 
+TEST_F(UiTest, ControllerLabels) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+
+  model_->controller.resting_in_viewport = true;
+  EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+
+  ui_->SetFullscreen(true);
+  EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_TRUE(IsVisible(kControllerExitButtonLabel));
+
+  model_->controller.resting_in_viewport = false;
+  EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+}
+
 }  // namespace vr

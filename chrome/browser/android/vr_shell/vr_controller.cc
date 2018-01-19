@@ -183,6 +183,12 @@ base::TimeTicks VrController::GetLastButtonTimestamp() const {
   return base::TimeTicks::Now();
 }
 
+vr::PlatformController::Handedness VrController::GetHandedness() const {
+  return handedness_ == GVR_CONTROLLER_RIGHT_HANDED
+             ? vr::PlatformController::kRightHanded
+             : vr::PlatformController::kLeftHanded;
+}
+
 gfx::Quaternion VrController::Orientation() const {
   const gvr::Quatf& orientation = controller_state_->GetOrientation();
   return gfx::Quaternion(orientation.qx, orientation.qy, orientation.qz,
