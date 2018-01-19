@@ -378,10 +378,9 @@ WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
   result.did_reuse_connection = final_response.ConnectionReused();
   result.allow_negative_values = info.NegativeAllowed();
 
-  result.server_timing = PerformanceServerTiming::ParseServerTiming(
-      info, result.allow_timing_details
-                ? PerformanceServerTiming::ShouldAllowTimingDetails::Yes
-                : PerformanceServerTiming::ShouldAllowTimingDetails::No);
+  if (result.allow_timing_details) {
+    result.server_timing = PerformanceServerTiming::ParseServerTiming(info);
+  }
   if (!result.server_timing.empty()) {
     UseCounter::Count(&context_for_use_counter,
                       WebFeature::kPerformanceServerTiming);
