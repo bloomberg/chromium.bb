@@ -44,8 +44,6 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
       const base::string16& tablet_accessible_name,
       const base::string16& clamshell_accessible_name) override;
   void SetSearchHintText(const base::string16& hint_text) override;
-  void SetSearchSpeechRecognitionButton(
-      app_list::SpeechRecognitionState state) override;
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(

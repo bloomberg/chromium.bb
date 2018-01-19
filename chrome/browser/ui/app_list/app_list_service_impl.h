@@ -52,10 +52,6 @@ class AppListServiceImpl : public AppListService,
   base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override;
   void SetProfilePath(const base::FilePath& profile_path) override;
   void Show() override;
-  void ShowForVoiceSearch(
-      Profile* profile,
-      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble)
-      override;
   void ShowForAppInstall(Profile* profile,
                          const std::string& extension_id,
                          bool start_discovery_tracking) override;

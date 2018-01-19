@@ -23,22 +23,12 @@ AppListTestViewDelegate::AppListTestViewDelegate()
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
-int AppListTestViewDelegate::GetStopSpeechRecognitionCountAndReset() {
-  int count = stop_speech_recognition_count_;
-  stop_speech_recognition_count_ = 0;
-  return count;
-}
-
 AppListModel* AppListTestViewDelegate::GetModel() {
   return model_.get();
 }
 
 SearchModel* AppListTestViewDelegate::GetSearchModel() {
   return search_model_.get();
-}
-
-SpeechUIModel* AppListTestViewDelegate::GetSpeechUI() {
-  return &speech_ui_;
 }
 
 void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
@@ -57,17 +47,9 @@ void AppListTestViewDelegate::Dismiss() {
   ++dismiss_count_;
 }
 
-void AppListTestViewDelegate::StopSpeechRecognition() {
-  ++stop_speech_recognition_count_;
-}
-
 views::View* AppListTestViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   return NULL;
-}
-
-bool AppListTestViewDelegate::IsSpeechRecognitionEnabled() {
-  return false;
 }
 
 void AppListTestViewDelegate::ReplaceTestModel(int item_count) {

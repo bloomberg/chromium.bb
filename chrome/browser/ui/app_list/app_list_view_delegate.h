@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -32,7 +31,6 @@
 namespace app_list {
 class SearchController;
 class SearchResourceManager;
-class SpeechUIModel;
 }
 
 namespace content {
@@ -44,7 +42,6 @@ class AppSyncUIStateWatcher;
 class Profile;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
-                            public app_list::StartPageObserver,
                             public ash::mojom::WallpaperObserver,
                             public content::NotificationObserver,
                             public TemplateURLServiceObserver {
@@ -58,17 +55,12 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
-  // Invoked to start speech recognition based on a hotword trigger.
-  void StartSpeechRecognitionForHotword(
-      const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
-
   // Gets the model updater.
   AppListModelUpdater* GetModelUpdater();
 
   // Overridden from app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
-  app_list::SpeechUIModel* GetSpeechUI() override;
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(app_list::SearchResult* result,
                         int event_flags) override;
@@ -78,10 +70,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void ViewInitialized() override;
   void Dismiss() override;
   void ViewClosing() override;
-  void StartSpeechRecognition() override;
-  void StopSpeechRecognition() override;
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override;
   void ActivateItem(const std::string& id, int event_flags) override;
   ui::MenuModel* GetContextMenuModel(const std::string& id) override;
@@ -97,11 +86,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Updates the speech webview and start page for the current |profile_|.
   void SetUpSearchUI();
-
-  // Overridden from app_list::StartPageObserver:
-  void OnSpeechSoundLevelChanged(int16_t level) override;
-  void OnSpeechRecognitionStateChanged(
-      SpeechRecognizerState new_state) override;
 
   // Overridden from ash::mojom::WallpaperObserver:
   void OnWallpaperColorsChanged(
@@ -126,9 +110,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Will change if |profile_| changes.
   ChromeAppListModelUpdater* model_updater_;
 
-  // Note: order ensures |search_resource_manager_| is destroyed before
-  // |speech_ui_|.
-  std::unique_ptr<app_list::SpeechUIModel> speech_ui_;
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
 

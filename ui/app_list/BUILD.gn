@@ -90,8 +90,6 @@ component("app_list") {
     "views/search_result_tile_item_view.h",
     "views/search_result_view.cc",
     "views/search_result_view.h",
-    "views/speech_view.cc",
-    "views/speech_view.h",
     "views/suggestions_container_view.cc",
     "views/suggestions_container_view.h",
     "views/top_icon_animation_view.cc",
@@ -135,7 +133,6 @@ component("app_list") {
   public_deps = [
     "//ash/app_list/model:app_list_model",
     "//ash/app_list/model:search_model",
-    "//ash/app_list/model:speech_ui_model",
     "//ash/public/cpp:cpp",
   ]
 }
@@ -211,7 +208,6 @@ test("app_list_unittests") {
     "views/search_result_list_view_unittest.cc",
     "views/search_result_page_view_unittest.cc",
     "views/search_result_tile_item_list_view_unittest.cc",
-    "views/speech_view_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -41,17 +40,12 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   // SetProfileByPath() is called.
   void set_next_profile_app_count(int apps) { next_profile_app_count_ = apps; }
 
-  // Returns the value of |stop_speech_recognition_count_| and then resets this
-  // value to 0.
-  int GetStopSpeechRecognitionCountAndReset();
-
   // Sets whether the search engine is Google or not.
   void SetSearchEngineIsGoogle(bool is_google);
 
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
-  SpeechUIModel* GetSpeechUI() override;
   void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(SearchResult* result,
                         int event_flags) override;
@@ -61,10 +55,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void ViewInitialized() override {}
   void Dismiss() override;
   void ViewClosing() override {}
-  void StartSpeechRecognition() override {}
-  void StopSpeechRecognition() override;
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {}
   void ActivateItem(const std::string& id, int event_flags) override;
   ui::MenuModel* GetContextMenuModel(const std::string& id) override;
@@ -80,13 +71,11 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
  private:
   int dismiss_count_ = 0;
-  int stop_speech_recognition_count_ = 0;
   int open_search_result_count_ = 0;
   int next_profile_app_count_ = 0;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
-  SpeechUIModel speech_ui_;
   std::vector<SkColor> wallpaper_prominent_colors_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/app_list/model/search/search_box_model.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -65,7 +64,6 @@ constexpr SkColor kSearchBoxBorderColor =
     SkColorSetARGBMacro(0x3D, 0xFF, 0xFF, 0xFF);
 
 constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
-constexpr int kMicIconSize = 24;
 constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 
@@ -261,13 +259,11 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       l10n_util::GetStringUTF16(IDS_APP_LIST_CLEAR_SEARCHBOX));
   content_container_->AddChildView(close_button_);
 
-  view_delegate_->GetSpeechUI()->AddObserver(this);
   view_delegate_->AddObserver(this);
   ModelChanged();
 }
 
 SearchBoxView::~SearchBoxView() {
-  view_delegate_->GetSpeechUI()->RemoveObserver(this);
   search_model_->search_box()->RemoveObserver(this);
   view_delegate_->RemoveObserver(this);
 }
@@ -281,7 +277,6 @@ void SearchBoxView::ModelChanged() {
   UpdateSearchIcon();
   search_model_->search_box()->AddObserver(this);
 
-  SpeechRecognitionButtonPropChanged();
   HintTextChanged();
   OnWallpaperColorsChanged();
 }
@@ -418,8 +413,6 @@ bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 void SearchBoxView::OnEnabledChanged() {
   search_box_->SetEnabled(enabled());
-  if (speech_button_)
-    speech_button_->SetEnabled(enabled());
   if (close_button_)
     close_button_->SetEnabled(enabled());
 }
@@ -468,8 +461,6 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (back_button_ && sender == back_button_) {
     delegate_->BackButtonPressed();
-  } else if (speech_button_ && sender == speech_button_) {
-    view_delegate_->StartSpeechRecognition();
   } else if (close_button_ && sender == close_button_) {
     ClearSearch();
     app_list_view_->SetStateFromSearchBoxView(true);
@@ -639,33 +630,6 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
   return OnTextfieldEvent();
 }
 
-void SearchBoxView::SpeechRecognitionButtonPropChanged() {
-  const SearchBoxModel::SpeechButtonProperty* speech_button_prop =
-      search_model_->search_box()->speech_button();
-  if (speech_button_prop) {
-    if (!speech_button_) {
-      speech_button_ = new SearchBoxImageButton(this);
-      content_container_->AddChildView(speech_button_);
-    }
-
-    speech_button_->SetAccessibleName(speech_button_prop->accessible_name);
-
-    speech_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kIcMicBlackIcon, kMicIconSize,
-                              kDefaultSearchboxColor));
-
-    speech_button_->SetTooltipText(speech_button_prop->tooltip);
-  } else {
-    if (speech_button_) {
-      // Deleting a view will detach it from its parent.
-      delete speech_button_;
-      speech_button_ = nullptr;
-    }
-  }
-  Layout();
-}
-
 void SearchBoxView::HintTextChanged() {
   const app_list::SearchBoxModel* search_box = search_model_->search_box();
   search_box_->set_placeholder_text(search_box->hint_text());
@@ -696,23 +660,11 @@ void SearchBoxView::OnWallpaperColorsChanged() {
   SetBackgroundColor(
       prominent_colors[static_cast<int>(ColorProfileType::LIGHT_VIBRANT)]);
   UpdateSearchIcon();
-  if (speech_button_) {
-    speech_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kIcMicBlackIcon, kMicIconSize,
-                              search_box_color_));
-  }
   close_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kIcCloseIcon, kCloseIconSize, search_box_color_));
   search_box_->set_placeholder_text_color(search_box_color_);
   UpdateBackgroundColor(background_color_);
-  SchedulePaint();
-}
-
-void SearchBoxView::OnSpeechRecognitionStateChanged(
-    SpeechRecognitionState new_state) {
-  SpeechRecognitionButtonPropChanged();
   SchedulePaint();
 }
 

@@ -12,7 +12,6 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -85,27 +84,6 @@ void RecordHistogram(bool is_tablet_mode, app_list::AppListViewState state) {
 
 }  // namespace
 
-namespace app_list {
-
-SpeechRecognitionState ToSpeechRecognitionState(SpeechRecognizerState state) {
-  switch (state) {
-    case SPEECH_RECOGNIZER_OFF:
-      return SPEECH_RECOGNITION_OFF;
-    case SPEECH_RECOGNIZER_READY:
-      return SPEECH_RECOGNITION_READY;
-    case SPEECH_RECOGNIZER_RECOGNIZING:
-      return SPEECH_RECOGNITION_RECOGNIZING;
-    case SPEECH_RECOGNIZER_IN_SPEECH:
-      return SPEECH_RECOGNITION_IN_SPEECH;
-    case SPEECH_RECOGNIZER_STOPPING:
-      return SPEECH_RECOGNITION_STOPPING;
-    case SPEECH_RECOGNIZER_NETWORK_ERROR:
-      return SPEECH_RECOGNITION_NETWORK_ERROR;
-  }
-}
-
-}  // namespace app_list
-
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(nullptr),
@@ -116,14 +94,6 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       observer_binding_(this),
       weak_ptr_factory_(this) {
   CHECK(controller_);
-  speech_ui_.reset(new app_list::SpeechUIModel);
-
-#if defined(GOOGLE_CHROME_BUILD)
-  gfx::ImageSkia* image;
-  image = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH);
-  speech_ui_->set_logo(*image);
-#endif
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -155,14 +125,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     // delete |model_|'s search results to clear any dangling pointers.
     search_model_->results()->DeleteAll();
 
-    // Note: |search_resource_manager_| has a reference to |speech_ui_| so must
-    // be destroyed first.
     search_resource_manager_.reset();
     search_controller_.reset();
-    app_list::StartPageService* start_page_service =
-        app_list::StartPageService::Get(profile_);
-    if (start_page_service)
-      start_page_service->RemoveObserver(this);
     app_sync_ui_state_watcher_.reset();
     model_ = nullptr;
     search_model_ = nullptr;
@@ -172,11 +136,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   template_url_service_observer_.RemoveAll();
 
   profile_ = new_profile;
-  if (!profile_) {
-    speech_ui_->SetSpeechRecognitionState(app_list::SPEECH_RECOGNITION_OFF,
-                                          false);
+  if (!profile_)
     return;
-  }
 
   // If we are in guest mode, the new profile should be an incognito profile.
   // Otherwise, this may later hit a check (same condition as this one) in
@@ -218,19 +179,8 @@ void AppListViewDelegate::OnGetWallpaperColorsCallback(
 }
 
 void AppListViewDelegate::SetUpSearchUI() {
-  app_list::StartPageService* start_page_service =
-      app_list::StartPageService::Get(profile_);
-  if (start_page_service)
-    start_page_service->AddObserver(this);
-
-  speech_ui_->SetSpeechRecognitionState(
-      start_page_service
-          ? app_list::ToSpeechRecognitionState(start_page_service->state())
-          : app_list::SPEECH_RECOGNITION_OFF,
-      false);
-
-  search_resource_manager_.reset(new app_list::SearchResourceManager(
-      profile_, model_updater_, speech_ui_.get()));
+  search_resource_manager_.reset(
+      new app_list::SearchResourceManager(profile_, model_updater_));
 
   search_controller_ =
       app_list::CreateSearchController(profile_, model_updater_, controller_);
@@ -256,10 +206,6 @@ app_list::AppListModel* AppListViewDelegate::GetModel() {
 
 app_list::SearchModel* AppListViewDelegate::GetSearchModel() {
   return search_model_;
-}
-
-app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
-  return speech_ui_.get();
 }
 
 void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
@@ -310,44 +256,6 @@ void AppListViewDelegate::ViewClosing() {
     service->AppListHidden();
 }
 
-void AppListViewDelegate::StartSpeechRecognition() {
-  StartSpeechRecognitionForHotword(nullptr);
-}
-
-void AppListViewDelegate::StopSpeechRecognition() {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (service)
-    service->StopSpeechRecognition();
-}
-
-void AppListViewDelegate::StartSpeechRecognitionForHotword(
-    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-
-  // Don't start the recognizer or stop the hotword session if there is a
-  // network error. Show the network error message instead.
-  if (service) {
-    if (service->state() == SPEECH_RECOGNIZER_NETWORK_ERROR) {
-      speech_ui_->SetSpeechRecognitionState(
-          app_list::SPEECH_RECOGNITION_NETWORK_ERROR, true);
-      return;
-    }
-    service->StartSpeechRecognition(preamble);
-  }
-}
-
-void AppListViewDelegate::OnSpeechSoundLevelChanged(int16_t level) {
-  speech_ui_->UpdateSoundLevel(level);
-}
-
-void AppListViewDelegate::OnSpeechRecognitionStateChanged(
-    SpeechRecognizerState new_state) {
-  speech_ui_->SetSpeechRecognitionState(
-      app_list::ToSpeechRecognitionState(new_state), false);
-}
-
 views::View* AppListViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   app_list::StartPageService* service =
@@ -368,12 +276,6 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
   web_view->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
   web_view->SetWebContents(web_contents);
   return web_view;
-}
-
-bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  return service && service->GetSpeechRecognitionContents();
 }
 
 void AppListViewDelegate::GetWallpaperProminentColors(

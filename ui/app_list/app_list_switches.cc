@@ -35,11 +35,6 @@ const char kEnableTouchableAppContextMenu[] =
 // list hasn't been enabled (as in kEnableAppList) yet.
 const char kResetAppListInstallState[] = "reset-app-list-install-state";
 
-bool IsVoiceSearchEnabled() {
-  // Speech recognition in AppList is only for ChromeOS right now.
-  return true;
-}
-
 bool IsTouchableAppContextMenuEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableTouchableAppContextMenu);

@@ -23,9 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/speech/speech_recognizer.h"
-#include "chrome/browser/ui/app_list/speech_auth_helper.h"
-#include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -102,11 +99,6 @@ const net::BackoffEntry::Policy kDoodleBackoffPolicy = {
   // Don't use initial delay unless the last request was an error.
   false,
 };
-
-bool InSpeechRecognition(SpeechRecognizerState state) {
-  return state == SPEECH_RECOGNIZER_RECOGNIZING ||
-         state == SPEECH_RECOGNIZER_IN_SPEECH;
-}
 
 }  // namespace
 
@@ -203,42 +195,6 @@ class StartPageService::StartPageWebContentsDelegate
   DISALLOW_COPY_AND_ASSIGN(StartPageWebContentsDelegate);
 };
 
-
-class StartPageService::AudioStatus
-    : public chromeos::CrasAudioHandler::AudioObserver {
- public:
-  explicit AudioStatus(StartPageService* start_page_service)
-      : start_page_service_(start_page_service) {
-    chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
-    CheckAndUpdate();
-  }
-
-  ~AudioStatus() override {
-    chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  }
-
-  bool CanListen() {
-    chromeos::CrasAudioHandler* audio_handler =
-        chromeos::CrasAudioHandler::Get();
-    return (audio_handler->GetPrimaryActiveInputNode() != 0) &&
-           !audio_handler->IsInputMuted();
-  }
-
- private:
-  void CheckAndUpdate() {
-    start_page_service_->OnMicrophoneChanged(CanListen());
-  }
-
-  // chromeos::CrasAudioHandler::AudioObserver:
-  void OnInputMuteChanged(bool /* mute_on */) override { CheckAndUpdate(); }
-
-  void OnActiveInputNodeChanged() override { CheckAndUpdate(); }
-
-  StartPageService* start_page_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioStatus);
-};
-
 class StartPageService::NetworkChangeObserver
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
@@ -292,13 +248,8 @@ StartPageService* StartPageService::Get(Profile* profile) {
 StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
       profile_destroy_observer_(new ProfileDestroyObserver(this)),
-      state_(SPEECH_RECOGNIZER_READY),
-      speech_button_toggled_manually_(false),
-      speech_result_obtained_(false),
       webui_finished_loading_(false),
-      speech_auth_helper_(new SpeechAuthHelper(profile, &clock_)),
       network_available_(true),
-      microphone_available_(true),
       search_engine_is_google_(false),
       backoff_entry_(&kDoodleBackoffPolicy),
       weak_factory_(this) {
@@ -316,34 +267,8 @@ StartPageService::StartPageService(Profile* profile)
 StartPageService::~StartPageService() {
 }
 
-void StartPageService::AddObserver(StartPageObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void StartPageService::RemoveObserver(StartPageObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void StartPageService::OnMicrophoneChanged(bool available) {
-  microphone_available_ = available;
-  UpdateRecognitionState();
-}
-
 void StartPageService::OnNetworkChanged(bool available) {
   network_available_ = available;
-  UpdateRecognitionState();
-}
-
-void StartPageService::UpdateRecognitionState() {
-  if (ShouldEnableSpeechRecognition()) {
-    if (state_ == SPEECH_RECOGNIZER_OFF ||
-        state_ == SPEECH_RECOGNIZER_NETWORK_ERROR)
-      OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
-  } else {
-    OnSpeechRecognitionStateChanged(network_available_
-                                        ? SPEECH_RECOGNIZER_OFF
-                                        : SPEECH_RECOGNIZER_NETWORK_ERROR);
-  }
 }
 
 void StartPageService::Init() {
@@ -364,10 +289,6 @@ void StartPageService::LoadContentsIfNeeded() {
     LoadContents();
 }
 
-bool StartPageService::ShouldEnableSpeechRecognition() const {
-  return microphone_available_ && network_available_;
-}
-
 void StartPageService::AppListShown() {
   if (!contents_) {
     LoadContents();
@@ -377,113 +298,17 @@ void StartPageService::AppListShown() {
     contents_->GetWebUI()->CallJavascriptFunctionUnsafe(
         "appList.startPage.onAppListShown");
   }
-
-  audio_status_.reset(new AudioStatus(this));
 }
 
 void StartPageService::AppListHidden() {
-  if (speech_recognizer_) {
-    StopSpeechRecognition();
-  }
-
-  audio_status_.reset();
-}
-
-void StartPageService::StartSpeechRecognition(
-    const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble) {
-  DCHECK(contents_);
-  speech_button_toggled_manually_ = true;
-
-  if (!speech_recognizer_) {
-    std::string profile_locale;
-    profile_locale = profile_->GetPrefs()->GetString(
-        prefs::kApplicationLocale);
-    if (profile_locale.empty())
-      profile_locale = g_browser_process->GetApplicationLocale();
-
-    speech_recognizer_.reset(
-        new SpeechRecognizer(weak_factory_.GetWeakPtr(),
-                             profile_->GetRequestContext(),
-                             profile_locale));
-  }
-
-  speech_recognizer_->Start(preamble);
-}
-
-void StartPageService::StopSpeechRecognition() {
-  // A call to Stop() isn't needed since deleting the recognizer implicitly
-  // stops.
-  speech_recognizer_.reset();
-
-  // When the SpeechRecognizer is destroyed above, we get stuck in the current
-  // speech state instead of being reset into the READY state. Reset the speech
-  // state explicitly so that speech works when the launcher is opened again.
-  OnSpeechRecognitionStateChanged(SPEECH_RECOGNIZER_READY);
 }
 
 content::WebContents* StartPageService::GetStartPageContents() {
   return contents_.get();
 }
 
-content::WebContents* StartPageService::GetSpeechRecognitionContents() {
-  if (app_list::switches::IsVoiceSearchEnabled()) {
-    if (!contents_)
-      LoadContents();
-    return contents_.get();
-  }
-  return NULL;
-}
-
-void StartPageService::OnSpeechResult(
-    const base::string16& query, bool is_final) {
-  if (is_final) {
-    speech_result_obtained_ = true;
-    RecordAction(UserMetricsAction("AppList_SearchedBySpeech"));
-  }
-}
-
-void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
-  for (auto& observer : observers_)
-    observer.OnSpeechSoundLevelChanged(level);
-}
-
-void StartPageService::OnSpeechRecognitionStateChanged(
-    SpeechRecognizerState new_state) {
-  // Sometimes this can be called even though there are no audio input devices.
-  if (audio_status_ && !audio_status_->CanListen())
-    new_state = SPEECH_RECOGNIZER_OFF;
-  if (!microphone_available_)
-    new_state = SPEECH_RECOGNIZER_OFF;
-  if (!network_available_)
-    new_state = SPEECH_RECOGNIZER_NETWORK_ERROR;
-
-  if (state_ == new_state)
-    return;
-
-  if ((new_state == SPEECH_RECOGNIZER_READY ||
-       new_state == SPEECH_RECOGNIZER_OFF ||
-       new_state == SPEECH_RECOGNIZER_NETWORK_ERROR) &&
-      speech_recognizer_) {
-    speech_recognizer_->Stop();
-  }
-
-  if (!InSpeechRecognition(state_) && InSpeechRecognition(new_state)) {
-      RecordAction(UserMetricsAction("AppList_VoiceSearchStartedManually"));
-  } else if (InSpeechRecognition(state_) && !InSpeechRecognition(new_state) &&
-             !speech_result_obtained_) {
-    RecordAction(UserMetricsAction("AppList_VoiceSearchCanceled"));
-  }
-  speech_button_toggled_manually_ = false;
-  speech_result_obtained_ = false;
-  state_ = new_state;
-  for (auto& observer : observers_)
-    observer.OnSpeechRecognitionStateChanged(new_state);
-}
-
 void StartPageService::Shutdown() {
   UnloadContents();
-  audio_status_.reset();
-  speech_auth_helper_.reset();
   network_change_observer_.reset();
 }
 

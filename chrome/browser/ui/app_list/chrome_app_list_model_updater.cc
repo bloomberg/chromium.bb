@@ -80,11 +80,6 @@ void ChromeAppListModelUpdater::SetSearchHintText(
   search_model_->search_box()->SetHintText(hint_text);
 }
 
-void ChromeAppListModelUpdater::SetSearchSpeechRecognitionButton(
-    app_list::SpeechRecognitionState state) {
-  search_model_->search_box()->SetSpeechRecognitionButton(state);
-}
-
 void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
                                                 bool initiated_by_user) {
   search_model_->search_box()->Update(text, initiated_by_user);

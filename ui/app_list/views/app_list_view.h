@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_view_state.h"
-#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -47,7 +46,6 @@ class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
 class SearchModel;
-class SpeechView;
 
 namespace test {
 class AppListViewTestApi;
@@ -56,7 +54,6 @@ class AppListViewTestApi;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
-                                    public SpeechUIModelObserver,
                                     public display::DisplayObserver,
                                     public AppListViewDelegateObserver {
  public:
@@ -306,10 +303,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
-  // Overridden from SpeechUIModelObserver:
-  void OnSpeechRecognitionStateChanged(
-      SpeechRecognitionState new_state) override;
-
   // Overridden from DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
@@ -332,7 +325,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   SearchModel* const search_model_;  // Not Owned.
 
   AppListMainView* app_list_main_view_ = nullptr;
-  SpeechView* speech_view_ = nullptr;
   views::Widget* fullscreen_widget_ = nullptr;  // Owned by AppListView.
 
   views::View* search_box_focus_host_ =

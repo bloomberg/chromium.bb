@@ -13,7 +13,6 @@
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
@@ -228,8 +227,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return search_model_.get();
   }
 
-  app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
-
   void OpenSearchResult(app_list::SearchResult* result,
                         int event_flags) override {
     const ExampleSearchResult* example_result =
@@ -279,14 +276,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  void StartSpeechRecognition() override { NOTIMPLEMENTED(); }
-  void StopSpeechRecognition() override { NOTIMPLEMENTED(); }
-
   views::View* CreateStartPageWebView(const gfx::Size& size) override {
     return NULL;
   }
-
-  bool IsSpeechRecognitionEnabled() override { return false; }
 
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {
     NOTIMPLEMENTED();
@@ -315,7 +307,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<app_list::SearchModel> search_model_;
-  app_list::SpeechUIModel speech_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };

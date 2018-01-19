@@ -13,7 +13,6 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_result.h"
-#include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/strings/string16.h"
 
 class ChromeAppListItem;
@@ -53,8 +52,6 @@ class AppListModelUpdater {
       const base::string16& tablet_accessible_name,
       const base::string16& clamshell_accessible_name) {}
   virtual void SetSearchHintText(const base::string16& hint_text) {}
-  virtual void SetSearchSpeechRecognitionButton(
-      app_list::SpeechRecognitionState state) {}
   virtual void UpdateSearchBox(const base::string16& text,
                                bool initiated_by_user) {}
   virtual void PublishSearchResults(
