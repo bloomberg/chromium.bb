@@ -25,7 +25,7 @@ import sys
 import tempfile
 
 # TODO(agrieve): Move build_utils.WriteDepFile into a non-android directory.
-_REPOSITORY_ROOT = os.path.dirname(os.path.dirname(__file__))
+_REPOSITORY_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.join(_REPOSITORY_ROOT, 'build/android/gyp/util'))
 import build_utils
 
@@ -481,12 +481,17 @@ def GetThirdPartyDepsFromGNDepsOutput(gn_deps):
     Note that it always returns the direct sub-directory of third_party
     where README.chromium and LICENSE files are, so that it can be passed to
     ParseDir(). e.g.:
-        .../third_party/cld_3/src/src/BUILD.gn -> .../third_party/cld_3
+        third_party/cld_3/src/src/BUILD.gn -> third_party/cld_3
+
+    It returns relative paths from _REPOSITORY_ROOT, not absolute paths.
     """
     third_party_deps = set()
-    for build_dep in gn_deps.split():
-        m = re.search(r'^(.+/third_party/[^/]+)/(.+/)?BUILD\.gn$', build_dep)
-        if m and not os.path.join('build', 'secondary') in build_dep:
+    for absolute_build_dep in gn_deps.split():
+        relative_build_dep = os.path.relpath(
+            absolute_build_dep, _REPOSITORY_ROOT)
+        m = re.search(
+            r'^((.+/)?third_party/[^/]+)/(.+/)?BUILD\.gn$', relative_build_dep)
+        if m and not os.path.join('build', 'secondary') in relative_build_dep:
             third_party_deps.add(m.group(1))
     return third_party_deps
 
