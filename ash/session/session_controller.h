@@ -80,9 +80,6 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // session.
   bool IsUserSessionBlocked() const;
 
-  // Returns whether session unlocking is in progress.
-  bool IsUnlocking() const;
-
   // Convenience function that returns true if session state is LOGIN_SECONDARY.
   bool IsInSecondaryLoginScreen() const;
 

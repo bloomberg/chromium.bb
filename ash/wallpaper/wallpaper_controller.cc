@@ -1368,9 +1368,7 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
 
   bool is_wallpaper_blurred = false;
   auto* session_controller = Shell::Get()->session_controller();
-  if ((session_controller->IsUserSessionBlocked() ||
-       session_controller->IsUnlocking()) &&
-      IsBlurEnabled()) {
+  if (session_controller->IsUserSessionBlocked() && IsBlurEnabled()) {
     component->SetWallpaperBlur(login_constants::kBlurSigma);
     is_wallpaper_blurred = true;
   }
