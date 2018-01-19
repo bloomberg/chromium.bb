@@ -2041,7 +2041,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 // after download of a file while viewing another chrome://.
 IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   GURL flags_url(chrome::kChromeUIFlagsURL);
-  GURL extensions_url(chrome::kChromeUIExtensionsFrameURL);
+  GURL extensions_url(chrome::kChromeUIExtensionsURL);
 
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2057,7 +2057,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   bool webui_responded = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
-      "window.domAutomationController.send(window.webuiResponded);",
+      R"(chrome.developerPrivate.getExtensionsInfo(function(info) {
+           domAutomationController.send(!!info && !chrome.runtime.lastError);
+         });)",
       &webui_responded));
   EXPECT_TRUE(webui_responded);
 }
