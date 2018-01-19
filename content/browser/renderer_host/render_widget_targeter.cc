@@ -113,6 +113,15 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     RenderWidgetHostViewBase* root_view,
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency) {
+  DCHECK(blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+         event.GetType() == blink::WebInputEvent::kMouseWheel ||
+         blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
+         (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
+          (static_cast<const blink::WebGestureEvent&>(event).source_device ==
+               blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
+           static_cast<const blink::WebGestureEvent&>(event).source_device ==
+               blink::WebGestureDevice::kWebGestureDeviceTouchpad)));
+
   if (request_in_flight_) {
     if (!requests_.empty()) {
       auto& request = requests_.back();
@@ -170,14 +179,6 @@ void RenderWidgetTargeter::QueryClient(
       target->GetRenderWidgetHostImpl()->input_target_client();
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime",
                             "input,latency");
-  if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
-      event.GetType() == blink::WebInputEvent::kMouseWheel ||
-      event.GetType() == blink::WebInputEvent::kTouchStart ||
-      (blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
-       (static_cast<const blink::WebGestureEvent&>(event).source_device ==
-            blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
-        static_cast<const blink::WebGestureEvent&>(event).source_device ==
-            blink::WebGestureDevice::kWebGestureDeviceTouchpad))) {
     async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
         base::BindOnce(
             &RenderWidgetTargeter::AsyncHitTestTimedOut,
@@ -194,9 +195,6 @@ void RenderWidgetTargeter::QueryClient(
             weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
             target->GetWeakPtr(), ui::WebInputEventTraits::Clone(event),
             latency, ++last_request_id_, target_location, std::move(tracker)));
-    return;
-  }
-  NOTREACHED();
 }
 
 void RenderWidgetTargeter::FlushEventQueue() {
@@ -259,31 +257,8 @@ void RenderWidgetTargeter::FoundTarget(
     const base::Optional<gfx::PointF>& target_location) {
   if (!root_view)
     return;
-  // TODO: Unify position conversion for all event types.
-  if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
-    blink::WebMouseEvent mouse_event =
-        static_cast<const blink::WebMouseEvent&>(event);
-    if (target_location.has_value()) {
-      mouse_event.SetPositionInWidget(target_location->x(),
-                                      target_location->y());
-    }
-    if (mouse_event.GetType() != blink::WebInputEvent::kUndefined)
-      delegate_->DispatchEventToTarget(root_view, target, mouse_event, latency,
-                                       target_location);
-  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
-             blink::WebInputEvent::IsTouchEventType(event.GetType()) ||
-             blink::WebInputEvent::IsGestureEventType(event.GetType())) {
-    DCHECK(!blink::WebInputEvent::IsGestureEventType(event.GetType()) ||
-           (static_cast<const blink::WebGestureEvent&>(event).source_device ==
-                blink::WebGestureDevice::kWebGestureDeviceTouchscreen ||
-            static_cast<const blink::WebGestureEvent&>(event).source_device ==
-                blink::WebGestureDevice::kWebGestureDeviceTouchpad));
-    delegate_->DispatchEventToTarget(root_view, target, event, latency,
-                                     target_location);
-  } else {
-    NOTREACHED();
-    return;
-  }
+  delegate_->DispatchEventToTarget(root_view, target, event, latency,
+                                   target_location);
   FlushEventQueue();
 }
 
