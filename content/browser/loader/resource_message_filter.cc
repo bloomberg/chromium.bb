@@ -57,9 +57,7 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel*) {
 void ResourceMessageFilter::OnChannelClosing() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
-  // Close all additional Mojo connections opened to this object so that
-  // messages are not dispatched while it is being shut down.
-  bindings_.CloseAllBindings();
+  url_loader_factory_ = nullptr;
 
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
@@ -107,15 +105,14 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     return;
   }
 
-  URLLoaderFactoryImpl::CreateLoaderAndStart(
-      requester_info_.get(), std::move(request), routing_id, request_id,
-      options, url_request, std::move(client),
-      net::NetworkTrafficAnnotationTag(traffic_annotation));
+  url_loader_factory_->CreateLoaderAndStart(
+      std::move(request), routing_id, request_id, options, url_request,
+      std::move(client), traffic_annotation);
 }
 
 void ResourceMessageFilter::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  url_loader_factory_->Clone(std::move(request));
 }
 
 int ResourceMessageFilter::child_id() const {
@@ -144,6 +141,7 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   // The WeakPtr of the filter must be created on the IO thread. So sets the
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
+  url_loader_factory_ = std::make_unique<URLLoaderFactoryImpl>(requester_info_);
 }
 
 }  // namespace content

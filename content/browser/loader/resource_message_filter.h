@@ -113,10 +113,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   bool is_channel_closed_;
   scoped_refptr<ResourceRequesterInfo> requester_info_;
 
-  // An additional set of non-associated bindings (beyond those held by the
-  // BrowserAssociatedInterface parent class) of pipes to this object's
-  // URLLoaderFactory interface.
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
