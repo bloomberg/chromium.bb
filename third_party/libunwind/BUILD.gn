@@ -12,9 +12,7 @@ config("libunwind_config") {
 source_set("libunwind") {
   visibility = [ "//buildtools/third_party/libc++abi" ]
 
-  # On desktop Linux, libunwind symbols conflict with glibc's, so
-  # always make them hidden, even for component builds.
-  if (libcpp_is_static || !is_fuchsia) {
+  if (libcpp_is_static) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   }
   sources = [

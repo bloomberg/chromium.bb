@@ -6,12 +6,15 @@ source_set("libc++abi") {
   visibility = [ "//buildtools/third_party/libc++" ]
   deps = []
 
-  # This condition should match the one in build/config/c++.
-  if (current_cpu == "arm" || is_fuchsia) {
+  # Fuchsia builds don't link against any libraries that provide stack unwinding
+  # symbols, unlike Linux does with glibc.  Build and link against libunwind
+  # manually to get this functionality.
+  if (is_fuchsia) {
     deps += [
       "//buildtools/third_party/libunwind",
     ]
   }
+
   sources = [
     "trunk/src/abort_message.cpp",
     "trunk/src/cxa_aux_runtime.cpp",
