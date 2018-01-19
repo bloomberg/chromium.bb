@@ -264,6 +264,7 @@ exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
 
 EXTRA_DIST = tests/scanner-test.sh			\
+	protocol/tests.xml				\
 	tests/data/example.xml				\
 	tests/data/example-client.h			\
 	tests/data/example-server.h			\
