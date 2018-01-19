@@ -299,7 +299,7 @@ bool QuicFramer::IsSupportedTransportVersion(
 }
 
 bool QuicFramer::IsSupportedVersion(const ParsedQuicVersion version) const {
-  for (ParsedQuicVersion supported_version : supported_versions_) {
+  for (const ParsedQuicVersion& supported_version : supported_versions_) {
     if (version == supported_version) {
       return true;
     }
@@ -564,7 +564,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildVersionNegotiationPacket(
     return nullptr;
   }
 
-  for (ParsedQuicVersion version : versions) {
+  for (const ParsedQuicVersion& version : versions) {
     // TODO(rch): Use WriteUInt32() once QUIC_VERSION_38 and earlier
     // are removed.
     if (!writer.WriteTag(

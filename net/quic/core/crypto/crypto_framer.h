@@ -67,6 +67,15 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
   // parsed.
   size_t InputBytesRemaining() const override;
 
+  // Checks if the specified tag has been seen. Returns |true| if it
+  // has, and |false| if it has not or a CHLO has not been seen.
+  bool HasTag(QuicTag tag) const;
+
+  // Even if the CHLO has not been fully received, force processing of
+  // the handshake message. This is dangerous and should not be used
+  // except as a mechanism of last resort.
+  void ForceHandshake();
+
   // Returns a new QuicData owned by the caller that contains a serialized
   // |message|, or nullptr if there was an error.
   static QuicData* ConstructHandshakeMessage(

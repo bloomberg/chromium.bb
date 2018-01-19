@@ -584,6 +584,307 @@ TEST_P(QuicDataWriterTest, WriteUInt8AtOffset) {
   }
 }
 
+// Encodes and then decodes a specified value in a specified buffer,
+// etc, etc. Ensures that the operation is correct. Reports errors via
+// EXPECT_ macros.
+void EncodeDecodeValue(uint64_t value_in,
+                       char* buffer,
+                       size_t size_of_buffer,
+                       Endianness endianness) {
+  // This is the biggest value we can encode, ensure that
+  // it will fit. Other tests look at error cases.
+  EXPECT_LE(value_in, UINT64_C(0x3fffffffffffffff));
+
+  // Init the buffer to all 0, just for cleanliness. Makes for better
+  // output if, in debugging, we need to dump out the buffer.
+  memset(buffer, 0, size_of_buffer);
+  // make a writer. Note that for IETF encoding
+  // we do not care about endianness...
+  QuicDataWriter writer(size_of_buffer, buffer, endianness);
+
+  EXPECT_TRUE(writer.WriteVarInt62(value_in));
+  // Look at the value we encoded. Determine how much should have been
+  // used based on the value, and then check the state of the writer
+  // to see that it matches.
+  size_t expected_length = 0;
+  if (value_in <= 0x3f) {
+    expected_length = 1;
+  } else if (value_in <= 0x3fff) {
+    expected_length = 2;
+  } else if (value_in <= 0x3fffffff) {
+    expected_length = 4;
+  } else {
+    expected_length = 8;
+  }
+  EXPECT_EQ(writer.length(), expected_length);
+
+  // set up a reader, just the length we've used, no more, no less.
+  QuicDataReader reader(buffer, expected_length, endianness);
+  uint64_t value_out;
+
+  EXPECT_TRUE(reader.ReadVarInt62(&value_out));
+  EXPECT_EQ(value_in, value_out);
+  // We only write one value so there had better be nothing left to read
+  EXPECT_TRUE(reader.IsDoneReading());
+}
+
+// Test that 8-byte-encoded Variable Length Integers are properly laid
+// out in the buffer.
+TEST_P(QuicDataWriterTest, DISABLED_VarInt8Layout) {
+  char buffer[1024];
+
+  // Check that the layout of bytes in the buffer is correct. Bytes
+  // are always encoded big endian...
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  EXPECT_TRUE(writer.WriteVarInt62(UINT64_C(0x3142f3e4d5c6b7a8)));
+  EXPECT_EQ(*(writer.data() + 0), (0x31 + 0xc0));  // 0xc0 for encoding
+  EXPECT_EQ(*(writer.data() + 1), 0x42);
+  EXPECT_EQ(*(writer.data() + 2), 0xf3);
+  EXPECT_EQ(*(writer.data() + 3), 0xe4);
+  EXPECT_EQ(*(writer.data() + 4), 0xd5);
+  EXPECT_EQ(*(writer.data() + 5), 0xc6);
+  EXPECT_EQ(*(writer.data() + 6), 0xb7);
+  EXPECT_EQ(*(writer.data() + 7), 0xa8);
+}
+
+// Test that 4-byte-encoded Variable Length Integers are properly laid
+// out in the buffer.
+TEST_P(QuicDataWriterTest, DISABLED_VarInt4Layout) {
+  char buffer[1024];
+
+  // Check that the layout of bytes in the buffer is correct. Bytes
+  // are always encoded big endian...
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  EXPECT_TRUE(writer.WriteVarInt62(0x3243f4e5));
+  EXPECT_EQ(*(writer.data() + 0), (0x32 + 0x80));  // 0x80 for encoding
+  EXPECT_EQ(*(writer.data() + 1), 0x43);
+  EXPECT_EQ(*(writer.data() + 2), 0xf4);
+  EXPECT_EQ(*(writer.data() + 3), 0xe5);
+}
+
+// Test that 2-byte-encoded Variable Length Integers are properly laid
+// out in the buffer.
+TEST_P(QuicDataWriterTest, DISABLED_VarInt2Layout) {
+  char buffer[1024];
+
+  // Check that the layout of bytes in the buffer is correct. Bytes
+  // are always encoded big endian...
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  EXPECT_TRUE(writer.WriteVarInt62(0x3647));
+  EXPECT_EQ(*(writer.data() + 0), (0x36 + 0x40));  // 0x40 for encoding
+  EXPECT_EQ(*(writer.data() + 1), 0x47);
+}
+
+// Test that 1-byte-encoded Variable Length Integers are properly laid
+// out in the buffer.
+TEST_P(QuicDataWriterTest, DISABLED_VarInt1Layout) {
+  char buffer[1024];
+
+  // Check that the layout of bytes in the buffer
+  // is correct. Bytes are always encoded big endian...
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  EXPECT_TRUE(writer.WriteVarInt62(0x3f));
+  EXPECT_EQ(*(writer.data() + 0), 0x3f);
+}
+
+// This test runs a very large range of numbers, doing IETF Variable
+// Length Integer encoding and decoding operations. For each number
+// encoded/decoded we test that
+//  - decode(encode(number))==number
+//  - that the reader and writer state is correct after
+//    decoding/encoding
+// Systems are fast so rather than test for specific interesting
+// numbers, we simply do exhaustive testing for the low range (1, 2,
+// and 4-byte encoding).
+TEST_P(QuicDataWriterTest, DISABLED_VarIntRangeSmall) {
+  char buffer[1024];
+
+  // Test a range of values. These tests do basic checks that the
+  // decoded value is the same as the encoded one, that the buffer
+  // states are correct after encoding and decoding, and so on.  They
+  // do not check that the bit-layout in the buffer is correct.
+  for (uint64_t test_val = 0; test_val <= 0x0ffffff0; test_val++) {
+    EncodeDecodeValue(test_val, static_cast<char*>(buffer), sizeof(buffer),
+                      GetParam().endianness);
+  }
+}
+// Test in the vicinity of moving from 4-byte to 8-byte
+// encoding. Tests some exhaustive ranges as well as some targeted
+// values.
+TEST_P(QuicDataWriterTest, DISABLED_VarIntRangeMedium) {
+  char buffer[1024];
+
+  // Test a range of values. These tests do basic checks that the
+  // decoded value is the same as the encoded one, that the buffer
+  // states are correct after encoding and decoding, and so on.  They
+  // do not check that the bit-layout in the buffer is correct.
+  for (uint64_t test_val = 0; test_val <= 0x1ffffff00; test_val += 0xff) {
+    EncodeDecodeValue(test_val, static_cast<char*>(buffer), sizeof(buffer),
+                      GetParam().endianness);
+  }
+  // Specifically test around the 4/8 byte transition.
+  for (uint64_t test_val = 0x3fffffff - 1000; test_val <= 0x3fffffff + 1000;
+       test_val++) {
+    EncodeDecodeValue(test_val, static_cast<char*>(buffer), sizeof(buffer),
+                      GetParam().endianness);
+  }
+}
+
+TEST_P(QuicDataWriterTest, DISABLED_VarIntRangeLarge) {
+  char buffer[1024];
+
+  // Test a range of values. These tests do basic checks that the
+  // decoded value is the same as the encoded one, that the buffer
+  // states are correct after encoding and decoding, and so on. They
+  // do not check that the bit-layout in the buffer is correct.
+  //
+  // Run up to the maximum value, using exponentially increasing
+  // increments.
+  for (uint64_t test_val = 0x0fffffff; test_val <= UINT64_C(0x3fffffffffffffff);
+       test_val += (test_val >> 21)) {
+    EncodeDecodeValue(test_val, static_cast<char*>(buffer), sizeof(buffer),
+                      GetParam().endianness);
+  }
+
+  // Finally, do the last range incrementing by 1
+  for (uint64_t test_val = UINT64_C(0x3fffffffffff0000);
+       test_val <= UINT64_C(0x3fffffffffffffff); test_val++) {
+    EncodeDecodeValue(test_val, static_cast<char*>(buffer), sizeof(buffer),
+                      GetParam().endianness);
+  }
+}
+
+// Following tests all try to fill the buffer with multiple values,
+// go one value more than the buffer can accommodate, then read
+// the successfully encoded values, and try to read the unsuccessfully
+// encoded value. The following is the number of values to encode.
+const int kMultiVarCount = 1000;
+
+// Test writing & reading multiple 8-byte-encoded varints
+TEST_P(QuicDataWriterTest, DISABLED_MultiVarInt8) {
+  uint64_t test_val;
+  char buffer[8 * kMultiVarCount];
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  // Put N values into the buffer. Adding i to the value ensures that
+  // each value is different so we can detect if we overwrite values,
+  // or read the same value over and over.
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(writer.WriteVarInt62(UINT64_C(0x3142f3e4d5c6b7a8) + i));
+  }
+  EXPECT_EQ(writer.length(), 8u * kMultiVarCount);
+
+  // N+1st should fail, the buffer is full.
+  EXPECT_FALSE(writer.WriteVarInt62(UINT64_C(0x3142f3e4d5c6b7a8)));
+
+  // Now we should be able to read out the N values that were
+  // successfully encoded.
+  QuicDataReader reader(buffer, sizeof(buffer), GetParam().endianness);
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(reader.ReadVarInt62(&test_val));
+    EXPECT_EQ(test_val, (UINT64_C(0x3142f3e4d5c6b7a8) + i));
+  }
+  // And the N+1st should fail.
+  EXPECT_FALSE(reader.ReadVarInt62(&test_val));
+}
+
+// Test writing & reading multiple 4-byte-encoded varints
+TEST_P(QuicDataWriterTest, DISABLED_MultiVarInt4) {
+  uint64_t test_val;
+  char buffer[4 * kMultiVarCount];
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  // Put N values into the buffer. Adding i to the value ensures that
+  // each value is different so we can detect if we overwrite values,
+  // or read the same value over and over.
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(writer.WriteVarInt62(UINT64_C(0x3142f3e4) + i));
+  }
+  EXPECT_EQ(writer.length(), 4u * kMultiVarCount);
+
+  // N+1st should fail, the buffer is full.
+  EXPECT_FALSE(writer.WriteVarInt62(UINT64_C(0x3142f3e4)));
+
+  // Now we should be able to read out the N values that were
+  // successfully encoded.
+  QuicDataReader reader(buffer, sizeof(buffer), GetParam().endianness);
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(reader.ReadVarInt62(&test_val));
+    EXPECT_EQ(test_val, (UINT64_C(0x3142f3e4) + i));
+  }
+  // And the N+1st should fail.
+  EXPECT_FALSE(reader.ReadVarInt62(&test_val));
+}
+
+// Test writing & reading multiple 2-byte-encoded varints
+TEST_P(QuicDataWriterTest, DISABLED_MultiVarInt2) {
+  uint64_t test_val;
+  char buffer[2 * kMultiVarCount];
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  // Put N values into the buffer. Adding i to the value ensures that
+  // each value is different so we can detect if we overwrite values,
+  // or read the same value over and over.
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(writer.WriteVarInt62(UINT64_C(0x3142) + i));
+  }
+  EXPECT_EQ(writer.length(), 2u * kMultiVarCount);
+
+  // N+1st should fail, the buffer is full.
+  EXPECT_FALSE(writer.WriteVarInt62(UINT64_C(0x3142)));
+
+  // Now we should be able to read out the N values that were
+  // successfully encoded.
+  QuicDataReader reader(buffer, sizeof(buffer), GetParam().endianness);
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(reader.ReadVarInt62(&test_val));
+    EXPECT_EQ(test_val, (UINT64_C(0x3142) + i));
+  }
+  // And the N+1st should fail.
+  EXPECT_FALSE(reader.ReadVarInt62(&test_val));
+}
+
+// Test writing & reading multiple 1-byte-encoded varints
+TEST_P(QuicDataWriterTest, DISABLED_MultiVarInt1) {
+  uint64_t test_val;
+  char buffer[1 * kMultiVarCount];
+  memset(buffer, 0, sizeof(buffer));
+  QuicDataWriter writer(sizeof(buffer), static_cast<char*>(buffer),
+                        GetParam().endianness);
+  // Put N values into the buffer. Adding i to the value ensures that
+  // each value is different so we can detect if we overwrite values,
+  // or read the same value over and over. &0xf ensures we do not
+  // overflow the max value for single-byte encoding.
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(writer.WriteVarInt62(UINT64_C(0x30) + (i & 0xf)));
+  }
+  EXPECT_EQ(writer.length(), 1u * kMultiVarCount);
+
+  // N+1st should fail, the buffer is full.
+  EXPECT_FALSE(writer.WriteVarInt62(UINT64_C(0x31)));
+
+  // Now we should be able to read out the N values that were
+  // successfully encoded.
+  QuicDataReader reader(buffer, sizeof(buffer), GetParam().endianness);
+  for (int i = 0; i < kMultiVarCount; i++) {
+    EXPECT_TRUE(reader.ReadVarInt62(&test_val));
+    EXPECT_EQ(test_val, (UINT64_C(0x30) + (i & 0xf)));
+  }
+  // And the N+1st should fail.
+  EXPECT_FALSE(reader.ReadVarInt62(&test_val));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

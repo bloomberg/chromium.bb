@@ -68,6 +68,8 @@ class QUIC_EXPORT_PRIVATE RttStats {
 
   QuicTime::Delta mean_deviation() const { return mean_deviation_; }
 
+  QuicTime::Delta max_ack_delay() const { return max_ack_delay_; }
+
  private:
   friend class test::RttStatsPeer;
 
@@ -80,6 +82,9 @@ class QUIC_EXPORT_PRIVATE RttStats {
   // larger than the standard deviation, for a normally distributed signal.
   QuicTime::Delta mean_deviation_;
   int64_t initial_rtt_us_;
+  // The maximum ack delay observed over the connection after excluding ack
+  // delays that were too large to be included in an RTT measurement.
+  QuicTime::Delta max_ack_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(RttStats);
 };

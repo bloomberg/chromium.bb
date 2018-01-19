@@ -382,7 +382,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       const std::string& details,
       ConnectionCloseBehavior connection_close_behavior);
 
-  // Sends a GOAWAY frame. Does nothing if a GOAWAY frame has already been sent.
+  // Sends a GOAWAY frame.
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
                           const std::string& reason);
@@ -519,10 +519,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   size_t mtu_probe_count() const { return mtu_probe_count_; }
 
   bool connected() const { return connected_; }
-
-  bool goaway_sent() const { return goaway_sent_; }
-
-  bool goaway_received() const { return goaway_received_; }
 
   // Must only be called on client connections.
   const ParsedQuicVersionVector& server_supported_versions() const {
@@ -1135,12 +1131,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // The size of the largest packet received from peer.
   QuicByteCount largest_received_packet_size_;
-
-  // Whether a GoAway has been sent.
-  bool goaway_sent_;
-
-  // Whether a GoAway has been received.
-  bool goaway_received_;
 
   // Indicates whether a write error is encountered currently. This is used to
   // avoid infinite write errors.

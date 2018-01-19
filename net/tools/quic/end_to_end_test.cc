@@ -143,7 +143,7 @@ std::vector<TestParams> GetTestParams() {
   // with future versions of QUIC, so don't remove it.
   ParsedQuicVersionVector version_buckets[1];
 
-  for (const ParsedQuicVersion version : all_supported_versions) {
+  for (const ParsedQuicVersion& version : all_supported_versions) {
     // Versions: 35+
     // QUIC_VERSION_35 allows endpoints to independently set stream limit.
     version_buckets[0].push_back(version);
@@ -568,6 +568,23 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   QuicStreamId GetNthServerInitiatedId(int n) {
     return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
         *client_->client()->client_session(), n);
+  }
+
+  void WaitForDelayedAcks() {
+    // kWaitDuration is a period of time that is long enough for all delayed
+    // acks to be sent and received on the other end.
+    const QuicTime::Delta kWaitDuration =
+        4 * QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs);
+
+    const QuicClock* clock =
+        client_->client()->client_session()->connection()->clock();
+
+    QuicTime wait_until = clock->ApproximateNow() + kWaitDuration;
+    while (clock->ApproximateNow() < wait_until) {
+      QUIC_LOG_EVERY_N_SEC(INFO, 0.01) << "Waiting for delayed acks...";
+      // This waits for up to 50 ms.
+      client_->client()->WaitForEvents();
+    }
   }
 
   bool initialized_;
@@ -1853,24 +1870,24 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
 // called exactly once on destruction.
 class TestAckListener : public QuicAckListenerInterface {
  public:
-  explicit TestAckListener(int num_packets) : num_notifications_(num_packets) {}
+  explicit TestAckListener(int bytes_to_ack) : bytes_to_ack_(bytes_to_ack) {}
 
-  void OnPacketAcked(int /*acked_bytes*/,
+  void OnPacketAcked(int acked_bytes,
                      QuicTime::Delta /*delta_largest_observed*/) override {
-    ASSERT_LT(0, num_notifications_);
-    num_notifications_--;
+    ASSERT_LE(acked_bytes, bytes_to_ack_);
+    bytes_to_ack_ -= acked_bytes;
   }
 
   void OnPacketRetransmitted(int /*retransmitted_bytes*/) override {}
 
-  bool has_been_notified() const { return num_notifications_ == 0; }
+  bool has_been_notified() const { return bytes_to_ack_ == 0; }
 
  protected:
   // Object is ref counted.
-  ~TestAckListener() override { EXPECT_EQ(0, num_notifications_); }
+  ~TestAckListener() override { EXPECT_EQ(0, bytes_to_ack_); }
 
  private:
-  int num_notifications_;
+  int bytes_to_ack_;
 };
 
 class TestResponseListener : public QuicSpdyClientBase::ResponseListener {
@@ -1910,14 +1927,14 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
 
   client_->SendMessage(headers, "", /*fin=*/false);
 
-  // The TestAckListener will cause a failure if not notified.
-  QuicReferenceCountedPointer<TestAckListener> ack_listener(
-      new TestAckListener(2));
-
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.
   string request_string =
       "a request body bigger than one packet" + string(kMaxPacketSize, '.');
+
+  // The TestAckListener will cause a failure if not notified.
+  QuicReferenceCountedPointer<TestAckListener> ack_listener(
+      new TestAckListener(request_string.length()));
 
   // Send the request, and register the delegate for ACKs.
   client_->SendData(request_string, true, ack_listener);
@@ -2979,6 +2996,27 @@ TEST_P(EndToEndTest, DoNotCrashOnPacketWriteError) {
   headers[":authority"] = server_hostname_;
 
   client->SendCustomSynchronousRequest(headers, body);
+}
+
+// Regression test for b/71711996. This test sends a connectivity probing packet
+// as its last sent packet, and makes sure the server's ACK of that packet does
+// not cause the client to fail.
+TEST_P(EndToEndTest, LastPacketSentIsConnectivityProbing) {
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+
+  // Wait for the client's ACK (of the response) to be received by the server.
+  WaitForDelayedAcks();
+
+  // We are sending a connectivity probing packet from an unchanged client
+  // address, so the server will not respond to us with a connectivity probing
+  // packet, however the server should send an ack-only packet to us.
+  client_->SendConnectivityProbing();
+
+  // Wait for the server's last ACK to be received by the client.
+  WaitForDelayedAcks();
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

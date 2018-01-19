@@ -112,7 +112,7 @@ enum class ConnectionCloseBehavior {
   SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK
 };
 
-enum QuicFrameType {
+enum QuicFrameType : int8_t {
   // Regular frame types. The values set here cannot change without the
   // introduction of a new QUIC version.
   PADDING_FRAME = 0,

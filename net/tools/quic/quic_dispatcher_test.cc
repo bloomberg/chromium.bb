@@ -262,7 +262,7 @@ class QuicDispatcherTest : public QuicTest {
     std::unique_ptr<QuicReceivedPacket> received_packet(
         ConstructReceivedPacket(*packet, helper_.GetClock()->Now()));
 
-    if (ChloExtractor::Extract(*packet, versions, nullptr)) {
+    if (ChloExtractor::Extract(*packet, versions, {}, nullptr)) {
       // Add CHLO packet to the beginning to be verified first, because it is
       // also processed first by new session.
       data_connection_map_[connection_id].push_front(

@@ -401,6 +401,10 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   bool negotiated() const;
 
+  void SetCreateSessionTagIndicators(QuicTagVector tags);
+
+  const QuicTagVector& create_session_tag_indicators() const;
+
   // ToHandshakeMessage serialises the settings in this object as a series of
   // tags /value pairs and adds them to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const;
@@ -464,6 +468,11 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   // Stateless reset token used in IETF public reset packet.
   QuicFixedUint128 stateless_reset_token_;
+
+  // List of QuicTags whose presence immediately causes the session to
+  // be created. This allows for CHLOs that are larger than a single
+  // packet to be processed.
+  QuicTagVector create_session_tag_indicators_;
 };
 
 }  // namespace net

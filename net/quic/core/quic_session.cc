@@ -54,9 +54,13 @@ QuicSession::QuicSession(QuicConnection* connection,
                        perspective() == Perspective::IS_SERVER,
                        nullptr),
       currently_writing_stream_id_(0),
+      goaway_sent_(false),
+      goaway_received_(false),
       can_use_slices_(GetQuicReloadableFlag(quic_use_mem_slices)),
       allow_multiple_acks_for_data_(
-          GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+          GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)),
+      session_unblocks_stream_(
+          GetQuicReloadableFlag(quic_streams_unblocked_by_session)) {
   if (allow_multiple_acks_for_data_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_allow_multiple_acks_for_data2);
   }
@@ -146,7 +150,9 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   stream->OnStreamReset(frame);
 }
 
-void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {}
+void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
+  goaway_received_ = true;
+}
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error,
                                      const string& error_details,
@@ -400,9 +406,10 @@ void QuicSession::SendRstStream(QuicStreamId id,
 }
 
 void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
-  if (goaway_sent()) {
+  if (goaway_sent_) {
     return;
   }
+  goaway_sent_ = true;
 
   connection_->SendGoAway(error_code, largest_peer_created_stream_id_, reason);
 }
@@ -830,14 +837,6 @@ void QuicSession::set_max_open_outgoing_streams(
   QUIC_DVLOG(1) << "Setting max_open_outgoing_streams_ to "
                 << max_open_outgoing_streams;
   max_open_outgoing_streams_ = max_open_outgoing_streams;
-}
-
-bool QuicSession::goaway_sent() const {
-  return connection_->goaway_sent();
-}
-
-bool QuicSession::goaway_received() const {
-  return connection_->goaway_received();
 }
 
 bool QuicSession::IsClosedStream(QuicStreamId id) {

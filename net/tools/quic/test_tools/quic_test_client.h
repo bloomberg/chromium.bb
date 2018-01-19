@@ -127,6 +127,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // Sends a GET request for |uri|, waits for the response, and returns the
   // response body.
   std::string SendSynchronousRequest(const std::string& uri);
+  void SendConnectivityProbing();
   void Connect();
   void ResetConnection();
   void Disconnect();

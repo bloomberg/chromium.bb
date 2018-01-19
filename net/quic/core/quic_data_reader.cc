@@ -198,4 +198,70 @@ uint8_t QuicDataReader::PeekByte() const {
   return data_[pos_];
 }
 
+// Read an IETF/QUIC formatted 62-bit Variable Length Integer.
+//
+// Performance notes
+//
+// Measurements and experiments showed that unrolling the four cases
+// like this and dereferencing next_ as we do (*(next_+n) --- and then
+// doing a single pos_+=x at the end) gains about 10% over making a
+// loop and dereferencing next_ such as *(next_++)
+//
+// Using a register for pos_ was not helpful.
+//
+// Branches are ordered to increase the likelihood of the first being
+// taken.
+//
+// Low-level optimization is useful here because this function will be
+// called frequently, leading to outsize benefits.
+bool QuicDataReader::ReadVarInt62(uint64_t* result) {
+  size_t remaining = BytesRemaining();
+  const char* next = data_ + pos_;
+  if (remaining != 0) {
+    switch (*next & 0xc0) {
+      case 0xc0:
+        // Leading 0b11...... is 8 byte encoding
+        if (remaining >= 8) {
+          *result = (static_cast<uint64_t>((*(next)) & 0x3f) << 56) +
+                    (static_cast<uint64_t>(*(next + 1)) << 48) +
+                    (static_cast<uint64_t>(*(next + 2)) << 40) +
+                    (static_cast<uint64_t>(*(next + 3)) << 32) +
+                    (static_cast<uint64_t>(*(next + 4)) << 24) +
+                    (static_cast<uint64_t>(*(next + 5)) << 16) +
+                    (static_cast<uint64_t>(*(next + 6)) << 8) +
+                    (static_cast<uint64_t>(*(next + 7)) << 0);
+          pos_ += 8;
+          return true;
+        }
+        return false;
+
+      case 0x80:
+        // Leading 0b10...... is 4 byte encoding
+        if (remaining >= 4) {
+          *result = (((*(next)) & 0x3f) << 24) + (((*(next + 1)) << 16)) +
+                    (((*(next + 2)) << 8)) + (((*(next + 3)) << 0));
+          pos_ += 4;
+          return true;
+        }
+        return false;
+
+      case 0x40:
+        // Leading 0b01...... is 2 byte encoding
+        if (remaining >= 2) {
+          *result = (((*(next)) & 0x3f) << 8) + (*(next + 1));
+          pos_ += 2;
+          return true;
+        }
+        return false;
+
+      case 0x00:
+        // Leading 0b00...... is 1 byte encoding
+        *result = (*next) & 0x3f;
+        pos_++;
+        return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace net

@@ -240,9 +240,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // connection, or in a write-blocked stream.
   bool HasDataToWrite() const;
 
-  bool goaway_sent() const;
+  bool goaway_sent() const { return goaway_sent_; }
 
-  bool goaway_received() const;
+  bool goaway_received() const { return goaway_received_; }
 
   QuicErrorCode error() const { return error_; }
 
@@ -286,6 +286,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   bool allow_multiple_acks_for_data() const {
     return allow_multiple_acks_for_data_;
   }
+
+  bool session_unblocks_stream() const { return session_unblocks_stream_; }
 
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
@@ -502,6 +504,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // call stack of OnCanWrite.
   QuicStreamId currently_writing_stream_id_;
 
+  // Whether a GoAway has been sent.
+  bool goaway_sent_;
+
+  // Whether a GoAway has been received.
+  bool goaway_received_;
+
   // QUIC stream can take ownership of application data provided in reference
   // counted memory to avoid data copy.
   const bool can_use_slices_;
@@ -513,6 +521,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // is not used here.
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
+
+  // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session.
+  const bool session_unblocks_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

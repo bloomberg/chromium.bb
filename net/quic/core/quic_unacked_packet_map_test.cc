@@ -96,7 +96,7 @@ class QuicUnackedPacketMapTest : public QuicTest {
     size_t num_retransmittable_packets = 0;
     for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
          it != unacked_packets_.end(); ++it) {
-      if (!it->retransmittable_frames.empty()) {
+      if (unacked_packets_.HasRetransmittableFrames(*it)) {
         ++num_retransmittable_packets;
       }
     }

@@ -55,12 +55,15 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // No longer retransmit data for |stream_id|.
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
 
-  // Returns true if the unacked packet |packet_number| has retransmittable
-  // frames.  This will return false if the packet has been acked, if a
-  // previous transmission of this packet was ACK'd, or if this packet has been
-  // retransmitted as with different packet number, or if the packet never
-  // had any retransmittable packets in the first place.
+  // Returns true if |packet_number| has retransmittable frames. This will
+  // return false if all frames of this packet are either non-retransmittable or
+  // have been acked.
   bool HasRetransmittableFrames(QuicPacketNumber packet_number) const;
+
+  // Returns true if |info| has retransmittable frames. This will return false
+  // if all frames of this packet are either non-retransmittable or have been
+  // acked.
+  bool HasRetransmittableFrames(const QuicTransmissionInfo& info) const;
 
   // Returns true if there are any unacked packets.
   bool HasUnackedPackets() const;

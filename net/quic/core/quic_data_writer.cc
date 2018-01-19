@@ -189,4 +189,86 @@ bool QuicDataWriter::WriteTag(uint32_t tag) {
   return WriteBytes(&tag, sizeof(tag));
 }
 
+// Converts a uint64_t into an IETF/Quic formatted Variable Length
+// Integer. IETF Variable Length Integers have 62 significant bits, so
+// the value to write must be in the range of 0..(2^62)-1.
+//
+// Performance notes
+//
+// Measurements and experiments showed that unrolling the four cases
+// like this and dereferencing next_ as we do (*(next_+n)) gains about
+// 10% over making a loop and dereferencing it as *(next_++)
+//
+// Using a register for next didn't help.
+//
+// Branches are ordered to increase the likelihood of the first being
+// taken.
+//
+// Low-level optimization is useful here because this function will be
+// called frequently, leading to outsize benefits.
+bool QuicDataWriter::WriteVarInt62(uint64_t value) {
+  size_t remaining = capacity_ - length_;
+  char* next = buffer_ + length_;
+  if ((value & UINT64_C(0xc000000000000000)) == 0) {
+    // We know the high 2 bits are 0 so |value| is legal.
+    // We can do the encoding.
+    if ((value & UINT64_C(0x3fffffffc0000000)) != 0) {
+      // Someplace in the high-4 bytes is a 1-bit. Do an 8-byte
+      // encoding.
+      if (remaining >= 8) {
+        *(next + 0) = ((value >> 56) & 0x3f) + 0xc0;
+        *(next + 1) = (value >> 48) & 0xff;
+        *(next + 2) = (value >> 40) & 0xff;
+        *(next + 3) = (value >> 32) & 0xff;
+        *(next + 4) = (value >> 24) & 0xff;
+        *(next + 5) = (value >> 16) & 0xff;
+        *(next + 6) = (value >> 8) & 0xff;
+        *(next + 7) = value & 0xff;
+        length_ += 8;
+        return true;
+      }
+      return false;
+    }
+    // The high-order-4 bytes are all 0, check for a 1, 2, or 4-byte
+    // encoding
+    if ((value & UINT64_C(0x000000003fffc000)) != 0) {
+      // The encoding will not fit into 2 bytes, Do a 4-byte
+      // encoding.
+      if (remaining >= 4) {
+        *(next + 0) = ((value >> 24) & 0x3f) + 0x80;
+        *(next + 1) = (value >> 16) & 0xff;
+        *(next + 2) = (value >> 8) & 0xff;
+        *(next + 3) = value & 0xff;
+        length_ += 4;
+        return true;
+      }
+      return false;
+    }
+    // The high-order bits are all 0. Check to see if the number
+    // can be encoded as one or two bytes. One byte encoding has
+    // only 6 significant bits (bits 0xffffffff ffffffc0 are all 0).
+    // Two byte encoding has more than 6, but 14 or less significant
+    // bits (bits 0xffffffff ffffc000 are 0 and 0x00000000 00003fc0
+    // are not 0)
+    if ((value & UINT64_C(0x0000000000003fc0)) != 0) {
+      // Do 2-byte encoding
+      if (remaining >= 2) {
+        *(next + 0) = ((value >> 8) & 0x3f) + 0x40;
+        *(next + 1) = (value)&0xff;
+        length_ += 2;
+        return true;
+      }
+      return false;
+    }
+    if (remaining >= 1) {
+      // Do 1-byte encoding
+      *next = (value & 0x3f);
+      length_ += 1;
+      return true;
+    }
+    return false;
+  }
+  // Can not encode, high 2 bits not 0
+  return false;
+}
 }  // namespace net

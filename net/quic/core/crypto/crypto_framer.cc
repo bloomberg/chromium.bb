@@ -92,6 +92,31 @@ size_t CryptoFramer::InputBytesRemaining() const {
   return buffer_.length();
 }
 
+bool CryptoFramer::HasTag(QuicTag tag) const {
+  if (state_ != STATE_READING_VALUES) {
+    return false;
+  }
+  for (const auto& it : tags_and_lengths_) {
+    if (it.first == tag) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void CryptoFramer::ForceHandshake() {
+  QuicDataReader reader(buffer_.data(), buffer_.length(), HOST_BYTE_ORDER);
+  for (const std::pair<QuicTag, size_t>& item : tags_and_lengths_) {
+    QuicStringPiece value;
+    if (reader.BytesRemaining() < item.second) {
+      break;
+    }
+    reader.ReadStringPiece(&value, item.second);
+    message_.SetStringPiece(item.first, value);
+  }
+  visitor_->OnHandshakeMessage(message_);
+}
+
 // static
 QuicData* CryptoFramer::ConstructHandshakeMessage(
     const CryptoHandshakeMessage& message,
