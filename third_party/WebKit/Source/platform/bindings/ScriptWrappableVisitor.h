@@ -15,6 +15,8 @@
 
 namespace blink {
 
+template <typename T>
+class DOMWrapperMap;
 class HeapObjectHeader;
 class ScriptWrappable;
 class ScriptWrappableVisitor;
@@ -144,6 +146,10 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   static void WriteBarrier(v8::Isolate*,
                            const TraceWrapperV8Reference<v8::Value>&);
 
+  static void WriteBarrier(v8::Isolate*,
+                           DOMWrapperMap<ScriptWrappable>*,
+                           ScriptWrappable* key);
+
   ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
   ~ScriptWrappableVisitor() override;
 
@@ -185,6 +191,11 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
     Visit(v8reference.template Cast<v8::Value>());
   }
+
+  // Trace a wrapper in a non-main world.
+  // TODO(ulan): call this from ScriptWrappable::TraceWrappers and
+  // remove all MarkWrappersInAllWorlds methods.
+  void TraceWrappers(DOMWrapperMap<ScriptWrappable>*, ScriptWrappable* key);
 
   virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
   template <typename T>
@@ -228,6 +239,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // TODO(ulan): extract Visit methods to a general visitor interface.
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const;
   virtual void Visit(const WrapperDescriptor&) const;
+  virtual void Visit(DOMWrapperMap<ScriptWrappable>*, ScriptWrappable* key);
 
   v8::Isolate* isolate() const { return isolate_; }
 
