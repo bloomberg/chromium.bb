@@ -118,6 +118,17 @@ void FakeCentral::AddFakeService(const std::string& peripheral_address,
   std::move(callback).Run(fake_peripheral->AddFakeService(service_uuid));
 }
 
+void FakeCentral::RemoveFakeService(const std::string& identifier,
+                                    const std::string& peripheral_address,
+                                    RemoveFakeServiceCallback callback) {
+  FakePeripheral* fake_peripheral = GetFakePeripheral(peripheral_address);
+  if (!fake_peripheral) {
+    std::move(callback).Run(false);
+    return;
+  }
+  std::move(callback).Run(fake_peripheral->RemoveFakeService(identifier));
+}
+
 void FakeCentral::AddFakeCharacteristic(
     const device::BluetoothUUID& characteristic_uuid,
     mojom::CharacteristicPropertiesPtr properties,

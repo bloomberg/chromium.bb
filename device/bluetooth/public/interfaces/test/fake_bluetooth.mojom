@@ -163,6 +163,11 @@ interface FakeCentral {
   AddFakeService(string peripheral_address, UUID service_uuid)
       => (string? service_id);
 
+  // Removes a fake GATT Services with |service_id| from the fake peripheral
+  // with |peripheral_address|.
+  RemoveFakeService(string service_id, string peripheral_address)
+      => (bool success);
+
   // Adds a fake GATT Characteristic with |characteristic_uuid| and |properties|
   // to the fake service with |service_id| in |peripheral_address| peripheral.
   // The characteristic will be found when discovering the peripheral's GATT

@@ -59,6 +59,9 @@ class FakePeripheral : public device::BluetoothDevice {
   // Returns the service's Id.
   std::string AddFakeService(const device::BluetoothUUID& service_uuid);
 
+  // Remove a fake service with |identifier| from this peripheral.
+  bool RemoveFakeService(const std::string& identifier);
+
   // BluetoothDevice overrides:
   uint32_t GetBluetoothClass() const override;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
