@@ -104,9 +104,6 @@ declare_args() {
 
   # Path to an AFDO profile to use while building with clang, if any. Empty
   # implies none.
-  #
-  # Please note that you need to be very careful about changing your profile at
-  # the moment. See the `BUG(gbiv)` comment later in this file.
   clang_sample_profile_path = ""
 
   # Some configurations have default sample profiles. If this is true and
@@ -179,6 +176,7 @@ config("compiler") {
   ldflags = []
   defines = []
   configs = []
+  inputs = []
 
   # System-specific flags. If your compiler flags apply to one of the
   # categories here, add it to the associated file to keep this shared config
@@ -219,12 +217,6 @@ config("compiler") {
     # AFDO to be split into its own config, so this isn't part of that config.
     #
     # Since we only profile the browser, skip it if we're building host tools.
-    #
-    # XXX(gbiv): There is currently *no* dependency between the profile we use
-    # and the compilations/links that we do. So, if the profile gets updated,
-    # the user has to manually clean build artifacts. CL:827560 should fix this
-    # by allowing us to specify `inputs` here, but until then, the only "good"
-    # workaround is changing your profile name each time you update the profile.
     if (is_clang && current_toolchain == default_toolchain) {
       _sample_path = ""
       if (clang_sample_profile_path != "") {
@@ -240,6 +232,7 @@ config("compiler") {
         if (clang_sample_profile_is_accurate) {
           cflags += [ "-fprofile-sample-accurate" ]
         }
+        inputs += [ _sample_path ]
       }
     }
 
