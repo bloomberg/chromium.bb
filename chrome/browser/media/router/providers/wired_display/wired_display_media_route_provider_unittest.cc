@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 
 #include "base/run_loop.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
@@ -278,8 +277,6 @@ TEST_F(WiredDisplayMediaRouteProviderTest, NoSinksForNonPresentationSource) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
-// TODO(https://crbug.com/777654): Support presenting to macOS as well.
 TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   const std::string presentation_id = "presentationId";
   MockCallback callback;
@@ -337,6 +334,5 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
                                        kPresentationSource, IsEmpty()));
   receiver_creator_.receiver()->RunTerminationCallback();
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 
 }  // namespace media_router
