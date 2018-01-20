@@ -102,6 +102,9 @@ HttpProxySocketParams::HttpProxySocketParams(
   DCHECK(quic_version_ == QUIC_VERSION_UNSUPPORTED
              ? (bool)transport_params != (bool)ssl_params
              : !transport_params && ssl_params);
+  // Exactly one of |transport_params_| and |ssl_params_| must be non-null.
+  DCHECK(transport_params_ || ssl_params_);
+  DCHECK(!transport_params_ || !ssl_params_);
 }
 
 const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
@@ -200,13 +203,16 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
       network_quality_provider_(network_quality_provider),
-      transport_rtt_multiplier_(GetInt32Param("transport_rtt_multiplier", 5)),
+      ssl_http_rtt_multiplier_(GetInt32Param("ssl_http_rtt_multiplier", 5)),
+      non_ssl_http_rtt_multiplier_(
+          GetInt32Param("non_ssl_http_rtt_multiplier", 5)),
       min_proxy_connection_timeout_(base::TimeDelta::FromSeconds(
           GetInt32Param("min_proxy_connection_timeout_seconds", 8))),
       max_proxy_connection_timeout_(base::TimeDelta::FromSeconds(
           GetInt32Param("max_proxy_connection_timeout_seconds", 60))),
       net_log_(net_log) {
-  DCHECK_LT(0, transport_rtt_multiplier_);
+  DCHECK_LT(0, ssl_http_rtt_multiplier_);
+  DCHECK_LT(0, non_ssl_http_rtt_multiplier_);
   DCHECK_LE(base::TimeDelta(), min_proxy_connection_timeout_);
   DCHECK_LE(base::TimeDelta(), max_proxy_connection_timeout_);
   DCHECK_LE(min_proxy_connection_timeout_, max_proxy_connection_timeout_);
@@ -217,23 +223,35 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
+  bool is_secure_connection = (request.params()->ssl_params() != nullptr);
+
   return std::unique_ptr<ConnectJob>(new HttpProxyConnectJob(
       group_name, request.priority(), request.socket_tag(),
-      request.respect_limits(), request.params(), ConnectionTimeout(),
+      request.respect_limits(), request.params(),
+      ConnectionTimeoutWithConnectionProperty(is_secure_connection),
       transport_pool_, ssl_pool_, delegate, net_log_));
 }
 
 base::TimeDelta
 HttpProxyClientSocketPool::HttpProxyConnectJobFactory::ConnectionTimeout()
     const {
+  // Take a conservative approach: Return the timeout for the secure proxies
+  // which is higher than the connection timeout for the insecure proxies.
+  return ConnectionTimeoutWithConnectionProperty(
+      true /* is_secure_connection */);
+}
+
+base::TimeDelta HttpProxyClientSocketPool::HttpProxyConnectJobFactory::
+    ConnectionTimeoutWithConnectionProperty(bool is_secure_connection) const {
   if (IsInNetAdaptiveProxyConnectionTimeoutFieldTrial() &&
       network_quality_provider_) {
-    base::Optional<base::TimeDelta> transport_rtt_estimate =
-        network_quality_provider_->GetTransportRTT();
-    if (transport_rtt_estimate) {
-      base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
-          transport_rtt_multiplier_ *
-          transport_rtt_estimate.value().InMilliseconds());
+    base::Optional<base::TimeDelta> http_rtt_estimate =
+        network_quality_provider_->GetHttpRTT();
+    if (http_rtt_estimate) {
+      int32_t multiplier = is_secure_connection ? ssl_http_rtt_multiplier_
+                                                : non_ssl_http_rtt_multiplier_;
+      base::TimeDelta timeout = base::TimeDelta::FromMicroseconds(
+          multiplier * http_rtt_estimate.value().InMicroseconds());
       // Ensure that connection timeout is between
       // |min_proxy_connection_timeout_| and |max_proxy_connection_timeout_|.
       if (timeout < min_proxy_connection_timeout_)
