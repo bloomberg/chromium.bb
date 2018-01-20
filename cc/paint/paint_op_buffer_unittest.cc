@@ -100,9 +100,14 @@ class TestOptionsProvider : public ImageProvider,
   ImageProvider* image_provider() { return this; }
   TransferCacheTestHelper* transfer_cache_helper() { return this; }
 
+  const std::vector<DrawImage>& decoded_images() const {
+    return decoded_images_;
+  }
+
  private:
   ScopedDecodedDrawImage GetDecodedDrawImage(
       const DrawImage& draw_image) override {
+    decoded_images_.push_back(draw_image);
     auto& entry = entry_map_[++transfer_cache_entry_id_];
     SkBitmap bitmap;
     const auto& paint_image = draw_image.paint_image();
@@ -131,6 +136,7 @@ class TestOptionsProvider : public ImageProvider,
   testing::StrictMock<MockCanvas> canvas_;
   PaintOp::SerializeOptions serialize_options_;
   PaintOp::DeserializeOptions deserialize_options_;
+  std::vector<DrawImage> decoded_images_;
 };
 
 TEST(PaintOpBufferTest, Empty) {
@@ -1978,7 +1984,7 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
   PushDrawIRectOps(&buffer);
 
   PaintOpBufferSerializer::Preamble preamble;
-  preamble.playback_rect = gfx::Rect(1000.f, 1000.f);
+  preamble.playback_rect = gfx::RectF(1000.f, 1000.f);
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
@@ -2017,9 +2023,8 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
       // Preamble.
       ASSERT_EQ(op->GetType(), PaintOpType::ClipRect)
           << PaintOpTypeToString(op->GetType());
-      EXPECT_EQ(
-          static_cast<const ClipRectOp*>(op)->rect,
-          SkRect::MakeFromIRect(gfx::RectToSkIRect(preamble.playback_rect)));
+      EXPECT_EQ(static_cast<const ClipRectOp*>(op)->rect,
+                gfx::RectFToSkRect(preamble.playback_rect));
       continue;
     }
 
@@ -2041,9 +2046,9 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
 TEST(PaintOpSerializationTest, Preamble) {
   PaintOpBufferSerializer::Preamble preamble;
   preamble.translation = gfx::Vector2dF(10.f, 20.f);
-  preamble.playback_rect = gfx::Rect(5, 5);
+  preamble.playback_rect = gfx::RectF(5.f, 5.f);
   preamble.post_translation = gfx::Vector2dF(4.3f, 7.f);
-  preamble.post_scale = 0.5f;
+  preamble.post_scale = gfx::SizeF(0.5f, 0.5f);
 
   PaintOpBuffer buffer;
   buffer.push<DrawColorOp>(SK_ColorBLUE, SkBlendMode::kSrc);
@@ -2092,7 +2097,8 @@ TEST(PaintOpSerializationTest, Preamble) {
       ASSERT_EQ(op->GetType(), PaintOpType::ClipRect)
           << PaintOpTypeToString(op->GetType());
       const auto* clip_op = static_cast<const ClipRectOp*>(op);
-      EXPECT_RECT_EQ(gfx::SkRectToRectF(clip_op->rect), preamble.playback_rect);
+      EXPECT_FLOAT_RECT_EQ(gfx::SkRectToRectF(clip_op->rect),
+                           preamble.playback_rect);
       continue;
     }
 
@@ -2111,8 +2117,8 @@ TEST(PaintOpSerializationTest, Preamble) {
       ASSERT_EQ(op->GetType(), PaintOpType::Scale)
           << PaintOpTypeToString(op->GetType());
       const auto* scale_op = static_cast<const ScaleOp*>(op);
-      EXPECT_EQ(scale_op->sx, preamble.post_scale);
-      EXPECT_EQ(scale_op->sy, preamble.post_scale);
+      EXPECT_EQ(scale_op->sx, preamble.post_scale.width());
+      EXPECT_EQ(scale_op->sy, preamble.post_scale.height());
       continue;
     }
 
@@ -2210,7 +2216,7 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
                                       options_provider.image_provider(),
                                       options_provider.transfer_cache_helper());
     PaintOpBufferSerializer::Preamble preamble;
-    preamble.playback_rect = test_case.clip_rect;
+    preamble.playback_rect = gfx::RectF(test_case.clip_rect);
     serializer.Serialize(&buffer, nullptr, preamble);
     ASSERT_NE(serializer.written(), 0u);
 
@@ -2252,7 +2258,7 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
   buffer.push<RestoreOp>();
 
   PaintOpBufferSerializer::Preamble preamble;
-  preamble.playback_rect = gfx::Rect(1000.f, 1000.f);
+  preamble.playback_rect = gfx::RectF(1000.f, 1000.f);
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
@@ -3055,6 +3061,37 @@ TEST(PaintOpBufferTest, SecurityConstrainedImageSerialization) {
                        enable_security_constraints);
   reader.Read(&out_filter);
   EXPECT_TRUE(*filter == *out_filter);
+}
+
+TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
+  auto record_buffer = sk_make_sp<PaintOpBuffer>();
+  record_buffer->push<DrawImageOp>(
+      CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f, 0.f, nullptr);
+
+  auto shader = PaintShader::MakePaintRecord(
+      record_buffer, SkRect::MakeWH(10.f, 10.f),
+      SkShader::TileMode::kRepeat_TileMode,
+      SkShader::TileMode::kRepeat_TileMode, nullptr);
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  buffer->push<ScaleOp>(0.5f, 0.8f);
+  PaintFlags flags;
+  flags.setShader(shader);
+  buffer->push<DrawRectOp>(SkRect::MakeWH(10.f, 10.f), flags);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_provider.image_provider(),
+                                    options_provider.transfer_cache_helper());
+  serializer.Serialize(buffer.get());
+
+  ASSERT_EQ(options_provider.decoded_images().size(), 1u);
+  auto scale = options_provider.decoded_images().at(0).scale();
+  EXPECT_EQ(scale.width(), 0.5f);
+  EXPECT_EQ(scale.height(), 0.8f);
 }
 
 }  // namespace cc

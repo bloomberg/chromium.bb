@@ -14,12 +14,12 @@ namespace {
 
 sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
                              const SkRect& bounds,
-                             const SkMatrix* matrix,
+                             const gfx::SizeF* raster_scale,
                              ImageProvider* image_provider) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(bounds);
-  if (matrix)
-    canvas->setMatrix(*matrix);
+  if (raster_scale)
+    canvas->scale(raster_scale->width(), raster_scale->height());
   record->Playback(canvas, PlaybackParams(image_provider));
   return recorder.finishRecordingAsPicture();
 }
@@ -237,16 +237,13 @@ sk_sp<PaintShader> PaintShader::CreateDecodedPaintRecord(
   shader->tx_ = tx_;
   shader->ty_ = ty_;
 
-  const SkSize tile_scale =
-      SkSize::Make(SkIntToScalar(tile_rect.width()) / tile_.width(),
-                   SkIntToScalar(tile_rect.height()) / tile_.height());
+  shader->tile_scale_ =
+      gfx::SizeF(SkIntToScalar(tile_rect.width()) / tile_.width(),
+                 SkIntToScalar(tile_rect.height()) / tile_.height());
   shader->local_matrix_ = GetLocalMatrix();
-  shader->local_matrix_->preScale(1 / tile_scale.width(),
-                                  1 / tile_scale.height());
+  shader->local_matrix_->preScale(1 / shader->tile_scale_->width(),
+                                  1 / shader->tile_scale_->height());
 
-  SkMatrix raster_matrix =
-      SkMatrix::MakeRectToRect(tile_, tile_rect, SkMatrix::kFill_ScaleToFit);
-  shader->CreateSkShader(image_provider, &raster_matrix);
   return shader;
 }
 
@@ -254,8 +251,7 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
   return cached_shader_;
 }
 
-void PaintShader::CreateSkShader(ImageProvider* image_provider,
-                                 const SkMatrix* raster_matrix) {
+void PaintShader::CreateSkShader(ImageProvider* image_provider) {
   DCHECK(!cached_shader_);
 
   switch (shader_type_) {
@@ -301,7 +297,7 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider,
     case Type::kPaintRecord: {
       // Create a recording at the desired scale if this record has images which
       // have been decoded before raster.
-      auto picture = ToSkPicture(record_, tile_, raster_matrix, image_provider);
+      auto picture = ToSkPicture(record_, tile_, tile_scale(), image_provider);
 
       switch (scaling_behavior_) {
         // For raster scale, we create a picture shader directly.

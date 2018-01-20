@@ -168,7 +168,8 @@ void SkiaPaintCanvas::drawLine(SkScalar x0,
                                SkScalar y1,
                                const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -178,7 +179,8 @@ void SkiaPaintCanvas::drawLine(SkScalar x0,
 
 void SkiaPaintCanvas::drawRect(const SkRect& rect, const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -188,7 +190,8 @@ void SkiaPaintCanvas::drawRect(const SkRect& rect, const PaintFlags& flags) {
 
 void SkiaPaintCanvas::drawIRect(const SkIRect& rect, const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -198,7 +201,8 @@ void SkiaPaintCanvas::drawIRect(const SkIRect& rect, const PaintFlags& flags) {
 
 void SkiaPaintCanvas::drawOval(const SkRect& oval, const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -208,7 +212,8 @@ void SkiaPaintCanvas::drawOval(const SkRect& oval, const PaintFlags& flags) {
 
 void SkiaPaintCanvas::drawRRect(const SkRRect& rrect, const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -220,7 +225,8 @@ void SkiaPaintCanvas::drawDRRect(const SkRRect& outer,
                                  const SkRRect& inner,
                                  const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -233,7 +239,8 @@ void SkiaPaintCanvas::drawRoundRect(const SkRect& rect,
                                     SkScalar ry,
                                     const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -243,7 +250,8 @@ void SkiaPaintCanvas::drawRoundRect(const SkRect& rect,
 
 void SkiaPaintCanvas::drawPath(const SkPath& path, const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -256,7 +264,8 @@ void SkiaPaintCanvas::drawImage(const PaintImage& image,
                                 SkScalar top,
                                 const PaintFlags* flags) {
   ScopedRasterFlags raster_flags(flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
 
@@ -272,7 +281,8 @@ void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
                                     const PaintFlags* flags,
                                     SrcRectConstraint constraint) {
   ScopedRasterFlags raster_flags(flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
 
@@ -288,7 +298,8 @@ void SkiaPaintCanvas::drawBitmap(const SkBitmap& bitmap,
                                  const PaintFlags* flags) {
   if (flags) {
     ScopedRasterFlags raster_flags(flags, image_provider_.get(),
-                                   canvas_->getTotalMatrix(), 255u);
+                                   canvas_->getTotalMatrix(), 255u,
+                                   kCreateSkiaShaders);
     if (!raster_flags.flags())
       return;
     SkPaint paint = raster_flags.flags()->ToSkPaint();
@@ -303,7 +314,8 @@ void SkiaPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                                    SkScalar y,
                                    const PaintFlags& flags) {
   ScopedRasterFlags raster_flags(&flags, image_provider_.get(),
-                                 canvas_->getTotalMatrix(), 255u);
+                                 canvas_->getTotalMatrix(), 255u,
+                                 kCreateSkiaShaders);
   if (!raster_flags.flags())
     return;
   SkPaint paint = raster_flags.flags()->ToSkPaint();
