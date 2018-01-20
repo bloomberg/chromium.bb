@@ -95,7 +95,6 @@
 -NewlibPackagedAppTest.NoSocketPermissions
 -NewlibPackagedAppTest.SocketPermissions
 -NewlibPackagedAppTest.SuccessfulLoad
--PageLoadMetricsBrowserTest.ChromeErrorPage
 -PageLoadMetricsBrowserTest.LoadingMetrics
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 -PageLoadMetricsBrowserTest.PayloadSize

@@ -63,6 +63,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/failing_http_transaction_factory.h"
@@ -79,19 +80,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-void FailAllNetworkTransactions(net::URLRequestContextGetter* getter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::HttpCache* cache(
-      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
-  DCHECK(cache);
-  std::unique_ptr<net::FailingHttpTransactionFactory> factory =
-      std::make_unique<net::FailingHttpTransactionFactory>(cache->GetSession(),
-                                                           net::ERR_FAILED);
-  // Throw away old version; since this is a browser test, there is no
-  // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
-}
 
 // Waits until specified timing and metadata expectations are satisfied.
 class PageLoadMetricsWaiter
@@ -671,18 +659,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, HttpErrorPage) {
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Configure the network stack to fail all attempted loads with a network
-  // error, which will cause Chrome to display an error page.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      browser()->profile()->GetRequestContext();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&FailAllNetworkTransactions,
-                     base::RetainedRef(url_request_context_getter)));
-
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title1.html"));
+  GURL url = embedded_test_server()->GetURL("/title1.html");
+  // By shutting down the server, we ensure a failure.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  content::NavigationHandleObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), url);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(observer.is_error());
   NavigateToUntrackedUrl();
   EXPECT_TRUE(NoPageLoadMetricsRecorded())
       << "Recorded metrics: " << GetRecordedPageLoadMetricNames();
