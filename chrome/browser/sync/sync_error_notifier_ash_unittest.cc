@@ -10,7 +10,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -80,7 +80,8 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     error_notifier_ =
         std::make_unique<SyncErrorNotifier>(error_controller_.get(), profile());
 
-    notification_ui_manager_ = g_browser_process->notification_ui_manager();
+    display_service_ =
+        std::make_unique<NotificationDisplayServiceTester>(profile());
   }
 
   void TearDown() override {
@@ -107,13 +108,12 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     error_controller_->OnStateChanged(service_.get());
     EXPECT_EQ(is_error, error_controller_->HasError());
 
-    const message_center::Notification* notification =
-        notification_ui_manager_->FindById(
-            kNotificationId, NotificationUIManager::GetProfileID(profile()));
+    base::Optional<message_center::Notification> notification =
+        display_service_->GetNotification(kNotificationId);
     if (expected_notification) {
       ASSERT_TRUE(notification);
-      ASSERT_FALSE(notification->title().empty());
-      ASSERT_FALSE(notification->message().empty());
+      EXPECT_FALSE(notification->title().empty());
+      EXPECT_FALSE(notification->message().empty());
     } else {
       ASSERT_FALSE(notification);
     }
@@ -123,7 +123,7 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
   std::unique_ptr<SyncErrorNotifier> error_notifier_;
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> service_;
   FakeLoginUI login_ui_;
-  NotificationUIManager* notification_ui_manager_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierTest);
@@ -134,8 +134,7 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
 TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
   user_manager::ScopedUserManager scoped_enabler(
       std::make_unique<chromeos::MockUserManager>());
-  ASSERT_FALSE(notification_ui_manager_->FindById(
-      kNotificationId, NotificationUIManager::GetProfileID(profile())));
+  ASSERT_FALSE(display_service_->GetNotification(kNotificationId));
 
   syncer::SyncEngine::Status status;
   EXPECT_CALL(*service_, QueryDetailedSyncStatus(_))
@@ -152,9 +151,9 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
                                   true /* expecting notification */);
   }
 
-  // Sumulate discarded notification and check that notification is not shown.
-  notification_ui_manager_->CancelById(
-      kNotificationId, NotificationUIManager::GetProfileID(profile()));
+  // Simulate discarded notification and check that notification is not shown.
+  display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
+                                       kNotificationId, true /* by_user */);
   {
     SCOPED_TRACE("Not expecting notification, one was already discarded");
     VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,
