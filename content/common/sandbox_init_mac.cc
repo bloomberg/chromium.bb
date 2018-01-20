@@ -53,7 +53,8 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
         gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
             gpu_info, gpu_preferences.ignore_gpu_blacklist,
             gpu_preferences.disable_gpu_driver_bug_workarounds,
-            gpu_preferences.log_gpu_control_list_decisions, command_line);
+            gpu_preferences.log_gpu_control_list_decisions, command_line,
+            nullptr);
         gpu::CacheGpuFeatureInfo(gpu_feature_info);
         // Preload either the desktop GL or the osmesa so, depending on the
         // --use-gl flag.

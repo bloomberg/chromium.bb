@@ -45,7 +45,8 @@ ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
                       bool ignore_gpu_blacklist,
                       bool disable_gpu_driver_bug_workarounds,
                       bool log_gpu_control_list_decisions,
-                      base::CommandLine* command_line);
+                      base::CommandLine* command_line,
+                      bool* needs_more_info);
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
 

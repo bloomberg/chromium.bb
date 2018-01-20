@@ -66,12 +66,12 @@ void DeferredGpuCommandService::SetInstance() {
     gpu::GPUInfo gpu_info =
         content::GpuDataManager::GetInstance()->GetGPUInfo();
     DCHECK(base::CommandLine::InitializedForCurrentProcess());
-    gpu::GpuFeatureInfo gpu_feature_info =
-        gpu::ComputeGpuFeatureInfo(gpu_info,
-                                   false,  // ignore_gpu_blacklist
-                                   false,  // disable_gpu_driver_bug_workarounds
-                                   false,  // log_gpu_control_list_decisions
-                                   base::CommandLine::ForCurrentProcess());
+    gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
+        gpu_info,
+        false,  // ignore_gpu_blacklist
+        false,  // disable_gpu_driver_bug_workarounds
+        false,  // log_gpu_control_list_decisions
+        base::CommandLine::ForCurrentProcess(), nullptr);
     g_service.Get() = new DeferredGpuCommandService(gpu_info, gpu_feature_info);
   }
 }
