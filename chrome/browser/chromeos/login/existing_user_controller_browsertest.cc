@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -53,6 +55,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -436,9 +439,11 @@ class ExistingUserControllerPublicSessionTest
     test::UserSessionManagerTestApi session_manager_test_api(
         UserSessionManager::GetInstance());
     session_manager_test_api.InjectStubUserContext(user_context);
+    // There may be in-session oobe or an initial login screen created from
+    // --login-manager.
     EXPECT_CALL(*mock_login_display_host_,
                 StartWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE))
-        .Times(0);
+        .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(AnyNumber());
   }

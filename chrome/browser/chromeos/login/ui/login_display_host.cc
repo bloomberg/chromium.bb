@@ -28,9 +28,14 @@ constexpr int64_t kPolicyServiceInitializationDelayMilliseconds = 100;
 // static
 LoginDisplayHost* LoginDisplayHost::default_host_ = nullptr;
 
-LoginDisplayHost::LoginDisplayHost() : weak_factory_(this) {}
+LoginDisplayHost::LoginDisplayHost() : weak_factory_(this) {
+  DCHECK(default_host() == nullptr);
+  default_host_ = this;
+}
 
-LoginDisplayHost::~LoginDisplayHost() = default;
+LoginDisplayHost::~LoginDisplayHost() {
+  default_host_ = nullptr;
+}
 
 AppLaunchController* LoginDisplayHost::GetAppLaunchController() {
   return app_launch_controller_.get();
