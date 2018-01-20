@@ -1067,6 +1067,20 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  hasProxySection_: function(networkProperties) {
+    if (networkProperties.Type == CrOnc.Type.TETHER) {
+      // Proxy settings apply to the underlying WiFi network, not the Tether
+      // network.
+      return false;
+    }
+    return this.isRememberedOrConnected_(networkProperties);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
   showCellularChooseNetwork_: function(networkProperties) {
     return networkProperties.Type == CrOnc.Type.CELLULAR &&
         !!this.get('Cellular.SupportNetworkScan', this.networkProperties);

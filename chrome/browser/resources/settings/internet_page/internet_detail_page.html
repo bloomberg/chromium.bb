@@ -270,7 +270,9 @@
             </template>
           </div>
         </iron-collapse>
+      </template>
 
+      <template is="dom-if" if="[[hasProxySection_(networkProperties)]]">
         <!-- Proxy toggle -->
         <div class="settings-box" actionable on-tap="toggleProxyExpanded_">
           <div class="start">$i18n{networkSectionProxy}</div>
