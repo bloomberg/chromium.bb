@@ -86,9 +86,8 @@ void PaintOpBufferSerializer::SerializePreamble(
   }
 
   if (!preamble.playback_rect.IsEmpty()) {
-    ClipRectOp clip_op(
-        SkRect::MakeFromIRect(gfx::RectToSkIRect(preamble.playback_rect)),
-        SkClipOp::kIntersect, false);
+    ClipRectOp clip_op(gfx::RectFToSkRect(preamble.playback_rect),
+                       SkClipOp::kIntersect, false);
     SerializeOp(&clip_op, options, params);
   }
 
@@ -98,8 +97,9 @@ void PaintOpBufferSerializer::SerializePreamble(
     SerializeOp(&translate_op, options, params);
   }
 
-  if (preamble.post_scale != 1.f) {
-    ScaleOp scale_op(preamble.post_scale, preamble.post_scale);
+  if (preamble.post_scale.width() != 1.f ||
+      preamble.post_scale.height() != 1.f) {
+    ScaleOp scale_op(preamble.post_scale.width(), preamble.post_scale.height());
     SerializeOp(&scale_op, options, params);
   }
 }
@@ -150,9 +150,13 @@ bool PaintOpBufferSerializer::SerializeOpWithFlags(
     PaintOp::SerializeOptions* options,
     const PlaybackParams& params,
     uint8_t alpha) {
+  // We don't need the skia backing for decoded shaders during serialization,
+  // since those are created on the service side where the record is rasterized.
+  const bool create_skia_shaders = false;
+
   const ScopedRasterFlags scoped_flags(
       &flags_op->flags, options->image_provider,
-      options->canvas->getTotalMatrix(), alpha);
+      options->canvas->getTotalMatrix(), alpha, create_skia_shaders);
   const PaintFlags* flags_to_serialize = scoped_flags.flags();
   if (!flags_to_serialize)
     return true;

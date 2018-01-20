@@ -407,9 +407,9 @@ void RasterImplementationGLES::RasterCHROMIUM(
   // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
   cc::PaintOpBufferSerializer::Preamble preamble;
   preamble.translation = translate;
-  preamble.playback_rect = playback_rect;
+  preamble.playback_rect = gfx::RectF(playback_rect);
   preamble.post_translation = post_translate;
-  preamble.post_scale = post_scale;
+  preamble.post_scale = gfx::SizeF(post_scale, post_scale);
 
   // Wrap the provided provider in a stashing provider so that we can delay
   // unrefing images until we have serialized dependent commands.

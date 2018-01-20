@@ -10,6 +10,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
+#include "cc/paint/paint_op_buffer_serializer.h"
 
 struct SkRect;
 struct SkIRect;
@@ -119,7 +120,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const LightingPointPaintFilter& filter);
   void Write(const LightingSpotPaintFilter& filter);
 
-  void Write(const PaintRecord* record);
+  void Write(const PaintRecord* record,
+             base::Optional<PaintOpBufferSerializer::Preamble> preamble =
+                 base::nullopt);
   void Write(const PaintImage& image);
   void Write(const SkRegion& region);
 

@@ -131,8 +131,12 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                    const PlaybackParams& params);
 
  private:
+  // We always need skia shaders since the ops will be played on an SkCanvas.
+  static const bool kCreateSkiaShaders = true;
+
   void WrapCanvasInColorSpaceXformCanvas(
       sk_sp<SkColorSpace> target_color_space);
+
   SkCanvas* canvas_;
   std::unique_ptr<SkCanvas> owned_;
   std::unique_ptr<SkCanvas> color_space_xform_canvas_;
