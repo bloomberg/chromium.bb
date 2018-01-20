@@ -34,6 +34,7 @@ class ThreadTimesOopRasterKeyMobile(thread_times._ThreadTimes):
   raster."""
   tag = 'oop_rasterization'
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+  options = {'story_tag_filter': 'fastpath'}
 
   def SetExtraBrowserOptions(self, options):
     super(ThreadTimesOopRasterKeyMobile, self).SetExtraBrowserOptions(options)
