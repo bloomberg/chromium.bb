@@ -73,6 +73,7 @@ LayerTreeResourceProvider::Settings::Settings(
       use_gpu_memory_buffer_resources(
           resource_settings.use_gpu_memory_buffer_resources),
       delegated_sync_points_required(delegated_sync_points_required) {
+  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   if (!compositor_context_provider) {
     // Pick an arbitrary limit here similar to what hardware might.
     max_texture_size = 16 * 1024;
@@ -149,7 +150,6 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
-  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   GLES2Interface* gl = ContextGL();
   texture_id_allocator_ = std::make_unique<TextureIdAllocator>(
       gl, resource_settings.texture_id_allocation_chunk_size);

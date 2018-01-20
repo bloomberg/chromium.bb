@@ -53,17 +53,8 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
 
   void WaitSyncToken(viz::ResourceId id);
 
-  // Binds the given GL resource to a texture target for sampling using the
-  // specified filter for both minification and magnification. Returns the
-  // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(viz::ResourceId resource_id,
-                         GLenum unit,
-                         GLenum filter);
-
   // Checks whether a resource is in use.
   bool InUse(viz::ResourceId id);
-
-  static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
@@ -237,6 +228,12 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
 
   const viz::internal::Resource* LockForRead(viz::ResourceId id);
   void UnlockForRead(viz::ResourceId id);
+  // Binds the given GL resource to a texture target for sampling using the
+  // specified filter for both minification and magnification. Returns the
+  // texture target used. The resource must be locked for reading.
+  GLenum BindForSampling(viz::ResourceId resource_id,
+                         GLenum unit,
+                         GLenum filter);
   bool ReadLockFenceHasPassed(const viz::internal::Resource* resource);
 #if defined(OS_ANDROID)
   void DeletePromotionHint(ResourceMap::iterator it, DeleteStyle style);
