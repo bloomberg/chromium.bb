@@ -2199,6 +2199,23 @@ protocol::Response InspectorDOMAgent::describeNode(
   return Response::OK();
 }
 
+protocol::Response InspectorDOMAgent::getFrameOwner(const String& frame_id,
+                                                    int* node_id) {
+  Frame* frame = inspected_frames_->Root();
+  for (; frame; frame = frame->Tree().TraverseNext(inspected_frames_->Root())) {
+    if (frame->GetDevToolsFrameToken() == frame_id)
+      break;
+  }
+  if (!frame || !frame->Owner()->IsLocal())
+    return Response::Error("Frame with given id does not belong to target.");
+  HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(frame->Owner());
+  if (!frame_owner)
+    return Response::Error("No iframe owner for given node");
+  *node_id =
+      PushNodePathToFrontend(frame_owner, document_node_to_id_map_.Get());
+  return Response::OK();
+}
+
 Response InspectorDOMAgent::PushDocumentUponHandlelessOperation() {
   if (!document_node_to_id_map_->Contains(document_)) {
     std::unique_ptr<protocol::DOM::Node> root;

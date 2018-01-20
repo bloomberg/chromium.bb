@@ -1694,6 +1694,13 @@ domain DOM
   # Undoes the last performed action.
   experimental command undo
 
+  # Returns iframe node that owns iframe with the given domain.
+  experimental command getFrameOwner
+    parameters
+      Page.FrameId frameId
+    returns
+      NodeId nodeId
+
   # Fired when `Element`'s attribute is modified.
   event attributeModified
     parameters

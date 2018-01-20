@@ -34,7 +34,6 @@ namespace content {
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
-class NavigationHandle;
 class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
@@ -62,7 +61,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnResetNavigationRequest(NavigationRequest* navigation_request);
 
   static std::vector<std::unique_ptr<NavigationThrottle>>
-  CreateNavigationThrottles(NavigationHandle* navigation_handle);
+  CreateNavigationThrottles(NavigationHandleImpl* navigation_handle);
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
   static void WebContentsCreated(WebContents* web_contents);
 

@@ -3686,6 +3686,23 @@
                     "name": "undo",
                     "description": "Undoes the last performed action.",
                     "experimental": true
+                },
+                {
+                    "name": "getFrameOwner",
+                    "description": "Returns iframe node that owns iframe with the given domain.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "frameId",
+                            "$ref": "Page.FrameId"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodeId",
+                            "$ref": "NodeId"
+                        }
+                    ]
                 }
             ],
             "events": [
