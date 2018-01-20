@@ -74,9 +74,9 @@ class FormField {
 
   // Parses the stream of fields in |scanner| with regular expression |pattern|
   // as specified in the |match_type| bit field (see |MatchType|).  If |match|
-  // is non-NULL and the pattern matches, the matched field is returned.
-  // A |true| result is returned in the case of a successful match, false
-  // otherwise.
+  // is non-NULL and the pattern matches, |match| will be set to the matched
+  // field, and the scanner would advance by one step. A |true| result is
+  // returned in the case of a successful match, false otherwise.
   static bool ParseFieldSpecifics(AutofillScanner* scanner,
                                   const base::string16& pattern,
                                   int match_type,
