@@ -775,6 +775,13 @@ TEST(WindowManagerStateEventTest, AdjustEventLocation) {
   window_server->user_id_tracker()->SetActiveUserId(kUserId1);
   const int64_t first_display_id = screen_manager.AddDisplay();
   const int64_t second_display_id = screen_manager.AddDisplay();
+  Display* first_display =
+      window_server->display_manager()->GetDisplayById(first_display_id);
+  // As there are no child windows make sure the root is a valid target.
+  first_display->GetWindowManagerDisplayRootForUser(kUserId1)
+      ->GetClientVisibleRoot()
+      ->set_event_targeting_policy(
+          mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   Display* second_display =
       window_server->display_manager()->GetDisplayById(second_display_id);
   ASSERT_TRUE(second_display);

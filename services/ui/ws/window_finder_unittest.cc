@@ -273,5 +273,47 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
                          .window);
 }
 
+// Creates the following window hierarchy:
+// root
+// |- c1 (has .5x transform, and is used as the root in
+//        FindDeepestVisibleWindowForLocation).
+//    |- c2
+//       |- c3
+// With various assertions around hit testing.
+TEST_F(WindowFinderTest,
+       FindDeepestVisibleWindowWithTransformOnParentMagnified) {
+  TestServerWindowDelegate window_delegate(viz_host_proxy());
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  root.set_event_targeting_policy(
+      mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  root.SetVisible(true);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
+  window_delegate.set_root_window(&root);
+  ServerWindow c1(&window_delegate, WindowId(1, 3));
+  root.Add(&c1);
+  c1.SetVisible(true);
+  c1.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
+  gfx::Transform transform;
+  transform.Scale(SkFloatToMScalar(.5f), SkFloatToMScalar(.5f));
+  c1.SetTransform(transform);
+
+  ServerWindow c2(&window_delegate, WindowId(1, 4));
+  c1.Add(&c2);
+  c2.SetVisible(true);
+  c2.SetBounds(gfx::Rect(0, 0, 200, 200), base::nullopt);
+
+  ServerWindow c3(&window_delegate, WindowId(1, 5));
+  c2.Add(&c3);
+  c3.SetVisible(true);
+  c3.SetBounds(gfx::Rect(0, 190, 200, 10), base::nullopt);
+
+  EXPECT_EQ(&c2, FindDeepestVisibleWindowForLocation(&c1, EventSource::MOUSE,
+                                                     gfx::Point(55, 55))
+                     .window);
+  EXPECT_EQ(&c3, FindDeepestVisibleWindowForLocation(&c1, EventSource::MOUSE,
+                                                     gfx::Point(0, 99))
+                     .window);
+}
+
 }  // namespace ws
 }  // namespace ui
