@@ -125,6 +125,4 @@ void OzonePlatform::AddInterfaces(
     service_manager::BinderRegistryWithArgs<
         const service_manager::BindSourceInfo&>* registry) {}
 
-void OzonePlatform::AfterSandboxEntry() {}
-
 }  // namespace ui
