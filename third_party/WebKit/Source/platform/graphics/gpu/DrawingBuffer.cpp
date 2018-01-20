@@ -847,11 +847,11 @@ WebLayer* DrawingBuffer::PlatformLayer() {
 
     layer_->SetOpaque(!want_alpha_channel_);
     layer_->SetBlendBackgroundColor(want_alpha_channel_);
-    // If ShouldUseChromiumImage(), premultiplied_alpha_ has already been
-    // handled via CopySubTextureCHROMIUM, and does not need to be handled by
-    // the compositor.
+    // If premultiplied_alpha_false_texture_ exists, then premultiplied_alpha_
+    // has already been handled via CopySubTextureCHROMIUM, and does not need
+    // to be handled by the compositor.
     layer_->SetPremultipliedAlpha(premultiplied_alpha_ &&
-                                  !ShouldUseChromiumImage());
+                                  !premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
     GraphicsLayer::RegisterContentsLayer(layer_->Layer());
   }
