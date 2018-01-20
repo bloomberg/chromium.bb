@@ -198,7 +198,6 @@ void MediaDevices::Unpause() {
 
 void MediaDevices::OnDevicesChanged(
     MediaDeviceType type,
-    uint32_t subscription_id,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
   Document* document = ToDocument(GetExecutionContext());
   DCHECK(document);

@@ -60,7 +60,6 @@ class MODULES_EXPORT MediaDevices final
 
   // mojom::blink::MediaDevicesListener implementation.
   void OnDevicesChanged(MediaDeviceType,
-                        uint32_t subscription_id,
                         Vector<mojom::blink::MediaDeviceInfoPtr>) override;
 
   // Callback for testing only.

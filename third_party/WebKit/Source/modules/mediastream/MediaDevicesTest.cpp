@@ -104,11 +104,6 @@ class MockMediaDevicesDispatcherHost
     listener_ = std::move(listener);
   };
 
-  MOCK_METHOD2(SubscribeDeviceChangeNotifications,
-               void(MediaDeviceType type, uint32_t subscription_id));
-  MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
-               void(MediaDeviceType type, uint32_t subscription_id));
-
   mojom::blink::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     mojom::blink::MediaDevicesDispatcherHostPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
@@ -194,7 +189,7 @@ class MediaDevicesTest : public ::testing::Test {
 
   void SimulateDeviceChange() {
     DCHECK(listener());
-    listener()->OnDevicesChanged(MediaDeviceType::MEDIA_AUDIO_INPUT, 1u,
+    listener()->OnDevicesChanged(MediaDeviceType::MEDIA_AUDIO_INPUT,
                                  Vector<MediaDeviceInfoPtr>());
   }
 

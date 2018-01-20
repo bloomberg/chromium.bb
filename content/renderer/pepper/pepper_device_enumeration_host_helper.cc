@@ -93,7 +93,7 @@ class PepperDeviceEnumerationHostHelper::ScopedMonitoringRequest
       : owner_(owner),
         callback_(callback),
         requested_(false),
-        subscription_id_(0) {
+        subscription_id_(0u) {
     DCHECK(owner_);
     if (!owner->delegate_) {
       return;
@@ -120,7 +120,7 @@ class PepperDeviceEnumerationHostHelper::ScopedMonitoringRequest
   PepperDeviceEnumerationHostHelper* const owner_;
   PepperDeviceEnumerationHostHelper::Delegate::DevicesCallback callback_;
   bool requested_;
-  int subscription_id_;
+  size_t subscription_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMonitoringRequest);
 };

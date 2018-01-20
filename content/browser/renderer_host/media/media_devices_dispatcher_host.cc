@@ -112,17 +112,9 @@ MediaDevicesDispatcherHost::~MediaDevicesDispatcherHost() {
   if (!media_stream_manager_->media_devices_manager())
     return;
 
-  for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
-    if (!device_change_subscriptions_[i].empty()) {
-      media_stream_manager_->media_devices_manager()
-          ->UnsubscribeDeviceChangeNotifications(
-              static_cast<MediaDeviceType>(i), this);
-    }
-  }
-
-  for (auto& subscription_id : subscription_ids_) {
-    media_stream_manager_->media_devices_manager()->UnsubscribeDeviceChange(
-        subscription_id);
+  for (auto subscription_id : subscription_ids_) {
+    media_stream_manager_->media_devices_manager()
+        ->UnsubscribeDeviceChangeNotifications(subscription_id);
   }
 }
 
@@ -190,47 +182,6 @@ void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
                      base::Passed(&client_callback)));
 }
 
-void MediaDevicesDispatcherHost::SubscribeDeviceChangeNotifications(
-    MediaDeviceType type,
-    uint32_t subscription_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsValidMediaDeviceType(type));
-  auto it =
-      std::find(device_change_subscriptions_[type].begin(),
-                device_change_subscriptions_[type].end(), subscription_id);
-  if (it != device_change_subscriptions_[type].end()) {
-    bad_message::ReceivedBadMessage(
-        render_process_id_, bad_message::MDDH_INVALID_SUBSCRIPTION_REQUEST);
-    return;
-  }
-
-  if (device_change_subscriptions_[type].empty()) {
-    media_stream_manager_->media_devices_manager()
-        ->SubscribeDeviceChangeNotifications(type, this);
-  }
-
-  device_change_subscriptions_[type].push_back(subscription_id);
-}
-
-void MediaDevicesDispatcherHost::UnsubscribeDeviceChangeNotifications(
-    MediaDeviceType type,
-    uint32_t subscription_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsValidMediaDeviceType(type));
-  auto it =
-      std::find(device_change_subscriptions_[type].begin(),
-                device_change_subscriptions_[type].end(), subscription_id);
-  // Ignore invalid unsubscription requests.
-  if (it == device_change_subscriptions_[type].end())
-    return;
-
-  device_change_subscriptions_[type].erase(it);
-  if (device_change_subscriptions_[type].empty()) {
-    media_stream_manager_->media_devices_manager()
-        ->UnsubscribeDeviceChangeNotifications(type, this);
-  }
-}
-
 void MediaDevicesDispatcherHost::AddMediaDevicesListener(
     bool subscribe_audio_input,
     bool subscribe_video_input,
@@ -250,68 +201,12 @@ void MediaDevicesDispatcherHost::AddMediaDevicesListener(
   devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = subscribe_video_input;
   devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = subscribe_audio_output;
 
-  uint32_t subscription_id = media_stream_manager_->media_devices_manager()
-                                 ->SubscribeDeviceChangeNotifications(
-                                     devices_to_subscribe, std::move(listener));
+  uint32_t subscription_id =
+      media_stream_manager_->media_devices_manager()
+          ->SubscribeDeviceChangeNotifications(
+              render_process_id_, render_frame_id_, group_id_salt_base_,
+              devices_to_subscribe, std::move(listener));
   subscription_ids_.push_back(subscription_id);
-}
-
-void MediaDevicesDispatcherHost::OnDevicesChanged(
-    MediaDeviceType type,
-    const MediaDeviceInfoArray& device_infos) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsValidMediaDeviceType(type));
-  std::vector<uint32_t> subscriptions = device_change_subscriptions_[type];
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread,
-                     weak_factory_.GetWeakPtr(), std::move(subscriptions), type,
-                     device_infos));
-}
-
-void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
-    const std::vector<uint32_t>& subscriptions,
-    MediaDeviceType type,
-    const MediaDeviceInfoArray& device_infos) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(IsValidMediaDeviceType(type));
-
-  blink::mojom::MediaDevicesListenerPtr media_devices_listener;
-  if (device_change_listener_) {
-    media_devices_listener = std::move(device_change_listener_);
-  } else {
-    RenderFrameHost* render_frame_host =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!render_frame_host)
-      return;
-
-    render_frame_host->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&media_devices_listener));
-    if (!media_devices_listener)
-      return;
-  }
-
-  const auto& salt_and_origin = media_stream_manager_->media_devices_manager()
-                                    ->salt_and_origin_callback()
-                                    .Run(render_process_id_, render_frame_id_);
-  std::string group_id_salt = group_id_salt_base_ + salt_and_origin.first;
-  for (uint32_t subscription_id : subscriptions) {
-    bool has_permission = media_stream_manager_->media_devices_manager()
-                              ->media_devices_permission_checker()
-                              ->CheckPermissionOnUIThread(
-                                  type, render_process_id_, render_frame_id_);
-    media_devices_listener->OnDevicesChanged(
-        type, subscription_id,
-        TranslateMediaDeviceInfoArray(has_permission, salt_and_origin.first,
-                                      group_id_salt, salt_and_origin.second,
-                                      device_infos));
-  }
-}
-
-void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
-    blink::mojom::MediaDevicesListenerPtr listener) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device_change_listener_ = std::move(listener);
 }
 
 void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
