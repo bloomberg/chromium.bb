@@ -61,7 +61,11 @@ struct SizeAndCount {
   DISALLOW_NEW();
   SizeAndCount() : size(), count(0) {}
 
+  // The non-zero size associated with this client. A client must only
+  // ever be present at one non-zero size, with as many zero sizes as it wants.
   LayoutSize size;
+
+  // The net number of times this client has been added.
   int count;
 };
 

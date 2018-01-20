@@ -45,18 +45,19 @@ Image* GeneratedImageCache::GetImage(const LayoutSize& size) const {
 
 void GeneratedImageCache::PutImage(const LayoutSize& size,
                                    scoped_refptr<Image> image) {
+  DCHECK(!size.IsEmpty());
   images_.insert(size, std::move(image));
 }
 
 void GeneratedImageCache::AddSize(const LayoutSize& size) {
-  if (size.IsEmpty())
-    return;
+  DCHECK(!size.IsEmpty());
   sizes_.insert(size);
 }
 
 void GeneratedImageCache::RemoveSize(const LayoutSize& size) {
-  if (size.IsEmpty())
-    return;
+  DCHECK(!size.IsEmpty());
+  DCHECK(sizes_.Contains(size));
+  DCHECK(images_.Contains(size));
   if (sizes_.erase(size))
     images_.erase(size);
 }
@@ -90,7 +91,10 @@ void CSSImageGeneratorValue::RemoveClient(const ImageResourceObserver* client) {
   SECURITY_DCHECK(it != clients_.end());
 
   SizeAndCount& size_count = it->value;
-  cached_images_.RemoveSize(size_count.size);
+  if (!size_count.size.IsEmpty()) {
+    cached_images_.RemoveSize(size_count.size);
+    size_count.size = LayoutSize();
+  }
 
   if (!--size_count.count)
     clients_.erase(client);
@@ -108,12 +112,15 @@ Image* CSSImageGeneratorValue::GetImage(const ImageResourceObserver* client,
     DCHECK(keep_alive_);
     SizeAndCount& size_count = it->value;
     if (size_count.size != size) {
-      cached_images_.RemoveSize(size_count.size);
-      cached_images_.AddSize(size);
+      if (!size_count.size.IsEmpty()) {
+        cached_images_.RemoveSize(size_count.size);
+        size_count.size = LayoutSize();
+      }
 
-      // If there's only one use for this client, then update the size.
-      if (size_count.count == 1)
+      if (!size.IsEmpty()) {
+        cached_images_.AddSize(size);
         size_count.size = size;
+      }
     }
   }
   return cached_images_.GetImage(size);
