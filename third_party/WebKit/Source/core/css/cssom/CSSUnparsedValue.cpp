@@ -77,6 +77,10 @@ CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(const CSSVariableData& value) {
 }
 
 const CSSValue* CSSUnparsedValue::ToCSSValue() const {
+  if (tokens_.IsEmpty()) {
+    return CSSVariableReferenceValue::Create(CSSVariableData::Create());
+  }
+
   CSSTokenizer tokenizer(ToString());
   const auto tokens = tokenizer.TokenizeToEOF();
   return CSSVariableReferenceValue::Create(CSSVariableData::Create(
