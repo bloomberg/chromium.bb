@@ -300,23 +300,29 @@ Response PageHandler::Crash() {
   return Response::FallThrough();
 }
 
-Response PageHandler::Reload(Maybe<bool> bypassCache,
-                             Maybe<std::string> script_to_evaluate_on_load) {
+void PageHandler::Reload(Maybe<bool> bypassCache,
+                         Maybe<std::string> script_to_evaluate_on_load,
+                         std::unique_ptr<ReloadCallback> callback) {
   WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
-    return Response::InternalError();
+  if (!web_contents) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
   if (web_contents->IsCrashed() ||
       web_contents->GetURL().scheme() == url::kDataScheme ||
       (web_contents->GetController().GetVisibleEntry() &&
-       web_contents->GetController().GetVisibleEntry()->IsViewSourceMode())) {
+       web_contents->GetController().GetVisibleEntry()->IsViewSourceMode()) ||
+      !script_to_evaluate_on_load.isJust()) {
+    if (reload_callback_)
+      reload_callback_->sendSuccess();
+    reload_callback_ = std::move(callback);
     web_contents->GetController().Reload(bypassCache.fromMaybe(false)
                                              ? ReloadType::BYPASSING_CACHE
                                              : ReloadType::NORMAL,
-                                         false);
-    return Response::OK();
+                                         true);
   } else {
     // Handle reload in renderer except for crashed and view source mode.
-    return Response::FallThrough();
+    callback->fallThrough();
   }
 }
 
@@ -382,9 +388,16 @@ void PageHandler::Navigate(const std::string& url,
 }
 
 void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (reload_callback_) {
+    if (!web_contents)
+      reload_callback_->sendFailure(Response::InternalError());
+    else
+      reload_callback_->sendSuccess();
+    reload_callback_.reset();
+  }
   if (!navigate_callback_)
     return;
-  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents) {
     navigate_callback_->sendFailure(Response::InternalError());
     return;
