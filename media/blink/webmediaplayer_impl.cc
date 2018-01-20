@@ -801,10 +801,8 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 }
 
 void WebMediaPlayerImpl::PictureInPicture() {
-  if (client_) {
+  if (client_)
     client_->PictureInPictureStarted();
-    // client_->MediaRemotingStarted("eh");
-  }
 }
 
 void WebMediaPlayerImpl::SetSinkId(
