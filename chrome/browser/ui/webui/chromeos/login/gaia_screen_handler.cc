@@ -451,7 +451,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("whitelistErrorEnterprise",
                IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST);
   builder->Add("tryAgainButton", IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON);
-  builder->Add("learnMoreButton", IDS_WHITELIST_ERROR_LEARN_MORE_BUTTON);
+  builder->Add("learnMoreButton", IDS_LEARN_MORE);
   builder->Add("gaiaLoading", IDS_LOGIN_GAIA_LOADING_MESSAGE);
 
   // Strings used by the SAML fatal error dialog.

@@ -15,6 +15,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/strings/grit/components_strings.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -81,8 +82,7 @@ class ProfileSigninConfirmationViewControllerTest
     return "foo@bar.com";
   }
   base::string16 learn_more() {
-    return l10n_util::GetStringUTF16(
-        IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
+    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
 
   void OnClose() { closed_ = true; }

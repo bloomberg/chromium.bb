@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -186,8 +187,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   // Create the explanation label.
   std::vector<size_t> offsets;
   const base::string16 learn_more_text =
-      l10n_util::GetStringUTF16(
-          IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   const base::string16 signin_explanation_text =
       l10n_util::GetStringFUTF16(prompt_for_new_profile_ ?
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION :

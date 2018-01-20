@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/strings/grit/components_strings.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -122,7 +123,7 @@ void AddStringsForDrive(base::DictionaryValue* dict) {
              IDS_FILE_BROWSER_CONFIRM_MOVE_BUTTON_LABEL);
   SET_STRING("CONFIRM_COPY_BUTTON_LABEL",
              IDS_FILE_BROWSER_CONFIRM_COPY_BUTTON_LABEL);
-  SET_STRING("DRIVE_LEARN_MORE", IDS_FILE_BROWSER_DRIVE_LEARN_MORE);
+  SET_STRING("DRIVE_LEARN_MORE", IDS_LEARN_MORE);
   SET_STRING("DRIVE_MENU_HELP", IDS_FILE_BROWSER_DRIVE_MENU_HELP);
   SET_STRING("DRIVE_MOBILE_CONNECTION_OPTION",
              IDS_FILE_BROWSER_DRIVE_MOBILE_CONNECTION_OPTION);

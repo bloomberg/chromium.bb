@@ -154,7 +154,7 @@ int SadTab::GetButtonTitle() {
 }
 
 int SadTab::GetHelpLinkTitle() {
-  return IDS_SAD_TAB_LEARN_MORE_LINK;
+  return IDS_LEARN_MORE;
 }
 
 const char* SadTab::GetHelpLinkURL() {

@@ -19,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -133,8 +134,7 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
   source->AddString("signinErrorSwitchLabel",
                     l10n_util::GetStringFUTF16(
                         IDS_SIGNIN_ERROR_SWITCH_BUTTON_LABEL, existing_name));
-  source->AddLocalizedString("signinErrorLearnMore",
-                             IDS_SIGNIN_ERROR_LEARN_MORE_LINK);
+  source->AddLocalizedString("signinErrorLearnMore", IDS_LEARN_MORE);
   source->AddLocalizedString("signinErrorCloseLabel",
                              IDS_SIGNIN_ERROR_CLOSE_BUTTON_LABEL);
   source->AddLocalizedString("signinErrorOkLabel",

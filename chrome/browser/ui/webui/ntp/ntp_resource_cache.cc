@@ -292,7 +292,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   int guest_tab_ids = IDR_GUEST_TAB_HTML;
   int guest_tab_description_ids = IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION;
   int guest_tab_heading_ids = IDS_NEW_TAB_GUEST_SESSION_HEADING;
-  int guest_tab_link_ids = IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK;
+  int guest_tab_link_ids = IDS_LEARN_MORE;
 
 #if defined(OS_CHROMEOS)
   guest_tab_ids = IDR_GUEST_SESSION_TAB_HTML;

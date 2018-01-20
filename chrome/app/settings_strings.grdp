@@ -1407,9 +1407,6 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE" desc="Settings > Internet > Network details: Label for setting Google name servers.">
       Google name servers
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_LEARN_MORE" desc="Settings > Internet > Network details: Text for the learn more link for the Google name servers option.">
-      Learn more
-    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) label.">
       Web Proxy Auto Discovery URL:
     </message>
@@ -2718,9 +2715,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS" desc="The text for the link that points the user to the Adobe Flash Player Storage settings on the web">
     Adobe Flash Player Storage settings
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LEARN_MORE" desc="The text for the link to learn more about how managing exceptions work for Site Settings categories">
-    Learn more
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT" desc="A label showing that a certain handler for a given protocol is the default.">
     Default
   </message>
@@ -3371,9 +3365,6 @@
     </message>
     <message name="IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables traditional scrolling.">
       Traditional
-    </message>
-    <message name="IDS_SETTINGS_NATURAL_SCROLL_LEARN_MORE" desc="In Device Settings, the text for the link next to the Australian (natural) scrolling option; opens a page to learn more about natural scrolling.">
-      Learn more
     </message>
     <!-- Mouse -->
     <message name="IDS_SETTINGS_MOUSE_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the mouse.">

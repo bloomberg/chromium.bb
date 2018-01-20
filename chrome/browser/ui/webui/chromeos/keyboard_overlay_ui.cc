@@ -25,6 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -76,7 +77,7 @@ struct I18nContentToMessage {
      IDS_KEYBOARD_OVERLAY_SYSTEM_MENU_KEY_LABEL},
     {"keyboardOverlayLauncherKeyLabel",
      IDS_KEYBOARD_OVERLAY_LAUNCHER_KEY_LABEL},
-    {"keyboardOverlayLearnMore", IDS_KEYBOARD_OVERLAY_LEARN_MORE},
+    {"keyboardOverlayLearnMore", IDS_LEARN_MORE},
     {"keyboardOverlayTitle", IDS_KEYBOARD_OVERLAY_TITLE},
     {"keyboardOverlayEscKeyLabel", IDS_KEYBOARD_OVERLAY_ESC_KEY_LABEL},
     {"keyboardOverlayBackKeyLabel", IDS_KEYBOARD_OVERLAY_BACK_KEY_LABEL},

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_localized_strings_provider.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace {
@@ -15,7 +16,7 @@ const char kLocalizedStringsFile[] = "strings.js";
 
 void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("mediaRouterTitle", IDS_MEDIA_ROUTER_TITLE);
-  html_source->AddLocalizedString("learnMoreText", IDS_MEDIA_ROUTER_LEARN_MORE);
+  html_source->AddLocalizedString("learnMoreText", IDS_LEARN_MORE);
   html_source->AddLocalizedString("backButtonTitle",
                                   IDS_MEDIA_ROUTER_BACK_BUTTON_TITLE);
   html_source->AddLocalizedString("closeButtonTitle",
