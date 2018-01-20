@@ -170,18 +170,6 @@
       ]
     },
     {
-      "name": "butterfly",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "sandybridge",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "candy",
       "configs": [
         {
@@ -878,18 +866,6 @@
       ]
     },
     {
-      "name": "lumpy",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "sandybridge",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "macchiato-ground",
       "configs": [
         {
@@ -1089,18 +1065,6 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "slippy",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "parrot",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "sandybridge",
           "arch": "X86_INTERNAL"
         }
       ]
@@ -1353,18 +1317,6 @@
           "experimental": false,
           "leader_board": true,
           "board_group": "ivybridge",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "stumpy",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "sandybridge",
           "arch": "X86_INTERNAL"
         }
       ]

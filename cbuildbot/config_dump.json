@@ -8626,12 +8626,9 @@
     },
     "butterfly-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "butterfly"
         ],
-        "chrome_sdk_build_chrome": false,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -8758,7 +8755,6 @@
         "boards": [
             "butterfly"
         ],
-        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -8769,7 +8765,6 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
-        "important": true,
         "paygen": false,
         "push_image": false,
         "vm_tests": [],
@@ -34074,13 +34069,10 @@
     },
     "lumpy-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "lumpy"
         ],
-        "chrome_sdk_build_chrome": false,
         "critical_for_chrome": true,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -34207,7 +34199,6 @@
         "boards": [
             "lumpy"
         ],
-        "chrome_sdk_build_chrome": false,
         "critical_for_chrome": true,
         "debug": true,
         "display_label": "tryjob",
@@ -34219,7 +34210,6 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
-        "important": true,
         "paygen": false,
         "push_image": false,
         "vm_tests": [],
@@ -35009,7 +34999,6 @@
             "betty-release",
             "bob-release",
             "buddy-release",
-            "butterfly-release",
             "candy-release",
             "capri-release",
             "caroline-arc64-release",
@@ -35072,7 +35061,6 @@
             "leon-release",
             "link-release",
             "lulu-release",
-            "lumpy-release",
             "macchiato-ground-release",
             "mccloud-release",
             "meowth-release",
@@ -35090,7 +35078,6 @@
             "octavius-release",
             "orco-release",
             "panther-release",
-            "parrot-release",
             "parrot_ivb-release",
             "peach_pi-release",
             "peach_pit-release",
@@ -35114,7 +35101,6 @@
             "soraka-release",
             "squawks-release",
             "stout-release",
-            "stumpy-release",
             "sumo-release",
             "swanky-release",
             "terra-release",
@@ -35177,7 +35163,6 @@
             "betty-release",
             "bob-release",
             "buddy-release",
-            "butterfly-release",
             "candy-release",
             "capri-release",
             "caroline-arc64-release",
@@ -35240,7 +35225,6 @@
             "leon-release",
             "link-release",
             "lulu-release",
-            "lumpy-release",
             "macchiato-ground-release",
             "mccloud-release",
             "meowth-release",
@@ -35258,7 +35242,6 @@
             "octavius-release",
             "orco-release",
             "panther-release",
-            "parrot-release",
             "parrot_ivb-release",
             "peach_pi-release",
             "peach_pit-release",
@@ -35282,7 +35265,6 @@
             "soraka-release",
             "squawks-release",
             "stout-release",
-            "stumpy-release",
             "sumo-release",
             "swanky-release",
             "terra-release",
@@ -43095,12 +43077,10 @@
     },
     "parrot-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "parrot"
         ],
         "critical_for_chrome": true,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -43238,7 +43218,6 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
-        "important": true,
         "paygen": false,
         "push_image": false,
         "vm_tests": [],
@@ -55342,12 +55321,9 @@
     },
     "stumpy-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "stumpy"
         ],
-        "chrome_sdk_build_chrome": false,
-        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -55474,7 +55450,6 @@
         "boards": [
             "stumpy"
         ],
-        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -55485,7 +55460,6 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
-        "important": true,
         "paygen": false,
         "push_image": false,
         "vm_tests": [],
