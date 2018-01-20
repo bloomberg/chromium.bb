@@ -6,7 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,17 +18,23 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
 class ChromeScreenshotGrabberBrowserTest
     : public InProcessBrowserTest,
       public ui::ScreenshotGrabberObserver,
-      public message_center::MessageCenterObserver,
       public ui::ClipboardObserver {
  public:
-  ChromeScreenshotGrabberBrowserTest() : InProcessBrowserTest() {}
+  ChromeScreenshotGrabberBrowserTest() = default;
   ~ChromeScreenshotGrabberBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        browser()->profile());
+    display_service_->SetNotificationAddedClosure(base::BindRepeating(
+        &ChromeScreenshotGrabberBrowserTest::OnNotificationAdded,
+        base::Unretained(this)));
+  }
 
   // Overridden from ui::ScreenshotGrabberObserver
   void OnScreenshotCompleted(
@@ -38,8 +44,7 @@ class ChromeScreenshotGrabberBrowserTest
     screenshot_path_ = screenshot_path;
   }
 
-  // Overridden from message_center::MessageCenterObserver
-  void OnNotificationAdded(const std::string& notification_id) override {
+  void OnNotificationAdded() {
     notification_added_ = true;
     message_loop_runner_->Quit();
   }
@@ -62,15 +67,17 @@ class ChromeScreenshotGrabberBrowserTest
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   ScreenshotGrabberObserver::Result screenshot_result_;
   base::FilePath screenshot_path_;
   bool notification_added_ = false;
   bool clipboard_changed_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabberBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
-  message_center::MessageCenter::Get()->AddObserver(this);
-
   ChromeScreenshotGrabber* chrome_screenshot_grabber =
       ChromeScreenshotGrabber::Get();
   chrome_screenshot_grabber->screenshot_grabber()->AddObserver(this);
@@ -89,11 +96,7 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   chrome_screenshot_grabber->screenshot_grabber()->RemoveObserver(this);
 
   EXPECT_TRUE(notification_added_);
-  const message_center::Notification* notification =
-      g_browser_process->notification_ui_manager()->FindById(
-          std::string("screenshot"),
-          NotificationUIManager::GetProfileID(browser()->profile()));
-  EXPECT_NE(nullptr, notification);
+  EXPECT_TRUE(display_service_->GetNotification(std::string("screenshot")));
 
   EXPECT_EQ(ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_result_);
   EXPECT_TRUE(base::PathExists(screenshot_path_));
@@ -102,13 +105,12 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 
   // Copy to clipboard button.
-  notification->ButtonClick(0);
+  display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
+                                  std::string("screenshot"), 0, base::nullopt);
 
   RunLoop();
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
 
   EXPECT_TRUE(clipboard_changed_);
   EXPECT_TRUE(IsImageClipboardAvailable());
-
-  g_browser_process->notification_ui_manager()->CancelAll();
 }
