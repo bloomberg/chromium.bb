@@ -188,8 +188,11 @@ void ShowLoginWizardFinish(
   // Create the LoginDisplayHost. Use the views-based implementation only for
   // the sign-in screen.
   chromeos::LoginDisplayHost* display_host = nullptr;
-  if (ash::switches::IsUsingViewsLogin() &&
-      ShouldShowSigninScreen(first_screen)) {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    // Tests may have already allocated an instance for us to use.
+    display_host = chromeos::LoginDisplayHost::default_host();
+  } else if (ash::switches::IsUsingViewsLogin() &&
+             ShouldShowSigninScreen(first_screen)) {
     display_host = new chromeos::LoginDisplayHostViews();
   } else {
     gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
@@ -444,9 +447,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
 
-  DCHECK(default_host() == nullptr);
-  default_host_ = this;
-
   keep_alive_.reset(
       new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
                           KeepAliveRestartOption::DISABLED));
@@ -543,7 +543,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 
   keep_alive_.reset();
 
-  default_host_ = nullptr;
   // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.

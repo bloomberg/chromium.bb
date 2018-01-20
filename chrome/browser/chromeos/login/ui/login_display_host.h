@@ -139,9 +139,6 @@ class LoginDisplayHost {
   bool IsUserWhitelisted(const AccountId& account_id);
 
  protected:
-  // Default LoginDisplayHost. Child class sets the reference.
-  static LoginDisplayHost* default_host_;
-
   virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
   virtual void OnStartAppLaunch() = 0;
   virtual void OnStartArcKiosk() = 0;
@@ -162,6 +159,9 @@ class LoginDisplayHost {
   std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
 
  private:
+  // Global LoginDisplayHost instance.
+  static LoginDisplayHost* default_host_;
+
   base::WeakPtrFactory<LoginDisplayHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHost);

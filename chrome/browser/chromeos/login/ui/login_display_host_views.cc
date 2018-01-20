@@ -30,14 +30,9 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
 
 }  // namespace
 
-LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {
-  DCHECK(default_host() == nullptr);
-  default_host_ = this;
-}
+LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {}
 
 LoginDisplayHostViews::~LoginDisplayHostViews() {
-  DCHECK_EQ(default_host_, this);
-  default_host_ = nullptr;
   LoginScreenClient::Get()->SetDelegate(nullptr);
   ScheduleCompletionCallbacks(std::move(completion_callbacks_));
 }
@@ -53,7 +48,6 @@ gfx::NativeWindow LoginDisplayHostViews::GetNativeWindow() const {
 }
 
 OobeUI* LoginDisplayHostViews::GetOobeUI() const {
-  NOTREACHED();
   return nullptr;
 }
 
