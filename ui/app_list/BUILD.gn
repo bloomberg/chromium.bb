@@ -178,7 +178,6 @@ executable("app_list_demo") {
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/views",
-    "//ui/views/controls/webview",
     "//ui/views_content_client",
     "//url",
   ]

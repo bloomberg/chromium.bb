@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_delegate_mus.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
@@ -113,13 +112,6 @@ app_list::AppListPresenterImpl* AppListServiceAsh::GetAppListPresenter() {
 
 void AppListServiceAsh::Init(Profile* initial_profile) {
   app_list_presenter_service_->Init();
-
-  // Ensure the StartPageService is created here. This early initialization is
-  // necessary to allow the WebContents to load before the app list is shown.
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(initial_profile);
-  if (service)
-    service->Init();
 }
 
 void AppListServiceAsh::OnProfileWillBeRemoved(

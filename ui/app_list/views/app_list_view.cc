@@ -280,8 +280,6 @@ void AppListView::Initialize(const InitParams& params) {
 
   SetState(app_list_state_);
 
-  delegate_->ViewInitialized();
-
   UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
                       base::Time::Now() - start_time);
   RecordFolderMetrics();

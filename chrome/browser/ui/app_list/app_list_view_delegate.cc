@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
-#include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -91,7 +89,6 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       model_(nullptr),
       search_model_(nullptr),
       model_updater_(nullptr),
-      template_url_service_observer_(this),
       observer_binding_(this),
       weak_ptr_factory_(this) {
   CHECK(controller_);
@@ -134,8 +131,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     model_updater_ = nullptr;
   }
 
-  template_url_service_observer_.RemoveAll();
-
   profile_ = new_profile;
   if (!profile_)
     return;
@@ -146,10 +141,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   // http://crbug.com/460437).
   DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
       << "Guest mode must use incognito profile";
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  template_url_service_observer_.Add(template_url_service);
 
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
@@ -167,7 +158,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
       std::make_unique<AppSyncUIStateWatcher>(profile_, model_updater_);
 
   SetUpSearchUI();
-  OnTemplateURLServiceChanged();
 
   // Clear search query.
   model_updater_->UpdateSearchBox(base::string16(),
@@ -233,14 +223,6 @@ void AppListViewDelegate::InvokeSearchResultAction(
   search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
-void AppListViewDelegate::ViewInitialized() {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (service) {
-    service->AppListShown();
-  }
-}
-
 void AppListViewDelegate::ViewShown() {
   base::RecordAction(base::UserMetricsAction("Launcher_Show"));
   base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
@@ -253,36 +235,6 @@ void AppListViewDelegate::Dismiss() {
 
 void AppListViewDelegate::ViewClosing() {
   controller_->ViewClosing();
-
-  if (!profile_)
-    return;
-
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (service)
-    service->AppListHidden();
-}
-
-views::View* AppListViewDelegate::CreateStartPageWebView(
-    const gfx::Size& size) {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (!service)
-    return NULL;
-
-  service->LoadContentsIfNeeded();
-
-  content::WebContents* web_contents = service->GetStartPageContents();
-  if (!web_contents)
-    return NULL;
-
-  DCHECK_EQ(profile_, web_contents->GetBrowserContext());
-  views::WebView* web_view =
-      new views::WebView(web_contents->GetBrowserContext());
-  web_view->SetPreferredSize(size);
-  web_view->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
-  web_view->SetWebContents(web_contents);
-  return web_view;
 }
 
 void AppListViewDelegate::GetWallpaperProminentColors(
@@ -306,23 +258,6 @@ void AppListViewDelegate::AddObserver(
 void AppListViewDelegate::RemoveObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void AppListViewDelegate::OnTemplateURLServiceChanged() {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  const bool is_google =
-      default_provider->GetEngineType(
-          template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
-
-  model_updater_->SetSearchEngineIsGoogle(is_google);
-
-  app_list::StartPageService* start_page_service =
-      app_list::StartPageService::Get(profile_);
-  if (start_page_service)
-    start_page_service->set_search_engine_is_google(is_google);
 }
 
 void AppListViewDelegate::Observe(int type,

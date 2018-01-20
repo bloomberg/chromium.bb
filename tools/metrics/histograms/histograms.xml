@@ -2062,6 +2062,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Apps.AppListDoodleAction" enum="AppListDoodleAction">
+  <obsolete>
+    App list doesn't support doodles anymore.
+  </obsolete>
   <owner>calamity@chromium.org</owner>
   <summary>
     The number of user interactions with the app list doodle. This is logged

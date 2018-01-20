@@ -19,7 +19,6 @@ namespace chrome {
 const char kChromeUIAboutHost[] = "about";
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIAppLauncherPageHost[] = "apps";
-const char kChromeUIAppListStartPageHost[] = "app-list";
 const char kChromeUIAppListStartPageURL[] = "chrome://app-list/";
 const char kChromeUIAppsURL[] = "chrome://apps/";
 const char kChromeUIBluetoothInternalsHost[] = "bluetooth-internals";

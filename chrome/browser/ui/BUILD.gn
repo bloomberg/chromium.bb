@@ -3420,14 +3420,6 @@ split_static_library("ui") {
       "app_list/search/webstore/webstore_provider.h",
       "app_list/search/webstore/webstore_result.cc",
       "app_list/search/webstore/webstore_result.h",
-      "app_list/start_page_service.cc",
-      "app_list/start_page_service.h",
-      "app_list/start_page_service_factory.cc",
-      "app_list/start_page_service_factory.h",
-      "webui/app_list/start_page_handler.cc",
-      "webui/app_list/start_page_handler.h",
-      "webui/app_list/start_page_ui.cc",
-      "webui/app_list/start_page_ui.h",
     ]
     deps += [
       "//ui/app_list",

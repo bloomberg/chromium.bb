@@ -263,10 +263,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  void ViewInitialized() override {
-    // Nothing needs to be done.
-  }
-
   void ViewShown() override {
     // Nothing needs to be done.
   }
@@ -278,10 +274,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void ViewClosing() override {
     // Nothing needs to be done.
-  }
-
-  views::View* CreateStartPageWebView(const gfx::Size& size) override {
-    return NULL;
   }
 
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {
