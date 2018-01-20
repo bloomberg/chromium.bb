@@ -7,7 +7,7 @@
 # -crX indicates the chromium-specific revision of a package at a given version.
 
 @Subdir chrome/android/profiles
-chromium/afdo/profiles/android version:3309
+chromium/afdo/profiles/android version:3322
 
 # Three unchanging lines
 # avoid the horror that is
