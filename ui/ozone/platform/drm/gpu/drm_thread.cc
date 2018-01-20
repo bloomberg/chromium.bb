@@ -78,18 +78,16 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 }  // namespace
 
 DrmThread::DrmThread()
-    : base::Thread("DrmThread"), drm_binding_(this), weak_ptr_factory_(this) {}
+    : base::Thread("DrmThread"), binding_(this), weak_ptr_factory_(this) {}
 
 DrmThread::~DrmThread() {
   Stop();
 }
 
-void DrmThread::Start(base::OnceClosure binding_completer) {
-  complete_early_binding_requests_ = std::move(binding_completer);
+void DrmThread::Start() {
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   thread_options.priority = base::ThreadPriority::DISPLAY;
-
   if (!StartWithOptions(thread_options))
     LOG(FATAL) << "Failed to create DRM thread";
 }
@@ -106,13 +104,6 @@ void DrmThread::Init() {
 
   display_manager_.reset(
       new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
-
-  DCHECK(task_runner())
-      << "DrmThread::Init -- thread doesn't have a task_runner";
-
-  // DRM thread is running now so can safely handle binding requests. So drain
-  // the queue of as-yet unhandled binding requests if there are any.
-  std::move(complete_early_binding_requests_).Run();
 }
 
 void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
@@ -352,12 +343,12 @@ void DrmThread::StartDrmDevice(StartDrmDeviceCallback callback) {
 // be used from multiple threads in multiple processes.
 void DrmThread::AddBindingCursorDevice(
     ozone::mojom::DeviceCursorRequest request) {
-  cursor_bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {
   TRACE_EVENT0("drm", "DrmThread::AddBindingDrmDevice");
-  drm_binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 }  // namespace ui

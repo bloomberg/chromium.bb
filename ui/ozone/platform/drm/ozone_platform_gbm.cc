@@ -37,7 +37,6 @@
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
-#include "ui/ozone/platform/drm/host/drm_device_connector.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
@@ -101,83 +100,45 @@ class OzonePlatformGbm : public OzonePlatform {
     return event_factory_ozone_->input_controller();
   }
   IPC::MessageFilter* GetGpuMessageFilter() override {
-    if (using_mojo_) {
-      return nullptr;
-    } else {
-      return gpu_message_filter_.get();
-    }
+    return gpu_message_filter_.get();
   }
-
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    if (using_mojo_) {
-      return drm_device_connector_.get();
-    } else {
-      return gpu_platform_support_host_.get();
-    }
+    return gpu_platform_support_host_.get();
   }
-
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return event_factory_ozone_->CreateSystemInputInjector();
   }
 
-  // In multi-process mode, this function must be executed in Viz as it sets up
-  // the callbacks needed  for Mojo bindings.  In single process mode, it may be
-  // called on any thread.  It must follow one of |InitializeUI| or
-  // |InitializeGPU|. Invocations of this method when not using mojo will be
-  // ignored. While the caller may choose to invoke this method before entering
-  // the sandbox, the actual interface adding has to happen on the DRM Device
-  // thread and so will be deferred until the DRM thread is running.
   void AddInterfaces(
       service_manager::BinderRegistryWithArgs<
           const service_manager::BindSourceInfo&>* registry) override {
-    if (!using_mojo_)
-      return;
-
     registry->AddInterface<ozone::mojom::DeviceCursor>(
         base::Bind(&OzonePlatformGbm::CreateDeviceCursorBinding,
                    weak_factory_.GetWeakPtr()),
-        base::ThreadTaskRunnerHandle::Get());
+        gpu_task_runner_);
 
     registry->AddInterface<ozone::mojom::DrmDevice>(
         base::Bind(&OzonePlatformGbm::CreateDrmDeviceBinding,
                    weak_factory_.GetWeakPtr()),
-        base::ThreadTaskRunnerHandle::Get());
+        gpu_task_runner_);
   }
-
-  // Runs on the thread where AddInterfaces was invoked. But the endpoint is
-  // always bound on the DRM thread.
   void CreateDeviceCursorBinding(
       ozone::mojom::DeviceCursorRequest request,
       const service_manager::BindSourceInfo& source_info) {
-    if (drm_thread_started_)
+    if (drm_thread_proxy_)
       drm_thread_proxy_->AddBindingCursorDevice(std::move(request));
     else
       pending_cursor_requests_.push_back(std::move(request));
   }
-  // Runs on the thread where AddInterfaces was invoked. But the endpoint is
-  // always bound on the DRM thread.
+
   // service_manager::InterfaceFactory<ozone::mojom::DrmDevice>:
   void CreateDrmDeviceBinding(
       ozone::mojom::DrmDeviceRequest request,
       const service_manager::BindSourceInfo& source_info) {
-    if (drm_thread_started_)
+    if (drm_thread_proxy_)
       drm_thread_proxy_->AddBindingDrmDevice(std::move(request));
     else
       pending_gpu_adapter_requests_.push_back(std::move(request));
-  }
-
-  // Runs on the thread that invoked |AddInterfaces| to drain the queue of
-  // binding requests that could not be satisfied until the DRM thread is
-  // available (i.e. if waiting until the sandbox has been entered.)
-  void DrainBindingRequests() {
-    for (auto& request : pending_cursor_requests_)
-      drm_thread_proxy_->AddBindingCursorDevice(std::move(request));
-    pending_cursor_requests_.clear();
-    for (auto& request : pending_gpu_adapter_requests_)
-      drm_thread_proxy_->AddBindingDrmDevice(std::move(request));
-    pending_gpu_adapter_requests_.clear();
-
-    drm_thread_started_ = true;
   }
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
@@ -198,30 +159,20 @@ class OzonePlatformGbm : public OzonePlatform {
       override {
     return std::make_unique<DrmNativeDisplayDelegate>(display_manager_.get());
   }
-
   void InitializeUI(const InitParams& args) override {
-    // Ozone drm can operate in four modes configured at
-    // runtime. Three process modes:
+    // Ozone drm can operate in three modes configured at runtime:
     //   1. legacy mode where host and viz components communicate
     //      via param traits IPC.
     //   2. single-process mode where host and viz components
-    //      communicate via in-process mojo. Single-process mode can be single
-    //      or multi-threaded.
+    //      communicate via in-process mojo.
     //   3. multi-process mode where host and viz components communicate
     //      via mojo IPC.
-    //
-    // and 2 connection modes
-    //   a. Viz is launched via content::GpuProcessHost and it notifies the
-    //   ozone host when Viz becomes available. b. The ozone host uses a service
-    //   manager to launch and connect to Viz.
-    //
-    // Combinations 1a, 2b, and 3a, and 3b are supported and expected to work.
-    // Combination 1a will hopefully be deprecated and replaced with 3a.
-    // Combination 2b adds undesirable code-debt and the intent is to remove it.
-
     single_process_ = args.single_process;
-    using_mojo_ = args.using_mojo || args.connector != nullptr;
+    using_mojo_ = args.connector != nullptr;
     host_thread_ = base::PlatformThread::CurrentRef();
+
+    DCHECK(!(using_mojo_ && !single_process_))
+        << "Multiprocess Mojo is not supported yet.";
 
     device_manager_ = CreateDeviceManager();
     window_manager_.reset(new DrmWindowHostManager());
@@ -244,9 +195,8 @@ class OzonePlatformGbm : public OzonePlatform {
       gl_api_loader_.reset(new GlApiLoader());
 
     if (using_mojo_) {
-      host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
-      drm_device_connector_ = std::make_unique<DrmDeviceConnector>(
-          args.connector, host_drm_device_);
+      host_drm_device_ =
+          std::make_unique<HostDrmDevice>(cursor_.get(), args.connector);
       adapter = host_drm_device_.get();
     } else {
       gpu_platform_support_host_.reset(
@@ -264,12 +214,17 @@ class OzonePlatformGbm : public OzonePlatform {
     if (using_mojo_) {
       host_drm_device_->ProvideManagers(display_manager_.get(),
                                         overlay_manager_.get());
-      host_drm_device_->AsyncStartDrmDevice(*drm_device_connector_);
+      host_drm_device_->AsyncStartDrmDevice();
     }
   }
 
   void InitializeGPU(const InitParams& args) override {
-    using_mojo_ = args.using_mojo;
+    // TODO(rjkroege): services/ui should initialize this with a connector.
+    // However, in-progress refactorings in services/ui make it difficult to
+    // require this at present. Set using_mojo_ like below once this is
+    // complete.
+    // TODO(rjk): Make it possible to turn this on.
+    // using_mojo_ = args.connector != nullptr;
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
     if (!single_process_)
@@ -284,50 +239,48 @@ class OzonePlatformGbm : public OzonePlatform {
     }
 
     // NOTE: Can't start the thread here since this is called before sandbox
-    // initialization in multi-process Chrome.
+    // initialization in multi-process Chrome. In mus, we start the DRM thread.
     drm_thread_proxy_.reset(new DrmThreadProxy());
 
     surface_factory_.reset(new GbmSurfaceFactory(drm_thread_proxy_.get()));
     if (!using_mojo_) {
       drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
+    } else {
+      drm_thread_proxy_->StartDrmThread();
     }
+
+    // When the viz process (and hence the gpu portion of ozone/gbm) is
+    // operating in a single process, the AddInterfaces method is best
+    // invoked before the GPU thread launches.  As a result, requests to add
+    // mojom bindings to the as yet un-launched service will fail so we queue
+    // incoming binding requests until the GPU thread is running and play them
+    // back here.
+    for (auto& request : pending_cursor_requests_)
+      drm_thread_proxy_->AddBindingCursorDevice(std::move(request));
+    pending_cursor_requests_.clear();
+    for (auto& request : pending_gpu_adapter_requests_)
+      drm_thread_proxy_->AddBindingDrmDevice(std::move(request));
+    pending_gpu_adapter_requests_.clear();
 
     // If InitializeGPU and InitializeUI are invoked on the same thread, startup
     // sequencing is complicated because tasks are queued on the unbound mojo
     // pipe connecting the UI (the host) to the DRM thread before the DRM thread
-    // is launched above. Special case this sequence via the
+    // is launched above. Special case this sequence vis the
     // BlockingStartDrmDevice API.
     // TODO(rjkroege): In a future when we have completed splitting Viz, it will
     // be possible to simplify this logic.
-    if (using_mojo_ && single_process_) {
+    if (using_mojo_ && single_process_ &&
+        host_thread_ == base::PlatformThread::CurrentRef()) {
       CHECK(host_drm_device_)
           << "Mojo single-process mode requires a HostDrmDevice.";
-
-      // Wait here if host and gpu are one and the same thread.
-      if (host_thread_ == base::PlatformThread::CurrentRef()) {
-        // One-thread exection does not permit use of the sandbox.
-        AfterSandboxEntry();
-        host_drm_device_->BlockingStartDrmDevice();
-      }
+      host_drm_device_->BlockingStartDrmDevice();
     }
-  }
-
-  // The DRM thread needs to be started late because we need to wait for the
-  // sandbox to start. This entry point in the Ozne API gives platforms
-  // flexibility in handing this requirement.
-  void AfterSandboxEntry() override {
-    CHECK(drm_thread_proxy_) << "AfterSandboxEntry before InitializeForGPU is "
-                                "invalid startup order.\n";
-    // Defer the actual startup of the DRM thread to here.
-    auto safe_binding_resquest_drainer = CreateSafeOnceCallback(base::BindOnce(
-        &OzonePlatformGbm::DrainBindingRequests, weak_factory_.GetWeakPtr()));
-
-    drm_thread_proxy_->StartDrmThread(std::move(safe_binding_resquest_drainer));
   }
 
  private:
   bool using_mojo_;
   bool single_process_;
+  base::PlatformThreadRef host_thread_;
 
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
@@ -340,7 +293,6 @@ class OzonePlatformGbm : public OzonePlatform {
   // running in single process mode.
   std::vector<ozone::mojom::DeviceCursorRequest> pending_cursor_requests_;
   std::vector<ozone::mojom::DrmDeviceRequest> pending_gpu_adapter_requests_;
-  bool drm_thread_started_;
 
   // gpu_platform_support_host_ is the IPC bridge to the GPU process while
   // host_drm_device_ is the mojo bridge to the Viz process. Only one can be in
@@ -352,11 +304,9 @@ class OzonePlatformGbm : public OzonePlatform {
   // To avoid a use after free, the following two members should be declared
   // before the two managers, so that they're deleted after them.
   std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<HostDrmDevice> host_drm_device_;
 
-  // Objects in the host process.
-  std::unique_ptr<DrmDeviceConnector> drm_device_connector_;
-  scoped_refptr<HostDrmDevice> host_drm_device_;
-  base::PlatformThreadRef host_thread_;
+  // Objects in the Browser process.
   std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<DrmWindowHostManager> window_manager_;
