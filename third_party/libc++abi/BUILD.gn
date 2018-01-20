@@ -10,9 +10,7 @@ source_set("libc++abi") {
   # symbols, unlike Linux does with glibc.  Build and link against libunwind
   # manually to get this functionality.
   if (is_fuchsia) {
-    deps += [
-      "//buildtools/third_party/libunwind",
-    ]
+    deps += [ "//buildtools/third_party/libunwind" ]
   }
 
   sources = [
@@ -50,6 +48,9 @@ source_set("libc++abi") {
   if (is_posix && !is_mac && !is_linux) {
     sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
+
+  defines = [ "LIBCXXABI_SILENT_TERMINATE" ]
+
   configs -= [
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_exceptions",
