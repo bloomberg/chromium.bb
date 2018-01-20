@@ -38,25 +38,8 @@
 
 namespace base {
 
-#if defined(OS_WIN)
-// _WINDOWS_ will be defined if Windows.h was included - include Windows.h first
-// to get access to the full struct definition.
-#if defined(_WINDOWS_)
-struct IoCounters : public IO_COUNTERS {
-};
-#else
+// Full declaration is in process_metrics_iocounters.h.
 struct IoCounters;
-#endif
-#elif defined(OS_POSIX)
-struct IoCounters {
-  uint64_t ReadOperationCount;
-  uint64_t WriteOperationCount;
-  uint64_t OtherOperationCount;
-  uint64_t ReadTransferCount;
-  uint64_t WriteTransferCount;
-  uint64_t OtherTransferCount;
-};
-#endif
 
 // Working Set (resident) memory usage broken down by
 //

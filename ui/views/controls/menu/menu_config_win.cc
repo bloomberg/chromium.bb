@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_gdi_object.h"
-#include "base/win/win_util.h"
+#include "base/win/win_client_metrics.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme_win.h"

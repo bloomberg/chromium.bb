@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Must be included before process_metrics.h to get full IoCounters definition
-#include <windows.h>
-
 #include "base/win/win_util.h"
 
 #include <aclapi.h>
@@ -53,6 +50,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/scoped_propvariant.h"
+#include "base/win/win_client_metrics.h"
 #include "base/win/windows_version.h"
 
 namespace base {

@@ -94,6 +94,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_client_metrics.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/platform_font_win.h"

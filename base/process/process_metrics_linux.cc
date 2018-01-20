@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/process/internal_linux.h"
+#include "base/process/process_metrics_iocounters.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"

@@ -35,32 +35,6 @@ struct IPropertyStore;
 struct _tagpropertykey;
 typedef _tagpropertykey PROPERTYKEY;
 
-// _WINDOWS_ will be defined if Windows.h was included - include Windows.h first
-// to get access to the full struct definition.
-#if defined(_WINDOWS_)
-// This is the same as NONCLIENTMETRICS except that the
-// unused member |iPaddedBorderWidth| has been removed.
-struct NONCLIENTMETRICS_XP {
-    UINT    cbSize;
-    int     iBorderWidth;
-    int     iScrollWidth;
-    int     iScrollHeight;
-    int     iCaptionWidth;
-    int     iCaptionHeight;
-    LOGFONTW lfCaptionFont;
-    int     iSmCaptionWidth;
-    int     iSmCaptionHeight;
-    LOGFONTW lfSmCaptionFont;
-    int     iMenuWidth;
-    int     iMenuHeight;
-    LOGFONTW lfMenuFont;
-    LOGFONTW lfStatusFont;
-    LOGFONTW lfMessageFont;
-};
-#else
-struct NONCLIENTMETRICS_XP;
-#endif
-
 namespace base {
 namespace win {
 
@@ -76,8 +50,6 @@ inline HANDLE Uint32ToHandle(uint32_t h) {
   return reinterpret_cast<HANDLE>(
       static_cast<uintptr_t>(static_cast<int32_t>(h)));
 }
-
-BASE_EXPORT void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics);
 
 // Returns the string representing the current user sid.
 BASE_EXPORT bool GetUserSidString(std::wstring* user_sid);

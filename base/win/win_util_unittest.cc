@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
+#include "base/win/win_util.h"
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
-#include "base/win/win_util.h"
+#include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

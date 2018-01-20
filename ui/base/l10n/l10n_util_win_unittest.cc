@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/command_line.h"
-#include "base/win/win_util.h"
+#include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/display/display.h"
