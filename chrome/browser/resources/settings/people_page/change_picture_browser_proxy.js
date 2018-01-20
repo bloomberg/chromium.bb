@@ -51,8 +51,9 @@ cr.define('settings', function() {
     selectProfileImage() {}
 
     /**
-     * Provides the taken photo as a data URL to the C++. No response is
-     * expected.
+     * Provides the taken photo as a data URL to the C++ and sets the user
+     * image to the 'old' image. As a response, the C++ sends the
+     * 'old-image-changed' WebUIListener event.
      * @param {string} photoDataUrl
      */
     photoTaken(photoDataUrl) {}
