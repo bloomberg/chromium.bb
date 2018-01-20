@@ -94,7 +94,7 @@ if (is_win) {
 # gn orders flags on a target before flags from configs. The default config
 # adds -Wall, and these flags have to be after -Wall -- so they need to come
 # from a config and can't be on the target directly.
-config("ffmpegsumo_warnings") {
+config("ffmpeg_warnings") {
   if (is_clang) {
     cflags = [
       "-Wno-absolute-value",
@@ -199,7 +199,7 @@ target(link_target_type, "ffmpeg_internal") {
     # These must be after no_chromium_code for warning flags to be ordered
     # correctly.
     "//build/config/compiler:no_incompatible_pointer_warnings",
-    ":ffmpegsumo_warnings",
+    ":ffmpeg_warnings",
   ]
 
   # Since we are not often debugging FFmpeg, and performance is
