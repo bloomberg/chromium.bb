@@ -25030,7 +25030,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LoadRulesetResult">
   <int value="0" label="Load succeeded"/>
   <int value="1" label="Load failed - Invalid path"/>
-  <int value="2" label="Load failed - Memory Map error"/>
+  <int value="2" label="Load failed - File read error"/>
   <int value="3" label="Load failed - Ruleset verification error"/>
 </enum>
 
