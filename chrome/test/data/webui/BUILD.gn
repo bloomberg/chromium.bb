@@ -34,7 +34,6 @@ js2gtest("browser_tests_js_webui") {
   # and are handled by a rule, but in the GN build they're in a separate
   # action so need to be separated out.
   sources = [
-    "../../../browser/ui/webui/app_list/start_page_browsertest.js",
     "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
     "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
     "../../../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
@@ -118,9 +117,7 @@ js2gtest("browser_tests_js_webui") {
       "sys_internals/sys_internals_browsertest.js",
     ]
   } else {
-    sources += [
-      "signin/signin_browsertest.js",
-    ]
+    sources += [ "signin/signin_browsertest.js" ]
   }
 
   if (is_chrome_branded) {
@@ -131,10 +128,6 @@ js2gtest("browser_tests_js_webui") {
     sources -= [ "certificate_viewer_dialog_test.js" ]
   } else {
     sources -= [ "md_user_manager/user_manager_browsertest.js" ]
-  }
-  if (!enable_app_list) {
-    sources -=
-        [ "../../../browser/ui/webui/app_list/start_page_browsertest.js" ]
   }
   if (enable_print_preview) {
     sources += [

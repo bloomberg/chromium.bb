@@ -192,10 +192,6 @@
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-#include "chrome/browser/ui/webui/app_list/start_page_ui.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
@@ -546,10 +542,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-  if (url.host_piece() == chrome::kChromeUIAppListStartPageHost)
-    return &NewWebUI<app_list::StartPageUI>;
-#endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<extensions::ExtensionsUI>;

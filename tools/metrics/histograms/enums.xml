@@ -1175,6 +1175,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AppListDoodleAction">
+  <obsolete>
+    App list doesn't support doodles anymore.
+  </obsolete>
   <int value="0" label="DOODLE_SHOWN"/>
   <int value="1" label="DOODLE_CLICKED"/>
 </enum>

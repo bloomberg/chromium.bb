@@ -18,8 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -43,8 +41,7 @@ class Profile;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public ash::mojom::WallpaperObserver,
-                            public content::NotificationObserver,
-                            public TemplateURLServiceObserver {
+                            public content::NotificationObserver {
  public:
   // Constructs Chrome's AppListViewDelegate with a NULL Profile.
   // Does not take ownership of |controller|. TODO(tapted): It should.
@@ -67,19 +64,14 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void InvokeSearchResultAction(app_list::SearchResult* result,
                                 int action_index,
                                 int event_flags) override;
-  void ViewInitialized() override;
   void ViewShown() override;
   void Dismiss() override;
   void ViewClosing() override;
-  views::View* CreateStartPageWebView(const gfx::Size& size) override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override;
   void ActivateItem(const std::string& id, int event_flags) override;
   ui::MenuModel* GetContextMenuModel(const std::string& id) override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override;
   void RemoveObserver(app_list::AppListViewDelegateObserver* observer) override;
-
-  // Overridden from TemplateURLServiceObserver:
-  void OnTemplateURLServiceChanged() override;
 
  private:
   // Callback for ash::mojom::GetWallpaperColors.
@@ -115,9 +107,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   std::unique_ptr<app_list::SearchController> search_controller_;
 
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
-
-  ScopedObserver<TemplateURLService, AppListViewDelegate>
-      template_url_service_observer_;
 
   // Registers for NOTIFICATION_APP_TERMINATING to unload custom launcher pages.
   content::NotificationRegistrar registrar_;

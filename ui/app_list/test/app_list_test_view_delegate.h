@@ -52,11 +52,9 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void InvokeSearchResultAction(SearchResult* result,
                                 int action_index,
                                 int event_flags) override {}
-  void ViewInitialized() override {}
   void ViewShown() override {}
   void Dismiss() override;
   void ViewClosing() override {}
-  views::View* CreateStartPageWebView(const gfx::Size& size) override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {}
   void ActivateItem(const std::string& id, int event_flags) override;
   ui::MenuModel* GetContextMenuModel(const std::string& id) override;

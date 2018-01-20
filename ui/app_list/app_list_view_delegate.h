@@ -60,9 +60,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
                                         int action_index,
                                         int event_flags) = 0;
 
-  // Invoked when the app list UI is created.
-  virtual void ViewInitialized() = 0;
-
   // Invoked when the app list is shown.
   virtual void ViewShown() = 0;
 
@@ -72,10 +69,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
-
-  // Creates the web view for the start page. The caller takes the ownership of
-  // the returned view.
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) = 0;
 
   // Gets the wallpaper prominent colors.
   virtual void GetWallpaperProminentColors(std::vector<SkColor>* colors) = 0;
