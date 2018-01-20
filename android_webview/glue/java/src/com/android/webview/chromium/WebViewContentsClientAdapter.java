@@ -1281,7 +1281,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
-    // TODO: Move to upstream.
     private static class AwHttpAuthHandlerAdapter extends android.webkit.HttpAuthHandler {
         private AwHttpAuthHandler mAwHandler;
 
@@ -1314,7 +1313,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
     /**
      * Type adaptation class for PermissionRequest.
-     * TODO: Move to the upstream once the PermissionRequest is part of SDK.
      */
     public static class PermissionRequestAdapter extends PermissionRequest {
 
