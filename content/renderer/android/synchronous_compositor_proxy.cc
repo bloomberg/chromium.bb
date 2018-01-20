@@ -63,6 +63,8 @@ void SynchronousCompositorProxy::SetLayerTreeFrameSink(
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   if (layer_tree_frame_sink_) {
     layer_tree_frame_sink_->SetSyncClient(this);
+    if (begin_frame_paused_)
+      layer_tree_frame_sink_->SetBeginFrameSourcePaused(true);
   }
 }
 
@@ -144,6 +146,9 @@ void SynchronousCompositorProxy::OnMessageReceived(
                                     DemandDrawSw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZoomBy, SynchronouslyZoomBy)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetScroll, SetScroll)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetBeginFramePaused,
+                        OnSetBeginFrameSourcePaused)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, OnBeginFrame)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -355,12 +360,28 @@ void SynchronousCompositorProxy::SubmitCompositorFrame(
   }
 }
 
+void SynchronousCompositorProxy::SetNeedsBeginFrames(bool needs_begin_frames) {
+  Send(new SyncCompositorHostMsg_SetNeedsBeginFrames(routing_id_,
+                                                     needs_begin_frames));
+}
+
 void SynchronousCompositorProxy::OnComputeScroll(
     base::TimeTicks animation_time) {
   if (need_animate_scroll_) {
     need_animate_scroll_ = false;
     input_handler_proxy_->SynchronouslyAnimate(animation_time);
   }
+}
+
+void SynchronousCompositorProxy::OnSetBeginFrameSourcePaused(bool paused) {
+  begin_frame_paused_ = paused;
+  if (layer_tree_frame_sink_)
+    layer_tree_frame_sink_->SetBeginFrameSourcePaused(paused);
+}
+
+void SynchronousCompositorProxy::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  if (layer_tree_frame_sink_)
+    layer_tree_frame_sink_->BeginFrame(args);
 }
 
 void SynchronousCompositorProxy::SynchronouslyZoomBy(

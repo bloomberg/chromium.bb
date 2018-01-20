@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -51,6 +52,7 @@ class SynchronousLayerTreeFrameSinkClient {
   virtual void Invalidate() = 0;
   virtual void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
                                      viz::CompositorFrame frame) = 0;
+  virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
 
  protected:
   virtual ~SynchronousLayerTreeFrameSinkClient() {}
@@ -66,7 +68,8 @@ class SynchronousLayerTreeFrameSinkClient {
 // to a fixed thread when BindToClient is called.
 class SynchronousLayerTreeFrameSink
     : public cc::LayerTreeFrameSink,
-      public viz::mojom::CompositorFrameSinkClient {
+      public viz::mojom::CompositorFrameSinkClient,
+      public viz::ExternalBeginFrameSourceClient {
  public:
   SynchronousLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
@@ -108,6 +111,12 @@ class SynchronousLayerTreeFrameSink
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
+
+  // viz::ExternalBeginFrameSourceClient overrides.
+  void OnNeedsBeginFrames(bool needs_begin_frames) override;
+
+  void BeginFrame(const viz::BeginFrameArgs& args);
+  void SetBeginFrameSourcePaused(bool paused);
 
  private:
   class SoftwareOutputSurface;
@@ -181,7 +190,8 @@ class SynchronousLayerTreeFrameSink
   std::unique_ptr<viz::Display> display_;
   // Owned by |display_|.
   SoftwareOutputSurface* software_output_surface_ = nullptr;
-  std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::BeginFrameSource> synthetic_begin_frame_source_;
+  std::unique_ptr<viz::ExternalBeginFrameSource> external_begin_frame_source_;
 
   gfx::Rect sw_viewport_for_current_draw_;
 

@@ -67,6 +67,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input/sync_compositor_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
 #include "content/common/text_input_state.h"
@@ -581,13 +582,9 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!renderer_initialized()) {
     // SetNeedsBeginFrame messages are only sent by the renderer once and so
     // should never be dropped.
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
-                          OnSetNeedsBeginFrames)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
+    if (msg.type() == SyncCompositorHostMsg_SetNeedsBeginFrames::ID && view_)
+      return view_->OnMessageReceived(msg);
+    return false;
   }
 
   if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
@@ -620,7 +617,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
@@ -1640,15 +1636,6 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   if (view_)
     view_->SelectionBoundsChanged(params);
-}
-
-void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
-    return;
-
-  needs_begin_frames_ = needs_begin_frames;
-  if (view_)
-    view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RenderWidgetHostImpl::OnFocusedNodeTouched(bool editable) {
@@ -2675,8 +2662,13 @@ bool RenderWidgetHostImpl::HasGestureStopped() {
   return !input_router_->HasPendingEvents();
 }
 
-void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
-  OnSetNeedsBeginFrames(needs_begin_frame);
+void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
+  if (needs_begin_frames_ == needs_begin_frames)
+    return;
+
+  needs_begin_frames_ = needs_begin_frames;
+  if (view_)
+    view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RenderWidgetHostImpl::SetWantsAnimateOnlyBeginFrames() {

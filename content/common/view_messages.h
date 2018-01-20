@@ -541,12 +541,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
                     ui::LatencyInfo /* latency_info */)
 
-// Let renderer know begin frame messages won't be sent even if requested.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetBeginFramePaused, bool /* paused */)
-
-// Sent by the browser when the renderer should generate a new frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame, viz::BeginFrameArgs /* args */)
-
 // Sets the viewport intersection on the widget for an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetViewportIntersection,
                     gfx::Rect /* viewport_intersection */)
@@ -561,12 +555,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_UpdateRenderThrottlingStatus,
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
-
-// Sent by renderer to request a ViewMsg_BeginFrame message for upcoming
-// display events. If |enabled| is true, the BeginFrame message will continue
-// to be be delivered until the notification is disabled.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
-                    bool /* enabled */)
 
 // These two messages are sent to the parent RenderViewHost to display a widget
 // that was created by CreateWidget/CreateFullscreenWidget. |route_id| refers

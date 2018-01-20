@@ -20,8 +20,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Handled by RenderWidgetHost.
     case InputHostMsg_HandleInputEvent_ACK::ID:
     case ViewHostMsg_ResizeOrRepaint_ACK::ID:
-    // Handled by RenderWidgetHostView.
-    case ViewHostMsg_SetNeedsBeginFrames::ID:
     // Handled by RenderViewHost.
     case FrameHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:

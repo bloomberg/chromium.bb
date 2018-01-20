@@ -92,8 +92,6 @@
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "content/renderer/fileapi/webfilesystem_impl.h"
-#include "content/renderer/gpu/compositor_external_begin_frame_source.h"
-#include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/input/input_event_filter.h"
@@ -1268,10 +1266,6 @@ void RenderThreadImpl::InitializeWebKit(
   else
     compositor_impl_side_task_runner = base::ThreadTaskRunnerHandle::Get();
 
-  compositor_message_filter_ = new CompositorForwardingMessageFilter(
-      compositor_impl_side_task_runner.get());
-  AddFilter(compositor_message_filter_.get());
-
   RenderThreadImpl::RegisterSchemes();
 
   RenderMediaClient::Initialize();
@@ -1649,12 +1643,6 @@ gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
 
 blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
   return renderer_scheduler_.get();
-}
-
-std::unique_ptr<viz::BeginFrameSource>
-RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
-  return std::make_unique<CompositorExternalBeginFrameSource>(
-      compositor_message_filter_.get(), sync_message_filter(), routing_id);
 }
 
 std::unique_ptr<viz::SyntheticBeginFrameSource>
@@ -2102,14 +2090,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
-    std::unique_ptr<viz::BeginFrameSource> begin_frame_source =
-        params.synthetic_begin_frame_source
-            ? std::move(params.synthetic_begin_frame_source)
-            : CreateExternalBeginFrameSource(routing_id);
     callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
         compositor_task_runner_, GetGpuMemoryBufferManager(), routing_id,
-        g_next_layer_tree_frame_sink_id++, std::move(begin_frame_source),
+        g_next_layer_tree_frame_sink_id++,
+        std::move(params.synthetic_begin_frame_source),
         sync_compositor_message_filter_.get(),
         std::move(frame_swap_message_queue)));
     return;
