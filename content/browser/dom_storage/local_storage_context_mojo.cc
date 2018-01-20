@@ -1013,14 +1013,17 @@ void LocalStorageContextMojo::GetStatistics(size_t* total_cache_size,
 
 void LocalStorageContextMojo::OnCommitResult(
     leveldb::mojom::DatabaseError error) {
-  DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
+  DCHECK(connection_state_ == CONNECTION_FINISHED ||
+         connection_state_ == CONNECTION_SHUTDOWN)
+      << connection_state_;
   if (error == leveldb::mojom::DatabaseError::OK) {
     commit_error_count_ = 0;
     return;
   }
 
   commit_error_count_++;
-  if (commit_error_count_ > kCommitErrorThreshold) {
+  if (commit_error_count_ > kCommitErrorThreshold &&
+      connection_state_ != CONNECTION_SHUTDOWN) {
     if (tried_to_recover_from_commit_errors_) {
       // We already tried to recover from a high commit error rate before, but
       // are still having problems: there isn't really anything left to try, so
