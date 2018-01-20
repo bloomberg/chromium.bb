@@ -38,6 +38,11 @@ class TabbedPaneTest : public ViewsTestBase {
   }
 
  protected:
+  void MakeTabbedPaneForOrientation(TabbedPane::Orientation orientation) {
+    tabbed_pane_ = std::make_unique<TabbedPane>(orientation);
+    tabbed_pane_->set_owned_by_client();
+  }
+
   Tab* GetTabAt(int index) {
     return static_cast<Tab*>(tabbed_pane_->tab_strip_->child_at(index));
   }
@@ -58,7 +63,19 @@ class TabbedPaneTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneTest);
 };
 
-// Tests TabbedPane::GetPreferredSize() and TabbedPane::Layout().
+// Tests tab orientation.
+TEST_F(TabbedPaneTest, HorizontalOrientation) {
+  EXPECT_EQ(tabbed_pane_->IsHorizontal(), true);
+}
+
+// Tests tab orientation.
+TEST_F(TabbedPaneTest, VerticalOrientation) {
+  MakeTabbedPaneForOrientation(TabbedPane::Orientation::kVertical);
+  EXPECT_EQ(tabbed_pane_->IsHorizontal(), false);
+}
+
+// Tests TabbedPane::GetPreferredSize() and TabbedPane::Layout() when tabs
+// aligned in horizontal orientation.
 TEST_F(TabbedPaneTest, SizeAndLayout) {
   View* child1 = new StaticSizedView(gfx::Size(20, 10));
   tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
@@ -84,6 +101,40 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
   EXPECT_LE(bounds.width(), 100);
   EXPECT_GT(bounds.height(), 0);
   EXPECT_LT(bounds.height(), 200);
+
+  // If we switch to the other tab, it should get assigned the same bounds.
+  tabbed_pane_->SelectTabAt(1);
+  EXPECT_EQ(bounds, child2->bounds());
+}
+
+// Tests TabbedPane::GetPreferredSize() and TabbedPane::Layout() when tabs
+// aligned in vertical orientation.
+TEST_F(TabbedPaneTest, SizeAndLayoutInVerticalOrientation) {
+  MakeTabbedPaneForOrientation(TabbedPane::Orientation::kVertical);
+  View* child1 = new StaticSizedView(gfx::Size(20, 10));
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
+  View* child2 = new StaticSizedView(gfx::Size(5, 5));
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab2"), child2);
+  tabbed_pane_->SelectTabAt(0);
+
+  // The |tabbed_pane_| implementation of Views has no border by default.
+  // Therefore it should be as high as the highest tab. The native Windows
+  // tabbed pane has a border that used up extra space. Therefore the preferred
+  // height is larger than the largest child.
+  gfx::Size pref(tabbed_pane_->GetPreferredSize());
+  EXPECT_GT(pref.width(), 20);
+  EXPECT_GE(pref.height(), 10);
+
+  // The bounds of our children should be smaller than the tabbed pane's bounds.
+  tabbed_pane_->SetBounds(0, 0, 100, 200);
+  RunPendingMessages();
+  gfx::Rect bounds(child1->bounds());
+  EXPECT_GT(bounds.width(), 0);
+  EXPECT_LT(bounds.width(), 100);
+  EXPECT_GT(bounds.height(), 0);
+  // The |tabbed_pane_| has no border. Therefore the children should be as high
+  // as the |tabbed_pane_|.
+  EXPECT_LE(bounds.height(), 200);
 
   // If we switch to the other tab, it should get assigned the same bounds.
   tabbed_pane_->SelectTabAt(1);
