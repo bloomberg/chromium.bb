@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -567,7 +567,7 @@ chrome.networkingPrivate.ManagedVerifyX509;
  *   Password: (string|undefined),
  *   Port: (number|undefined),
  *   Proto: (string|undefined),
- *   PushPeerInfo: (string|undefined),
+ *   PushPeerInfo: (boolean|undefined),
  *   RemoteCertEKU: (string|undefined),
  *   RemoteCertKU: (!Array<string>|undefined),
  *   RemoteCertTLS: (string|undefined),
@@ -612,7 +612,7 @@ chrome.networkingPrivate.OpenVPNProperties;
  *   Password: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   Port: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   Proto: (!chrome.networkingPrivate.ManagedDOMString|undefined),
- *   PushPeerInfo: (!chrome.networkingPrivate.ManagedDOMString|undefined),
+ *   PushPeerInfo: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   RemoteCertEKU: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   RemoteCertKU: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   RemoteCertTLS: (!chrome.networkingPrivate.ManagedDOMString|undefined),
@@ -1233,6 +1233,9 @@ chrome.networkingPrivate.requestNetworkScan = function(networkType) {};
  * @param {function():void=} callback Called when the connect request has been
  *     sent. Note: the     connection may not have completed. Observe
  *     $(ref:onNetworksChanged)     to be notified when a network state changes.
+ *     If the connect request     immediately failed (e.g. the network is
+ *     unconfigured),     $(ref:runtime.lastError) will be set with a failure
+ *     reason.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-startConnect
  */
 chrome.networkingPrivate.startConnect = function(networkGuid, callback) {};
@@ -1359,7 +1362,7 @@ chrome.networkingPrivate.unlockCellularSim = function(networkGuid, pin, puk, cal
  * This will not lock the SIM; that is handled automatically by the device.
  * NOTE: If the SIM is locked, it must first be unlocked with
  * unlockCellularSim() before this can be called (otherwise it will fail and
- * chrome.runtime.lastError will be set to Error.SimLocked).
+ * $(ref:runtime.lastError) will be set to Error.SimLocked).
  * @param {string} networkGuid The GUID of the cellular network to set the SIM
  *     state of.     If empty, the default cellular device will be used.
  * @param {!chrome.networkingPrivate.CellularSimState} simState The SIM state to

@@ -425,7 +425,7 @@ namespace networkingPrivate {
     DOMString? Password;
     long? Port;
     DOMString? Proto;
-    DOMString? PushPeerInfo;
+    boolean? PushPeerInfo;
     DOMString? RemoteCertEKU;
     DOMString[]? RemoteCertKU;
     DOMString? RemoteCertTLS;
@@ -466,7 +466,7 @@ namespace networkingPrivate {
     ManagedDOMString? Password;
     ManagedLong? Port;
     ManagedDOMString? Proto;
-    ManagedDOMString? PushPeerInfo;
+    ManagedBoolean? PushPeerInfo;
     ManagedDOMString? RemoteCertEKU;
     ManagedDOMStringList? RemoteCertKU;
     ManagedDOMString? RemoteCertTLS;
