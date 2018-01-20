@@ -185,6 +185,10 @@ enum LaunchContainer {
   NUM_LAUNCH_CONTAINERS
 };
 
+// The origin of injected CSS.
+enum CSSOrigin { CSS_ORIGIN_AUTHOR, CSS_ORIGIN_USER };
+static const CSSOrigin CSS_ORIGIN_LAST = CSS_ORIGIN_USER;
+
 }  // namespace extensions
 
 namespace extension_misc {

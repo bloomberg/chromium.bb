@@ -90,6 +90,10 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptRunAt) {
   ASSERT_TRUE(RunExtensionTest("executescript/run_at")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptCSSOrigin) {
+  ASSERT_TRUE(RunExtensionTest("executescript/css_origin")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptCallback) {
   ASSERT_TRUE(RunExtensionTest("executescript/callback")) << message_;
 }
