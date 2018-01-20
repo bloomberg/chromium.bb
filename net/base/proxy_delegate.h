@@ -48,10 +48,6 @@ class NET_EXPORT ProxyDelegate {
   // allowed to push cross-origin resources.
   virtual bool IsTrustedSpdyProxy(const ProxyServer& proxy_server) = 0;
 
-  // Notifies the ProxyDelegate that |alternative_proxy_server| is broken.
-  virtual void OnAlternativeProxyBroken(
-      const ProxyServer& alternative_proxy_server) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyDelegate);
 };

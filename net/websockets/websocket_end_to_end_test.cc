@@ -231,8 +231,6 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
     return true;
   }
-  void OnAlternativeProxyBroken(
-      const ProxyServer& alternative_proxy_server) override {}
 
  private:
   ResolvedProxyInfo resolved_proxy_info_;

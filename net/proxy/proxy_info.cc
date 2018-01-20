@@ -89,6 +89,7 @@ void ProxyInfo::Reset() {
   proxy_resolve_start_time_ = base::TimeTicks();
   proxy_resolve_end_time_ = base::TimeTicks();
   proxy_list_.Clear();
+  alternative_proxy_ = net::ProxyServer();
   proxy_retry_info_.clear();
   config_id_ = ProxyConfig::kInvalidConfigID;
   config_source_ = PROXY_CONFIG_SOURCE_UNKNOWN;

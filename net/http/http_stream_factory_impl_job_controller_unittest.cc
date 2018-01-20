@@ -47,7 +47,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Contains;
+using ::testing::ElementsAre;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
+using ::testing::Key;
+using ::testing::SizeIs;
 
 namespace net {
 
@@ -536,23 +541,21 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
 
     std::unique_ptr<HttpStreamRequest> request =
         CreateJobController(request_info);
-
     base::RunLoop().RunUntilIdle();
-    // The proxy that failed should now be known to the proxy_service as
-    // bad.
-    const ProxyRetryInfoMap retry_info =
-        session_->proxy_service()->proxy_retry_info();
-    EXPECT_EQ(2u, retry_info.size()) << mock_error;
-    EXPECT_NE(retry_info.end(), retry_info.find("https://badproxy:99"));
-    EXPECT_NE(retry_info.end(), retry_info.find("https://badfallbackproxy:98"));
 
     // Verify that request was fetched without proxy.
     EXPECT_TRUE(used_proxy_info.is_direct());
 
-    // If alternative proxy server was specified, it should have been marked
-    // as invalid so that it is not used for subsequent requests.
-    EXPECT_FALSE(
-        test_proxy_delegate_raw->alternative_proxy_server().is_valid());
+    // The proxies that failed should now be known to the proxy service as
+    // bad.
+    const ProxyRetryInfoMap& retry_info =
+        session_->proxy_service()->proxy_retry_info();
+    EXPECT_THAT(retry_info, SizeIs(set_alternative_proxy_server ? 3 : 2));
+    EXPECT_THAT(retry_info, Contains(Key("https://badproxy:99")));
+    EXPECT_THAT(retry_info, Contains(Key("https://badfallbackproxy:98")));
+
+    if (set_alternative_proxy_server)
+      EXPECT_THAT(retry_info, Contains(Key("quic://badproxy:99")));
   }
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
@@ -1891,6 +1894,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   request_info.url = GURL("http://mail.example.org/");
   Initialize(request_info);
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_quic());
+  EXPECT_THAT(session_->proxy_service()->proxy_retry_info(), IsEmpty());
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
@@ -1914,7 +1918,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   EXPECT_TRUE(job_controller_->main_job());
 
   // The alternative proxy server should be marked as bad.
-  EXPECT_FALSE(test_proxy_delegate()->alternative_proxy_server().is_valid());
+  EXPECT_THAT(session_->proxy_service()->proxy_retry_info(),
+              ElementsAre(Key("quic://myproxy.org:443")));
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }

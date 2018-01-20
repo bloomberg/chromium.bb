@@ -90,7 +90,6 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
       configurator_(configurator),
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
-      alternative_proxies_broken_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       first_data_saver_request_recorded_(false),
       io_data_(nullptr),
@@ -181,8 +180,10 @@ void DataReductionProxyDelegate::OnResolveProxy(
 
   if (!result->is_empty()) {
     net::ProxyServer alternative_proxy_server;
-    GetAlternativeProxy(url, result->proxy_server(), &alternative_proxy_server);
-    result->SetAlternativeProxy(alternative_proxy_server);
+    if (GetAlternativeProxy(url, result->proxy_server(), proxy_retry_info,
+                            &alternative_proxy_server)) {
+      result->SetAlternativeProxy(alternative_proxy_server);
+    }
   }
 
   if (!first_data_saver_request_recorded_ && !result->is_empty() &&
@@ -222,59 +223,49 @@ void DataReductionProxyDelegate::SetTickClockForTesting(
   last_network_change_time_ = tick_clock_->NowTicks();
 }
 
-void DataReductionProxyDelegate::GetAlternativeProxy(
+bool DataReductionProxyDelegate::GetAlternativeProxy(
     const GURL& url,
     const net::ProxyServer& resolved_proxy_server,
+    const net::ProxyRetryInfoMap& proxy_retry_info,
     net::ProxyServer* alternative_proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!alternative_proxy_server->is_valid());
 
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() ||
       url.SchemeIsCryptographic()) {
-    return;
+    return false;
   }
 
   if (!params::IsIncludedInQuicFieldTrial()) {
     RecordQuicProxyStatus(QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL);
-    return;
+    return false;
   }
 
   if (!resolved_proxy_server.is_valid() || !resolved_proxy_server.is_https())
-    return;
+    return false;
 
   if (!config_ ||
       !config_->IsDataReductionProxy(resolved_proxy_server, nullptr)) {
-    return;
-  }
-
-  if (alternative_proxies_broken_) {
-    RecordQuicProxyStatus(QUIC_PROXY_STATUS_MARKED_AS_BROKEN);
-    return;
+    return false;
   }
 
   if (!SupportsQUIC(resolved_proxy_server)) {
     RecordQuicProxyStatus(QUIC_PROXY_NOT_SUPPORTED);
-    return;
+    return false;
   }
 
-  *alternative_proxy_server = net::ProxyServer(
-      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair());
-  DCHECK(alternative_proxy_server->is_valid());
-  RecordQuicProxyStatus(QUIC_PROXY_STATUS_AVAILABLE);
-  return;
-}
+  net::ProxyInfo alternative_proxy_info;
+  alternative_proxy_info.UseProxyServer(net::ProxyServer(
+      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair()));
+  alternative_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
 
-void DataReductionProxyDelegate::OnAlternativeProxyBroken(
-    const net::ProxyServer& alternative_proxy_server) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(tbansal): Reset this on connection change events.
-  // Currently, DataReductionProxyDelegate does not maintain a list of broken
-  // proxies. If one alternative proxy is broken, use of all alternative proxies
-  // is disabled because it is likely that other QUIC proxies would be
-  // broken   too.
-  alternative_proxies_broken_ = true;
-  UMA_HISTOGRAM_COUNTS_100("DataReductionProxy.Quic.OnAlternativeProxyBroken",
-                           1);
+  if (alternative_proxy_info.is_empty()) {
+    RecordQuicProxyStatus(QUIC_PROXY_STATUS_MARKED_AS_BROKEN);
+    return false;
+  }
+
+  RecordQuicProxyStatus(QUIC_PROXY_STATUS_AVAILABLE);
+  *alternative_proxy_server = alternative_proxy_info.proxy_server();
+  return true;
 }
 
 bool DataReductionProxyDelegate::SupportsQUIC(

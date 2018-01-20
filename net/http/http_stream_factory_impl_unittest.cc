@@ -70,6 +70,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Contains;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Key;
+using ::testing::SizeIs;
+
 using net::test::IsError;
 using net::test::IsOk;
 
@@ -1009,22 +1015,19 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
                 /* enable_alternative_services = */ true, NetLogWithSource()));
         waiter.WaitForStream();
 
-        // The proxy that failed should now be known to the proxy_service as
-        // bad.
-        const ProxyRetryInfoMap retry_info =
-            session->proxy_service()->proxy_retry_info();
-        EXPECT_EQ(2u, retry_info.size()) << mock_error;
-
         // Verify that request was fetched without proxy.
         EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 
-        EXPECT_NE(retry_info.end(), retry_info.find("https://badproxy:99"));
-        EXPECT_NE(retry_info.end(),
-                  retry_info.find("https://badfallbackproxy:98"));
+        // The proxies that failed should now be known to the proxy service as
+        // bad.
+        const ProxyRetryInfoMap& retry_info =
+            session->proxy_service()->proxy_retry_info();
+        EXPECT_THAT(retry_info, SizeIs(set_alternative_proxy_server ? 3 : 2));
+        EXPECT_THAT(retry_info, Contains(Key("https://badproxy:99")));
+        EXPECT_THAT(retry_info, Contains(Key("https://badfallbackproxy:98")));
 
-        // If alternative proxy server was specified, it should have been marked
-        // as invalid so that it is not used for subsequent requests.
-        EXPECT_FALSE(test_proxy_delegate.alternative_proxy_server().is_valid());
+        if (set_alternative_proxy_server)
+          EXPECT_THAT(retry_info, Contains(Key("quic://badproxy:99")));
       }
     }
   }
@@ -1092,6 +1095,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
     SSLConfig ssl_config;
     StreamRequestWaiter waiter;
 
+    EXPECT_THAT(session->proxy_service()->proxy_retry_info(), IsEmpty());
     EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
     // Start two requests. The first request should consume data from
@@ -1105,21 +1109,15 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
               /* enable_alternative_services = */ true, NetLogWithSource()));
       waiter.WaitForStream();
 
-      // The proxy that failed should now be known to the proxy_service as
-      // bad.
-      const ProxyRetryInfoMap retry_info =
-          session->proxy_service()->proxy_retry_info();
-      // Proxy should not be marked as bad.
-      EXPECT_EQ(0u, retry_info.size()) << mock_error;
       // Verify that request was fetched using proxy.
       EXPECT_TRUE(waiter.used_proxy_info().is_https());
       EXPECT_TRUE(host_port_pair.Equals(
           waiter.used_proxy_info().proxy_server().host_port_pair()));
-      net::ProxyServer proxy_server;
 
-      // Alternative proxy server should be marked as invalid so that it is
-      // not used for subsequent requests.
-      EXPECT_FALSE(test_proxy_delegate.alternative_proxy_server().is_quic());
+      // Alternative proxy server should be marked as bad so that it is not
+      // used for subsequent requests.
+      EXPECT_THAT(session->proxy_service()->proxy_retry_info(),
+                  ElementsAre(Key("quic://badproxy:99")));
     }
   }
 }
