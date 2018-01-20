@@ -33,6 +33,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "skia/ext/event_tracer_impl.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -210,6 +211,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
 
   StartServiceManagerConnection();
+
+  InitSkiaEventTracer();
 }
 
 void GpuChildThread::CreateVizMainService(
