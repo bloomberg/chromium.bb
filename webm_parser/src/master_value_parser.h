@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "src/master_parser.h"
+#include "src/recursive_parser.h"
 #include "src/skip_callback.h"
 #include "webm/callback.h"
 #include "webm/element.h"
@@ -244,6 +245,56 @@ class MasterValueParser : public ElementParser {
     std::vector<Element<Value>> T::*member_;
   };
 
+  template <typename Parser, typename... Tags>
+  class RecursiveChildFactory {
+   public:
+    constexpr RecursiveChildFactory(Id id, std::vector<Element<T>> T::*member,
+                                    std::size_t max_recursion_depth)
+        : id_(id), member_(member), max_recursion_depth_(max_recursion_depth) {}
+
+    // Builds a std::pair<Id, std::unique_ptr<ElementParser>>. The parent
+    // pointer must be a pointer to the MasterValueParser that is being
+    // constructed. The given value pointer must be the pointer to the fully
+    // constructed MasterValueParser::value_ object.
+    std::pair<Id, std::unique_ptr<ElementParser>> BuildParser(
+        MasterValueParser* parent, T* value) {
+      assert(parent != nullptr);
+      assert(value != nullptr);
+
+      std::vector<Element<T>>* child_member = &(value->*member_);
+      auto lambda = [child_member](RecursiveParser<Parser>* parser) {
+        if (child_member->size() == 1 && !child_member->front().is_present()) {
+          child_member->clear();
+        }
+        child_member->emplace_back(std::move(*parser->mutable_value()), true);
+      };
+
+      return {id_, std::unique_ptr<ElementParser>(
+                       new ChildParser<RecursiveParser<Parser>,
+                                       decltype(lambda), Tags...>(
+                           parent, std::move(lambda), max_recursion_depth_))};
+    }
+
+    // If called, OnParseStarted will be called on the parent element when this
+    // particular element is encountered.
+    constexpr RecursiveChildFactory<Parser, TagUseAsStart, Tags...>
+    UseAsStartEvent() const {
+      return {id_, member_, max_recursion_depth_};
+    }
+
+    // If called, OnChildParsed will be called on the parent element when this
+    // particular element is fully parsed.
+    constexpr RecursiveChildFactory<Parser, TagNotifyOnParseComplete, Tags...>
+    NotifyOnParseComplete() const {
+      return {id_, member_, max_recursion_depth_};
+    }
+
+   private:
+    Id id_;
+    std::vector<Element<T>> T::*member_;
+    std::size_t max_recursion_depth_;
+  };
+
   // Constructs a new parser. Each argument must be a *ChildFactory, constructed
   // from the MakeChild method.
   template <typename... Args>
@@ -262,6 +313,8 @@ class MasterValueParser : public ElementParser {
       Id id, Element<Value> T::*member) {
     static_assert(std::is_base_of<ElementParser, Parser>::value,
                   "Parser must derive from ElementParser");
+    static_assert(!std::is_base_of<MasterValueParser<T>, Parser>::value,
+                  "Recursive elements should be contained in a std::vector");
     return SingleChildFactory<Parser, Value>(id, member);
   }
 
@@ -270,7 +323,18 @@ class MasterValueParser : public ElementParser {
       Id id, std::vector<Element<Value>> T::*member) {
     static_assert(std::is_base_of<ElementParser, Parser>::value,
                   "Parser must derive from ElementParser");
+    static_assert(!std::is_base_of<MasterValueParser<T>, Parser>::value,
+                  "Recursive elements require a maximum recursion depth");
     return RepeatedChildFactory<Parser, Value>(id, member);
+  }
+
+  template <typename Parser>
+  static RecursiveChildFactory<Parser> MakeChild(
+      Id id, std::vector<Element<T>> T::*member,
+      std::size_t max_recursion_depth) {
+    static_assert(std::is_base_of<MasterValueParser<T>, Parser>::value,
+                  "Child must be recusrive to use maximum recursion depth");
+    return RecursiveChildFactory<Parser>(id, member, max_recursion_depth);
   }
 
   // Gets the metadata for this element, setting the EBML element ID to id. Only

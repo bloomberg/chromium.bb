@@ -49,7 +49,7 @@ static int Run(Reader* reader) {
   assert(status.code != Status::kOkPartial);
 
   // Only the following ranges have status codes defined:
-  assert((-1030 <= status.code && status.code <= -1025) ||
+  assert((-1031 <= status.code && status.code <= -1025) ||
          (-3 <= status.code && status.code <= 0));
 
   return 0;

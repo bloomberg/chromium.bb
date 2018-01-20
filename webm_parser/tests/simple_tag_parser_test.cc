@@ -13,11 +13,13 @@
 
 #include "test_utils/element_parser_test.h"
 #include "webm/id.h"
+#include "webm/status.h"
 
 using webm::ElementParserTest;
 using webm::Id;
 using webm::SimpleTag;
 using webm::SimpleTagParser;
+using webm::Status;
 
 namespace {
 
@@ -179,6 +181,25 @@ TEST_F(SimpleTagParserTest, CustomValues) {
   ASSERT_EQ(static_cast<std::size_t>(1), simple_tag.tags.size());
   EXPECT_TRUE(simple_tag.tags[0].is_present());
   EXPECT_EQ(expected, simple_tag.tags[0].value());
+}
+
+TEST_F(SimpleTagParserTest, ExceedMaxRecursionDepth) {
+  ResetParser(1);
+
+  SetReaderData({
+      0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
+      0x80,  // Size = 0.
+  });
+  ParseAndVerify();
+
+  SetReaderData({
+      0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
+      0x83,  // Size = 3.
+
+      0x67, 0xC8,  // ID = 0x67C8 (SimpleTag).
+      0x80,  //   Size = 0.
+  });
+  ParseAndExpectResult(Status::kExceededRecursionDepthLimit);
 }
 
 }  // namespace

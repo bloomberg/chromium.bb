@@ -12,7 +12,6 @@
 #include "src/chapter_display_parser.h"
 #include "src/int_parser.h"
 #include "src/master_value_parser.h"
-#include "src/recursive_parser.h"
 #include "webm/dom_types.h"
 #include "webm/id.h"
 
@@ -23,7 +22,7 @@ namespace webm {
 // http://www.webmproject.org/docs/container/#ChapterAtom
 class ChapterAtomParser : public MasterValueParser<ChapterAtom> {
  public:
-  ChapterAtomParser()
+  explicit ChapterAtomParser(std::size_t max_recursive_depth = 25)
       : MasterValueParser<ChapterAtom>(
             MakeChild<UnsignedIntParser>(Id::kChapterUid, &ChapterAtom::uid),
             MakeChild<StringParser>(Id::kChapterStringUid,
@@ -34,8 +33,8 @@ class ChapterAtomParser : public MasterValueParser<ChapterAtom> {
                                          &ChapterAtom::time_end),
             MakeChild<ChapterDisplayParser>(Id::kChapterDisplay,
                                             &ChapterAtom::displays),
-            MakeChild<RecursiveParser<ChapterAtomParser>>(
-                Id::kChapterAtom, &ChapterAtom::atoms)) {}
+            MakeChild<ChapterAtomParser>(Id::kChapterAtom, &ChapterAtom::atoms,
+                                         max_recursive_depth)) {}
 };
 
 }  // namespace webm

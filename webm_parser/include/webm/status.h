@@ -87,6 +87,11 @@ struct Status {
      */
     kInvalidElementValue = -1030,
 
+    /**
+     A recursive element was so deeply nested that exceeded the parser's limit.
+     */
+    kExceededRecursionDepthLimit = -1031,
+
     // The following codes are internal-only and should not be used by users.
     // Additionally, these codes should never be returned to the user; doing so
     // is considered a bug.

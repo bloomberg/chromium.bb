@@ -27,7 +27,8 @@ namespace webm {
 template <typename T>
 class RecursiveParser : public ElementParser {
  public:
-  RecursiveParser() = default;
+  explicit RecursiveParser(std::size_t max_recursion_depth = 25)
+      : max_recursion_depth_(max_recursion_depth){};
 
   RecursiveParser(RecursiveParser&&) = default;
   RecursiveParser& operator=(RecursiveParser&&) = default;
@@ -39,8 +40,12 @@ class RecursiveParser : public ElementParser {
               std::uint64_t max_size) override {
     assert(metadata.size == kUnknownElementSize || metadata.size <= max_size);
 
+    if (max_recursion_depth_ == 0) {
+      return Status(Status::kExceededRecursionDepthLimit);
+    }
+
     if (!impl_) {
-      impl_.reset(new T);
+      impl_.reset(new T(max_recursion_depth_ - 1));
     }
 
     return impl_->Init(metadata, max_size);
@@ -48,8 +53,9 @@ class RecursiveParser : public ElementParser {
 
   void InitAfterSeek(const Ancestory& child_ancestory,
                      const ElementMetadata& child_metadata) override {
+    assert(max_recursion_depth_ > 0);
     if (!impl_) {
-      impl_.reset(new T);
+      impl_.reset(new T(max_recursion_depth_ - 1));
     }
 
     impl_->InitAfterSeek(child_ancestory, child_metadata);
@@ -79,6 +85,7 @@ class RecursiveParser : public ElementParser {
 
  private:
   std::unique_ptr<T> impl_;
+  std::size_t max_recursion_depth_;
 };
 
 }  // namespace webm

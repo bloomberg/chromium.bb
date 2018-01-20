@@ -11,12 +11,14 @@
 
 #include "test_utils/element_parser_test.h"
 #include "webm/id.h"
+#include "webm/status.h"
 
 using webm::ChapterAtom;
 using webm::ChapterAtomParser;
 using webm::ChapterDisplay;
 using webm::ElementParserTest;
 using webm::Id;
+using webm::Status;
 
 namespace {
 
@@ -183,6 +185,25 @@ TEST_F(ChapterAtomParserTest, CustomValues) {
   ASSERT_EQ(static_cast<std::size_t>(1), chapter_atom.atoms.size());
   EXPECT_TRUE(chapter_atom.atoms[0].is_present());
   EXPECT_EQ(expected_chapter_atom, chapter_atom.atoms[0].value());
+}
+
+TEST_F(ChapterAtomParserTest, ExceedMaxRecursionDepth) {
+  ResetParser(1);
+
+  SetReaderData({
+      0xB6,  // ID = 0xB6 (ChapterAtom).
+      0x80,  // Size = 0.
+  });
+  ParseAndVerify();
+
+  SetReaderData({
+      0xB6,  // ID = 0xB6 (ChapterAtom).
+      0x82,  // Size = 2.
+
+      0xB6,  //   ID = 0xB6 (ChapterAtom).
+      0x80,  //   Size = 0.
+  });
+  ParseAndExpectResult(Status::kExceededRecursionDepthLimit);
 }
 
 }  // namespace

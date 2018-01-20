@@ -30,22 +30,37 @@ namespace {
 
 class FailParser : public ElementParser {
  public:
-  FailParser() { EXPECT_FALSE(true); }
+  explicit FailParser(std::size_t /* max_recursion_depth */) { ADD_FAILURE(); }
 
   Status Init(const ElementMetadata& /* metadata */,
               std::uint64_t /* max_size */) override {
+    ADD_FAILURE();
     return Status(Status::kInvalidElementSize);
   }
 
   Status Feed(Callback* /* callback */, Reader* /* reader */,
               std::uint64_t* num_bytes_read) override {
+    ADD_FAILURE();
     *num_bytes_read = 0;
     return Status(Status::kInvalidElementSize);
   }
 
-  int value() const { return 0; }
+  int value() const {
+    ADD_FAILURE();
+    return 0;
+  }
 
-  int* mutable_value() { return nullptr; }
+  int* mutable_value() {
+    ADD_FAILURE();
+    return nullptr;
+  }
+};
+
+class StringParserWrapper : public StringParser {
+ public:
+  explicit StringParserWrapper(std::size_t max_recursion_depth) {
+    EXPECT_EQ(max_recursion_depth, 24);
+  }
 };
 
 class RecursiveFailParserTest
@@ -56,7 +71,7 @@ TEST_F(RecursiveFailParserTest, NoConstruction) {
 }
 
 class RecursiveStringParserTest
-    : public ElementParserTest<RecursiveParser<StringParser>> {};
+    : public ElementParserTest<RecursiveParser<StringParserWrapper>> {};
 
 TEST_F(RecursiveStringParserTest, ParsesOkay) {
   ParseAndVerify();
@@ -65,6 +80,11 @@ TEST_F(RecursiveStringParserTest, ParsesOkay) {
   SetReaderData({0x48, 0x69});  // "Hi".
   ParseAndVerify();
   EXPECT_EQ("Hi", parser_.value());
+}
+
+TEST_F(RecursiveStringParserTest, ExceedMaxRecursionDepth) {
+  ResetParser(0);
+  TestInit(0, Status::kExceededRecursionDepthLimit);
 }
 
 }  // namespace
