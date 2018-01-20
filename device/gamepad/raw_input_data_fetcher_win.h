@@ -14,57 +14,22 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_native_library.h"
 #include "base/win/message_window.h"
-#include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/hid_dll_functions_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
+#include "device/gamepad/raw_input_gamepad_device_win.h"
 
 namespace device {
-
-struct RawGamepadAxis {
-  HIDP_VALUE_CAPS caps;
-  float value;
-  bool active;
-  unsigned long bitmask;
-};
-
-struct RawGamepadInfo {
-  RawGamepadInfo();
-  ~RawGamepadInfo();
-
-  int source_id;
-  int enumeration_id;
-  HANDLE handle;
-  std::unique_ptr<uint8_t[]> ppd_buffer;
-  PHIDP_PREPARSED_DATA preparsed_data;
-
-  uint32_t report_id;
-  uint32_t vendor_id;
-  uint32_t product_id;
-  uint32_t version_number;
-
-  wchar_t id[Gamepad::kIdLengthCap];
-
-  uint32_t buttons_length;
-  bool buttons[Gamepad::kButtonsLengthCap];
-
-  uint32_t axes_length;
-  RawGamepadAxis axes[Gamepad::kAxesLengthCap];
-};
 
 class RawInputDataFetcher : public GamepadDataFetcher,
                             public base::SupportsWeakPtr<RawInputDataFetcher> {
  public:
-  typedef GamepadDataFetcherFactoryImpl<RawInputDataFetcher,
-                                        GAMEPAD_SOURCE_WIN_RAW>
-      Factory;
+  using Factory = GamepadDataFetcherFactoryImpl<RawInputDataFetcher,
+                                                GAMEPAD_SOURCE_WIN_RAW>;
 
   explicit RawInputDataFetcher();
   ~RawInputDataFetcher() override;
@@ -80,8 +45,7 @@ class RawInputDataFetcher : public GamepadDataFetcher,
   void StartMonitor();
   void StopMonitor();
   void EnumerateDevices();
-  RawGamepadInfo* ParseGamepadInfo(HANDLE hDevice);
-  void UpdateGamepad(RAWINPUT* input, RawGamepadInfo* gamepad_info);
+  RawInputGamepadDeviceWin* DeviceFromSourceId(int source_id);
   // Handles WM_INPUT messages.
   LRESULT OnInput(HRAWINPUT input_handle);
   // Handles messages received by |window_|.
@@ -92,18 +56,30 @@ class RawInputDataFetcher : public GamepadDataFetcher,
   RAWINPUTDEVICE* GetRawInputDevices(DWORD flags);
   void ClearControllers();
 
+  // The window to receive RawInput events.
   std::unique_ptr<base::win::MessageWindow> window_;
-  bool rawinput_available_;
-  bool filter_xinput_;
-  bool events_monitored_;
-  int last_source_id_;
-  int last_enumeration_id_;
 
-  typedef std::map<HANDLE, RawGamepadInfo*> ControllerMap;
-  ControllerMap controllers_;
+  // True if DLL loading succeeded and methods for enumerating and polling
+  // RawInput devices are available.
+  bool rawinput_available_ = false;
+
+  // When true, XInput devices will not be enumerated by this data fetcher.
+  // This should be enabled when the platform data fetcher is active to avoid
+  // enumerating XInput gamepads twice.
+  bool filter_xinput_ = true;
+
+  // True if we are registered to receive RawInput events.
+  bool events_monitored_ = false;
+
+  // The last ID assigned to an enumerated device.
+  int last_source_id_ = 0;
 
   // HID functions loaded from hid.dll.
   std::unique_ptr<HidDllFunctionsWin> hid_functions_;
+
+  // Connected devices, keyed by device handle.
+  std::unordered_map<HANDLE, std::unique_ptr<RawInputGamepadDeviceWin>>
+      controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(RawInputDataFetcher);
 };
