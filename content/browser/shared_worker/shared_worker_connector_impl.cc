@@ -34,9 +34,14 @@ void SharedWorkerConnectorImpl::Connect(
     mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port) {
+  RenderProcessHost* host = RenderProcessHost::FromID(process_id_);
+  // The render process was already terminated.
+  if (!host) {
+    client->OnScriptLoadFailed();
+    return;
+  }
   SharedWorkerServiceImpl* service =
-      static_cast<StoragePartitionImpl*>(
-          RenderProcessHost::FromID(process_id_)->GetStoragePartition())
+      static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
           ->GetSharedWorkerService();
   service->ConnectToWorker(process_id_, frame_id_, std::move(info),
                            std::move(client), creation_context_type,
