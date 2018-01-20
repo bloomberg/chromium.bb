@@ -103,6 +103,9 @@ class CORE_EXPORT ObjectPaintProperties {
   //     |   Clip created by CSS clip. CSS clip applies to all descendants, this
   //     |   node only applies to containing block descendants. For descendants
   //     |   not contained by this object, use [ css clip fixed position ].
+  //     +-[ overflow controls clip ]
+  //     |   Clip created by overflow clip to clip overflow controls
+  //     |   (scrollbars, resizer, scroll corner) that would overflow the box.
   //     +-[ inner border radius clip]
   //       |   Clip created by a rounded border with overflow clip. This clip is
   //       |   not inset by scrollbars.
@@ -118,6 +121,9 @@ class CORE_EXPORT ObjectPaintProperties {
   const ClipPaintPropertyNode* CssClip() const { return css_clip_.get(); }
   const ClipPaintPropertyNode* CssClipFixedPosition() const {
     return css_clip_fixed_position_.get();
+  }
+  const ClipPaintPropertyNode* OverflowControlsClip() const {
+    return overflow_controls_clip_.get();
   }
   const ClipPaintPropertyNode* InnerBorderRadiusClip() const {
     return inner_border_radius_clip_.get();
@@ -141,6 +147,7 @@ class CORE_EXPORT ObjectPaintProperties {
   bool ClearMaskClip() { return Clear(mask_clip_); }
   bool ClearCssClip() { return Clear(css_clip_); }
   bool ClearCssClipFixedPosition() { return Clear(css_clip_fixed_position_); }
+  bool ClearOverflowControlsClip() { return Clear(overflow_controls_clip_); }
   bool ClearInnerBorderRadiusClip() { return Clear(inner_border_radius_clip_); }
   bool ClearOverflowClip() { return Clear(overflow_clip_); }
   bool ClearPerspective() { return Clear(perspective_); }
@@ -222,6 +229,10 @@ class CORE_EXPORT ObjectPaintProperties {
     return Update(css_clip_fixed_position_, std::forward<Args>(args)...);
   }
   template <typename... Args>
+  UpdateResult UpdateOverflowControlsClip(Args&&... args) {
+    return Update(overflow_controls_clip_, std::forward<Args>(args)...);
+  }
+  template <typename... Args>
   UpdateResult UpdateInnerBorderRadiusClip(Args&&... args) {
     return Update(inner_border_radius_clip_, std::forward<Args>(args)...);
   }
@@ -252,6 +263,8 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->css_clip_ = css_clip_->Clone();
     if (css_clip_fixed_position_)
       cloned->css_clip_fixed_position_ = css_clip_fixed_position_->Clone();
+    if (overflow_controls_clip_)
+      cloned->overflow_controls_clip_ = overflow_controls_clip_->Clone();
     if (inner_border_radius_clip_)
       cloned->inner_border_radius_clip_ = inner_border_radius_clip_->Clone();
     if (overflow_clip_)
@@ -310,6 +323,7 @@ class CORE_EXPORT ObjectPaintProperties {
   scoped_refptr<ClipPaintPropertyNode> mask_clip_;
   scoped_refptr<ClipPaintPropertyNode> css_clip_;
   scoped_refptr<ClipPaintPropertyNode> css_clip_fixed_position_;
+  scoped_refptr<ClipPaintPropertyNode> overflow_controls_clip_;
   scoped_refptr<ClipPaintPropertyNode> inner_border_radius_clip_;
   scoped_refptr<ClipPaintPropertyNode> overflow_clip_;
   scoped_refptr<TransformPaintPropertyNode> perspective_;

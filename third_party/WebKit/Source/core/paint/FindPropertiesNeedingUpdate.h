@@ -178,6 +178,9 @@ class FindObjectPropertiesNeedingUpdateScope {
                                 original_properties_->CssClipFixedPosition(),
                                 object_properties->CssClipFixedPosition());
       DCHECK_OBJECT_PROPERTY_EQ(object_,
+                                original_properties_->OverflowControlsClip(),
+                                object_properties->OverflowControlsClip());
+      DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->InnerBorderRadiusClip(),
                                 object_properties->InnerBorderRadiusClip());
       DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->OverflowClip(),

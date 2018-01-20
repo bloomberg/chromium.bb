@@ -15,6 +15,7 @@ class DisplayItemClient;
 class GraphicsContext;
 class IntPoint;
 class IntRect;
+struct PaintInfo;
 class PaintLayerScrollableArea;
 
 class ScrollableAreaPainter {
@@ -25,13 +26,13 @@ class ScrollableAreaPainter {
       PaintLayerScrollableArea& paint_layer_scrollable_area)
       : scrollable_area_(&paint_layer_scrollable_area) {}
 
+  void PaintOverflowControls(const PaintInfo&,
+                             const IntPoint& paint_offset,
+                             bool painting_overlay_controls);
+
   void PaintResizer(GraphicsContext&,
                     const IntPoint& paint_offset,
                     const CullRect&);
-  void PaintOverflowControls(GraphicsContext&,
-                             const IntPoint& paint_offset,
-                             const CullRect&,
-                             bool painting_overlay_controls);
   void PaintScrollCorner(GraphicsContext&,
                          const IntPoint& paint_offset,
                          const CullRect&);
