@@ -97,7 +97,7 @@ bool RemoteTestServer::StartInBackground() {
                                !ssl_options().GetOCSPArgument().empty());
   if (config_.address() != IPAddress::IPv4Localhost() && ocsp_server_enabled) {
     ocsp_proxy_ = std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
-    bool initialized = !ocsp_proxy_->Initialize();
+    bool initialized = ocsp_proxy_->Initialize();
     CHECK(initialized);
     arguments_dict.SetKey("ocsp-proxy-port-number",
                           base::Value(ocsp_proxy_->local_port()));
@@ -137,7 +137,7 @@ bool RemoteTestServer::BlockUntilStarted() {
   if (config_.address() != IPAddress::IPv4Localhost()) {
     test_server_proxy_ =
         std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
-    bool initialized = !test_server_proxy_->Initialize();
+    bool initialized = test_server_proxy_->Initialize();
     CHECK(initialized);
     test_server_proxy_->Start(IPEndPoint(config_.address(), remote_port_));
 
