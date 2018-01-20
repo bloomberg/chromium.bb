@@ -316,6 +316,9 @@ void KioskAppManager::InitSession(Profile* profile,
   app_session_ = CreateAppSession();
   if (app_session_)
     app_session_->Init(profile, app_id);
+
+  for (auto& observer : observers_)
+    observer.OnKioskSessionInitialized();
 }
 
 bool KioskAppManager::GetSwitchesForSessionRestore(

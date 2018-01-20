@@ -259,6 +259,25 @@ void SetPlatformVersion(const std::string& platform_version) {
   base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
 }
 
+class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
+ public:
+  KioskSessionInitializedWaiter() : scoped_observer_(this) {
+    scoped_observer_.Add(KioskAppManager::Get());
+  }
+  ~KioskSessionInitializedWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // KioskAppManagerObserver:
+  void OnKioskSessionInitialized() override { run_loop_.Quit(); }
+
+ private:
+  ScopedObserver<KioskAppManager, KioskAppManagerObserver> scoped_observer_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskSessionInitializedWaiter);
+};
+
 // Helper functions for CanConfigureNetwork mock.
 class ScopedCanConfigureNetwork {
  public:
@@ -629,10 +648,7 @@ class KioskTest : public OobeBaseTest {
         "launchData.isKioskSession = true", false);
 
     // Wait for the Kiosk App to launch.
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
-        content::NotificationService::AllSources())
-        .Wait();
+    KioskSessionInitializedWaiter().Wait();
 
     // Default profile switches to app profile after app is launched.
     Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
@@ -2202,11 +2218,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   PrepareAppLaunch();
   LaunchApp(kTestEnterpriseKioskApp, false);
 
-  // Wait for the Kiosk App to launch.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
-      content::NotificationService::AllSources())
-      .Wait();
+  KioskSessionInitializedWaiter().Wait();
 
   // Check installer status.
   EXPECT_EQ(chromeos::KioskAppLaunchError::NONE,
