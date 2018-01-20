@@ -188,7 +188,7 @@ GLenum DataType(gfx::BufferFormat format) {
 // When an IOSurface is bound to a texture with internalformat "GL_RGB", many
 // OpenGL operations are broken. Therefore, don't allow an IOSurface to be bound
 // with GL_RGB unless overridden via BindTexImageWithInternalformat.
-// crbug.com/595948, crbug.com/699566.
+// https://crbug.com/595948, https://crbug.com/699566.
 GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
   if (internalformat == GL_RGB)
     return GL_RGBA;
