@@ -9,45 +9,21 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "device/gamepad/gamepad_standard_mappings.h"
 
 namespace device {
 
 namespace {
 
-float NormalizeAxis(long value, long min, long max) {
-  return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
-}
-
-unsigned long GetBitmask(unsigned short bits) {
-  return (1 << bits) - 1;
-}
-
-// From the HID Usage Tables specification.
-USHORT DeviceUsages[] = {
-    0x04,  // Joysticks
-    0x05,  // Gamepads
-    0x08,  // Multi Axis
+const uint16_t DeviceUsages[] = {
+    RawInputGamepadDeviceWin::kGenericDesktopJoystick,
+    RawInputGamepadDeviceWin::kGenericDesktopGamePad,
+    RawInputGamepadDeviceWin::kGenericDesktopMultiAxisController,
 };
-
-const uint32_t kAxisMinimumUsageNumber = 0x30;
-const uint32_t kGameControlsUsagePage = 0x05;
-const uint32_t kButtonUsagePage = 0x09;
-
-const uint32_t kVendorOculus = 0x2833;
-const uint32_t kVendorBlue = 0xb58e;
 
 }  // namespace
 
-RawGamepadInfo::RawGamepadInfo() {}
-
-RawGamepadInfo::~RawGamepadInfo() {}
-
-RawInputDataFetcher::RawInputDataFetcher()
-    : rawinput_available_(false),
-      filter_xinput_(true),
-      events_monitored_(false),
-      last_source_id_(0),
-      last_enumeration_id_(0) {}
+RawInputDataFetcher::RawInputDataFetcher() = default;
 
 RawInputDataFetcher::~RawInputDataFetcher() {
   StopMonitor();
@@ -101,8 +77,8 @@ void RawInputDataFetcher::StartMonitor() {
   // Register to receive raw HID input.
   std::unique_ptr<RAWINPUTDEVICE[]> devices(
       GetRawInputDevices(RIDEV_INPUTSINK));
-  if (!RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
-                               sizeof(RAWINPUTDEVICE))) {
+  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+                                 sizeof(RAWINPUTDEVICE))) {
     PLOG(ERROR) << "RegisterRawInputDevices() failed for RIDEV_INPUTSINK";
     window_.reset();
     return;
@@ -119,8 +95,8 @@ void RawInputDataFetcher::StopMonitor() {
   DCHECK(window_);
   std::unique_ptr<RAWINPUTDEVICE[]> devices(GetRawInputDevices(RIDEV_REMOVE));
 
-  if (!RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
-                               sizeof(RAWINPUTDEVICE))) {
+  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+                                 sizeof(RAWINPUTDEVICE))) {
     PLOG(INFO) << "RegisterRawInputDevices() failed for RIDEV_REMOVE";
   }
 
@@ -129,11 +105,9 @@ void RawInputDataFetcher::StopMonitor() {
 }
 
 void RawInputDataFetcher::ClearControllers() {
-  while (!controllers_.empty()) {
-    RawGamepadInfo* gamepad_info = controllers_.begin()->second;
-    controllers_.erase(gamepad_info->handle);
-    delete gamepad_info;
-  }
+  for (const auto& entry : controllers_)
+    entry.second->Shutdown();
+  controllers_.clear();
 }
 
 void RawInputDataFetcher::GetGamepadData(bool devices_changed_hint) {
@@ -143,33 +117,20 @@ void RawInputDataFetcher::GetGamepadData(bool devices_changed_hint) {
   if (devices_changed_hint)
     EnumerateDevices();
 
-  for (const auto& controller : controllers_) {
-    RawGamepadInfo* gamepad = controller.second;
-    PadState* state = GetPadState(gamepad->source_id);
+  for (const auto& entry : controllers_) {
+    const RawInputGamepadDeviceWin* device = entry.second.get();
+    PadState* state = GetPadState(device->GetSourceId());
     if (!state)
       continue;
 
-    Gamepad& pad = state->data;
-
-    pad.timestamp = gamepad->report_id;
-    pad.buttons_length = gamepad->buttons_length;
-    pad.axes_length = gamepad->axes_length;
-
-    for (unsigned int i = 0; i < pad.buttons_length; i++) {
-      pad.buttons[i].pressed = gamepad->buttons[i];
-      pad.buttons[i].value = gamepad->buttons[i] ? 1.0 : 0.0;
-    }
-
-    for (unsigned int i = 0; i < pad.axes_length; i++)
-      pad.axes[i] = gamepad->axes[i].value;
+    device->ReadPadState(&state->data);
   }
 }
 
 void RawInputDataFetcher::EnumerateDevices() {
-  last_enumeration_id_++;
-
   UINT count = 0;
-  UINT result = GetRawInputDeviceList(NULL, &count, sizeof(RAWINPUTDEVICELIST));
+  UINT result =
+      ::GetRawInputDeviceList(nullptr, &count, sizeof(RAWINPUTDEVICELIST));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputDeviceList() failed";
     return;
@@ -178,49 +139,75 @@ void RawInputDataFetcher::EnumerateDevices() {
 
   std::unique_ptr<RAWINPUTDEVICELIST[]> device_list(
       new RAWINPUTDEVICELIST[count]);
-  result = GetRawInputDeviceList(device_list.get(), &count,
-                                 sizeof(RAWINPUTDEVICELIST));
+  result = ::GetRawInputDeviceList(device_list.get(), &count,
+                                   sizeof(RAWINPUTDEVICELIST));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputDeviceList() failed";
     return;
   }
   DCHECK_EQ(count, result);
 
+  std::unordered_set<HANDLE> enumerated_device_handles;
   for (UINT i = 0; i < count; ++i) {
     if (device_list[i].dwType == RIM_TYPEHID) {
       HANDLE device_handle = device_list[i].hDevice;
-      ControllerMap::iterator controller = controllers_.find(device_handle);
+      auto controller_it = controllers_.find(device_handle);
 
-      RawGamepadInfo* gamepad;
-      if (controller != controllers_.end()) {
-        gamepad = controller->second;
+      RawInputGamepadDeviceWin* device;
+      if (controller_it != controllers_.end()) {
+        device = controller_it->second.get();
       } else {
-        gamepad = ParseGamepadInfo(device_handle);
-        if (!gamepad)
+        int source_id = ++last_source_id_;
+        auto new_device = std::make_unique<RawInputGamepadDeviceWin>(
+            device_handle, source_id, hid_functions_.get());
+        if (!new_device->IsValid()) {
+          new_device->Shutdown();
           continue;
+        }
 
-        PadState* state = GetPadState(gamepad->source_id);
-        if (!state)
+        // The presence of "IG_" in the device name indicates that this is an
+        // XInput Gamepad. Skip enumerating these devices and let the XInput
+        // path handle it.
+        // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417014.aspx
+        const std::wstring device_name = new_device->GetDeviceName();
+        if (filter_xinput_ && device_name.find(L"IG_") != std::wstring::npos) {
+          new_device->Shutdown();
+          continue;
+        }
+
+        PadState* state = GetPadState(source_id);
+        if (!state) {
+          new_device->Shutdown();
           continue;  // No slot available for this gamepad.
+        }
 
-        controllers_[device_handle] = gamepad;
+        auto emplace_result =
+            controllers_.emplace(device_handle, std::move(new_device));
+        device = emplace_result.first->second.get();
 
         Gamepad& pad = state->data;
         pad.connected = true;
 
-        std::string vendor = base::StringPrintf("%04x", gamepad->vendor_id);
-        std::string product = base::StringPrintf("%04x", gamepad->product_id);
-        std::string version =
-            base::StringPrintf("%04x", gamepad->version_number);
+        pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
+        pad.vibration_actuator.not_null = false;
+
+        const int vendor_int = device->GetVendorId();
+        const int product_int = device->GetProductId();
+        const int version_number = device->GetVersionNumber();
+        const std::wstring product_string = device->GetProductString();
+
+        const std::string vendor = base::StringPrintf("%04x", vendor_int);
+        const std::string product = base::StringPrintf("%04x", product_int);
+        const std::string version = base::StringPrintf("%04x", version_number);
         state->mapper =
             GetGamepadStandardMappingFunction(vendor, product, version);
         state->axis_mask = 0;
         state->button_mask = 0;
 
         swprintf(pad.id, Gamepad::kIdLengthCap,
-                 L"%ls (%lsVendor: %04x Product: %04x)", gamepad->id,
-                 state->mapper ? L"STANDARD GAMEPAD " : L"", gamepad->vendor_id,
-                 gamepad->product_id);
+                 L"%ls (%lsVendor: %04x Product: %04x)", product_string.c_str(),
+                 state->mapper ? L"STANDARD GAMEPAD " : L"", vendor_int,
+                 product_int);
 
         if (state->mapper)
           swprintf(pad.mapping, Gamepad::kMappingLengthCap, L"standard");
@@ -228,294 +215,37 @@ void RawInputDataFetcher::EnumerateDevices() {
           pad.mapping[0] = 0;
       }
 
-      gamepad->enumeration_id = last_enumeration_id_;
+      enumerated_device_handles.insert(device_handle);
     }
   }
 
   // Clear out old controllers that weren't part of this enumeration pass.
   auto controller_it = controllers_.begin();
   while (controller_it != controllers_.end()) {
-    RawGamepadInfo* gamepad = controller_it->second;
-    if (gamepad->enumeration_id != last_enumeration_id_) {
+    if (enumerated_device_handles.find(controller_it->first) ==
+        enumerated_device_handles.end()) {
+      controller_it->second->Shutdown();
       controller_it = controllers_.erase(controller_it);
-      delete gamepad;
     } else {
       ++controller_it;
     }
   }
 }
 
-RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
-  DCHECK(hid_functions_);
-  DCHECK(hid_functions_->IsValid());
-  UINT size = 0;
-
-  // Query basic device info.
-  UINT result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICEINFO, NULL, &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
+RawInputGamepadDeviceWin* RawInputDataFetcher::DeviceFromSourceId(
+    int source_id) {
+  for (const auto& entry : controllers_) {
+    if (entry.second->GetSourceId() == source_id)
+      return entry.second.get();
   }
-  DCHECK_EQ(0u, result);
-
-  std::unique_ptr<uint8_t[]> di_buffer(new uint8_t[size]);
-  RID_DEVICE_INFO* device_info =
-      reinterpret_cast<RID_DEVICE_INFO*>(di_buffer.get());
-  result =
-      GetRawInputDeviceInfo(hDevice, RIDI_DEVICEINFO, di_buffer.get(), &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
-  }
-  DCHECK_EQ(size, result);
-
-  // Make sure this device is of a type that we want to observe.
-  bool valid_type = false;
-  for (USHORT device_usage : DeviceUsages) {
-    if (device_info->hid.usUsage == device_usage) {
-      valid_type = true;
-      break;
-    }
-  }
-
-  // This is terrible, but the Oculus Rift and some Blue Yeti microphones seem
-  // to think they are gamepads. Filter out any such devices. Oculus Touch is
-  // handled elsewhere.
-  if (device_info->hid.dwVendorId == kVendorOculus ||
-      device_info->hid.dwVendorId == kVendorBlue) {
-    valid_type = false;
-  }
-
-  if (!valid_type)
-    return NULL;
-
-  std::unique_ptr<RawGamepadInfo> gamepad_info(new RawGamepadInfo);
-  gamepad_info->source_id = ++last_source_id_;
-  gamepad_info->handle = hDevice;
-  gamepad_info->report_id = 0;
-  gamepad_info->vendor_id = device_info->hid.dwVendorId;
-  gamepad_info->product_id = device_info->hid.dwProductId;
-  gamepad_info->version_number = device_info->hid.dwVersionNumber;
-  gamepad_info->buttons_length = 0;
-  ZeroMemory(gamepad_info->buttons, sizeof(gamepad_info->buttons));
-  gamepad_info->axes_length = 0;
-  ZeroMemory(gamepad_info->axes, sizeof(gamepad_info->axes));
-
-  // Query device identifier
-  result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICENAME, NULL, &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
-  }
-  DCHECK_EQ(0u, result);
-
-  std::unique_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
-  result =
-      GetRawInputDeviceInfo(hDevice, RIDI_DEVICENAME, name_buffer.get(), &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
-  }
-  DCHECK_EQ(size, result);
-
-  // The presence of "IG_" in the device name indicates that this is an XInput
-  // Gamepad. Skip enumerating these devices and let the XInput path handle it.
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417014.aspx
-  if (filter_xinput_ && wcsstr(name_buffer.get(), L"IG_"))
-    return NULL;
-
-  // Get a friendly device name
-  BOOLEAN got_product_string = FALSE;
-  HANDLE hid_handle = CreateFile(
-      name_buffer.get(), GENERIC_READ | GENERIC_WRITE,
-      FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL);
-  if (hid_handle) {
-    got_product_string = hid_functions_->HidDGetProductString()(
-        hid_handle, gamepad_info->id, sizeof(gamepad_info->id));
-    CloseHandle(hid_handle);
-  }
-
-  if (!got_product_string)
-    swprintf(gamepad_info->id, Gamepad::kIdLengthCap, L"Unknown Gamepad");
-
-  // Query device capabilities.
-  result = GetRawInputDeviceInfo(hDevice, RIDI_PREPARSEDDATA, NULL, &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
-  }
-  DCHECK_EQ(0u, result);
-
-  gamepad_info->ppd_buffer.reset(new uint8_t[size]);
-  gamepad_info->preparsed_data =
-      reinterpret_cast<PHIDP_PREPARSED_DATA>(gamepad_info->ppd_buffer.get());
-  result = GetRawInputDeviceInfo(hDevice, RIDI_PREPARSEDDATA,
-                                 gamepad_info->ppd_buffer.get(), &size);
-  if (result == static_cast<UINT>(-1)) {
-    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
-    return NULL;
-  }
-  DCHECK_EQ(size, result);
-
-  HIDP_CAPS caps;
-  NTSTATUS status =
-      hid_functions_->HidPGetCaps()(gamepad_info->preparsed_data, &caps);
-  DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
-
-  // Query button information.
-  USHORT count = caps.NumberInputButtonCaps;
-  if (count > 0) {
-    std::unique_ptr<HIDP_BUTTON_CAPS[]> button_caps(
-        new HIDP_BUTTON_CAPS[count]);
-    status = hid_functions_->HidPGetButtonCaps()(
-        HidP_Input, button_caps.get(), &count, gamepad_info->preparsed_data);
-    DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
-
-    for (uint32_t i = 0; i < count; ++i) {
-      if (button_caps[i].Range.UsageMin <= Gamepad::kButtonsLengthCap &&
-          button_caps[i].UsagePage == kButtonUsagePage) {
-        uint32_t max_index =
-            std::min(Gamepad::kButtonsLengthCap,
-                     static_cast<size_t>(button_caps[i].Range.UsageMax));
-        gamepad_info->buttons_length =
-            std::max(gamepad_info->buttons_length, max_index);
-      }
-    }
-  }
-
-  // Query axis information.
-  count = caps.NumberInputValueCaps;
-  std::unique_ptr<HIDP_VALUE_CAPS[]> axes_caps(new HIDP_VALUE_CAPS[count]);
-  status = hid_functions_->HidPGetValueCaps()(
-      HidP_Input, axes_caps.get(), &count, gamepad_info->preparsed_data);
-
-  bool mapped_all_axes = true;
-
-  for (UINT i = 0; i < count; i++) {
-    uint32_t axis_index = axes_caps[i].Range.UsageMin - kAxisMinimumUsageNumber;
-    if (axis_index < Gamepad::kAxesLengthCap) {
-      gamepad_info->axes[axis_index].caps = axes_caps[i];
-      gamepad_info->axes[axis_index].value = 0;
-      gamepad_info->axes[axis_index].active = true;
-      gamepad_info->axes[axis_index].bitmask = GetBitmask(axes_caps[i].BitSize);
-      gamepad_info->axes_length =
-          std::max(gamepad_info->axes_length, axis_index + 1);
-    } else {
-      mapped_all_axes = false;
-    }
-  }
-
-  if (!mapped_all_axes) {
-    // For axes who's usage puts them outside the standard axesLengthCap range.
-    uint32_t next_index = 0;
-    for (UINT i = 0; i < count; i++) {
-      uint32_t usage = axes_caps[i].Range.UsageMin - kAxisMinimumUsageNumber;
-      if (usage >= Gamepad::kAxesLengthCap &&
-          axes_caps[i].UsagePage <= kGameControlsUsagePage) {
-        for (; next_index < Gamepad::kAxesLengthCap; ++next_index) {
-          if (!gamepad_info->axes[next_index].active)
-            break;
-        }
-        if (next_index < Gamepad::kAxesLengthCap) {
-          gamepad_info->axes[next_index].caps = axes_caps[i];
-          gamepad_info->axes[next_index].value = 0;
-          gamepad_info->axes[next_index].active = true;
-          gamepad_info->axes[next_index].bitmask =
-              GetBitmask(axes_caps[i].BitSize);
-          gamepad_info->axes_length =
-              std::max(gamepad_info->axes_length, next_index + 1);
-        }
-      }
-
-      if (next_index >= Gamepad::kAxesLengthCap)
-        break;
-    }
-  }
-
-  // Sometimes devices show up with no buttons or axes. Don't return these.
-  if (gamepad_info->buttons_length == 0 && gamepad_info->axes_length == 0)
-    return nullptr;
-
-  return gamepad_info.release();
-}
-
-void RawInputDataFetcher::UpdateGamepad(RAWINPUT* input,
-                                        RawGamepadInfo* gamepad_info) {
-  DCHECK(hid_functions_);
-  DCHECK(hid_functions_->IsValid());
-  NTSTATUS status;
-
-  gamepad_info->report_id++;
-
-  // Query button state.
-  if (gamepad_info->buttons_length) {
-    // Clear the button state
-    ZeroMemory(gamepad_info->buttons, sizeof(gamepad_info->buttons));
-    ULONG buttons_length = 0;
-
-    hid_functions_->HidPGetUsagesEx()(
-        HidP_Input, 0, NULL, &buttons_length, gamepad_info->preparsed_data,
-        reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-        input->data.hid.dwSizeHid);
-
-    std::unique_ptr<USAGE_AND_PAGE[]> usages(
-        new USAGE_AND_PAGE[buttons_length]);
-    status = hid_functions_->HidPGetUsagesEx()(
-        HidP_Input, 0, usages.get(), &buttons_length,
-        gamepad_info->preparsed_data,
-        reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-        input->data.hid.dwSizeHid);
-
-    if (status == HIDP_STATUS_SUCCESS) {
-      // Set each reported button to true.
-      for (uint32_t j = 0; j < buttons_length; j++) {
-        int32_t button_index = usages[j].Usage - 1;
-        if (usages[j].UsagePage == kButtonUsagePage && button_index >= 0 &&
-            button_index < static_cast<int>(Gamepad::kButtonsLengthCap)) {
-          gamepad_info->buttons[button_index] = true;
-        }
-      }
-    }
-  }
-
-  // Query axis state.
-  ULONG axis_value = 0;
-  LONG scaled_axis_value = 0;
-  for (uint32_t i = 0; i < gamepad_info->axes_length; i++) {
-    RawGamepadAxis* axis = &gamepad_info->axes[i];
-
-    // If the min is < 0 we have to query the scaled value, otherwise we need
-    // the normal unscaled value.
-    if (axis->caps.LogicalMin < 0) {
-      status = hid_functions_->HidPGetScaledUsageValue()(
-          HidP_Input, axis->caps.UsagePage, 0, axis->caps.Range.UsageMin,
-          &scaled_axis_value, gamepad_info->preparsed_data,
-          reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-          input->data.hid.dwSizeHid);
-      if (status == HIDP_STATUS_SUCCESS) {
-        axis->value = NormalizeAxis(scaled_axis_value, axis->caps.PhysicalMin,
-                                    axis->caps.PhysicalMax);
-      }
-    } else {
-      status = hid_functions_->HidPGetUsageValue()(
-          HidP_Input, axis->caps.UsagePage, 0, axis->caps.Range.UsageMin,
-          &axis_value, gamepad_info->preparsed_data,
-          reinterpret_cast<PCHAR>(input->data.hid.bRawData),
-          input->data.hid.dwSizeHid);
-      if (status == HIDP_STATUS_SUCCESS) {
-        axis->value = NormalizeAxis(axis_value & axis->bitmask,
-                                    axis->caps.LogicalMin & axis->bitmask,
-                                    axis->caps.LogicalMax & axis->bitmask);
-      }
-    }
-  }
+  return nullptr;
 }
 
 LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
   // Get the size of the input record.
   UINT size = 0;
-  UINT result = GetRawInputData(input_handle, RID_INPUT, NULL, &size,
-                                sizeof(RAWINPUTHEADER));
+  UINT result = ::GetRawInputData(input_handle, RID_INPUT, nullptr, &size,
+                                  sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
@@ -525,8 +255,8 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
   // Retrieve the input record.
   std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
-  result = GetRawInputData(input_handle, RID_INPUT, buffer.get(), &size,
-                           sizeof(RAWINPUTHEADER));
+  result = ::GetRawInputData(input_handle, RID_INPUT, buffer.get(), &size,
+                             sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
@@ -535,12 +265,12 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
 
   // Notify the observer about events generated locally.
   if (input->header.dwType == RIM_TYPEHID && input->header.hDevice != NULL) {
-    ControllerMap::iterator it = controllers_.find(input->header.hDevice);
+    auto it = controllers_.find(input->header.hDevice);
     if (it != controllers_.end())
-      UpdateGamepad(input, it->second);
+      it->second->UpdateGamepad(input);
   }
 
-  return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
+  return ::DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
 }
 
 bool RawInputDataFetcher::HandleMessage(UINT message,
