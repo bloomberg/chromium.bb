@@ -177,6 +177,8 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
       printer.AddPropertyNode(c, "CssClip", object);
     if (const auto* c = properties.CssClipFixedPosition())
       printer.AddPropertyNode(c, "CssClipFixedPosition", object);
+    if (const auto* c = properties.OverflowControlsClip())
+      printer.AddPropertyNode(c, "OverflowControlsClip", object);
     if (const auto* c = properties.InnerBorderRadiusClip())
       printer.AddPropertyNode(c, "InnerBorderRadiusClip", object);
     if (const auto* c = properties.OverflowClip())

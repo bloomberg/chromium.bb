@@ -4877,4 +4877,21 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   }
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClip) {
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { width: 20px }</style>
+    <div id='div1' style='overflow: scroll; width: 5px; height: 50px'></div>
+    <div id='div2' style='overflow: scroll; width: 50px; height: 50px'></div>
+  )HTML");
+
+  const auto* properties1 = PaintPropertiesForElement("div1");
+  ASSERT_NE(nullptr, properties1);
+  const auto* overflow_controls_clip = properties1->OverflowControlsClip();
+  EXPECT_EQ(FloatRect(0, 0, 5, 50), overflow_controls_clip->ClipRect().Rect());
+
+  const auto* properties2 = PaintPropertiesForElement("div2");
+  ASSERT_NE(nullptr, properties2);
+  EXPECT_EQ(nullptr, properties2->OverflowControlsClip());
+}
+
 }  // namespace blink

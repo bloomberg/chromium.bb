@@ -18,6 +18,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
 
@@ -122,9 +123,8 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
 }
 
 void ScrollableAreaPainter::PaintOverflowControls(
-    GraphicsContext& context,
+    const PaintInfo& paint_info,
     const IntPoint& paint_offset,
-    const CullRect& cull_rect,
     bool painting_overlay_controls) {
   // Don't do anything if we have no overflow.
   if (!GetScrollableArea().GetLayoutBox()->HasOverflowClip())
@@ -134,7 +134,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (painting_overlay_controls)
     adjusted_paint_offset = GetScrollableArea().CachedOverlayScrollbarOffset();
 
-  CullRect adjusted_cull_rect(cull_rect, -adjusted_paint_offset);
+  CullRect adjusted_cull_rect(paint_info.GetCullRect(), -adjusted_paint_offset);
   // Overlay scrollbars paint in a second pass through the layer tree so that
   // they will paint on top of everything else. If this is the normal painting
   // pass, paintingOverlayControls will be false, and we should just tell the
@@ -171,11 +171,27 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (painting_overlay_controls && !GetScrollableArea().HasOverlayScrollbars())
     return;
 
-  IntRect clip_rect(adjusted_paint_offset,
-                    GetScrollableArea().Layer()->PixelSnappedSize());
-  ClipRecorder clip_recorder(context, *GetScrollableArea().GetLayoutBox(),
-                             DisplayItem::kClipLayerOverflowControls,
-                             clip_rect);
+  GraphicsContext& context = paint_info.context;
+
+  Optional<ClipRecorder> clip_recorder;
+  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    const auto& box = *GetScrollableArea().GetLayoutBox();
+    if (const auto* fragment = paint_info.FragmentToPaint(box)) {
+      const auto* properties = fragment->PaintProperties();
+      DCHECK(properties);
+      if (const auto* clip = properties->OverflowControlsClip()) {
+        scoped_paint_chunk_properties.emplace(
+            context.GetPaintController(), clip, box,
+            DisplayItem::kClipLayerOverflowControls);
+      }
+    }
+  } else {
+    IntRect clip_rect(adjusted_paint_offset,
+                      GetScrollableArea().Layer()->PixelSnappedSize());
+    clip_recorder.emplace(context, *GetScrollableArea().GetLayoutBox(),
+                          DisplayItem::kClipLayerOverflowControls, clip_rect);
+  }
 
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().LayerForHorizontalScrollbar()) {
@@ -197,10 +213,10 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (!GetScrollableArea().LayerForScrollCorner()) {
     // We fill our scroll corner with white if we have a scrollbar that doesn't
     // run all the way up to the edge of the box.
-    PaintScrollCorner(context, adjusted_paint_offset, cull_rect);
+    PaintScrollCorner(context, adjusted_paint_offset, paint_info.GetCullRect());
 
     // Paint our resizer last, since it sits on top of the scroll corner.
-    PaintResizer(context, adjusted_paint_offset, cull_rect);
+    PaintResizer(context, adjusted_paint_offset, paint_info.GetCullRect());
   }
 }
 

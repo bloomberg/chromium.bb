@@ -955,7 +955,7 @@ PaintResult PaintLayerPainter::PaintChildren(
 void PaintLayerPainter::PaintOverflowControlsForFragments(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
-    const PaintLayerPaintingInfo& local_painting_info,
+    const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
   PaintLayerScrollableArea* scrollable_area = paint_layer_.GetScrollableArea();
   if (!scrollable_area)
@@ -979,32 +979,38 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
         LayoutRect cull_rect = fragment.background_rect.Rect();
 
         Optional<LayerClipRecorder> clip_recorder;
-        if (NeedsToClip(local_painting_info, fragment.background_rect,
-                        paint_flags, paint_layer_.GetLayoutObject())) {
+        if (NeedsToClip(painting_info, fragment.background_rect, paint_flags,
+                        paint_layer_.GetLayoutObject())) {
           clip_recorder.emplace(
               context, paint_layer_, DisplayItem::kClipLayerOverflowControls,
-              fragment.background_rect, local_painting_info.root_layer,
+              fragment.background_rect, painting_info.root_layer,
               fragment.pagination_offset, paint_flags,
               paint_layer_.GetLayoutObject());
         }
 
         Optional<ScrollRecorder> scroll_recorder;
         if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-            !local_painting_info.scroll_offset_accumulation.IsZero()) {
-          cull_rect.Move(local_painting_info.scroll_offset_accumulation);
-          scroll_recorder.emplace(
-              context, paint_layer_.GetLayoutObject(),
-              DisplayItem::kScrollOverflowControls,
-              local_painting_info.scroll_offset_accumulation);
+            !painting_info.scroll_offset_accumulation.IsZero()) {
+          cull_rect.Move(painting_info.scroll_offset_accumulation);
+          scroll_recorder.emplace(context, paint_layer_.GetLayoutObject(),
+                                  DisplayItem::kScrollOverflowControls,
+                                  painting_info.scroll_offset_accumulation);
         }
 
+        PaintInfo paint_info(
+            context, PixelSnappedIntRect(cull_rect),
+            PaintPhase::kSelfBlockBackgroundOnly,
+            painting_info.GetGlobalPaintFlags(), paint_flags,
+            &painting_info.root_layer->GetLayoutObject(),
+            fragment.fragment_data
+                ? fragment.fragment_data->LogicalTopInFlowThread()
+                : LayoutUnit());
         // We pass IntPoint() as the paint offset here, because
         // ScrollableArea::paintOverflowControls just ignores it and uses the
         // offset found in a previous pass.
-        CullRect snapped_cull_rect(PixelSnappedIntRect(cull_rect));
         ScrollableAreaPainter(*scrollable_area)
-            .PaintOverflowControls(context, IntPoint(), snapped_cull_rect,
-                                   true);
+            .PaintOverflowControls(paint_info, IntPoint(),
+                                   true /* painting_overlay_controls */);
       });
 }
 
