@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -49,9 +49,8 @@ constexpr base::TimeDelta kDefaultMaxDuration =
 
 // Returns true if |mime_type| is one of the known PAC mime type.
 bool IsPacMimeType(const std::string& mime_type) {
-  static const char * const kSupportedPacMimeTypes[] = {
-    "application/x-ns-proxy-autoconfig",
-    "application/x-javascript-config",
+  static const char* const kSupportedPacMimeTypes[] = {
+      "application/x-ns-proxy-autoconfig", "application/x-javascript-config",
   };
   for (size_t i = 0; i < arraysize(kSupportedPacMimeTypes); ++i) {
     if (base::LowerCaseEqualsASCII(mime_type, kSupportedPacMimeTypes[i]))
@@ -127,8 +126,9 @@ void ProxyScriptFetcherImpl::OnResponseCompleted(URLRequest* request,
   FetchCompleted();
 }
 
-int ProxyScriptFetcherImpl::Fetch(
-    const GURL& url, base::string16* text, const CompletionCallback& callback) {
+int ProxyScriptFetcherImpl::Fetch(const GURL& url,
+                                  base::string16* text,
+                                  const CompletionCallback& callback) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
   DCHECK(!callback.is_null());
@@ -211,8 +211,9 @@ int ProxyScriptFetcherImpl::Fetch(
   cur_request_id_ = ++next_id_;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ProxyScriptFetcherImpl::OnTimeout,
-                            weak_factory_.GetWeakPtr(), cur_request_id_),
+      FROM_HERE,
+      base::Bind(&ProxyScriptFetcherImpl::OnTimeout, weak_factory_.GetWeakPtr(),
+                 cur_request_id_),
       max_duration_);
 
   // Start the request.

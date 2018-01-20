@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
-#define CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
+#ifndef CHROMEOS_NETWORK_DHCP_PAC_FILE_FETCHER_CHROMEOS_H_
+#define CHROMEOS_NETWORK_DHCP_PAC_FILE_FETCHER_CHROMEOS_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -60,4 +60,4 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_NETWORK_DHCP_PROXY_SCRIPT_FETCHER_CHROMEOS_H_
+#endif  // CHROMEOS_NETWORK_DHCP_PAC_FILE_FETCHER_CHROMEOS_H_

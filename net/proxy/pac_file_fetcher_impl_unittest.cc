@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 
 #include <string>
 #include <utility>
@@ -226,20 +226,20 @@ class ProxyScriptFetcherImplTest : public PlatformTest {
 TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
-  { // Fetch a non-existent file.
+  {  // Fetch a non-existent file.
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(GetTestFileUrl("does-not-exist"),
-                                   &text, callback.callback());
+    int result = pac_fetcher.Fetch(GetTestFileUrl("does-not-exist"), &text,
+                                   callback.callback());
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
     EXPECT_TRUE(text.empty());
   }
-  { // Fetch a file that exists.
+  {  // Fetch a file that exists.
     base::string16 text;
     TestCompletionCallback callback;
-    int result = pac_fetcher.Fetch(GetTestFileUrl("pac.txt"),
-                                   &text, callback.callback());
+    int result = pac_fetcher.Fetch(GetTestFileUrl("pac.txt"), &text,
+                                   callback.callback());
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
@@ -254,7 +254,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
 
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
-  { // Fetch a PAC with mime type "text/plain"
+  {  // Fetch a PAC with mime type "text/plain"
     GURL url(test_server_.GetURL("/pac.txt"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -263,7 +263,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.txt-\n"), text);
   }
-  { // Fetch a PAC with mime type "text/html"
+  {  // Fetch a PAC with mime type "text/html"
     GURL url(test_server_.GetURL("/pac.html"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -272,7 +272,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
     EXPECT_THAT(callback.WaitForResult(), IsOk());
     EXPECT_EQ(ASCIIToUTF16("-pac.html-\n"), text);
   }
-  { // Fetch a PAC with mime type "application/x-ns-proxy-autoconfig"
+  {  // Fetch a PAC with mime type "application/x-ns-proxy-autoconfig"
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -288,7 +288,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
 
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
-  { // Fetch a PAC which gives a 500 -- FAIL
+  {  // Fetch a PAC which gives a 500 -- FAIL
     GURL url(test_server_.GetURL("/500.pac"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -297,7 +297,7 @@ TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_STATUS_NOT_OK));
     EXPECT_TRUE(text.empty());
   }
-  { // Fetch a PAC which gives a 404 -- FAIL
+  {  // Fetch a PAC which gives a 404 -- FAIL
     GURL url(test_server_.GetURL("/404.pac"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -389,7 +389,7 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
   // Restore the original size bound.
   pac_fetcher.SetSizeConstraint(prev_size);
 
-  { // Make sure we can still fetch regular URLs.
+  {  // Make sure we can still fetch regular URLs.
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;
@@ -406,8 +406,8 @@ TEST_F(ProxyScriptFetcherImplTest, Hang) {
   ProxyScriptFetcherImpl pac_fetcher(&context_);
 
   // Set the timeout period to 0.5 seconds.
-  base::TimeDelta prev_timeout = pac_fetcher.SetTimeoutConstraint(
-      base::TimeDelta::FromMilliseconds(500));
+  base::TimeDelta prev_timeout =
+      pac_fetcher.SetTimeoutConstraint(base::TimeDelta::FromMilliseconds(500));
 
   // Try fetching a URL which takes 1.2 seconds. We should abort the request
   // after 500 ms, and fail with a timeout error.
@@ -424,7 +424,7 @@ TEST_F(ProxyScriptFetcherImplTest, Hang) {
   // Restore the original timeout period.
   pac_fetcher.SetTimeoutConstraint(prev_timeout);
 
-  { // Make sure we can still fetch regular URLs.
+  {  // Make sure we can still fetch regular URLs.
     GURL url(test_server_.GetURL("/pac.nsproxy"));
     base::string16 text;
     TestCompletionCallback callback;

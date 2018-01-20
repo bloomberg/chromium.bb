@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
 
 #include "net/base/net_errors.h"
 

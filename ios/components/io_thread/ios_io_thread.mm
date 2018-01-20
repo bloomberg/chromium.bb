@@ -54,7 +54,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/log/net_log_event_type.h"
 #include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/chromium/spdy_session.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/dhcp_proxy_script_fetcher_factory_chromeos.h"
+#include "chromeos/network/dhcp_pac_file_fetcher_factory_chromeos.h"
 
 #include <memory>
 
-#include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
+#include "chromeos/network/dhcp_pac_file_fetcher_chromeos.h"
 
 namespace chromeos {
 

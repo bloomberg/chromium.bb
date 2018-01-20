@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
+#include "chromeos/network/dhcp_pac_file_fetcher_chromeos.h"
 
 #include "base/location.h"
 #include "base/task_runner_util.h"
@@ -10,8 +10,8 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "net/proxy/proxy_script_fetcher.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/pac_file_fetcher.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 #include "net/url_request/url_request_context.h"
 
 namespace chromeos {

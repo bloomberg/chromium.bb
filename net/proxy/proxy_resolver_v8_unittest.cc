@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/proxy/proxy_resolver_v8.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -10,9 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/proxy/pac_file_data.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_script_data.h"
-#include "net/proxy/proxy_resolver_v8.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

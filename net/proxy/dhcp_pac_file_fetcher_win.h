@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_WIN_H_
-#define NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_WIN_H_
+#ifndef NET_PROXY_DHCP_PAC_FILE_FETCHER_WIN_H_
+#define NET_PROXY_DHCP_PAC_FILE_FETCHER_WIN_H_
 
 #include <memory>
 #include <set>
@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -184,4 +184,4 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
 }  // namespace net
 
-#endif  // NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_WIN_H_
+#endif  // NET_PROXY_DHCP_PAC_FILE_FETCHER_WIN_H_

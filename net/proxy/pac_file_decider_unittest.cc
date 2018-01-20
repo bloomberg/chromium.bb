@@ -21,12 +21,12 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
-#include "net/proxy/mock_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
+#include "net/proxy/mock_pac_file_fetcher.h"
+#include "net/proxy/pac_file_decider.h"
+#include "net/proxy/pac_file_fetcher.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_resolver.h"
-#include "net/proxy/proxy_script_decider.h"
-#include "net/proxy/proxy_script_fetcher.h"
 #include "net/test/gtest_util.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,8 +49,7 @@ class Rules {
     Rule(const GURL& url, int fetch_error, bool is_valid_script)
         : url(url),
           fetch_error(fetch_error),
-          is_valid_script(is_valid_script) {
-    }
+          is_valid_script(is_valid_script) {}
 
     base::string16 text() const {
       if (is_valid_script)
@@ -72,8 +71,8 @@ class Rules {
   }
 
   void AddFailDownloadRule(const char* url) {
-    rules_.push_back(Rule(GURL(url), kFailedDownloading /*fetch_error*/,
-        false));
+    rules_.push_back(
+        Rule(GURL(url), kFailedDownloading /*fetch_error*/, false));
   }
 
   void AddFailParsingRule(const char* url) {
@@ -173,7 +172,7 @@ int MockDhcpProxyScriptFetcher::Fetch(base::string16* utf16_text,
   return ERR_IO_PENDING;
 }
 
-void MockDhcpProxyScriptFetcher::Cancel() { }
+void MockDhcpProxyScriptFetcher::Cancel() {}
 
 void MockDhcpProxyScriptFetcher::OnShutdown() {}
 
@@ -186,7 +185,8 @@ void MockDhcpProxyScriptFetcher::SetPacURL(const GURL& url) {
 }
 
 void MockDhcpProxyScriptFetcher::CompleteRequests(
-    int result, const base::string16& script) {
+    int result,
+    const base::string16& script) {
   *utf16_text_ = script;
   callback_.Run(result);
 }
@@ -205,8 +205,8 @@ TEST(ProxyScriptDeciderTest, CustomPacSucceeds) {
   TestCompletionCallback callback;
   TestNetLog log;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(OK, decider.Start(
-      config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(
+      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   // Check the NetLog was filled correctly.
@@ -241,9 +241,8 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1) {
   TestCompletionCallback callback;
   TestNetLog log;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(kFailedDownloading,
-            decider.Start(config, base::TimeDelta(), true,
-                          callback.callback()));
+  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
+                                              callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
   // Check the NetLog was filled correctly.
@@ -276,9 +275,8 @@ TEST(ProxyScriptDeciderTest, CustomPacFails2) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedParsing,
-            decider.Start(config, base::TimeDelta(), true,
-                          callback.callback()));
+  EXPECT_EQ(kFailedParsing, decider.Start(config, base::TimeDelta(), true,
+                                          callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -292,9 +290,8 @@ TEST(ProxyScriptDeciderTest, HasNullProxyScriptFetcher) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(NULL, &dhcp_fetcher, NULL);
-  EXPECT_EQ(ERR_UNEXPECTED,
-            decider.Start(config, base::TimeDelta(), true,
-                          callback.callback()));
+  EXPECT_EQ(ERR_UNEXPECTED, decider.Start(config, base::TimeDelta(), true,
+                                          callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -311,8 +308,8 @@ TEST(ProxyScriptDeciderTest, AutodetectSuccess) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, decider.Start(
-      config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(
+      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   EXPECT_TRUE(decider.effective_config().has_pac_url());
@@ -323,7 +320,7 @@ class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
  public:
   ProxyScriptDeciderQuickCheckTest()
       : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
-        fetcher_(&rules_) { }
+        fetcher_(&rules_) {}
 
   void SetUp() override {
     request_context_.set_host_resolver(&resolver_);
@@ -334,7 +331,7 @@ class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
 
   int StartDecider() {
     return decider_->Start(config_, base::TimeDelta(), true,
-                            callback_.callback());
+                           callback_.callback());
   }
 
  protected:
@@ -405,7 +402,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, AsyncTimeout) {
 // Fails if DHCP check doesn't take place before QuickCheck.
 TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
   MockDhcpProxyScriptFetcher dhcp_fetcher;
-  const char *kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
+  const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
   base::string16 pac_contents = base::UTF8ToUTF16(kPac);
   GURL url("http://foobar/baz");
   dhcp_fetcher.SetPacURL(url);
@@ -421,7 +418,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckInhibitsDhcp) {
 // mean a QuickCheck failure, then ensure that our ProxyScriptFetcher is still
 // asked to fetch.
 TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckDisabled) {
-  const char *kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
+  const char* kPac = "function FindProxyForURL(u,h) { return \"DIRECT\"; }";
   resolver_.set_synchronous_mode(true);
   resolver_.rules()->AddSimulatedFailure("wpad");
   MockProxyScriptFetcher fetcher;
@@ -432,7 +429,7 @@ TEST_F(ProxyScriptDeciderQuickCheckTest, QuickCheckDisabled) {
 }
 
 TEST_F(ProxyScriptDeciderQuickCheckTest, ExplicitPacUrl) {
-  const char *kCustomUrl = "http://custom/proxy.pac";
+  const char* kCustomUrl = "http://custom/proxy.pac";
   config_.set_pac_url(GURL(kCustomUrl));
   Rules::Rule rule = rules_.AddSuccessRule(kCustomUrl);
   resolver_.rules()->AddSimulatedFailure("wpad");
@@ -479,8 +476,8 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomSuccess1) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, decider.Start(
-      config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(
+      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   EXPECT_TRUE(decider.effective_config().has_pac_url());
@@ -506,8 +503,8 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomSuccess2) {
   TestNetLog log;
 
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_EQ(OK, decider.Start(config, base::TimeDelta(),
-                          true, callback.callback()));
+  EXPECT_EQ(
+      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
   EXPECT_EQ(rule.text(), decider.script_data()->utf16());
 
   // Verify that the effective configuration no longer contains auto detect or
@@ -567,9 +564,8 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomFails1) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedDownloading,
-            decider.Start(config, base::TimeDelta(), true,
-                          callback.callback()));
+  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
+                                              callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -588,9 +584,8 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomFails2) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(kFailedParsing,
-            decider.Start(config, base::TimeDelta(), true,
-                          callback.callback()));
+  EXPECT_EQ(kFailedParsing, decider.Start(config, base::TimeDelta(), true,
+                                          callback.callback()));
   EXPECT_FALSE(decider.script_data());
 }
 
@@ -611,8 +606,8 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithPositiveDelay) {
   TestNetLog log;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_EQ(ERR_IO_PENDING,
-            decider.Start(config, base::TimeDelta::FromMilliseconds(1),
-                      true, callback.callback()));
+            decider.Start(config, base::TimeDelta::FromMilliseconds(1), true,
+                          callback.callback()));
 
   EXPECT_EQ(kFailedDownloading, callback.WaitForResult());
   EXPECT_FALSE(decider.script_data());
@@ -653,8 +648,8 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithNegativeDelay) {
   TestNetLog log;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
-            decider.Start(config, base::TimeDelta::FromSeconds(-5),
-                          true, callback.callback()));
+            decider.Start(config, base::TimeDelta::FromSeconds(-5), true,
+                          callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
   // Check the NetLog was filled correctly.
@@ -675,8 +670,7 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithNegativeDelay) {
 class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
  public:
   explicit SynchronousSuccessDhcpFetcher(const base::string16& expected_text)
-      : gurl_("http://dhcppac/"), expected_text_(expected_text) {
-  }
+      : gurl_("http://dhcppac/"), expected_text_(expected_text) {}
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback) override {
@@ -690,9 +684,7 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
 
   const GURL& GetPacURL() const override { return gurl_; }
 
-  const base::string16& expected_text() const {
-    return expected_text_;
-  }
+  const base::string16& expected_text() const { return expected_text_; }
 
  private:
   GURL gurl_;
@@ -720,10 +712,9 @@ TEST(ProxyScriptDeciderTest, AutodetectDhcpSuccess) {
 
   TestCompletionCallback callback;
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
-  EXPECT_EQ(OK, decider.Start(
-      config, base::TimeDelta(), true, callback.callback()));
-  EXPECT_EQ(dhcp_fetcher.expected_text(),
-            decider.script_data()->utf16());
+  EXPECT_EQ(
+      OK, decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(dhcp_fetcher.expected_text(), decider.script_data()->utf16());
 
   EXPECT_TRUE(decider.effective_config().has_pac_url());
   EXPECT_EQ(GURL("http://dhcppac/"), decider.effective_config().pac_url());
@@ -745,8 +736,8 @@ TEST(ProxyScriptDeciderTest, AutodetectDhcpFailParse) {
   ProxyScriptDecider decider(&fetcher, &dhcp_fetcher, NULL);
   // Since there is fallback to DNS-based WPAD, the final error will be that
   // it failed downloading, not that it failed parsing.
-  EXPECT_EQ(kFailedDownloading,
-      decider.Start(config, base::TimeDelta(), true, callback.callback()));
+  EXPECT_EQ(kFailedDownloading, decider.Start(config, base::TimeDelta(), true,
+                                              callback.callback()));
   EXPECT_FALSE(decider.script_data());
 
   EXPECT_FALSE(decider.effective_config().has_pac_url());

@@ -56,7 +56,7 @@
 #include "net/http/transport_security_persister.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

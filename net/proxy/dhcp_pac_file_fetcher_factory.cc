@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
+#include "net/proxy/dhcp_pac_file_fetcher_factory.h"
 
 #include "net/base/net_errors.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
 
 #if defined(OS_WIN)
-#include "net/proxy/dhcp_proxy_script_fetcher_win.h"
+#include "net/proxy/dhcp_pac_file_fetcher_win.h"
 #endif
 
 namespace net {
