@@ -6,32 +6,6 @@
 
 namespace chrome {
 
-#if defined(OS_CHROMEOS)
-const char kCrosScheme[] = "cros";
-#endif
-
-#if defined(OS_ANDROID)
-const char kAndroidAppScheme[] = "android-app";
-#endif
-
-#if defined(OS_CHROMEOS)
-const char kCupsPrintLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=chromebook_printing";
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
-const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
-const char kOemEulaURLPath[] = "oem";
-const char kOnlineEulaURLPath[] =
-    "https://www.google.com/intl/%s/chrome/eula_text.html";
-
-const char kChromeOSCreditsPath[] =
-    "/opt/google/chrome/resources/about_os_credits.html";
-
-const char kChromeOSAssetHost[] = "chromeos-asset";
-const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
-#endif  // defined(OS_CHROMEOS)
-
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
 
 const char kSyncGoogleDashboardURL[] =
@@ -96,28 +70,6 @@ const char kChromeHelpViaWebUIURL[] =
 const char kChromeBetaForumURL[] =
     "https://support.google.com/chrome/?p=beta_forum";
 
-#if defined(OS_CHROMEOS)
-const char kChromeAccessibilityHelpURL[] =
-    "https://support.google.com/chromebook/topic/6323347";
-const char kChromeAccessibilitySettingsURL[] =
-    "/chromevox/background/options.html";
-const char kChromePaletteHelpURL[] =
-    "https://support.google.com/chromebook?p=stylus_help";
-#endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-const char kChromeSyncLearnMoreURL[] =
-    "https://support.google.com/chrome/answer/165139";
-
-const char kChromeSyncMergeTroubleshootingURL[] =
-    "https://support.google.com/chrome/answer/1181420#merge";
-#endif  // BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-
-#if defined(OS_MACOSX)
-const char kChromeEnterpriseSignInLearnMoreURL[] =
-    "https://support.google.com/chromebook/answer/1331549";
-#endif
-
 const char kResetProfileSettingsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_reset_settings";
 
@@ -181,33 +133,10 @@ const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_do_not_track";
 #endif
 
-#if defined(OS_CHROMEOS)
-const char kAttestationForContentProtectionLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=verified_access";
-#endif
-
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-const char kEnhancedPlaybackNotificationLearnMoreURL[] =
-#endif
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromebook/?p=enhanced_playback";
-#elif defined(OS_ANDROID)
-// Keep in sync with chrome/android/java/strings/android_chrome_strings.grd
-    "https://support.google.com/chrome/?p=mobile_protected_content";
-#endif
-
 const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-const char kOutdatedPluginLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=ib_outdated_plugin";
-
-const char kBlockedPluginLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=ib_blocked_plugin";
-#endif
 
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "https://support.google.com/chrome/?p=ib_protocol_handler";
@@ -223,11 +152,6 @@ const char kDownloadInterruptedLearnMoreURL[] =
 
 const char kSyncEverythingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sync_all";
-
-#if defined(OS_CHROMEOS)
-const char kCrosPrintingLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=chromebook_printing";
-#endif
 
 const char kCloudPrintLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
@@ -265,29 +189,8 @@ const char kSyncEncryptionHelpURL[] =
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
-#if defined(OS_CHROMEOS)
-const char kNaturalScrollHelpURL[] =
-    "https://support.google.com/chromebook/?p=simple_scrolling";
-const char kLearnMoreEnterpriseURL[] =
-    "https://support.google.com/chromebook/?p=managed";
-const char kAndroidAppsLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=playapps";
-const char kInstantTetheringLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=instant_tethering";
-const char kTPMFirmwareUpdateLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=tpm_update";
-#endif
-
 const char kRemoveNonCWSExtensionURL[] =
     "https://support.google.com/chrome/?p=ui_remove_non_cws_extensions";
-
-#if defined(OS_WIN)
-const char kNotificationsHelpURL[] =
-    "https://support.google.com/chrome/?p=ui_notifications";
-
-const char kChromeCleanerLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=chrome_cleanup_tool";
-#endif
 
 const char kChromeNativeScheme[] = "chrome-native";
 
@@ -317,11 +220,6 @@ const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/topic/1678461";
 #endif
 
-#if defined(OS_WIN)
-const char kWindowsXPVistaDeprecationURL[] =
-    "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
-#endif
-
 const char kChooserBluetoothOverviewURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 
@@ -335,11 +233,98 @@ const char kBluetoothAdapterOffHelpURL[] =
 const char kChooserUsbOverviewURL[] =
     "https://support.google.com/chrome?p=webusb";
 
+#if defined(OS_ANDROID)
+const char kAndroidAppScheme[] = "android-app";
+#endif
+
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+const char kEnhancedPlaybackNotificationLearnMoreURL[] =
+#endif
 #if defined(OS_CHROMEOS)
+    "https://support.google.com/chromebook/?p=enhanced_playback";
+#elif defined(OS_ANDROID)
+// Keep in sync with chrome/android/java/strings/android_chrome_strings.grd
+    "https://support.google.com/chrome/?p=mobile_protected_content";
+#endif
+
+
+#if defined(OS_CHROMEOS)
+const char kCupsPrintLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_printing";
+
+const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
+const char kOemEulaURLPath[] = "oem";
+const char kOnlineEulaURLPath[] =
+    "https://www.google.com/intl/%s/chrome/eula_text.html";
+
+const char kChromeOSCreditsPath[] =
+    "/opt/google/chrome/resources/about_os_credits.html";
+
+const char kChromeOSAssetHost[] = "chromeos-asset";
+const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
+
+const char kChromeAccessibilityHelpURL[] =
+    "https://support.google.com/chromebook/topic/6323347";
+const char kChromeAccessibilitySettingsURL[] =
+    "/chromevox/background/options.html";
+const char kChromePaletteHelpURL[] =
+    "https://support.google.com/chromebook?p=stylus_help";
+
+const char kAttestationForContentProtectionLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=verified_access";
+
+const char kNaturalScrollHelpURL[] =
+    "https://support.google.com/chromebook/?p=simple_scrolling";
+const char kLearnMoreEnterpriseURL[] =
+    "https://support.google.com/chromebook/?p=managed";
+const char kAndroidAppsLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=playapps";
+const char kInstantTetheringLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=instant_tethering";
+const char kTPMFirmwareUpdateLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=tpm_update";
+
+const char kCrosScheme[] = "cros";
+
+const char kCrosPrintingLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_printing";
+
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
 
 const char kGoogleNameserversLearnMoreURL[] =
     "https://developers.google.com/speed/public-dns";
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+const char kChromeEnterpriseSignInLearnMoreURL[] =
+    "https://support.google.com/chromebook/answer/1331549";
+#endif
+
+#if defined(OS_WIN)
+const char kNotificationsHelpURL[] =
+    "https://support.google.com/chrome/?p=ui_notifications";
+
+const char kChromeCleanerLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=chrome_cleanup_tool";
+
+const char kWindowsXPVistaDeprecationURL[] =
+    "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
+#endif
+
+#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
+const char kChromeSyncLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/165139";
+
+const char kChromeSyncMergeTroubleshootingURL[] =
+    "https://support.google.com/chrome/answer/1181420#merge";
+#endif  // BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+const char kOutdatedPluginLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ib_outdated_plugin";
+
+const char kBlockedPluginLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ib_blocked_plugin";
 #endif
 
 }  // namespace chrome
