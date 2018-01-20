@@ -7,7 +7,6 @@
 package: chromium/afdo/profiles/android
 description: AFDO profiles collected for Chromium on Android
 
-# FIXME(gbiv): When we can specify dependencies on the profile in the build
-# system, settle on a profile name that doesn't include the version.
+# FIXME(gbiv): When we no longer use text profiles, make this "afdo.prof"
 data:
-  - file: chrome-profile-3309-text.prof
+  - file: afdo-text.prof
