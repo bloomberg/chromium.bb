@@ -76,10 +76,19 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
   SkIRect filter_bounds(const SkIRect& src,
                         const SkMatrix& ctm,
                         MapDirection direction) const {
+    if (!cached_sk_filter_)
+      return SkIRect::MakeEmpty();
     return cached_sk_filter_->filterBounds(src, ctm, direction);
   }
-  int count_inputs() const { return cached_sk_filter_->countInputs(); }
+  int count_inputs() const {
+    if (!cached_sk_filter_)
+      return 0;
+    return cached_sk_filter_->countInputs();
+  }
   std::string ToString() const {
+    if (!cached_sk_filter_)
+      return "Invalid filter";
+
     SkString str;
     cached_sk_filter_->toString(&str);
     return str.c_str();
