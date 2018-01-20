@@ -128,6 +128,39 @@ void CheckLowBoxToken(const base::win::ScopedHandle& token,
     EXPECT_TRUE(::EqualSid(capabilities->Groups[index].Sid,
                            security_capabilities->Capabilities[index].Sid));
   }
+
+  DWORD length_needed = 0;
+  ::GetKernelObjectSecurity(token.Get(), DACL_SECURITY_INFORMATION, nullptr, 0,
+                            &length_needed);
+  ASSERT_EQ(::GetLastError(), DWORD{ERROR_INSUFFICIENT_BUFFER});
+
+  std::vector<char> security_desc_buffer(length_needed);
+  SECURITY_DESCRIPTOR* security_desc =
+      reinterpret_cast<SECURITY_DESCRIPTOR*>(security_desc_buffer.data());
+
+  ASSERT_TRUE(::GetKernelObjectSecurity(token.Get(), DACL_SECURITY_INFORMATION,
+                                        security_desc, length_needed,
+                                        &length_needed));
+
+  ATL::CSecurityDesc token_sd(*security_desc);
+  ATL::CSid check_sid(
+      static_cast<SID*>(security_capabilities->AppContainerSid));
+  bool package_sid_found = false;
+
+  ATL::CDacl dacl;
+  ASSERT_TRUE(token_sd.GetDacl(&dacl));
+  unsigned int ace_count = dacl.GetAceCount();
+  for (unsigned int i = 0; i < ace_count; ++i) {
+    ATL::CSid sid;
+    ACCESS_MASK mask = 0;
+    BYTE type = 0;
+    dacl.GetAclEntry(i, &sid, &mask, &type);
+    if (sid == check_sid && mask == TOKEN_ALL_ACCESS &&
+        type == ACCESS_ALLOWED_ACE_TYPE) {
+      package_sid_found = true;
+    }
+  }
+  ASSERT_TRUE(package_sid_found);
 }
 
 // Checks if a sid is in the restricting list of the restricted token.
