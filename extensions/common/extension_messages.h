@@ -18,6 +18,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/common_param_traits.h"
 #include "extensions/common/draggable_region.h"
 #include "extensions/common/event_filtering_info.h"
@@ -37,6 +38,8 @@
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
+
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::CSSOrigin, extensions::CSS_ORIGIN_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::ViewType, extensions::VIEW_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::SocketPermissionRequest::OperationType,
@@ -179,6 +182,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
 
   // Whether the code to be executed should be associated with a user gesture.
   IPC_STRUCT_MEMBER(bool, user_gesture)
+
+  // The origin of the CSS.
+  IPC_STRUCT_MEMBER(base::Optional<extensions::CSSOrigin>, css_origin)
 IPC_STRUCT_END()
 
 // Struct containing information about the sender of connect() calls that

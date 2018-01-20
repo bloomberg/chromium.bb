@@ -31,6 +31,8 @@ const char kMoreThanOneValuesError[] =
 const char kBadFileEncodingError[] =
     "Could not load file '*' for content script. It isn't UTF-8 encoded.";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
+const char kCSSOriginForNonCSSError[] =
+    "CSS origin should be specified only for CSS code.";
 
 }
 
@@ -147,12 +149,18 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
   }
   CHECK_NE(UserScript::UNDEFINED, run_at);
 
+  base::Optional<CSSOrigin> css_origin;
+  if (details_->css_origin == api::extension_types::CSS_ORIGIN_USER)
+    css_origin = CSS_ORIGIN_USER;
+  else if (details_->css_origin == api::extension_types::CSS_ORIGIN_AUTHOR)
+    css_origin = CSS_ORIGIN_AUTHOR;
+
   executor->ExecuteScript(
       host_id_, script_type, code_string, frame_scope, frame_id,
       match_about_blank, run_at, ScriptExecutor::ISOLATED_WORLD,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
-      GetWebViewSrc(), file_url_, user_gesture(),
+      GetWebViewSrc(), file_url_, user_gesture(), css_origin,
       has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
                      : ScriptExecutor::NO_RESULT,
       base::Bind(&ExecuteCodeFunction::OnExecuteCodeFinished, this));
@@ -178,6 +186,11 @@ bool ExecuteCodeFunction::RunAsync() {
   }
   if (details_->code.get() && details_->file.get()) {
     error_ = kMoreThanOneValuesError;
+    return false;
+  }
+  if (details_->css_origin != api::extension_types::CSS_ORIGIN_NONE &&
+      !ShouldInsertCSS()) {
+    error_ = kCSSOriginForNonCSSError;
     return false;
   }
 

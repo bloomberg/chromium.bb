@@ -242,6 +242,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
                                    const GURL& webview_src,
                                    const GURL& file_url,
                                    bool user_gesture,
+                                   base::Optional<CSSOrigin> css_origin,
                                    ScriptExecutor::ResultType result_type,
                                    const ExecuteScriptCallback& callback) {
   if (host_id.type() == HostID::EXTENSIONS) {
@@ -268,6 +269,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.file_url = file_url;
   params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
   params.user_gesture = user_gesture;
+  params.css_origin = css_origin;
 
   // Handler handles IPCs and deletes itself on completion.
   new Handler(script_observers_, web_contents_, params, frame_scope, frame_id,
