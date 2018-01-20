@@ -47,3 +47,13 @@ TEST(LoginUIServiceTest, CanSetMultipleLoginUIs) {
   service.LoginUIClosed(&other_ui);
   EXPECT_EQ(nullptr, service.current_login_ui());
 }
+
+TEST(LoginUIServiceTest, SetProfileBlockingErrorMessage) {
+  LoginUIService service(nullptr);
+
+  service.SetProfileBlockingErrorMessage();
+
+  EXPECT_EQ(base::string16(), service.GetLastLoginResult());
+  EXPECT_EQ(base::string16(), service.GetLastLoginErrorEmail());
+  EXPECT_TRUE(service.IsDisplayingProfileBlockedErrorMessage());
+}

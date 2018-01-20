@@ -71,6 +71,7 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
   // ChromeOS doesn't have the avatar bubble so it never calls this function.
   NOTREACHED();
 #else
+  is_displaying_profile_blocking_error_message_ = false;
   last_login_result_ = error_message;
   last_login_error_email_ = email;
   if (!error_message.empty()) {
@@ -86,6 +87,16 @@ void LoginUIService::DisplayLoginResult(Browser* browser,
         signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS, false);
   }
 #endif
+}
+
+void LoginUIService::SetProfileBlockingErrorMessage() {
+  last_login_result_ = base::string16();
+  last_login_error_email_ = base::string16();
+  is_displaying_profile_blocking_error_message_ = true;
+}
+
+bool LoginUIService::IsDisplayingProfileBlockedErrorMessage() const {
+  return is_displaying_profile_blocking_error_message_;
 }
 
 const base::string16& LoginUIService::GetLastLoginResult() const {

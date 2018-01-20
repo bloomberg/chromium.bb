@@ -492,8 +492,11 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // in with an email address matched RestrictSigninToPattern policy already.
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::USED_PROFILE_BLOCKED_WARNING);
-    DisplayErrorMessage(
-        l10n_util::GetStringUTF16(IDS_USER_NOT_ALLOWED_BY_POLICY), web_ui());
+    LoginUIServiceFactory::GetForProfile(
+        Profile::FromWebUI(web_ui())->GetOriginalProfile())
+        ->SetProfileBlockingErrorMessage();
+    UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
+        web_ui()->GetWebContents()->GetBrowserContext());
   } else {
     // Fresh sign in via user manager without existing email address.
     RecordAuthenticatedLaunchUserEvent(
