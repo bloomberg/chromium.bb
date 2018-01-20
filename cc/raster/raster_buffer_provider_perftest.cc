@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/base/lap_timer.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
@@ -558,7 +559,14 @@ TEST_P(RasterBufferProviderPerfTest, ScheduleTasks) {
   RunScheduleTasksTest("32_4", 32, 4);
 }
 
-TEST_P(RasterBufferProviderPerfTest, ScheduleAlternateTasks) {
+// Crashes on Android only.  http://crbug.com/803874
+#if defined(OS_ANDROID)
+#define MAYBE_ScheduleAlternateTasks DISABLED_ScheduleAlternateTasks
+#else
+#define MAYBE_ScheduleAlternateTasks ScheduleAlternateTasks
+#endif
+
+TEST_P(RasterBufferProviderPerfTest, MAYBE_ScheduleAlternateTasks) {
   RunScheduleAlternateTasksTest("1_0", 1, 0);
   RunScheduleAlternateTasksTest("32_0", 32, 0);
   RunScheduleAlternateTasksTest("1_1", 1, 1);
@@ -619,7 +627,14 @@ class RasterBufferProviderCommonPerfTest
   }
 };
 
-TEST_F(RasterBufferProviderCommonPerfTest, BuildTileTaskGraph) {
+// Crashes on Android only.  http://crbug.com/803874
+#if defined(OS_ANDROID)
+#define MAYBE_BuildTileTaskGraph DISABLED_BuildTileTaskGraph
+#else
+#define MAYBE_BuildTileTaskGraph BuildTileTaskGraph
+#endif
+
+TEST_F(RasterBufferProviderCommonPerfTest, MAYBE_BuildTileTaskGraph) {
   RunBuildTileTaskGraphTest("1_0", 1, 0);
   RunBuildTileTaskGraphTest("32_0", 32, 0);
   RunBuildTileTaskGraphTest("1_1", 1, 1);
