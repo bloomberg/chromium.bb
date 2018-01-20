@@ -96,6 +96,8 @@ void FakeSessionManagerClient::RestartJob(int socket_fd,
                                           const std::vector<std::string>& argv,
                                           VoidDBusMethodCallback callback) {}
 
+void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {}
+
 void FakeSessionManagerClient::StartSession(
     const cryptohome::Identification& cryptohome_id) {
   DCHECK_EQ(0UL, user_sessions_.count(cryptohome_id));

@@ -1338,5 +1338,56 @@ bool HasPolicyForNetwork(const PrefService* profile_prefs,
   return policy != NULL;
 }
 
+bool HasUserPasswordSubsitutionVariable(const OncValueSignature& signature,
+                                        base::DictionaryValue* onc_object) {
+  if (&signature == &kEAPSignature) {
+    std::string password_field;
+    if (!onc_object->GetStringWithoutPathExpansion(::onc::eap::kPassword,
+                                                   &password_field)) {
+      return false;
+    }
+
+    if (password_field == ::onc::substitutes::kPasswordField) {
+      return true;
+    }
+  }
+
+  // Recurse into nested objects.
+  for (base::DictionaryValue::Iterator it(*onc_object); !it.IsAtEnd();
+       it.Advance()) {
+    base::DictionaryValue* inner_object = nullptr;
+    if (!onc_object->GetDictionaryWithoutPathExpansion(it.key(), &inner_object))
+      continue;
+
+    const OncFieldSignature* field_signature =
+        GetFieldSignature(signature, it.key());
+    if (!field_signature)
+      continue;
+
+    bool result = HasUserPasswordSubsitutionVariable(
+        *field_signature->value_signature, inner_object);
+    if (result) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool HasUserPasswordSubsitutionVariable(base::ListValue* network_configs) {
+  for (auto& entry : *network_configs) {
+    base::DictionaryValue* network = nullptr;
+    entry.GetAsDictionary(&network);
+    DCHECK(network);
+
+    bool result = HasUserPasswordSubsitutionVariable(
+        kNetworkConfigurationSignature, network);
+    if (result) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace onc
 }  // namespace chromeos

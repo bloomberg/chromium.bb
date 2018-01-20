@@ -696,6 +696,13 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 
   UserContext user_context(GetAccountId(email, gaia_id, AccountType::GOOGLE));
   user_context.SetKey(Key(password));
+  // Only save the password for enterprise users. See https://crbug.com/386606.
+  const bool is_enterprise_managed = g_browser_process->platform_part()
+                                         ->browser_policy_connector_chromeos()
+                                         ->IsEnterpriseManaged();
+  if (is_enterprise_managed) {
+    user_context.SetPasswordKey(Key(password));
+  }
   user_context.SetAuthCode(auth_code);
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML

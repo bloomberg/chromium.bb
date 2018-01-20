@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -120,6 +121,14 @@ void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
   DCHECK(user_);
   chromeos::onc::ExpandStringPlaceholdersInNetworksForUser(user_,
                                                            network_configs_onc);
+
+  // Call on UserSessionManager to send the user's password to session manager
+  // if the password substitution variable exists in the ONC.
+  bool send_password =
+      chromeos::onc::HasUserPasswordSubsitutionVariable(network_configs_onc);
+  chromeos::UserSessionManager::GetInstance()->OnUserNetworkPolicyParsed(
+      send_password);
+
   network_config_handler_->SetPolicy(onc_source_,
                                      user_->username_hash(),
                                      *network_configs_onc,

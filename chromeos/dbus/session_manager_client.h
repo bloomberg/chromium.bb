@@ -118,6 +118,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
                           const std::vector<std::string>& argv,
                           VoidDBusMethodCallback callback) = 0;
 
+  // Sends the user's password to the session manager.
+  virtual void SaveLoginPassword(const std::string& password) = 0;
+
   // Starts the session for the user.
   virtual void StartSession(
       const cryptohome::Identification& cryptohome_id) = 0;

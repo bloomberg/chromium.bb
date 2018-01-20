@@ -1040,6 +1040,30 @@ void UserSessionManager::StartCrosSession() {
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
+void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
+  // Sanity check that we only send the password for enterprise users. See
+  // https://crbug.com/386606.
+  const bool is_enterprise_managed = g_browser_process->platform_part()
+                                         ->browser_policy_connector_chromeos()
+                                         ->IsEnterpriseManaged();
+  if (!is_enterprise_managed) {
+    LOG(WARNING) << "Attempting to save user password for non enterprise user.";
+    user_context_.GetMutablePasswordKey()->ClearSecret();
+    return;
+  }
+
+  if (send_password) {
+    if (user_context_.GetPasswordKey()->GetSecret().size() > 0) {
+      DBusThreadManager::Get()->GetSessionManagerClient()->SaveLoginPassword(
+          user_context_.GetPasswordKey()->GetSecret());
+    } else {
+      LOG(WARNING) << "Not saving password because password is empty.";
+    }
+  }
+
+  user_context_.GetMutablePasswordKey()->ClearSecret();
+}
+
 void UserSessionManager::PrepareProfile() {
   const bool is_demo_session =
       DemoAppLauncher::IsDemoAppSession(user_context_.GetAccountId());
