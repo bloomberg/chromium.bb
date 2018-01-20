@@ -13,7 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
-#include "net/proxy/proxy_resolver_script_data.h"
+#include "net/proxy/pac_file_data.h"
 #include "url/gurl.h"
 
 namespace net {

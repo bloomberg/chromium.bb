@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_FACTORY_H_
-#define NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_FACTORY_H_
+#ifndef NET_PROXY_DHCP_PAC_FILE_FETCHER_FACTORY_H_
+#define NET_PROXY_DHCP_PAC_FILE_FETCHER_FACTORY_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
 
 namespace net {
 
@@ -53,4 +53,4 @@ class NET_EXPORT DhcpProxyScriptFetcherFactory {
 
 }  // namespace net
 
-#endif  // NET_PROXY_DHCP_PROXY_SCRIPT_FETCHER_FACTORY_H_
+#endif  // NET_PROXY_DHCP_PAC_FILE_FETCHER_FACTORY_H_

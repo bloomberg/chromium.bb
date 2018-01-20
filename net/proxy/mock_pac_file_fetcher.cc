@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/mock_proxy_script_fetcher.h"
+#include "net/proxy/mock_pac_file_fetcher.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"

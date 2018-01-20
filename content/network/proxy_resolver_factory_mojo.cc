@@ -25,10 +25,10 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy/pac_file_data.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
-#include "net/proxy/proxy_resolver_script_data.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace content {

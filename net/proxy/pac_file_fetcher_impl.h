@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PROXY_SCRIPT_FETCHER_IMPL_H_
-#define NET_PROXY_PROXY_SCRIPT_FETCHER_IMPL_H_
+#ifndef NET_PROXY_PAC_FILE_FETCHER_IMPL_H_
+#define NET_PROXY_PAC_FILE_FETCHER_IMPL_H_
 
 #include <stddef.h>
 
@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/proxy/proxy_script_fetcher.h"
+#include "net/proxy/pac_file_fetcher.h"
 #include "net/url_request/url_request.h"
 
 class GURL;
@@ -136,4 +136,4 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
 }  // namespace net
 
-#endif  // NET_PROXY_PROXY_SCRIPT_FETCHER_IMPL_H_
+#endif  // NET_PROXY_PAC_FILE_FETCHER_IMPL_H_

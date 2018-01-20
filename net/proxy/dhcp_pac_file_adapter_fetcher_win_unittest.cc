@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
+#include "net/proxy/dhcp_pac_file_adapter_fetcher_win.h"
 
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -12,8 +12,8 @@
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/proxy/mock_proxy_script_fetcher.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/mock_pac_file_fetcher.h"
+#include "net/proxy/pac_file_fetcher_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/url_request/url_request_test_util.h"

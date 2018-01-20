@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

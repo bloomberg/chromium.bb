@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/dhcp_proxy_script_fetcher_win.h"
+#include "net/proxy/dhcp_pac_file_fetcher_win.h"
 
 #include <memory>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/memory/free_deleter.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/base/net_errors.h"
-#include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
+#include "net/proxy/dhcp_pac_file_adapter_fetcher_win.h"
 
 #include <winsock2.h>
 #include <iphlpapi.h>

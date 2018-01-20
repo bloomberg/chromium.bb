@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_resolver_script_data.h"
+#include "net/proxy/pac_file_data.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,8 +12,7 @@ namespace net {
 // static
 scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF8(
     const std::string& utf8) {
-  return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS,
-                                     GURL(),
+  return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS, GURL(),
                                      base::UTF8ToUTF16(utf8));
 }
 
@@ -66,10 +65,7 @@ bool ProxyResolverScriptData::Equals(
 ProxyResolverScriptData::ProxyResolverScriptData(Type type,
                                                  const GURL& url,
                                                  const base::string16& utf16)
-    : type_(type),
-      url_(url),
-      utf16_(utf16) {
-}
+    : type_(type), url_(url), utf16_(utf16) {}
 
 ProxyResolverScriptData::~ProxyResolverScriptData() = default;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_script_decider.h"
+#include "net/proxy/pac_file_decider.h"
 
 #include <utility>
 
@@ -19,9 +19,9 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
-#include "net/proxy/dhcp_proxy_script_fetcher.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
-#include "net/proxy/proxy_script_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher.h"
+#include "net/proxy/dhcp_pac_file_fetcher_factory.h"
+#include "net/proxy/pac_file_fetcher.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {
@@ -36,7 +36,7 @@ bool LooksLikePacScript(const base::string16& script) {
   //
   // An exact test would have to load the script in a javascript evaluator.
   return script.find(base::ASCIIToUTF16("FindProxyForURL")) !=
-             base::string16::npos;
+         base::string16::npos;
 }
 
 }  // anonymous namespace
@@ -56,7 +56,7 @@ bool LooksLikePacScript(const base::string16& script) {
 namespace {
 const char kWpadUrl[] = "http://wpad/wpad.dat";
 const int kQuickCheckDelayMs = 1000;
-};
+};  // namespace
 
 std::unique_ptr<base::Value> ProxyScriptDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
@@ -99,9 +99,10 @@ ProxyScriptDecider::~ProxyScriptDecider() {
     Cancel();
 }
 
-int ProxyScriptDecider::Start(
-    const ProxyConfig& config, const base::TimeDelta wait_delay,
-    bool fetch_pac_bytes, const CompletionCallback& callback) {
+int ProxyScriptDecider::Start(const ProxyConfig& config,
+                              const base::TimeDelta wait_delay,
+                              bool fetch_pac_bytes,
+                              const CompletionCallback& callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(!callback.is_null());
   DCHECK(config.HasAutomaticSettings());
@@ -151,8 +152,8 @@ const ProxyConfig& ProxyScriptDecider::effective_config() const {
   return effective_config_;
 }
 
-const scoped_refptr<ProxyResolverScriptData>&
-ProxyScriptDecider::script_data() const {
+const scoped_refptr<ProxyResolverScriptData>& ProxyScriptDecider::script_data()
+    const {
   DCHECK_EQ(STATE_NONE, next_state_);
   return script_data_;
 }
@@ -161,8 +162,8 @@ ProxyScriptDecider::script_data() const {
 // (1) WPAD (DHCP).
 // (2) WPAD (DNS).
 // (3) Custom PAC URL.
-ProxyScriptDecider::PacSourceList ProxyScriptDecider::
-    BuildPacSourcesFallbackList(
+ProxyScriptDecider::PacSourceList
+ProxyScriptDecider::BuildPacSourcesFallbackList(
     const ProxyConfig& config) const {
   PacSourceList pac_sources;
   if (config.auto_detect()) {
@@ -273,15 +274,13 @@ int ProxyScriptDecider::DoQuickCheck() {
   std::string host = current_pac_source().url.host();
   HostResolver::RequestInfo reqinfo(HostPortPair(host, 80));
   reqinfo.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
-  CompletionCallback callback = base::Bind(
-      &ProxyScriptDecider::OnIOCompletion,
-      base::Unretained(this));
+  CompletionCallback callback =
+      base::Bind(&ProxyScriptDecider::OnIOCompletion, base::Unretained(this));
 
   next_state_ = STATE_QUICK_CHECK_COMPLETE;
-  quick_check_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(
-                              kQuickCheckDelayMs),
-                           base::Bind(callback, ERR_NAME_NOT_RESOLVED));
+  quick_check_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kQuickCheckDelayMs),
+      base::Bind(callback, ERR_NAME_NOT_RESOLVED));
 
   HostResolver* host_resolver =
       proxy_script_fetcher_->GetRequestContext()->host_resolver();
@@ -374,9 +373,9 @@ int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
   if (fetch_pac_bytes_) {
     script_data_ = ProxyResolverScriptData::FromUTF16(pac_script_);
   } else {
-    script_data_ = pac_source.type == PacSource::CUSTOM ?
-        ProxyResolverScriptData::FromURL(pac_source.url) :
-        ProxyResolverScriptData::ForAutoDetect();
+    script_data_ = pac_source.type == PacSource::CUSTOM
+                       ? ProxyResolverScriptData::FromURL(pac_source.url)
+                       : ProxyResolverScriptData::ForAutoDetect();
   }
 
   // Let the caller know which automatic setting we ended up initializing the
@@ -437,7 +436,7 @@ int ProxyScriptDecider::TryToFallbackPacSource(int error) {
 }
 
 ProxyScriptDecider::State ProxyScriptDecider::GetStartState() const {
-  return fetch_pac_bytes_ ?  STATE_FETCH_PAC_SCRIPT : STATE_VERIFY_PAC_SCRIPT;
+  return fetch_pac_bytes_ ? STATE_FETCH_PAC_SCRIPT : STATE_VERIFY_PAC_SCRIPT;
 }
 
 void ProxyScriptDecider::DetermineURL(const PacSource& pac_source,
@@ -456,8 +455,8 @@ void ProxyScriptDecider::DetermineURL(const PacSource& pac_source,
   }
 }
 
-const ProxyScriptDecider::PacSource&
-    ProxyScriptDecider::current_pac_source() const {
+const ProxyScriptDecider::PacSource& ProxyScriptDecider::current_pac_source()
+    const {
   DCHECK_LT(current_pac_source_index_, pac_sources_.size());
   return pac_sources_[current_pac_source_index_];
 }
