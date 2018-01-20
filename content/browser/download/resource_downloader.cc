@@ -11,7 +11,6 @@
 #include "content/browser/download/download_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "storage/browser/fileapi/file_system_context.h"
 
 namespace network {
 struct ResourceResponseHead;
@@ -89,7 +88,6 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-    scoped_refptr<storage::FileSystemContext> file_system_context,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& site_url,
     const GURL& tab_url,
@@ -100,8 +98,8 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       delegate, std::move(request), web_contents_getter, site_url, tab_url,
       tab_referrer_url, download_id);
 
-  downloader->Start(url_loader_factory_getter, file_system_context,
-                    std::move(params), is_parallel_request);
+  downloader->Start(url_loader_factory_getter, std::move(params),
+                    is_parallel_request);
   return downloader;
 }
 
@@ -146,7 +144,6 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-    scoped_refptr<storage::FileSystemContext> file_system_context,
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
