@@ -161,3 +161,36 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
         });
       }, 'This is some bold text');
 });
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'SpeakTextSurroundedByBrs', function() {
+  // If you load this html and double-click on "Selected text", this is the
+  // document selection that occurs -- into the second <br/> element.
+
+  let setFocusCallback = function(desktop) {
+    let firstNode = this.findTextNode(desktop, 'Selected text');
+    let lastNode = desktop.findAll({role: 'lineBreak'})[1];
+    chrome.automation.setDocumentSelection({
+        anchorObject: firstNode, anchorOffset: 0,
+        focusObject: lastNode, focusOffset: 1
+    });
+  };
+  setFocusCallback = this.newCallback(setFocusCallback);
+  this.runWithLoadedTree('data:text/html;charset=utf-8,<br/><p>Selected text</p></br>',
+    function(desktop) {
+      // Add an event listener that will start the user interaction
+      // of the test once the selection is completed.
+      desktop.addEventListener('documentSelectionChanged',
+        this.newCallback(function(event) {
+          this.triggerReadSelectedText();
+          assertTrue(this.mockTts.currentlySpeaking());
+          this.assertEqualsCollapseWhitespace(
+              this.mockTts.pendingUtterances()[0], 'Selected text');
+          if (this.mockTts.pendingUtterances().length == 2) {
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[1], '');
+          }
+      }), false);
+      setFocusCallback(desktop);
+  });
+});
