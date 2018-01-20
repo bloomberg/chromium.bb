@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
@@ -27,7 +26,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -391,11 +389,6 @@ void StartupAppLauncher::LaunchApp() {
 
   KioskAppManager::Get()->InitSession(profile_, app_id_);
   session_manager::SessionManager::Get()->SessionStarted();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 
   if (diagnostic_mode_)
     KioskDiagnosisRunner::Run(profile_, app_id_);

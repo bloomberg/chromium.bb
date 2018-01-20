@@ -318,8 +318,6 @@ enum NotificationType {
   //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // 4. Boot into retail mode
   //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
-  // 5. Boot into kiosk mode
-  //    NOTIFICATION_KIOSK_APP_LAUNCHED
   NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
 
   // Send when kiosk auto-launch warning screen is visible.
@@ -339,9 +337,6 @@ enum NotificationType {
 
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,
-
-  // Sent when a kiosk app is launched.
-  NOTIFICATION_KIOSK_APP_LAUNCHED,
 
   // Sent when the user list has changed.
   NOTIFICATION_USER_LIST_CHANGED,
