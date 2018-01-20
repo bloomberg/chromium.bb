@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sessions/core/session_id.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DataUseTabUIManager_jni.h"
@@ -56,7 +57,7 @@ uint32_t data_use_ui_message_id_map[DATA_USE_UI_MESSAGE_MAX] = {
             IDS_DATA_USE_TRACKING_ENDED_CHECKBOX_MESSAGE,
         [DATA_USE_TRACKING_ENDED_CONTINUE] =
             IDS_DATA_USE_TRACKING_ENDED_CONTINUE,
-        [DATA_USE_LEARN_MORE_TITLE] = IDS_DATA_USE_LEARN_MORE_TITLE,
+        [DATA_USE_LEARN_MORE_TITLE] = IDS_LEARN_MORE,
         [DATA_USE_LEARN_MORE_LINK_URL] = IDS_DATA_USE_LEARN_MORE_LINK_URL,
 };
 

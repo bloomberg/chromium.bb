@@ -138,8 +138,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_TOOLTIP_MIC_SEARCH);
     AddString(translated_strings.get(), "languageError",
               IDS_NEW_TAB_VOICE_LANGUAGE_ERROR);
-    AddString(translated_strings.get(), "learnMore",
-              IDS_NEW_TAB_VOICE_LEARN_MORE);
+    AddString(translated_strings.get(), "learnMore", IDS_LEARN_MORE);
     AddString(translated_strings.get(), "listening",
               IDS_NEW_TAB_VOICE_LISTENING);
     AddString(translated_strings.get(), "networkError",

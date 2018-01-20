@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -140,7 +141,7 @@ void EolNotification::Update() {
   message_center::RichNotificationData data;
 
   DCHECK_EQ(BUTTON_MORE_INFO, data.buttons.size());
-  data.buttons.emplace_back(GetStringUTF16(IDS_EOL_MORE_INFO_BUTTON));
+  data.buttons.emplace_back(GetStringUTF16(IDS_LEARN_MORE));
 
   DCHECK_EQ(BUTTON_DISMISS, data.buttons.size());
   data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));

@@ -39,9 +39,6 @@
       =1 {&lt;1 line not shown&gt;}
       other {&lt;$1 lines not shown&gt;}}
   </message>
-  <message name="IDS_MD_EXTENSIONS_LEARN_MORE" desc="Learn more text">
-    Learn more
-  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ERRORS" desc="The label of the button to bring the user to the page showing an extension's errors.">
     Errors
   </message>

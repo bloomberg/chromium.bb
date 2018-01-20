@@ -11,9 +11,6 @@
   <message name="IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" desc="Title of menu item for Media Router, which appears in the overflow menu and page contextual menus.">
     &amp;Cast...
   </message>
-  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Text of a menu item or link which, on click, opens a page with more information or relevant help center page.">
-   Learn more
-  </message>
 
   <!-- Button Titles -->
   <message name="IDS_MEDIA_ROUTER_BACK_BUTTON_TITLE" desc="Back button title, which is spoken when a screen reader is being used.">

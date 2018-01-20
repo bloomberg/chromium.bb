@@ -92,6 +92,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -418,7 +419,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
   builder->Add("publicAccountMonitoringWarning",
                IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
-  builder->Add("publicAccountLearnMore", IDS_LOGIN_PUBLIC_ACCOUNT_LEARN_MORE);
+  builder->Add("publicAccountLearnMore", IDS_LEARN_MORE);
   builder->Add("publicAccountMonitoringInfo",
                IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO);
   builder->Add("publicAccountMonitoringInfoItem1",

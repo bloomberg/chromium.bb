@@ -253,7 +253,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
-  source->AddLocalizedString("learnMore", IDS_MD_EXTENSIONS_LEARN_MORE);
+  source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   source->AddLocalizedString(
       "loadErrorCouldNotLoadManifest",
       IDS_MD_EXTENSIONS_LOAD_ERROR_COULD_NOT_LOAD_MANIFEST);

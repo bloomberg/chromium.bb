@@ -1596,10 +1596,6 @@ are declared in build/common.gypi.
         Show all downloads
       </message>
       <if expr="chromeos">
-        <message name="IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING"
-                 desc="In the download notification, a label of the button to show information about download scanning">
-          Learn more
-        </message>
       </if>
       <message name="IDS_DOWNLOAD_TAB_CANCELLED"
                desc="Text that appears next to the downloaded files that have been canceled">
@@ -6638,9 +6634,6 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Sad Tab Strings -->
-      <message name="IDS_SAD_TAB_LEARN_MORE_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
-        Learn more
-      </message>
       <message name="IDS_CRASHED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
         Help our engineers investigate and fix this crash. List exact steps if you can. No detail is too small!
 '''
@@ -7035,9 +7028,6 @@ I don't think this site should be blocked!
         Advanced
       </message>
       <!-- Enterprise sign-in profile linking -->
-      <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE" desc="The link to get more information about profile linking after signing in to an enterprise account">
-        Learn more
-      </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CANCEL" desc="Text of the button to cancel sign-in">
         Cancel
       </message>
@@ -7234,10 +7224,6 @@ I don't think this site should be blocked!
               desc="Heading used when a person enters Guest Session">
           You’re browsing as a Guest
         </message>
-        <message name="IDS_NEW_TAB_GUEST_SESSION_LEARN_MORE_LINK"
-              desc="Guest Session link text to learn more">
-          Learn more
-        </message>
         <if expr="chromeos">
           <message name="IDS_NEW_TAB_GUEST_SESSION_DESCRIPTION"
               desc="Used when a person enters Guest Session">
@@ -7299,10 +7285,6 @@ I don't think this site should be blocked!
       <message name="IDS_NEW_TAB_VOICE_LANGUAGE_ERROR"
         desc="Used to indicate that the speech recognition service is not available for the user's locale.">
         Voice search in your language is not available.
-      </message>
-      <message name="IDS_NEW_TAB_VOICE_LEARN_MORE"
-        desc="Used as text for a link to a help web page, in case speech recognition fails.">
-        Learn more
       </message>
       <message name="IDS_NEW_TAB_VOICE_LISTENING"
         desc="Used to indicate that the speech recognition service has started and is still waiting for user input. This message appears if there is no activity for 2 seconds after the user has been instructed to start speaking.">
@@ -7560,9 +7542,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to hide the accounts for a profile.">
           Hide accounts
-        </message>
-        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
-          Learn more
         </message>
         <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
           Switch person
@@ -7910,9 +7889,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_SIGNIN_ERROR_EMAIL_TITLE" desc="Title of the signin error tab modal dialog when username can be retrieved to display.">
         Can't sign in to <ph name="USERNAME">$1<ex>Jane.Doe@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_SIGNIN_ERROR_LEARN_MORE_LINK" desc="Label in the signin error tab modal dialog containing the link to go to the Chrome Help page for sync problems.">
-        Learn more
       </message>
       <message name="IDS_SIGNIN_ERROR_CLOSE_BUTTON_LABEL" desc="Label of the Close button in the signin error dialog.">
         Close
@@ -10531,9 +10507,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_DONE_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog step for encouraging the user to enable Smart Lock for Android. Clicking this button advances the dialog to step 3.">
         Next
       </message>
-      <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_ABOUT_LINK_TEXT" desc="The text to show as the link text to access the Smart Lock for Android help article.">
-        Learn more
-      </message>
       <!-- Step 3: "You're all set" -->
       <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the penultimate step, confirming success.">
         Smart Lock is all set
@@ -10552,9 +10525,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         Done
       </message>
       <!-- Error strings for the Easy Unlock setup dialog -->
-      <message name="IDS_EASY_UNLOCK_LEARN_MORE_LINK_TITLE" desc="Text to use for links that point to more information about Easy Unlock in the easy unlock setup dialog.">
-        Learn more
-     </message>
       <message name="IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_UNAVAILBLE" desc="The error message to display when the user's Chromebook might not have Bluetooth functionality during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
         Can’t find your phone. Make sure your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>'s Bluetooth is turned on. &lt;a&gt;Learn more&lt;/a&gt;
       </message>
@@ -10780,9 +10750,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       </message>
       <message name="IDS_DATA_USE_TRACKING_ENDED_CONTINUE" desc="Continue button for the dialog shown when data use tracking has ended. When clicked, the page resumes loading.">
         Continue
-      </message>
-      <message name="IDS_DATA_USE_LEARN_MORE_TITLE" desc="Title for the 'Learn more' link in the the dialog shown when data use tracking has ended.">
-        Learn more
       </message>
       <message name="IDS_DATA_USE_LEARN_MORE_LINK_URL" desc="URL for the 'Learn more' link in the the dialog shown when data use tracking has ended.">
         <!-- Intentionally empty. This is overridden via Finch. -->

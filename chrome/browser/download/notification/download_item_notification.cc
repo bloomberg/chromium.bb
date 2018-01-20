@@ -25,6 +25,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
@@ -643,7 +644,7 @@ base::string16 DownloadItemNotification::GetCommandLabel(
       id = IDS_DOWNLOAD_LINK_CANCEL;
       break;
     case DownloadCommands::LEARN_MORE_SCANNING:
-      id = IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING;
+      id = IDS_LEARN_MORE;
       break;
     case DownloadCommands::COPY_TO_CLIPBOARD:
       id = IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD;

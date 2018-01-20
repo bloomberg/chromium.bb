@@ -27,6 +27,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model_delegate.h"
@@ -58,8 +59,7 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
                                   IDS_MEDIA_ROUTER_ABOUT);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE,
-                                  IDS_MEDIA_ROUTER_LEARN_MORE);
+  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE, IDS_LEARN_MORE);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
                                   IDS_MEDIA_ROUTER_HELP);
   if (shown_by_policy) {
