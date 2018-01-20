@@ -1697,8 +1697,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   args.deadline = sync_compositor_ ? base::TimeTicks()
   : args.frame_time + (args.interval * 0.6);
   if (sync_compositor_) {
-    host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
-    sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid());
+    sync_compositor_->SendBeginFrame(view_.GetWindowAndroid(), args);
   } else if (renderer_compositor_frame_sink_) {
     renderer_compositor_frame_sink_->OnBeginFrame(args);
   }
@@ -2300,10 +2299,8 @@ void RenderWidgetHostViewAndroid::SendBeginFramePaused() {
   bool paused = begin_frame_paused_ || !observing_root_window_;
 
   if (!using_browser_compositor_) {
-    if (host_) {
-      host_->Send(
-          new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), paused));
-    }
+    if (sync_compositor_)
+      sync_compositor_->SetBeginFramePaused(paused);
   } else if (renderer_compositor_frame_sink_) {
     renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
   }

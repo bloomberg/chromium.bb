@@ -76,6 +76,8 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_LayerTreeFrameSinkCreated,
                         LayerTreeFrameSinkCreated)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, ProcessCommonParams)
+    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_SetNeedsBeginFrames,
+                        SetNeedsBeginFrames)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -371,11 +373,22 @@ void SynchronousCompositorHost::DidOverscroll(
                          over_scroll_params.current_fling_velocity);
 }
 
-void SynchronousCompositorHost::DidSendBeginFrame(
-    ui::WindowAndroid* window_android) {
+void SynchronousCompositorHost::SendBeginFrame(
+    ui::WindowAndroid* window_android,
+    const viz::BeginFrameArgs& args) {
   compute_scroll_needs_synchronous_draw_ = false;
+  sender_->Send(new SyncCompositorMsg_BeginFrame(routing_id_, args));
+
   if (SynchronousCompositorBrowserFilter* filter = GetFilter())
     filter->SyncStateAfterVSync(window_android, this);
+}
+
+void SynchronousCompositorHost::SetBeginFramePaused(bool paused) {
+  sender_->Send(new SyncCompositorMsg_SetBeginFramePaused(routing_id_, paused));
+}
+
+void SynchronousCompositorHost::SetNeedsBeginFrames(bool needs_begin_frames) {
+  rwhva_->GetRenderWidgetHostImpl()->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
