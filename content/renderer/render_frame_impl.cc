@@ -117,7 +117,6 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_output_ipc_factory.h"
-#include "content/renderer/media/media_devices_listener_impl.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/user_media_client_impl.h"
@@ -6633,8 +6632,6 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
       std::make_unique<MediaStreamDeviceObserver>(this));
-  registry_.AddInterface(
-      base::Bind(&MediaDevicesListenerImpl::Create, GetRoutingID()));
 #endif
 }
 

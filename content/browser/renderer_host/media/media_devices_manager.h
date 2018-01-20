@@ -34,18 +34,6 @@ class VideoCaptureManager;
 using MediaDeviceEnumeration =
     std::array<MediaDeviceInfoArray, NUM_MEDIA_DEVICE_TYPES>;
 
-// MediaDeviceChangeSubscriber is an interface to be implemented by classes
-// that can register with MediaDevicesManager to get notifications about changes
-// in the set of media devices.
-class CONTENT_EXPORT MediaDeviceChangeSubscriber {
- public:
-  // This function is invoked to notify about changes in the set of media
-  // devices of type |type|. |device_infos| contains the updated list of
-  // devices of type |type|.
-  virtual void OnDevicesChanged(MediaDeviceType type,
-                                const MediaDeviceInfoArray& device_infos) = 0;
-};
-
 // MediaDevicesManager is responsible for doing media-device enumerations.
 // In addition it implements caching for enumeration results and device
 // monitoring in order to keep caches consistent.
@@ -94,26 +82,13 @@ class CONTENT_EXPORT MediaDevicesManager
                         const BoolDeviceTypes& requested_types,
                         EnumerateDevicesCallback callback);
 
-  // Subscribes |subscriber| to receive device-change notifications for devices
-  // of type |type|. If |subscriber| is already subscribed, this function has
-  // no side effects. MediaDevicesManager does not own |subscriber|. It is the
-  // responsibility of the caller to ensure that all registered subscribers
-  // remain valid while the they are subscribed.
-  void SubscribeDeviceChangeNotifications(
-      MediaDeviceType type,
-      MediaDeviceChangeSubscriber* subscriber);
-
-  // Unubscribes |subscriber| from device-change notifications for the devices
-  // of type |type|. If |subscriber| is not subscribed, this function has no
-  // side effects.
-  void UnsubscribeDeviceChangeNotifications(
-      MediaDeviceType type,
-      MediaDeviceChangeSubscriber* subscriber);
-
   uint32_t SubscribeDeviceChangeNotifications(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& group_id_salt_base,
       const BoolDeviceTypes& subscribe_types,
       blink::mojom::MediaDevicesListenerPtr listener);
-  void UnsubscribeDeviceChange(uint32_t subscription_id);
+  void UnsubscribeDeviceChangeNotifications(uint32_t subscription_id);
 
   // Tries to start device monitoring. If successful, enables caching of
   // enumeration results for the device types supported by the monitor.
@@ -152,6 +127,24 @@ class CONTENT_EXPORT MediaDevicesManager
  private:
   friend class MediaDevicesManagerTest;
   struct EnumerationRequest;
+
+  struct SubscriptionRequest {
+    SubscriptionRequest(int render_process_id,
+                        int render_frame_id,
+                        const std::string& group_id_salt_base,
+                        const BoolDeviceTypes& subscribe_types,
+                        blink::mojom::MediaDevicesListenerPtr listener);
+    SubscriptionRequest(SubscriptionRequest&&);
+    ~SubscriptionRequest();
+
+    SubscriptionRequest& operator=(SubscriptionRequest&&);
+
+    int render_process_id;
+    int render_frame_id;
+    std::string group_id_salt_base;
+    BoolDeviceTypes subscribe_types;
+    blink::mojom::MediaDevicesListenerPtr listener;
+  };
 
   // The NO_CACHE policy is such that no previous results are used when
   // EnumerateDevices is called. The results of a new or in-progress low-level
@@ -218,6 +211,17 @@ class CONTENT_EXPORT MediaDevicesManager
                                 const MediaDeviceInfoArray& new_snapshot);
   void NotifyDeviceChangeSubscribers(MediaDeviceType type,
                                      const MediaDeviceInfoArray& snapshot);
+  void CheckPermissionForDeviceChange(
+      SubscriptionRequest* request,
+      MediaDeviceType type,
+      const MediaDeviceInfoArray& device_infos,
+      const std::pair<std::string, url::Origin>& salt_and_origin);
+  void NotifyDeviceChange(SubscriptionRequest* request,
+                          MediaDeviceType type,
+                          const MediaDeviceInfoArray& device_infos,
+                          std::string device_id_salt,
+                          const url::Origin& security_origin,
+                          bool has_permission);
 
 #if defined(OS_MACOSX)
   void StartMonitoringOnUIThread();
@@ -242,22 +246,7 @@ class CONTENT_EXPORT MediaDevicesManager
   MediaDeviceEnumeration current_snapshot_;
   bool monitoring_started_;
 
-  std::vector<MediaDeviceChangeSubscriber*>
-      device_change_subscribers_[NUM_MEDIA_DEVICE_TYPES];
-
-  struct SubscriptionRequest {
-    SubscriptionRequest(const BoolDeviceTypes& subscribe_types,
-                        blink::mojom::MediaDevicesListenerPtr listener);
-    SubscriptionRequest(SubscriptionRequest&&);
-    ~SubscriptionRequest();
-
-    SubscriptionRequest& operator=(SubscriptionRequest&&);
-
-    BoolDeviceTypes subscribe_types;
-    blink::mojom::MediaDevicesListenerPtr listener;
-  };
-
-  uint32_t current_subscription_id_ = 0u;
+  uint32_t last_subscription_id_ = 0u;
   base::flat_map<uint32_t, SubscriptionRequest> subscriptions_;
 
   // Callback used to obtain the current device ID salt and security origin.

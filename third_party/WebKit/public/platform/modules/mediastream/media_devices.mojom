@@ -82,23 +82,6 @@ interface MediaDevicesDispatcherHost {
   GetAudioInputCapabilities()
       => (array<AudioInputDeviceCapabilities> audio_input_device_capabilities);
 
-  // TODO(c.padhi): Remove below two methods once device change migration to
-  // blink is complete, see https://crbug.com/793297.
-  // Creates a subscription for device-change notifications for the calling
-  // frame/security origin. It is the responsibility of the caller to send
-  // |subscription_id| values that are unique per device type.
-  // Requests to create a subscription with an ID that already exists for type
-  // |type| are invalid and result in a renderer crash.
-  SubscribeDeviceChangeNotifications(MediaDeviceType type,
-                                     uint32 subscription_id);
-
-  // Removes a subscription to device-change notifications for the calling
-  // frame. The caller is responsible for sending |subscription_id| values that
-  // that refer to existing subscriptions for type |type|. Requests to remove
-  // a nonexisting subscription with are invalid and result in a renderer crash.
-  UnsubscribeDeviceChangeNotifications(MediaDeviceType type,
-                                       uint32 subscription_id);
-
   // Subscribes |listener| to device-change notifications for the calling
   // frame/security origin. |listener| will receive notifications only for
   // device types decided by the boolean fields. Closing the pipe will cancel
@@ -112,13 +95,10 @@ interface MediaDevicesDispatcherHost {
 // This object lives in the renderer process and is used by the browser process
 // to pass device-change notifications to the renderer.
 interface MediaDevicesListener {
-  // TODO(c.padhi): Remove |subscription_id| once device change migration to
-  // blink is complete, see https://crbug.com/793297.
-  // Called to notify a change in the set of devices of type |type| for
-  // subscription |subscription_id|. |device_infos| contains the new list of
-  // devices of type |type|, with device and group IDs obfuscated according to
-  // the subscription's security origin.
+  // Called to notify a change in the set of devices of type |type|.
+  // |device_infos| contains the new list of devices of type |type|, with
+  // device and group IDs obfuscated according to the subscription's security
+  // origin.
   OnDevicesChanged(MediaDeviceType type,
-                   uint32 subscription_id,
                    array<MediaDeviceInfo> device_infos);
 };

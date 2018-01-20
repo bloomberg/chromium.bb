@@ -237,11 +237,6 @@ class MockMediaDevicesDispatcherHost
     audio_parameters_ = media::AudioParameters::UnavailableDeviceParams();
   }
 
-  MOCK_METHOD2(SubscribeDeviceChangeNotifications,
-               void(MediaDeviceType type, uint32_t subscription_id));
-  MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
-               void(MediaDeviceType type, uint32_t subscription_id));
-
   void AddMediaDevicesListener(
       bool subscribe_audio_input,
       bool subscribe_video_input,

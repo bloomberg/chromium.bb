@@ -25,8 +25,7 @@ namespace content {
 class MediaStreamManager;
 
 class CONTENT_EXPORT MediaDevicesDispatcherHost
-    : public blink::mojom::MediaDevicesDispatcherHost,
-      public MediaDeviceChangeSubscriber {
+    : public blink::mojom::MediaDevicesDispatcherHost {
  public:
   MediaDevicesDispatcherHost(int render_process_id,
                              int render_frame_id,
@@ -53,22 +52,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       GetAvailableVideoInputDeviceFormatsCallback client_callback) override;
   void GetAudioInputCapabilities(
       GetAudioInputCapabilitiesCallback client_callback) override;
-  void SubscribeDeviceChangeNotifications(MediaDeviceType type,
-                                          uint32_t subscription_id) override;
-  void UnsubscribeDeviceChangeNotifications(MediaDeviceType type,
-                                            uint32_t subscription_id) override;
   void AddMediaDevicesListener(
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
       blink::mojom::MediaDevicesListenerPtr listener) override;
-
-  // MediaDeviceChangeSubscriber implementation.
-  void OnDevicesChanged(MediaDeviceType type,
-                        const MediaDeviceInfoArray& device_infos) override;
-
-  void SetDeviceChangeListenerForTesting(
-      blink::mojom::MediaDevicesListenerPtr listener);
 
  private:
   using GetVideoInputDeviceFormatsCallback =
@@ -130,10 +118,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id,
                                                   bool try_in_use_first);
 
-  void NotifyDeviceChangeOnUIThread(const std::vector<uint32_t>& subscriptions,
-                                    MediaDeviceType type,
-                                    const MediaDeviceInfoArray& device_infos);
-
   // The following const fields can be accessed on any thread.
   const int render_process_id_;
   const int render_frame_id_;
@@ -145,12 +129,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
-  std::vector<uint32_t> device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
-
-  // TODO(c.padhi): Remove this field once device change migration to blink is
-  // complete, see https://crbug.com/793297.
-  // This field can only be accessed on the UI thread.
-  blink::mojom::MediaDevicesListenerPtr device_change_listener_;
 
   struct AudioInputCapabilitiesRequest;
   // Queued requests for audio-input capabilities.
