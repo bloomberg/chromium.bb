@@ -108,13 +108,18 @@ TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
 
   DummyExceptionStateForTesting exception_state;
 
-  EXPECT_EQ(nullptr, map->get("--foo", exception_state));
+  const CSSStyleValue* foo = map->get("--foo", exception_state);
+  ASSERT_NE(nullptr, foo);
+  ASSERT_EQ(CSSStyleValue::kUnparsedType, foo->GetType());
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(false, map->has("--foo", exception_state));
+  EXPECT_EQ(true, map->has("--foo", exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
-  EXPECT_EQ(CSSStyleValueVector(), map->getAll("--foo", exception_state));
+  CSSStyleValueVector fooAll = map->getAll("--foo", exception_state);
+  EXPECT_EQ(1U, fooAll.size());
+  ASSERT_NE(nullptr, fooAll[0]);
+  ASSERT_EQ(CSSStyleValue::kUnparsedType, fooAll[0]->GetType());
   EXPECT_FALSE(exception_state.HadException());
 
   EXPECT_EQ(nullptr, map->get("--quix", exception_state));

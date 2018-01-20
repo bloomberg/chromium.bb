@@ -5,6 +5,7 @@
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
 
 namespace blink {
 
@@ -14,6 +15,11 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
     const Vector<AtomicString>& custom_properties)
     : ComputedStylePropertyMap(node) {
   for (const auto& native_property : native_properties) {
+    // Silently drop shorthand properties.
+    DCHECK_NE(native_property, CSSPropertyInvalid);
+    if (CSSProperty::Get(native_property).IsShorthand())
+      continue;
+
     native_properties_.insert(native_property);
   }
 
@@ -35,18 +41,17 @@ const CSSValue* FilteredComputedStylePropertyMap::GetCustomProperty(
   if (!custom_properties_.Contains(AtomicString(property_name)))
     return nullptr;
 
-  return ComputedStylePropertyMap::GetCustomProperty(property_name);
+  const CSSValue* value =
+      ComputedStylePropertyMap::GetCustomProperty(property_name);
+  if (!value)
+    return CSSUnparsedValue::Create()->ToCSSValue();
+  return value;
 }
 
 void FilteredComputedStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
-  // FIXME: We should be filtering out properties from ComputedStylePropertyMap,
-  // but native_properties_ may contain invalid properties (e.g. shorthands).
-  // The correct behaviour would be to ignore invalid properties, but there
-  // are a few tests that rely on this.
   for (const auto property_id : native_properties_) {
-    const CSSValue* value = GetProperty(property_id);
-    if (value) {
+    if (const CSSValue* value = GetProperty(property_id)) {
       callback(CSSProperty::Get(property_id).GetPropertyNameAtomicString(),
                *value);
     }
@@ -54,15 +59,8 @@ void FilteredComputedStylePropertyMap::ForEachProperty(
 
   for (const auto& name : custom_properties_) {
     const CSSValue* value = GetCustomProperty(name);
-    // FIXME: If custom_properties_ contains an invalid custom property, the
-    // current behaviour is to treat it as valid. The best we can do here is
-    // returning a dummy 'initial' value until we fix this.
-    if (value) {
-      callback(name, *value);
-    } else {
-      callback(name,
-               *CSSCustomPropertyDeclaration::Create(name, CSSValueInitial));
-    }
+    DCHECK(value);
+    callback(name, *value);
   }
 }
 
