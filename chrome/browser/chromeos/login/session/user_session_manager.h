@@ -263,6 +263,12 @@ class UserSessionManager
 
   void Shutdown();
 
+  // Called when the user network policy has been parsed. If |send_password| is
+  // true, the user's password will be sent over dbus to the session manager to
+  // save in a keyring. Before the function exits, it will clear the user
+  // password from the UserContext regardless of the value of |send_password|.
+  void OnUserNetworkPolicyParsed(bool send_password);
+
  private:
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;

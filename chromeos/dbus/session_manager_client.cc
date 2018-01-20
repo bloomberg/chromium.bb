@@ -165,6 +165,27 @@ PolicyDescriptor MakePolicyDescriptor(
   return descriptor;
 }
 
+// Creates a pipe that contains the given data. The data will be prefixed by a
+// size_t sized variable containing the size of the data to read.
+base::ScopedFD CreatePasswordPipe(const std::string& data) {
+  int pipe_fds[2];
+  if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
+    DLOG(ERROR) << "Failed to create pipe";
+    return base::ScopedFD();
+  }
+  base::ScopedFD pipe_read_end(pipe_fds[0]);
+  base::ScopedFD pipe_write_end(pipe_fds[1]);
+
+  const size_t data_size = data.size();
+
+  base::WriteFileDescriptor(pipe_write_end.get(),
+                            reinterpret_cast<const char*>(&data_size),
+                            sizeof(data_size));
+  base::WriteFileDescriptor(pipe_write_end.get(), data.c_str(), data.size());
+
+  return pipe_read_end;
+}
+
 }  // namespace
 
 // The SessionManagerClient implementation used in production.
@@ -212,6 +233,25 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void SaveLoginPassword(const std::string& password) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerSaveLoginPassword);
+    dbus::MessageWriter writer(&method_call);
+
+    base::ScopedFD fd = CreatePasswordPipe(password);
+    if (fd.get() == -1) {
+      LOG(WARNING) << "Could not create password pipe.";
+      return;
+    }
+
+    writer.AppendFileDescriptor(fd.get());
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
   void StartSession(const cryptohome::Identification& cryptohome_id) override {
@@ -850,6 +890,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
                   VoidDBusMethodCallback callback) override {}
+  void SaveLoginPassword(const std::string& password) override {}
   void StartSession(const cryptohome::Identification& cryptohome_id) override {}
   void StopSession() override {}
   void NotifySupervisedUserCreationStarted() override {}

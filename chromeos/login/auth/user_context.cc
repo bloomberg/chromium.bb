@@ -59,6 +59,14 @@ Key* UserContext::GetKey() {
   return &key_;
 }
 
+const Key* UserContext::GetPasswordKey() const {
+  return &password_key_;
+}
+
+Key* UserContext::GetMutablePasswordKey() {
+  return &password_key_;
+}
+
 const std::string& UserContext::GetAuthCode() const {
   return auth_code_;
 }
@@ -129,6 +137,10 @@ void UserContext::SetKey(const Key& key) {
   key_ = key;
 }
 
+void UserContext::SetPasswordKey(const Key& key) {
+  password_key_ = key;
+}
+
 void UserContext::SetAuthCode(const std::string& auth_code) {
   auth_code_ = auth_code;
 }
@@ -188,6 +200,7 @@ void UserContext::SetSyncPasswordData(
 
 void UserContext::ClearSecrets() {
   key_.ClearSecret();
+  password_key_.ClearSecret();
   auth_code_.clear();
   refresh_token_.clear();
 }

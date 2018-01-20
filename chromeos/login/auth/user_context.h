@@ -52,6 +52,8 @@ class CHROMEOS_EXPORT UserContext {
   const std::string& GetGaiaID() const;
   const Key* GetKey() const;
   Key* GetKey();
+  const Key* GetPasswordKey() const;
+  Key* GetMutablePasswordKey();
   const std::string& GetAuthCode() const;
   const std::string& GetRefreshToken() const;
   const std::string& GetAccessToken() const;
@@ -72,6 +74,7 @@ class CHROMEOS_EXPORT UserContext {
 
   void SetAccountId(const AccountId& account_id);
   void SetKey(const Key& key);
+  void SetPasswordKey(const Key& key);
   void SetAuthCode(const std::string& auth_code);
   void SetRefreshToken(const std::string& refresh_token);
   void SetAccessToken(const std::string& access_token);
@@ -93,6 +96,7 @@ class CHROMEOS_EXPORT UserContext {
  private:
   AccountId account_id_;
   Key key_;
+  Key password_key_;
   std::string auth_code_;
   std::string refresh_token_;
   std::string access_token_;  // OAuthLogin scoped access token.
