@@ -87,7 +87,7 @@ egl::ThreadState* ThreadState::Get() {
             false,  // ignore_gpu_blacklist
             false,  // disable_gpu_driver_bug_workarounds
             false,  // log_gpu_control_list_decisions
-            command_line);
+            command_line, nullptr);
         Context::SetPlatformGpuFeatureInfo(gpu_feature_info);
       }
 
