@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html i18n-values="dir:textdirection;lang:language" dir="$i18n{textdirection}">
   <head>
     <meta charset="utf-8">
     <link rel="import" href="chrome://resources/html/polymer.html">
@@ -26,6 +26,41 @@
         -webkit-margin-start: 8px;
       }
 
+      #normal-error-message p:empty,
+      #normal-error-message a:empty {
+        display: none;
+      }
+
+      #profile-blocking-error-message {
+        margin-top: 30px;
+      }
+
+      #profile-blocking-error-message p {
+        -webkit-padding-start: 35px;
+        background-position: 0 3px;
+        background-repeat: no-repeat;
+        background-size: 20px;
+        line-height: 18px;
+      }
+
+      html[dir=rtl] #profile-blocking-error-message p {
+        background-position: right 3px;
+      }
+
+      #profile-blocking-error-message p:empty {
+        display: none;
+      }
+
+      #profile-blocking-error-message p:nth-child(1) {
+        background-image:
+          url(../../../../../ui/webui/resources/images/business.svg);
+      }
+
+      #profile-blocking-error-message p:nth-child(2) {
+        background-image:
+          url(../../../../../ui/webui/resources/images/info.svg);
+      }
+
 <if expr="is_macosx or is_linux">
       #closeButton {
         -webkit-margin-end: 8px;
@@ -37,9 +72,14 @@
   <body>
     <div class="container">
       <div class="top-title-bar">$i18n{signinErrorTitle}</div>
-      <div class="details">
+      <div id="normal-error-message" class="details">
         <p>$i18nRaw{signinErrorMessage}</p>
         <a id="learnMoreLink" href="#">$i18nRaw{signinErrorLearnMore}</a>
+      </div>
+      <div id="profile-blocking-error-message" class="details">
+        <p>$i18n{profileBlockedMessage}</p>
+        <p>$i18n{profileBlockedAddPersonSuggestion}</p>
+        <p>$i18n{profileBlockedRemoveProfileSuggestion}</p>
       </div>
       <div class="action-container">
         <paper-button class="primary-action" id="switchButton">

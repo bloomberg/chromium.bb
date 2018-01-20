@@ -86,6 +86,13 @@ class LoginUIService : public KeyedService {
                                   const base::string16& error_message,
                                   const base::string16& email);
 
+  // Set the profile blocking modal error dialog message.
+  virtual void SetProfileBlockingErrorMessage();
+
+  // Gets whether the Modal Signin Error dialog should display profile blocking
+  // error message.
+  bool IsDisplayingProfileBlockedErrorMessage() const;
+
   // Gets the last login result set through |DisplayLoginResult|.
   const base::string16& GetLastLoginResult() const;
 
@@ -105,6 +112,7 @@ class LoginUIService : public KeyedService {
 
   base::string16 last_login_result_;
   base::string16 last_login_error_email_;
+  bool is_displaying_profile_blocking_error_message_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUIService);
 };

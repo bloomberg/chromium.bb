@@ -39,6 +39,7 @@ class MockLoginUIService : public LoginUIService {
                void(Browser* browser,
                     const base::string16& error_message,
                     const base::string16& email));
+  MOCK_METHOD0(SetProfileBlockingErrorMessage, void(void));
 };
 
 std::unique_ptr<KeyedService> CreateLoginUIService(
@@ -165,7 +166,6 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
   EXPECT_CALL(*service, DisplayLoginResult(_, _, _));
 
   LaunchAuthenticatedUser("");
-
   histogram_tester_.ExpectUniqueSample(
       kAuthenticatedLaunchUserEventMetricsName,
       AuthenticatedLaunchUserEvent::SUPERVISED_PROFILE_BLOCKED_WARNING, 1);
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
   MockLoginUIService* service = static_cast<MockLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_, CreateLoginUIService));
-  EXPECT_CALL(*service, DisplayLoginResult(_, _, _));
+  EXPECT_CALL(*service, SetProfileBlockingErrorMessage());
 
   LaunchAuthenticatedUser("");
 
