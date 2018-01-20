@@ -179,10 +179,9 @@ void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
 // static
 std::vector<std::unique_ptr<NavigationThrottle>>
 RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
-    NavigationHandle* navigation_handle) {
+    NavigationHandleImpl* navigation_handle) {
   std::vector<std::unique_ptr<NavigationThrottle>> result;
-  FrameTreeNode* frame_tree_node =
-      static_cast<NavigationHandleImpl*>(navigation_handle)->frame_tree_node();
+  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
 
   // Interception might throttle navigations in inspected frames.
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
@@ -399,8 +398,14 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (handle->frame_tree_node() != frame_tree_node_)
+  if (handle->frame_tree_node() != frame_tree_node_) {
+    if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
+        handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
+      RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
+          handle->frame_tree_node());
+    }
     return;
+  }
 
   UpdateFrameHost(handle->GetRenderFrameHost());
   // UpdateFrameHost may destruct |this|.
@@ -408,10 +413,9 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
 
 void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  NotifyNavigated();
-
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle);
+  NotifyNavigated(FindAgentHost(handle->frame_tree_node()));
   if (handle->frame_tree_node() != frame_tree_node_)
     return;
   navigation_handles_.erase(handle);

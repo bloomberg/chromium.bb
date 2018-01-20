@@ -71,7 +71,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   virtual void InspectElement(DevToolsSession* session, int x, int y);
 
   void NotifyCreated();
-  void NotifyNavigated();
+  void NotifyNavigated(DevToolsAgentHostImpl* host);
   void ForceDetachAllClients();
   void ForceDetachSession(DevToolsSession* session);
   DevToolsIOContext* GetIOContext() { return &io_context_; }
