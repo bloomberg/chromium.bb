@@ -563,9 +563,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   bool selection_only =
       local_painting_info.GetGlobalPaintFlags() & kGlobalPaintSelectionOnly;
+
   {  // Begin block for the lifetime of any filter.
+    size_t display_item_list_size_before_painting =
+        context.GetPaintController().NewDisplayItemList().size();
+
     Optional<FilterPainter> filter_painter;
     if (image_filter) {
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
       // Compute clips outside the filter (#3, see above for discussion).
       PaintLayerFragments filter_fragments;
       paint_layer_.AppendSingleFragmentIgnoringPagination(
@@ -579,6 +584,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                  ? ClipRect()
                                  : filter_fragments[0].background_rect,
                              local_painting_info, paint_flags);
+    } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+               paint_layer_.PaintsWithFilters()) {
     }
 
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
@@ -627,6 +634,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (should_paint_overlay_scrollbars) {
       PaintOverflowControlsForFragments(layer_fragments, context,
                                         local_painting_info, paint_flags);
+    }
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        !is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
+        display_item_list_size_before_painting ==
+            context.GetPaintController().NewDisplayItemList().size()) {
+      // If a layer with filters painted nothing, we need to issue a no-op
+      // display item to ensure the filters won't be ignored.
+      PaintEmptyContentForFilters(context);
     }
   }  // FilterPainter block
 
@@ -1362,6 +1378,25 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
   DrawingRecorder recorder(context, client, type);
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   context.FillRect(snapped_clip_rect, Color::kBlack);
+}
+
+// Generate a no-op DrawingDisplayItem to ensure a non-empty chunk for the
+// filter without content.
+void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
+  DCHECK(paint_layer_.PaintsWithFilters());
+
+  ScopedPaintChunkProperties paint_chunk_properties(
+      context.GetPaintController(),
+      *paint_layer_.GetLayoutObject()
+           .FirstFragment()
+           .LocalBorderBoxProperties(),
+      paint_layer_, DisplayItem::kEmptyContentForFilters);
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context, paint_layer_, DisplayItem::kEmptyContentForFilters))
+    return;
+  DrawingRecorder recorder(context, paint_layer_,
+                           DisplayItem::kEmptyContentForFilters);
 }
 
 }  // namespace blink

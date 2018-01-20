@@ -24,12 +24,14 @@ void AppendDisplayItemToCcDisplayItemList(const DisplayItem& display_item,
                                           const IntRect& visual_rect_in_layer) {
   DCHECK(display_item.IsDrawing());
 
-  sk_sp<const PaintRecord> record =
-      static_cast<const DrawingDisplayItem&>(display_item).GetPaintRecord();
-  if (!record)
-    return;
   list.StartPaint();
-  list.push<cc::DrawRecordOp>(std::move(record));
+  if (auto record =
+          static_cast<const DrawingDisplayItem&>(display_item).GetPaintRecord())
+    list.push<cc::DrawRecordOp>(std::move(record));
+  // StartPaint() and EndPaintOfUnpaired() are called regardless of whether the
+  // record is null to ensure we'll set correct visual rects for the enclosing
+  // paired display items. This is especially important for filters that draw
+  // content by themselves but don't enclose any non-empty DrawingDisplayItem.
   list.EndPaintOfUnpaired(visual_rect_in_layer);
 }
 
