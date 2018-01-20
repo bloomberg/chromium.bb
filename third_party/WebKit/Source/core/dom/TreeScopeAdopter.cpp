@@ -86,7 +86,7 @@ void TreeScopeAdopter::MoveTreeToNewScope(Node& root) const {
         if (shadow->GetType() == ShadowRootType::V0) {
           new_document.SetShadowCascadeOrder(
               ShadowCascadeOrder::kShadowCascadeV0);
-        } else if (shadow->IsV1()) {
+        } else if (shadow->IsV1() && !shadow->IsUserAgent()) {
           new_document.SetShadowCascadeOrder(
               ShadowCascadeOrder::kShadowCascadeV1);
         }
