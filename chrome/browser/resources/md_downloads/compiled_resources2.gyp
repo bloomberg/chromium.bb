@@ -75,7 +75,6 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-announcer/compiled_resources2.gyp:iron-a11y-announcer-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-menu/compiled_resources2.gyp:paper-menu-extracted',
         'browser_proxy',
         'search_service',
       ],
