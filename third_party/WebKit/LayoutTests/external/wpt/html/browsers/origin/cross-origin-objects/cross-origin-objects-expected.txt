@@ -1,30 +1,24 @@
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
-Blocked access to external URL http://www1.127.0.0.1:8001/html/browsers/origin/cross-origin-objects/frame.html
 This is a testharness.js-based test.
-FAIL Basic sanity-checking assert_equals: Need to run the top-level test from domain 127.0.0.1 expected "127.0.0.1" but got "web-platform.test"
-FAIL Only whitelisted properties are accessible cross-origin assert_throws: Should throw when accessing speechSynthesis on Window function "function () { C[prop]; }" did not throw
+PASS Basic sanity-checking
+PASS Only whitelisted properties are accessible cross-origin
 PASS [[GetPrototypeOf]] should return null
-FAIL [[SetPrototypeOf]] should throw assert_throws: proto set on cross-origin Location function "function () { C.location.__proto__ = new Object(); }" did not throw
+FAIL [[SetPrototypeOf]] should return false assert_throws: proto setter |call| on cross-origin Window function "function() { protoSetter.call(C, new Object()); }" threw object "SecurityError: Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame." ("SecurityError") expected object "TypeError" ("TypeError")
 PASS [[IsExtensible]] should return true for cross-origin objects
-FAIL [[PreventExtensions]] should throw for cross-origin objects assert_throws: preventExtensions on cross-origin Window should throw function "function () { Object.preventExtensions(C) }" did not throw
+FAIL [[PreventExtensions]] should throw for cross-origin objects assert_throws: preventExtensions on cross-origin Window should throw function "function() { Object.preventExtensions(C) }" threw object "SecurityError: Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame." ("SecurityError") expected object "TypeError" ("TypeError")
 FAIL [[GetOwnProperty]] - Properties on cross-origin objects should be reported |own| Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
-FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly assert_equals: property descriptor for location should be non-enumerable expected false but got true
+FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly assert_equals: property descriptor for 0 should be enumerable expected true but got false
 PASS [[Delete]] Should throw on cross-origin objects
-FAIL [[DefineOwnProperty]] Should throw for cross-origin objects assert_throws: Can't define cross-origin value property length function "function () { Object.defineProperty(obj, prop, valueDesc); }" did not throw
-PASS [[Enumerate]] should return an empty iterator
-FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Window lengths differ, expected 863 got 13
+PASS [[DefineOwnProperty]] Should throw for cross-origin objects
+FAIL Can only enumerate safelisted enumerable properties assert_equals: Enumerate all enumerable safelisted cross-origin Window properties expected 2 but got 0
+FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Window lengths differ, expected 15 got 13
+FAIL [[OwnPropertyKeys]] should return the right symbol-named properties for cross-origin objects assert_array_equals: Object.getOwnPropertySymbols() should return the three symbol-named properties that are exposed on a cross-origin Window lengths differ, expected 3 got 0
+FAIL [[OwnPropertyKeys]] should place the symbols after the property names after the subframe indices assert_array_equals: Reflect.ownKeys should start with the indices exposed on the cross-origin window. property 0, expected "0" but got "window"
 PASS A and B jointly observe the same identity for cross-origin Window and Location
 PASS Cross-origin functions get local Function.prototype
 FAIL Cross-origin Window accessors get local Function.prototype Cannot read property 'name' of undefined
 FAIL Same-origin observers get different functions for cross-origin objects assert_true: same-origin Window functions get their own object expected true got false
 FAIL Same-origin observers get different accessors for cross-origin Window assert_true: different Window accessors per-incumbent script settings object expected true got false
-FAIL Same-origin observers get different accessors for cross-origin Location assert_true: different Location accessors per-incumbent script settings object expected true got false
+FAIL Same-origin observers get different accessors for cross-origin Location Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
+FAIL {}.toString.call() does the right thing on cross-origin objects assert_equals: expected "[object Object]" but got "[object Location]"
 Harness: the test ran to completion.
 
