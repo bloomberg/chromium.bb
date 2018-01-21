@@ -398,7 +398,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
 int od_ec_enc_tell(const od_ec_enc *enc) {
   /*The 10 here counteracts the offset of -9 baked into cnt, and adds 1 extra
      bit, which we reserve for terminating the stream.*/
-  return (enc->offs + enc->end_offs) * 8 + enc->cnt + enc->nend_bits + 10;
+  return (enc->cnt + 10 + enc->nend_bits) + (enc->offs + enc->end_offs) * 8;
 }
 
 /*Returns the number of bits "used" by the encoded symbols so far.
