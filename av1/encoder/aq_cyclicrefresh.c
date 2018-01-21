@@ -479,6 +479,18 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   struct segmentation *const seg = &cm->seg;
   const int apply_cyclic_refresh = apply_cyclic_refresh_bitrate(cm, rc);
+#if CONFIG_SEGMENT_PRED_LAST
+  int resolution_change =
+      (cm->width != cm->last_width || cm->height != cm->last_height) &&
+      cm->prev_frame;
+  if (resolution_change) {
+    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    av1_clearall_segfeatures(seg);
+    aom_clear_system_state();
+    av1_disable_segmentation(seg);
+    return;
+  }
+#endif
   if (cm->current_video_frame == 0) cr->low_content_avg = 0.0;
   // Don't apply refresh on key frame or enhancement layer frames.
   if (!apply_cyclic_refresh || cm->frame_type == KEY_FRAME) {

@@ -48,9 +48,23 @@ static int get_aq_c_strength(int q_index, aom_bit_depth_t bit_depth) {
 void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   struct segmentation *const seg = &cm->seg;
+#if CONFIG_SEGMENT_PRED_LAST
+  int resolution_change =
+      (cm->width != cm->last_width || cm->height != cm->last_height) &&
+      cm->prev_frame;
+#endif
 
   // Make SURE use of floating point in this function is safe.
   aom_clear_system_state();
+
+#if CONFIG_SEGMENT_PRED_LAST
+  if (resolution_change) {
+    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    av1_clearall_segfeatures(seg);
+    av1_disable_segmentation(seg);
+    return;
+  }
+#endif
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
       cpi->refresh_alt_ref_frame ||

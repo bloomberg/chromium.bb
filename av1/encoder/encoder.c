@@ -310,11 +310,17 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
 static void setup_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  // Set up entropy context depending on frame type. The decoder mandates
-  // the use of the default context, index 0, for keyframes and inter
-  // frames where the error_resilient_mode or intra_only flag is set. For
-  // other inter-frames the encoder currently uses only two contexts;
-  // context 1 for ALTREF frames and context 0 for the others.
+// Set up entropy context depending on frame type. The decoder mandates
+// the use of the default context, index 0, for keyframes and inter
+// frames where the error_resilient_mode or intra_only flag is set. For
+// other inter-frames the encoder currently uses only two contexts;
+// context 1 for ALTREF frames and context 0 for the others.
+
+#if CONFIG_SEGMENT_PRED_LAST
+  if (cm->prev_frame) cm->last_frame_seg_map = cm->prev_frame->seg_map;
+  cm->current_frame_seg_map = cm->cur_frame->seg_map;
+#endif
+
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
   } else {

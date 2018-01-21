@@ -47,6 +47,18 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
   struct segmentation *seg = &cm->seg;
   int i;
 
+#if CONFIG_SEGMENT_PRED_LAST
+  int resolution_change =
+      (cm->width != cm->last_width || cm->height != cm->last_height) &&
+      cm->prev_frame;
+  if (resolution_change) {
+    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    av1_clearall_segfeatures(seg);
+    aom_clear_system_state();
+    av1_disable_segmentation(seg);
+    return;
+  }
+#endif
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
       cpi->refresh_alt_ref_frame ||
       (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {

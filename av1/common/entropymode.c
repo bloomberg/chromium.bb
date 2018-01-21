@@ -3081,13 +3081,15 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 
   av1_clearall_segfeatures(&cm->seg);
 
-  if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
-#if !CONFIG_SEGMENT_PRED_LAST
-    memset(cm->last_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
-#else
-    memset(cm->last_frame_seg_map, 0,
-           (cm->prev_frame->mi_cols * cm->prev_frame->mi_rows));
+#if CONFIG_SEGMENT_PRED_LAST
+  cm->current_frame_seg_map = cm->cur_frame->seg_map;
 #endif
+
+#if !CONFIG_SEGMENT_PRED_LAST
+  if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
+    memset(cm->last_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
+#endif
+
   if (cm->current_frame_seg_map)
     memset(cm->current_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
 
