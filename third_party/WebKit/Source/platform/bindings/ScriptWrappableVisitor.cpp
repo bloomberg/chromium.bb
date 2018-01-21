@@ -215,12 +215,6 @@ void ScriptWrappableVisitor::MarkWrapperHeader(HeapObjectHeader* header) const {
   headers_to_unmark_.push_back(header);
 }
 
-void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
-    const ScriptWrappable* script_wrappable) const {
-  DOMWrapperWorld::MarkWrappersInAllWorlds(
-      const_cast<ScriptWrappable*>(script_wrappable), this);
-}
-
 void ScriptWrappableVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const TraceWrapperV8Reference<v8::Value>& dst_object) {
@@ -246,7 +240,7 @@ void ScriptWrappableVisitor::WriteBarrier(
 
 void ScriptWrappableVisitor::TraceWrappers(
     DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    ScriptWrappable* key) {
+    const ScriptWrappable* key) const {
   Visit(wrapper_map, key);
 }
 
@@ -278,8 +272,8 @@ void ScriptWrappableVisitor::Visit(
 }
 
 void ScriptWrappableVisitor::Visit(DOMWrapperMap<ScriptWrappable>* wrapper_map,
-                                   ScriptWrappable* key) {
-  wrapper_map->MarkWrapper(key);
+                                   const ScriptWrappable* key) const {
+  wrapper_map->MarkWrapper(const_cast<ScriptWrappable*>(key));
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(

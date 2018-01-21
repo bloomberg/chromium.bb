@@ -193,15 +193,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
 
   // ScriptWrappableVisitor overrides.
 
-  void MarkWrappersInAllWorlds(
-      const ScriptWrappable* traceable) const override {
-    // Only mark the main thread wrapper as we cannot properly intercept
-    // DOMWrapperMap::markWrapper. This means that edges from the isolated
-    // worlds are missing in the snapshot.
-    traceable->MarkWrapper(this);
-  }
-
-  void DispatchTraceWrappers(const TraceWrapperBase* traceable) const override {
+  void DispatchTraceWrappers(const TraceWrapperBase* traceable) const final {
     if (!only_trace_single_level_ || !traceable->IsScriptWrappable() ||
         !reinterpret_cast<const ScriptWrappable*>(traceable)
              ->ContainsWrapper() ||
@@ -214,11 +206,19 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
  protected:
   // ScriptWrappableVisitor override.
   void Visit(
-      const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const override {
+      const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const final {
     const v8::PersistentBase<v8::Value>* value = &traced_wrapper.Get();
     if (current_parent_ && current_parent_ != value)
       edges_.push_back(std::make_pair(current_parent_, value));
     found_v8_wrappers_.insert(value);
+  }
+
+  void Visit(DOMWrapperMap<ScriptWrappable>*,
+             const ScriptWrappable* key) const final {
+    // The found_v8_wrappers are PersistentBase pointers. We only mark the
+    // main world wrapper as we cannot properly record DOMWrapperMap values.
+    // This means that edges from the isolated worlds are missing in the
+    // snapshot. This will be fixed with crbug.com/749490.
   }
 
  private:

@@ -114,7 +114,6 @@ class AdjustAndMarkTrait<T, false> {
     // API boundary, i.e., tell V8 that an object is alive. Actual marking
     // will be done in V8.
     visitor->DispatchTraceWrappers(self);
-    visitor->MarkWrappersInAllWorlds(self);
   }
 };
 

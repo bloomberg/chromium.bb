@@ -193,9 +193,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
 
   // Trace a wrapper in a non-main world.
-  // TODO(ulan): call this from ScriptWrappable::TraceWrappers and
-  // remove all MarkWrappersInAllWorlds methods.
-  void TraceWrappers(DOMWrapperMap<ScriptWrappable>*, ScriptWrappable* key);
+  void TraceWrappers(DOMWrapperMap<ScriptWrappable>*,
+                     const ScriptWrappable* key) const;
 
   virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
   template <typename T>
@@ -205,20 +204,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
   // Catch all handlers needed because of mixins except for Supplement<T>.
   void DispatchTraceWrappers(const void*) const { CHECK(false); }
-
-  // Mark wrappers in all worlds for the given ScriptWrappable as alive in V8.
-  virtual void MarkWrappersInAllWorlds(const ScriptWrappable*) const;
-  void MarkWrappersInAllWorlds(const TraceWrapperBase*) const {
-    // TraceWrapperBase cannot point to V8 and thus doesn't need to
-    // mark wrappers.
-  }
-  template <typename T>
-  void MarkWrappersInAllWorlds(const Supplement<T>*) const {
-    // Supplement<T> which is not ScriptWrappable cannot point to V8 and thus
-    // doesn't need to mark wrappers.
-  }
-  // Catch all handlers needed because of mixins except for Supplement<T>.
-  void MarkWrappersInAllWorlds(const void*) const { CHECK(false); }
 
   // v8::EmbedderHeapTracer interface.
 
@@ -239,7 +224,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   // TODO(ulan): extract Visit methods to a general visitor interface.
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const;
   virtual void Visit(const WrapperDescriptor&) const;
-  virtual void Visit(DOMWrapperMap<ScriptWrappable>*, ScriptWrappable* key);
+  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
+                     const ScriptWrappable* key) const;
 
   v8::Isolate* isolate() const { return isolate_; }
 
