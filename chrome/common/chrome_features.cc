@@ -181,6 +181,11 @@ const base::Feature kCopylessPaste{"CopylessPaste",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enable project Crostini, Linux VMs on Chrome OS.
+const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Enables or disables desktop ios promotion, which shows a promotion to the
 // user promoting Chrome for iOS.
