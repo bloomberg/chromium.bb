@@ -18,11 +18,160 @@ sys.path.append(path)
 import symbol_extractor
 
 
+class SymbolOffsetProcessor(object):
+  """Utility for processing symbols in binaries.
+
+  This class is used to translate between general offsets into a binary and the
+  starting offset of symbols in the binary. Because later phases in orderfile
+  generation have complicated strategies for resolving multiple symbols that map
+  to the same binary offset, this class is concerned with locating a symbol
+  containing a binary offset. If such a symbol exists, the start offset will be
+  unique, even when there are multiple symbol names at the same location in the
+  binary.
+
+  In the function names below, "dump" is used to refer to arbitrary offsets in a
+  binary (eg, from a profiling run), while "offset" refers to a symbol
+  offset. The dump offsets are relative to the start of text, as returned by
+  lightweight_cygprofile.cc.
+
+  This class manages expensive operations like extracting symbols, so that
+  higher-level operations can be done in different orders without the caller
+  managing all the state.
+  """
+
+  def __init__(self, binary_filename):
+    self._binary_filename = binary_filename
+    self._symbol_infos = None
+    self._name_to_symbol = None
+    self._offset_to_primary = None
+
+  def SymbolInfos(self):
+    """The symbols associated with this processor's binary.
+
+    The symbols are ordered by offset.
+
+    Returns:
+      [symbol_extractor.SymbolInfo]
+    """
+    if self._symbol_infos is None:
+      self._symbol_infos = symbol_extractor.SymbolInfosFromBinary(
+          self._binary_filename)
+      self._symbol_infos.sort(key=lambda s: s.offset)
+      logging.info('%d symbols from %s',
+                   len(self._symbol_infos), self._binary_filename)
+    return self._symbol_infos
+
+  def NameToSymbolMap(self):
+    """Map symbol names to their full information.
+
+    Returns:
+      {symbol name (str): symbol_extractor.SymbolInfo}
+    """
+    if self._name_to_symbol is None:
+      self._name_to_symbol = {s.name: s for s in self.SymbolInfos()}
+    return self._name_to_symbol
+
+  def OffsetToPrimaryMap(self):
+    """The map of a symbol offset in this binary to its primary symbol.
+
+    Several symbols can be aliased to the same address, through ICF. This
+    returns the first one. The order is consistent for a given binary, as it's
+    derived from the file layout. We assert that all aliased symbols are the
+    same size.
+
+    Returns:
+      {offset (int): primary (symbol_extractor.SymbolInfo)}
+    """
+    if self._offset_to_primary is None:
+      self._offset_to_primary = {}
+      for s in self.SymbolInfos():
+        if s.offset not in self._offset_to_primary:
+          self._offset_to_primary[s.offset] = s
+        else:
+          curr = self._offset_to_primary[s.offset]
+          if curr.size != s.size:
+            assert curr.size == 0 or s.size == 0, (
+                'Nonzero size mismatch between {} and {}'.format(
+                    curr.name, s.name))
+            # Upgrade to a symbol with nonzero size, otherwise don't change
+            # anything so that we use the earliest nonzero-size symbol.
+            if curr.size == 0 and s.size != 0:
+              self._offset_to_primary[s.offset] = s
+
+    return self._offset_to_primary
+
+  def GetReachedOffsetsFromDump(self, dump):
+    """Find the symbol offsets from a list of binary offsets.
+
+    The dump is a list offsets into a .text section. This finds the symbols
+    which contain the dump offsets, and returns their offsets. Note that while
+    usually a symbol offset corresponds to a single symbol, in some cases
+    several symbols will map to the same offset. For that reason this function
+    returns only the offset list. See cyglog_to_orderfile.py for computing more
+    information about symbols.
+
+    Args:
+     dump: (int iterable) Dump offsets, for example as returned by MergeDumps().
+
+    Returns:
+      [int] Reached symbol offsets.
+    """
+    dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
+    logging.info('Offset to Symbol size = %d', len(dump_offset_to_symbol_info))
+    assert max(dump) / 4 <= len(dump_offset_to_symbol_info)
+    already_seen = set()
+    reached_offsets = []
+    reached_return_addresses_not_found = 0
+    for dump_offset in dump:
+      symbol_info = dump_offset_to_symbol_info[dump_offset / 4]
+      if symbol_info is None:
+        reached_return_addresses_not_found += 1
+        continue
+      if symbol_info.offset in already_seen:
+        continue
+      reached_offsets.append(symbol_info.offset)
+      already_seen.add(symbol_info.offset)
+    if reached_return_addresses_not_found:
+      logging.warning('%d return addresses don\'t map to any symbol',
+                      reached_return_addresses_not_found)
+    return reached_offsets
+
+  def MatchSymbolNames(self, symbol_names):
+    """Find the symbols in this binary which match a list of symbols.
+
+    Args:
+      symbol_names (str iterable) List of symbol names.
+
+    Returns:
+      [symbol_extractor.SymbolInfo] Symbols in this binary matching the names.
+    """
+    our_symbol_names = set(s.name for s in self.SymbolInfos())
+    matched_names = our_symbol_names.intersection(set(symbol_names))
+    return [self.NameToSymbolMap()[n] for n in matched_names]
+
+  def _GetDumpOffsetToSymbolInfo(self):
+    """Computes an array mapping each word in .text to a symbol.
+
+    Returns:
+      [symbol_extractor.SymbolInfo or None] For every 4 bytes of the .text
+        section, maps it to a symbol, or None.
+    """
+    min_offset = min(s.offset for s in self.SymbolInfos())
+    max_offset = max(s.offset + s.size for s in self.SymbolInfos())
+    text_length_words = (max_offset - min_offset) / 4
+    offset_to_symbol_info = [None for _ in xrange(text_length_words)]
+    for s in self.SymbolInfos():
+      offset = s.offset - min_offset
+      for i in range(offset / 4, (offset + s.size) / 4):
+        offset_to_symbol_info[i] = s
+    return offset_to_symbol_info
+
+
 def _SortedFilenames(filenames):
   """Returns filenames in ascending timestamp order.
 
   Args:
-    filenames: ([str]) List of filenames, matching.  *-TIMESTAMP.*.
+    filenames: (str iterable) List of filenames, matching.  *-TIMESTAMP.*.
 
   Returns:
     [str] Ordered by ascending timestamp.
@@ -41,7 +190,7 @@ def MergeDumps(filenames):
   """Merges several dumps.
 
   Args:
-    filenames: [str] List of dump filenames.
+    filenames: (str iterable) List of dump filenames.
 
   Returns:
     [int] Ordered list of reached offsets. Each offset only appears
@@ -58,147 +207,22 @@ def MergeDumps(filenames):
   return result
 
 
-def GetOffsetToSymbolInfo(symbol_infos):
-  """From a list of symbol infos, returns a offset -> symbol info array.
+def GetReachedOffsetsFromDumpFiles(dump_filenames, library_filename):
+  """Produces a list of symbol offsets reached by the dumps.
 
   Args:
-    symbol_infos: ([symbol_extractor.SymbolInfo]) List of sumbols extracted from
-                  the native library.
+    dump_filenames (str iterable) A list of dump filenames.
+    library_filename (str) The library file which the dumps refer to.
 
   Returns:
-    [symbol_extractor.SymbolInfo or None] For every 4 bytes of the .text
-    section, maps it to a symbol, or None.
+    [int] A list of symbol offsets. This order of symbol offsets produced is
+      given by the deduplicated order of offsets found in dump_filenames (see
+      also MergeDumps().
   """
-  min_offset = min(s.offset for s in symbol_infos)
-  max_offset = max(s.offset + s.size for s in symbol_infos)
-  text_length_words = (max_offset - min_offset) / 4
-  offset_to_symbol_info = [None for _ in xrange(text_length_words)]
-  for s in symbol_infos:
-    offset = s.offset - min_offset
-    for i in range(offset / 4, (offset + s.size) / 4):
-      offset_to_symbol_info[i] = s
-  return offset_to_symbol_info
-
-
-def GetOffsetToSymbolArray(instrumented_native_lib_filename):
-  """From the native library, maps .text offsets to symbols.
-
-  Args:
-    instrumented_native_lib_filename: (str) Native library filename.
-                                      Has to be the instrumented version.
-
-  Returns:
-    [symbol_extractor.SymbolInfo or None] For every 4 bytes of the .text
-    section, maps it to a symbol, or None.
-  """
-  symbol_infos = symbol_extractor.SymbolInfosFromBinary(
-      instrumented_native_lib_filename)
-  logging.info('%d Symbols', len(symbol_infos))
-  return GetOffsetToSymbolInfo(symbol_infos)
-
-
-def GetReachedSymbolsFromDump(offsets, offset_to_symbol_info):
-  """From a dump and an offset->symbol array, returns reached symbols.
-
-  Args:
-   offsets: ([int]) As returned by MergeDumps()
-   offset_to_symbol_info: As returned by GetOffsetToSymbolArray()
-
-  Returns:
-    [symbol_extractor.SymbolInfo] Reached symbols.
-  """
-  logging.info('Reached offsets = %d', len(offsets))
-  logging.info('Offset to Symbol size = %d', len(offset_to_symbol_info))
-  assert max(offsets) / 4 <= len(offset_to_symbol_info)
-  already_seen = set()
-  reached_symbols = []
-  reached_return_addresses_not_found = 0
-  for offset in offsets:
-    symbol_info = offset_to_symbol_info[offset / 4]
-    if symbol_info is None:
-      reached_return_addresses_not_found += 1
-      continue
-    if symbol_info in already_seen:
-      continue
-    reached_symbols.append(symbol_info)
-    already_seen.add(symbol_info)
-  if reached_return_addresses_not_found:
-    logging.warning('%d return addresses don\'t map to any symbol',
-                    reached_return_addresses_not_found)
-  return reached_symbols
-
-
-def SymbolNameToPrimary(symbol_infos):
-  """Maps a symbol names to a "primary" symbol.
-
-  Several symbols can be aliased to the same address, through ICF. This returns
-  the first one. The order is consistent for a given binary, as it's derived
-  from the file layout.
-
-  Args:
-    symbol_infos: ([symbol_extractor.SymbolInfo])
-
-  Returns:
-    {name (str): primary (symbol_extractor.SymbolInfo)}
-  """
-  symbol_name_to_primary = {}
-  offset_to_symbol_info = {}
-  for s in symbol_infos:
-    if s.offset not in offset_to_symbol_info:
-      offset_to_symbol_info[s.offset] = s
-  for s in symbol_infos:
-    symbol_name_to_primary[s.name] = offset_to_symbol_info[s.offset]
-  return symbol_name_to_primary
-
-
-def MatchSymbolsInRegularBuild(reached_symbol_infos,
-                               regular_native_lib_filename):
-  """Match a list of symbols to canonical ones on the regular build.
-
-  Args:
-    reached_symbol_infos: ([symbol_extractor.SymbolInfo]) Reached symbol
-      in the instrumented build.
-    regular_native_lib_filename: (str) regular build filename.
-
-  Returns:
-    [symbol_extractor.SymbolInfo] list of matched canonical symbols.
-  """
-  regular_build_symbol_infos = symbol_extractor.SymbolInfosFromBinary(
-      regular_native_lib_filename)
-  regular_build_symbol_names = set(s.name for s in regular_build_symbol_infos)
-  reached_symbol_names = set(s.name for s in reached_symbol_infos)
-  logging.info('Reached symbols = %d', len(reached_symbol_names))
-  matched_names = reached_symbol_names.intersection(regular_build_symbol_names)
-  logging.info('Matched symbols = %d', len(matched_names))
-
-  symbol_name_to_primary = SymbolNameToPrimary(regular_build_symbol_infos)
-  matched_primary_symbols = []
-  for symbol in reached_symbol_names:
-    if symbol in matched_names:
-      matched_primary_symbols.append(symbol_name_to_primary[symbol])
-  return matched_primary_symbols
-
-
-def GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
-    dump_filenames, native_lib_filename, output_filename):
-  """Merges a list of dumps, returns reached symbols and maybe writes offsets.
-
-  Args:
-    dump_filenames: ([str]) List of dump filenames.
-    native_lib_filename: (str) Path to the native library.
-    output_filename: (str or None) Offset output path, if not None.
-
-  Returns:
-    [symbol_extractor.SymbolInfo] Reached symbols.
-  """
-  offsets = MergeDumps(dump_filenames)
-  offset_to_symbol_info = GetOffsetToSymbolArray(native_lib_filename)
-  reached_symbols = GetReachedSymbolsFromDump(offsets, offset_to_symbol_info)
-  if output_filename:
-    offsets = [s.offset for s in reached_symbols]
-    with open(output_filename, 'w') as f:
-      f.write('\n'.join('%d' % offset for offset in offsets))
-  return reached_symbols
+  dump = MergeDumps(dump_filenames)
+  logging.info('Reached offsets = %d', len(dump))
+  processor = SymbolOffsetProcessor(library_filename)
+  return processor.GetReachedOffsetsFromDump(dump)
 
 
 def CreateArgumentParser():
@@ -215,6 +239,9 @@ def CreateArgumentParser():
   parser.add_argument('--offsets-output', type=str,
                       help='Output filename for the symbol offsets',
                       required=False, default=None)
+  parser.add_argument('--library-name', default='libchrome.so',
+                      help=('Chrome shared library name (usually libchrome.so '
+                            'or libmonochrome.so'))
   return parser
 
 
@@ -223,19 +250,31 @@ def main():
   parser = CreateArgumentParser()
   args = parser.parse_args()
   logging.info('Merging dumps')
-  dumps = args.dumps.split(',')
-  sorted_dumps = _SortedFilenames(dumps)
+  dump_files = args.dumps.split(',')
+  dumps = MergeDumps(_SortedFilenames(dump_files))
 
   instrumented_native_lib = os.path.join(args.instrumented_build_dir,
-                                         'lib.unstripped', 'libchrome.so')
+                                         'lib.unstripped', args.library_name)
   regular_native_lib = os.path.join(args.build_dir,
-                                    'lib.unstripped', 'libchrome.so')
+                                    'lib.unstripped', args.library_name)
 
-  reached_symbols = GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
-      sorted_dumps, instrumented_native_lib, args.offsets_output)
-  logging.info('Reached Symbols = %d', len(reached_symbols))
-  matched_in_regular_build = MatchSymbolsInRegularBuild(reached_symbols,
-                                                        regular_native_lib)
+  instrumented_processor = SymbolOffsetProcessor(instrumented_native_lib)
+
+  reached_offsets = instrumented_processor.GetReachedOffsetsFromDumps(dumps)
+  if args.offsets_output:
+    with file(args.offsets_output, 'w') as f:
+      f.write('\n'.join(map(str, reached_offsets)))
+  logging.info('Reached Offsets = %d', len(reached_offsets))
+
+  primary_map = instrumented_processor.OffsetToPrimaryMap()
+  reached_primary_symbols = set(
+      primary_map[offset] for offset in reached_offsets)
+  logging.info('Reached symbol names = %d', len(reached_primary_symbols))
+
+  regular_processor = SymbolOffsetProcessor(regular_native_lib)
+  matched_in_regular_build = regular_processor.MatchSymbolNames(
+      s.name for s in reached_primary_symbols)
+  logging.info('Matched symbols = %d', len(matched_in_regular_build))
   total_size = sum(s.size for s in matched_in_regular_build)
   logging.info('Total reached size = %d', total_size)
 
