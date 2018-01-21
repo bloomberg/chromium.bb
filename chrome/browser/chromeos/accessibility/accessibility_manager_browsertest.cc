@@ -289,6 +289,8 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
     ash::Shell::Get()->accessibility_controller()->SetPrefServiceForTest(
         profile->GetPrefs());
     default_autoclick_delay_ = GetAutoclickDelay();
+    // Spin the message loop to ensure the initial CheckBrailleState() is done.
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDownOnMainThread() override {
@@ -299,6 +301,7 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
     braille_controller_.SetAvailable(available);
     braille_controller_.GetObserver()->OnBrailleDisplayStateChanged(
         *braille_controller_.GetDisplayState());
+    AccessibilityManager::Get()->FlushForTesting();
   }
 
   int default_autoclick_delay() const { return default_autoclick_delay_; }
