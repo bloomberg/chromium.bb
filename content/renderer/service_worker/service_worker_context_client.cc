@@ -338,36 +338,19 @@ bool RunEventCallback(MapType* map,
 
 // Creates a callback which takes an |event_id|, which calls the given event's
 // callback with ABORTED status and removes it from |map|.
-template <typename MapType>
-base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map) {
+template <typename MapType, typename... Args>
+base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
+                                                                 Args... args) {
   return base::BindOnce(
-      [](MapType* map, base::Time dispatched_time, int event_id) {
+      [](MapType* map, Args... args, base::Time dispatched_time, int event_id) {
         auto iter = map->find(event_id);
         DCHECK(iter != map->end());
         std::move(iter->second)
             .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 dispatched_time);
+                 std::forward<Args>(args)..., dispatched_time);
         map->erase(iter);
       },
-      map, base::Time::Now());
-}
-
-// Same as CreateAbortCallback() for InstallEvent only.
-// DispatchInstallEventCallback has an additional parameter, so this is
-// separately defined.
-template <typename MapType>
-base::OnceCallback<void(int /* event_id */)> CreateInstallEventAbortCallback(
-    MapType* map) {
-  return base::BindOnce(
-      [](MapType* map, base::Time dispatched_time, int event_id) {
-        auto iter = map->find(event_id);
-        DCHECK(iter != map->end());
-        std::move(iter->second)
-            .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 false /* has_fetch_handler */, dispatched_time);
-        map->erase(iter);
-      },
-      map, base::Time::Now());
+      map, std::forward<Args>(args)..., base::Time::Now());
 }
 
 void OnResponseBlobDispatchDone(
@@ -1465,8 +1448,8 @@ void ServiceWorkerContextClient::DispatchInstallEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchInstallEvent");
 
-  int event_id = context_->timeout_timer->StartEvent(
-      CreateInstallEventAbortCallback(&context_->install_event_callbacks));
+  int event_id = context_->timeout_timer->StartEvent(CreateAbortCallback(
+      &context_->install_event_callbacks, false /* has_fetch_handler */));
   context_->install_event_callbacks.emplace(event_id, std::move(callback));
   proxy_->DispatchInstallEvent(event_id);
 }
