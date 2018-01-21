@@ -346,7 +346,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
 
   auto* client = PrintCompositeClient::FromWebContents(web_contents());
   if (IsOopifEnabled() && !client->for_preview() &&
-      !document->settings().is_modifiable()) {
+      document->settings().is_modifiable()) {
     client->DoComposite(params.metafile_data_handle, params.data_size,
                         base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
                                        weak_ptr_factory_.GetWeakPtr(), params));
