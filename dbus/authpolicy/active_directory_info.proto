@@ -82,8 +82,10 @@ enum ErrorType {
   ERROR_OU_ACCESS_DENIED = 32;
   // Setting computer organizational unit failed with unspecified error.
   ERROR_SETTING_OU_FAILED = 33;
+  // Fetching user policy failed because Windows policy was unavailable.
+  ERROR_NO_WINDOWS_POLICY = 34;
   // Should be the last.
-  ERROR_COUNT = 34;
+  ERROR_COUNT = 35;
 }
 
 // Message sent to Chrome by authpolicyd as a response of a successful
