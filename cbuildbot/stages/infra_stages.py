@@ -18,17 +18,16 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 
 
-_GO_BINDIR = '/usr/bin'
-_GO_PACKAGES = {
-    'lucifer': (
-        'lucifer_run_job',
-        'lucifer_watcher',
-    ),
-    'tast-cmd': (
-        'remote_test_runner',
-        'tast',
-    ),
-}
+# Prefix appended to package names in _GO_PACKAGES when building CIPD packages.
+_CIPD_PACKAGE_PREFIX = 'chromiumos/infra/'
+
+# Names of packages to build and upload. These are Portage package names (minus
+# categories) but are also used to produce CIPD package names.
+_GO_PACKAGES = [
+    'lucifer',
+    'tast-cmd',
+]
+
 _CRED_FILE = ('/creds/service_accounts/'
               'service-account-chromeos-cipd-uploader.json')
 
@@ -54,10 +53,16 @@ class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
   def PerformStage(self):
     """Build infra Go packages."""
     self._PreparePackagesDir()
-    for package, binaries in _GO_PACKAGES.items():
+    for package in _GO_PACKAGES:
+      files = self._GetPortagePackageFiles(package)
+      if not files:
+        logging.warning('Skipping package %s with no files', package)
+        continue
+
       package_path = _GetPackagePath(self.archive_path, package)
       with osutils.TempDir() as staging_dir:
-        self._StagePackage(staging_dir, package, binaries)
+        logging.info('Staging %s with %d file(s)', package, len(files))
+        _StageChrootFilesIntoDir(staging_dir, files)
         self._BuildCIPDPackage(package_path, package, staging_dir)
       logging.info('Uploading %s package artifact', package)
       self.UploadArtifact(package_path, archive=False)
@@ -72,19 +77,26 @@ class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
     if not os.path.exists(self.archive_path):
       self.archive.SetupArchivePath()
 
-  def _StagePackage(self, staging_dir, package, binaries):
-    """Stage binaries for packaging."""
-    logging.info('Staging %s', package)
-    binary_paths = [os.path.join(_GO_BINDIR, binary)
-                    for binary in binaries]
-    _StageChrootFilesIntoDir(staging_dir, binary_paths)
+  def _GetPortagePackageFiles(self, package):
+    """Gets paths of files owned by an installed Portage package.
+
+    Args:
+      package: Portage package name without category.
+
+    Returns:
+      A list of paths of files owned by the package.
+    """
+    cmd = ['equery', '--no-color', '--quiet', 'f', '--filter=obj,cmd', package]
+    result = commands.RunBuildScript(self._build_root, cmd, enter_chroot=True,
+                                     redirect_stdout=True)
+    return result.output.splitlines()
 
   def _BuildCIPDPackage(self, package_path, package, staging_dir):
     """Build CIPD package."""
     logging.info('Building CIPD package %s', package)
     cipd.BuildPackage(
         cipd_path=cipd.GetCIPDFromCache(),
-        package='chromiumos/infra/%s' % package,
+        package=(_CIPD_PACKAGE_PREFIX + package),
         in_dir=staging_dir,
         outfile=package_path,
     )
