@@ -623,11 +623,6 @@ bool HTMLTextAreaElement::SupportsAutofocus() const {
   return true;
 }
 
-const AtomicString& HTMLTextAreaElement::DefaultAutocapitalize() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-  return sentences;
-}
-
 void HTMLTextAreaElement::CopyNonAttributePropertiesFromElement(
     const Element& source) {
   const HTMLTextAreaElement& source_element =

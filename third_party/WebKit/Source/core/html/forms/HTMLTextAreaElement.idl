@@ -64,8 +64,4 @@ interface HTMLTextAreaElement : HTMLElement {
     void setSelectionRange(unsigned long start,
                            unsigned long end,
                            optional DOMString direction);
-
-    // HTML autocapitalize proposal
-    // https://github.com/mounirlamouri/html-autocapitalize/blob/master/proposal.md
-    [Measure] attribute DOMString autocapitalize;
 };

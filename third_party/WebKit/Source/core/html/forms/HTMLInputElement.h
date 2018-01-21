@@ -380,8 +380,6 @@ class CORE_EXPORT HTMLInputElement
                             Element* old_focused_element,
                             WebFocusType,
                             InputDeviceCapabilities* source_capabilities) final;
-  bool SupportsAutocapitalize() const final;
-  const AtomicString& DefaultAutocapitalize() const final;
 
   bool IsOptionalFormControl() const final { return !IsRequiredFormControl(); }
   bool IsRequiredFormControl() const final;

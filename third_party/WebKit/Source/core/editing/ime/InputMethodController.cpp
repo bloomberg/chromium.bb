@@ -318,18 +318,14 @@ StyleableMarker::Thickness BoolIsThickToStyleableMarkerThickness(
 }
 
 int ComputeAutocapitalizeFlags(const Element* element) {
-  const TextControlElement* const text_control =
-      ToTextControlElementOrNull(element);
-  if (!text_control)
-    return 0;
-
-  if (!text_control->SupportsAutocapitalize())
+  const HTMLElement* const html_element = ToHTMLElementOrNull(element);
+  if (!html_element)
     return 0;
 
   // We set the autocapitalization flag corresponding to the "used
   // autocapitalization hint" for the focused element:
   // https://html.spec.whatwg.org/multipage/interaction.html#used-autocapitalization-hint
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
     const AtomicString& input_type = input->type();
     if (input_type == InputTypeNames::email ||
         input_type == InputTypeNames::url ||
@@ -347,7 +343,7 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
   DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
 
-  const AtomicString& autocapitalize = text_control->autocapitalize();
+  const AtomicString& autocapitalize = html_element->autocapitalize();
   if (autocapitalize == none)
     flags |= kWebTextInputFlagAutocapitalizeNone;
   else if (autocapitalize == characters)

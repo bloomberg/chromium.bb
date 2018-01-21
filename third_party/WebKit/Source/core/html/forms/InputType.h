@@ -194,8 +194,6 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual Decimal FindClosestTickMarkValue(const Decimal&);
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
   virtual const QualifiedName& SubResourceAttributeName() const;
-  virtual bool SupportsAutocapitalize() const;
-  virtual const AtomicString& DefaultAutocapitalize() const;
   virtual void CopyNonAttributeProperties(const HTMLInputElement&);
   virtual void OnAttachWithLayoutObject();
   virtual void OnDetachWithLayoutObject();

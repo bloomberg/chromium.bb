@@ -148,11 +148,6 @@ void SearchInputType::UpdateView() {
   UpdateCancelButtonVisibility();
 }
 
-const AtomicString& SearchInputType::DefaultAutocapitalize() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-  return sentences;
-}
-
 void SearchInputType::UpdateCancelButtonVisibility() {
   Element* button = GetElement().UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SearchClearButton());

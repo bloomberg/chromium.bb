@@ -35,6 +35,7 @@ namespace http://www.w3.org/1999/xhtml
     property attachShadow
     property attributeStyleMap
     property attributes
+    property autocapitalize
     property baseURI
     property before
     property blur
@@ -625,7 +626,6 @@ html element input
     property accept
     property align
     property alt
-    property autocapitalize
     property autocomplete
     property autofocus
     property checkValidity
@@ -951,7 +951,6 @@ html element td
 html element template
     property content
 html element textarea
-    property autocapitalize
     property autofocus
     property checkValidity
     property cols

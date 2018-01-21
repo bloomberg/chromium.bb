@@ -51,7 +51,6 @@ class SearchInputType final : public BaseTextInputType {
   void DidSetValueByUserEdit() override;
   bool SupportsInputModeAttribute() const override;
   void UpdateView() override;
-  const AtomicString& DefaultAutocapitalize() const override;
   void DispatchSearchEvent() override;
 
   void SearchEventTimerFired(TimerBase*);
