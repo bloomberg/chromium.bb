@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
+#include "chrome/browser/chromeos/dbus/finch_features_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
@@ -125,6 +126,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/services/chrome_features_service_provider.h"
 #include "chromeos/dbus/services/component_updater_service_provider.h"
 #include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -365,6 +367,13 @@ class DBusServices {
                 std::make_unique<
                     ChromeComponentUpdaterServiceProviderDelegate>())));
 
+    finch_features_service_ = CrosDBusService::Create(
+        kChromeFeaturesServiceName,
+        dbus::ObjectPath(kChromeFeaturesServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<ChromeFeaturesServiceProvider>(
+                std::make_unique<FinchFeaturesServiceProviderDelegate>())));
+
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
 
@@ -414,6 +423,7 @@ class DBusServices {
     liveness_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
+    finch_features_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -442,6 +452,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> liveness_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
+  std::unique_ptr<CrosDBusService> finch_features_service_;
 
   ChromeConsoleServiceProviderDelegate console_service_provider_delegate_;
 
