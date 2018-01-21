@@ -1554,6 +1554,7 @@ class WaylandToplevel : public aura::WindowObserver {
       AddState(&states, ZXDG_TOPLEVEL_V6_STATE_ACTIVATED);
     zxdg_toplevel_v6_send_configure(resource_, size.width(), size.height(),
                                     &states);
+    wl_array_release(&states);
   }
 
   wl_resource* const resource_;
