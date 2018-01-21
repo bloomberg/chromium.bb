@@ -240,6 +240,35 @@ NOAUTOREVERT=true
 Bug: 768828
 """)
 
+    def fix_branch(self):
+        git = Git(cwd=self._repo_root)
+        status = self._get_local_change_status(git)
+
+        # TODO(tkent): Apply "update" command only to files without "D" status.
+        # TODO(tkent): Apply "move" command only to them
+        # TODO(tkent): Show a message about "D" status files.
+
+    def _get_local_change_status(self, git):
+        """Returns a list of tuples representing local change summary.
+
+        Each tuple contains two strings. The first one is file change status
+        such as "M", "D".  See --diff-filter section of git-diff manual page.
+        The second one is file name relative to the repository top.
+        """
+
+        base_commit = git.run(['show-branch', '--merge-base', 'master', 'HEAD']).strip()
+        # Note that file names in the following command result are always
+        # slash-separated, even on Windows.
+        status_lines = git.run(['diff', '--name-status', '--no-renames', base_commit]).split('\n')
+        status_tuple_list = []
+        for l in status_lines:
+            items = l.split('\t')
+            if len(items) == 2:
+                status_tuple_list.append(tuple(items))
+            elif len(l) > 0:
+                _log.warning('Unrecognized diff output: "%s"', l)
+        return status_tuple_list
+
     def _get_checked_in_files(self, git):
         files_text = git.run(['ls-files',
                               'third_party/WebKit/Source',
@@ -533,12 +562,17 @@ def main():
     move_parser.add_argument('--git', dest='run_git', action='store_true',
                              help='Run |git mv| command instead of |mv|.')
 
+    fixbranch_parser = sub_parsers.add_parser('fixbranch')
+    fixbranch_parser.set_defaults(command='fixbranch', run=True, run_git=True)
+
     options = parser.parse_args()
     mover = MoveBlinkSource(FileSystem(), options, get_chromium_src_dir())
     if options.command == 'update':
         mover.update()
     elif options.command == 'move':
         mover.move()
+    elif options.command == 'fixbranch':
+        mover.fix_branch()
 
 
 if __name__ == '__main__':
