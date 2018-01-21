@@ -539,8 +539,10 @@ class OrderfileGenerator(object):
       self._step_recorder.BeginStep('Process cyglog')
       if self._options.lightweight_instrumentation:
         assert os.path.exists(self._compiler.lib_chrome_so)
-        process_profiles.GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
-            files, self._compiler.lib_chrome_so, self._MERGED_CYGLOG_FILENAME)
+        offsets = process_profiles.GetReachedOffsetsFromDumpFiles(
+            files, self._compiler.lib_chrome_so)
+        with open(self._MERGED_CYGLOG_FILENAME, 'w') as f:
+          f.write('\n'.join(map(str, offsets)))
       else:
         with open(self._MERGED_CYGLOG_FILENAME, 'w') as merged_cyglog:
           self._step_recorder.RunCommand([self._MERGE_TRACES_SCRIPT] + files,
