@@ -67,7 +67,9 @@ class DOMWrapperMap {
     map_.SetReference(key, parent);
   }
 
-  bool ContainsKey(KeyType* key) { return map_.Contains(key); }
+  bool ContainsKey(const KeyType* key) {
+    return map_.Contains(const_cast<KeyType*>(key));
+  }
 
   WARN_UNUSED_RESULT bool Set(KeyType* key,
                               const WrapperTypeInfo* wrapper_type_info,

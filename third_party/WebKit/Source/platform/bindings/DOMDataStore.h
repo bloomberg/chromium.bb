@@ -116,7 +116,8 @@ class DOMDataStore {
     return Current(isolate).Set(isolate, object, wrapper_type_info, wrapper);
   }
 
-  static bool ContainsWrapper(ScriptWrappable* object, v8::Isolate* isolate) {
+  static bool ContainsWrapper(const ScriptWrappable* object,
+                              v8::Isolate* isolate) {
     return Current(isolate).ContainsWrapper(object);
   }
 
@@ -142,6 +143,11 @@ class DOMDataStore {
     return updated;
   }
 
+  void TraceWrappers(const ScriptWrappable* script_wrappable,
+                     const ScriptWrappableVisitor* visitor) {
+    visitor->TraceWrappers(&wrapper_map_.value(), script_wrappable);
+  }
+
   void MarkWrapper(ScriptWrappable* script_wrappable) {
     wrapper_map_->MarkWrapper(script_wrappable);
   }
@@ -159,7 +165,7 @@ class DOMDataStore {
     return wrapper_map_->SetReturnValueFrom(return_value, object);
   }
 
-  bool ContainsWrapper(ScriptWrappable* object) {
+  bool ContainsWrapper(const ScriptWrappable* object) {
     if (is_main_world_)
       return object->ContainsWrapper();
     return wrapper_map_->ContainsKey(object);
