@@ -642,15 +642,6 @@ const QualifiedName& InputType::SubResourceAttributeName() const {
   return QualifiedName::Null();
 }
 
-bool InputType::SupportsAutocapitalize() const {
-  return false;
-}
-
-const AtomicString& InputType::DefaultAutocapitalize() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
-  return none;
-}
-
 void InputType::CopyNonAttributeProperties(const HTMLInputElement&) {}
 
 void InputType::OnAttachWithLayoutObject() {}

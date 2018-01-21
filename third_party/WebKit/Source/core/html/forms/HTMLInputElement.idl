@@ -99,10 +99,6 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect] attribute DOMString useMap;
 
-    // HTML autocapitalize proposal
-    // https://github.com/mounirlamouri/html-autocapitalize/blob/master/proposal.md
-    [Measure] attribute DOMString autocapitalize;
-
     // HTML Media Capture
     // https://w3c.github.io/html-media-capture/#the-capture-attribute
     [Measure, RuntimeEnabled=MediaCapture, Reflect] attribute DOMString capture;

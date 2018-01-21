@@ -38,6 +38,7 @@ interface HTMLElement : Element {
     [CEReactions, Reflect] attribute DOMString accessKey;
     [CEReactions, CustomElementCallbacks] attribute boolean draggable;
     [CEReactions] attribute boolean spellcheck;
+    [Measure] attribute DOMString autocapitalize;
 
     // HTMLElement implements ElementContentEditable
     // https://html.spec.whatwg.org/#contenteditable

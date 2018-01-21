@@ -89,8 +89,6 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   String GetPlaceholderValue() const final;
   void UpdatePlaceholderText() override;
   bool IsEmptyValue() const override { return value().IsEmpty(); }
-  bool SupportsAutocapitalize() const override { return true; }
-  const AtomicString& DefaultAutocapitalize() const override;
 
   bool IsOptionalFormControl() const override {
     return !IsRequiredFormControl();

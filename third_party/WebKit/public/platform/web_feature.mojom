@@ -487,10 +487,6 @@ enum WebFeature {
   kV8Permissions_Query_Method = 750,
   // The above items are available in M43 branch.
 
-  kV8HTMLInputElement_Autocapitalize_AttributeGetter = 754,
-  kV8HTMLInputElement_Autocapitalize_AttributeSetter = 755,
-  kV8HTMLTextAreaElement_Autocapitalize_AttributeGetter = 756,
-  kV8HTMLTextAreaElement_Autocapitalize_AttributeSetter = 757,
   kSVGHrefBaseVal = 758,
   kSVGHrefAnimVal = 759,
   kV8CSSRuleList_Item_Method = 760,
@@ -1853,6 +1849,8 @@ enum WebFeature {
   kRTCPeerConnectionWithActiveCsp = 2346,
   kImageDecodingAttribute = 2347,
   kImageDecodeAPI = 2348,
+  kV8HTMLElement_Autocapitalize_AttributeGetter = 2349,
+  kV8HTMLElement_Autocapitalize_AttributeSetter = 2350,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

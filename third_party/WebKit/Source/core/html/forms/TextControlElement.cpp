@@ -659,32 +659,6 @@ SelectionInDOMTree TextControlElement::Selection() const {
       .Build();
 }
 
-const AtomicString& TextControlElement::autocapitalize() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, off, ("off"));
-  DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
-  DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
-  DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
-  DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-
-  const AtomicString& value = FastGetAttribute(autocapitalizeAttr);
-  if (DeprecatedEqualIgnoringCase(value, none) ||
-      DeprecatedEqualIgnoringCase(value, off))
-    return none;
-  if (DeprecatedEqualIgnoringCase(value, characters))
-    return characters;
-  if (DeprecatedEqualIgnoringCase(value, words))
-    return words;
-  if (DeprecatedEqualIgnoringCase(value, sentences))
-    return sentences;
-
-  // Invalid or missing value.
-  return DefaultAutocapitalize();
-}
-
-void TextControlElement::setAutocapitalize(const AtomicString& autocapitalize) {
-  setAttribute(autocapitalizeAttr, autocapitalize);
-}
-
 int TextControlElement::maxLength() const {
   int value;
   if (!ParseHTMLInteger(FastGetAttribute(maxlengthAttr), value))
@@ -764,9 +738,6 @@ void TextControlElement::ScheduleSelectEvent() {
 
 void TextControlElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == autocapitalizeAttr)
-    UseCounter::Count(GetDocument(), WebFeature::kAutocapitalizeAttribute);
-
   if (params.name == placeholderAttr) {
     UpdatePlaceholderText();
     UpdatePlaceholderVisibility();

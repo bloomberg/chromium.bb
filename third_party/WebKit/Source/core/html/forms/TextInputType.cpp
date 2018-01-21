@@ -61,9 +61,4 @@ bool TextInputType::SupportsInputModeAttribute() const {
   return true;
 }
 
-const AtomicString& TextInputType::DefaultAutocapitalize() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-  return sentences;
-}
-
 }  // namespace blink

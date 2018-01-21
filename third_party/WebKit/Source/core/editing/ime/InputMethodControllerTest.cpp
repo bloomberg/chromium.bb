@@ -3115,11 +3115,15 @@ TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
       {"<textarea autocapitalize='words'></textarea>",
        kWebTextInputFlagAutocapitalizeWords},
 
-      {"<div contenteditable></div>", 0},
-      {"<div contenteditable autocapitalize='none'></div>", 0},
-      {"<div contenteditable autocapitalize='characters'></div>", 0},
-      {"<div contenteditable autocapitalize='sentences'></div>", 0},
-      {"<div contenteditable autocapitalize='words'></div>", 0},
+      {"<div contenteditable></div>", kWebTextInputFlagAutocapitalizeSentences},
+      {"<div contenteditable autocapitalize='none'></div>",
+       kWebTextInputFlagAutocapitalizeNone},
+      {"<div contenteditable autocapitalize='characters'></div>",
+       kWebTextInputFlagAutocapitalizeCharacters},
+      {"<div contenteditable autocapitalize='sentences'></div>",
+       kWebTextInputFlagAutocapitalizeSentences},
+      {"<div contenteditable autocapitalize='words'></div>",
+       kWebTextInputFlagAutocapitalizeWords},
   };
 
   const int autocapitalize_mask = kWebTextInputFlagAutocapitalizeNone |

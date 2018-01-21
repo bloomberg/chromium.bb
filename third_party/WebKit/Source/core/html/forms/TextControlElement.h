@@ -102,11 +102,6 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
       TextFieldSelectionDirection = kSelectionHasNoDirection);
   SelectionInDOMTree Selection() const;
 
-  virtual bool SupportsAutocapitalize() const = 0;
-  virtual const AtomicString& DefaultAutocapitalize() const = 0;
-  const AtomicString& autocapitalize() const;
-  void setAutocapitalize(const AtomicString&);
-
   int maxLength() const;
   int minLength() const;
   void setMaxLength(int, ExceptionState&);

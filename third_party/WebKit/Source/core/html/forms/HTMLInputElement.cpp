@@ -1725,14 +1725,6 @@ String HTMLInputElement::GetPlaceholderValue() const {
   return !SuggestedValue().IsEmpty() ? SuggestedValue() : StrippedPlaceholder();
 }
 
-bool HTMLInputElement::SupportsAutocapitalize() const {
-  return input_type_->SupportsAutocapitalize();
-}
-
-const AtomicString& HTMLInputElement::DefaultAutocapitalize() const {
-  return input_type_->DefaultAutocapitalize();
-}
-
 String HTMLInputElement::DefaultToolTip() const {
   return input_type_->DefaultToolTip(*input_type_view_);
 }
