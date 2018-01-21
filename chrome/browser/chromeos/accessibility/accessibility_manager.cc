@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
@@ -1254,15 +1253,6 @@ void AccessibilityManager::ActiveUserChanged(
     SetProfile(ProfileManager::GetActiveUserProfile());
 }
 
-void AccessibilityManager::SetProfileForTest(Profile* profile) {
-  SetProfile(profile);
-}
-
-void AccessibilityManager::SetBrailleControllerForTest(
-    BrailleController* controller) {
-  g_braille_controller_for_test = controller;
-}
-
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   if (!PlayEarcon(SOUND_SHUTDOWN,
                   PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
@@ -1396,21 +1386,9 @@ void AccessibilityManager::Observe(
 void AccessibilityManager::OnBrailleDisplayStateChanged(
     const DisplayState& display_state) {
   braille_display_connected_ = display_state.available;
-  if (braille_display_connected_) {
-    // TODO(crbug.com/594887): Fix for mash by moving notifying accessibility
-    // status change to ash for BrailleDisplayStateChanged.
-    if (GetAshConfig() == ash::Config::MASH)
-      return;
-
-    ash::Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
-        true, ash::A11Y_NOTIFICATION_SHOW);
-  }
+  accessibility_controller_->BrailleDisplayStateChanged(
+      braille_display_connected_);
   UpdateBrailleImeState();
-
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED,
-      braille_display_connected_, ash::A11Y_NOTIFICATION_SHOW);
-  NotifyAccessibilityStatusChanged(details);
 }
 
 void AccessibilityManager::OnBrailleKeyEvent(const KeyEvent& event) {
@@ -1547,6 +1525,20 @@ void AccessibilityManager::ToggleDictation() {
     dictation_ = std::make_unique<DictationChromeos>(profile_);
 
   dictation_->OnToggleDictation();
+}
+
+void AccessibilityManager::SetProfileForTest(Profile* profile) {
+  SetProfile(profile);
+}
+
+// static
+void AccessibilityManager::SetBrailleControllerForTest(
+    BrailleController* controller) {
+  g_braille_controller_for_test = controller;
+}
+
+void AccessibilityManager::FlushForTesting() {
+  accessibility_controller_.FlushForTesting();
 }
 
 }  // namespace chromeos

@@ -61,6 +61,8 @@ class ASH_EXPORT AccessibilityController
                                 AccessibilityNotificationVisibility notify);
   bool IsSpokenFeedbackEnabled() const;
 
+  bool braille_display_connected() const { return braille_display_connected_; }
+
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert);
 
@@ -83,6 +85,7 @@ class ASH_EXPORT AccessibilityController
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;
+  void BrailleDisplayStateChanged(bool connected) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
@@ -125,6 +128,7 @@ class ASH_EXPORT AccessibilityController
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
   bool mono_audio_enabled_ = false;
   bool spoken_feedback_enabled_ = false;
+  bool braille_display_connected_ = false;
 
   // TODO(warx): consider removing this and replacing it with a more reliable
   // way (https://crbug.com/800270).

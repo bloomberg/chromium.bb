@@ -55,7 +55,6 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_CURSOR_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_TAP_DRAGGING,
-  ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED
 };
 
 struct AccessibilityStatusEventDetails {
@@ -227,11 +226,6 @@ class AccessibilityManager
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
-  void SetProfileForTest(Profile* profile);
-
-  static void SetBrailleControllerForTest(
-      extensions::api::braille_display_private::BrailleController* controller);
-
   // Initiates play of shutdown sound and returns it's duration.
   base::TimeDelta PlayShutdownSound();
 
@@ -304,6 +298,12 @@ class AccessibilityManager
 
   // Starts or stops dictation (type what you speak).
   void ToggleDictation();
+
+  // Test helpers:
+  void SetProfileForTest(Profile* profile);
+  static void SetBrailleControllerForTest(
+      extensions::api::braille_display_private::BrailleController* controller);
+  void FlushForTesting();
 
  protected:
   AccessibilityManager();

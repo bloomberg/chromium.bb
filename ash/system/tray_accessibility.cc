@@ -75,7 +75,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_AUTOCLICK;
   if (delegate->IsVirtualKeyboardEnabled())
     state |= A11Y_VIRTUAL_KEYBOARD;
-  if (delegate->IsBrailleDisplayConnected())
+  if (controller->braille_display_connected())
     state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
   if (controller->IsMonoAudioEnabled())
     state |= A11Y_MONO_AUDIO;

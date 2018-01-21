@@ -38,6 +38,7 @@ class TestAccessibilityController : ash::mojom::AccessibilityController {
     was_client_set_ = true;
   }
   void SetDarkenScreen(bool darken) override {}
+  void BrailleDisplayStateChanged(bool connected) override {}
 
   bool was_client_set() const { return was_client_set_; }
 

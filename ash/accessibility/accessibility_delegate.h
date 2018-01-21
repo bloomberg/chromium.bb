@@ -78,9 +78,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 
-  // Returns true if a braille display is connected to the system.
-  virtual bool IsBrailleDisplayConnected() const = 0;
-
   // Cancel all current and queued speech immediately.
   virtual void SilenceSpokenFeedback() const = 0;
 

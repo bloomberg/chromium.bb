@@ -192,11 +192,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return AccessibilityManager::Get()->ShouldShowAccessibilityMenu();
   }
 
-  bool IsBrailleDisplayConnected() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsBrailleDisplayConnected();
-  }
-
   void SilenceSpokenFeedback() const override {
     TtsController::GetInstance()->Stop();
   }

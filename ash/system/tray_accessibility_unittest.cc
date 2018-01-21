@@ -82,7 +82,7 @@ TEST_F(TrayAccessibilityTest, ShowNotificationOnSpokenFeedback) {
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
   message_center::NotificationList::Notifications notifications =
       MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(1u, notifications.size());
+  ASSERT_EQ(1u, notifications.size());
   EXPECT_EQ(kChromeVoxEnabledTitle, (*notifications.begin())->title());
   EXPECT_EQ(kChromeVoxEnabled, (*notifications.begin())->message());
 
@@ -90,6 +90,48 @@ TEST_F(TrayAccessibilityTest, ShowNotificationOnSpokenFeedback) {
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_SHOW);
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
+}
+
+TEST_F(TrayAccessibilityTest, ShowNotificationOnBrailleDisplayStateChanged) {
+  const base::string16 kBrailleConnected =
+      base::ASCIIToUTF16("Braille display connected.");
+  const base::string16 kChromeVoxEnabled =
+      base::ASCIIToUTF16("Press Ctrl + Alt + Z to disable spoken feedback.");
+  const base::string16 kBrailleConnectedAndChromeVoxEnabledTitle =
+      base::ASCIIToUTF16("Braille and ChromeVox are enabled");
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+
+  controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
+  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  // Connecting a braille display when spoken feedback is already enabled
+  // should only show the message about the braille display.
+  controller->BrailleDisplayStateChanged(true);
+  message_center::NotificationList::Notifications notifications =
+      MessageCenter::Get()->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  EXPECT_EQ(base::string16(), (*notifications.begin())->title());
+  EXPECT_EQ(kBrailleConnected, (*notifications.begin())->message());
+
+  // Neither disconnecting a braille display, nor disabling spoken feedback
+  // should show any notification.
+  controller->BrailleDisplayStateChanged(false);
+  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(0u, notifications.size());
+  controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_SHOW);
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(0u, notifications.size());
+  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+
+  // Connecting a braille display should enable spoken feedback and show
+  // both messages.
+  controller->BrailleDisplayStateChanged(true);
+  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  notifications = MessageCenter::Get()->GetVisibleNotifications();
+  EXPECT_EQ(kBrailleConnectedAndChromeVoxEnabledTitle,
+            (*notifications.begin())->title());
+  EXPECT_EQ(kChromeVoxEnabled, (*notifications.begin())->message());
 }
 
 }  // namespace
