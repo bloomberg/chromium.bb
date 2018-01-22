@@ -54,6 +54,14 @@ class FrameSelectionTest : public EditingTestBase {
   // Returns if a word is is selected.
   bool SelectWordAroundPosition(const Position&);
 
+  void MoveRangeSelectionInternal(const Position& base,
+                                  const Position& extent,
+                                  TextGranularity granularity) {
+    Selection().MoveRangeSelectionInternal(
+        SelectionInDOMTree::Builder().SetBaseAndExtent(base, extent).Build(),
+        granularity);
+  }
+
  private:
   Persistent<Text> text_node_;
 };
@@ -224,24 +232,20 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   EXPECT_EQ_SELECTED_TEXT("a");
 
   // "Foo B|ar B>az," with the Character granularity.
-  Selection().MoveRangeSelection(CreateVisiblePosition(Position(text, 5)),
-                                 CreateVisiblePosition(Position(text, 9)),
-                                 TextGranularity::kCharacter);
+  MoveRangeSelectionInternal(Position(text, 5), Position(text, 9),
+                             TextGranularity::kCharacter);
   EXPECT_EQ_SELECTED_TEXT("ar B");
   // "Foo B|ar B>az," with the Word granularity.
-  Selection().MoveRangeSelection(CreateVisiblePosition(Position(text, 5)),
-                                 CreateVisiblePosition(Position(text, 9)),
-                                 TextGranularity::kWord);
+  MoveRangeSelectionInternal(Position(text, 5), Position(text, 9),
+                             TextGranularity::kWord);
   EXPECT_EQ_SELECTED_TEXT("Bar Baz");
   // "Fo<o B|ar Baz," with the Character granularity.
-  Selection().MoveRangeSelection(CreateVisiblePosition(Position(text, 5)),
-                                 CreateVisiblePosition(Position(text, 2)),
-                                 TextGranularity::kCharacter);
+  MoveRangeSelectionInternal(Position(text, 5), Position(text, 2),
+                             TextGranularity::kCharacter);
   EXPECT_EQ_SELECTED_TEXT("o B");
   // "Fo<o B|ar Baz," with the Word granularity.
-  Selection().MoveRangeSelection(CreateVisiblePosition(Position(text, 5)),
-                                 CreateVisiblePosition(Position(text, 2)),
-                                 TextGranularity::kWord);
+  MoveRangeSelectionInternal(Position(text, 5), Position(text, 2),
+                             TextGranularity::kWord);
   EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 
@@ -249,10 +253,9 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionNoLiveness) {
   SetBodyContent("<span id=sample>xyz</span>");
   Element* const sample = GetDocument().getElementById("sample");
   // Select as: <span id=sample>^xyz|</span>
-  Selection().MoveRangeSelection(
-      CreateVisiblePosition(Position(sample->firstChild(), 1)),
-      CreateVisiblePosition(Position(sample->firstChild(), 1)),
-      TextGranularity::kWord);
+  MoveRangeSelectionInternal(Position(sample->firstChild(), 1),
+                             Position(sample->firstChild(), 1),
+                             TextGranularity::kWord);
   EXPECT_EQ("xyz", Selection().SelectedText());
   sample->insertBefore(Text::Create(GetDocument(), "abc"),
                        sample->firstChild());

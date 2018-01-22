@@ -125,8 +125,8 @@ class CORE_EXPORT FrameSelection final
   // extent is resolved to the same position as the current base, this
   // function will do nothing.
   void MoveRangeSelectionExtent(const IntPoint&);
-  void MoveRangeSelection(const VisiblePosition& base,
-                          const VisiblePosition& extent,
+  void MoveRangeSelection(const IntPoint& base_point,
+                          const IntPoint& extent_point,
                           TextGranularity);
 
   TextGranularity Granularity() const { return granularity_; }
@@ -252,6 +252,8 @@ class CORE_EXPORT FrameSelection final
   GranularityStrategy* GetGranularityStrategy();
 
   IntRect ComputeRectToScroll(RevealExtentOption);
+
+  void MoveRangeSelectionInternal(const SelectionInDOMTree&, TextGranularity);
 
   // Implementation of |SynchronousMutationObserver| member functions.
   void ContextDestroyed(Document*) final;

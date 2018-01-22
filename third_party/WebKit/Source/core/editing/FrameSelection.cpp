@@ -1137,19 +1137,25 @@ void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
           .Build());
 }
 
-// TODO(yosin): We should make |FrameSelection::moveRangeSelection()| to take
-// two |IntPoint| instead of two |VisiblePosition| like
-// |moveRangeSelectionExtent()|.
-void FrameSelection::MoveRangeSelection(const VisiblePosition& base_position,
-                                        const VisiblePosition& extent_position,
+void FrameSelection::MoveRangeSelection(const IntPoint& base_point,
+                                        const IntPoint& extent_point,
                                         TextGranularity granularity) {
-  SelectionInDOMTree new_selection =
+  const VisiblePosition& base_position =
+      VisiblePositionForContentsPoint(base_point, GetFrame());
+  const VisiblePosition& extent_position =
+      VisiblePositionForContentsPoint(extent_point, GetFrame());
+  MoveRangeSelectionInternal(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtentDeprecated(base_position.DeepEquivalent(),
                                       extent_position.DeepEquivalent())
           .SetAffinity(base_position.Affinity())
-          .Build();
+          .Build(),
+      granularity);
+}
 
+void FrameSelection::MoveRangeSelectionInternal(
+    const SelectionInDOMTree& new_selection,
+    TextGranularity granularity) {
   if (new_selection.IsNone())
     return;
 
