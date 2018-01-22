@@ -61,6 +61,7 @@ class MessageCenterButtonBar : public views::View,
   ASH_EXPORT views::Button* GetCloseAllButtonForTest() const;
   ASH_EXPORT views::Button* GetSettingsButtonForTest() const;
   ASH_EXPORT views::Button* GetQuietModeButtonForTest() const;
+  ASH_EXPORT views::Button* GetCollapseButtonForTest() const;
 
   // Sometimes we shouldn't see the back arrow (not in settings).
   void SetBackArrowVisible(bool visible);
