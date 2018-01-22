@@ -1301,10 +1301,12 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   BuildModel();
 
   PumpLoop();
-  EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
+  // The clear storage task will be delayed on initialization.
+  EXPECT_EQ(base::Time(), last_clear_page_time());
 
-  // Only 5 minutes passed and the last clear page time should not be changed
-  // since the clear page will not be triggered.
+  // 5 minutes passed and the last clear page time should be
+  // |now - 5mins + 30seconds| since the clear page will be triggered with a 30
+  // seconds delay. The delay is a hard-coded value in the model.
   const base::TimeDelta short_delta = base::TimeDelta::FromMinutes(5);
   task_runner()->FastForwardBy(short_delta);
   auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
@@ -1312,7 +1314,9 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
       kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
   PumpLoop();
-  EXPECT_EQ(task_runner()->Now() - short_delta, last_clear_page_time());
+  EXPECT_EQ(
+      task_runner()->Now() - short_delta + base::TimeDelta::FromSeconds(30),
+      last_clear_page_time());
 
   task_runner()->FastForwardBy(
       OfflinePageModelTaskified::kClearStorageInterval);
