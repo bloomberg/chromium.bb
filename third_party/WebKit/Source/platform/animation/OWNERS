@@ -2,5 +2,5 @@ file://third_party/WebKit/Source/core/animation/OWNERS
 
 loyso@chromium.org
 
-# TEAM: style-dev@chromium.org
+# TEAM: animations-dev@chromium.org
 # COMPONENT: Blink>Animation
