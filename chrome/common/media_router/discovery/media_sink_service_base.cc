@@ -37,8 +37,12 @@ void MediaSinkServiceBase::OnDiscoveryComplete() {
   }
 
   DVLOG(2) << "Send sinks to media router, [size]: " << current_sinks_.size();
-  on_sinks_discovered_cb_.Run(std::vector<MediaSinkInternal>(
-      current_sinks_.begin(), current_sinks_.end()));
+
+  std::vector<MediaSinkInternal> sinks;
+  for (const auto& sink_it : current_sinks_)
+    sinks.push_back(sink_it.second);
+
+  on_sinks_discovered_cb_.Run(std::move(sinks));
   mrp_sinks_ = current_sinks_;
   discovery_timer_->Stop();
   RecordDeviceCounts();
