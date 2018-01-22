@@ -136,6 +136,17 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   using OracleFrameNumber =
       decltype(std::declval<media::VideoCaptureOracle>().next_frame_number());
 
+  // Starts the refresh frame timer to guarantee a frame representing the most
+  // up-to-date content will be sent to the consumer in the near future. This
+  // refresh operation will be canceled if a compositing event triggers a frame
+  // capture in the meantime.
+  void ScheduleRefreshFrame(media::VideoCaptureOracle::Event event);
+
+  // Executes the refresh capture, if conditions permit. Otherwise, schedules a
+  // later retry. Note that the retry "polling" should be a short-term state,
+  // since it only occurs when the capture target hasn't yet been resolved.
+  void RefreshOrReschedule(media::VideoCaptureOracle::Event event);
+
   // CapturableFrameSink::Client implementation:
   void OnBeginFrame(const BeginFrameArgs& args) final;
   void OnFrameDamaged(const BeginFrameAck& ack,
@@ -221,10 +232,13 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   int64_t next_capture_frame_number_ = 0;
   int64_t next_delivery_frame_number_ = 0;
 
-  // When the oracle rejects a "refresh frame" request, this timer is set to
-  // auto-retry the refresh at a later point. This ensures refresh frame
-  // requests eventually result in a frame being delivered to the consumer.
-  base::OneShotTimer refresh_frame_retry_timer_;
+  // When the oracle rejects a "refresh frame" request, or a target is not yet
+  // resolved, this timer is set to auto-retry the refresh at a later point.
+  // This ensures refresh frame requests eventually result in a frame being
+  // delivered to the consumer.
+  //
+  // Note: This is always set, but the instance is overridden for unit testing.
+  base::Optional<base::OneShotTimer> refresh_frame_retry_timer_;
 
   // Provides a pool of VideoFrames that can be efficiently delivered across
   // processes. The size of this pool is used to limit the maximum number of

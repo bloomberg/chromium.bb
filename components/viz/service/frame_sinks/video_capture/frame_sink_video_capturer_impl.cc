@@ -70,6 +70,9 @@ FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
       capture_weak_factory_(this) {
   DCHECK(frame_sink_manager_);
 
+  // Instantiate a default base::OneShotTimer instance.
+  refresh_frame_retry_timer_.emplace();
+
   if (request.is_pending()) {
     binding_.Bind(std::move(request));
     binding_.set_connection_error_handler(
@@ -93,32 +96,32 @@ void FrameSinkVideoCapturerImpl::SetResolvedTarget(
     return;
   }
 
+  const bool refresh_was_scheduled = refresh_frame_retry_timer_->IsRunning();
+
   if (resolved_target_) {
     resolved_target_->DetachCaptureClient(this);
   }
   resolved_target_ = target;
   if (resolved_target_) {
     resolved_target_->AttachCaptureClient(this);
-    const gfx::Size& source_size = resolved_target_->GetSurfaceSize();
-    if (source_size != oracle_.source_size()) {
-      oracle_.SetSourceSize(source_size);
-    }
-    MaybeCaptureFrame(VideoCaptureOracle::kActiveRefreshRequest,
-                      gfx::Rect(source_size), clock_->NowTicks());
   } else {
     // Not calling consumer_->OnTargetLost() because SetResolvedTarget() should
     // be called by FrameSinkManagerImpl with a valid target very soon.
+  }
+
+  // Since the target has changed, re-schedule the frame refresh as an active
+  // one, just in case a passive one was scheduled. This ensures the next frame
+  // delivered to the consumer will contain content for the new target instead
+  // of the old (from a resurrected buffer).
+  if (refresh_was_scheduled) {
+    ScheduleRefreshFrame(VideoCaptureOracle::kActiveRefreshRequest);
   }
 }
 
 void FrameSinkVideoCapturerImpl::OnTargetWillGoAway() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!resolved_target_) {
-    return;
-  }
-  resolved_target_->DetachCaptureClient(this);
-  resolved_target_ = nullptr;
+  SetResolvedTarget(nullptr);
 
   if (requested_target_.is_valid()) {
     if (consumer_) {
@@ -216,14 +219,13 @@ void FrameSinkVideoCapturerImpl::Start(
   // Stop(), make that call on its behalf.
   consumer_.set_connection_error_handler(base::BindOnce(
       &FrameSinkVideoCapturerImpl::Stop, base::Unretained(this)));
-  MaybeCaptureFrame(VideoCaptureOracle::kActiveRefreshRequest,
-                    gfx::Rect(oracle_.source_size()), clock_->NowTicks());
+  ScheduleRefreshFrame(VideoCaptureOracle::kActiveRefreshRequest);
 }
 
 void FrameSinkVideoCapturerImpl::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  refresh_frame_retry_timer_.Stop();
+  refresh_frame_retry_timer_->Stop();
 
   // Cancel any captures in-flight and any captured frames pending delivery.
   capture_weak_factory_.InvalidateWeakPtrs();
@@ -242,8 +244,48 @@ void FrameSinkVideoCapturerImpl::Stop() {
 void FrameSinkVideoCapturerImpl::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  MaybeCaptureFrame(VideoCaptureOracle::kPassiveRefreshRequest,
-                    gfx::Rect(oracle_.source_size()), clock_->NowTicks());
+  if (!consumer_ || refresh_frame_retry_timer_->IsRunning()) {
+    return;
+  }
+  ScheduleRefreshFrame(VideoCaptureOracle::kPassiveRefreshRequest);
+}
+
+void FrameSinkVideoCapturerImpl::ScheduleRefreshFrame(
+    VideoCaptureOracle::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  refresh_frame_retry_timer_->Start(
+      FROM_HERE,
+      std::max(kRefreshFrameRetryInterval, oracle_.min_capture_period()),
+      base::BindRepeating(&FrameSinkVideoCapturerImpl::RefreshOrReschedule,
+                          base::Unretained(this), event));
+}
+
+void FrameSinkVideoCapturerImpl::RefreshOrReschedule(
+    VideoCaptureOracle::Event event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // If the capture target has not yet been resolved, the refresh must be
+  // attempted later.
+  if (!resolved_target_) {
+    ScheduleRefreshFrame(VideoCaptureOracle::kActiveRefreshRequest);
+    return;
+  }
+
+  // If the target's surface size is empty, that indicates it has not yet had
+  // its first frame composited. Since having content is obviously a requirement
+  // for video capture, the refresh must be attempted later.
+  const gfx::Size& source_size = resolved_target_->GetSurfaceSize();
+  if (source_size.IsEmpty()) {
+    ScheduleRefreshFrame(VideoCaptureOracle::kActiveRefreshRequest);
+    return;
+  }
+
+  if (source_size != oracle_.source_size()) {
+    oracle_.SetSourceSize(source_size);
+  }
+  MaybeCaptureFrame(event, gfx::Rect(oracle_.source_size()),
+                    clock_->NowTicks());
 }
 
 void FrameSinkVideoCapturerImpl::OnBeginFrame(const BeginFrameArgs& args) {
@@ -313,13 +355,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     const gfx::Rect& damage_rect,
     base::TimeTicks event_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(resolved_target_);
 
   // Consult the oracle to determine whether this frame should be captured.
   if (oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time)) {
     // Regardless of the type of |event|, there is no longer a need for the
     // refresh frame retry timer to fire. The following is a no-op, if the timer
     // was not running.
-    refresh_frame_retry_timer_.Stop();
+    refresh_frame_retry_timer_->Stop();
   } else {
     TRACE_EVENT_INSTANT1("gpu.capture", "FpsRateLimited",
                          TRACE_EVENT_SCOPE_THREAD, "trigger",
@@ -328,17 +371,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     // If the oracle rejected a "refresh frame" request, schedule a later retry.
     if (event == VideoCaptureOracle::kPassiveRefreshRequest ||
         event == VideoCaptureOracle::kActiveRefreshRequest) {
-      refresh_frame_retry_timer_.Start(
-          FROM_HERE,
-          std::max(kRefreshFrameRetryInterval, oracle_.min_capture_period()),
-          base::BindRepeating(
-              [](FrameSinkVideoCapturerImpl* self,
-                 VideoCaptureOracle::Event event) {
-                self->MaybeCaptureFrame(event,
-                                        gfx::Rect(self->oracle_.source_size()),
-                                        self->clock_->NowTicks());
-              },
-              this, event));
+      ScheduleRefreshFrame(event);
     }
     return;
   }
@@ -420,18 +453,18 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                            "frame_number", frame_number, "trigger",
                            VideoCaptureOracle::EventAsString(event));
 
-  // If there is currently no resolved target (or the target has zero area),
-  // deliver a blank black frame.
   const gfx::Size& source_size = oracle_.source_size();
-  if (!resolved_target_ || source_size.IsEmpty()) {
+  DCHECK(!source_size.IsEmpty());
+  const gfx::Rect content_rect =
+      media::ComputeLetterboxRegionForI420(frame->visible_rect(), source_size);
+  // Extreme edge-case: If somehow the source size is so tiny that the content
+  // region becomes empty, just deliver a frame filled with black.
+  if (content_rect.IsEmpty()) {
     media::FillYUV(frame.get(), 0x00, 0x80, 0x80);
     DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
                     gfx::Rect());
     return;
   }
-
-  const gfx::Rect content_rect =
-      media::ComputeLetterboxRegionForI420(frame->visible_rect(), source_size);
 
   // For passive refresh requests, just deliver the resurrected frame.
   if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
