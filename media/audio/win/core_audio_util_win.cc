@@ -897,25 +897,36 @@ ComPtr<IAudioCaptureClient> CoreAudioUtil::CreateCaptureClient(
 }
 
 bool CoreAudioUtil::FillRenderEndpointBufferWithSilence(
-    IAudioClient* client, IAudioRenderClient* render_client) {
+    IAudioClient* client,
+    IAudioRenderClient* render_client) {
   UINT32 endpoint_buffer_size = 0;
-  if (FAILED(client->GetBufferSize(&endpoint_buffer_size)))
+  if (FAILED(client->GetBufferSize(&endpoint_buffer_size))) {
+    PLOG(ERROR) << "Failed IAudioClient::GetBufferSize()";
     return false;
+  }
 
   UINT32 num_queued_frames = 0;
-  if (FAILED(client->GetCurrentPadding(&num_queued_frames)))
+  if (FAILED(client->GetCurrentPadding(&num_queued_frames))) {
+    PLOG(ERROR) << "Failed IAudioClient::GetCurrentPadding()";
     return false;
+  }
 
   BYTE* data = NULL;
   int num_frames_to_fill = endpoint_buffer_size - num_queued_frames;
-  if (FAILED(render_client->GetBuffer(num_frames_to_fill, &data)))
+  if (FAILED(render_client->GetBuffer(num_frames_to_fill, &data))) {
+    PLOG(ERROR) << "Failed IAudioRenderClient::GetBuffer()";
     return false;
+  }
 
   // Using the AUDCLNT_BUFFERFLAGS_SILENT flag eliminates the need to
   // explicitly write silence data to the rendering buffer.
-  DVLOG(2) << "filling up " << num_frames_to_fill << " frames with silence";
-  return SUCCEEDED(render_client->ReleaseBuffer(num_frames_to_fill,
-                                                AUDCLNT_BUFFERFLAGS_SILENT));
+  if (FAILED(render_client->ReleaseBuffer(num_frames_to_fill,
+                                          AUDCLNT_BUFFERFLAGS_SILENT))) {
+    PLOG(ERROR) << "Failed IAudioRenderClient::ReleaseBuffer()";
+    return false;
+  }
+
+  return true;
 }
 
 bool CoreAudioUtil::GetDxDiagDetails(std::string* driver_name,
