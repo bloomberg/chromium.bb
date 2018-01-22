@@ -31,7 +31,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(SetScreenCaptureEnabled, void(bool enabled));
   MOCK_METHOD1(SetAudioCaptureEnabled, void(bool enabled));
   MOCK_METHOD1(SetBluetoothConnected, void(bool enabled));
-  MOCK_METHOD1(SetLocationAccess, void(bool enabled));
+  MOCK_METHOD1(SetLocationAccessEnabled, void(bool enabled));
   MOCK_METHOD2(SetExitVrPromptEnabled,
                void(bool enabled, UiUnsupportedMode reason));
   MOCK_METHOD1(SetSpeechRecognitionEnabled, void(bool enabled));

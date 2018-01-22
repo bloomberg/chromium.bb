@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_MODEL_PERMISSIONS_MODEL_H_
-#define CHROME_BROWSER_VR_MODEL_PERMISSIONS_MODEL_H_
+#ifndef CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
+#define CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
 
 namespace vr {
 
-struct PermissionsModel {
+struct CapturingStateModel {
   bool audio_capture_enabled = false;
   bool video_capture_enabled = false;
   bool screen_capture_enabled = false;
-  bool location_access = false;
+  bool location_access_enabled = false;
   bool bluetooth_connected = false;
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_MODEL_PERMISSIONS_MODEL_H_
+#endif  // CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_

@@ -891,7 +891,7 @@ void VrShell::PollMediaAccessFlag() {
 void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
   if (high_accuracy_location == high_accuracy_location_)
     return;
-  ui_->SetLocationAccess(high_accuracy_location);
+  ui_->SetLocationAccessEnabled(high_accuracy_location);
   high_accuracy_location_ = high_accuracy_location;
 }
 

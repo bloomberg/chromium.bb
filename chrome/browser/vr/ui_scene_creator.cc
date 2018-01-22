@@ -647,22 +647,22 @@ void UiSceneCreator::CreateSystemIndicators() {
     UiElementName name;
     const gfx::VectorIcon& icon;
     int resource_string;
-    bool PermissionsModel::*signal;
+    bool CapturingStateModel::*signal;
   };
   const std::vector<Indicator> indicators = {
       {kAudioCaptureIndicator, vector_icons::kMicIcon,
        IDS_AUDIO_CALL_NOTIFICATION_TEXT_2,
-       &PermissionsModel::audio_capture_enabled},
+       &CapturingStateModel::audio_capture_enabled},
       {kVideoCaptureIndicator, vector_icons::kVideocamIcon,
        IDS_VIDEO_CALL_NOTIFICATION_TEXT_2,
-       &PermissionsModel::video_capture_enabled},
+       &CapturingStateModel::video_capture_enabled},
       {kScreenCaptureIndicator, vector_icons::kScreenShareIcon,
        IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2,
-       &PermissionsModel::screen_capture_enabled},
+       &CapturingStateModel::screen_capture_enabled},
       {kBluetoothConnectedIndicator, vector_icons::kBluetoothConnectedIcon, 0,
-       &PermissionsModel::bluetooth_connected},
+       &CapturingStateModel::bluetooth_connected},
       {kLocationAccessIndicator, vector_icons::kLocationOnIcon, 0,
-       &PermissionsModel::location_access},
+       &CapturingStateModel::location_access_enabled},
   };
 
   std::unique_ptr<LinearLayout> indicator_layout =
@@ -697,8 +697,8 @@ void UiSceneCreator::CreateSystemIndicators() {
                   &Toast::SetForegroundColor);
     element->AddBinding(std::make_unique<Binding<bool>>(
         VR_BIND_LAMBDA(
-            [](Model* m, bool PermissionsModel::*permission) {
-              return m->permissions.*permission;
+            [](Model* m, bool CapturingStateModel::*permission) {
+              return m->capturing_state.*permission;
             },
             base::Unretained(model_), indicator.signal),
         VR_BIND_LAMBDA(
@@ -1066,9 +1066,10 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   voice_search_button->set_y_anchoring(BOTTOM);
   voice_search_button->set_y_centering(TOP);
   voice_search_button->set_contributes_to_parent_bounds(false);
-  VR_BIND_VISIBILITY(
-      voice_search_button,
-      model->speech.has_or_can_request_audio_permission && !model->incognito);
+  VR_BIND_VISIBILITY(voice_search_button,
+                     model->speech.has_or_can_request_audio_permission &&
+                         !model->incognito &&
+                         !model->capturing_state.audio_capture_enabled);
   VR_BIND_BUTTON_COLORS(model_, voice_search_button.get(),
                         &ColorScheme::button_colors,
                         &DiscButton::SetButtonColors);
