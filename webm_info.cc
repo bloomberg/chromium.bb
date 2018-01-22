@@ -1190,8 +1190,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  // TODO(fgalligan): Replace auto_ptr with scoped_ptr.
-  std::auto_ptr<mkvparser::MkvReader> reader(
+  std::unique_ptr<mkvparser::MkvReader> reader(
       new (std::nothrow) mkvparser::MkvReader());  // NOLINT
   if (reader->Open(input.c_str())) {
     fprintf(stderr, "Error opening file:%s\n", input.c_str());
@@ -1199,7 +1198,7 @@ int main(int argc, char* argv[]) {
   }
 
   long long int pos = 0;
-  std::auto_ptr<mkvparser::EBMLHeader> ebml_header(
+  std::unique_ptr<mkvparser::EBMLHeader> ebml_header(
       new (std::nothrow) mkvparser::EBMLHeader());  // NOLINT
   if (ebml_header->Parse(reader.get(), pos) < 0) {
     fprintf(stderr, "Error parsing EBML header.\n");
@@ -1217,7 +1216,7 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "Segment::CreateInstance() failed.\n");
     return EXIT_FAILURE;
   }
-  std::auto_ptr<mkvparser::Segment> segment(temp_segment);
+  std::unique_ptr<mkvparser::Segment> segment(temp_segment);
 
   if (segment->Load() < 0) {
     fprintf(stderr, "Segment::Load() failed.\n");

@@ -22,13 +22,6 @@
 
 #include "common/webmids.h"
 
-// disable deprecation warnings for auto_ptr
-#if defined(__GNUC__)
-#if __GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-#endif
-
 namespace mkvparser {
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;
@@ -5017,7 +5010,7 @@ bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
   if (!reader || *mm)
     return false;
 
-  std::auto_ptr<MasteringMetadata> mm_ptr(new MasteringMetadata());
+  std::unique_ptr<MasteringMetadata> mm_ptr(new MasteringMetadata());
   if (!mm_ptr.get())
     return false;
 
@@ -5106,7 +5099,7 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
   if (!reader || *colour)
     return false;
 
-  std::auto_ptr<Colour> colour_ptr(new Colour());
+  std::unique_ptr<Colour> colour_ptr(new Colour());
   if (!colour_ptr.get())
     return false;
 
@@ -5204,7 +5197,7 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
   if (!reader || *projection)
     return false;
 
-  std::auto_ptr<Projection> projection_ptr(new Projection());
+  std::unique_ptr<Projection> projection_ptr(new Projection());
   if (!projection_ptr.get())
     return false;
 

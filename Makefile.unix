@@ -2,7 +2,7 @@ CXX       := g++
 DEFINES   := -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS
 DEFINES   += -D__STDC_LIMIT_MACROS
 INCLUDES  := -I.
-CXXFLAGS  := -W -Wall -g
+CXXFLAGS  := -W -Wall -g -std=c++11
 ALL_CXXFLAGS := -MMD -MP $(DEFINES) $(INCLUDES) $(CXXFLAGS)
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
