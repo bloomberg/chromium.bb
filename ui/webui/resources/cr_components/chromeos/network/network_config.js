@@ -365,12 +365,13 @@ Polymer({
 
     var propertiesToSet = this.getPropertiesToSet_();
     if (!this.guid || this.getSource_() == CrOnc.Source.NONE) {
-      // New network configurations default to 'AutoConnect' unless prohibited
-      // by policy.
+      // New non VPN network configurations default to 'AutoConnect' unless
+      // prohibited by policy.
+      var prohibitAutoConnect = this.globalPolicy &&
+          this.globalPolicy.AllowOnlyPolicyNetworksToConnect;
       CrOnc.setTypeProperty(
           propertiesToSet, 'AutoConnect',
-          !(this.globalPolicy &&
-            this.globalPolicy.AllowOnlyPolicyNetworksToConnect));
+          this.type != CrOnc.Type.VPN && !prohibitAutoConnect);
 
       // Create the configuration, then connect to it in the callback.
       this.networkingPrivate.createNetwork(
