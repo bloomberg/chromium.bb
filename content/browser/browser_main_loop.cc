@@ -147,6 +147,7 @@
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/zygote_handle.h"
 #include "media/base/media_switches.h"
 #endif
@@ -284,7 +285,15 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
                              kForwardSwitches, arraysize(kForwardSwitches));
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(cmd_line, -1);
-  return ZygoteHostImpl::GetInstance()->LaunchZygote(cmd_line, control_fd);
+
+  // Start up the sandbox host process and get the file descriptor for the
+  // sandboxed processes to talk to it.
+  base::FileHandleMappingVector additional_remapped_fds;
+  additional_remapped_fds.emplace_back(
+      SandboxHostLinux::GetInstance()->GetChildSocket(), GetSandboxFD());
+
+  return ZygoteHostImpl::GetInstance()->LaunchZygote(
+      cmd_line, control_fd, std::move(additional_remapped_fds));
 }
 
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
