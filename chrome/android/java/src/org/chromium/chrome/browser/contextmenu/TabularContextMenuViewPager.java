@@ -10,6 +10,7 @@ import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -35,6 +36,8 @@ public class TabularContextMenuViewPager extends ViewPager {
     private int mOldHeight;
     private int mCanvasWidth;
     private int mClipHeight;
+
+    private Rect mClipBounds = new Rect();
 
     private int mDifferenceInHeight;
     private int mPreviousChildIndex = 1;
@@ -104,7 +107,6 @@ public class TabularContextMenuViewPager extends ViewPager {
             heightMeasureSpec = MeasureSpec.makeMeasureSpec(
                     Math.max(mOldHeight, fullHeight), MeasureSpec.EXACTLY);
         }
-
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mPreviousChildIndex = currentChildIndex;
         // The animation only runs when switching to a tab with a different height.
@@ -127,6 +129,9 @@ public class TabularContextMenuViewPager extends ViewPager {
                     setTranslationY((1 - animatedValue) * mDifferenceInHeight / 2);
                 }
                 mClipHeight = mOldHeight + (int) (mDifferenceInHeight * animatedValue);
+                mClipBounds.bottom = mClipHeight;
+                mClipBounds.right = mCanvasWidth;
+                setClipBounds(mClipBounds);
                 invalidate();
             }
         });
@@ -136,29 +141,17 @@ public class TabularContextMenuViewPager extends ViewPager {
                 mOldHeight = mClipHeight;
                 setTranslationY(0);
                 if (mDifferenceInHeight < 0) requestLayout();
+                setClipBounds(null);
             }
         });
     }
 
     @Override
-    public void onDraw(Canvas canvas) {
+    public void draw(Canvas canvas) {
         mCanvasWidth = canvas.getWidth();
-        int backgroundOffsetX = getScrollX();
-        mBackgroundDrawable.setBounds(
-                backgroundOffsetX, 0, canvas.getWidth() + backgroundOffsetX, mClipHeight);
+        mBackgroundDrawable.setBounds(getScrollX(), 0, mCanvasWidth + getScrollX(), mClipHeight);
         mBackgroundDrawable.draw(canvas);
 
-        boolean clipped = false;
-        if (mClipHeight != 0) {
-            canvas.save();
-            canvas.clipRect(0, 0, mCanvasWidth, mClipHeight);
-            clipped = true;
-        }
-
-        super.onDraw(canvas);
-
-        if (clipped) {
-            canvas.restore();
-        }
+        super.draw(canvas);
     }
 }
