@@ -200,10 +200,10 @@ public class SuggestionsRecyclerView extends RecyclerView {
         // be through a OnLayoutChangeListener, but then we get notified of the change after the
         // layout pass, which means that the new style will only be visible after layout happens
         // again. We prefer updating here to avoid having to require that additional layout pass.
-        mUiConfig.updateDisplayStyle();
+        if (mUiConfig != null) mUiConfig.updateDisplayStyle();
 
         // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        mContextMenuManager.closeContextMenu();
+        if (mContextMenuManager != null) mContextMenuManager.closeContextMenu();
     }
 
     /** Highlights the current length of the view by temporarily showing the scrollbar. */

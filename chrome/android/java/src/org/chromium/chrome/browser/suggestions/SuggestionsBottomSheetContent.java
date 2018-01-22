@@ -86,6 +86,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     private boolean mNewTabShown;
     private boolean mSuggestionsInitialized;
+    private boolean mIsDestroyed;
     private boolean mSearchProviderHasLogo = true;
     private float mLastSheetHeightFraction = 1f;
 
@@ -163,6 +164,12 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                     .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
                         @Override
                         public void onSuccess(boolean alreadyStarted) {
+                            // If this is destroyed before native initialization is finished, don't
+                            // do anything. Otherwise this will be initialized based on out-of-date
+                            // #mSheet and #mActivity, which causes a crash.
+                            // See https://crbug.com/804296.
+                            if (mIsDestroyed) return;
+
                             mRecyclerView.setVisibility(View.VISIBLE);
                             loadingView.hideLoadingUI();
                             initializeWithNative(tabModelSelector, snackbarManager);
@@ -361,6 +368,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     @Override
     public void destroy() {
+        mIsDestroyed = true;
         mSheet.getNewTabController().removeObserver(this);
         mLocationBar.removeUrlFocusChangeListener(this);
         if (mAnimator != null) {
