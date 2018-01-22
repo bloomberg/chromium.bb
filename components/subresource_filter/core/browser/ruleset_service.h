@@ -124,7 +124,7 @@ class IndexedRulesetLocator {
   // versions, keeping only:
   //  -- the |most_recent_version|, if it is valid,
   //  -- versions of the current format that have a sentinel file present.
-  // To be called on the |blocking_task_runner_|.
+  // To be called on the |background_task_runner_|.
   static void DeleteObsoleteRulesets(
       const base::FilePath& indexed_ruleset_base_dir,
       const IndexedRulesetVersion& most_recent_version);
@@ -141,7 +141,13 @@ class IndexedRulesetLocator {
 // version. The version information of the most recent successfully stored
 // ruleset is written into |local_state|. The invariant is maintained that the
 // version pointed to by preferences, if valid, will exist on disk at any point
-// in time. All file operations are posted to |blocking_task_runner|.
+// in time.
+//
+// Ruleset file opening is a critical for user experience operation. It is
+// posted to |blocking_task_runner|. Obsolete files deletion and rulesets
+// indexing are not critical for user experience. These tasks are posted to
+// |background_task_runner|. Since the two task runners are distinct you cannot
+// make guarantees about task ordering between them.
 class RulesetService : public base::SupportsWeakPtr<RulesetService> {
  public:
   // Enumerates the possible outcomes of indexing a ruleset and writing it to
@@ -168,10 +174,12 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Creates a new instance that will immediately publish the most recently
   // indexed version of the ruleset if one is available according to prefs.
   // See class comments for details of arguments.
-  RulesetService(PrefService* local_state,
-                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-                 RulesetServiceDelegate* delegate,
-                 const base::FilePath& indexed_ruleset_base_dir);
+  RulesetService(
+      PrefService* local_state,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      RulesetServiceDelegate* delegate,
+      const base::FilePath& indexed_ruleset_base_dir);
   virtual ~RulesetService();
 
   // Indexes, stores, and publishes the given unindexed ruleset, unless its
@@ -202,7 +210,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Reads the ruleset described in |unindexed_ruleset_info|, indexes it, and
   // calls WriteRuleset() to persist the indexed ruleset. Returns the resulting
   // indexed ruleset version, or an invalid version on error. To be called on
-  // the |blocking_task_runner_|.
+  // the |background_task_runner|.
   static IndexedRulesetVersion IndexAndWriteRuleset(
       const base::FilePath& indexed_ruleset_base_dir,
       const UnindexedRulesetInfo& unindexed_ruleset_info);
@@ -217,7 +225,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // More specifically, it writes:
   //  -- the |indexed_ruleset_data| of the given |indexed_ruleset_size|,
   //  -- a copy of the LICENSE file at |license_path|, if exists.
-  // Returns true on success. To be called on the |blocking_task_runner_|.
+  // Returns true on success. To be called on the |background_task_runner|.
   // Attempts not to leave an incomplete copy in the target directory.
   //
   // Writing is factored out into this separate function so it can be
@@ -236,10 +244,10 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Performs indexing of the queued unindexed ruleset (if any) after start-up.
   void InitializeAfterStartup();
 
-  // Posts a task to the |blocking_task_runner_| to index and persist the given
-  // unindexed ruleset. Then, on success, updates the most recently indexed
-  // version in preferences and invokes |success_callback| on the calling
-  // thread. There is no callback on failure.
+  // Posts a task to the |background_task_runner| to index and persist the
+  // given unindexed ruleset. Then, on success, updates the most recently
+  // indexed version in preferences and invokes |success_callback| on the
+  // calling thread. There is no callback on failure.
   void IndexAndStoreRuleset(const UnindexedRulesetInfo& unindexed_ruleset_info,
                             const WriteRulesetCallback& success_callback);
 
@@ -250,7 +258,15 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   void OnOpenedRuleset(base::File::Error error);
 
   PrefService* const local_state_;
+
+  // Task runner for tasks critical for user experience. The current ruleset
+  // file opening should be done on this task runner so as it throttles the
+  // first page load.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  // Task runner for tasks that don't influence user experience. Obsolete files
+  // deletion and ruleset indexing should be done on this task runner.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Must outlive |this| object.
   RulesetServiceDelegate* delegate_;

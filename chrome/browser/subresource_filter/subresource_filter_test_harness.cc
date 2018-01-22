@@ -75,12 +75,23 @@ void SubresourceFilterTestHarness::SetUp() {
   ASSERT_TRUE(ruleset_service_dir_.CreateUniqueTempDir());
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(
       pref_service_.registry());
+  // TODO(csharrison): having separated blocking and background task runners
+  // for |ContentRulesetService| and |RulesetService| would be a good idea, but
+  // external unit tests code implicitly uses knowledge that blocking and
+  // background task runners are initiazlied from
+  // |base::ThreadTaskRunnerHandle::Get()|:
+  // 1. |TestRulesetPublisher| uses this knowledge in |SetRuleset| method. It
+  //    is waiting for the ruleset published callback.
+  // 2. Navigation simulator uses this knowledge. It knows that
+  //    |AsyncDocumentSubresourceFilter| posts core initialization tasks on
+  //    blocking task runner and this it is the current thread task runner.
   auto content_service =
       base::MakeUnique<subresource_filter::ContentRulesetService>(
           base::ThreadTaskRunnerHandle::Get());
   auto ruleset_service = base::MakeUnique<subresource_filter::RulesetService>(
       &pref_service_, base::ThreadTaskRunnerHandle::Get(),
-      content_service.get(), ruleset_service_dir_.GetPath());
+      base::ThreadTaskRunnerHandle::Get(), content_service.get(),
+      ruleset_service_dir_.GetPath());
   content_service->set_ruleset_service(std::move(ruleset_service));
   TestingBrowserProcess::GetGlobal()->SetRulesetService(
       std::move(content_service));

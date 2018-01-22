@@ -44,6 +44,7 @@ class TestRulesetService : public subresource_filter::RulesetService {
                      const base::FilePath& base_dir)
       : subresource_filter::RulesetService(local_state,
                                            task_runner,
+                                           task_runner,
                                            content_service,
                                            base_dir) {}
 
