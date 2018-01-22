@@ -32,7 +32,6 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "platform/text/TextDirection.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 
@@ -78,13 +77,7 @@ PositionWithAffinity ComputeInlineAdjustedPosition(const VisiblePosition&);
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionWithAffinity&);
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
-    const PositionWithAffinity&,
-    TextDirection primary_direction);
-InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity&);
-InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
-    const PositionInFlatTreeWithAffinity&,
-    TextDirection primary_direction);
 
 // The print for |InlineBoxPosition| is available only for testing
 // in "webkit_unit_tests", and implemented in
