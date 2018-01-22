@@ -64,6 +64,7 @@ source_set("ui_util") {
     "uikit_ui_util.mm",
   ]
   deps = [
+    ":feature_flags",
     "//base",
     "//base:i18n",
     "//ios/chrome/app:tests_hook",
@@ -80,6 +81,17 @@ source_set("ui_util") {
     "QuartzCore.framework",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ui_feature_flags.cc",
+    "ui_feature_flags.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("unit_tests") {

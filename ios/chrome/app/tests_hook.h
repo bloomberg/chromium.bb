@@ -32,9 +32,9 @@ bool DisableSigninRecallPromo();
 bool DisableUpdateService();
 
 // TODO(crbug.com/800266): Removes this hook.
-// Returns true if the AdaptiveToolbar UI should be displayed, overriding the
-// flag value.
-bool ForceAdaptiveToolbar();
+// Returns true if the first phase of the UI refresh will be displayed,
+// overriding the flag value.
+bool ForceUIRefreshPhase1();
 
 // Global integration tests setup.  This is not used by EarlGrey-based
 // integration tests.

@@ -39,8 +39,8 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
-// Returns whether the feature to display the adaptive toolbar is enabled.
-bool IsAdaptiveToolbarEnabled();
+// Returns whether the first phase of the UI refresh will be displayed..
+bool IsUIRefreshPhase1Enabled();
 
 // Returns whether the feature to force the toolbar to respect the safe area is
 // enabled.
