@@ -19,7 +19,7 @@ As of 2018 Blink animations is maintained by the
 
 ## Integration with Chromium
 
-The Blink animation engine has three main integration points:
+The Blink animation engine interacts with Blink/Chrome in the following ways:
 
 *   ### [Blink's Style engine](../css)
 
@@ -52,12 +52,10 @@ The Blink animation engine has three main integration points:
 
 *   ### [Chromium's Compositor](../../../../../cc/README.md)
 
-    Blink uses a multi-threaded LayerTreeHost to render websites as a tree of
-    layers. The compositor creates frames on a separate thread which maintains a
-    copy of Blinks layers and can implement some effects without involving Blink
-    (i.e. while Blink is busy). In particular, the
-    [compositor animations infrastructure](../../../../../cc/animations/README.md)
-    is capable of implementing a subset of web animations.
+    Chromium's compositor has a separate, more lightweight [animation
+    engine](../../../../../cc/animation/README.md) that runs separate to the
+    main thread. Blink's animation engine delegates animations to the compositor
+    where possible for better performance and power utilisation.
 
     #### Compositable animations
 
@@ -70,7 +68,8 @@ The Blink animation engine has three main integration points:
     Whether or not an animation can be accelerated is determined by
     [CheckCanStartAnimationOnCompositor()][] which looks at several aspects
     such as the composite mode, other animations affecting same property, and
-    whether the target element can be promoted and mutated in compositor.
+    whether the target element can be promoted and mutated in compositor.  
+    Reasons for not compositing animations are captured in [FailureCodes][].
 
     #### Lifetime of a compositor animation
 
@@ -100,6 +99,7 @@ The Blink animation engine has three main integration points:
     output.
 
 [CheckCanStartAnimationOnCompositor()]: https://cs.chromium.org/search/?q=file:Animation.h+function:CheckCanStartAnimationOnCompositor
+[FailureCodes]: https://cs.chromium.org/search/?q=return%5Cs%2B(CompositorAnimations::)?FailureCode
 [cc::AnimationPlayer]: https://cs.chromium.org/search/?q=file:src/cc/animation/animation_player.h+class:AnimationPlayer
 [PendingAnimations]: https://cs.chromium.org/search/?q=file:PendingAnimations.h+class:PendingAnimations
 [Animation::PreCommit()]: https://cs.chromium.org/search/?q=file:Animation.h+function:PreCommit
