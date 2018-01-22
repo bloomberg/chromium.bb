@@ -233,10 +233,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // in a UMA histogram.
   void RecordNegotiatedProtocol() const;
 
-  // Records histograms for channel id support during full handshakes - resumed
-  // handshakes are ignored.
-  void RecordChannelIDSupport() const;
-
   // Returns whether TLS channel ID is enabled.
   bool IsChannelIDEnabled() const;
 

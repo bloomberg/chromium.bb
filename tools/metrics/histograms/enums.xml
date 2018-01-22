@@ -9299,6 +9299,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult">
+  <obsolete>
+    Removed January 2018.
+  </obsolete>
   <int value="0" label="SYNC_SUCCESS"/>
   <int value="1" label="ASYNC_SUCCESS"/>
   <int value="2" label="ASYNC_CANCELLED"/>
