@@ -195,6 +195,7 @@ struct Element : public BufferRegion {
 // A matched pair of Elements.
 struct ElementMatch {
   bool IsValid() const { return old_element.exe_type == new_element.exe_type; }
+  ExecutableType exe_type() const { return old_element.exe_type; }
 
   Element old_element;
   Element new_element;

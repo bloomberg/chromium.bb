@@ -29,7 +29,7 @@ bool SerializeElementMatch(const ElementMatch& element_match,
       base::checked_cast<uint32_t>(element_match.old_element.size);
   element_header.new_length =
       base::checked_cast<uint32_t>(element_match.new_element.size);
-  element_header.exe_type = element_match.old_element.exe_type;
+  element_header.exe_type = element_match.exe_type();
 
   return sink->PutValue<PatchElementHeader>(element_header);
 }
