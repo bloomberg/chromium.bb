@@ -35,9 +35,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomeIphMenuHeader;
 import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomeIphMenuHeader.ChromeHomeIphMenuHeaderTestObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoDialog;
-import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoDialog.ChromeHomePromoDialogTestObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoMenuHeader;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -234,44 +231,6 @@ public class ChromeHomeAppMenuTest {
 
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CHROME_HOME_PROMO})
-    public void testPromoAppMenuHeader() throws InterruptedException, TimeoutException {
-        // Create a callback to be notified when the dialog is shown.
-        final CallbackHelper dialogShownCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeHomePromoDialog.setObserverForTests(new ChromeHomePromoDialogTestObserver() {
-                @Override
-                public void onDialogShown(ChromeHomePromoDialog shownDialog) {
-                    dialogShownCallback.notifyCalled();
-                }
-            });
-        });
-
-        // Load a test page and show the app menu. The header is only shown on the page menu.
-        loadTestPage();
-        showAppMenuAndAssertMenuShown();
-
-        // Check for the existence of a header.
-        ListView listView = mAppMenuHandler.getAppMenu().getListView();
-        Assert.assertEquals("There should be one header.", 1, listView.getHeaderViewsCount());
-
-        // Click the header.
-        ChromeHomePromoMenuHeader promoHeader = (ChromeHomePromoMenuHeader) listView.findViewById(
-                R.id.chrome_home_promo_menu_header);
-        ThreadUtils.runOnUiThreadBlocking(() -> { promoHeader.performClick(); });
-
-        // Wait for the dialog to show and the app menu to hide.
-        dialogShownCallback.waitForCallback(0);
-        assertFalse("Menu should be hidden.", mAppMenuHandler.isAppMenuShowing());
-
-        // Reset state.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { ChromeHomePromoDialog.setObserverForTests(null); });
-    }
-
-    @Test
-    @SmallTest
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.CHROME_HOME_PROMO})
     public void testIphAppMenuHeader_Click() throws InterruptedException, TimeoutException {
         TestTracker tracker = new TestTracker(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
         TrackerFactory.setTrackerForTests(tracker);
@@ -333,7 +292,6 @@ public class ChromeHomeAppMenuTest {
 
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.CHROME_HOME_PROMO})
     public void testIphAppMenuHeader_Dismiss() throws InterruptedException, TimeoutException {
         TestTracker tracker = new TestTracker(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
         TrackerFactory.setTrackerForTests(tracker);
@@ -391,9 +349,8 @@ public class ChromeHomeAppMenuTest {
 
     @Test
     @SmallTest
-    @CommandLineFlags.Add({
-        "disable-features=IPH_ChromeHomeMenuHeader," + ChromeFeatureList.CHROME_HOME_PROMO,
-        "enable-features=" + ChromeFeatureList.DATA_REDUCTION_MAIN_MENU})
+    @CommandLineFlags.Add({"disable-features=IPH_ChromeHomeMenuHeader",
+            "enable-features=" + ChromeFeatureList.DATA_REDUCTION_MAIN_MENU})
     public void testDataSaverAppMenuHeader() {
         showAppMenuAndAssertMenuShown();
 

@@ -781,6 +781,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChromeHome.Promo.Result.Menu"
     enum="ChromeHomePromoResult">
+  <obsolete>
+    Deprecated 01/2018 with the removal of the first version of Chrome Home.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -791,6 +794,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChromeHome.Promo.Result.NTP"
     enum="ChromeHomePromoResult">
+  <obsolete>
+    Deprecated 01/2018 with the removal of the first version of Chrome Home.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -801,6 +807,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChromeHome.Promo.Result.Startup"
     enum="ChromeHomePromoResult">
+  <obsolete>
+    Deprecated 01/2018 with the removal of the first version of Chrome Home.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -811,6 +820,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChromeHome.Promo.ShowReason"
     enum="ChromeHomePromoShowReason">
+  <obsolete>
+    Deprecated 01/2018 with the removal of the first version of Chrome Home.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>The reason the Chrome Home promo was shown.</summary>

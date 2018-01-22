@@ -1727,11 +1727,6 @@ const char kChromeHomeMenuItemsDescription[] =
     " when Chrome Home is enabled. These items will open the bottom sheet to"
     " show the desired content.";
 
-const char kChromeHomeOptOutSnackbarName[] = "Chrome Home Opt-out Snackbar";
-const char kChromeHomeOptOutSnackbarDescription[] =
-    "Show a snackbar prompting users to take a survey the first time they"
-    " opt-out of Chrome Home";
-
 const char kChromeHomePersistentIphName[] = "Chrome Home Persistent Iph";
 const char kChromeHomePersistentIphDescription[] =
     "Wait to dismiss the Chrome Home IPH until the user inteacts with the "
@@ -1741,10 +1736,6 @@ const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
     "Chrome Home Personalized Omnibox Suggestions";
 const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
     "Enable personalized omnibox suggestions on focus for Chrome Home.";
-
-const char kChromeHomePromoName[] = "Chrome Home Promo";
-const char kChromeHomePromoDescription[] =
-    "Enable showing the opt-in/out Chrome Home promo.";
 
 const char kChromeHomePullToRefreshIphAtTopName[] =
     "Chrome Home Pull-To-Refresh Iph At Top";

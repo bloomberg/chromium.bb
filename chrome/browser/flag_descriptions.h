@@ -1056,17 +1056,11 @@ extern const char kChromeHomeInactivitySheetExpansionDescription[];
 extern const char kChromeHomeMenuItemsName[];
 extern const char kChromeHomeMenuItemsDescription[];
 
-extern const char kChromeHomeOptOutSnackbarName[];
-extern const char kChromeHomeOptOutSnackbarDescription[];
-
 extern const char kChromeHomePersistentIphName[];
 extern const char kChromeHomePersistentIphDescription[];
 
 extern const char kChromeHomePersonalizedOmniboxSuggestionsName[];
 extern const char kChromeHomePersonalizedOmniboxSuggestionsDescription[];
-
-extern const char kChromeHomePromoName[];
-extern const char kChromeHomePromoDescription[];
 
 extern const char kChromeHomePullToRefreshIphAtTopName[];
 extern const char kChromeHomePullToRefreshIphAtTopDescription[];
