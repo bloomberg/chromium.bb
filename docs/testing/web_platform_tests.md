@@ -199,6 +199,9 @@ GitHub. You can [add it as a secondary address on your GitHub
 account](https://help.github.com/articles/adding-an-email-address-to-your-github-account/)
 to link your exported commits to your GitHub profile.
 
+If you are a Googler, you can also register your GitHub account at go/github,
+making it easier for other Googlers to find you.
+
 ### What if there are conflicts?
 
 This cannot be avoided entirely as the two repositories are independent, but
