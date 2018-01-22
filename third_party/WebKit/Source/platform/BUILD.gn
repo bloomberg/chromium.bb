@@ -1289,6 +1289,8 @@ jumbo_component("platform") {
     "mediastream/MediaStreamSource.h",
     "mediastream/MediaStreamWebAudioSource.cpp",
     "mediastream/MediaStreamWebAudioSource.h",
+    "memory_profiler/SamplingNativeHeapProfiler.cpp",
+    "memory_profiler/SamplingNativeHeapProfiler.h",
     "mhtml/ArchiveResource.cpp",
     "mhtml/ArchiveResource.h",
     "mhtml/MHTMLArchive.cpp",
@@ -1531,6 +1533,7 @@ jumbo_component("platform") {
     "//third_party/WebKit/Source/platform/scheduler",
   ]
   deps = [
+    "//base/allocator:features",
     "//components/viz/service",
     "//device/base/synchronization",
     "//device/vr:mojo_bindings_blink",

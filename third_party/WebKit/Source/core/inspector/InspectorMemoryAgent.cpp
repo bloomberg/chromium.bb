@@ -30,11 +30,20 @@
 
 #include "core/inspector/InspectorMemoryAgent.h"
 
+#include "base/debug/stack_trace.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectedFrames.h"
 #include "platform/InstanceCounters.h"
+#include "platform/memory_profiler/SamplingNativeHeapProfiler.h"
 
 namespace blink {
+
+const unsigned kDefaultNativeMemorySamplingInterval = 128 * 1024;
+
+namespace MemoryAgentState {
+static const char samplingProfileInterval[] =
+    "memoryAgentSamplingProfileInterval";
+}  // namespace MemoryAgentState
 
 using PrepareForLeakDetectionCallback =
     protocol::Memory::Backend::PrepareForLeakDetectionCallback;
@@ -74,6 +83,89 @@ void InspectorMemoryAgent::OnLeakDetectionComplete() {
 void InspectorMemoryAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(frames_);
   InspectorBaseAgent::Trace(visitor);
+}
+
+void InspectorMemoryAgent::Restore() {
+  int sampling_interval = 0;
+  state_->getInteger(MemoryAgentState::samplingProfileInterval,
+                     &sampling_interval);
+  // The action below won't start sampling if the sampling_interval is zero.
+  startSampling(protocol::Maybe<int>(sampling_interval),
+                protocol::Maybe<bool>());
+}
+
+Response InspectorMemoryAgent::startSampling(
+    protocol::Maybe<int> in_sampling_interval,
+    protocol::Maybe<bool> in_suppressRandomness) {
+  int interval =
+      in_sampling_interval.fromMaybe(kDefaultNativeMemorySamplingInterval);
+  if (interval <= 0)
+    return Response::Error("Invalid sampling rate.");
+  SamplingNativeHeapProfiler::GetInstance()->SetSamplingInterval(interval);
+  state_->setInteger(MemoryAgentState::samplingProfileInterval, interval);
+  if (in_suppressRandomness.fromMaybe(false))
+    SamplingNativeHeapProfiler::GetInstance()->SuppressRandomnessForTest();
+  SamplingNativeHeapProfiler::GetInstance()->Start();
+  return Response::OK();
+}
+
+Response InspectorMemoryAgent::stopSampling() {
+  int sampling_interval = 0;
+  state_->getInteger(MemoryAgentState::samplingProfileInterval,
+                     &sampling_interval);
+  if (!sampling_interval)
+    return Response::Error("Sampling profiler is not started.");
+  SamplingNativeHeapProfiler::GetInstance()->Stop();
+  state_->setInteger(MemoryAgentState::samplingProfileInterval, 0);
+  return Response::OK();
+}
+
+Response InspectorMemoryAgent::getSamplingProfile(
+    std::unique_ptr<protocol::Memory::SamplingProfile>* out_profile) {
+  std::unique_ptr<protocol::Array<protocol::Memory::SamplingProfileNode>>
+      samples =
+          protocol::Array<protocol::Memory::SamplingProfileNode>::create();
+  std::vector<SamplingNativeHeapProfiler::Sample> raw_samples =
+      SamplingNativeHeapProfiler::GetInstance()->GetSamples();
+  // TODO(alph): Only report samples recorded within the current session.
+  for (auto it = raw_samples.begin(); it != raw_samples.end(); ++it) {
+    std::unique_ptr<protocol::Array<protocol::String>> stack =
+        protocol::Array<protocol::String>::create();
+    std::vector<std::string> source_stack = Symbolize(it->stack);
+    for (auto it2 = source_stack.begin(); it2 != source_stack.end(); ++it2)
+      stack->addItem(it2->c_str());
+    samples->addItem(protocol::Memory::SamplingProfileNode::create()
+                         .setSize(it->size)
+                         .setCount(it->count)
+                         .setStack(std::move(stack))
+                         .build());
+  }
+  std::unique_ptr<protocol::Memory::SamplingProfile> result =
+      protocol::Memory::SamplingProfile::create()
+          .setSamples(std::move(samples))
+          .build();
+  *out_profile = std::move(result);
+  return Response::OK();
+}
+
+std::vector<std::string> InspectorMemoryAgent::Symbolize(
+    const std::vector<void*>& addresses) {
+  // TODO(alph): Move symbolization to the client.
+  std::vector<std::string> result;
+  base::debug::StackTrace trace(addresses.data(), addresses.size());
+  std::string text = trace.ToString();
+
+  size_t next_pos;
+  for (size_t pos = 0;; pos = next_pos + 1) {
+    next_pos = text.find('\n', pos);
+    if (next_pos == std::string::npos)
+      break;
+    std::string line = text.substr(pos, next_pos - pos);
+    size_t space_pos = line.rfind(' ');
+    result.push_back(
+        line.substr(space_pos == std::string::npos ? 0 : space_pos + 1));
+  }
+  return result;
 }
 
 }  // namespace blink
