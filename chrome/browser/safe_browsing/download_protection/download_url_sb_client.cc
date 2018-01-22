@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -119,7 +120,8 @@ void DownloadUrlSBClient::ReportMalware(SBThreatType threat_type) {
   hit_report.post_data = post_data;
   hit_report.extended_reporting_level = extended_reporting_level_;
   hit_report.is_metrics_reporting_active =
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state());
 
   ui_manager_->MaybeReportSafeBrowsingHit(hit_report, item_->GetWebContents());
 }

@@ -82,7 +82,8 @@ void BackgroundProfilingTriggers::StartTimer() {
 }
 
 bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state())) {
     return false;
   }
 

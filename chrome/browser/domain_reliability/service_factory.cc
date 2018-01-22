@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/domain_reliability/service.h"
@@ -69,7 +70,8 @@ bool DomainReliabilityServiceFactory::ShouldCreateService() const {
     return false;
   if (command_line->HasSwitch(switches::kEnableDomainReliability))
     return true;
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state()))
     return false;
   if (base::FieldTrialList::TrialExists(kFieldTrialName)) {
     std::string value = base::FieldTrialList::FindFullName(kFieldTrialName);

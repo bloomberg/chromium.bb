@@ -900,7 +900,8 @@ class ReporterRunner {
       invocation->set_reporter_logs_upload_enabled(false);
     }
 
-    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+            local_state)) {
       invocation->mutable_command_line().AppendSwitch(
           chrome_cleaner::kEnableCrashReportingSwitch);
     }

@@ -58,7 +58,7 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #else
   // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
 #endif
 }
