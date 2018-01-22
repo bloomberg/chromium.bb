@@ -64,7 +64,10 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
   // earlier because the bubble is shown on mouse release (but dismissed on
   // mouse pressed). A Cocoa browser does both on mouse pressed, so a check
   // when showing is sufficient.
-  if (ManagePasswordsBubbleDelegateViewBase::manage_password_bubble())
+  if (ManagePasswordsBubbleDelegateViewBase::manage_password_bubble() &&
+      ManagePasswordsBubbleDelegateViewBase::manage_password_bubble()
+          ->GetWidget()
+          ->IsVisible())
     return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());

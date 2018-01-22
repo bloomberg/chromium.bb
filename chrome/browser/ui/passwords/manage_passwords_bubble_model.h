@@ -42,6 +42,10 @@ class ManagePasswordsBubbleModel {
                              DisplayReason reason);
   ~ManagePasswordsBubbleModel();
 
+  // The method MAY BE called to record the statistics while the bubble is being
+  // closed. Otherwise, it is called later on when the model is destroyed.
+  void OnBubbleClosing();
+
   // Called by the view code when the "Nope" button in clicked by the user in
   // update bubble.
   void OnNopeUpdateClicked();
@@ -186,6 +190,10 @@ class ManagePasswordsBubbleModel {
 
   // A bridge to ManagePasswordsUIController instance.
   base::WeakPtr<PasswordsModelDelegate> delegate_;
+
+  // True if the model has already recorded all the necessary statistics when
+  // the bubble is closing.
+  bool interaction_reported_;
 
   // True iff password revealing should require re-auth for privacy reasons.
   bool password_revealing_requires_reauth_;
