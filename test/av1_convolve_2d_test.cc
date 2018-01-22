@@ -95,6 +95,14 @@ INSTANTIATE_TEST_CASE_P(
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
+    AVX2_X, AV1Convolve2DSrTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_x_sr_avx2, 1, 0, 0));
+
+INSTANTIATE_TEST_CASE_P(
+    AVX2_Y, AV1Convolve2DSrTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_y_sr_avx2, 0, 1, 0));
+
+INSTANTIATE_TEST_CASE_P(
     AVX2, AV1Convolve2DSrTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sr_avx2, 1, 1, 0));
 #endif
