@@ -157,7 +157,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
   fprintf(
       options_file,
       "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
-      "--tool-path=%s --tool-args=--extra-arg=-resource-dir=%s ",
+      "--tool-path=%s --tool-arg=--extra-arg=-resource-dir=%s "
+      "--tool-arg=--extra-arg=-Wno-comment ",
       build_path_.MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
