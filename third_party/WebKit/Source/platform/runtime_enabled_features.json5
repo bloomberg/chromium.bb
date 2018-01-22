@@ -502,6 +502,11 @@
       status: "test",
     },
     {
+      name: "ImplicitRootScroller",
+      status: "experimental",
+      settable_from_internals: true,
+    },
+    {
       name: "IncrementalShadowDOM",
     },
     {
