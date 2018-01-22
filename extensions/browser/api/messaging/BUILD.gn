@@ -25,6 +25,7 @@ source_set("messaging") {
   ]
 
   deps = [
+    "//base",
     "//content/public/browser",
     "//content/public/common",
     "//extensions/common",
