@@ -101,6 +101,7 @@ void ViewsScreenLocker::OnLockScreenReady() {
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
+  SessionControllerClient::Get()->NotifyChromeLockAnimationsComplete();
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
   OnAllowedInputMethodsChanged();
