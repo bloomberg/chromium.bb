@@ -467,7 +467,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     if (real_pid <= 0) {
       LOG(FATAL) << "Invalid pid from parent zygote";
     }
-#if defined(OS_LINUX)
     // Sandboxed processes need to send the global, non-namespaced PID when
     // setting up an IPC channel to their parent.
     IPC::Channel::SetGlobalPid(real_pid);
@@ -476,7 +475,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     base::trace_event::TraceLog::GetInstance()->SetProcessID(
         static_cast<int>(real_pid));
     base::InitUniqueIdForProcessInPidNamespace(real_pid);
-#endif
     return 0;
   }
 
