@@ -271,6 +271,31 @@ void NotificationDisplayServiceImpl::GetDisplayed(
                         callback);
 }
 
+// Callback to run once the profile has been loaded in order to perform a
+// given |operation| in a notification.
+void NotificationDisplayServiceImpl::ProfileLoadedCallback(
+    NotificationCommon::Operation operation,
+    NotificationHandler::Type notification_type,
+    const GURL& origin,
+    const std::string& notification_id,
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
+    const base::Optional<bool>& by_user,
+    Profile* profile) {
+  if (!profile) {
+    // TODO(miguelg): Add UMA for this condition.
+    // Perhaps propagate this through PersistentNotificationStatus.
+    LOG(WARNING) << "Profile not loaded correctly";
+    return;
+  }
+
+  NotificationDisplayServiceImpl* display_service =
+      NotificationDisplayServiceImpl::GetForProfile(profile);
+  display_service->ProcessNotificationOperation(operation, notification_type,
+                                                origin, notification_id,
+                                                action_index, reply, by_user);
+}
+
 void NotificationDisplayServiceImpl::OnNotificationPlatformBridgeReady(
     bool success) {
   if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {

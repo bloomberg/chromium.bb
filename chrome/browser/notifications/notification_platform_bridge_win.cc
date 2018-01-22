@@ -76,25 +76,6 @@ HRESULT CreateActivationFactory(wchar_t const (&class_name)[size], T** object) {
                                            IID_PPV_ARGS(object));
 }
 
-// Perform |operation| on a notification once the profile has been loaded.
-void ProfileLoadedCallback(NotificationCommon::Operation operation,
-                           NotificationHandler::Type notification_type,
-                           const GURL& origin,
-                           const std::string& notification_id,
-                           const base::Optional<int>& action_index,
-                           const base::Optional<base::string16>& reply,
-                           const base::Optional<bool>& by_user,
-                           Profile* profile) {
-  if (!profile)
-    return;
-
-  NotificationDisplayServiceImpl* display_service =
-      NotificationDisplayServiceImpl::GetForProfile(profile);
-  display_service->ProcessNotificationOperation(operation, notification_type,
-                                                origin, notification_id,
-                                                action_index, reply, by_user);
-}
-
 void ForwardNotificationOperationOnUiThread(
     NotificationCommon::Operation operation,
     NotificationHandler::Type notification_type,
@@ -110,9 +91,9 @@ void ForwardNotificationOperationOnUiThread(
 
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, incognito,
-      base::Bind(&ProfileLoadedCallback, operation, notification_type, origin,
-                 notification_id, action_index, base::nullopt /*reply*/,
-                 by_user));
+      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                 operation, notification_type, origin, notification_id,
+                 action_index, base::nullopt /*reply*/, by_user));
 }
 
 }  // namespace

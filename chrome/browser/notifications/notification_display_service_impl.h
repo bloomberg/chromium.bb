@@ -70,6 +70,15 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
              const std::string& notification_id) override;
   void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 
+  static void ProfileLoadedCallback(NotificationCommon::Operation operation,
+                                    NotificationHandler::Type notification_type,
+                                    const GURL& origin,
+                                    const std::string& notification_id,
+                                    const base::Optional<int>& action_index,
+                                    const base::Optional<base::string16>& reply,
+                                    const base::Optional<bool>& by_user,
+                                    Profile* profile);
+
  private:
   // Called when the NotificationPlatformBridge may have been initialized.
   void OnNotificationPlatformBridgeReady(bool success);

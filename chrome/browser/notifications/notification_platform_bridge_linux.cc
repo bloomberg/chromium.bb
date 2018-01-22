@@ -170,26 +170,6 @@ gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
           height)));
 }
 
-// Runs once the profile has been loaded in order to perform a given
-// |operation| on a notification.
-void ProfileLoadedCallback(NotificationCommon::Operation operation,
-                           NotificationHandler::Type notification_type,
-                           const GURL& origin,
-                           const std::string& notification_id,
-                           const base::Optional<int>& action_index,
-                           const base::Optional<base::string16>& reply,
-                           const base::Optional<bool>& by_user,
-                           Profile* profile) {
-  if (!profile)
-    return;
-
-  NotificationDisplayServiceImpl* display_service =
-      NotificationDisplayServiceImpl::GetForProfile(profile);
-  display_service->ProcessNotificationOperation(operation, notification_type,
-                                                origin, notification_id,
-                                                action_index, reply, by_user);
-}
-
 void ForwardNotificationOperationOnUiThread(
     NotificationCommon::Operation operation,
     NotificationHandler::Type notification_type,
@@ -202,9 +182,9 @@ void ForwardNotificationOperationOnUiThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, is_incognito,
-      base::Bind(&ProfileLoadedCallback, operation, notification_type, origin,
-                 notification_id, action_index, base::nullopt /* reply */,
-                 by_user));
+      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                 operation, notification_type, origin, notification_id,
+                 action_index, base::nullopt /* reply */, by_user));
 }
 
 class ResourceFile {
