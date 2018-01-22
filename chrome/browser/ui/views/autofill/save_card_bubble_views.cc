@@ -213,6 +213,13 @@ bool SaveCardBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillUpstreamUseGooglePayBranding)) {
+    const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                      margins().width();
+    return gfx::Size(width, GetHeightForWidth(width));
+  }
   return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
 }
 
