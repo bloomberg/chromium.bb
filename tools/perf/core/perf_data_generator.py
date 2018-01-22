@@ -372,8 +372,7 @@ def get_waterfall_config():
           ],
        'perf_tests': [
          ('load_library_perf_tests', 'build145-m1'),
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build145-m1'),
+         ('performance_browser_tests', 'build145-m1'),
          ('media_perftests', 'build146-m1')]
       }
     ])
@@ -409,9 +408,8 @@ def get_waterfall_config():
            'build140-m1', 'build141-m1', 'build142-m1'
           ],
        'perf_tests': [
-         ('load_library_perf_tests', 'build140-m1')]
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build140-m1')]
+         ('load_library_perf_tests', 'build140-m1'),
+         ('performance_browser_tests', 'build140-m1')]
       }
     ])
   waterfall = add_tester(
@@ -430,8 +428,7 @@ def get_waterfall_config():
          # crbug.com/785291
          # ('angle_perftests', 'build103-m1'),
          ('load_library_perf_tests', 'build103-m1'),
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build103-m1'),
+         ('performance_browser_tests', 'build103-m1'),
          ('media_perftests', 'build104-m1')]
       }
     ])
@@ -449,9 +446,8 @@ def get_waterfall_config():
           ],
        'perf_tests': [
          ('angle_perftests', 'build166-m1'),
-         ('load_library_perf_tests', 'build166-m1')]
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build166-m1')]
+         ('load_library_perf_tests', 'build166-m1'),
+         ('performance_browser_tests', 'build166-m1')]
       }
     ])
   waterfall = add_tester(
@@ -528,8 +524,7 @@ def get_waterfall_config():
            'build30-b4' # replacing build8-b1. crbug.com/724998
           ],
        'perf_tests': [
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build30-b4')
+         ('performance_browser_tests', 'build30-b4')
        ]
       }
     ])
@@ -546,8 +541,7 @@ def get_waterfall_config():
            'build130-b1', 'build131-b1', 'build132-b1'
           ],
        'perf_tests': [
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build132-b1')
+         ('performance_browser_tests', 'build132-b1')
        ]
       }
     ])
@@ -564,8 +558,7 @@ def get_waterfall_config():
            'build125-b1', 'build126-b1', 'build127-b1'
           ],
        'perf_tests': [
-         # crbug.com/803455
-         # ('performance_browser_tests', 'build126-b1')
+         ('performance_browser_tests', 'build126-b1')
        ]
       }
     ])
