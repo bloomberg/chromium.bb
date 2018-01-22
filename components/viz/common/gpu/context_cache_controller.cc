@@ -159,8 +159,11 @@ void ContextCacheController::OnIdle(uint32_t idle_generation) {
     return;
   }
 
-  if (gr_context_)
-    gr_context_->freeGpuResources();
+  if (gr_context_) {
+    // Avoid the more complete GrContext::freeGpuResources, as that evicts
+    // harder to re-generate Skia caches.
+    gr_context_->performDeferredCleanup(std::chrono::milliseconds(0));
+  }
 
   // Toggle SetAggressivelyFreeResources to drop command buffer data.
   context_support_->SetAggressivelyFreeResources(true);
