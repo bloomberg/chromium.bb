@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -472,6 +473,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FragmentUnescapedForDisplay) {
             base::UTF8ToUTF16("https://www.google.com/#\u2603"));
 }
 
+// Ensure that when the user navigates between suggestions, that the accessible
+// value of the Omnibox includes helpful information for human comprehension,
+// such as the document title. When the user begins to arrow left/right
+// within the label or edit it, the value is presented as the pure editable URL.
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
@@ -548,4 +553,54 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   omnibox_view_views->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(base::ASCIIToUTF16("hxps://google.com"),
             node_data.GetString16Attribute(ui::AX_ATTR_VALUE));
+}
+
+// Ensure that the Omnibox popup exposes appropriate accessibility semantics,
+// given a current state of open or closed.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  OmniboxViewViews* omnibox_view_views =
+      static_cast<OmniboxViewViews*>(omnibox_view);
+
+  base::string16 match_url = base::ASCIIToUTF16("https://google.com");
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  match.contents = match_url;
+  match.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::URL));
+  match.destination_url = GURL(match_url);
+  match.description = base::ASCIIToUTF16("Google");
+  match.allowed_to_be_default_match = true;
+
+  OmniboxPopupContentsView* popup_view =
+      omnibox_view_views->GetPopupContentsView();
+  ui::AXNodeData popup_node_data_1;
+  popup_view->GetAccessibleNodeData(&popup_node_data_1);
+  EXPECT_FALSE(popup_node_data_1.HasState(ui::AX_STATE_EXPANDED));
+  EXPECT_TRUE(popup_node_data_1.HasState(ui::AX_STATE_COLLAPSED));
+  EXPECT_TRUE(popup_node_data_1.HasState(ui::AX_STATE_INVISIBLE));
+
+  // Populate suggestions for the omnibox popup.
+  AutocompleteController* autocomplete_controller =
+      omnibox_view->model()->popup_model()->autocomplete_controller();
+  AutocompleteResult& results = autocomplete_controller->result_;
+  ACMatches matches;
+  matches.push_back(match);
+  AutocompleteInput input(base::ASCIIToUTF16("g"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  results.AppendMatches(input, matches);
+  results.SortAndCull(
+      input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+
+  // The omnibox popup should open with suggestions displayed.
+  chrome::FocusLocationBar(browser());
+  omnibox_view->model()->popup_model()->OnResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+  ui::AXNodeData popup_node_data_2;
+  popup_view->GetAccessibleNodeData(&popup_node_data_2);
+  EXPECT_TRUE(popup_node_data_2.HasState(ui::AX_STATE_EXPANDED));
+  EXPECT_FALSE(popup_node_data_2.HasState(ui::AX_STATE_COLLAPSED));
+  EXPECT_FALSE(popup_node_data_2.HasState(ui::AX_STATE_INVISIBLE));
 }

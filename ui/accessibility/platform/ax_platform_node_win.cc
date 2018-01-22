@@ -3474,6 +3474,8 @@ int AXPlatformNodeWin::MSAAEvent(AXEvent event) {
   switch (event) {
     case AX_EVENT_ALERT:
       return EVENT_SYSTEM_ALERT;
+    case AX_EVENT_EXPANDED_CHANGED:
+      return EVENT_OBJECT_STATECHANGE;
     case AX_EVENT_FOCUS:
       return EVENT_OBJECT_FOCUS;
     case AX_EVENT_MENU_START:
