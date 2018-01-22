@@ -162,37 +162,25 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   friend class FrameSinkManagerTest;
 
   // BeginFrameSource routing information for a FrameSinkId.
-  struct FrameSinkSourceMapping {
-    FrameSinkSourceMapping();
-    FrameSinkSourceMapping(FrameSinkSourceMapping&& other);
-    ~FrameSinkSourceMapping();
-    FrameSinkSourceMapping& operator=(FrameSinkSourceMapping&& other);
+  struct FrameSinkData {
+    FrameSinkData();
+    FrameSinkData(FrameSinkData&& other);
+    ~FrameSinkData();
+    FrameSinkData& operator=(FrameSinkData&& other);
 
-    bool has_children() const { return !children.empty(); }
+    bool empty() const { return !source && children.empty() && !sink; }
+
     // The currently assigned begin frame source for this client.
     BeginFrameSource* source = nullptr;
     // This represents a dag of parent -> children mapping.
     base::flat_set<FrameSinkId> children;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FrameSinkSourceMapping);
-  };
-
-  struct SinkAndSupport {
-    SinkAndSupport();
-    SinkAndSupport(SinkAndSupport&& other);
-    ~SinkAndSupport();
-    SinkAndSupport& operator=(SinkAndSupport&& other);
-
     // CompositorFrameSinks owned here. This will be null if a
     // CompositorFrameSinkSupport is owned externally.
     std::unique_ptr<mojom::CompositorFrameSink> sink;
 
-    // This can be owned by |sink| or owned externally.
-    CompositorFrameSinkSupport* support = nullptr;
-
    private:
-    DISALLOW_COPY_AND_ASSIGN(SinkAndSupport);
+    DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -218,11 +206,13 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // parent in the dag.
   base::flat_map<BeginFrameSource*, FrameSinkId> registered_sources_;
 
-  // Contains FrameSinkId hierarchy and BeginFrameSource mapping.
-  base::flat_map<FrameSinkId, FrameSinkSourceMapping> frame_sink_source_map_;
+  // Contains FrameSinkId hierarchy, BeginFrameSource mapping and maybe a
+  // [Root]CompositorFrameSinkImpl.
+  base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
 
-  // Contains (and maybe owns) the CompositorFrameSinkSupport.
-  base::flat_map<FrameSinkId, SinkAndSupport> compositor_frame_sinks_;
+  // CompositorFrameSinkSupports get added to this map on creation and removed
+  // on destruction.
+  base::flat_map<FrameSinkId, CompositorFrameSinkSupport*> support_map_;
 
   PrimaryBeginFrameSource primary_source_;
 

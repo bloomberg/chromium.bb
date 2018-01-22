@@ -36,8 +36,8 @@ class FrameSinkManagerTest : public testing::Test {
 
   // testing::Test implementation.
   void TearDown() override {
-    // Make sure that all FrameSinkSourceMappings have been deleted.
-    EXPECT_TRUE(manager_.frame_sink_source_map_.empty());
+    // Make sure that all FrameSinkData has been deleted.
+    EXPECT_TRUE(manager_.frame_sink_data_map_.empty());
   }
 
  protected:
