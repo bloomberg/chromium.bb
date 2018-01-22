@@ -272,7 +272,7 @@ int amdgpu_device_initialize(int fd,
 		max = dev->dev_info.virtual_address_max;
 	}
 
-	max = MIN2(max, (start & ~0xffffffff) + 0x100000000ULL);
+	max = MIN2(max, (start & ~0xffffffffULL) + 0x100000000ULL);
 	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
