@@ -140,6 +140,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private final LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
     private final AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private OverviewModeBehavior mOverviewModeBehavior;
+    private LayoutManager mLayoutManager;
 
     private final TabObserver mTabObserver;
     private final BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -642,17 +644,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @param controlsVisibilityDelegate The delegate to handle visibility of browser controls.
      * @param findToolbarManager         The manager for find in page.
      * @param overviewModeBehavior       The overview mode manager.
-     * @param layoutDriver               A {@link LayoutManager} instance used to watch for scene
+     * @param layoutManager              A {@link LayoutManager} instance used to watch for scene
      *                                   changes.
      */
     public void initializeWithNative(TabModelSelector tabModelSelector,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            final FindToolbarManager findToolbarManager,
-            final OverviewModeBehavior overviewModeBehavior,
-            final LayoutManager layoutDriver,
-            OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler,
+            FindToolbarManager findToolbarManager, OverviewModeBehavior overviewModeBehavior,
+            LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
+            OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
             OnClickListener customTabsBackClickHandler) {
         assert !mInitializedWithNative;
         mTabModelSelector = tabModelSelector;
@@ -664,36 +663,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar.setOnNewTabClickHandler(newTabClickHandler);
         mToolbar.setBookmarkClickHandler(bookmarkClickHandler);
         mToolbar.setCustomTabCloseClickHandler(customTabsBackClickHandler);
-        mToolbar.setLayoutUpdateHost(layoutDriver);
+        mToolbar.setLayoutUpdateHost(layoutManager);
 
         mToolbarModel.initializeWithNative();
 
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
-            public void onViewDetachedFromWindow(View v) {
-                HomepageManager.getInstance().removeListener(mHomepageStateListener);
-                mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-                for (TabModel model : mTabModelSelector.getModels()) {
-                    model.removeObserver(mTabModelObserver);
-                }
-                if (mBookmarkBridge != null) {
-                    mBookmarkBridge.destroy();
-                    mBookmarkBridge = null;
-                }
-                if (mTemplateUrlObserver != null) {
-                    TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
-                    mTemplateUrlObserver = null;
-                }
-
-                mFindToolbarManager.removeObserver(mFindToolbarObserver);
-
-                if (overviewModeBehavior != null) {
-                    overviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-                }
-                if (layoutDriver != null) {
-                    layoutDriver.removeSceneChangeObserver(mSceneChangeObserver);
-                }
-            }
+            public void onViewDetachedFromWindow(View v) {}
 
             @Override
             public void onViewAttachedToWindow(View v) {
@@ -714,9 +690,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mFindToolbarManager.addObserver(mFindToolbarObserver);
 
         if (overviewModeBehavior != null) {
-            overviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = overviewModeBehavior;
+            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
-        if (layoutDriver != null) layoutDriver.addSceneChangeObserver(mSceneChangeObserver);
+        if (layoutManager != null) {
+            mLayoutManager = layoutManager;
+            mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
+        }
 
         onNativeLibraryReady();
         mInitializedWithNative = true;
@@ -781,6 +761,33 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Call to tear down all of the toolbar dependencies.
      */
     public void destroy() {
+        if (mInitializedWithNative) {
+            HomepageManager.getInstance().removeListener(mHomepageStateListener);
+            mFindToolbarManager.removeObserver(mFindToolbarObserver);
+        }
+        if (mTabModelSelector != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            for (TabModel model : mTabModelSelector.getModels()) {
+                model.removeObserver(mTabModelObserver);
+            }
+        }
+        if (mBookmarkBridge != null) {
+            mBookmarkBridge.destroy();
+            mBookmarkBridge = null;
+        }
+        if (mTemplateUrlObserver != null) {
+            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
+            mTemplateUrlObserver = null;
+        }
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = null;
+        }
+        if (mLayoutManager != null) {
+            mLayoutManager.removeSceneChangeObserver(mSceneChangeObserver);
+            mLayoutManager = null;
+        }
+
         mLocationBar.removeUrlFocusChangeListener(this);
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
