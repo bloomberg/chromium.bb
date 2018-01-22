@@ -9,12 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "cc/paint/transfer_cache_entry.h"
 #include "ui/gfx/overlay_transform.h"
-
-namespace cc {
-class ClientTransferCacheEntry;
-}
 
 namespace gfx {
 class GpuFence;
@@ -98,15 +93,25 @@ class ContextSupport {
   // Access to transfer cache functionality for OOP raster. Only
   // ThreadsafeLockTransferCacheEntry can be accessed without holding the
   // context lock.
-  virtual void CreateTransferCacheEntry(
-      const cc::ClientTransferCacheEntry& entry) = 0;
-  virtual bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
-                                                uint32_t id) = 0;
+
+  // Maps a buffer that will receive serialized data for an entry to be created.
+  // Returns nullptr on failure. If success, must be paired with a call to
+  // UnmapAndCreateTransferCacheEntry.
+  virtual void* MapTransferCacheEntry(size_t serialized_size) = 0;
+
+  // Unmaps the buffer and creates a transfer cache entry with the serialized
+  // data.
+  virtual void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) = 0;
+
+  // Locks a transfer cache entry. May be called on any thread.
+  virtual bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) = 0;
+
+  // Unlocks transfer cache entries.
   virtual void UnlockTransferCacheEntries(
-      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
-          entries) = 0;
-  virtual void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
-                                        uint32_t id) = 0;
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) = 0;
+
+  // Delete a transfer cache entry.
+  virtual void DeleteTransferCacheEntry(uint32_t type, uint32_t id) = 0;
 
   virtual unsigned int GetTransferBufferFreeSize() const = 0;
 

@@ -6148,27 +6148,28 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return manager->TextureIsDeletedForTracing(texture_id);
 }
 
-void GLES2Implementation::CreateTransferCacheEntry(
-    const cc::ClientTransferCacheEntry& entry) {
-  transfer_cache_.CreateCacheEntry(helper_, mapped_memory_.get(), entry);
+void* GLES2Implementation::MapTransferCacheEntry(size_t serialized_size) {
+  return transfer_cache_.MapEntry(helper_, mapped_memory_.get(),
+                                  serialized_size);
 }
 
-bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(
-    cc::TransferCacheEntryType type,
-    uint32_t id) {
-  return transfer_cache_.LockTransferCacheEntry(type, id);
+void GLES2Implementation::UnmapAndCreateTransferCacheEntry(uint32_t type,
+                                                           uint32_t id) {
+  transfer_cache_.UnmapAndCreateEntry(helper_, type, id);
+}
+
+bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
+                                                           uint32_t id) {
+  return transfer_cache_.LockEntry(type, id);
 }
 
 void GLES2Implementation::UnlockTransferCacheEntries(
-    const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
-        entries) {
-  transfer_cache_.UnlockTransferCacheEntries(helper_, entries);
+    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
+  transfer_cache_.UnlockEntries(helper_, entries);
 }
 
-void GLES2Implementation::DeleteTransferCacheEntry(
-    cc::TransferCacheEntryType type,
-    uint32_t id) {
-  transfer_cache_.DeleteTransferCacheEntry(helper_, type, id);
+void GLES2Implementation::DeleteTransferCacheEntry(uint32_t type, uint32_t id) {
+  transfer_cache_.DeleteEntry(helper_, type, id);
 }
 
 unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {

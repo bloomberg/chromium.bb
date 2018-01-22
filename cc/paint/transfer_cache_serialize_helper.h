@@ -24,12 +24,14 @@ class CC_PAINT_EXPORT TransferCacheSerializeHelper {
 
   void AssertLocked(TransferCacheEntryType type, uint32_t id);
 
- private:
+ protected:
   using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
-  virtual bool LockEntryInternal(TransferCacheEntryType type, uint32_t id) = 0;
-  virtual void CreateEntryInternal(const ClientTransferCacheEntry& entry) = 0;
-  virtual void FlushEntriesInternal(const std::vector<EntryKey>& entries) = 0;
 
+  virtual bool LockEntryInternal(const EntryKey& key) = 0;
+  virtual void CreateEntryInternal(const ClientTransferCacheEntry& entry) = 0;
+  virtual void FlushEntriesInternal(std::set<EntryKey> keys) = 0;
+
+ private:
   std::set<EntryKey> added_entries_;
 };
 

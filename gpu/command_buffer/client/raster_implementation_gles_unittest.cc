@@ -194,18 +194,23 @@ class ContextSupportStub : public ContextSupport {
       uint32_t texture_id) override {
     return false;
   }
-  void CreateTransferCacheEntry(
-      const cc::ClientTransferCacheEntry& entry) override {}
-  bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
-                                        uint32_t id) override {
+  void* MapTransferCacheEntry(size_t serialized_size) override {
+    mapped_transfer_cache_entry_.reset(new char[serialized_size]);
+    return mapped_transfer_cache_entry_.get();
+  }
+  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override {
+    mapped_transfer_cache_entry_.reset();
+  }
+  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override {
     return true;
   }
   void UnlockTransferCacheEntries(
-      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
-          entries) override {}
-  void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
-                                uint32_t id) override {}
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override {}
+  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {}
   unsigned int GetTransferBufferFreeSize() const override { return 0; }
+
+ private:
+  std::unique_ptr<char[]> mapped_transfer_cache_entry_;
 };
 
 class ImageProviderStub : public cc::ImageProvider {

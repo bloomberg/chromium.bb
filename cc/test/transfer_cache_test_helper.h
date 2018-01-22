@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 
@@ -25,11 +26,11 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   void SetCachedItemsLimit(size_t limit);
 
   // Direct Access API (simulates ContextSupport methods).
-  bool LockEntryDirect(TransferCacheEntryType type, uint32_t id);
-  void CreateEntryDirect(const ClientTransferCacheEntry& entry);
-  void UnlockEntriesDirect(
-      const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries);
-  void DeleteEntryDirect(TransferCacheEntryType type, uint32_t id);
+  bool LockEntryDirect(const EntryKey& key);
+
+  void CreateEntryDirect(const EntryKey& key, base::span<uint8_t> data);
+  void UnlockEntriesDirect(const std::vector<EntryKey>& keys);
+  void DeleteEntryDirect(const EntryKey& key);
 
  protected:
   // Deserialization helpers.
@@ -37,10 +38,9 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
                                               uint32_t id) override;
 
   // Serialization helpers.
-  using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
-  bool LockEntryInternal(TransferCacheEntryType type, uint32_t id) override;
+  bool LockEntryInternal(const EntryKey& key) override;
   void CreateEntryInternal(const ClientTransferCacheEntry& entry) override;
-  void FlushEntriesInternal(const std::vector<EntryKey>& entries) override;
+  void FlushEntriesInternal(std::set<EntryKey> keys) override;
 
  private:
   // Helper functions.

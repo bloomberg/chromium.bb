@@ -130,22 +130,39 @@ class FakeGPUImageDecodeTestGLES2Interface : public TestGLES2Interface,
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override {}
 
-  void CreateTransferCacheEntry(
-      const ClientTransferCacheEntry& entry) override {
-    transfer_cache_helper_->CreateEntryDirect(entry);
+  void* MapTransferCacheEntry(size_t serialized_size) override {
+    mapped_entry_size_ = serialized_size;
+    mapped_entry_.reset(new uint8_t[serialized_size]);
+    return mapped_entry_.get();
   }
-  bool ThreadsafeLockTransferCacheEntry(TransferCacheEntryType entry_type,
-                                        uint32_t entry_id) override {
-    return transfer_cache_helper_->LockEntryDirect(entry_type, entry_id);
+
+  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override {
+    transfer_cache_helper_->CreateEntryDirect(
+        MakeEntryKey(type, id),
+        base::make_span(mapped_entry_.get(), mapped_entry_size_));
+    mapped_entry_ = nullptr;
+    mapped_entry_size_ = 0;
+  }
+
+  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override {
+    return transfer_cache_helper_->LockEntryDirect(MakeEntryKey(type, id));
   }
   void UnlockTransferCacheEntries(
-      const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries)
-      override {
-    transfer_cache_helper_->UnlockEntriesDirect(entries);
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override {
+    std::vector<std::pair<TransferCacheEntryType, uint32_t>> keys;
+    keys.reserve(entries.size());
+    for (const auto& e : entries)
+      keys.emplace_back(MakeEntryKey(e.first, e.second));
+    transfer_cache_helper_->UnlockEntriesDirect(keys);
   }
-  void DeleteTransferCacheEntry(TransferCacheEntryType entry_type,
-                                uint32_t entry_id) override {
-    transfer_cache_helper_->DeleteEntryDirect(entry_type, entry_id);
+  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {
+    transfer_cache_helper_->DeleteEntryDirect(MakeEntryKey(type, id));
+  }
+
+  std::pair<TransferCacheEntryType, uint32_t> MakeEntryKey(uint32_t type,
+                                                           uint32_t id) {
+    DCHECK_LE(type, static_cast<uint32_t>(TransferCacheEntryType::kLast));
+    return std::make_pair(static_cast<TransferCacheEntryType>(type), id);
   }
 
   // TestGLES2Interface:
@@ -188,6 +205,8 @@ class FakeGPUImageDecodeTestGLES2Interface : public TestGLES2Interface,
   const std::string extension_string_;
   FakeDiscardableManager* discardable_manager_;
   TransferCacheTestHelper* transfer_cache_helper_;
+  size_t mapped_entry_size_ = 0;
+  std::unique_ptr<uint8_t[]> mapped_entry_;
 };
 
 class GPUImageDecodeTestMockContextProvider : public TestContextProvider {

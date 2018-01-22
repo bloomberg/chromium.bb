@@ -113,23 +113,27 @@ bool TestContextSupport::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return false;
 }
 
-void TestContextSupport::CreateTransferCacheEntry(
-    const ClientTransferCacheEntry& entry) {
+void* TestContextSupport::MapTransferCacheEntry(size_t serialized_size) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+void TestContextSupport::UnmapAndCreateTransferCacheEntry(uint32_t type,
+                                                          uint32_t id) {
   NOTIMPLEMENTED();
 }
-bool TestContextSupport::ThreadsafeLockTransferCacheEntry(
-    TransferCacheEntryType entry_type,
-    uint32_t entry_id) {
+
+bool TestContextSupport::ThreadsafeLockTransferCacheEntry(uint32_t entry_type,
+                                                          uint32_t entry_id) {
   NOTIMPLEMENTED();
   return false;
 }
 void TestContextSupport::UnlockTransferCacheEntries(
-    const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries) {
+    const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
   NOTIMPLEMENTED();
 }
-void TestContextSupport::DeleteTransferCacheEntry(
-    TransferCacheEntryType entry_type,
-    uint32_t entry_id) {
+void TestContextSupport::DeleteTransferCacheEntry(uint32_t entry_type,
+                                                  uint32_t entry_id) {
   NOTIMPLEMENTED();
 }
 unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
