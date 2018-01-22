@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
-#define CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
+#ifndef COMPONENTS_WEBRTC_LOGGING_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
+#define COMPONENTS_WEBRTC_LOGGING_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
 
 #include <stdint.h>
+
+namespace webrtc_logging {
 
 // A wrapper around a memory buffer that allows circular read and write with a
 // selectable wrapping position. Buffer layout (after wrap; H is header):
@@ -63,4 +65,6 @@ class PartialCircularBuffer {
   uint32_t total_read_;
 };
 
-#endif  // CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
+}  // namespace webrtc_logging
+
+#endif  // COMPONENTS_WEBRTC_LOGGING_COMMON_PARTIAL_CIRCULAR_BUFFER_H_

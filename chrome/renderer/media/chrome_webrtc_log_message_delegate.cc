@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/common/partial_circular_buffer.h"
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#include "components/webrtc_logging/common/partial_circular_buffer.h"
 
 ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,

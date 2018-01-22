@@ -3671,6 +3671,7 @@ split_static_library("ui") {
       "webui/media/webrtc_logs_ui.cc",
       "webui/media/webrtc_logs_ui.h",
     ]
+    deps += [ "//components/webrtc_logging/browser" ]
   }
 
   if (safe_browsing_mode == 1) {

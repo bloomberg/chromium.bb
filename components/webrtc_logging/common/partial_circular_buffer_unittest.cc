@@ -12,7 +12,7 @@
 // Note that desipte the number of wraps (if one or more), the reference output
 // data is the same since the offset at each wrap is always the same.
 
-#include "chrome/common/partial_circular_buffer.h"
+#include "components/webrtc_logging/common/partial_circular_buffer.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,6 +22,10 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace webrtc_logging {
+
+namespace {
+
 const uint32_t kWrapPosition = 20;
 const uint8_t kInputData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
 const uint8_t kOutputRefDataWrap[] =
@@ -30,6 +34,8 @@ const uint8_t kOutputRefDataWrap[] =
      // The 32 bytes in wrapping part.
      11, 12, 13, 14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1, 2, 3, 4,
      5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+
+}  // namespace
 
 class PartialCircularBufferTest : public testing::Test {
  public:
@@ -44,10 +50,8 @@ class PartialCircularBufferTest : public testing::Test {
 
   void InitWriteBuffer(bool append) {
     pcb_write_.reset(new PartialCircularBuffer(
-        buffer_.get(),
-        buffer_header_size_ + sizeof(kOutputRefDataWrap),
-        kWrapPosition,
-        append));
+        buffer_.get(), buffer_header_size_ + sizeof(kOutputRefDataWrap),
+        kWrapPosition, append));
   }
 
   void WriteToBuffer(int num) {
@@ -216,3 +220,4 @@ TEST_F(PartialCircularBufferTest, WrapTwiceWithSingleWrite) {
   EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
 }
 
+}  // namespace webrtc_logging

@@ -14,10 +14,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
-#include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
+#include "components/webrtc_logging/browser/log_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -402,7 +402,7 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
 base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
   DCHECK(log_uploader_->background_task_runner()->RunsTasksInCurrentSequence());
   base::FilePath log_dir_path =
-      WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+      webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
           browser_context_->GetPath());
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
