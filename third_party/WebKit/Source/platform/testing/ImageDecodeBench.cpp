@@ -25,163 +25,17 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "ui/gfx/test/icc_profiles.h"
-
-#if defined(_WIN32)
-#include <mmsystem.h>
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
 
 namespace blink {
 
 namespace {
 
-#if defined(_WIN32)
-
-// There is no real platform support herein, so adopt the WIN32 performance
-// counter from WTF
-// http://trac.webkit.org/browser/trunk/Source/WTF/wtf/CurrentTime.cpp?rev=152438
-
-static double LowResUTCTime() {
-  FILETIME file_time;
-  GetSystemTimeAsFileTime(&file_time);
-
-  // As per Windows documentation for FILETIME, copy the resulting FILETIME
-  // structure to a ULARGE_INTEGER structure using memcpy (using memcpy instead
-  // of direct assignment can prevent alignment faults on 64-bit Windows).
-  ULARGE_INTEGER date_time;
-  memcpy(&date_time, &file_time, sizeof(date_time));
-
-  // Number of 100 nanosecond between January 1, 1601 and January 1, 1970.
-  static const ULONGLONG kEpochBias = 116444736000000000ULL;
-  // Windows file times are in 100s of nanoseconds.
-  static const double kHundredsOfNanosecondsPerMillisecond = 10000;
-  return (date_time.QuadPart - kEpochBias) /
-         kHundredsOfNanosecondsPerMillisecond;
-}
-
-static LARGE_INTEGER g_qpc_frequency;
-static bool g_synced_time;
-
-static double HighResUpTime() {
-  // We use QPC, but only after sanity checking its result, due to bugs:
-  // http://support.microsoft.com/kb/274323
-  // http://support.microsoft.com/kb/895980
-  // http://msdn.microsoft.com/en-us/library/ms644904.aspx ("you can get
-  // different results on different processors due to bugs in the basic
-  // input/output system (BIOS) or the hardware abstraction layer (HAL).").
-
-  static LARGE_INTEGER qpc_last;
-  static DWORD tick_count_last;
-  static bool inited;
-
-  LARGE_INTEGER qpc;
-  QueryPerformanceCounter(&qpc);
-  DWORD tick_count = GetTickCount();
-
-  if (inited) {
-    __int64 qpc_elapsed =
-        ((qpc.QuadPart - qpc_last.QuadPart) * 1000) / g_qpc_frequency.QuadPart;
-    __int64 tick_count_elapsed;
-    if (tick_count >= tick_count_last) {
-      tick_count_elapsed = (tick_count - tick_count_last);
-    } else {
-      __int64 tick_count_large = tick_count + 0x100000000I64;
-      tick_count_elapsed = tick_count_large - tick_count_last;
-    }
-
-    // Force a re-sync if QueryPerformanceCounter differs from GetTickCount()
-    // by more than 500ms. (The 500ms value is from
-    // http://support.microsoft.com/kb/274323).
-    __int64 diff = tick_count_elapsed - qpc_elapsed;
-    if (diff > 500 || diff < -500)
-      g_synced_time = false;
-  } else {
-    inited = true;
-  }
-
-  qpc_last = qpc;
-  tick_count_last = tick_count;
-
-  return (1000.0 * qpc.QuadPart) /
-         static_cast<double>(g_qpc_frequency.QuadPart);
-}
-
-static bool QpcAvailable() {
-  static bool available;
-  static bool checked;
-
-  if (checked)
-    return available;
-
-  available = QueryPerformanceFrequency(&g_qpc_frequency);
-  checked = true;
-  return available;
-}
-
-static double GetCurrentTime() {
-  // Use a combination of ftime and QueryPerformanceCounter.
-  // ftime returns the information we want, but doesn't have sufficient
-  // resolution.  QueryPerformanceCounter has high resolution, but is only
-  // usable to measure time intervals.  To combine them, we call ftime and
-  // QueryPerformanceCounter initially. Later calls will use
-  // QueryPerformanceCounter by itself, adding the delta to the saved ftime.
-  // We periodically re-sync to correct for drift.
-  static double sync_low_res_utc_time;
-  static double sync_high_res_up_time;
-  static double last_utc_time;
-
-  double low_res_time = LowResUTCTime();
-  if (!QpcAvailable())
-    return low_res_time * (1.0 / 1000.0);
-
-  double high_res_time = HighResUpTime();
-  if (!g_synced_time) {
-    timeBeginPeriod(1);  // increase time resolution around low-res time getter
-    sync_low_res_utc_time = low_res_time = LowResUTCTime();
-    timeEndPeriod(1);  // restore time resolution
-    sync_high_res_up_time = high_res_time;
-    g_synced_time = true;
-  }
-
-  double high_res_elapsed = high_res_time - sync_high_res_up_time;
-  double utc = sync_low_res_utc_time + high_res_elapsed;
-
-  // Force a clock re-sync if we've drifted.
-  double low_res_elapsed = low_res_time - sync_low_res_utc_time;
-  const double kMaximumAllowedDriftMsec =
-      15.625 * 2.0;  // 2x the typical low-res accuracy
-  if (fabs(high_res_elapsed - low_res_elapsed) > kMaximumAllowedDriftMsec)
-    g_synced_time = false;
-
-  // Make sure time doesn't run backwards (only correct if the difference is < 2
-  // seconds, since DST or clock changes could occur).
-  const double kBackwardTimeLimit = 2000.0;
-  if (utc < last_utc_time && (last_utc_time - utc) < kBackwardTimeLimit)
-    return last_utc_time * (1.0 / 1000.0);
-
-  last_utc_time = utc;
-  return utc * (1.0 / 1000.0);
-}
-
-#else
-
-static double GetCurrentTime() {
-  struct timeval now;
-  gettimeofday(&now, nullptr);
-  return now.tv_sec + now.tv_usec * (1.0 / 1000000.0);
-}
-
-#endif
-
 scoped_refptr<SharedBuffer> ReadFile(const char* name) {
-  std::ifstream file;
-
-  file.open(name, std::ios::in | std::ios::binary);
+  std::ifstream file(name, std::ios::in | std::ios::binary);
   if (!file) {
     fprintf(stderr, "Can't open file %s\n", name);
     exit(2);
@@ -191,13 +45,11 @@ scoped_refptr<SharedBuffer> ReadFile(const char* name) {
   size_t file_size = file.tellg();
   file.seekg(0, std::ios::beg);
 
-  if (!file_size)
+  if (!file || !file_size)
     return SharedBuffer::Create();
 
   Vector<char> buffer(file_size);
-  file.read(buffer.data(), file_size);
-
-  if (file.bad()) {
+  if (!file.read(buffer.data(), file_size)) {
     fprintf(stderr, "Error reading file %s\n", name);
     exit(2);
   }
@@ -333,10 +185,10 @@ int Main(int argc, char* argv[]) {
   double total_time = 0.0;
 
   for (size_t i = 0; i < iterations; ++i) {
-    double start_time = GetCurrentTime();
+    auto start_time = CurrentTimeTicks();
     bool decoded =
         DecodeImageData(data.get(), apply_color_correction, packet_size);
-    double elapsed_time = GetCurrentTime() - start_time;
+    double elapsed_time = (CurrentTimeTicks() - start_time).InSecondsF();
     total_time += elapsed_time;
     if (!decoded) {
       fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
