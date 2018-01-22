@@ -110,6 +110,8 @@ class Internals final : public ScriptWrappable {
                                bool shrinks_layout);
   void setBrowserControlsShownRatio(float);
 
+  Node* effectiveRootScroller(Document*);
+
   ShadowRoot* createUserAgentShadowRoot(Element* host);
 
   ShadowRoot* shadowRoot(Element* host);

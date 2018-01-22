@@ -6,13 +6,18 @@
   // flags turned on.
   if (window.internals) {
     window.internals.setBrowserControlsState(100, 0, true);
-    window.internals.setBrowserControlsShownRatio(0);
+    testRunner.waitUntilDone();
   }
 
   addEventListener("load", function() {
     var iframe = document.getElementById("iframe");
     document.rootScroller = iframe;
     iframe.contentDocument.rootScroller = iframe.contentDocument.getElementById("scroller");
+
+    if (window.internals)
+      window.internals.setBrowserControlsShownRatio(0);
+
+    requestAnimationFrame(() => { testRunner.notifyDone(); });
   });
 </script>
 <style>
