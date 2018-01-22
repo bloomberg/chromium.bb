@@ -15,34 +15,35 @@ TransferCacheSerializeHelper::~TransferCacheSerializeHelper() = default;
 
 bool TransferCacheSerializeHelper::LockEntry(TransferCacheEntryType type,
                                              uint32_t id) {
+  EntryKey key(type, id);
   // Entry already locked, so we don't need to process it.
-  if (added_entries_.count(std::make_pair(type, id)) != 0)
+  if (added_entries_.count(key) != 0)
     return true;
 
-  bool success = LockEntryInternal(type, id);
+  bool success = LockEntryInternal(key);
   if (!success)
     return false;
-  added_entries_.emplace(type, id);
+  added_entries_.insert(key);
   return true;
 }
 
 void TransferCacheSerializeHelper::CreateEntry(
     const ClientTransferCacheEntry& entry) {
   // We shouldn't be creating entries if they were already created or locked.
-  DCHECK_EQ(added_entries_.count(std::make_pair(entry.Type(), entry.Id())), 0u);
+  EntryKey key(entry.Type(), entry.Id());
+  DCHECK_EQ(added_entries_.count(key), 0u);
   CreateEntryInternal(entry);
-  added_entries_.emplace(entry.Type(), entry.Id());
+  added_entries_.insert(key);
 }
 
 void TransferCacheSerializeHelper::FlushEntries() {
-  FlushEntriesInternal(
-      std::vector<EntryKey>(added_entries_.begin(), added_entries_.end()));
+  FlushEntriesInternal(std::move(added_entries_));
   added_entries_.clear();
 }
 
 void TransferCacheSerializeHelper::AssertLocked(TransferCacheEntryType type,
                                                 uint32_t id) {
-  DCHECK_EQ(added_entries_.count(std::make_pair(type, id)), 1u);
+  DCHECK_EQ(added_entries_.count(EntryKey(type, id)), 1u);
 }
 
 }  // namespace cc

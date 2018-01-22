@@ -50,6 +50,10 @@ class CC_PAINT_EXPORT ClientTransferCacheEntry {
   // guaranteed to be at least SerializedSize() bytes. Returns true on success
   // and false otherwise.
   virtual bool Serialize(base::span<uint8_t> data) const = 0;
+
+  // Returns the same value as Type() but as a uint32_t to use via
+  // ContextSupport.
+  uint32_t UnsafeType() const { return static_cast<uint32_t>(Type()); }
 };
 
 // An interface which receives the raw data sent by the client and

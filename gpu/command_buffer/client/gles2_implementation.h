@@ -218,15 +218,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       uint32_t texture_id) override;
   bool ThreadsafeDiscardableTextureIsDeletedForTracing(
       uint32_t texture_id) override;
-  void CreateTransferCacheEntry(
-      const cc::ClientTransferCacheEntry& entry) override;
-  bool ThreadsafeLockTransferCacheEntry(cc::TransferCacheEntryType type,
-                                        uint32_t id) override;
+  void* MapTransferCacheEntry(size_t serialized_size) override;
+  void UnmapAndCreateTransferCacheEntry(uint32_t type, uint32_t id) override;
+  bool ThreadsafeLockTransferCacheEntry(uint32_t type, uint32_t id) override;
   void UnlockTransferCacheEntries(
-      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
-          entries) override;
-  void DeleteTransferCacheEntry(cc::TransferCacheEntryType type,
-                                uint32_t id) override;
+      const std::vector<std::pair<uint32_t, uint32_t>>& entries) override;
+  void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override;
   unsigned int GetTransferBufferFreeSize() const override;
 
   // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to

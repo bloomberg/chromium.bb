@@ -13,7 +13,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -31,18 +31,28 @@ class TransferCacheSerializeHelperImpl
   ~TransferCacheSerializeHelperImpl() final = default;
 
  private:
-  bool LockEntryInternal(cc::TransferCacheEntryType type, uint32_t id) final {
-    return support_->ThreadsafeLockTransferCacheEntry(type, id);
+  bool LockEntryInternal(const EntryKey& key) final {
+    return support_->ThreadsafeLockTransferCacheEntry(
+        static_cast<uint32_t>(key.first), key.second);
   }
 
   void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
-    support_->CreateTransferCacheEntry(entry);
+    size_t size = entry.SerializedSize();
+    void* data = support_->MapTransferCacheEntry(size);
+    // TODO(piman): handle error (failed to allocate/map shm)
+    DCHECK(data);
+    bool succeeded = entry.Serialize(
+        base::make_span(reinterpret_cast<uint8_t*>(data), size));
+    DCHECK(succeeded);
+    support_->UnmapAndCreateTransferCacheEntry(entry.UnsafeType(), entry.Id());
   }
 
-  void FlushEntriesInternal(
-      const std::vector<std::pair<cc::TransferCacheEntryType, uint32_t>>&
-          entries) final {
-    support_->UnlockTransferCacheEntries(entries);
+  void FlushEntriesInternal(std::set<EntryKey> entries) final {
+    std::vector<std::pair<uint32_t, uint32_t>> transformed;
+    transformed.reserve(entries.size());
+    for (const auto& e : entries)
+      transformed.emplace_back(static_cast<uint32_t>(e.first), e.second);
+    support_->UnlockTransferCacheEntries(transformed);
   }
 
   ContextSupport* support_;
