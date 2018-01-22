@@ -8,7 +8,7 @@ What does *not* work:
 
 * goma. Sorry. ([internal bug](http://b/64390790)) You can use the
   [jumbo build](jumbo.md) for faster build times.
-* mini_installer ([bug](https://crbug.com/762073))
+* renderer processes crash at startup ([bug](https://crbug.com/803591))
 * on Mac hosts, building a 32-bit chrome ([bug](https://crbug.com/794838))
 
 All other targets build fine (including `chrome`, `browser_tests`, ...).
@@ -50,6 +50,12 @@ you'll need to put a JSON file describing the SDK layout in a certain location.
 Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 
     ninja -C out/gnwin base_unittests.exe
+
+## Copying and running chrome
+
+A convenient way to copy chrome over to a Windows box is to build the
+`mini_installer` target.  Then, copy just `mini_installer.exe` over
+to the Windows box and run it to install the chrome you just built.
 
 ## Running tests on swarming
 
