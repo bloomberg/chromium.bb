@@ -24,6 +24,10 @@ declare_args() {
   # a class has an empty destructor which would be unnecessarily invoked
   # when finalized.
   blink_gc_plugin_option_warn_unneeded_finalizer = false
+
+  # Set to true to have the clang Blink GC plugin additionally check if a
+  # TraceWrappers method also dispatches to all its base classes.
+  blink_gc_plugin_option_warn_trace_wrappers_missing_base_dispatch = false
 }
 
 # features ---------------------------------------------------------------------
@@ -138,6 +142,14 @@ config("config") {
         "-plugin-arg-blink-gc-plugin",
         "-Xclang",
         "warn-unneeded-finalizer",
+      ]
+    }
+    if (blink_gc_plugin_option_warn_trace_wrappers_missing_base_dispatch) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-blink-gc-plugin",
+        "-Xclang",
+        "warn_trace_wrappers_missing_base_dispatch",
       ]
     }
   }
