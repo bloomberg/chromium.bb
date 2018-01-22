@@ -6,9 +6,6 @@
 
 namespace chrome {
 
-const char kAppLauncherHelpURL[] =
-    "https://support.google.com/chrome_webstore/?p=cws_app_launcher";
-
 const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
@@ -147,9 +144,6 @@ const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/topic/1678461";
 #endif
 
-const char kLearnMoreRegisterProtocolHandlerURL[] =
-    "https://support.google.com/chrome/?p=ib_protocol_handler";
-
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
 
@@ -157,9 +151,6 @@ const char kLegacySupervisedUserManagementDisplayURL[] =
     "www.chrome.com/manage";
 const char kLegacySupervisedUserManagementURL[] =
     "https://www.chrome.com/manage";
-
-const char kMediaAccessLearnMoreUrl[] =
-    "https://support.google.com/chrome/?p=ib_access_cam_mic";
 
 const char kMyActivityUrlInClearBrowsingData[] =
     "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
@@ -221,9 +212,6 @@ const char kSyncEncryptionHelpURL[] =
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
-const char kSyncEverythingLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=settings_sync_all";
-
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
 
@@ -252,13 +240,8 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";
 
-const char kAttestationForContentProtectionLearnMoreURL[] =
-    "https://support.google.com/chromebook/?p=verified_access";
-
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
-const char kChromeAccessibilitySettingsURL[] =
-    "/chromevox/background/options.html";
 
 const char kChromeOSAssetHost[] = "chromeos-asset";
 const char kChromeOSAssetPath[] = "/usr/share/chromeos-assets/";
@@ -268,9 +251,6 @@ const char kChromeOSCreditsPath[] =
 
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
-
-const char kCrosPrintingLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=chromebook_printing";
 
 const char kCrosScheme[] = "cros";
 
@@ -311,9 +291,6 @@ const char kChromeEnterpriseSignInLearnMoreURL[] =
 const char kChromeCleanerLearnMoreURL[] =
     "https://support.google.com/chrome/?p=chrome_cleanup_tool";
 
-const char kNotificationsHelpURL[] =
-    "https://support.google.com/chrome/?p=ui_notifications";
-
 const char kWindowsXPVistaDeprecationURL[] =
     "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
 #endif
@@ -321,9 +298,6 @@ const char kWindowsXPVistaDeprecationURL[] =
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 const char kChromeSyncLearnMoreURL[] =
     "https://support.google.com/chrome/answer/165139";
-
-const char kChromeSyncMergeTroubleshootingURL[] =
-    "https://support.google.com/chrome/answer/1181420#merge";
 #endif  // BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
