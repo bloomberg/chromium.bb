@@ -44,6 +44,7 @@ class CategorizedWorkerPool;
 class NestedMessagePumpAndroid;
 class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
+class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
 class SynchronousCompositor;
 class SynchronousCompositorBrowserFilter;
@@ -265,6 +266,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
                            ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
+  friend class content::SessionStorageDatabase;
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;

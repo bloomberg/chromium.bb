@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
@@ -115,6 +116,8 @@ SessionStorageDatabase::SessionStorageDatabase(
 
 SessionStorageDatabase::~SessionStorageDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+  db_.reset();
 }
 
 void SessionStorageDatabase::ReadAreaValues(
@@ -209,6 +212,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
 
   WriteValuesToMap(map_id, changes, &batch);
 
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   UMA_HISTOGRAM_ENUMERATION("SessionStorageDatabase.Commit",
                             leveldb_env::GetLevelDBStatusUMAValue(s),
@@ -258,6 +262,7 @@ bool SessionStorageDatabase::CloneNamespace(
       return false;
     AddAreaToNamespace(new_namespace_id, origin, map_id, &batch);
   }
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
 }
@@ -273,6 +278,7 @@ bool SessionStorageDatabase::DeleteArea(const std::string& namespace_id,
   leveldb::WriteBatch batch;
   if (!DeleteAreaHelper(namespace_id, origin.spec(), &batch))
     return false;
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
 }
@@ -301,6 +307,7 @@ bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
       return false;
   }
   batch.Delete(NamespaceStartKey(namespace_id));
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
 }
