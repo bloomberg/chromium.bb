@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
 }
 
 // Make sure that UKM is disabled while an non-sync profile's window is open.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NonSyncCheck) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -490,8 +490,6 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
-
-// TODO(crbug/745939): Add a tests for disable w/ multiprofiles.
 
 // TODO(crbug/745939): Add a tests for guest profile.
 
