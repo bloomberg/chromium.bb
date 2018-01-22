@@ -47,17 +47,27 @@ base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
           url, url_formatter::FormatUrl(
                    url, url_formatter::kFormatUrlOmitDefaults,
                    net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
-  if (formatted_text.length() <= max_url_display_chars_)
-    return formatted_text;
 
   // Truncating the URL breaks editing and then pressing enter, but hopefully
   // people won't try to do much with such enormous URLs anyway. If this becomes
   // a real problem, we could perhaps try to keep some sort of different "elided
   // visible URL" where editing affects and reloads the "real underlying URL",
   // but this seems very tricky for little gain.
-  return gfx::TruncateString(formatted_text, max_url_display_chars_ - 1,
-                             gfx::CHARACTER_BREAK) +
-         gfx::kEllipsisUTF16;
+  return gfx::TruncateString(formatted_text, max_url_display_chars_,
+                             gfx::CHARACTER_BREAK);
+}
+
+base::string16 ToolbarModelImpl::GetURLForDisplay() const {
+  url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitDefaults |
+      url_formatter::kFormatUrlOmitHTTPS |
+      url_formatter::kFormatUrlOmitTrivialSubdomains;
+  base::string16 result = url_formatter::FormatUrl(GetURL(), format_types,
+                                                   net::UnescapeRule::NORMAL,
+                                                   nullptr, nullptr, nullptr);
+
+  return gfx::TruncateString(result, max_url_display_chars_,
+                             gfx::CHARACTER_BREAK);
 }
 
 GURL ToolbarModelImpl::GetURL() const {

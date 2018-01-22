@@ -32,6 +32,12 @@ class ToolbarModel {
   // applying any elisions that change the meaning of the URL.
   virtual base::string16 GetFormattedFullURL() const = 0;
 
+  // Returns a simplified URL for display (but not editing) on the toolbar.
+  // This formatting is generally a superset of GetFormattedFullURL, and may
+  // include some destructive elisions that change the meaning of the URL.
+  // The returned string is not suitable for editing, and is for display only.
+  virtual base::string16 GetURLForDisplay() const = 0;
+
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 

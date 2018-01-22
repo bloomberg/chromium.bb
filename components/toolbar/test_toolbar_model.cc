@@ -22,6 +22,10 @@ base::string16 TestToolbarModel::GetFormattedFullURL() const {
   return text_;
 }
 
+base::string16 TestToolbarModel::GetURLForDisplay() const {
+  return text_;
+}
+
 GURL TestToolbarModel::GetURL() const {
   return url_;
 }
