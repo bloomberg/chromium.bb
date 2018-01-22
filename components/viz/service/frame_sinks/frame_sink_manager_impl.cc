@@ -24,28 +24,15 @@
 
 namespace viz {
 
-FrameSinkManagerImpl::FrameSinkSourceMapping::FrameSinkSourceMapping() =
+FrameSinkManagerImpl::FrameSinkData::FrameSinkData() = default;
+
+FrameSinkManagerImpl::FrameSinkData::FrameSinkData(FrameSinkData&& other) =
     default;
 
-FrameSinkManagerImpl::FrameSinkSourceMapping::FrameSinkSourceMapping(
-    FrameSinkSourceMapping&& other) = default;
+FrameSinkManagerImpl::FrameSinkData::~FrameSinkData() = default;
 
-FrameSinkManagerImpl::FrameSinkSourceMapping::~FrameSinkSourceMapping() =
-    default;
-
-FrameSinkManagerImpl::FrameSinkSourceMapping&
-FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
-    FrameSinkSourceMapping&& other) = default;
-
-FrameSinkManagerImpl::SinkAndSupport::SinkAndSupport() = default;
-
-FrameSinkManagerImpl::SinkAndSupport::SinkAndSupport(SinkAndSupport&& other) =
-    default;
-
-FrameSinkManagerImpl::SinkAndSupport::~SinkAndSupport() = default;
-
-FrameSinkManagerImpl::SinkAndSupport& FrameSinkManagerImpl::SinkAndSupport::
-operator=(SinkAndSupport&& other) = default;
+FrameSinkManagerImpl::FrameSinkData& FrameSinkManagerImpl::FrameSinkData::
+operator=(FrameSinkData&& other) = default;
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     uint32_t number_of_frames_to_activation_deadline,
@@ -60,11 +47,13 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(
 
 FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // All CompositorFrameSinkSupports and BeginFrameSources should be deleted
+  // before FrameSinkManagerImpl destruction.
+  DCHECK(support_map_.empty());
+  DCHECK(registered_sources_.empty());
+
   video_capturers_.clear();
-  // All FrameSinks should be unregistered prior to FrameSinkManager
-  // destruction.
-  compositor_frame_sinks_.clear();
-  DCHECK_EQ(registered_sources_.size(), 0u);
   surface_manager_.RemoveObserver(this);
   surface_manager_.RemoveObserver(&hit_test_manager_);
 }
@@ -104,11 +93,13 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
     video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
 
   // Destroy the [Root]CompositorFrameSinkImpl if there is one. This will result
-  // in UnregisterCompositorFrameSinkSupport() being called and |iter| will be
-  // invalidated afterwards
-  auto iter = compositor_frame_sinks_.find(frame_sink_id);
-  if (iter != compositor_frame_sinks_.end())
+  // in UnregisterCompositorFrameSinkSupport() being called.
+  auto iter = frame_sink_data_map_.find(frame_sink_id);
+  if (iter != frame_sink_data_map_.end()) {
     iter->second.sink.reset();
+    if (iter->second.empty())
+      frame_sink_data_map_.erase(iter);
+  }
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
@@ -120,7 +111,7 @@ void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(0u, compositor_frame_sinks_.count(params->frame_sink_id));
+  DCHECK(!frame_sink_data_map_[params->frame_sink_id].sink);
   DCHECK(display_provider_);
 
   std::unique_ptr<ExternalBeginFrameControllerImpl>
@@ -140,17 +131,16 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
       external_begin_frame_controller.get(), params->renderer_settings,
       &begin_frame_source);
 
-  auto frame_sink = std::make_unique<RootCompositorFrameSinkImpl>(
-      this, params->frame_sink_id, std::move(display),
-      std::move(begin_frame_source), std::move(external_begin_frame_controller),
-      std::move(params->compositor_frame_sink),
-      mojom::CompositorFrameSinkClientPtr(
-          std::move(params->compositor_frame_sink_client)),
-      std::move(params->display_private),
-      mojom::DisplayClientPtr(std::move(params->display_client)));
-  SinkAndSupport& entry = compositor_frame_sinks_[params->frame_sink_id];
-  DCHECK(entry.support);  // |entry| was created by RootCompositorFrameSinkImpl.
-  entry.sink = std::move(frame_sink);
+  frame_sink_data_map_[params->frame_sink_id].sink =
+      std::make_unique<RootCompositorFrameSinkImpl>(
+          this, params->frame_sink_id, std::move(display),
+          std::move(begin_frame_source),
+          std::move(external_begin_frame_controller),
+          std::move(params->compositor_frame_sink),
+          mojom::CompositorFrameSinkClientPtr(
+              std::move(params->compositor_frame_sink_client)),
+          std::move(params->display_private),
+          mojom::DisplayClientPtr(std::move(params->display_client)));
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -158,13 +148,11 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkRequest request,
     mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+  DCHECK(!frame_sink_data_map_[frame_sink_id].sink);
 
-  auto frame_sink = std::make_unique<CompositorFrameSinkImpl>(
-      this, frame_sink_id, std::move(request), std::move(client));
-  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
-  DCHECK(entry.support);  // |entry| was created by CompositorFrameSinkImpl.
-  entry.sink = std::move(frame_sink);
+  frame_sink_data_map_[frame_sink_id].sink =
+      std::make_unique<CompositorFrameSinkImpl>(
+          this, frame_sink_id, std::move(request), std::move(client));
 }
 
 void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
@@ -174,14 +162,14 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
   // then this will create an infinite loop.  Might as well just crash here.
   CHECK(!ChildContains(child_frame_sink_id, parent_frame_sink_id));
 
-  auto& children = frame_sink_source_map_[parent_frame_sink_id].children;
+  auto& children = frame_sink_data_map_[parent_frame_sink_id].children;
   DCHECK(!base::ContainsKey(children, child_frame_sink_id));
   children.insert(child_frame_sink_id);
 
   // If the parent has no source, then attaching it to this child will
   // not change any downstream sources.
   BeginFrameSource* parent_source =
-      frame_sink_source_map_[parent_frame_sink_id].source;
+      frame_sink_data_map_[parent_frame_sink_id].source;
   if (!parent_source)
     return;
 
@@ -197,30 +185,26 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   // in time. This makes it possible to invalidate parent and child FrameSinkIds
   // independently of each other and not have an ordering dependency of
   // unregistering the hierarchy first before either of them.
-  auto iter = frame_sink_source_map_.find(parent_frame_sink_id);
-  DCHECK(iter != frame_sink_source_map_.end());
+  auto iter = frame_sink_data_map_.find(parent_frame_sink_id);
+  DCHECK(iter != frame_sink_data_map_.end());
 
   // Remove |child_frame_sink_id| from parents list of children.
-  auto& mapping = iter->second;
-  DCHECK(base::ContainsKey(mapping.children, child_frame_sink_id));
-  mapping.children.erase(child_frame_sink_id);
-
-  // Delete the FrameSinkSourceMapping for |parent_frame_sink_id| if empty.
-  if (!mapping.has_children() && !mapping.source) {
-    frame_sink_source_map_.erase(iter);
-    return;
-  }
+  auto& data = iter->second;
+  DCHECK(base::ContainsKey(data.children, child_frame_sink_id));
+  data.children.erase(child_frame_sink_id);
 
   // If the parent does not have a begin frame source, then disconnecting it
   // will not change any of its children.
-  BeginFrameSource* parent_source = iter->second.source;
-  if (!parent_source)
+  if (!data.source) {
+    if (data.empty())
+      frame_sink_data_map_.erase(iter);
     return;
+  }
 
   // TODO(enne): these walks could be done in one step.
-  RecursivelyDetachBeginFrameSource(child_frame_sink_id, parent_source);
-  for (auto& source_iter : registered_sources_)
-    RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
+  RecursivelyDetachBeginFrameSource(child_frame_sink_id, data.source);
+  for (auto& map_entry : registered_sources_)
+    RecursivelyAttachBeginFrameSource(map_entry.second, map_entry.first);
 }
 
 void FrameSinkManagerImpl::AssignTemporaryReference(const SurfaceId& surface_id,
@@ -249,31 +233,30 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {
   DCHECK(support);
+  DCHECK(!base::ContainsKey(support_map_, frame_sink_id));
 
-  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
-  DCHECK(!entry.support);
-  entry.support = support;
+  support_map_[frame_sink_id] = support;
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
-      capturer->SetResolvedTarget(entry.support);
+      capturer->SetResolvedTarget(support);
   }
 
-  auto it = frame_sink_source_map_.find(frame_sink_id);
-  if (it != frame_sink_source_map_.end() && it->second.source)
+  auto it = frame_sink_data_map_.find(frame_sink_id);
+  if (it != frame_sink_data_map_.end() && it->second.source)
     support->SetBeginFrameSource(it->second.source);
 }
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id) {
-  DCHECK_EQ(compositor_frame_sinks_.count(frame_sink_id), 1u);
+  DCHECK(base::ContainsKey(support_map_, frame_sink_id));
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
       capturer->OnTargetWillGoAway();
   }
 
-  compositor_frame_sinks_.erase(frame_sink_id);
+  support_map_.erase(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::RegisterBeginFrameSource(
@@ -298,7 +281,7 @@ void FrameSinkManagerImpl::UnregisterBeginFrameSource(
 
   primary_source_.OnBeginFrameSourceRemoved(source);
 
-  if (frame_sink_source_map_.count(frame_sink_id) == 0u)
+  if (frame_sink_data_map_.count(frame_sink_id) == 0u)
     return;
 
   // TODO(enne): these walks could be done in one step.
@@ -317,17 +300,17 @@ BeginFrameSource* FrameSinkManagerImpl::GetPrimaryBeginFrameSource() {
 void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(
     const FrameSinkId& frame_sink_id,
     BeginFrameSource* source) {
-  FrameSinkSourceMapping& mapping = frame_sink_source_map_[frame_sink_id];
-  if (!mapping.source) {
-    mapping.source = source;
-    auto iter = compositor_frame_sinks_.find(frame_sink_id);
-    if (iter != compositor_frame_sinks_.end())
-      iter->second.support->SetBeginFrameSource(source);
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  if (!data.source) {
+    data.source = source;
+    auto iter = support_map_.find(frame_sink_id);
+    if (iter != support_map_.end())
+      iter->second->SetBeginFrameSource(source);
   }
 
   // Copy the list of children because RecursivelyAttachBeginFrameSource() can
-  // modify |frame_sink_source_map_| and invalidate iterators.
-  base::flat_set<FrameSinkId> children = mapping.children;
+  // modify |frame_sink_data_map_| and invalidate iterators.
+  base::flat_set<FrameSinkId> children = data.children;
   for (const FrameSinkId& child : children)
     RecursivelyAttachBeginFrameSource(child, source);
 }
@@ -335,37 +318,37 @@ void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(
 void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
     const FrameSinkId& frame_sink_id,
     BeginFrameSource* source) {
-  auto iter = frame_sink_source_map_.find(frame_sink_id);
-  if (iter == frame_sink_source_map_.end())
+  auto iter = frame_sink_data_map_.find(frame_sink_id);
+  if (iter == frame_sink_data_map_.end())
     return;
 
-  auto& mapping = iter->second;
-  if (mapping.source == source) {
-    mapping.source = nullptr;
-    auto client_iter = compositor_frame_sinks_.find(frame_sink_id);
-    if (client_iter != compositor_frame_sinks_.end())
-      client_iter->second.support->SetBeginFrameSource(nullptr);
+  auto& data = iter->second;
+  if (data.source == source) {
+    data.source = nullptr;
+    auto client_iter = support_map_.find(frame_sink_id);
+    if (client_iter != support_map_.end())
+      client_iter->second->SetBeginFrameSource(nullptr);
   }
 
-  // Delete the FrameSinkSourceMapping for |frame_sink_id| if empty.
-  if (!mapping.has_children()) {
-    frame_sink_source_map_.erase(iter);
+  // Delete the FrameSinkData for |frame_sink_id| if empty.
+  if (data.empty()) {
+    frame_sink_data_map_.erase(iter);
     return;
   }
 
   // Copy the list of children because RecursivelyDetachBeginFrameSource() can
-  // modify |frame_sink_source_map_| and invalidate iterators.
-  base::flat_set<FrameSinkId> children = mapping.children;
+  // modify |frame_sink_data_map_| and invalidate iterators.
+  base::flat_set<FrameSinkId> children = data.children;
   for (const FrameSinkId& child : children)
     RecursivelyDetachBeginFrameSource(child, source);
 }
 
 CapturableFrameSink* FrameSinkManagerImpl::FindCapturableFrameSink(
     const FrameSinkId& frame_sink_id) {
-  const auto it = compositor_frame_sinks_.find(frame_sink_id);
-  if (it == compositor_frame_sinks_.end())
+  const auto it = support_map_.find(frame_sink_id);
+  if (it == support_map_.end())
     return nullptr;
-  return it->second.support;
+  return it->second;
 }
 
 void FrameSinkManagerImpl::OnCapturerConnectionLost(
@@ -376,8 +359,8 @@ void FrameSinkManagerImpl::OnCapturerConnectionLost(
 bool FrameSinkManagerImpl::ChildContains(
     const FrameSinkId& child_frame_sink_id,
     const FrameSinkId& search_frame_sink_id) const {
-  auto iter = frame_sink_source_map_.find(child_frame_sink_id);
-  if (iter == frame_sink_source_map_.end())
+  auto iter = frame_sink_data_map_.find(child_frame_sink_id);
+  if (iter == frame_sink_data_map_.end())
     return false;
 
   for (const FrameSinkId& child : iter->second.children) {
