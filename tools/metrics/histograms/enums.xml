@@ -35989,6 +35989,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Error: Write queue out of sync"/>
   <int value="13" label="Error: Device lost"/>
   <int value="14" label="Error: Connection dropped"/>
+  <int value="15" label="Timeout: Waiting for message to send"/>
 </enum>
 
 <enum name="ProximityAuth_BluetoothGattConnectionResult">

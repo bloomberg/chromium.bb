@@ -84,7 +84,8 @@ class BluetoothLowEnergyWeaveClientConnection
     WAITING_NOTIFY_SESSION,
     NOTIFY_SESSION_READY,
     WAITING_CONNECTION_RESPONSE,
-    CONNECTED,
+    CONNECTED_AND_IDLE,
+    CONNECTED_AND_SENDING_MESSAGE,
   };
 
   // Constructs the Connection object; a subsequent call to Connect() is
@@ -120,6 +121,7 @@ class BluetoothLowEnergyWeaveClientConnection
     BLE_WEAVE_CONNECTION_RESULT_ERROR_WRITE_QUEUE_OUT_OF_SYNC = 12,
     BLE_WEAVE_CONNECTION_RESULT_ERROR_DEVICE_LOST = 13,
     BLE_WEAVE_CONNECTION_RESULT_ERROR_CONNECTION_DROPPED = 14,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_WAITING_FOR_MESSAGE_TO_SEND = 15,
     BLE_WEAVE_CONNECTION_RESULT_MAX
   };
 
@@ -225,7 +227,8 @@ class BluetoothLowEnergyWeaveClientConnection
                            Timeout_NotifySession);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                            Timeout_ConnectionResponse);
-
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_SendingMessage);
   enum WriteRequestType {
     REGULAR,
     MESSAGE_COMPLETE,
