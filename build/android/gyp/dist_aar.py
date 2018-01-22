@@ -72,13 +72,23 @@ def main(args):
       '--android-manifest',
       help='Path to AndroidManifest.xml to include.',
       default=os.path.join(_ANDROID_BUILD_DIR, 'AndroidManifest.xml'))
+  parser.add_argument('--native-libraries', default='',
+                      help='GN list of native libraries. If non-empty then '
+                      'ABI must be specified.')
+  parser.add_argument('--abi',
+                      help='ABI (e.g. armeabi-v7a) for native libraries.')
 
   options = parser.parse_args(args)
+
+  if options.native_libraries and not options.abi:
+    parser.error('You must provide --abi if you have native libs')
+
   options.jars = build_utils.ParseGnList(options.jars)
   options.dependencies_res_zips = build_utils.ParseGnList(
       options.dependencies_res_zips)
   options.r_text_files = build_utils.ParseGnList(options.r_text_files)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
+  options.native_libraries = build_utils.ParseGnList(options.native_libraries)
 
   with tempfile.NamedTemporaryFile(delete=False) as staging_file:
     try:
@@ -100,6 +110,12 @@ def main(args):
               data=_MergeProguardConfigs(options.proguard_configs))
 
         _AddResources(z, options.dependencies_res_zips)
+
+        for native_library in options.native_libraries:
+          libname = os.path.basename(native_library)
+          build_utils.AddToZipHermetic(
+              z, os.path.join('jni', options.abi, libname),
+              src_path=native_library)
     except:
       os.unlink(staging_file.name)
       raise
