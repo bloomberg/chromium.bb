@@ -4,7 +4,7 @@
 
 source_set("adaptive") {
   sources = [
-    "adaptive_toolbar_coordinator+protected.h",
+    "adaptive_toolbar_coordinator+subclassing.h",
     "adaptive_toolbar_coordinator.h",
     "adaptive_toolbar_coordinator.mm",
     "primary_toolbar_coordinator.h",
@@ -43,6 +43,7 @@ source_set("adaptive") {
 source_set("adaptive_ui") {
   sources = [
     "adaptive_toolbar_view.h",
+    "adaptive_toolbar_view_controller+subclassing.h",
     "adaptive_toolbar_view_controller.h",
     "adaptive_toolbar_view_controller.mm",
     "primary_toolbar_view.h",

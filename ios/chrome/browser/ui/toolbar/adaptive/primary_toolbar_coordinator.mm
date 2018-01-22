@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+protected.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
@@ -84,7 +84,7 @@
 }
 
 - (void)showPrerenderingAnimation {
-  // TODO(crbug.com/803377): Implement that.
+  [self.viewController showPrerenderingAnimation];
 }
 
 - (BOOL)isOmniboxFirstResponder {

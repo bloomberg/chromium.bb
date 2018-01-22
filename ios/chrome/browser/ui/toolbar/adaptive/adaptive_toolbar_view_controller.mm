@@ -95,17 +95,8 @@
   self.view.shareButton.enabled = enabled;
 }
 
-#pragma mark - Private
+#pragma mark - Protected
 
-// Updates all buttons visibility to match any recent WebState or SizeClass
-// change.
-- (void)updateAllButtonsVisibility {
-  for (ToolbarButton* button in self.view.allButtons) {
-    [button updateHiddenInCurrentSizeClass];
-  }
-}
-
-// Sets the progress of the progressBar to 1 then hides it.
 - (void)stopProgressBar {
   __weak MDCProgressView* weakProgressBar = self.view.progressBar;
   __weak AdaptiveToolbarViewController* weakSelf = self;
@@ -117,6 +108,16 @@
            [weakProgressBar setHidden:YES animated:YES completion:nil];
          }
        }];
+}
+
+#pragma mark - Private
+
+// Updates all buttons visibility to match any recent WebState or SizeClass
+// change.
+- (void)updateAllButtonsVisibility {
+  for (ToolbarButton* button in self.view.allButtons) {
+    [button updateHiddenInCurrentSizeClass];
+  }
 }
 
 @end
