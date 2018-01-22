@@ -23,7 +23,6 @@ class WebGestureEvent;
 namespace viz {
 class SurfaceId;
 class SurfaceInfo;
-struct SurfaceSequence;
 }  // namespace viz
 
 namespace content {
@@ -64,8 +63,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Provide the SurfaceInfo to the embedder, which becomes a reference to the
   // current view's Surface that is included in higher-level compositor
   // frames.
-  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                                    const viz::SurfaceSequence& sequence) {}
+  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) {}
 
   // Return the rect in DIP that the RenderWidgetHostViewChildFrame's content
   // will render into.

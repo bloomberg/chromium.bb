@@ -31,7 +31,6 @@ struct WebScrollIntoViewParams;
 
 namespace viz {
 class SurfaceInfo;
-struct SurfaceSequence;
 }
 
 namespace content {
@@ -198,8 +197,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   void ResendResizeParams();
 
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const viz::SurfaceSequence& sequence);
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info);
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -208,8 +206,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                              const viz::SurfaceSequence& sequence);
+  // TODO(fsamuel): Rename OnFirstSurfaceActivation().
+  void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const viz::FrameSinkId& frame_sink_id);
   void OnDidStopLoading();
@@ -295,6 +293,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };
 
-}  // namespace
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_FRAME_PROXY_H_

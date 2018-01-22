@@ -141,8 +141,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
-    const viz::SurfaceInfo& surface_info,
-    const viz::SurfaceSequence& sequence) {
+    const viz::SurfaceInfo& surface_info) {
   if (!attached() || switches::IsMusHostingViz())
     return;
 
@@ -151,12 +150,7 @@ void BrowserPlugin::OnSetChildFrameSurface(
                                              frame_rect().size());
   }
   compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            frame_rect().size(), sequence);
-}
-
-void BrowserPlugin::SendSatisfySequence(const viz::SurfaceSequence& sequence) {
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SatisfySequence(
-      render_frame_routing_id_, browser_plugin_instance_id_, sequence));
+                                            frame_rect().size());
 }
 
 void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
@@ -768,8 +762,8 @@ void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
   if (!attached_)
     return;
 
-  compositing_helper_->SetFallbackSurfaceId(
-      surface_info.id(), frame_rect().size(), viz::SurfaceSequence());
+  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
+                                            frame_rect().size());
 }
 
 void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(

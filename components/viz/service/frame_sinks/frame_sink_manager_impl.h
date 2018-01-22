@@ -43,9 +43,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       public FrameSinkVideoCapturerManager,
       public mojom::FrameSinkManager {
  public:
-  FrameSinkManagerImpl(SurfaceManager::LifetimeType lifetime_type =
-                           SurfaceManager::LifetimeType::REFERENCES,
-                       uint32_t number_of_frames_to_activation_deadline = 4u,
+  FrameSinkManagerImpl(uint32_t number_of_frames_to_activation_deadline = 4u,
                        DisplayProvider* display_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 

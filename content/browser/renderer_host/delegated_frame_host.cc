@@ -18,7 +18,6 @@
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -300,8 +299,7 @@ void DelegatedFrameHost::WasResized() {
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_id, current_frame_size_in_dip_, GetGutterColor(),
-        GetSurfaceReferenceFactory());
+        surface_id, current_frame_size_in_dip_, GetGutterColor());
     if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                            switches::kDisableResizeLock)) {
       compositor_->OnChildResizing();
@@ -572,8 +570,7 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     }
   } else {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info.id(), frame_size_in_dip, GetGutterColor(),
-        GetSurfaceReferenceFactory());
+        surface_info.id(), frame_size_in_dip, GetGutterColor());
   }
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
@@ -946,14 +943,6 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (compositor_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
-}
-
-scoped_refptr<viz::SurfaceReferenceFactory>
-DelegatedFrameHost::GetSurfaceReferenceFactory() {
-  if (enable_viz_)
-    return base::MakeRefCounted<viz::StubSurfaceReferenceFactory>();
-
-  return GetFrameSinkManager()->surface_manager()->reference_factory();
 }
 
 }  // namespace content

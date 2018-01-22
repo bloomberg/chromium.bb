@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -186,96 +185,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   shell()->web_contents()->ForEachFrame(
       base::BindRepeating(&RenderWidgetHostViewChildFrameTest::CheckFrameSinkId,
                           base::Unretained(this)));
-}
-
-// A class to filter RequireSequence and SatisfySequence messages sent from
-// an embedding renderer for its child's Surfaces.
-class SurfaceRefMessageFilter : public BrowserMessageFilter {
- public:
-  SurfaceRefMessageFilter()
-      : BrowserMessageFilter(FrameMsgStart),
-        require_message_loop_runner_(new content::MessageLoopRunner),
-        satisfy_message_loop_runner_(new content::MessageLoopRunner),
-        satisfy_received_(false),
-        require_received_first_(false) {}
-
-  void WaitForRequire() { require_message_loop_runner_->Run(); }
-
-  void WaitForSatisfy() { satisfy_message_loop_runner_->Run(); }
-
-  bool require_received_first() { return require_received_first_; }
-
- protected:
-  ~SurfaceRefMessageFilter() override {}
-
- private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(SurfaceRefMessageFilter, message)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequire)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfy)
-    IPC_END_MESSAGE_MAP()
-    return false;
-  }
-
-  void OnRequire(const viz::SurfaceId& id,
-                 const viz::SurfaceSequence sequence) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&SurfaceRefMessageFilter::OnRequireOnUI, this));
-  }
-
-  void OnRequireOnUI() {
-    if (!satisfy_received_)
-      require_received_first_ = true;
-    require_message_loop_runner_->Quit();
-  }
-
-  void OnSatisfy(const viz::SurfaceSequence sequence) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&SurfaceRefMessageFilter::OnSatisfyOnUI, this));
-  }
-
-  void OnSatisfyOnUI() {
-    satisfy_received_ = true;
-    satisfy_message_loop_runner_->Quit();
-  }
-
-  scoped_refptr<content::MessageLoopRunner> require_message_loop_runner_;
-  scoped_refptr<content::MessageLoopRunner> satisfy_message_loop_runner_;
-  bool satisfy_received_;
-  bool require_received_first_;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceRefMessageFilter);
-};
-
-// Test that when a child frame submits its first compositor frame, the
-// embedding renderer process properly acquires and releases references to the
-// new Surface. See https://crbug.com/701175.
-// TODO(crbug.com/676384): Delete test with the rest of SurfaceSequence code.
-IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
-                       DISABLED_ChildFrameSurfaceReference) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(
-                   "a.com", "/cross_site_iframe_factory.html?a(a)")));
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  ASSERT_EQ(1U, root->child_count());
-
-  scoped_refptr<SurfaceRefMessageFilter> filter = new SurfaceRefMessageFilter();
-  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
-
-  GURL foo_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
-  NavigateFrameToURL(root->child_at(0), foo_url);
-
-  // If one of these messages isn't received, this test times out.
-  filter->WaitForRequire();
-  filter->WaitForSatisfy();
-
-  EXPECT_TRUE(filter->require_received_first());
 }
 
 }  // namespace content

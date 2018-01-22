@@ -26,10 +26,6 @@ void HostFrameSinkManager::SetLocalManager(
   frame_sink_manager_impl_ = frame_sink_manager_impl;
 
   frame_sink_manager_ = frame_sink_manager_impl;
-
-  // Assign temporary references if FrameSinkManagerImpl is using them.
-  assign_temporary_references_ =
-      frame_sink_manager_impl_->surface_manager()->using_surface_references();
 }
 
 void HostFrameSinkManager::BindAndSetManager(

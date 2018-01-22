@@ -226,10 +226,6 @@ const LayerTreeSettings& LayerTreeHost::GetSettings() const {
   return settings_;
 }
 
-void LayerTreeHost::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  surface_sequence_generator_.set_frame_sink_id(frame_sink_id);
-}
-
 void LayerTreeHost::QueueSwapPromise(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
@@ -241,10 +237,6 @@ void LayerTreeHost::QueueSwapPromise(
   // EarlyOut_NoUpdates).
   if (!inside_main_frame_)
     SetNeedsAnimate();
-}
-
-viz::SurfaceSequenceGenerator* LayerTreeHost::GetSurfaceSequenceGenerator() {
-  return &surface_sequence_generator_;
 }
 
 void LayerTreeHost::WillBeginMainFrame() {

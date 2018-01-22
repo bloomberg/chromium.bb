@@ -189,8 +189,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
     if (surface_layer_->primary_surface_id().is_valid()) {
       clone->SetShowPrimarySurface(surface_layer_->primary_surface_id(),
                                    frame_size_in_dip_,
-                                   surface_layer_->background_color(),
-                                   surface_layer_->surface_reference_factory());
+                                   surface_layer_->background_color());
     }
     if (surface_layer_->fallback_surface_id().is_valid())
       clone->SetFallbackSurfaceId(surface_layer_->fallback_surface_id());
@@ -746,16 +745,13 @@ bool Layer::TextureFlipped() const {
   return texture_layer_->flipped();
 }
 
-void Layer::SetShowPrimarySurface(
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& frame_size_in_dip,
-    SkColor default_background_color,
-    scoped_refptr<viz::SurfaceReferenceFactory> ref_factory) {
+void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
+                                  const gfx::Size& frame_size_in_dip,
+                                  SkColor default_background_color) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   if (!surface_layer_) {
-    scoped_refptr<cc::SurfaceLayer> new_layer =
-        cc::SurfaceLayer::Create(ref_factory);
+    scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
     SwitchToLayer(new_layer);
     surface_layer_ = new_layer;
   }
@@ -767,8 +763,8 @@ void Layer::SetShowPrimarySurface(
   RecomputeDrawsContentAndUVRect();
 
   for (const auto& mirror : mirrors_) {
-    mirror->dest()->SetShowPrimarySurface(
-        surface_id, frame_size_in_dip, default_background_color, ref_factory);
+    mirror->dest()->SetShowPrimarySurface(surface_id, frame_size_in_dip,
+                                          default_background_color);
   }
 }
 

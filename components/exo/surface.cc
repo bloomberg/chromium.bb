@@ -23,7 +23,6 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"

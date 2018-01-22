@@ -205,7 +205,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   animation_host_->AddAnimationTimeline(animation_timeline_.get());
 
   host_->SetRootLayer(root_web_layer_);
-  host_->SetFrameSinkId(frame_sink_id_);
   host_->SetVisible(true);
 
   if (command_line->HasSwitch(switches::kUISlowAnimations)) {

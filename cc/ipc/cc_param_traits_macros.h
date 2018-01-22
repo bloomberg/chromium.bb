@@ -24,7 +24,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "ui/gfx/ipc/buffer_types/gfx_param_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -44,11 +43,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
 
 // TODO(fsamuel): This trait belongs with skia code.
 IPC_ENUM_TRAITS_MAX_VALUE(SkBlendMode, SkBlendMode::kLastMode)
-
-IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
-  IPC_STRUCT_TRAITS_MEMBER(frame_sink_id)
-  IPC_STRUCT_TRAITS_MEMBER(sequence)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(material)

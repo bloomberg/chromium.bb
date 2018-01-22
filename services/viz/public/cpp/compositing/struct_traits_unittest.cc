@@ -41,7 +41,6 @@
 #include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
-#include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/begin_frame_args.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
@@ -49,7 +48,6 @@
 #include "services/viz/public/interfaces/compositing/filter_operations.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
-#include "services/viz/public/interfaces/compositing/surface_sequence.mojom.h"
 #include "services/viz/public/interfaces/compositing/transferable_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
@@ -446,19 +444,6 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   EXPECT_EQ(opacity, output_sqs.opacity);
   EXPECT_EQ(blend_mode, output_sqs.blend_mode);
   EXPECT_EQ(sorting_context_id, output_sqs.sorting_context_id);
-}
-
-TEST_F(StructTraitsTest, SurfaceSequence) {
-  const FrameSinkId frame_sink_id(2016, 1234);
-  const uint32_t sequence = 0xfbadbeef;
-
-  SurfaceSequence input(frame_sink_id, sequence);
-  SurfaceSequence output;
-  mojom::SurfaceSequence::Deserialize(mojom::SurfaceSequence::Serialize(&input),
-                                      &output);
-
-  EXPECT_EQ(frame_sink_id, output.frame_sink_id);
-  EXPECT_EQ(sequence, output.sequence);
 }
 
 // Note that this is a fairly trivial test of CompositorFrame serialization as

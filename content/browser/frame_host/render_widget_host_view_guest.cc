@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -369,10 +368,9 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 }
 
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
-    const viz::SurfaceInfo& surface_info,
-    const viz::SurfaceSequence& sequence) {
+    const viz::SurfaceInfo& surface_info) {
   if (guest_ && !guest_->is_in_destruction())
-    guest_->SetChildFrameSurface(surface_info, sequence);
+    guest_->SetChildFrameSurface(surface_info);
 }
 
 void RenderWidgetHostViewGuest::SubmitCompositorFrame(

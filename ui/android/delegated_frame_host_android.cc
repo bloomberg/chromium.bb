@@ -14,7 +14,6 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
@@ -27,11 +26,10 @@ namespace ui {
 namespace {
 
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
-    viz::SurfaceManager* surface_manager,
     viz::SurfaceInfo surface_info,
     bool surface_opaque) {
   // manager must outlive compositors using it.
-  auto layer = cc::SurfaceLayer::Create(surface_manager->reference_factory());
+  auto layer = cc::SurfaceLayer::Create();
   layer->SetPrimarySurfaceId(surface_info.id(), base::nullopt);
   layer->SetFallbackSurfaceId(surface_info.id());
   layer->SetBounds(surface_info.size_in_pixels());
@@ -54,13 +52,11 @@ void CopyOutputRequestCallback(
 DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
     viz::HostFrameSinkManager* host_frame_sink_manager,
-    viz::FrameSinkManagerImpl* frame_sink_manager,
     Client* client,
     const viz::FrameSinkId& frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       view_(view),
       host_frame_sink_manager_(host_frame_sink_manager),
-      frame_sink_manager_(frame_sink_manager),
       client_(client),
       begin_frame_source_(this),
       enable_surface_synchronization_(
@@ -101,8 +97,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     DCHECK(result);
 
     content_layer_ =
-        CreateSurfaceLayer(frame_sink_manager_->surface_manager(),
-                           surface_info_, !has_transparent_background_);
+        CreateSurfaceLayer(surface_info_, !has_transparent_background_);
     view_->GetLayer()->AddChild(content_layer_);
   } else {
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -127,8 +122,7 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   DCHECK(!result_callback.is_null());
 
   scoped_refptr<cc::Layer> readback_layer =
-      CreateSurfaceLayer(frame_sink_manager_->surface_manager(), surface_info_,
-                         !has_transparent_background_);
+      CreateSurfaceLayer(surface_info_, !has_transparent_background_);
   readback_layer->SetHideLayerAndSubtree(true);
   compositor->AttachLayerForReadback(readback_layer);
   std::unique_ptr<viz::CopyOutputRequest> copy_output_request =

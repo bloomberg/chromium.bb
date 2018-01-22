@@ -76,8 +76,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderWidgetHostViewBase* GetParentRenderWidgetHostView() override;
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView() override;
   void RenderProcessGone() override;
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const viz::SurfaceSequence& sequence) override;
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override;
   void UpdateCursor(const WebCursor& cursor) override;
   gfx::PointF TransformPointToRootCoordSpace(
       const gfx::PointF& point,
@@ -137,9 +136,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
-  void OnSatisfySequence(const viz::SurfaceSequence& sequence);
-  void OnRequireSequence(const viz::SurfaceId& id,
-                         const viz::SurfaceSequence& sequence);
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.

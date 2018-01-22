@@ -16,7 +16,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -55,8 +54,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
       : FrameConnectorDelegate(use_zoom_for_device_scale_factor) {}
   ~MockFrameConnectorDelegate() override {}
 
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const viz::SurfaceSequence& sequence) override {
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override {
     last_surface_info_ = surface_info;
   }
 

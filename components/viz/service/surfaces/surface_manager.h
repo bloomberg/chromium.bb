@@ -22,8 +22,6 @@
 #include "base/timer/timer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/common/surfaces/surface_reference_factory.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/surfaces/surface_dependency_tracker.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/surfaces/surface_reference.h"
@@ -45,13 +43,7 @@ struct BeginFrameArgs;
 
 class VIZ_SERVICE_EXPORT SurfaceManager {
  public:
-  enum class LifetimeType {
-    REFERENCES,
-    SEQUENCES,
-  };
-
-  SurfaceManager(LifetimeType lifetime_type,
-                 uint32_t number_of_frames_to_activation_deadline);
+  explicit SurfaceManager(uint32_t number_of_frames_to_activation_deadline);
   ~SurfaceManager();
 
 #if DCHECK_IS_ON()
@@ -64,8 +56,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Creates a Surface for the given SurfaceClient. The surface will be
   // destroyed when DestroySurface is called, all of its destruction
   // dependencies are satisfied, and it is not reachable from the root surface.
-  // If LifetimeType=REFERENCES, then a temporary reference will be added to
-  // the new Surface.
+  // A temporary reference will be added to the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const SurfaceInfo& surface_info,
                          BeginFrameSource* begin_frame_source,
@@ -109,15 +100,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // and, thus, is expected to produce damage soon.
   void SurfaceDamageExpected(const SurfaceId& surface_id,
                              const BeginFrameArgs& args);
-
-  // Require that the given sequence number must be satisfied (using
-  // SatisfySequence) before the given surface can be destroyed.
-  void RequireSequence(const SurfaceId& surface_id,
-                       const SurfaceSequence& sequence);
-
-  // Satisfies the given sequence number. Once all sequence numbers that
-  // a surface depends on are satisfied, the surface can be destroyed.
-  void SatisfySequence(const SurfaceSequence& sequence);
 
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id);
 
@@ -185,14 +167,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // return an empty set if |surface_id| is unknown or has no references to it.
   const base::flat_set<SurfaceId>& GetSurfacesThatReferenceChild(
       const SurfaceId& surface_id) const;
-
-  const scoped_refptr<SurfaceReferenceFactory>& reference_factory() {
-    return reference_factory_;
-  }
-
-  bool using_surface_references() const {
-    return lifetime_type_ == LifetimeType::REFERENCES;
-  }
 
   // Returns the most recent surface associated with the |fallback_surface_id|'s
   // FrameSinkId that was created prior to the current primary surface and
@@ -290,9 +264,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
       const base::flat_set<SurfaceId>& fallback_parents,
       const base::Optional<FrameSinkId>& owner) const;
 
-  // Use reference or sequence based lifetime management.
-  LifetimeType lifetime_type_;
-
   // SurfaceDependencyTracker needs to be destroyed after Surfaces are destroyed
   // because they will call back into the dependency tracker.
   SurfaceDependencyTracker dependency_tracker_;
@@ -302,10 +273,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   base::ThreadChecker thread_checker_;
 
   base::flat_set<SurfaceId> surfaces_to_destroy_;
-
-  // Set of SurfaceSequences that have been satisfied by a frame but not yet
-  // waited on.
-  base::flat_set<SurfaceSequence> satisfied_sequences_;
 
   // Set of valid FrameSinkIds and their labels. When a FrameSinkId is removed
   // from this set, any remaining (surface) sequences with that FrameSinkId are
@@ -319,10 +286,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Always empty set that is returned when there is no entry in |references_|
   // for a SurfaceId.
   const base::flat_set<SurfaceId> empty_surface_id_set_;
-
-  // The DirectSurfaceReferenceFactory that uses this manager to create surface
-  // references.
-  scoped_refptr<SurfaceReferenceFactory> reference_factory_;
 
   // Keeps track of surface references for a surface. The graph of references is
   // stored in both directions, so we know the parents and children for each

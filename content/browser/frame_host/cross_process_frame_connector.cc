@@ -53,8 +53,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetIsInert, OnSetIsInert)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -107,21 +105,9 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 }
 
 void CrossProcessFrameConnector::SetChildFrameSurface(
-    const viz::SurfaceInfo& surface_info,
-    const viz::SurfaceSequence& sequence) {
+    const viz::SurfaceInfo& surface_info) {
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_SetChildFrameSurface(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info, sequence));
-}
-
-void CrossProcessFrameConnector::OnSatisfySequence(
-    const viz::SurfaceSequence& sequence) {
-  GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
-}
-
-void CrossProcessFrameConnector::OnRequireSequence(
-    const viz::SurfaceId& id,
-    const viz::SurfaceSequence& sequence) {
-  GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
+      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
 }
 
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {

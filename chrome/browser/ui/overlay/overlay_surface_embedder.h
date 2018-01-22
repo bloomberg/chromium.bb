@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
 
 #include "chrome/browser/ui/overlay/overlay_window.h"
-#include "components/viz/common/surfaces/surface_reference_factory.h"
 
 namespace viz {
 class SurfaceId;
@@ -28,8 +27,6 @@ class OverlaySurfaceEmbedder {
 
   // Contains the client's content.
   std::unique_ptr<ui::Layer> surface_layer_;
-
-  scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlaySurfaceEmbedder);
 };

@@ -56,11 +56,6 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-  // blink::mojom::OffscreenCanvasSurface implementation.
-  void Require(const viz::SurfaceId& surface_id,
-               const viz::SurfaceSequence& sequence) override;
-  void Satisfy(const viz::SurfaceSequence& sequence) override;
-
  private:
   // Registered as a callback for when |binding_| is closed. Will call
   // |destroy_callback_|.

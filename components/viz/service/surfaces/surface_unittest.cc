@@ -86,25 +86,6 @@ TEST(SurfaceTest, PresentationCallback) {
   }
 }
 
-TEST(SurfaceTest, SurfaceLifetime) {
-  FrameSinkManagerImpl frame_sink_manager(
-      SurfaceManager::LifetimeType::SEQUENCES);
-  SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
-  auto support = std::make_unique<CompositorFrameSinkSupport>(
-      nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
-      kNeedsSyncPoints);
-
-  LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
-  SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  support->SubmitCompositorFrame(local_surface_id,
-                                 MakeDefaultCompositorFrame());
-  EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
-  support->EvictCurrentSurface();
-  frame_sink_manager.surface_manager()->GarbageCollectSurfaces();
-
-  EXPECT_EQ(nullptr, surface_manager->GetSurfaceForId(surface_id));
-}
-
 TEST(SurfaceTest, SurfaceIds) {
   for (size_t i = 0; i < 3; ++i) {
     ParentLocalSurfaceIdAllocator allocator;

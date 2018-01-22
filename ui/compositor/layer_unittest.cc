@@ -33,10 +33,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/common/surfaces/surface_reference_factory.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -1833,26 +1830,6 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
   EXPECT_TRUE(delegate.painted());
 }
 
-namespace {
-
-class TestSurfaceReferenceFactory
-    : public viz::SequenceSurfaceReferenceFactory {
- public:
-  TestSurfaceReferenceFactory() = default;
-
- private:
-  ~TestSurfaceReferenceFactory() override = default;
-
-  // cc::SequenceSurfaceReferenceFactory implementation:
-  void SatisfySequence(const viz::SurfaceSequence& seq) const override {}
-  void RequireSequence(const viz::SurfaceId& id,
-                       const viz::SurfaceSequence& seq) const override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestSurfaceReferenceFactory);
-};
-
-}  // namespace
-
 TEST_F(LayerWithDelegateTest, ExternalContent) {
   std::unique_ptr<Layer> root(
       CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
@@ -1872,8 +1849,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   // Showing surface content changes the underlying cc layer.
   before = child->cc_layer_for_testing();
   child->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
-                               SK_ColorWHITE,
-                               new TestSurfaceReferenceFactory());
+                               SK_ColorWHITE);
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_NE(before.get(), child->cc_layer_for_testing());
 
@@ -1886,14 +1862,11 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
 TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
-  scoped_refptr<viz::SurfaceReferenceFactory> reference_factory(
-      new TestSurfaceReferenceFactory());
 
   viz::SurfaceId surface_id(
       viz::FrameSinkId(0, 1),
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(10, 10), SK_ColorWHITE,
-                               reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(10, 10), SK_ColorWHITE);
 
   const auto mirror = layer->Mirror();
   auto* const cc_layer = mirror->cc_layer_for_testing();
@@ -1905,13 +1878,11 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   surface_id =
       viz::SurfaceId(viz::FrameSinkId(1, 2),
                      viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
-                               reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE);
 
   // The mirror should continue to use the same cc_layer.
   EXPECT_EQ(cc_layer, mirror->cc_layer_for_testing());
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
-                               reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE);
 
   // Surface updates propagate to the mirror.
   EXPECT_EQ(surface_id, surface->primary_surface_id());
@@ -1932,8 +1903,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
   // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
   layer->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
-                               SK_ColorWHITE,
-                               new TestSurfaceReferenceFactory());
+                               SK_ColorWHITE);
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
   EXPECT_NE(before.get(), layer->cc_layer_for_testing());

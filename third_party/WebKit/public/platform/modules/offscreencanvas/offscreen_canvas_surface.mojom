@@ -8,12 +8,11 @@ import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
-import "services/viz/public/interfaces/compositing/surface_sequence.mojom";
 
-interface OffscreenCanvasSurface {
-  Require(viz.mojom.SurfaceId surface_id, viz.mojom.SurfaceSequence sequence);
-  Satisfy(viz.mojom.SurfaceSequence sequence);
-};
+// The renderer main thread can shutdown the offscreen canvas by closing this
+// interface.
+// TODO(kylechar): Refactor so this empty interface isn't needed.
+interface OffscreenCanvasSurface {};
 
 interface OffscreenCanvasSurfaceClient {
   OnFirstSurfaceActivation(viz.mojom.SurfaceInfo surface_info);

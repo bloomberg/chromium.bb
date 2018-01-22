@@ -8,10 +8,8 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
-#include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "media/base/media_switches.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -25,46 +23,13 @@
 
 namespace blink {
 
-namespace {
-class SequenceSurfaceReferenceFactoryImpl
-    : public viz::SequenceSurfaceReferenceFactory {
- public:
-  SequenceSurfaceReferenceFactoryImpl(base::WeakPtr<SurfaceLayerBridge> bridge)
-      : bridge_(bridge) {}
-
- private:
-  ~SequenceSurfaceReferenceFactoryImpl() override = default;
-
-  // cc::SequenceSurfaceReferenceFactory implementation:
-  void RequireSequence(const viz::SurfaceId& id,
-                       const viz::SurfaceSequence& sequence) const override {
-    DCHECK(bridge_);
-    bridge_->RequireCallback(id, sequence);
-  }
-
-  void SatisfySequence(const viz::SurfaceSequence& sequence) const override {
-    if (bridge_)
-      bridge_->SatisfyCallback(sequence);
-  }
-
-  base::WeakPtr<SurfaceLayerBridge> bridge_;
-
-  DISALLOW_COPY_AND_ASSIGN(SequenceSurfaceReferenceFactoryImpl);
-};
-
-}  // namespace
-
 SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
                                        WebSurfaceLayerBridgeObserver* observer)
-    : weak_factory_(this),
-      observer_(observer),
+    : observer_(observer),
       binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : viz::FrameSinkId()) {
-  ref_factory_ =
-      new SequenceSurfaceReferenceFactoryImpl(weak_factory_.GetWeakPtr());
-
   DCHECK(!service_.is_bound());
   mojom::blink::OffscreenCanvasProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
@@ -81,15 +46,6 @@ SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
 
 SurfaceLayerBridge::~SurfaceLayerBridge() {
   observer_ = nullptr;
-}
-
-void SurfaceLayerBridge::SatisfyCallback(const viz::SurfaceSequence& sequence) {
-  service_->Satisfy(sequence);
-}
-
-void SurfaceLayerBridge::RequireCallback(const viz::SurfaceId& surface_id,
-                                         const viz::SurfaceSequence& sequence) {
-  service_->Require(surface_id, sequence);
 }
 
 void SurfaceLayerBridge::CreateSolidColorLayer() {
@@ -114,8 +70,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
       web_layer_->RemoveFromParent();
     }
 
-    scoped_refptr<cc::SurfaceLayer> surface_layer =
-        cc::SurfaceLayer::Create(ref_factory_);
+    scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create();
     surface_layer->SetPrimarySurfaceId(surface_info.id(), base::nullopt);
     surface_layer->SetFallbackSurfaceId(surface_info.id());
     surface_layer->SetStretchContentToFillBounds(true);
