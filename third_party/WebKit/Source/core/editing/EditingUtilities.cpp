@@ -1577,12 +1577,6 @@ bool IsInPasswordField(const Position& position) {
          ToHTMLInputElement(text_control)->type() == InputTypeNames::password;
 }
 
-bool IsTextSecurityNode(const Node* node) {
-  return node && node->GetLayoutObject() &&
-         node->GetLayoutObject()->Style()->TextSecurity() !=
-             ETextSecurity::kNone;
-}
-
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest left grapheme boundary.
 size_t ComputeDistanceToLeftGraphemeBoundary(const Position& position) {

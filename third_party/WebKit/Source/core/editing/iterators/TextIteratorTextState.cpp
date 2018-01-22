@@ -30,9 +30,20 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutObject.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+
+namespace {
+
+bool IsTextSecurityNode(const Node& node) {
+  return node.GetLayoutObject() &&
+         node.GetLayoutObject()->Style()->TextSecurity() !=
+             ETextSecurity::kNone;
+}
+
+}  // anonymous namespace
 
 TextIteratorTextState::TextIteratorTextState(
     const TextIteratorBehavior& behavior)
@@ -146,7 +157,7 @@ void TextIteratorTextState::EmitText(const Node* text_node,
                                      unsigned text_end_offset) {
   DCHECK(text_node);
   text_ =
-      behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(text_node)
+      behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(*text_node)
           ? RepeatString("x", string.length())
           : string,
 
