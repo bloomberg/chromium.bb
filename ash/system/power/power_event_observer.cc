@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/location.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -89,7 +90,7 @@ void PowerEventObserver::SuspendImminent(
       controller->CanLockScreen()) {
     screen_lock_callback_ = chromeos::DBusThreadManager::Get()
                                 ->GetPowerManagerClient()
-                                ->GetSuspendReadinessCallback();
+                                ->GetSuspendReadinessCallback(FROM_HERE);
     VLOG(1) << "Requesting screen lock from PowerEventObserver";
     // TODO(warx): once crbug.com/748732 is fixed, we probably can treat
     // auto-screen-lock pref set and not set cases as the same. Also remove
@@ -105,7 +106,7 @@ void PowerEventObserver::SuspendImminent(
     // is a memory leak in the GPU and weird artifacts on the screen.
     screen_lock_callback_ = chromeos::DBusThreadManager::Get()
                                 ->GetPowerManagerClient()
-                                ->GetSuspendReadinessCallback();
+                                ->GetSuspendReadinessCallback(FROM_HERE);
   } else {
     // The auto-screen-lock pref is not set or the screen has already been
     // locked and the animations have completed.  Rendering can be stopped now.
@@ -117,10 +118,11 @@ void PowerEventObserver::SuspendImminent(
   // TODO(derat): After mus exposes a method for suspending displays, call it
   // here: http://crbug.com/692193
   if (Shell::GetAshConfig() != Config::MASH) {
-    Shell::Get()->display_configurator()->SuspendDisplays(base::Bind(
-        &OnSuspendDisplaysCompleted, chromeos::DBusThreadManager::Get()
-                                         ->GetPowerManagerClient()
-                                         ->GetSuspendReadinessCallback()));
+    Shell::Get()->display_configurator()->SuspendDisplays(
+        base::Bind(&OnSuspendDisplaysCompleted,
+                   chromeos::DBusThreadManager::Get()
+                       ->GetPowerManagerClient()
+                       ->GetSuspendReadinessCallback(FROM_HERE)));
   }
 }
 

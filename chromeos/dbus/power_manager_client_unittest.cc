@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -116,8 +117,10 @@ class TestObserver : public PowerManagerClient::Observer {
   // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
     num_suspend_imminent_++;
-    if (take_suspend_readiness_callback_)
-      suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
+    if (take_suspend_readiness_callback_) {
+      suspend_readiness_callback_ =
+          client_->GetSuspendReadinessCallback(FROM_HERE);
+    }
     if (run_suspend_readiness_callback_immediately_)
       CHECK(RunSuspendReadinessCallback());
   }
@@ -126,8 +129,10 @@ class TestObserver : public PowerManagerClient::Observer {
   }
   void DarkSuspendImminent() override {
     num_dark_suspend_imminent_++;
-    if (take_suspend_readiness_callback_)
-      suspend_readiness_callback_ = client_->GetSuspendReadinessCallback();
+    if (take_suspend_readiness_callback_) {
+      suspend_readiness_callback_ =
+          client_->GetSuspendReadinessCallback(FROM_HERE);
+    }
     if (run_suspend_readiness_callback_immediately_)
       CHECK(RunSuspendReadinessCallback());
   }
