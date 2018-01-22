@@ -27,10 +27,8 @@ namespace app_list {
 
 namespace {
 
-constexpr int kPreferredWidth = 360;
-constexpr int kPreferredHeight = 48;
-constexpr int kBottomSeparatorHeight = 1;
-constexpr int kMaxFolderNameWidthFullScreen = 236;
+constexpr int kMaxFolderNameWidth = 204;
+constexpr SkColor kFolderNameColor = SkColorSetARGBMacro(138, 0, 0, 0);
 
 }  // namespace
 
@@ -38,7 +36,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
  public:
   FolderNameView() { SetBorder(views::CreateEmptyBorder(1, 1, 1, 1)); }
 
-  ~FolderNameView() override {}
+  ~FolderNameView() override = default;
 
   void OnFocus() override {
     SelectAll(false);
@@ -66,8 +64,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
   // Make folder name font size 14px.
   folder_name_view_->SetFontList(font_list.DeriveWithSizeDelta(-1));
   folder_name_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  folder_name_view_->SetTextColor(kGridTitleColor);
-
+  folder_name_view_->SetTextColor(kFolderNameColor);
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);
 }
@@ -149,10 +146,8 @@ bool FolderHeaderView::IsFolderNameEnabledForTest() const {
 }
 
 gfx::Size FolderHeaderView::CalculatePreferredSize() const {
-  const int preferred_height = kPreferredHeight +
-                               kBottomSeparatorBottomPadding +
-                               AppsGridView::GetTilePadding().top();
-  return gfx::Size(kPreferredWidth, preferred_height);
+  return gfx::Size(kMaxFolderNameWidth,
+                   folder_name_view_->GetPreferredSize().height());
 }
 
 views::View* FolderHeaderView::GetFolderNameViewForTest() const {
@@ -160,7 +155,7 @@ views::View* FolderHeaderView::GetFolderNameViewForTest() const {
 }
 
 int FolderHeaderView::GetMaxFolderNameWidth() const {
-  return kMaxFolderNameWidthFullScreen;
+  return kMaxFolderNameWidth;
 }
 
 base::string16 FolderHeaderView::GetElidedFolderName(
@@ -203,26 +198,6 @@ bool FolderHeaderView::OnKeyPressed(const ui::KeyEvent& event) {
     delegate_->GiveBackFocusToSearchBox();
 
   return false;
-}
-
-void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-
-  gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty() || !folder_name_visible_)
-    return;
-
-  // Draw bottom separator line.
-  rect.Inset(kAppsGridLeftRightPadding +
-                 (-AppsGridView::GetTilePadding().left()) +
-                 kBottomSeparatorLeftRightPadding,
-             0);
-  int extra_bottom_padding =
-      kBottomSeparatorBottomPadding + AppsGridView::GetTilePadding().top();
-  rect.set_y(rect.bottom() - kBottomSeparatorHeight - extra_bottom_padding);
-  rect.set_height(kBottomSeparatorHeight);
-  SkColor color = kBottomSeparatorColor;
-  canvas->FillRect(rect, color);
 }
 
 void FolderHeaderView::ContentsChanged(views::Textfield* sender,
