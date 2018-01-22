@@ -18,9 +18,9 @@ class MockBrowsingDataFlashLSOHelper : public BrowsingDataFlashLSOHelper {
       content::BrowserContext* browser_context);
 
   // BrowsingDataFlashLSOHelper implementation:
-  void StartFetching(const GetSitesWithFlashDataCallback& callback) override;
+  void StartFetching(GetSitesWithFlashDataCallback callback) override;
   void DeleteFlashLSOsForSite(const std::string& site,
-                              const base::Closure& callback) override;
+                              base::OnceClosure callback) override;
 
   // Adds a domain sample.
   void AddFlashLSODomain(const std::string& domain);

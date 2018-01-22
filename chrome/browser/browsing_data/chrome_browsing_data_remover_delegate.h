@@ -147,32 +147,6 @@ class ChromeBrowsingDataRemoverDelegate
   static_assert((IMPORTANT_SITES_DATA_TYPES & ~FILTERABLE_DATA_TYPES) == 0,
                 "All important sites datatypes must be filterable.");
 
-  // Used to track the deletion of a single data storage backend.
-  class SubTask {
-   public:
-    // Creates a SubTask that calls |forward_callback| when completed.
-    // |forward_callback| is only kept as a reference and must outlive SubTask.
-    explicit SubTask(const base::Closure& forward_callback);
-    ~SubTask();
-
-    // Indicate that the task is in progress and we're waiting.
-    void Start();
-
-    // Returns a callback that should be called to indicate that the task
-    // has been finished.
-    base::Closure GetCompletionCallback();
-
-    // Whether the task is still in progress.
-    bool is_pending() const { return is_pending_; }
-
-   private:
-    void CompletionCallback();
-
-    bool is_pending_;
-    const base::Closure& forward_callback_;
-    base::WeakPtrFactory<SubTask> weak_ptr_factory_;
-  };
-
   ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
@@ -203,30 +177,36 @@ class ChromeBrowsingDataRemoverDelegate
 #endif
 
  private:
-  // If AllDone(), calls the callback provided in RemoveEmbedderData().
-  void NotifyIfDone();
+  // Called by the closures returned by CreatePendingTaskCompletionClosure().
+  // Checks if all tasks have completed, and if so, calls callback_.
+  void OnTaskComplete();
 
-  // Whether there are no running deletion tasks.
-  bool AllDone();
+  // Increments the number of pending tasks by one, and returns a OnceClosure
+  // that calls OnTaskComplete(). The Remover is complete once all the closures
+  // created by this method have been invoked.
+  base::OnceClosure CreatePendingTaskCompletionClosure();
 
   // Callback for when TemplateURLService has finished loading. Clears the data,
   // clears the respective waiting flag, and invokes NotifyIfDone.
-  void OnKeywordsLoaded(base::Callback<bool(const GURL&)> url_filter);
+  void OnKeywordsLoaded(base::RepeatingCallback<bool(const GURL&)> url_filter,
+                        base::OnceClosure done);
 
 #if defined (OS_CHROMEOS)
-  void OnClearPlatformKeys(base::Optional<bool> result);
+  void OnClearPlatformKeys(base::OnceClosure done, base::Optional<bool> result);
 #endif
 
   // Callback for when cookies have been deleted. Invokes NotifyIfDone.
-  void OnClearedCookies();
+  void OnClearedCookies(base::OnceClosure done);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
-  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+  void OnWaitableEventSignaled(base::OnceClosure done,
+                               base::WaitableEvent* waitable_event);
 
   // Called when the list of |sites| storing Flash LSO cookies is fetched.
   void OnSitesWithFlashDataFetched(
-      base::Callback<bool(const std::string&)> plugin_filter,
+      base::RepeatingCallback<bool(const std::string&)> plugin_filter,
+      base::OnceClosure done,
       const std::vector<std::string>& sites);
 
   // Indicates that LSO cookies for one website have been deleted.
@@ -249,44 +229,8 @@ class ChromeBrowsingDataRemoverDelegate
   // Completion callback to call when all data are deleted.
   base::OnceClosure callback_;
 
-  // A callback to NotifyIfDone() used by SubTasks instances.
-  const base::Closure sub_task_forward_callback_;
-
-  // Keeping track of various subtasks to be completed.
-  // Non-zero if waiting for SafeBrowsing cookies to be cleared.
-  int clear_cookies_count_ = 0;
-  SubTask synchronous_clear_operations_;
-  SubTask clear_autofill_origin_urls_;
-  SubTask clear_flash_content_licenses_;
-  SubTask clear_media_drm_licenses_;
-  SubTask clear_domain_reliability_monitor_;
-  SubTask clear_form_;
-  SubTask clear_history_;
-  SubTask clear_keyword_data_;
-#if BUILDFLAG(ENABLE_NACL)
-  SubTask clear_nacl_cache_;
-  SubTask clear_pnacl_cache_;
-#endif
-  SubTask clear_hostname_resolution_cache_;
-  SubTask clear_network_predictor_;
-  SubTask clear_passwords_;
-  SubTask clear_passwords_stats_;
-  SubTask clear_http_auth_cache_;
-  SubTask clear_platform_keys_;
-#if defined(OS_ANDROID)
-  SubTask clear_precache_history_;
-  SubTask clear_offline_page_data_;
-#endif
-#if BUILDFLAG(ENABLE_WEBRTC)
-  SubTask clear_webrtc_logs_;
-#endif
-  SubTask clear_auto_sign_in_;
-  SubTask clear_reporting_cache_;
-  SubTask clear_network_error_logging_;
-  SubTask clear_video_perf_history_;
-  // Counts the number of plugin data tasks. Should be the number of LSO cookies
-  // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
-  int clear_plugin_data_count_ = 0;
+  // Keeps track of number of tasks to be completed.
+  int num_pending_tasks_ = 0;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Used to delete plugin data.

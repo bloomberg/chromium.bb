@@ -693,8 +693,8 @@ class TestBrowsingDataFlashLSOHelper : public MockBrowsingDataFlashLSOHelper {
   explicit TestBrowsingDataFlashLSOHelper(TestingProfile* profile)
       : MockBrowsingDataFlashLSOHelper(profile) {}
 
-  void StartFetching(const GetSitesWithFlashDataCallback& callback) override {
-    MockBrowsingDataFlashLSOHelper::StartFetching(callback);
+  void StartFetching(GetSitesWithFlashDataCallback callback) override {
+    MockBrowsingDataFlashLSOHelper::StartFetching(std::move(callback));
     Notify();
   }
 
