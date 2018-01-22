@@ -63,6 +63,16 @@ class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
     handles_.push_back(std::move(handle));
   }
 
+  void UnregisterServiceWorkerHandle(int handle_id) override {
+    auto iter = handles_.begin();
+    for (; iter != handles_.end(); ++iter) {
+      if ((*iter)->handle_id() == handle_id)
+        break;
+    }
+    ASSERT_NE(handles_.end(), iter);
+    handles_.erase(iter);
+  }
+
   void Clear() {
     handles_.clear();
   }

@@ -167,10 +167,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
-                        OnIncrementServiceWorkerRefCount)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
-                        OnDecrementServiceWorkerRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_TerminateWorker, OnTerminateWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -217,6 +213,10 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
     }
   }
   return nullptr;
+}
+
+void ServiceWorkerDispatcherHost::UnregisterServiceWorkerHandle(int handle_id) {
+  handles_.Remove(handle_id);
 }
 
 base::WeakPtr<ServiceWorkerDispatcherHost>
@@ -376,7 +376,6 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
   // If not enough time is left to actually process the event don't even
   // bother starting the worker and sending the event.
   if (timeout && *timeout < base::TimeDelta::FromMilliseconds(100)) {
-    ReleaseSourceInfo(std::move(source_info));
     std::move(callback).Run(SERVICE_WORKER_ERROR_TIMEOUT);
     return;
   }
@@ -403,7 +402,6 @@ void ServiceWorkerDispatcherHost::
         ServiceWorkerStatusCode start_worker_status) {
   DCHECK(IsValidSourceInfo(source_info));
   if (start_worker_status != SERVICE_WORKER_OK) {
-    ReleaseSourceInfo(std::move(source_info));
     std::move(callback).Run(start_worker_status);
     return;
   }
@@ -428,21 +426,6 @@ void ServiceWorkerDispatcherHost::
       std::move(event), worker->CreateSimpleEventCallback(request_id));
 }
 
-void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
-    blink::mojom::ServiceWorkerClientInfoPtr source_info) {
-  // ServiceWorkerClientInfo is just a snapshot of the client. There is no need
-  // to do anything for it.
-}
-
-void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
-    blink::mojom::ServiceWorkerObjectInfoPtr source_info) {
-  ServiceWorkerHandle* handle = handles_.Lookup(source_info->handle_id);
-  DCHECK(handle);
-  handle->DecrementRefCount();
-  if (handle->HasNoRefCount())
-    handles_.Remove(source_info->handle_id);
-}
-
 void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
                                                  uint32_t feature) {
   if (!GetContext())
@@ -459,34 +442,6 @@ void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
     return;
   }
   version->CountFeature(feature);
-}
-
-void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(
-    int handle_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount");
-  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_INCREMENT_WORKER_BAD_HANDLE);
-    return;
-  }
-  handle->IncrementRefCount();
-}
-
-void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
-    int handle_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount");
-  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_DECREMENT_WORKER_BAD_HANDLE);
-    return;
-  }
-  handle->DecrementRefCount();
-  if (handle->HasNoRefCount())
-    handles_.Remove(handle_id);
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {

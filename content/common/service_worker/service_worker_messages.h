@@ -110,14 +110,6 @@ IPC_MESSAGE_CONTROL5(
     url::Origin /* source_origin */,
     std::vector<blink::MessagePortChannel> /* sent_message_ports */)
 
-// Increments and decrements the ServiceWorker object's reference
-// counting in the browser side. The ServiceWorker object is created
-// with ref-count==1 initially.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
-                     int /* handle_id */)
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
-                     int /* handle_id */)
-
 // Tells the browser to terminate a service worker. Used in layout tests to
 // verify behavior when a service worker isn't running.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,

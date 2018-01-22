@@ -6,49 +6,49 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/service_worker_modes.h"
 
 namespace content {
 
-std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerVersion* version) {
-  const int handle_id = context.get()
-                            ? context->GetNewServiceWorkerHandleId()
-                            : blink::mojom::kInvalidServiceWorkerHandleId;
-  return CreateWithID(context, provider_host, version, handle_id);
-}
-
-std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::CreateWithID(
+// static
+base::WeakPtr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
+    ServiceWorkerDispatcherHost* dispatcher_host,
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerVersion* version,
-    int handle_id) {
-  if (!context || !provider_host || !version)
-    return std::unique_ptr<ServiceWorkerHandle>();
-  DCHECK(context->GetLiveRegistration(version->registration_id()));
-  return base::WrapUnique(
-      new ServiceWorkerHandle(context, provider_host, version, handle_id));
+    blink::mojom::ServiceWorkerObjectInfoPtr* out_info) {
+  DCHECK(context && provider_host && version && out_info);
+  ServiceWorkerHandle* handle =
+      new ServiceWorkerHandle(dispatcher_host, context, provider_host, version);
+  *out_info = handle->CreateObjectInfo();
+  return handle->AsWeakPtr();
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(
+    ServiceWorkerDispatcherHost* dispatcher_host,
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerVersion* version,
-    int handle_id)
-    : context_(context),
+    ServiceWorkerVersion* version)
+    : dispatcher_host_(dispatcher_host),
+      context_(context),
       provider_host_(provider_host),
-      provider_id_(provider_host ? provider_host->provider_id()
-                                 : kInvalidServiceWorkerProviderId),
-      handle_id_(handle_id),
-      ref_count_(1),
-      version_(version) {
+      provider_id_(provider_host->provider_id()),
+      handle_id_(context->GetNewServiceWorkerHandleId()),
+      version_(version),
+      weak_ptr_factory_(this) {
+  DCHECK(context_ && provider_host_ && version_);
+  DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddListener(this);
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &ServiceWorkerHandle::OnConnectionError, base::Unretained(this)));
+  if (dispatcher_host_)
+    dispatcher_host_->RegisterServiceWorkerHandle(base::WrapUnique(this));
 }
 
 ServiceWorkerHandle::~ServiceWorkerHandle() {
@@ -72,17 +72,35 @@ ServiceWorkerHandle::CreateObjectInfo() {
   info->state =
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
   info->version_id = version_->version_id();
+  bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   return info;
 }
 
-void ServiceWorkerHandle::IncrementRefCount() {
-  DCHECK_GT(ref_count_, 0);
-  ++ref_count_;
+void ServiceWorkerHandle::RegisterIntoDispatcherHost(
+    ServiceWorkerDispatcherHost* dispatcher_host) {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(!dispatcher_host_);
+  dispatcher_host_ = dispatcher_host;
+  dispatcher_host_->RegisterServiceWorkerHandle(base::WrapUnique(this));
 }
 
-void ServiceWorkerHandle::DecrementRefCount() {
-  DCHECK_GE(ref_count_, 0);
-  --ref_count_;
+base::WeakPtr<ServiceWorkerHandle> ServiceWorkerHandle::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void ServiceWorkerHandle::OnConnectionError() {
+  // If there are still bindings, |this| is still being used.
+  if (!bindings_.empty())
+    return;
+  // S13nServiceWorker: This handle may have been precreated before registering
+  // to a dispatcher host. Just self-destruct since we're no longer needed.
+  if (!dispatcher_host_) {
+    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    delete this;
+    return;
+  }
+  // Will destroy |this|.
+  dispatcher_host_->UnregisterServiceWorkerHandle(handle_id_);
 }
 
 }  // namespace content

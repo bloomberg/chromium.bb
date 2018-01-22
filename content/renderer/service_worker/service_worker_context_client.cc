@@ -42,7 +42,6 @@
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
-#include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
@@ -1478,14 +1477,12 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
              blink::mojom::kInvalidServiceWorkerHandleId &&
          event->source_info_for_service_worker->version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
-  std::unique_ptr<ServiceWorkerHandleReference> handle =
-      ServiceWorkerHandleReference::Adopt(
-          std::move(event->source_info_for_service_worker), sender_);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           sender_.get(), main_thread_task_runner_.get());
   scoped_refptr<WebServiceWorkerImpl> worker =
-      dispatcher->GetOrCreateServiceWorker(std::move(handle));
+      dispatcher->GetOrCreateServiceWorker(
+          std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
       request_id, blink::WebString::FromUTF16(event->message),
       event->source_origin,

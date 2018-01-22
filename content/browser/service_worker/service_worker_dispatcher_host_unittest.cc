@@ -392,12 +392,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   // worker object information for the source attribute of the message event.
   provider_host_->running_hosted_version_ = version_;
 
-  // Set aside the initial refcount of the worker handle.
-  provider_host_->GetOrCreateServiceWorkerHandle(version_.get());
+  // |info| keeps the 1st reference to |sender_worker_handle|.
+  blink::mojom::ServiceWorkerObjectInfoPtr info =
+      provider_host_->GetOrCreateServiceWorkerHandle(version_.get());
   ServiceWorkerHandle* sender_worker_handle =
       dispatcher_host_->FindServiceWorkerHandle(provider_host_->provider_id(),
                                                 version_->version_id());
-  const int ref_count = sender_worker_handle->ref_count();
+  EXPECT_EQ(1u, sender_worker_handle->bindings_.size());
 
   // Set mock clock on version_ to check timeout behavior.
   tick_clock_.SetNowTicks(base::TimeTicks::Now());
@@ -430,12 +431,17 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
       version_, base::string16(),
       url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
       base::BindOnce(&SaveStatusCallback, &called, &status));
-  EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
+  // The 2nd reference to |sender_worker_handle| has been passed via the above
+  // dispatch of ExtendableMessageEvent.
+  EXPECT_EQ(2u, sender_worker_handle->bindings_.size());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
-  EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
+  // The remote handler of ExtendableMessageEvent has released the reference to
+  // |service_worker_handle|, please see impl of
+  // EmbeddedWorkerTestHelper::OnExtendableMessageEvent() for details.
+  EXPECT_EQ(1u, sender_worker_handle->bindings_.size());
 
   // Timeout of message event should not have extended life of service worker.
   EXPECT_EQ(remaining_time, version_->remaining_timeout());

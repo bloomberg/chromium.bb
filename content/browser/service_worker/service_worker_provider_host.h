@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
@@ -275,11 +276,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
-  // Used to get a ServiceWorkerObjectInfo to send to the renderer. Finds an
-  // existing ServiceWorkerHandle, and increments its reference count, or else
-  // creates a new one (initialized to ref count 1). Returns the
-  // ServiceWorkerObjectInfo from the handle. The renderer is expected to use
-  // ServiceWorkerHandleReference::Adopt to balance out the ref count.
+  // Used to get a ServiceWorkerObjectInfo to send to the renderer.
+  // The object info holds a Mojo connection to the ServiceWorkerHandle for the
+  // |version| to ensure the handle stays alive while the object info is alive.
+  // A new handle is created if one does not already exist.
   blink::mojom::ServiceWorkerObjectInfoPtr GetOrCreateServiceWorkerHandle(
       ServiceWorkerVersion* version);
 
@@ -584,11 +584,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   std::vector<base::Closure> queued_events_;
 
   // S13nServiceWorker:
-  // A service worker handle ID for the controller service worker that is
+  // A service worker handle for the controller service worker that is
   // pre-created before the renderer process (and therefore the dispatcher host)
   // is created.
-  int precreated_controller_handle_id_ =
-      blink::mojom::kInvalidServiceWorkerHandleId;
+  base::WeakPtr<ServiceWorkerHandle> precreated_controller_handle_;
 
   // For provider hosts that are hosting a running service worker.
   mojo::Binding<service_manager::mojom::InterfaceProvider>

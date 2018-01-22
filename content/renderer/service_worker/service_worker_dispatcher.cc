@@ -18,7 +18,6 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_constants.h"
-#include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
@@ -111,18 +110,17 @@ void ServiceWorkerDispatcher::WillStopCurrentWorkerThread() {
 
 scoped_refptr<WebServiceWorkerImpl>
 ServiceWorkerDispatcher::GetOrCreateServiceWorker(
-    std::unique_ptr<ServiceWorkerHandleReference> handle_ref) {
-  if (!handle_ref)
+    blink::mojom::ServiceWorkerObjectInfoPtr info) {
+  if (!info || info->handle_id == blink::mojom::kInvalidServiceWorkerHandleId ||
+      info->version_id == blink::mojom::kInvalidServiceWorkerVersionId)
     return nullptr;
 
-  WorkerObjectMap::iterator found =
-      service_workers_.find(handle_ref->handle_id());
+  WorkerObjectMap::iterator found = service_workers_.find(info->handle_id);
   if (found != service_workers_.end())
     return found->second;
 
   // WebServiceWorkerImpl constructor calls AddServiceWorker.
-  return new WebServiceWorkerImpl(std::move(handle_ref),
-                                  thread_safe_sender_.get());
+  return new WebServiceWorkerImpl(std::move(info), thread_safe_sender_.get());
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

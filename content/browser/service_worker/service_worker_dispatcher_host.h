@@ -98,9 +98,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  // This method is virtual only for testing.
+  // These methods are virtual only for testing.
   virtual void RegisterServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerHandle> handle);
+  virtual void UnregisterServiceWorkerHandle(int handle_id);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
@@ -140,8 +141,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   // IPC Message handlers
   void OnCountFeature(int64_t version_id, uint32_t feature);
-  void OnIncrementServiceWorkerRefCount(int handle_id);
-  void OnDecrementServiceWorkerRefCount(int handle_id);
   void OnPostMessageToWorker(
       int handle_id,
       int provider_id,
@@ -177,8 +176,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const base::Optional<base::TimeDelta>& timeout,
       StatusCallback callback,
       ServiceWorkerStatusCode status);
-  void ReleaseSourceInfo(blink::mojom::ServiceWorkerClientInfoPtr source_info);
-  void ReleaseSourceInfo(blink::mojom::ServiceWorkerObjectInfoPtr source_info);
 
   ServiceWorkerContextCore* GetContext();
 
