@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/feature_engagement/features.h"
@@ -72,7 +74,8 @@ bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = true;
   return prefs->GetBoolean(prefs::kTabStripStackedLayout);
 #else
-  return false;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceStackedTabStripLayout);
 #endif
 }
 
