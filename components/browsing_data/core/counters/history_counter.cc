@@ -88,7 +88,7 @@ void HistoryCounter::Count() {
   history::QueryOptions options;
   options.max_count = 1;
   options.begin_time = GetPeriodStart();
-  options.end_time = base::Time::Max();
+  options.end_time = GetPeriodEnd();
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation("web_history_counter",
                                                  "web_history_service",
