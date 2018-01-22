@@ -24,7 +24,7 @@ infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
     const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
     InfoBarService* infobar_service) {
   return infobar_service->AddInfoBar(
-      base::MakeUnique<GroupedPermissionInfoBar>(base::WrapUnique(
+      std::make_unique<GroupedPermissionInfoBar>(base::WrapUnique(
           new GroupedPermissionInfoBarDelegate(permission_prompt))));
 }
 

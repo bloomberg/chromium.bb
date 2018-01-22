@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -195,15 +194,15 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
       Profile* profile,
       const ContentSettingsType content_settings_type)
       : TestPermissionContext(profile, content_settings_type),
-        field_trial_list_(base::MakeUnique<base::FieldTrialList>(
-            base::MakeUnique<base::MockEntropyProvider>())) {}
+        field_trial_list_(std::make_unique<base::FieldTrialList>(
+            std::make_unique<base::MockEntropyProvider>())) {}
 
   void ResetFieldTrialList() {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trial_list_.reset();
-    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
-        base::MakeUnique<base::MockEntropyProvider>());
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(
+        std::make_unique<base::MockEntropyProvider>());
     variations::testing::ClearAllVariationParams();
   }
 
@@ -448,7 +447,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                                                      kPromptGroupName, params));
 
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         features::kBlockPromptsIfDismissedOften.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);

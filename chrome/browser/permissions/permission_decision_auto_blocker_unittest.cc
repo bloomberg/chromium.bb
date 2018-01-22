@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -93,7 +94,7 @@ class PermissionDecisionAutoBlockerUnitTest
                                    {});
     last_embargoed_status_ = false;
     std::unique_ptr<base::SimpleTestClock> clock =
-        base::MakeUnique<base::SimpleTestClock>();
+        std::make_unique<base::SimpleTestClock>();
     clock_ = clock.get();
     autoblocker_->SetClockForTesting(std::move(clock));
     callback_was_run_ = false;
