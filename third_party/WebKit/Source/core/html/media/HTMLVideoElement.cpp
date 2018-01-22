@@ -83,7 +83,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
   HTMLVideoElement* video = new HTMLVideoElement(document);
-  video->EnsureUserAgentShadowRootV1();
+  video->EnsureUserAgentShadowRoot();
   video->PauseIfNeeded();
   return video;
 }
@@ -521,7 +521,7 @@ void HTMLVideoElement::MediaRemotingStarted(
     const WebString& remote_device_friendly_name) {
   if (!remoting_interstitial_) {
     remoting_interstitial_ = new MediaRemotingInterstitial(*this);
-    ShadowRoot& shadow_root = EnsureUserAgentShadowRootV1();
+    ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(remoting_interstitial_, shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);
   }
@@ -537,7 +537,7 @@ void HTMLVideoElement::MediaRemotingStopped(
 void HTMLVideoElement::PictureInPictureStarted() {
   if (!picture_in_picture_interstitial_) {
     picture_in_picture_interstitial_ = new PictureInPictureInterstitial(*this);
-    ShadowRoot& shadow_root = EnsureUserAgentShadowRootV1();
+    ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(picture_in_picture_interstitial_,
                              shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);

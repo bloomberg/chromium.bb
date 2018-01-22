@@ -56,7 +56,7 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
 
 HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
   HTMLMarqueeElement* marquee_element = new HTMLMarqueeElement(document);
-  marquee_element->EnsureUserAgentShadowRootV1();
+  marquee_element->EnsureUserAgentShadowRoot();
   return marquee_element;
 }
 

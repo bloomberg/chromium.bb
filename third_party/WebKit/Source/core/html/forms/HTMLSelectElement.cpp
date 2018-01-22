@@ -100,7 +100,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
 
 HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
   HTMLSelectElement* select = new HTMLSelectElement(document);
-  select->EnsureUserAgentShadowRootV1();
+  select->EnsureUserAgentShadowRoot();
   return select;
 }
 

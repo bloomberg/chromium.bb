@@ -44,7 +44,7 @@ HTMLMeterElement::~HTMLMeterElement() = default;
 
 HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
   HTMLMeterElement* meter = new HTMLMeterElement(document);
-  meter->EnsureUserAgentShadowRootV1();
+  meter->EnsureUserAgentShadowRoot();
   return meter;
 }
 
