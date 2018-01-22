@@ -3609,7 +3609,7 @@ void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
 #if DCHECK_IS_ON()
   // There can be up to three children: an interstitial (media remoting or
   // picture in picture), text track container, and media controls. The media
-  // controls has to be the last child if presend, and has to be the next
+  // controls has to be the last child if present, and has to be the next
   // sibling of the text track container if both present. When present, media
   // remoting interstitial has to be the first child.
   unsigned number_of_children = shadow_root.CountChildren();
