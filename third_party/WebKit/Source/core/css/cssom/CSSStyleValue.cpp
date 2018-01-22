@@ -73,11 +73,16 @@ Nullable<CSSStyleValueVector> CSSStyleValue::parseAll(
   return style_value_vector;
 }
 
-String CSSStyleValue::toString() const {
+String CSSStyleValue::toString(ExceptionState& exception_state) const {
   const CSSValue* result = ToCSSValue();
-  // TODO(crbug.com/782103): Remove this once all CSSStyleValues
+  // TODO(crbug.com/803739): Remove this once all CSSStyleValues
   // support toCSSValue().
-  return result ? result->CssText() : "";
+  if (!result) {
+    exception_state.ThrowTypeError(
+        "Some CSSMathValues can't be serialized yet. See crbug.com/803739");
+    return "";
+  }
+  return result->CssText();
 }
 
 String CSSStyleValue::StyleValueTypeToString(StyleValueType type) {
