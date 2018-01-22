@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_creator.h"
+#include "extensions/browser/extension_creator.h"
 
 namespace extensions {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_creator_filter.h"
+#include "extensions/browser/extension_creator_filter.h"
 
 #include <stddef.h>
 
@@ -27,17 +27,13 @@ bool ExtensionCreatorFilter::ShouldPackageFile(
   }
 
   // The file path that contains one of following special components should be
-  // excluded. See crbug.com/314360 and crbug.com/27840.
+  // excluded. See https://crbug.com/314360 and https://crbug.com/27840.
   const base::FilePath::StringType names_to_exclude[] = {
-    FILE_PATH_LITERAL(".DS_Store"),
-    FILE_PATH_LITERAL(".git"),
-    FILE_PATH_LITERAL(".svn"),
-    FILE_PATH_LITERAL("__MACOSX"),
-    FILE_PATH_LITERAL("desktop.ini"),
-    FILE_PATH_LITERAL("Thumbs.db")
-  };
-  std::set<base::FilePath::StringType> names_to_exclude_set(names_to_exclude,
-      names_to_exclude + arraysize(names_to_exclude));
+      FILE_PATH_LITERAL(".DS_Store"),   FILE_PATH_LITERAL(".git"),
+      FILE_PATH_LITERAL(".svn"),        FILE_PATH_LITERAL("__MACOSX"),
+      FILE_PATH_LITERAL("desktop.ini"), FILE_PATH_LITERAL("Thumbs.db")};
+  std::set<base::FilePath::StringType> names_to_exclude_set(
+      names_to_exclude, names_to_exclude + arraysize(names_to_exclude));
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
   for (size_t i = 0; i < components.size(); i++) {

@@ -142,8 +142,23 @@
       <!-- Document Scan API strings. Please keep alphabetized. -->
 
       <!-- General extensions strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
+        Can't find the absolute path to the directory to pack.
+      </message>
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
+      </message>
+      <message name="IDS_EXTENSION_CRX_EXISTS" desc="Warning displayed in pack dialog when the crx file already exists.">
+        There is already a CRX file present with this name.
+      </message>
+      <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
+        Input directory must exist.
+      </message>
+      <message name="IDS_EXTENSION_ERROR_WHILE_SIGNING" desc="Warning displayed in pack dialog when occurred an error while signing an extension.">
+        Error while signing extension.
+      </message>
+      <message name="IDS_EXTENSION_FAILED_DURING_PACKAGING" desc="Warning displayed in pack dialog when was not possible to create a zip file.">
+        Failed to create temporary zip file during packaging.
       </message>
       <message name="IDS_EXTENSION_LOAD_ABOUT_PAGE_FAILED" desc="">
         Could not load about page '<ph name="ABOUT_PAGE">$1<ex>page.html</ex></ph>'.
@@ -181,9 +196,38 @@
       <message name="IDS_EXTENSION_PACKAGE_UNZIP_ERROR" desc="Message for when an error occurs while unzipping a packaged extension or app.">
         Could not unzip extension
       </message>
-
+      <message name="IDS_EXTENSION_PRIVATE_KEY_EXISTS" desc="Warning displayed in pack dialog when the private key for the extension already exists.">
+        A private key for specified extension already exists. Reuse that key or delete it first.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ" desc="Warning displayed in pack dialog when was not possible to read the private key of the extension.">
+        Failed to read private key.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a private key failed.">
+        Failed to export private key.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE" desc="Warning displayed in pack dialog when generating a random RSA private key failed.">
+        Yikes! Failed to generate random RSA private key.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT" desc="Warning displayed in pack dialog when outputing a private key failed.">
+        Failed to output private key.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID" desc="Warning displayed in pack dialog when the private key of extensions is invalid.">
+        Invalid private key.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS" desc="Warning displayed in pack dialog when the private key for the extension does not exist.">
+        Input value for private key must exist.
+      </message>
+      <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH" desc="Warning displayed in pack dialog when the private key must be a valid path.">
+        Input value for private key must be a valid path.
+      </message>
+      <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
+        Failed to export public key.
+      </message>
       <message name="IDS_LOAD_STATE_PARAMETER_EXTENSION" desc="Parameter to IDS_LOAD_STATE_WAITING_FOR_DELEGATE when we are waiting for an extension. The variable is the extension name.">
         extension <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_SHARING_VIOLATION" desc="Warning displayed in pack dialog when a sharing violation is found during creation of the crx.">
+        Failed to replace crx file. Check to see if the file is in use.
       </message>
 
       <!-- Policy strings. Please keep alphabetized. -->

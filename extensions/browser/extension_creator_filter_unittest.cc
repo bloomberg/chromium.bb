@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_creator_filter.h"
+#include "extensions/browser/extension_creator_filter.h"
 
 #include <stddef.h>
 
@@ -66,18 +66,18 @@ struct UnaryBooleanTestData {
 
 TEST_F(ExtensionCreatorFilterTest, NormalCases) {
   const struct UnaryBooleanTestData cases[] = {
-    { FILE_PATH_LITERAL("foo"), true },
-    { FILE_PATH_LITERAL(".foo"), false },
-    { FILE_PATH_LITERAL("~foo"), true },
-    { FILE_PATH_LITERAL("foo~"), false },
-    { FILE_PATH_LITERAL("#foo"), true },
-    { FILE_PATH_LITERAL("foo#"), true },
-    { FILE_PATH_LITERAL("#foo#"), false },
-    { FILE_PATH_LITERAL(".svn"), false },
-    { FILE_PATH_LITERAL("__MACOSX"), false },
-    { FILE_PATH_LITERAL(".DS_Store"), false },
-    { FILE_PATH_LITERAL("desktop.ini"), false },
-    { FILE_PATH_LITERAL("Thumbs.db"), false },
+      {FILE_PATH_LITERAL("foo"), true},
+      {FILE_PATH_LITERAL(".foo"), false},
+      {FILE_PATH_LITERAL("~foo"), true},
+      {FILE_PATH_LITERAL("foo~"), false},
+      {FILE_PATH_LITERAL("#foo"), true},
+      {FILE_PATH_LITERAL("foo#"), true},
+      {FILE_PATH_LITERAL("#foo#"), false},
+      {FILE_PATH_LITERAL(".svn"), false},
+      {FILE_PATH_LITERAL("__MACOSX"), false},
+      {FILE_PATH_LITERAL(".DS_Store"), false},
+      {FILE_PATH_LITERAL("desktop.ini"), false},
+      {FILE_PATH_LITERAL("Thumbs.db"), false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -85,8 +85,8 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
     base::FilePath test_file(CreateEmptyTestFile(input));
     bool observed = filter_->ShouldPackageFile(test_file);
 
-    EXPECT_EQ(cases[i].expected, observed) <<
-      "i: " << i << ", input: " << test_file.value();
+    EXPECT_EQ(cases[i].expected, observed)
+        << "i: " << i << ", input: " << test_file.value();
   }
 }
 
@@ -100,19 +100,19 @@ struct StringStringWithBooleanTestData {
 // "__MACOSX".
 TEST_F(ExtensionCreatorFilterTest, IgnoreFilesInSpecialDir) {
   const struct StringStringWithBooleanTestData cases[] = {
-    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL(".git"), false },
-    { FILE_PATH_LITERAL("goo"), FILE_PATH_LITERAL(".svn"), false },
-    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("__MACOSX"), false },
-    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("foo"), true },
-    { FILE_PATH_LITERAL("index.js"), FILE_PATH_LITERAL("scripts"), true },
+      {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL(".git"), false},
+      {FILE_PATH_LITERAL("goo"), FILE_PATH_LITERAL(".svn"), false},
+      {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("__MACOSX"), false},
+      {FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("foo"), true},
+      {FILE_PATH_LITERAL("index.js"), FILE_PATH_LITERAL("scripts"), true},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    base::FilePath test_file(CreateEmptyTestFileInDir(cases[i].file_name,
-                                                      cases[i].dir));
+    base::FilePath test_file(
+        CreateEmptyTestFileInDir(cases[i].file_name, cases[i].dir));
     bool observed = filter_->ShouldPackageFile(test_file);
-    EXPECT_EQ(cases[i].expected, observed) <<
-      "i: " << i << ", input: " << test_file.value();
+    EXPECT_EQ(cases[i].expected, observed)
+        << "i: " << i << ", input: " << test_file.value();
   }
 }
 
@@ -125,13 +125,12 @@ struct StringBooleanWithBooleanTestData {
 
 TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
   const struct StringBooleanWithBooleanTestData cases[] = {
-    { FILE_PATH_LITERAL("a-normal-file"), false, true },
-    { FILE_PATH_LITERAL(".a-dot-file"), false, false },
-    { FILE_PATH_LITERAL(".a-dot-file-that-we-have-set-to-hidden"),
-      true, false },
-    { FILE_PATH_LITERAL("a-file-that-we-have-set-to-hidden"), true, false },
-    { FILE_PATH_LITERAL("a-file-that-we-have-not-set-to-hidden"),
-      false, true },
+      {FILE_PATH_LITERAL("a-normal-file"), false, true},
+      {FILE_PATH_LITERAL(".a-dot-file"), false, false},
+      {FILE_PATH_LITERAL(".a-dot-file-that-we-have-set-to-hidden"), true,
+       false},
+      {FILE_PATH_LITERAL("a-file-that-we-have-set-to-hidden"), true, false},
+      {FILE_PATH_LITERAL("a-file-that-we-have-not-set-to-hidden"), false, true},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -143,8 +142,8 @@ TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
       SetFileAttributes(test_file.value().c_str(), FILE_ATTRIBUTE_HIDDEN);
     }
     bool observed = filter_->ShouldPackageFile(test_file);
-    EXPECT_EQ(cases[i].expected, observed) <<
-      "i: " << i << ", input: " << test_file.value();
+    EXPECT_EQ(cases[i].expected, observed)
+        << "i: " << i << ", input: " << test_file.value();
   }
 }
 #endif

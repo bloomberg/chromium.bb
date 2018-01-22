@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_CREATOR_FILTER_H_
+#define EXTENSIONS_BROWSER_EXTENSION_CREATOR_FILTER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,8 +16,7 @@ namespace extensions {
 
 // Determines which files should be included in a packaged extension.
 // Designed specifically to operate with the callback in chrome/common/zip.
-class ExtensionCreatorFilter
-      : public base::RefCounted<ExtensionCreatorFilter> {
+class ExtensionCreatorFilter : public base::RefCounted<ExtensionCreatorFilter> {
  public:
   ExtensionCreatorFilter() {}
 
@@ -31,6 +30,6 @@ class ExtensionCreatorFilter
   DISALLOW_COPY_AND_ASSIGN(ExtensionCreatorFilter);
 };
 
-}  // namespace etensions
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_CREATOR_FILTER_H_
