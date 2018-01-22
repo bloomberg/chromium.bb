@@ -198,10 +198,11 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoMatch_NoBlocking) {
   EXPECT_TRUE(GetMainFrameConsoleMessages().empty());
 }
 
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoFeature_NoCreating) {
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest, FeatureEnabledByDefault) {
+  ResetFeatureAndGet();
   EXPECT_NE(nullptr,
             SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents()));
-  ResetFeatureAndGet();
+  ResetFeatureAndGet()->InitAndDisableFeature(kAbusiveExperienceEnforce);
   EXPECT_EQ(nullptr,
             SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents()));
 }
