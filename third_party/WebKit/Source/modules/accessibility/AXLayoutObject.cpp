@@ -660,6 +660,10 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (RoleValue() == kTimeRole)
     return false;
 
+  if (RoleValue() == kProgressIndicatorRole) {
+    return false;
+  }
+
   // if this element has aria attributes on it, it should not be ignored.
   if (SupportsARIAAttributes())
     return false;
