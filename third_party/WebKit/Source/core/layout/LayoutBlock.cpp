@@ -51,6 +51,7 @@
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/paint/BlockPaintInvalidator.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -409,6 +410,10 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
 
 void LayoutBlock::UpdateAfterLayout() {
   InvalidateStickyConstraints();
+
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() && GetNode())
+    GetDocument().GetRootScrollerController().ConsiderForImplicit(*GetNode());
+
   LayoutBox::UpdateAfterLayout();
 }
 

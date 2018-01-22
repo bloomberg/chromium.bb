@@ -26,6 +26,7 @@
 #include "core/layout/LayoutIFrame.h"
 
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/page/scrolling/RootScrollerController.h"
 
 namespace blink {
 
@@ -58,6 +59,13 @@ void LayoutIFrame::UpdateLayout() {
   UpdateAfterLayout();
 
   ClearNeedsLayout();
+}
+
+void LayoutIFrame::UpdateAfterLayout() {
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() && GetNode())
+    GetDocument().GetRootScrollerController().ConsiderForImplicit(*GetNode());
+
+  LayoutEmbeddedContent::UpdateAfterLayout();
 }
 
 }  // namespace blink
