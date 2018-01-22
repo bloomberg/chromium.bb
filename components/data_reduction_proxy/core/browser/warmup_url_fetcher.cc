@@ -29,9 +29,9 @@ WarmupURLFetcher::WarmupURLFetcher(
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     WarmupURLFetcherCallback callback)
-    : previous_attempt_counts_(0),
+    : is_fetch_in_flight_(false),
+      previous_attempt_counts_(0),
       url_request_context_getter_(url_request_context_getter),
-      is_fetch_in_flight_(false),
       callback_(callback) {
   DCHECK(url_request_context_getter_);
   DCHECK(url_request_context_getter_->GetURLRequestContext()
@@ -41,6 +41,8 @@ WarmupURLFetcher::WarmupURLFetcher(
 WarmupURLFetcher::~WarmupURLFetcher() {}
 
 void WarmupURLFetcher::FetchWarmupURL(size_t previous_attempt_counts) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   previous_attempt_counts_ = previous_attempt_counts;
 
   DCHECK_LE(0u, previous_attempt_counts_);
@@ -58,6 +60,7 @@ void WarmupURLFetcher::FetchWarmupURL(size_t previous_attempt_counts) {
 }
 
 base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LT(0u, previous_attempt_counts_);
   DCHECK_GE(2u, previous_attempt_counts_);
 
@@ -68,6 +71,8 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
 }
 
 void WarmupURLFetcher::FetchWarmupURLNow() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
                              2);
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -96,6 +101,7 @@ void WarmupURLFetcher::FetchWarmupURLNow() {
   GetWarmupURLWithQueryParam(&warmup_url_with_query_params);
 
   fetcher_.reset();
+  fetch_timeout_timer_.Stop();
   is_fetch_in_flight_ = true;
 
   fetcher_ =
@@ -114,11 +120,15 @@ void WarmupURLFetcher::FetchWarmupURLNow() {
   static const int kMaxRetries = 5;
   fetcher_->SetAutomaticallyRetryOn5xx(false);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
+  fetch_timeout_timer_.Start(FROM_HERE, GetFetchTimeout(), this,
+                             &WarmupURLFetcher::OnFetchTimeout);
   fetcher_->Start();
 }
 
 void WarmupURLFetcher::GetWarmupURLWithQueryParam(
     GURL* warmup_url_with_query_params) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Set the query param to a random string to prevent intermediate middleboxes
   // from returning cached content.
   const std::string query = "q=" + base::GenerateGUID();
@@ -133,6 +143,7 @@ void WarmupURLFetcher::GetWarmupURLWithQueryParam(
 }
 
 void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(source, fetcher_.get());
   DCHECK(is_fetch_in_flight_);
 
@@ -161,8 +172,7 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!GetFieldTrialParamByFeatureAsBool(
           features::kDataReductionProxyRobustConnection,
           "warmup_fetch_callback_enabled", false)) {
-    // Running the callback is not enabled.
-    is_fetch_in_flight_ = false;
+    CleanupAfterFetch();
     return;
   }
 
@@ -171,7 +181,7 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     // Fetching failed due to Internet unavailability, and not due to some
     // error. Set the proxy server to unknown.
     callback_.Run(net::ProxyServer(), FetchResult::kSuccessful);
-    is_fetch_in_flight_ = false;
+    CleanupAfterFetch();
     return;
   }
 
@@ -184,11 +194,84 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   callback_.Run(source->ProxyServerUsed(), success_response
                                                ? FetchResult::kSuccessful
                                                : FetchResult::kFailed);
-  is_fetch_in_flight_ = false;
+  CleanupAfterFetch();
 }
 
 bool WarmupURLFetcher::IsFetchInFlight() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return is_fetch_in_flight_;
+}
+
+base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_LE(0u, previous_attempt_counts_);
+  DCHECK_GE(2u, previous_attempt_counts_);
+
+  // The timeout value should always be between kMinTimeout and kMaxTimeout
+  // (both inclusive).
+  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(8);
+  constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
+
+  // Set the timeout based on how many times the fetching of the warmup URL
+  // has been tried.
+  size_t http_rtt_multiplier = 5;
+  if (previous_attempt_counts_ == 1) {
+    http_rtt_multiplier = 10;
+  } else if (previous_attempt_counts_ == 2) {
+    http_rtt_multiplier = 20;
+  }
+
+  const net::NetworkQualityEstimator* network_quality_estimator =
+      url_request_context_getter_->GetURLRequestContext()
+          ->network_quality_estimator();
+
+  base::Optional<base::TimeDelta> http_rtt_estimate =
+      network_quality_estimator->GetHttpRTT();
+  if (!http_rtt_estimate)
+    return kMaxTimeout;
+
+  base::TimeDelta timeout = http_rtt_multiplier * http_rtt_estimate.value();
+  if (timeout > kMaxTimeout)
+    return kMaxTimeout;
+
+  if (timeout < kMinTimeout)
+    return kMinTimeout;
+
+  return timeout;
+}
+
+void WarmupURLFetcher::OnFetchTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(is_fetch_in_flight_);
+  DCHECK(fetcher_);
+
+  const net::ProxyServer proxy_server = fetcher_->ProxyServerUsed();
+  DCHECK_LE(1, proxy_server.scheme());
+
+  UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.WarmupURL.FetchSuccessful", false);
+  base::UmaHistogramSparse("DataReductionProxy.WarmupURL.NetError",
+                           net::ERR_ABORTED);
+  base::UmaHistogramSparse("DataReductionProxy.WarmupURL.HttpResponseCode",
+                           std::abs(net::URLFetcher::RESPONSE_CODE_INVALID));
+
+  if (!GetFieldTrialParamByFeatureAsBool(
+          features::kDataReductionProxyRobustConnection,
+          "warmup_fetch_callback_enabled", false)) {
+    // Running the callback is not enabled.
+    CleanupAfterFetch();
+    return;
+  }
+
+  callback_.Run(proxy_server, FetchResult::kTimedOut);
+  CleanupAfterFetch();
+}
+
+void WarmupURLFetcher::CleanupAfterFetch() {
+  is_fetch_in_flight_ = false;
+  fetcher_.reset();
+  fetch_timeout_timer_.Stop();
+  fetch_delay_timer_.Stop();
 }
 
 }  // namespace data_reduction_proxy

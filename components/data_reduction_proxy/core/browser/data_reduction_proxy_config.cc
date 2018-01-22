@@ -493,20 +493,37 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsFetchInFlight());
 
-  // Check the proxy server used, or disable all data saver proxies?
-  if (!IsDataReductionProxy(proxy_server, nullptr)) {
-    // No need to do anything here.
+  // If the probe times out, then proxy server information may not have been
+  // set by the URL fetcher.
+  bool timed_out_with_no_proxy_data =
+      (success_response == WarmupURLFetcher::FetchResult::kTimedOut &&
+       !proxy_server.is_valid());
+
+  // Check the proxy server used.
+  if (!timed_out_with_no_proxy_data &&
+      !IsDataReductionProxy(proxy_server, nullptr)) {
+    // No need to do anything here since the warmup fetch did not go through
+    // the data saver proxy.
     return;
   }
 
-  bool is_secure_proxy = proxy_server.is_https() || proxy_server.is_quic();
-  bool is_core_proxy = IsDataReductionProxyServerCore(proxy_server);
+  bool is_secure_proxy = false;
+  bool is_core_proxy = false;
 
-  // The proxy server through which the warmup URL was fetched should match
-  // the proxy server for which the warmup URL is in-flight.
-  DCHECK(GetInFlightWarmupProxyDetails());
-  DCHECK_EQ(is_secure_proxy, GetInFlightWarmupProxyDetails()->first);
-  DCHECK_EQ(is_core_proxy, GetInFlightWarmupProxyDetails()->second);
+  if (!timed_out_with_no_proxy_data) {
+    is_secure_proxy = proxy_server.is_https() || proxy_server.is_quic();
+    is_core_proxy = IsDataReductionProxyServerCore(proxy_server);
+    // The proxy server through which the warmup URL was fetched should match
+    // the proxy server for which the warmup URL is in-flight.
+    DCHECK(GetInFlightWarmupProxyDetails());
+    DCHECK_EQ(is_secure_proxy, GetInFlightWarmupProxyDetails()->first);
+    DCHECK_EQ(is_core_proxy, GetInFlightWarmupProxyDetails()->second);
+  } else {
+    // When the probe times out, the proxy information may not be set. Fill-in
+    // the missing data using the proxy that was being probed.
+    is_secure_proxy = warmup_url_fetch_in_flight_secure_proxy_;
+    is_core_proxy = warmup_url_fetch_in_flight_core_proxy_;
+  }
 
   if (is_secure_proxy && is_core_proxy) {
     UMA_HISTOGRAM_BOOLEAN(
