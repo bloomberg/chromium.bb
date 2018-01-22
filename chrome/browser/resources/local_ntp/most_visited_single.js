@@ -27,35 +27,6 @@ var LOG_TYPE = {
 
 
 /**
- * The different sources where an NTP tile's title can originate from.
- * Note: Keep in sync with components/ntp_tiles/tile_title_source.h
- * @enum {number}
- * @const
- */
-var TileTitleSource = {
-  UNKNOWN: 0,
-  MANIFEST: 1,
-  META_TAG: 2,
-  TITLE: 3,
-  INFERRED: 4
-};
-
-
-/**
- * The different sources that an NTP tile can have.
- * Note: Keep in sync with components/ntp_tiles/tile_source.h
- * @enum {number}
- * @const
- */
-var TileSource = {
-  TOP_SITES: 0,
-  SUGGESTIONS_SERVICE: 1,
-  POPULAR: 3,
-  WHITELIST: 4,
-};
-
-
-/**
  * The different (visual) types that an NTP tile can have.
  * Note: Keep in sync with components/ntp_tiles/tile_visual_type.h
  * @enum {number}
@@ -128,9 +99,11 @@ var logEvent = function(eventType) {
 /**
  * Log impression of an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
- * @param {number} tileTitleSource The title's source from TileTitleSource.
- * @param {number} tileSource The source from TileSource.
- * @param {number} tileType The type from TileVisualType.
+ * @param {number} tileTitleSource The source of the tile's title as received
+ *                 from getMostVisitedItemData.
+ * @param {number} tileSource The tile's source as received from
+ *                 getMostVisitedItemData.
+ * @param {number} tileType The tile's visual type from TileVisualType.
  * @param {Date} dataGenerationTime Timestamp representing when the tile was
  *               produced by a ranking algorithm.
  */
@@ -143,9 +116,11 @@ function logMostVisitedImpression(
 /**
  * Log click on an NTP tile.
  * @param {number} tileIndex Position of the tile, >= 0 and < NUMBER_OF_TILES.
- * @param {number} tileTitleSource The title's source from TileTitleSource.
- * @param {number} tileSource The source from TileSource.
- * @param {number} tileType The type from TileVisualType.
+ * @param {number} tileTitleSource The source of the tile's title as received
+ *                 from getMostVisitedItemData.
+ * @param {number} tileSource The tile's source as received from
+ *                 getMostVisitedItemData.
+ * @param {number} tileType The tile's visual type from TileVisualType.
  * @param {Date} dataGenerationTime Timestamp representing when the tile was
  *               produced by a ranking algorithm.
  */
