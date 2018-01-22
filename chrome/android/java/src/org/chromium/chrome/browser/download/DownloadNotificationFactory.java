@@ -153,8 +153,6 @@ public final class DownloadNotificationFactory {
                         downloadUpdate.getContentId(), downloadUpdate.getIsOffTheRecord());
                 cancelIntent = buildActionIntent(context, ACTION_DOWNLOAD_CANCEL,
                         downloadUpdate.getContentId(), downloadUpdate.getIsOffTheRecord());
-                PendingIntent deleteIntent = buildPendingIntent(
-                        context, cancelIntent, downloadUpdate.getNotificationId());
 
                 builder.setAutoCancel(false)
                         .setLargeIcon(downloadUpdate.getIcon())
@@ -167,8 +165,12 @@ public final class DownloadNotificationFactory {
                                 context.getResources().getString(
                                         R.string.download_notification_cancel_button),
                                 buildPendingIntent(
-                                        context, cancelIntent, downloadUpdate.getNotificationId()))
-                        .setDeleteIntent(deleteIntent);
+                                        context, cancelIntent, downloadUpdate.getNotificationId()));
+
+                if (downloadUpdate.getIsTransient()) {
+                    builder.setDeleteIntent(buildPendingIntent(
+                            context, cancelIntent, downloadUpdate.getNotificationId()));
+                }
 
                 break;
 
