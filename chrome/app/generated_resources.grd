@@ -3810,59 +3810,14 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Extension/App error messages -->
-      <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
-        Can't find the absolute path to the directory to pack.
-      </message>
-      <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
-        Input directory must exist.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID_PATH" desc="Warning displayed in pack dialog when the private key must be a valid path.">
-        Input value for private key must be a valid path.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_EXISTS" desc="Warning displayed in pack dialog when the private key for the extension already exists.">
-        A private key for specified extension already exists. Reuse that key or delete it first.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_NO_EXISTS" desc="Warning displayed in pack dialog when the private key for the extension does not exist.">
-        Input value for private key must exist.
-      </message>
       <message name="IDS_EXTENSION_PACK_WARNING_TITLE" desc="Warning title message for pack extension">
         Pack Extension Warning
       </message>
       <message name="IDS_EXTENSION_PACK_ERROR_TITLE" desc="Error title message for pack extension">
         Pack Extension Error
       </message>
-      <message name="IDS_EXTENSION_CRX_EXISTS" desc="Warning displayed in pack dialog when the crx file already exists.">
-        There is already a CRX file present with this name.
-      </message>
       <message name="IDS_EXTENSION_PROCEED_ANYWAY" desc="Button to continue with operation in extension packing">
         Proceed anyway
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_READ" desc="Warning displayed in pack dialog when was not possible to read the private key of the extension.">
-        Failed to read private key.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_INVALID" desc="Warning displayed in pack dialog when the private key of extensions is invalid.">
-        Invalid private key.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_GENERATE" desc="Warning displayed in pack dialog when generating a random RSA private key failed.">
-        Yikes! Failed to generate random RSA private key.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a private key failed.">
-        Failed to export private key.
-      </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT" desc="Warning displayed in pack dialog when outputing a private key failed.">
-        Failed to output private key.
-      </message>
-      <message name="IDS_EXTENSION_FAILED_DURING_PACKAGING" desc="Warning displayed in pack dialog when was not possible to create a zip file.">
-        Failed to create temporary zip file during packaging.
-      </message>
-      <message name="IDS_EXTENSION_ERROR_WHILE_SIGNING" desc="Warning displayed in pack dialog when occurred an error while signing an extension.">
-        Error while signing extension.
-      </message>
-      <message name="IDS_EXTENSION_SHARING_VIOLATION" desc="Warning displayed in pack dialog when a sharing violation is found during creation of the crx.">
-        Failed to replace crx file. Check to see if the file is in use.
-      </message>
-      <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
-        Failed to export public key.
       </message>
       <message name="IDS_EXTENSION_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an extension with a lower version than a version that it already installed.">
         Attempted to downgrade extension.

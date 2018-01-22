@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_CREATOR_H_
+#define EXTENSIONS_BROWSER_EXTENSION_CREATOR_H_
 
 #include <stdint.h>
 
@@ -103,4 +103,4 @@ class ExtensionCreator {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_CREATOR_H_

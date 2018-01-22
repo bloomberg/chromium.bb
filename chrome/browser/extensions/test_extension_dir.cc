@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/extensions/extension_creator.h"
+#include "extensions/browser/extension_creator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
