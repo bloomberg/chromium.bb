@@ -133,6 +133,16 @@ TEST(CBORValuesTest, ConstructSimpleValue) {
             undefined_value.GetSimpleValue());
 }
 
+TEST(CBORValuesTest, ConstructSimpleBooleanValue) {
+  CBORValue true_value(true);
+  ASSERT_EQ(CBORValue::Type::SIMPLE_VALUE, true_value.type());
+  EXPECT_TRUE(true_value.GetBool());
+
+  CBORValue false_value(false);
+  ASSERT_EQ(CBORValue::Type::SIMPLE_VALUE, false_value.type());
+  EXPECT_FALSE(false_value.GetBool());
+}
+
 // Test copy constructors
 TEST(CBORValuesTest, CopyUnsigned) {
   CBORValue value(74);
