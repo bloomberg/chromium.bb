@@ -5,10 +5,12 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
@@ -91,3 +93,41 @@ TEST(AccountConsistencyModeManagerTest, NewProfile) {
   EXPECT_TRUE(signin::IsDiceEnabledForProfile(profile->GetPrefs()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if defined(OS_CHROMEOS)
+TEST(AccountConsistencyModeManagerTest, MirrorDisabledForNonUnicorn) {
+  // Creation of this object sets the current thread's id as UI thread.
+  content::TestBrowserThreadBundle test_thread_bundle;
+
+  TestingProfile profile;
+  EXPECT_FALSE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+}
+
+TEST(AccountConsistencyModeManagerTest, MirrorEnabledForUnicorn) {
+  // Creation of this object sets the current thread's id as UI thread.
+  content::TestBrowserThreadBundle test_thread_bundle;
+
+  TestingProfile profile;
+  profile.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  EXPECT_TRUE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+}
+#endif
+
+#if BUILDFLAG(ENABLE_MIRROR)
+TEST(AccountConsistencyModeManagerTest, MirrorEnabled) {
+  // Creation of this object sets the current thread's id as UI thread.
+  content::TestBrowserThreadBundle test_thread_bundle;
+
+  // Test that Mirror is enabled for regular accounts.
+  TestingProfile profile;
+  EXPECT_TRUE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+
+  // Test that Mirror is enabled for child accounts.
+  profile.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  EXPECT_TRUE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+}
+#endif
