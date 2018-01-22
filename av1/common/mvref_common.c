@@ -1239,7 +1239,6 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       void *const data, int16_t *mode_context) {
   int_mv zeromv[2];
   BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  int idx, all_zero = 1;
   MV_REFERENCE_FRAME rf[2];
 
   av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col,
@@ -1280,32 +1279,6 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                     zeromv,
 #endif  // USE_CUR_GM_REFMV
                     mi_row, mi_col, mode_context);
-  /* Note: If global motion is enabled, then we want to set the ALL_ZERO flag
-     iff all of the MVs we could generate with NEARMV/NEARESTMV are equivalent
-     to the global motion vector.
-     Note: For the following to work properly, the encoder can't throw away
-     any global motion models after calling this function, even if they are
-     unused. Instead we rely on the recode loop: If any non-IDENTITY model
-     is unused, the whole frame will be re-encoded without it.
-     The problem is that, otherwise, we can end up in the following situation:
-     * Encoder has a global motion model with nonzero translational part,
-       and all candidate MVs are zero. So the ALL_ZERO flag is unset.
-     * Encoder throws away global motion because it is never used.
-     * Decoder sees that there is no global motion and all candidate MVs are
-       zero, so sets the ALL_ZERO flag.
-     * This leads to an encode/decode mismatch.
-  */
-  for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
-    if (ref_mv_stack[idx].this_mv.as_int != zeromv[0].as_int) all_zero = 0;
-    if (ref_frame > ALTREF_FRAME)
-      if (ref_mv_stack[idx].comp_mv.as_int != zeromv[1].as_int) all_zero = 0;
-  }
-  if (*ref_mv_count < 2 && ref_frame <= ALTREF_FRAME) {
-    for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
-      if (mv_ref_list[idx].as_int != zeromv[0].as_int) all_zero = 0;
-  }
-
-  (void)all_zero;
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
