@@ -118,6 +118,7 @@ static const char* g_ui_element_name_strings[] = {
     "kDownloadedSnackbar",
     "kControllerTrackpadLabel",
     "kControllerExitButtonLabel",
+    "kControllerBackButtonLabel",
 };
 
 static_assert(

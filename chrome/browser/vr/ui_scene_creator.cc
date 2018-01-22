@@ -1308,9 +1308,14 @@ void UiSceneCreator::CreateController() {
   auto exit_button_label = CreateControllerLabel(
       kControllerExitButtonLabel, kControllerExitButtonOffset,
       l10n_util::GetStringUTF16(IDS_VR_BUTTON_EXIT), model_);
-
   VR_BIND_VISIBILITY(exit_button_label, model->fullscreen_enabled());
   callout_group->AddChild(std::move(exit_button_label));
+
+  auto back_button_label = CreateControllerLabel(
+      kControllerBackButtonLabel, kControllerBackButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model_);
+  VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled());
+  callout_group->AddChild(std::move(back_button_label));
 
   controller->AddChild(std::move(callout_group));
 

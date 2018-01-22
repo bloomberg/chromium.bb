@@ -117,6 +117,7 @@ enum UiElementName {
   kDownloadedSnackbar,
   kControllerTrackpadLabel,
   kControllerExitButtonLabel,
+  kControllerBackButtonLabel,
 
   // This must be last.
   kNumUiElementNames,

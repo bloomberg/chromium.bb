@@ -1070,18 +1070,28 @@ TEST_F(UiTest, ControllerLabels) {
 
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
 
   model_->controller.resting_in_viewport = true;
   EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
 
-  ui_->SetFullscreen(true);
+  model_->push_mode(kModeFullscreen);
   EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
   EXPECT_TRUE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
+
+  model_->pop_mode(kModeFullscreen);
+  model_->push_mode(kModeEditingOmnibox);
+  EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_TRUE(IsVisible(kControllerBackButtonLabel));
 
   model_->controller.resting_in_viewport = false;
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
 }
 
 }  // namespace vr

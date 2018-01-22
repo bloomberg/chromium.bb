@@ -11068,8 +11068,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_BUTTON_TRACKPAD" desc="The label for the trackpad on the VR controller.">
         Scroll / Click
       </message>
-      <message name="IDS_VR_BUTTON_EXIT" desc="The label for the exit button on the VR controller.">
+      <message name="IDS_VR_BUTTON_EXIT" desc="The label for the exit button on the VR controller -- shown when in fullscreen mode.">
         Exit Fullscreen
+      </message>
+      <message name="IDS_VR_BUTTON_BACK" desc="The label for the back button on the VR controller -- shown when the keyboard is visible.">
+        Back
       </message>
     </if>
   </messages>

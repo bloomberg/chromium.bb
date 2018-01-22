@@ -126,7 +126,6 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     // Set calculated height.
     if (bounds->height() == 0)
       bounds->set_height(height);
-
   } else {
     std::unique_ptr<gfx::RenderText> render_text = CreateConfiguredRenderText(
         text, font_list, parameters.color, parameters.text_alignment,
@@ -147,6 +146,12 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     render_text->SetDisplayRect(*bounds);
     lines.push_back(std::move(render_text));
   }
+
+  if (parameters.shadows_enabled) {
+    bounds->Inset(-parameters.shadow_size, -parameters.shadow_size);
+    bounds->Offset(parameters.shadow_size, parameters.shadow_size);
+  }
+
   return lines;
 }
 
