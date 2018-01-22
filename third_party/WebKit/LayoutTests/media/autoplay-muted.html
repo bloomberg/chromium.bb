@@ -94,6 +94,8 @@
         document.onclick = t.step_func_done(function() {
             e.muted = false;
             assert_false(e.paused, "The video should not be paused.");
+            // Consume the triggered transient user activation
+            eventSender.consumeUserActivation();
         });
     }, "Test that unmuting autoplayed video with gesture doesn't pause it.");
 
