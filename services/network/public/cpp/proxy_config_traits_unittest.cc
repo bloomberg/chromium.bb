@@ -4,8 +4,8 @@
 
 #include "services/network/public/cpp/proxy_config_traits.h"
 
-#include "net/proxy/proxy_bypass_rules.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "services/network/public/interfaces/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

@@ -9,7 +9,7 @@
 
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 
 namespace data_reduction_proxy {
 

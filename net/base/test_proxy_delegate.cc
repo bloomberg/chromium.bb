@@ -4,7 +4,7 @@
 
 #include "net/base/test_proxy_delegate.h"
 
-#include "net/proxy/proxy_info.h"
+#include "net/proxy_resolution/proxy_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

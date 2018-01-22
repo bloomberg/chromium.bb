@@ -32720,7 +32720,7 @@ Called by update_net_trust_anchors.py.-->
   </obsolete>
   <summary>
     Result for PAC script experiment as defined in
-    net/proxy/proxy_resolver_v8_tracing.h
+    net/proxy_resolution/proxy_resolver_v8_tracing.h
   </summary>
   <int value="0" label="SKIPPED_FALLBACK_BLOCKING_DNS"/>
   <int value="1" label="SUCCESS"/>

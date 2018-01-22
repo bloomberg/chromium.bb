@@ -8,7 +8,7 @@
 #include <string>
 
 #include "net/base/proxy_delegate.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 
 class GURL;
 

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "url/origin.h"
 

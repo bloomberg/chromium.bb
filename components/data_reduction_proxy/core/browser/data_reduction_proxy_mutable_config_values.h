@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {

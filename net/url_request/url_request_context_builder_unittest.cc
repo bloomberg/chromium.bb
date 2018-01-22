@@ -20,8 +20,8 @@
 #include "testing/platform_test.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service_fixed.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service_fixed.h"
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 namespace net {

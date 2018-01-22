@@ -26,9 +26,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "net/base/network_change_notifier_linux.h"

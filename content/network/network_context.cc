@@ -43,7 +43,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"

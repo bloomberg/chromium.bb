@@ -32,7 +32,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_prefs.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_test_util.h"

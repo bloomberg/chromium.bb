@@ -8,8 +8,8 @@
 #include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/network/proxy_service_mojo.h"
-#include "net/proxy/pac_file_fetcher_impl.h"
-#include "net/proxy/proxy_config_service.h"
+#include "net/proxy_resolution/pac_file_fetcher_impl.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 
 namespace content {
 

@@ -7,8 +7,8 @@
 #include "build/build_config.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/proxy/proxy_config_service_impl.h"

@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FirefoxProxySettingsTest : public testing::Test {

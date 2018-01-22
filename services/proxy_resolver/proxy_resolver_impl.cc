@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
-#include "net/proxy/mojo_proxy_resolver_v8_tracing_bindings.h"
-#include "net/proxy/pac_file_data.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_resolver_v8_tracing.h"
+#include "net/proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings.h"
+#include "net/proxy_resolution/pac_file_data.h"
+#include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace proxy_resolver {

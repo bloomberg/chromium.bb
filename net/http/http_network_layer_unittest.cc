@@ -16,7 +16,7 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"

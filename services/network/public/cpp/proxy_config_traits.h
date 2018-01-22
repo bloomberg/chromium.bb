@@ -5,10 +5,10 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
 
-#include "net/proxy/proxy_bypass_rules.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_source.h"
-#include "net/proxy/proxy_list.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_source.h"
+#include "net/proxy_resolution/proxy_list.h"
 #include "services/network/public/interfaces/proxy_config.mojom-shared.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 

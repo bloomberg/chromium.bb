@@ -27,8 +27,8 @@
 #include "jni/CronetLibraryLoader_jni.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
-#include "net/proxy/proxy_config_service_android.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_config_service_android.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "url/url_features.h"
 #include "url/url_util.h"
 

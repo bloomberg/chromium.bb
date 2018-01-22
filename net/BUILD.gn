@@ -492,6 +492,9 @@ component("net") {
       "base/prioritized_dispatcher.h",
       "base/priority_queue.h",
       "base/proxy_delegate.h",
+      "base/proxy_server.cc",
+      "base/proxy_server.h",
+      "base/proxy_server_mac.cc",
       "base/request_priority.cc",
       "base/request_priority.h",
       "base/static_cookie_policy.cc",
@@ -1031,67 +1034,64 @@ component("net") {
       "ntlm/ntlm_client.cc",
       "ntlm/ntlm_client.h",
       "ntlm/ntlm_constants.h",
-      "proxy/dhcp_pac_file_adapter_fetcher_win.cc",
-      "proxy/dhcp_pac_file_adapter_fetcher_win.h",
-      "proxy/dhcp_pac_file_fetcher.cc",
-      "proxy/dhcp_pac_file_fetcher.h",
-      "proxy/dhcp_pac_file_fetcher_factory.cc",
-      "proxy/dhcp_pac_file_fetcher_factory.h",
-      "proxy/dhcp_pac_file_fetcher_win.cc",
-      "proxy/dhcp_pac_file_fetcher_win.h",
-      "proxy/dhcpcsvc_init_win.cc",
-      "proxy/dhcpcsvc_init_win.h",
-      "proxy/multi_threaded_proxy_resolver.cc",
-      "proxy/multi_threaded_proxy_resolver.h",
-      "proxy/network_delegate_error_observer.cc",
-      "proxy/network_delegate_error_observer.h",
-      "proxy/pac_file_data.cc",
-      "proxy/pac_file_data.h",
-      "proxy/pac_file_decider.cc",
-      "proxy/pac_file_decider.h",
-      "proxy/pac_file_fetcher.h",
-      "proxy/pac_file_fetcher_impl.cc",
-      "proxy/pac_file_fetcher_impl.h",
-      "proxy/pac_js_library.h",
-      "proxy/polling_proxy_config_service.cc",
-      "proxy/polling_proxy_config_service.h",
-      "proxy/proxy_bypass_rules.cc",
-      "proxy/proxy_bypass_rules.h",
-      "proxy/proxy_config.cc",
-      "proxy/proxy_config.h",
-      "proxy/proxy_config_service.h",
-      "proxy/proxy_config_service_android.cc",
-      "proxy/proxy_config_service_android.h",
-      "proxy/proxy_config_service_fixed.cc",
-      "proxy/proxy_config_service_fixed.h",
-      "proxy/proxy_config_service_ios.cc",
-      "proxy/proxy_config_service_ios.h",
-      "proxy/proxy_config_service_linux.cc",
-      "proxy/proxy_config_service_linux.h",
-      "proxy/proxy_config_service_mac.cc",
-      "proxy/proxy_config_service_mac.h",
-      "proxy/proxy_config_service_win.cc",
-      "proxy/proxy_config_service_win.h",
-      "proxy/proxy_config_source.cc",
-      "proxy/proxy_config_source.h",
-      "proxy/proxy_info.cc",
-      "proxy/proxy_info.h",
-      "proxy/proxy_list.cc",
-      "proxy/proxy_list.h",
-      "proxy/proxy_resolver.h",
-      "proxy/proxy_resolver_error_observer.h",
-      "proxy/proxy_resolver_factory.cc",
-      "proxy/proxy_resolver_factory.h",
-      "proxy/proxy_resolver_mac.cc",
-      "proxy/proxy_resolver_mac.h",
-      "proxy/proxy_resolver_winhttp.cc",
-      "proxy/proxy_resolver_winhttp.h",
-      "proxy/proxy_retry_info.h",
-      "proxy/proxy_server.cc",
-      "proxy/proxy_server.h",
-      "proxy/proxy_server_mac.cc",
-      "proxy/proxy_service.cc",
-      "proxy/proxy_service.h",
+      "proxy_resolution/dhcp_pac_file_adapter_fetcher_win.cc",
+      "proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h",
+      "proxy_resolution/dhcp_pac_file_fetcher.cc",
+      "proxy_resolution/dhcp_pac_file_fetcher.h",
+      "proxy_resolution/dhcp_pac_file_fetcher_factory.cc",
+      "proxy_resolution/dhcp_pac_file_fetcher_factory.h",
+      "proxy_resolution/dhcp_pac_file_fetcher_win.cc",
+      "proxy_resolution/dhcp_pac_file_fetcher_win.h",
+      "proxy_resolution/dhcpcsvc_init_win.cc",
+      "proxy_resolution/dhcpcsvc_init_win.h",
+      "proxy_resolution/multi_threaded_proxy_resolver.cc",
+      "proxy_resolution/multi_threaded_proxy_resolver.h",
+      "proxy_resolution/network_delegate_error_observer.cc",
+      "proxy_resolution/network_delegate_error_observer.h",
+      "proxy_resolution/pac_file_data.cc",
+      "proxy_resolution/pac_file_data.h",
+      "proxy_resolution/pac_file_decider.cc",
+      "proxy_resolution/pac_file_decider.h",
+      "proxy_resolution/pac_file_fetcher.h",
+      "proxy_resolution/pac_file_fetcher_impl.cc",
+      "proxy_resolution/pac_file_fetcher_impl.h",
+      "proxy_resolution/pac_js_library.h",
+      "proxy_resolution/polling_proxy_config_service.cc",
+      "proxy_resolution/polling_proxy_config_service.h",
+      "proxy_resolution/proxy_bypass_rules.cc",
+      "proxy_resolution/proxy_bypass_rules.h",
+      "proxy_resolution/proxy_config.cc",
+      "proxy_resolution/proxy_config.h",
+      "proxy_resolution/proxy_config_service.h",
+      "proxy_resolution/proxy_config_service_android.cc",
+      "proxy_resolution/proxy_config_service_android.h",
+      "proxy_resolution/proxy_config_service_fixed.cc",
+      "proxy_resolution/proxy_config_service_fixed.h",
+      "proxy_resolution/proxy_config_service_ios.cc",
+      "proxy_resolution/proxy_config_service_ios.h",
+      "proxy_resolution/proxy_config_service_linux.cc",
+      "proxy_resolution/proxy_config_service_linux.h",
+      "proxy_resolution/proxy_config_service_mac.cc",
+      "proxy_resolution/proxy_config_service_mac.h",
+      "proxy_resolution/proxy_config_service_win.cc",
+      "proxy_resolution/proxy_config_service_win.h",
+      "proxy_resolution/proxy_config_source.cc",
+      "proxy_resolution/proxy_config_source.h",
+      "proxy_resolution/proxy_info.cc",
+      "proxy_resolution/proxy_info.h",
+      "proxy_resolution/proxy_list.cc",
+      "proxy_resolution/proxy_list.h",
+      "proxy_resolution/proxy_resolver.h",
+      "proxy_resolution/proxy_resolver_error_observer.h",
+      "proxy_resolution/proxy_resolver_factory.cc",
+      "proxy_resolution/proxy_resolver_factory.h",
+      "proxy_resolution/proxy_resolver_mac.cc",
+      "proxy_resolution/proxy_resolver_mac.h",
+      "proxy_resolution/proxy_resolver_winhttp.cc",
+      "proxy_resolution/proxy_resolver_winhttp.h",
+      "proxy_resolution/proxy_retry_info.h",
+      "proxy_resolution/proxy_service.cc",
+      "proxy_resolution/proxy_service.h",
       "quic/chromium/bidirectional_stream_quic_impl.cc",
       "quic/chromium/bidirectional_stream_quic_impl.h",
       "quic/chromium/crypto/channel_id_chromium.cc",
@@ -1976,8 +1976,8 @@ component("net") {
         "base/winsock_init.h",
         "base/winsock_util.cc",
         "base/winsock_util.h",
-        "proxy/proxy_resolver_winhttp.cc",
-        "proxy/proxy_resolver_winhttp.h",
+        "proxy_resolution/proxy_resolver_winhttp.cc",
+        "proxy_resolution/proxy_resolver_winhttp.h",
       ]
     }
 
@@ -1992,12 +1992,12 @@ component("net") {
         "base/network_config_watcher_mac.cc",
         "base/network_config_watcher_mac.h",
         "base/platform_mime_util_mac.mm",
+        "base/proxy_server_mac.cc",
         "cert/test_root_certs_mac.cc",
         "cert/x509_util_ios_and_mac.cc",
         "cert/x509_util_ios_and_mac.h",
-        "proxy/proxy_resolver_mac.cc",
-        "proxy/proxy_resolver_mac.h",
-        "proxy/proxy_server_mac.cc",
+        "proxy_resolution/proxy_resolver_mac.cc",
+        "proxy_resolution/proxy_resolver_mac.h",
       ]
 
       sources -= [ "disk_cache/blockfile/file_posix.cc" ]
@@ -2585,12 +2585,12 @@ static_library("test_support") {
     "log/test_net_log_util.h",
     "nqe/network_quality_estimator_test_util.cc",
     "nqe/network_quality_estimator_test_util.h",
-    "proxy/mock_pac_file_fetcher.cc",
-    "proxy/mock_pac_file_fetcher.h",
-    "proxy/mock_proxy_resolver.cc",
-    "proxy/mock_proxy_resolver.h",
-    "proxy/proxy_config_service_common_unittest.cc",
-    "proxy/proxy_config_service_common_unittest.h",
+    "proxy_resolution/mock_pac_file_fetcher.cc",
+    "proxy_resolution/mock_pac_file_fetcher.h",
+    "proxy_resolution/mock_proxy_resolver.cc",
+    "proxy_resolution/mock_proxy_resolver.h",
+    "proxy_resolution/proxy_config_service_common_unittest.cc",
+    "proxy_resolution/proxy_config_service_common_unittest.h",
     "socket/socket_test_util.cc",
     "socket/socket_test_util.h",
     "spdy/chromium/spdy_test_util_common.cc",
@@ -2744,12 +2744,12 @@ static_library("test_support") {
 if (use_v8_in_net) {
   component("net_with_v8") {
     sources = [
-      "proxy/proxy_resolver_v8.cc",
-      "proxy/proxy_resolver_v8.h",
-      "proxy/proxy_resolver_v8_tracing.cc",
-      "proxy/proxy_resolver_v8_tracing.h",
-      "proxy/proxy_resolver_v8_tracing_wrapper.cc",
-      "proxy/proxy_resolver_v8_tracing_wrapper.h",
+      "proxy_resolution/proxy_resolver_v8.cc",
+      "proxy_resolution/proxy_resolver_v8.h",
+      "proxy_resolution/proxy_resolver_v8_tracing.cc",
+      "proxy_resolution/proxy_resolver_v8_tracing.h",
+      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.cc",
+      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.h",
     ]
 
     defines = [ "NET_IMPLEMENTATION" ]
@@ -4971,26 +4971,26 @@ test("net_unittests") {
     "ntlm/ntlm_client_unittest.cc",
     "ntlm/ntlm_test_data.h",
     "ntlm/ntlm_unittest.cc",
-    "proxy/dhcp_pac_file_adapter_fetcher_win_unittest.cc",
-    "proxy/dhcp_pac_file_fetcher_factory_unittest.cc",
-    "proxy/dhcp_pac_file_fetcher_win_unittest.cc",
-    "proxy/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
-    "proxy/multi_threaded_proxy_resolver_unittest.cc",
-    "proxy/network_delegate_error_observer_unittest.cc",
-    "proxy/pac_file_decider_unittest.cc",
-    "proxy/pac_file_fetcher_impl_unittest.cc",
-    "proxy/proxy_bypass_rules_unittest.cc",
-    "proxy/proxy_config_service_android_unittest.cc",
-    "proxy/proxy_config_service_linux_unittest.cc",
-    "proxy/proxy_config_service_win_unittest.cc",
-    "proxy/proxy_config_unittest.cc",
-    "proxy/proxy_info_unittest.cc",
-    "proxy/proxy_list_unittest.cc",
-    "proxy/proxy_resolver_v8_tracing_unittest.cc",
-    "proxy/proxy_resolver_v8_tracing_wrapper_unittest.cc",
-    "proxy/proxy_resolver_v8_unittest.cc",
-    "proxy/proxy_server_unittest.cc",
-    "proxy/proxy_service_unittest.cc",
+    "proxy_resolution/dhcp_pac_file_adapter_fetcher_win_unittest.cc",
+    "proxy_resolution/dhcp_pac_file_fetcher_factory_unittest.cc",
+    "proxy_resolution/dhcp_pac_file_fetcher_win_unittest.cc",
+    "proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
+    "proxy_resolution/multi_threaded_proxy_resolver_unittest.cc",
+    "proxy_resolution/network_delegate_error_observer_unittest.cc",
+    "proxy_resolution/pac_file_decider_unittest.cc",
+    "proxy_resolution/pac_file_fetcher_impl_unittest.cc",
+    "proxy_resolution/proxy_bypass_rules_unittest.cc",
+    "proxy_resolution/proxy_config_service_android_unittest.cc",
+    "proxy_resolution/proxy_config_service_linux_unittest.cc",
+    "proxy_resolution/proxy_config_service_win_unittest.cc",
+    "proxy_resolution/proxy_config_unittest.cc",
+    "proxy_resolution/proxy_info_unittest.cc",
+    "proxy_resolution/proxy_list_unittest.cc",
+    "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
+    "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
+    "proxy_resolution/proxy_resolver_v8_unittest.cc",
+    "proxy_resolution/proxy_server_unittest.cc",
+    "proxy_resolution/proxy_service_unittest.cc",
     "quic/chromium/bidirectional_stream_quic_impl_unittest.cc",
     "quic/chromium/crypto/proof_test_chromium.cc",
     "quic/chromium/crypto/proof_verifier_chromium_test.cc",
@@ -5419,7 +5419,7 @@ test("net_unittests") {
   }
 
   if (is_chromeos) {
-    sources -= [ "proxy/proxy_config_service_linux_unittest.cc" ]
+    sources -= [ "proxy_resolution/proxy_config_service_linux_unittest.cc" ]
   }
 
   if (!is_proto_quic && v8_use_external_startup_data) {
@@ -5549,9 +5549,9 @@ test("net_unittests") {
     deps += [ ":net_with_v8" ]
   } else {
     sources -= [
-      "proxy/proxy_resolver_v8_tracing_unittest.cc",
-      "proxy/proxy_resolver_v8_tracing_wrapper_unittest.cc",
-      "proxy/proxy_resolver_v8_unittest.cc",
+      "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
+      "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
+      "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
   }
 
@@ -5565,7 +5565,7 @@ test("net_unittests") {
     sources -= [
       "dns/host_resolver_mojo_unittest.cc",
       "dns/mojo_host_resolver_impl_unittest.cc",
-      "proxy/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
+      "proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
     ]
   }
 
@@ -5589,7 +5589,7 @@ test("net_unittests") {
 
       # Need TestServer.
       "cert_net/cert_net_fetcher_impl_unittest.cc",
-      "proxy/pac_file_fetcher_impl_unittest.cc",
+      "proxy_resolution/pac_file_fetcher_impl_unittest.cc",
       "socket/ssl_client_socket_unittest.cc",
       "url_request/url_fetcher_impl_unittest.cc",
       "url_request/url_request_context_builder_unittest.cc",
@@ -5617,7 +5617,7 @@ test("net_unittests") {
       "base/filename_util_unittest.cc",
       "base/url_util_unittest.cc",
       "cert/x509_certificate_unittest.cc",
-      "proxy/proxy_resolver_v8_unittest.cc",
+      "proxy_resolution/proxy_resolver_v8_unittest.cc",
       "url_request/url_request_job_unittest.cc",
     ]
   }
@@ -5817,7 +5817,7 @@ fuzzer_test("net_mime_sniffer_fuzzer") {
 
 fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
   sources = [
-    "proxy/parse_proxy_list_pac_fuzzer.cc",
+    "proxy_resolution/parse_proxy_list_pac_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -5827,7 +5827,7 @@ fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
 
 fuzzer_test("net_parse_proxy_list_fuzzer") {
   sources = [
-    "proxy/parse_proxy_list_fuzzer.cc",
+    "proxy_resolution/parse_proxy_list_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -5837,7 +5837,7 @@ fuzzer_test("net_parse_proxy_list_fuzzer") {
 
 fuzzer_test("net_parse_proxy_bypass_rules_fuzzer") {
   sources = [
-    "proxy/parse_proxy_bypass_rules_fuzzer.cc",
+    "proxy_resolution/parse_proxy_bypass_rules_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -5847,7 +5847,7 @@ fuzzer_test("net_parse_proxy_bypass_rules_fuzzer") {
 
 fuzzer_test("net_parse_proxy_rules_fuzzer") {
   sources = [
-    "proxy/parse_proxy_rules_fuzzer.cc",
+    "proxy_resolution/parse_proxy_rules_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",

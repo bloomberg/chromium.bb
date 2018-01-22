@@ -25,8 +25,8 @@
 #include "components/previews/core/previews_experiments.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_retry_info.h"
 
 namespace base {
 class SingleThreadTaskRunner;

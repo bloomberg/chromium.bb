@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
-#include "net/proxy/dhcp_pac_file_fetcher.h"
+#include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace net {

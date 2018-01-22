@@ -14,8 +14,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 
 class PrefService;
 class PrefRegistrySimple;

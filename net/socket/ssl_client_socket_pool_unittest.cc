@@ -27,7 +27,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"

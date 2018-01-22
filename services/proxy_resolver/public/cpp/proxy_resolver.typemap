@@ -4,8 +4,8 @@
 
 mojom = "//services/proxy_resolver/public/interfaces/proxy_resolver.mojom"
 public_headers = [
-  "//net/proxy/proxy_server.h",
-  "//net/proxy/proxy_info.h",
+  "//net/base/proxy_server.h",
+  "//net/proxy_resolution/proxy_info.h",
 ]
 traits_headers =
     [ "//services/proxy_resolver/public/cpp/proxy_resolver_struct_traits.h" ]

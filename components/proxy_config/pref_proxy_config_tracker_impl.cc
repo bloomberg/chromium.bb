@@ -17,7 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 #include "url/gurl.h"
 
 //============================= ProxyConfigServiceImpl =======================

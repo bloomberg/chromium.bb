@@ -27,6 +27,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -34,7 +35,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
-#include "net/proxy/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {

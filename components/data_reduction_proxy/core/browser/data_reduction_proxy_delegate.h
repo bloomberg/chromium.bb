@@ -11,7 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
-#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy_resolution/proxy_retry_info.h"
 #include "url/gurl.h"
 
 namespace base {

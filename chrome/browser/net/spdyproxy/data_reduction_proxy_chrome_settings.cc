@@ -34,9 +34,9 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/base/host_port_pair.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_list.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_list.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {

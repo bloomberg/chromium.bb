@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 
 class GURL;
 

@@ -9,9 +9,9 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/host_port_pair.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_list.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
+#include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_list.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace net {

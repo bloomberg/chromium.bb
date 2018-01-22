@@ -26,7 +26,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/data_url.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 
 namespace extensions {
 

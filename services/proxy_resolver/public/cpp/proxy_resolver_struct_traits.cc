@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "net/base/host_port_pair.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
+#include "net/proxy_resolution/proxy_info.h"
 
 namespace mojo {
 

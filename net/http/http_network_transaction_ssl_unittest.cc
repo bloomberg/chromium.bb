@@ -23,7 +23,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/test/gtest_util.h"

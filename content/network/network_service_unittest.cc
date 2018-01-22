@@ -14,7 +14,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "net/base/mock_network_change_notifier.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"

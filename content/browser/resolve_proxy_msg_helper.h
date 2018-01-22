@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/completion_callback.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "url/gurl.h"
 
 namespace net {

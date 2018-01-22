@@ -10,8 +10,8 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "net/proxy/pac_file_fetcher.h"
-#include "net/proxy/pac_file_fetcher_impl.h"
+#include "net/proxy_resolution/pac_file_fetcher.h"
+#include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/url_request/url_request_context.h"
 
 namespace chromeos {
