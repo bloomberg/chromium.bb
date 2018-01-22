@@ -32,9 +32,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
 
-  bool selected() { return selected_; }
-  void SetSelected(bool selected);
-
   // Overridden from views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
@@ -77,8 +74,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   // Properties for pulse opacity and size used in animation.
   float pulse_opacity_;
   int pulse_radius_;
-
-  bool selected_ = false;
 
   std::unique_ptr<gfx::SlideAnimation> animation_;
 

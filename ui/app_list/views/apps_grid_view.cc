@@ -497,8 +497,6 @@ void AppsGridView::ClearAnySelectedView() {
   }
   if (suggestions_container_)
     suggestions_container_->ClearSelectedIndex();
-  if (expand_arrow_view_)
-    expand_arrow_view_->SetSelected(false);
 }
 
 bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
@@ -508,7 +506,7 @@ bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
 views::View* AppsGridView::GetSelectedView() const {
   if (selected_view_)
     return selected_view_;
-  if (expand_arrow_view_ && expand_arrow_view_->selected())
+  if (expand_arrow_view_ && expand_arrow_view_->HasFocus())
     return expand_arrow_view_;
   if (suggestions_container_)
     return suggestions_container_->GetSelectedView();
@@ -1009,10 +1007,6 @@ int AppsGridView::TilesPerPage(int page) const {
   return cols_ * rows_per_page_;
 }
 
-int AppsGridView::LastIndexOfPage(int page) const {
-  return TilesPerPage(page) - 1;
-}
-
 void AppsGridView::UpdatePaging() {
   if (!view_model_.view_size() || !TilesPerPage(0)) {
     pagination_model_.SetTotalPages(0);
@@ -1150,180 +1144,6 @@ AppsGridView::Index AppsGridView::GetLastViewIndex() const {
   DCHECK_LT(0, view_model_.view_size());
   int view_index = view_model_.view_size() - 1;
   return GetIndexFromModelIndex(view_index);
-}
-
-void AppsGridView::MoveSelected(int page_delta,
-                                int slot_x_delta,
-                                int slot_y_delta) {
-  if (expand_arrow_view_ && expand_arrow_view_->selected() &&
-      HandleExpandArrowMove(page_delta, slot_x_delta, slot_y_delta)) {
-    return;
-  }
-
-  if (!selected_view_) {
-    // If fullscreen app list is enabled and we are on the first page, moving
-    // selected should consider suggested apps tiles before all apps tiles.
-    int current_page = pagination_model_.selected_page();
-    if (!suggestions_container_ || current_page != 0)
-      return SetSelectedItemByIndex(Index(current_page, 0));
-    if (HandleSuggestionsMove(page_delta, slot_x_delta, slot_y_delta))
-      return;
-  }
-
-  const Index& selected = GetIndexOfView(selected_view_);
-  int target_slot = selected.slot + slot_x_delta + slot_y_delta * cols_;
-
-  // Moving left from the first slot of all apps tiles should move focus to
-  // the last slot of previous page or last tile of suggested apps.
-  if (selected.slot == 0 && slot_x_delta == -1) {
-    if (selected.page == 0) {
-      ClearSelectedView(selected_view_);
-      if (!suggestions_container_)
-        return;
-      suggestions_container_->SetSelectedIndex(
-          suggestions_container_->num_results() - 1);
-      return;
-    } else {
-      page_delta = -1;
-      target_slot = LastIndexOfPage(selected.page + page_delta);
-    }
-  }
-
-  // Moving right from last slot should flip to next page and focus on the
-  // first tile.
-  if (selected.slot == LastIndexOfPage(selected.page) && slot_x_delta == 1) {
-    page_delta = 1;
-    target_slot = 0;
-  }
-
-  // Moving up from the first row of all apps tiles should move focus to the
-  // last row of previous page or suggested apps.
-  if (selected.slot / cols_ == 0 && slot_y_delta == -1) {
-    if (selected.page == 0) {
-      ClearSelectedView(selected_view_);
-      if (!suggestions_container_)
-        return;
-      const int max_suggestion_index =
-          suggestions_container_->num_results() - 1;
-      int selected_index = std::min(max_suggestion_index, selected.slot);
-      suggestions_container_->SetSelectedIndex(selected_index);
-      return;
-    } else {
-      page_delta = -1;
-      target_slot = LastIndexOfPage(selected.page + page_delta) -
-                    (cols_ - 1 - selected.slot);
-    }
-  }
-
-  // Moving down from the last row of all apps tiles should move focus to the
-  // first row of next page if it exists.
-  if (LastIndexOfPage(selected.page) - selected.slot < cols_ &&
-      slot_y_delta == 1) {
-    if (selected.page < pagination_model_.total_pages() - 1) {
-      page_delta = 1;
-      target_slot =
-          (cols_ - 1) - (LastIndexOfPage(selected.page) - selected.slot);
-    } else {
-      target_slot = selected.slot;
-    }
-  }
-
-  // Clamp the target slot to the last item if we are moving in or to the last
-  // page but our target slot is past the end of the item list.
-  if (selected.page + page_delta == pagination_model_.total_pages() - 1) {
-    int last_item_slot =
-        GetIndexFromModelIndex(view_model_.view_size() - 1).slot;
-    if (last_item_slot < target_slot) {
-      target_slot = last_item_slot;
-    }
-  }
-
-  int target_page = std::min(pagination_model_.total_pages() - 1,
-                             std::max(selected.page + page_delta, 0));
-  SetSelectedItemByIndex(Index(target_page, target_slot));
-}
-
-bool AppsGridView::HandleSuggestionsMove(int page_delta,
-                                         int slot_x_delta,
-                                         int slot_y_delta) {
-  DCHECK(suggestions_container_);
-  DCHECK(expand_arrow_view_);
-
-  if (suggestions_container_->selected_index() == -1) {
-    suggestions_container_->SetSelectedIndex(0);
-    return true;
-  }
-
-  if (page_delta == -1 || slot_y_delta == -1)
-    return true;
-
-  if (slot_x_delta != 0) {
-    int new_index = suggestions_container_->selected_index() + slot_x_delta;
-    if (new_index == suggestions_container_->num_results()) {
-      suggestions_container_->ClearSelectedIndex();
-      if (contents_view_->GetActiveState() == AppListModel::STATE_START) {
-        // In state start, moving right out of |suggestions_container_| should
-        // give selection to the expand arrow.
-        expand_arrow_view_->SetSelected(true);
-      } else {
-        DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_APPS);
-        // In state apps, moving right out of |suggestions_container_| should
-        // give selection to the first tile of all apps.
-        SetSelectedItemByIndex(Index(0, 0));
-      }
-    } else if (suggestions_container_->IsValidSelectionIndex(new_index)) {
-      suggestions_container_->SetSelectedIndex(new_index);
-    }
-    return true;
-  }
-
-  if (slot_y_delta == 1) {
-    if (contents_view_->GetActiveState() == AppListModel::STATE_START) {
-      // In state start, moving down from |suggestions_container_| should give
-      // selection to the expand arrow.
-      expand_arrow_view_->SetSelected(true);
-    } else {
-      DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_APPS);
-      // In state apps, moving down from |suggestions_container_| should give
-      // selection to the first row of all apps.
-      SetSelectedItemByIndex(
-          Index(0, suggestions_container_->selected_index()));
-    }
-    suggestions_container_->ClearSelectedIndex();
-    return true;
-  }
-
-  // A page flip to next page from |suggestions_container_| should focus to
-  // the first tile of next page.
-  if (page_delta == 1) {
-    SetSelectedItemByIndex(Index(page_delta, 0));
-    suggestions_container_->ClearSelectedIndex();
-    return true;
-  }
-  return false;
-}
-
-bool AppsGridView::HandleExpandArrowMove(int page_delta,
-                                         int slot_x_delta,
-                                         int slot_y_delta) {
-  DCHECK(suggestions_container_);
-  DCHECK(expand_arrow_view_);
-  DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_START);
-
-  if (page_delta != 0 || slot_x_delta == 1 || slot_y_delta == 1 ||
-      (slot_x_delta == 0 && slot_y_delta == 0)) {
-    return true;
-  }
-
-  if (slot_x_delta == -1 || slot_y_delta == -1) {
-    // Move focus to the last app in ||suggestions_container|.
-    expand_arrow_view_->SetSelected(false);
-    suggestions_container_->SetSelectedIndex(
-        suggestions_container_->num_results() - 1);
-    return true;
-  }
-
-  return false;
 }
 
 const gfx::Vector2d AppsGridView::CalculateTransitionOffset(

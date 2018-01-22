@@ -92,25 +92,14 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
 
 ExpandArrowView::~ExpandArrowView() = default;
 
-void ExpandArrowView::SetSelected(bool selected) {
-  if (selected == selected_)
-    return;
-
-  selected_ = selected;
-  SchedulePaint();
-
-  if (selected)
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
-}
-
 void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
 
   // Draw focused or unfocused background.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(selected_ ? kFocusedBackgroundColor
-                           : kUnFocusedBackgroundColor);
+  flags.setColor(HasFocus() ? kFocusedBackgroundColor
+                            : kUnFocusedBackgroundColor);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kSelectedRadius, flags);
 
@@ -154,11 +143,13 @@ bool ExpandArrowView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void ExpandArrowView::OnFocus() {
-  SetSelected(true);
+  SchedulePaint();
+  Button::OnFocus();
 }
 
 void ExpandArrowView::OnBlur() {
-  SetSelected(false);
+  SchedulePaint();
+  Button::OnBlur();
 }
 
 std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {

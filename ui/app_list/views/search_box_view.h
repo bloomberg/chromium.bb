@@ -136,8 +136,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   // Returns selected view in contents view.
   views::View* GetSelectedViewInContentsView() const;
 
-  bool selected() { return selected_; }
-  void SetSelected(bool selected);
+  void OnOnSearchBoxFocusedChanged();
 
  private:
   // Updates model text and selection model with current Textfield info.
@@ -217,9 +216,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   SkColor background_color_ = kSearchBoxBackgroundDefault;
   // The current search box color.
   SkColor search_box_color_ = kDefaultSearchboxColor;
-
-  // Whether the search box is selected.
-  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };
