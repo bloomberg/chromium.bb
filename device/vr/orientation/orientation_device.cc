@@ -65,6 +65,7 @@ VROrientationDevice::VROrientationDevice(
 VROrientationDevice::~VROrientationDevice() = default;
 
 void VROrientationDevice::SensorReady(
+    device::mojom::SensorCreationResult,
     device::mojom::SensorInitParamsPtr params) {
   if (!params) {
     // This means that there are no orientation sensors on this device.

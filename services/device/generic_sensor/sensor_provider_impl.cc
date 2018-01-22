@@ -59,12 +59,14 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
                                    GetSensorCallback callback) {
   if (!base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses) &&
       IsExtraSensorClass(type)) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojom::SensorCreationResult::ERROR_NOT_AVAILABLE,
+                            nullptr);
     return;
   }
   auto cloned_handle = provider_->CloneSharedBufferHandle();
   if (!cloned_handle.is_valid()) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojom::SensorCreationResult::ERROR_NOT_AVAILABLE,
+                            nullptr);
     return;
   }
 
@@ -87,7 +89,8 @@ void SensorProviderImpl::SensorCreated(
     GetSensorCallback callback,
     scoped_refptr<PlatformSensor> sensor) {
   if (!sensor) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojom::SensorCreationResult::ERROR_NOT_AVAILABLE,
+                            nullptr);
     return;
   }
 
@@ -133,7 +136,8 @@ void SensorProviderImpl::SensorCreated(
   DCHECK_GT(init_params->minimum_frequency, 0.0);
   DCHECK_GE(init_params->maximum_frequency, init_params->minimum_frequency);
 
-  std::move(callback).Run(std::move(init_params));
+  std::move(callback).Run(mojom::SensorCreationResult::SUCCESS,
+                          std::move(init_params));
 }
 
 }  // namespace device

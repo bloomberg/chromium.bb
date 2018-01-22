@@ -19,7 +19,23 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading, feature
 
       sensorObject.onerror = wrapper.callback;
     });
-  }, `${sensorType.name}: Test that onerror is send when sensor is not supported.`);
+  }, `${sensorType.name}: Test that onerror is sent when sensor is not supported.`);
+
+  sensor_test(sensor => {
+    sensor.mockSensorProvider.setPermissionsDenied(true);
+    let sensorObject = new sensorType;
+    sensorObject.start();
+    return new Promise((resolve, reject) => {
+      let wrapper = new CallbackWrapper(event => {
+        assert_false(sensorObject.activated);
+        assert_equals(event.error.name, 'NotAllowedError');
+        sensorObject.onerror = null;
+        resolve();
+      }, reject);
+
+      sensorObject.onerror = wrapper.callback;
+    });
+  }, `${sensorType.name}: Test that onerror is sent when permissions are not granted.`);
 
   sensor_test(async sensor => {
     let sensorObject = new sensorType({frequency: 560});
