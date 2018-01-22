@@ -1415,6 +1415,79 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode) {
   EXPECT_FALSE(is_toggle_dev_mode_checkbox_enabled);
 }
 
+// TODO(dpapad): Remove the "_MD" suffix once the non-MD test is deleted.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode_MD) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kMaterialDesignExtensions} /* enabled */, {} /* disabled */);
+
+  // Verifies that when DeveloperToolsDisabled policy is set, the "dev mode"
+  // in chrome://extensions is actively turned off and the checkbox
+  // is disabled.
+  // Note: We don't test the indicator as it is tested in the policy pref test
+  // for kDeveloperToolsDisabled.
+
+  // This test depends on the following helper methods to locate the DOM elemens
+  // to be tested.
+  const char define_helpers_js[] =
+      R"(function getToolbar() {
+           const manager = document.querySelector('extensions-manager');
+           return manager.$$('extensions-toolbar');
+         }
+
+         function getToggle() {
+           return getToolbar().$$('#dev-mode');
+         }
+
+         function getControls() {
+           return getToolbar().$$('#devDrawer');
+         }
+        )";
+
+  const char toggle_dev_mode_accessor_js[] = "getToggle()";
+  const char dev_controls_accessor_js[] = "getControls()";
+  const char dev_controls_visibility_check_js[] =
+      "getControls().hasAttribute('expanded')";
+
+  // Navigate to the extensions frame and enabled "Developer mode"
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      content::ExecuteScript(contents, base::StringPrintf(define_helpers_js)));
+
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, base::StringPrintf("domAutomationController.send(%s.click());",
+                                   toggle_dev_mode_accessor_js)));
+
+  WaitForExtensionsDevModeControlsVisibility(contents, dev_controls_accessor_js,
+                                             dev_controls_visibility_check_js,
+                                             true);
+
+  // Disable devtools via policy.
+  PolicyMap policies;
+  policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+
+  // Expect devcontrols to be hidden now...
+  WaitForExtensionsDevModeControlsVisibility(contents, dev_controls_accessor_js,
+                                             dev_controls_visibility_check_js,
+                                             false);
+
+  // ... and checkbox is disabled
+  bool is_toggle_dev_mode_checkbox_disabled = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      base::StringPrintf(
+          "domAutomationController.send(%s.hasAttribute('disabled'))",
+          toggle_dev_mode_accessor_js),
+      &is_toggle_dev_mode_checkbox_disabled));
+  EXPECT_TRUE(is_toggle_dev_mode_checkbox_disabled);
+}
+
 // TODO(samarth): remove along with rest of NTP4 code.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
   // Verifies that the web store icons can be hidden from the new tab page.
