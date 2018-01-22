@@ -681,10 +681,6 @@ split_static_library("browser") {
     "media/webrtc/native_desktop_media_list.h",
     "media/webrtc/permission_bubble_media_access_handler.cc",
     "media/webrtc/permission_bubble_media_access_handler.h",
-
-    # TODO(brettw) should this go with the webrtc sources?
-    "media/webrtc/webrtc_log_list.cc",
-    "media/webrtc/webrtc_log_list.h",
     "media/webrtc/window_icon_util.h",
     "media/webrtc/window_icon_util_chromeos.cc",
     "media/webrtc/window_icon_util_mac.mm",
@@ -4108,8 +4104,6 @@ split_static_library("browser") {
     sources += [
       "media/webrtc/audio_debug_recordings_handler.cc",
       "media/webrtc/audio_debug_recordings_handler.h",
-
-      # TODO(brettw) should webrtc_log_list.cc go here?
       "media/webrtc/webrtc_log_uploader.cc",
       "media/webrtc/webrtc_log_uploader.h",
       "media/webrtc/webrtc_log_util.cc",
@@ -4124,6 +4118,8 @@ split_static_library("browser") {
       "media/webrtc/webrtc_text_log_handler.h",
     ]
     deps += [
+      "//components/webrtc_logging/browser",
+      "//components/webrtc_logging/common",
       "//third_party/webrtc/modules/desktop_capture",
       "//third_party/webrtc_overrides",
       "//third_party/webrtc_overrides:init_webrtc",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/webrtc/webrtc_log_util.h"
+#include "components/webrtc_logging/browser/log_cleanup.h"
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -12,11 +12,17 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace webrtc_logging {
+
+namespace {
+
 const int kExpectedDaysToKeepLogFiles = 5;
 
-class WebRtcLogUtilTest : public testing::Test {
+}  // namespace
+
+class WebRtcLogCleanupTest : public testing::Test {
  public:
-  WebRtcLogUtilTest() = default;
+  WebRtcLogCleanupTest() = default;
 
   void SetUp() override {
     // Create three files. One with modified date as of now, one with date one
@@ -55,15 +61,16 @@ class WebRtcLogUtilTest : public testing::Test {
   base::ScopedTempDir dir_;
 };
 
-TEST_F(WebRtcLogUtilTest, DeleteOldWebRtcLogFiles) {
-  WebRtcLogUtil::DeleteOldWebRtcLogFiles(dir_.GetPath());
+TEST_F(WebRtcLogCleanupTest, DeleteOldWebRtcLogFiles) {
+  DeleteOldWebRtcLogFiles(dir_.GetPath());
   VerifyFiles(2);
 }
 
-TEST_F(WebRtcLogUtilTest, DeleteOldAndRecentWebRtcLogFiles) {
+TEST_F(WebRtcLogCleanupTest, DeleteOldAndRecentWebRtcLogFiles) {
   base::Time time_begin_delete =
       base::Time::Now() - base::TimeDelta::FromDays(1);
-  WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(dir_.GetPath(),
-                                                  time_begin_delete);
+  DeleteOldAndRecentWebRtcLogFiles(dir_.GetPath(), time_begin_delete);
   VerifyFiles(1);
 }
+
+}  // namespace webrtc_logging

@@ -18,10 +18,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/webrtc/webrtc_log_list.h"
-#include "chrome/browser/media/webrtc/webrtc_log_util.h"
-#include "chrome/common/partial_circular_buffer.h"
 #include "components/version_info/version_info.h"
+#include "components/webrtc_logging/browser/log_cleanup.h"
+#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -121,7 +121,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
   std::string local_log_id;
 
   if (base::PathExists(upload_done_data.log_path)) {
-    WebRtcLogUtil::DeleteOldWebRtcLogFiles(upload_done_data.log_path);
+    webrtc_logging::DeleteOldWebRtcLogFiles(upload_done_data.log_path);
 
     local_log_id = base::NumberToString(base::Time::Now().ToDoubleT());
     base::FilePath log_file_path =
@@ -130,7 +130,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     WriteCompressedLogToFile(compressed_log, log_file_path);
 
     base::FilePath log_list_path =
-        WebRtcLogList::GetWebRtcLogListFileForDirectory(
+        webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
             upload_done_data.log_path);
     AddLocallyStoredLogInfoToUploadListFile(log_list_path, local_log_id);
   }
@@ -235,10 +235,11 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
   DCHECK(log_buffer.get());
   DCHECK(!log_paths.log_path.empty());
 
-  WebRtcLogUtil::DeleteOldWebRtcLogFiles(log_paths.log_path);
+  webrtc_logging::DeleteOldWebRtcLogFiles(log_paths.log_path);
 
   base::FilePath log_list_path =
-      WebRtcLogList::GetWebRtcLogListFileForDirectory(log_paths.log_path);
+      webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
+          log_paths.log_path);
 
   // Store the native log with a ".gz" extension.
   std::string compressed_log;
@@ -306,7 +307,8 @@ void WebRtcLogUploader::OnURLFetchComplete(
         !it->second.log_path.empty()) {
       // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
       base::FilePath log_list_path =
-          WebRtcLogList::GetWebRtcLogListFileForDirectory(it->second.log_path);
+          webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
+              it->second.log_path);
       background_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
@@ -395,7 +397,7 @@ void WebRtcLogUploader::CompressLog(std::string* compressed_log,
   ResizeForNextOutput(compressed_log, &stream);
   uint32_t read = 0;
 
-  PartialCircularBuffer read_buffer(buffer->Read());
+  webrtc_logging::PartialCircularBuffer read_buffer(buffer->Read());
   do {
     if (stream.avail_in == 0) {
       read = read_buffer.Read(&intermediate_buffer[0],

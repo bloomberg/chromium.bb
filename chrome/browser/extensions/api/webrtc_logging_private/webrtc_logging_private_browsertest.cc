@@ -7,8 +7,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/webrtc_logging/browser/log_list.h"
 
 class WebrtcLoggingPrivateApiBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -17,7 +17,7 @@ class WebrtcLoggingPrivateApiBrowserTest
   ~WebrtcLoggingPrivateApiBrowserTest() override = default;
 
   base::FilePath webrtc_logs_path() {
-    return WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
+    return webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
         profile()->GetPath());
   }
 

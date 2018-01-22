@@ -2558,7 +2558,6 @@ test("unit_tests") {
     "../common/origin_trials/chrome_origin_trial_policy_unittest.cc",
     "../common/page_load_metrics/test/weak_mock_timer.cc",
     "../common/page_load_metrics/test/weak_mock_timer.h",
-    "../common/partial_circular_buffer_unittest.cc",
     "../common/pref_names_util_unittest.cc",
     "../common/secure_origin_whitelist_unittest.cc",
     "../renderer/app_categorizer_unittest.cc",
@@ -3736,7 +3735,6 @@ test("unit_tests") {
   if (enable_webrtc) {
     sources += [
       "../browser/media/webrtc/webrtc_log_uploader_unittest.cc",
-      "../browser/media/webrtc/webrtc_log_util_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_handler_unittest.cc",
       "../browser/media/webrtc/webrtc_rtp_dump_writer_unittest.cc",
       "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",

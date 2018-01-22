@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOG_LIST_H_
-#define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOG_LIST_H_
+#ifndef COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_
+#define COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_
 
 #include "base/files/file_path.h"
 
@@ -13,7 +13,9 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-class WebRtcLogList {
+namespace webrtc_logging {
+
+class LogList {
  public:
   // Creates the upload list with the given callback delegate for a
   // browser context. The upload list loads and parses a text file list of
@@ -32,4 +34,6 @@ class WebRtcLogList {
       const base::FilePath& dir);
 };
 
-#endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOG_LIST_H_
+}  // namespace webrtc_logging
+
+#endif  // COMPONENTS_WEBRTC_LOGGING_BROWSER_LOG_LIST_H_

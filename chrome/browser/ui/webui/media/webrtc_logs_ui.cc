@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -27,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/upload_list/upload_list.h"
 #include "components/version_info/version_info.h"
+#include "components/webrtc_logging/browser/log_list.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -110,11 +110,12 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler {
 };
 
 WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
-    : log_dir_(WebRtcLogList::GetWebRtcLogDirectoryForBrowserContextPath(
-          profile->GetPath())),
+    : log_dir_(
+          webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
+              profile->GetPath())),
       list_available_(false),
       js_request_pending_(false) {
-  upload_list_ = WebRtcLogList::CreateWebRtcLogList(profile);
+  upload_list_ = webrtc_logging::LogList::CreateWebRtcLogList(profile);
 }
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {

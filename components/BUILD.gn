@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
+import("//media/media_options.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//testing/test.gni")
@@ -321,6 +322,13 @@ test("components_unittests") {
     deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
+  }
+
+  if (enable_webrtc && !is_ios) {
+    deps += [
+      "//components/webrtc_logging/browser:unit_tests",
+      "//components/webrtc_logging/common:unit_tests",
+    ]
   }
 
   # No components should depend on Chrome.

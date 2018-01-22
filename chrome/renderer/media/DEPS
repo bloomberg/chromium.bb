@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/webrtc_logging/common",
   "+media/audio",  # For basic audio functions.
   "+media/video",  # For basic video functions.
   "+media/base",  # For basic media functions.

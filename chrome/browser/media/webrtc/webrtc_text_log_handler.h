@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
-#include "chrome/common/partial_circular_buffer.h"
+#include "components/webrtc_logging/common/partial_circular_buffer.h"
 #include "net/base/network_interfaces.h"
 
 #if defined(OS_ANDROID)
@@ -36,7 +36,7 @@ class WebRtcLogBuffer {
   // Must only be called after the log has been marked as complete
   // (see SetComplete) and the caller must ensure that the WebRtcLogBuffer
   // instance remains in scope for the lifetime of the returned circular buffer.
-  PartialCircularBuffer Read();
+  webrtc_logging::PartialCircularBuffer Read();
 
   // Switches the buffer to read-only mode, where access to the internal
   // buffer is allowed from different threads than were used to contribute
@@ -48,7 +48,7 @@ class WebRtcLogBuffer {
  private:
   base::ThreadChecker thread_checker_;
   uint8_t buffer_[kWebRtcLogSize];
-  PartialCircularBuffer circular_;
+  webrtc_logging::PartialCircularBuffer circular_;
   bool read_only_;
 };
 
