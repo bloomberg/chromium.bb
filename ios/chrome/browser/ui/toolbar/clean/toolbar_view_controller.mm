@@ -241,6 +241,7 @@
 - (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
   self.view.backgroundView.alpha = alpha;
   self.view.shadowView.alpha = 1 - alpha;
+  self.view.progressBar.alpha = 1 - alpha;
 }
 
 - (void)showPrerenderingAnimation {
