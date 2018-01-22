@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -243,9 +244,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
       DBusMethodCallback<power_manager::PowerManagementPolicy::Delays>
           callback) = 0;
 
-  // Returns a callback that can be called by an observer to report
-  // readiness for suspend.  See Observer::SuspendImminent().
-  virtual base::Closure GetSuspendReadinessCallback() = 0;
+  // Returns a callback that can be called by an observer to report readiness
+  // for suspend. See Observer::SuspendImminent().
+  virtual base::Closure GetSuspendReadinessCallback(
+      const base::Location& from_where) = 0;
 
   // Returns the number of callbacks returned by GetSuspendReadinessCallback()
   // for the current suspend attempt but not yet called. Used by tests.
