@@ -19,6 +19,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/ng/ng_paint_fragment.h"
+#include "platform/PlatformChromeClient.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/wtf/Optional.h"
 
@@ -449,6 +450,23 @@ void PaintInvalidator::InvalidatePaint(
   }
 }
 
+static void InvalidateChromeClient(
+    const LayoutBoxModelObject& paint_invalidation_container) {
+  if (paint_invalidation_container.GetDocument().Printing() &&
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
+    return;
+
+  DCHECK(paint_invalidation_container.IsLayoutView());
+  DCHECK(!paint_invalidation_container.IsPaintInvalidationContainer());
+
+  auto* frame_view = paint_invalidation_container.GetFrameView();
+  DCHECK(!frame_view->GetFrame().OwnerLayoutObject());
+  if (auto* client = frame_view->GetChromeClient()) {
+    client->InvalidateRect(
+        frame_view->ContentsToFrame(frame_view->VisibleContentRect()));
+  }
+}
+
 void PaintInvalidator::UpdateEmptyVisualRectFlag(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
@@ -596,6 +614,17 @@ void PaintInvalidator::InvalidatePaint(
     // requirement to the subtree.
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeVisualRectUpdate;
   }
+
+  // The object is under a frame for WebViewPlugin, SVG images etc. Need to
+  // inform the chrome client of the invalidation so that the client will
+  // initiate painting of the contents. For SPv1 this is done by
+  // ObjectPaintInvalidator::InvalidatePaintUsingContainer().
+  // TODO(wangxianzhu): Do we need this for SPv2?
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !context.paint_invalidation_container->IsPaintInvalidationContainer() &&
+      object.GetPaintInvalidationReason() != PaintInvalidationReason::kNone)
+    InvalidateChromeClient(*context.paint_invalidation_container);
 }
 
 void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {

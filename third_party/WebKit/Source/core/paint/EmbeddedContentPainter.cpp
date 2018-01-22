@@ -74,25 +74,39 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
     return;
 
   if (layout_embedded_content_.GetEmbeddedContentView()) {
+    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     Optional<RoundedInnerRectClipper> clipper;
     if (layout_embedded_content_.Style()->HasBorderRadius()) {
       if (border_rect.IsEmpty())
         return;
 
-      FloatRoundedRect rounded_inner_rect =
-          layout_embedded_content_.Style()->GetRoundedInnerBorderFor(
-              border_rect,
-              LayoutRectOutsets(-(layout_embedded_content_.PaddingTop() +
-                                  layout_embedded_content_.BorderTop()),
-                                -(layout_embedded_content_.PaddingRight() +
-                                  layout_embedded_content_.BorderRight()),
-                                -(layout_embedded_content_.PaddingBottom() +
-                                  layout_embedded_content_.BorderBottom()),
-                                -(layout_embedded_content_.PaddingLeft() +
-                                  layout_embedded_content_.BorderLeft())),
-              true, true);
-      clipper.emplace(layout_embedded_content_, local_paint_info, border_rect,
-                      rounded_inner_rect, kApplyToDisplayList);
+      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        const auto* fragment =
+            local_paint_info.FragmentToPaint(layout_embedded_content_);
+        if (!fragment)
+          return;
+        const auto* properties = fragment->PaintProperties();
+        DCHECK(properties && properties->InnerBorderRadiusClip());
+        scoped_paint_chunk_properties.emplace(
+            local_paint_info.context.GetPaintController(),
+            properties->InnerBorderRadiusClip(), layout_embedded_content_,
+            DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+      } else {
+        FloatRoundedRect rounded_inner_rect =
+            layout_embedded_content_.Style()->GetRoundedInnerBorderFor(
+                border_rect,
+                LayoutRectOutsets(-(layout_embedded_content_.PaddingTop() +
+                                    layout_embedded_content_.BorderTop()),
+                                  -(layout_embedded_content_.PaddingRight() +
+                                    layout_embedded_content_.BorderRight()),
+                                  -(layout_embedded_content_.PaddingBottom() +
+                                    layout_embedded_content_.BorderBottom()),
+                                  -(layout_embedded_content_.PaddingLeft() +
+                                    layout_embedded_content_.BorderLeft())),
+                true, true);
+        clipper.emplace(layout_embedded_content_, local_paint_info, border_rect,
+                        rounded_inner_rect, kApplyToDisplayList);
+      }
     }
 
     layout_embedded_content_.PaintContents(local_paint_info, paint_offset);
