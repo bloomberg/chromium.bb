@@ -149,8 +149,8 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
   if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady()) {
     worklet_backing_thread_ = Context()->audioWorklet()->GetBackingThread();
   } else {
-    render_thread_ =
-        Platform::Current()->CreateThread("offline audio renderer");
+    render_thread_ = Platform::Current()->CreateThread(
+        WebThreadCreationParams("offline audio renderer"));
   }
 
   render_target_ = render_target;

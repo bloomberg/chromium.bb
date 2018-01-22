@@ -72,8 +72,9 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
         AudioHardwareSampleRate(), buffer_size);
   }
 
-  std::unique_ptr<WebThread> CreateThread(const char* name) override {
-    return old_platform_->CreateThread(name);
+  std::unique_ptr<WebThread> CreateThread(
+      const WebThreadCreationParams& params) override {
+    return old_platform_->CreateThread(params);
   }
 
   double AudioHardwareSampleRate() override { return 44100; }

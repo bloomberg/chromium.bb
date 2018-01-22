@@ -51,8 +51,8 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     ThreadableLoadingContext* loading_context,
     DedicatedWorkerObjectProxy& worker_object_proxy)
     : WorkerThread(loading_context, worker_object_proxy),
-      worker_backing_thread_(
-          WorkerBackingThread::Create("DedicatedWorker Thread")),
+      worker_backing_thread_(WorkerBackingThread::Create(
+          WebThreadCreationParams("DedicatedWorker Thread"))),
       worker_object_proxy_(worker_object_proxy) {}
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;

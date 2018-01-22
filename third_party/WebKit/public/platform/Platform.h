@@ -135,6 +135,7 @@ struct WebFloatPoint;
 class WebTaskRunner;
 class WebThemeEngine;
 class WebThread;
+struct WebThreadCreationParams;
 class WebTrialTokenValidator;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
@@ -405,7 +406,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Threads -------------------------------------------------------
 
   // Creates an embedder-defined thread.
-  virtual std::unique_ptr<WebThread> CreateThread(const char* name);
+  virtual std::unique_ptr<WebThread> CreateThread(
+      const WebThreadCreationParams&);
 
   // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
   // for any other purpose.

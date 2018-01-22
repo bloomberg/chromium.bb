@@ -69,7 +69,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   static void EnsureSharedBackingThread() {
     DCHECK(IsMainThread());
     WorkletThreadHolder<ThreadedWorkletThreadForTest>::CreateForTest(
-        "ThreadedWorkletThreadForTest");
+        WebThreadCreationParams("ThreadedWorkletThreadForTest"));
   }
 
   static void ClearSharedBackingThread() {

@@ -369,10 +369,10 @@ WebString BlinkPlatformImpl::UserAgent() {
 }
 
 std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateThread(
-    const char* name) {
+    const blink::WebThreadCreationParams& params) {
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =
       blink::scheduler::WebThreadBase::CreateWorkerThread(
-          name, base::Thread::Options());
+          params.name, base::Thread::Options());
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
   return std::move(thread);

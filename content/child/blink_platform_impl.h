@@ -78,7 +78,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   bool IsLowEndDevice() override;
   uint32_t GetUniqueIdForProcess() override;
   blink::WebString UserAgent() override;
-  std::unique_ptr<blink::WebThread> CreateThread(const char* name) override;
+  std::unique_ptr<blink::WebThread> CreateThread(
+      const blink::WebThreadCreationParams& params) override;
   std::unique_ptr<blink::WebThread> CreateWebAudioThread() override;
   blink::WebThread* CurrentThread() override;
   void RecordAction(const blink::UserMetricsAction&) override;

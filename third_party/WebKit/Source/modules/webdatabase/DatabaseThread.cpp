@@ -59,7 +59,8 @@ void DatabaseThread::Start() {
   DCHECK(IsMainThread());
   if (thread_)
     return;
-  thread_ = WebThreadSupportingGC::Create("WebCore: Database");
+  thread_ = WebThreadSupportingGC::Create(
+      WebThreadCreationParams("WebCore: Database"));
   thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&DatabaseThread::SetupDatabaseThread,
                                     WrapCrossThreadPersistent(this)));
