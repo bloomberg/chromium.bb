@@ -50,13 +50,3 @@ source_set("bookmarks_utils") {
     "//ios/chrome/browser/browser_state",
   ]
 }
-
-source_set("features") {
-  sources = [
-    "bookmark_new_generation_features.cc",
-    "bookmark_new_generation_features.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
