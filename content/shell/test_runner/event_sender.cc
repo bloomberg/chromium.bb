@@ -41,6 +41,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -619,6 +620,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void MouseScrollBy(gin::Arguments* args);
   void ScheduleAsynchronousClick(gin::Arguments* args);
   void ScheduleAsynchronousKeyDown(gin::Arguments* args);
+  void ConsumeUserActivation();
   void MouseDown(gin::Arguments* args);
   void MouseUp(gin::Arguments* args);
   void SetMouseButtonState(gin::Arguments* args);
@@ -753,6 +755,8 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
                  &EventSenderBindings::ScheduleAsynchronousClick)
       .SetMethod("scheduleAsynchronousKeyDown",
                  &EventSenderBindings::ScheduleAsynchronousKeyDown)
+      .SetMethod("consumeUserActivation",
+                 &EventSenderBindings::ConsumeUserActivation)
       .SetProperty("forceLayoutOnEvents",
                    &EventSenderBindings::ForceLayoutOnEvents,
                    &EventSenderBindings::SetForceLayoutOnEvents)
@@ -1070,6 +1074,11 @@ void EventSenderBindings::ScheduleAsynchronousKeyDown(gin::Arguments* args) {
   }
   sender_->ScheduleAsynchronousKeyDown(code_str, modifiers,
                                        static_cast<KeyLocationCode>(location));
+}
+
+void EventSenderBindings::ConsumeUserActivation() {
+  if (sender_)
+    sender_->ConsumeUserActivation();
 }
 
 void EventSenderBindings::MouseDown(gin::Arguments* args) {
@@ -2256,6 +2265,11 @@ void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
   delegate()->PostTask(base::Bind(&EventSender::KeyDown,
                                   weak_factory_.GetWeakPtr(), code_str,
                                   modifiers, location));
+}
+
+void EventSender::ConsumeUserActivation() {
+  blink::WebUserGestureIndicator::ConsumeUserGesture(
+      view()->MainFrame()->ToWebLocalFrame());
 }
 
 double EventSender::GetCurrentEventTimeSec() {

@@ -172,6 +172,9 @@ class EventSender {
   void ScheduleAsynchronousKeyDown(const std::string& code_str,
                                    int modifiers,
                                    KeyLocationCode location);
+  // Consumes the transient user activation state for follow-up tests that don't
+  // expect it.
+  void ConsumeUserActivation();
 
   double GetCurrentEventTimeSec();
 

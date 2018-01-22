@@ -333,6 +333,8 @@ var testsWithUserGesture = [
     // Test that play() on an element when media playback requires a gesture
     // returns a rejected promise if there is no user gesture.
     function playRequiresUserGestureAndDoesNotHaveIt(t, audio) {
+        // Consume transient user activation triggered in the previous test.
+        eventSender.consumeUserActivation();
         audio.src = findMediaFile("audio", "content/test");
         playExpectingRejectedPromise(t, audio, "NotAllowedError");
     }
