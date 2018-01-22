@@ -20,10 +20,6 @@ void ContentDecryptionModule::GetStatusForPolicy(
                   "GetStatusForPolicy() is not supported.");
 }
 
-CdmContext* ContentDecryptionModule::GetCdmContext() {
-  return nullptr;
-}
-
 void ContentDecryptionModule::DeleteOnCorrectThread() const {
   delete this;
 }

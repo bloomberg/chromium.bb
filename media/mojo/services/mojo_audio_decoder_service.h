@@ -17,7 +17,7 @@
 
 namespace media {
 
-class ContentDecryptionModule;
+class CdmContextRef;
 class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 
@@ -42,9 +42,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
 
  private:
   // Called by |decoder_| upon finishing initialization.
-  void OnInitialized(InitializeCallback callback,
-                     scoped_refptr<ContentDecryptionModule> cdm,
-                     bool success);
+  void OnInitialized(InitializeCallback callback, bool success);
 
   // Called by |mojo_decoder_buffer_reader_| when read is finished.
   void OnReadDone(DecodeCallback callback, scoped_refptr<DecoderBuffer> buffer);
@@ -69,9 +67,9 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   // The destination for the decoded buffers.
   mojom::AudioDecoderClientAssociatedPtr client_;
 
-  // Hold a reference to the CDM to keep it alive for the lifetime of the
-  // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.
-  scoped_refptr<ContentDecryptionModule> cdm_;
+  // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
+  // the |decoder_|.
+  std::unique_ptr<CdmContextRef> cdm_context_ref_;
 
   // The AudioDecoder that does actual decoding work.
   // This MUST be declared after |cdm_| to maintain correct destruction order.
