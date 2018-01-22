@@ -72,11 +72,10 @@ class StyleFetchedImageSet final : public StyleImage,
   bool UsesImageContainerSize() const override;
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
-  scoped_refptr<Image> GetImage(
-      const ImageResourceObserver&,
-      const Document&,
-      const ComputedStyle&,
-      const LayoutSize& container_size) const override;
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const FloatSize& target_size) const override;
   float ImageScaleFactor() const override { return image_scale_factor_; }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;

@@ -72,9 +72,9 @@ scoped_refptr<Image> StyleGeneratedImage::GetImage(
     const ImageResourceObserver& observer,
     const Document& document,
     const ComputedStyle& style,
-    const LayoutSize& container_size) const {
+    const FloatSize& target_size) const {
   return image_generator_value_->GetImage(observer, document, style,
-                                          container_size);
+                                          target_size);
 }
 
 bool StyleGeneratedImage::KnownToBeOpaque(const Document& document,

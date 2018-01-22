@@ -65,7 +65,7 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
   if (style_image_->IsPendingImage())
     return nullptr;
   return style_image_->GetImage(*layout_object_, layout_object_->GetDocument(),
-                                layout_object_->StyleRef(), size);
+                                layout_object_->StyleRef(), FloatSize(size));
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {

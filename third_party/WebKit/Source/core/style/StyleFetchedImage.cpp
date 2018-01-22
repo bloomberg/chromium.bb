@@ -130,11 +130,11 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ImageResourceObserver&,
     const Document&,
     const ComputedStyle& style,
-    const LayoutSize& container_size) const {
+    const FloatSize& target_size) const {
   Image* image = image_->GetImage();
   if (!image->IsSVGImage())
     return image;
-  return SVGImageForContainer::Create(ToSVGImage(image), container_size,
+  return SVGImageForContainer::Create(ToSVGImage(image), target_size,
                                       style.EffectiveZoom(), url_);
 }
 

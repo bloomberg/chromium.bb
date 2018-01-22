@@ -158,7 +158,7 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
     url = node->GetDocument().CompleteURL(url_string);
   }
   return SVGImageForContainer::Create(
-      ToSVGImage(image), container_size,
+      ToSVGImage(image), FloatSize(container_size),
       layout_object_->StyleRef().EffectiveZoom(), url);
 }
 
