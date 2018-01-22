@@ -69,7 +69,8 @@ class TraceWrapperV8Reference {
  private:
   inline void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
     handle_.Reset(isolate, handle);
-    ScriptWrappableVisitor::WriteBarrier(isolate, UnsafeCast<v8::Value>());
+    ScriptWrappableMarkingVisitor::WriteBarrier(isolate,
+                                                UnsafeCast<v8::Value>());
   }
 
   v8::Persistent<T> handle_;

@@ -35,10 +35,12 @@ static bool DequeContains(const WTF::Deque<WrapperMarkingData>& deque,
   return false;
 }
 
-TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
+TEST(ScriptWrappableMarkingVisitorTest,
+     ScriptWrappableMarkingVisitorTracesWrappers) {
   V8TestingScope scope;
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
   DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::Create();
   target->SetWrappedDependency(dependency);
@@ -70,7 +72,8 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   visitor->AbortTracing();
 }
 
-TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
+TEST(ScriptWrappableMarkingVisitorTest,
+     OilpanCollectObjectsNotReachableFromV8) {
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
 
@@ -90,7 +93,8 @@ TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
   EXPECT_TRUE(DeathAwareScriptWrappable::HasDied());
 }
 
-TEST(ScriptWrappableVisitorTest, OilpanDoesntCollectObjectsReachableFromV8) {
+TEST(ScriptWrappableMarkingVisitorTest,
+     OilpanDoesntCollectObjectsReachableFromV8) {
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -107,7 +111,7 @@ TEST(ScriptWrappableVisitorTest, OilpanDoesntCollectObjectsReachableFromV8) {
   EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
 }
 
-TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
+TEST(ScriptWrappableMarkingVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -130,7 +134,7 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
   EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
 }
 
-TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
+TEST(ScriptWrappableMarkingVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -146,12 +150,13 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
   EXPECT_FALSE(DeathAwareScriptWrappable::HasDied());
 }
 
-TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
+TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   V8TestingScope scope;
 
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
   auto header = HeapObjectHeader::FromPayload(object);
   visitor->HeadersToUnmark()->push_back(header);
@@ -162,12 +167,14 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   visitor->AbortTracing();
 }
 
-TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
+TEST(ScriptWrappableMarkingVisitorTest,
+     OilpanClearsMarkingDequeWhenObjectDied) {
   V8TestingScope scope;
 
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
 
   visitor->TraceWrappersWithManualWriteBarrier(object);
@@ -181,12 +188,13 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
   visitor->AbortTracing();
 }
 
-TEST(ScriptWrappableVisitorTest,
+TEST(ScriptWrappableMarkingVisitorTest,
      MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
   V8TestingScope scope;
 
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
@@ -209,12 +217,13 @@ TEST(ScriptWrappableVisitorTest,
   visitor->AbortTracing();
 }
 
-TEST(ScriptWrappableVisitorTest,
+TEST(ScriptWrappableMarkingVisitorTest,
      MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked) {
   V8TestingScope scope;
 
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
@@ -261,12 +270,13 @@ class HandleContainer
   TraceWrapperV8Reference<v8::String> handle_;
 };
 
-class InterceptingScriptWrappableVisitor
-    : public blink::ScriptWrappableVisitor {
+class InterceptingScriptWrappableMarkingVisitor
+    : public blink::ScriptWrappableMarkingVisitor {
  public:
-  InterceptingScriptWrappableVisitor(v8::Isolate* isolate)
-      : ScriptWrappableVisitor(isolate), marked_wrappers_(new size_t(0)) {}
-  ~InterceptingScriptWrappableVisitor() { delete marked_wrappers_; }
+  InterceptingScriptWrappableMarkingVisitor(v8::Isolate* isolate)
+      : ScriptWrappableMarkingVisitor(isolate),
+        marked_wrappers_(new size_t(0)) {}
+  ~InterceptingScriptWrappableMarkingVisitor() { delete marked_wrappers_; }
 
   void Visit(const TraceWrapperV8Reference<v8::Value>&) const override {
     *marked_wrappers_ += 1;
@@ -291,33 +301,36 @@ class InterceptingScriptWrappableVisitor
   size_t* marked_wrappers_;  // Indirection required because of const override.
 };
 
-class InterceptingScriptWrappableVisitorScope
+class InterceptingScriptWrappableMarkingVisitorScope
     : public V8PerIsolateData::TemporaryScriptWrappableVisitorScope {
-  WTF_MAKE_NONCOPYABLE(InterceptingScriptWrappableVisitorScope);
+  WTF_MAKE_NONCOPYABLE(InterceptingScriptWrappableMarkingVisitorScope);
   STACK_ALLOCATED();
 
  public:
-  InterceptingScriptWrappableVisitorScope(v8::Isolate* isolate)
+  InterceptingScriptWrappableMarkingVisitorScope(v8::Isolate* isolate)
       : V8PerIsolateData::TemporaryScriptWrappableVisitorScope(
             isolate,
-            std::unique_ptr<InterceptingScriptWrappableVisitor>(
-                new InterceptingScriptWrappableVisitor(isolate))) {
+            std::unique_ptr<InterceptingScriptWrappableMarkingVisitor>(
+                new InterceptingScriptWrappableMarkingVisitor(isolate))) {
     Visitor()->Start();
   }
 
-  virtual ~InterceptingScriptWrappableVisitorScope() { Visitor()->end(); }
+  virtual ~InterceptingScriptWrappableMarkingVisitorScope() {
+    Visitor()->end();
+  }
 
-  InterceptingScriptWrappableVisitor* Visitor() {
-    return reinterpret_cast<InterceptingScriptWrappableVisitor*>(
+  InterceptingScriptWrappableMarkingVisitor* Visitor() {
+    return reinterpret_cast<InterceptingScriptWrappableMarkingVisitor*>(
         CurrentVisitor());
   }
 };
 
 }  // namespace
 
-TEST(ScriptWrappableVisitorTest, WriteBarrierOnUnmarkedContainer) {
+TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnUnmarkedContainer) {
   V8TestingScope scope;
-  InterceptingScriptWrappableVisitorScope visitor_scope(scope.GetIsolate());
+  InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
+      scope.GetIsolate());
   auto* raw_visitor = visitor_scope.Visitor();
 
   v8::Local<v8::String> str =
@@ -332,9 +345,10 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierOnUnmarkedContainer) {
   CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
 }
 
-TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
+TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   V8TestingScope scope;
-  InterceptingScriptWrappableVisitorScope visitor_scope(scope.GetIsolate());
+  InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
+      scope.GetIsolate());
   auto* raw_visitor = visitor_scope.Visitor();
 
   v8::Local<v8::String> str =
@@ -348,23 +362,24 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
 }
 
-TEST(ScriptWrappableVisitorTest, VtableAtObjectStart) {
+TEST(ScriptWrappableMarkingVisitorTest, VtableAtObjectStart) {
   // This test makes sure that the subobject v8::EmbedderHeapTracer is placed
-  // at the start of a ScriptWrappableVisitor object. We do this to mitigate
-  // potential problems that could be caused by LTO when passing
+  // at the start of a ScriptWrappableMarkingVisitor object. We do this to
+  // mitigate potential problems that could be caused by LTO when passing
   // v8::EmbedderHeapTracer across the API boundary.
   V8TestingScope scope;
-  std::unique_ptr<blink::ScriptWrappableVisitor> visitor(
-      new ScriptWrappableVisitor(scope.GetIsolate()));
+  std::unique_ptr<blink::ScriptWrappableMarkingVisitor> visitor(
+      new ScriptWrappableMarkingVisitor(scope.GetIsolate()));
   CHECK_EQ(
       static_cast<void*>(visitor.get()),
       static_cast<void*>(dynamic_cast<v8::EmbedderHeapTracer*>(visitor.get())));
 }
 
-TEST(ScriptWrappableVisitor, WriteBarrierForScriptWrappable) {
+TEST(ScriptWrappableMarkingVisitor, WriteBarrierForScriptWrappable) {
   // Regression test for crbug.com/702490.
   V8TestingScope scope;
-  InterceptingScriptWrappableVisitorScope visitor_scope(scope.GetIsolate());
+  InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
+      scope.GetIsolate());
   auto* raw_visitor = visitor_scope.Visitor();
 
   // Mark the ScriptWrappable.
@@ -385,10 +400,11 @@ TEST(ScriptWrappableVisitor, WriteBarrierForScriptWrappable) {
   CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
 }
 
-TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap1) {
+TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
   V8TestingScope scope;
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
   DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
@@ -408,10 +424,11 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap1) {
   visitor->AbortTracing();
 }
 
-TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap2) {
+TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
   V8TestingScope scope;
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
   DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
@@ -482,10 +499,11 @@ class Base : public blink::GarbageCollected<Base>,
 
 }  // namespace
 
-TEST(ScriptWrappableVisitorTest, MixinTracing) {
+TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   V8TestingScope scope;
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+  ScriptWrappableMarkingVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())
+          ->GetScriptWrappableMarkingVisitor();
 
   DeathAwareScriptWrappable* base_wrapper = DeathAwareScriptWrappable::Create();
   DeathAwareScriptWrappable* mixin_wrapper =

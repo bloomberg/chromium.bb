@@ -15,9 +15,8 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
   // For each object in the deque the verifier checks that all children of
   // the object are marked.
   ScriptWrappableVisitorVerifier(
-      v8::Isolate* isolate,
       const WTF::Deque<WrapperMarkingData>* verifier_deque)
-      : ScriptWrappableVisitor(isolate), verifier_deque_(verifier_deque) {}
+      : verifier_deque_(verifier_deque) {}
 
   void Verify() {
     for (auto& marking_data : *verifier_deque_) {

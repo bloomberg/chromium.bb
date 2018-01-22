@@ -96,14 +96,115 @@ class WrapperMarkingData {
   const void* raw_object_pointer_;
 };
 
+// Abstract visitor for wrapper references in a ScriptWrappable.
+// Usage:
+// - Define a derived class that overrides Visit(..) methods.
+// - Create an instance of the derived class: visitor.
+// - Call visitor.DispatchTraceWrappers(traceable).
+// DispatchTraceWrappers will invoke Visit() method for all
+// wrapper references in traceable.
+class PLATFORM_EXPORT ScriptWrappableVisitor {
+ public:
+  // Trace all wrappers of |tracable|.
+  //
+  // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
+  // for some reason (e.g., unions using raw pointers), see
+  // |TraceWrappersWithManualWriteBarrier()| below.
+  template <typename T>
+  void TraceWrappers(const TraceWrapperMember<T>& traceable) const {
+    static_assert(sizeof(T), "T must be fully defined");
+    Visit(traceable.Get());
+  }
+
+  // Enable partial tracing of objects. This is used when tracing interior
+  // objects without their own header.
+  template <typename T>
+  void TraceWrappers(const T& traceable) const {
+    static_assert(sizeof(T), "T must be fully defined");
+    traceable.TraceWrappers(this);
+  }
+
+  // Only called from automatically generated bindings code.
+  template <typename T>
+  void TraceWrappersFromGeneratedCode(const T* traceable) const {
+    Visit(traceable);
+  }
+
+  // Require all users of manual write barriers to make this explicit in their
+  // |TraceWrappers| definition. Be sure to add
+  // |ScriptWrappableMarkingVisitor::WriteBarrier(new_value)| after all
+  // assignments to the field. Otherwise, the objects may be collected
+  // prematurely.
+  template <typename T>
+  void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
+    Visit(traceable);
+  }
+
+  template <typename V8Type>
+  void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
+    Visit(v8reference.template Cast<v8::Value>());
+  }
+
+  // Trace wrappers in non-main worlds.
+  void TraceWrappers(DOMWrapperMap<ScriptWrappable>*,
+                     const ScriptWrappable* key) const;
+
+  virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
+  template <typename T>
+  void DispatchTraceWrappers(const Supplement<T>* traceable) const {
+    const TraceWrapperBaseForSupplement* base = traceable;
+    DispatchTraceWrappersForSupplement(base);
+  }
+  // Catch all handlers needed because of mixins except for Supplement<T>.
+  void DispatchTraceWrappers(const void*) const { CHECK(false); }
+
+ protected:
+  // The visitor interface. Derived visitors should override this
+  // function to visit V8 references and ScriptWrappables.
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const = 0;
+  virtual void Visit(const WrapperDescriptor&) const = 0;
+  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
+                     const ScriptWrappable* key) const = 0;
+
+  template <typename T>
+  static WrapperDescriptor WrapperDescriptorFor(const T* traceable) {
+    return {traceable, TraceTrait<T>::TraceMarkedWrapper,
+            TraceTrait<T>::GetHeapObjectHeader,
+            ScriptWrappableVisitor::MissedWriteBarrier<T>};
+  }
+
+ private:
+  template <typename T>
+  static NOINLINE void MissedWriteBarrier() {
+    NOTREACHED();
+  }
+
+  // Helper method to invoke the virtual Visit method with wrapper descriptor.
+  template <typename T>
+  void Visit(const T* traceable) const {
+    static_assert(sizeof(T), "T must be fully defined");
+    if (!traceable)
+      return;
+    Visit(WrapperDescriptorFor(traceable));
+  }
+
+  // Supplement-specific implementation of DispatchTraceWrappers.  The suffix of
+  // "ForSupplement" is necessary not to make this member function a candidate
+  // of overload resolutions.
+  void DispatchTraceWrappersForSupplement(
+      const TraceWrapperBaseForSupplement*) const;
+};
+
 // ScriptWrappableVisitor is used to trace through Blink's heap to find all
 // reachable wrappers. V8 calls this visitor during its garbage collection,
 // see v8::EmbedderHeapTracer.
-class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ScriptWrappableVisitor);
+class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
+    : public v8::EmbedderHeapTracer,
+      public ScriptWrappableVisitor {
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScriptWrappableMarkingVisitor);
 
  public:
-  static ScriptWrappableVisitor* CurrentVisitor(v8::Isolate*);
+  static ScriptWrappableMarkingVisitor* CurrentVisitor(v8::Isolate*);
 
   bool WrapperTracingInProgress() const { return tracing_in_progress_; }
 
@@ -140,7 +241,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
     if (TraceTrait<T>::GetHeapObjectHeader(dst_object)->IsWrapperHeaderMarked())
       return;
 
-    CurrentVisitor(thread_state->GetIsolate())->Visit(dst_object);
+    CurrentVisitor(thread_state->GetIsolate())
+        ->Visit(WrapperDescriptorFor(dst_object));
   }
 
   static void WriteBarrier(v8::Isolate*,
@@ -150,60 +252,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
                            DOMWrapperMap<ScriptWrappable>*,
                            ScriptWrappable* key);
 
-  ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
-  ~ScriptWrappableVisitor() override;
-
-  // Trace all wrappers of |t|.
-  //
-  // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
-  // for some reason (e.g., unions using raw pointers), see
-  // |TraceWrappersWithManualWriteBarrier()| below.
-  // TODO(ulan): extract TraceWrappers* methods to a general visitor interface.
-  template <typename T>
-  void TraceWrappers(const TraceWrapperMember<T>& traceable) const {
-    Visit(traceable.Get());
-  }
-
-  // Enable partial tracing of objects. This is used when tracing interior
-  // objects without their own header.
-  template <typename T>
-  void TraceWrappers(const T& traceable) const {
-    static_assert(sizeof(T), "T must be fully defined");
-    traceable.TraceWrappers(this);
-  }
-
-  // Only called from automatically generated bindings code.
-  template <typename T>
-  void TraceWrappersFromGeneratedCode(const T* traceable) const {
-    Visit(traceable);
-  }
-
-  // Require all users of manual write barriers to make this explicit in their
-  // |TraceWrappers| definition. Be sure to add
-  // |ScriptWrappableVisitor::WriteBarrier(new_value)| after all assignments to
-  // the field. Otherwise, the objects may be collected prematurely.
-  template <typename T>
-  void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
-    Visit(traceable);
-  }
-
-  template <typename V8Type>
-  void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
-    Visit(v8reference.template Cast<v8::Value>());
-  }
-
-  // Trace a wrapper in a non-main world.
-  void TraceWrappers(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) const;
-
-  virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
-  template <typename T>
-  void DispatchTraceWrappers(const Supplement<T>* traceable) const {
-    const TraceWrapperBaseForSupplement* base = traceable;
-    DispatchTraceWrappersForSupplement(base);
-  }
-  // Catch all handlers needed because of mixins except for Supplement<T>.
-  void DispatchTraceWrappers(const void*) const { CHECK(false); }
+  ScriptWrappableMarkingVisitor(v8::Isolate* isolate) : isolate_(isolate){};
+  ~ScriptWrappableMarkingVisitor() override;
 
   // v8::EmbedderHeapTracer interface.
 
@@ -219,42 +269,16 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   size_t NumberOfWrappersToTrace() override;
 
  protected:
-  // The visitor interface. Derived visitors should override this
-  // function to visit V8 references and ScriptWrappables.
-  // TODO(ulan): extract Visit methods to a general visitor interface.
-  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const;
-  virtual void Visit(const WrapperDescriptor&) const;
-  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) const;
+  // ScriptWrappableVisitor interface.
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) const override;
+  void Visit(const WrapperDescriptor&) const override;
+  void Visit(DOMWrapperMap<ScriptWrappable>*,
+             const ScriptWrappable* key) const override;
 
   v8::Isolate* isolate() const { return isolate_; }
 
  private:
-  template <typename T>
-  static NOINLINE void MissedWriteBarrier() {
-    NOTREACHED();
-  }
-
-  // Helper method to invoke the virtual Visit method with wrapper descriptor.
-  template <typename T>
-  void Visit(const T* traceable) const {
-    static_assert(sizeof(T), "T must be fully defined");
-    if (!traceable)
-      return;
-    WrapperDescriptor wrapper_descriptor = {
-        traceable, TraceTrait<T>::TraceMarkedWrapper,
-        TraceTrait<T>::GetHeapObjectHeader,
-        ScriptWrappableVisitor::MissedWriteBarrier<T>};
-    Visit(wrapper_descriptor);
-  }
-
   void MarkWrapperHeader(HeapObjectHeader*) const;
-
-  // Supplement-specific implementation of DispatchTraceWrappers.  The suffix of
-  // "ForSupplement" is necessary not to make this member function a candidate
-  // of overload resolutions.
-  void DispatchTraceWrappersForSupplement(
-      const TraceWrapperBaseForSupplement*) const;
 
   // Schedule an idle task to perform a lazy (incremental) clean up of
   // wrappers.
@@ -317,22 +341,22 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   mutable WTF::Vector<HeapObjectHeader*> headers_to_unmark_;
   v8::Isolate* isolate_;
 
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest, MixinTracing);
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest, MixinTracing);
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
                            OilpanClearsMarkingDequeWhenObjectDied);
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
-                           ScriptWrappableVisitorTracesWrappers);
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
+                           ScriptWrappableMarkingVisitorTracesWrappers);
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
                            OilpanClearsHeadersWhenObjectDied);
   FRIEND_TEST_ALL_PREFIXES(
-      ScriptWrappableVisitorTest,
+      ScriptWrappableMarkingVisitorTest,
       MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo);
   FRIEND_TEST_ALL_PREFIXES(
-      ScriptWrappableVisitorTest,
+      ScriptWrappableMarkingVisitorTest,
       MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked);
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
                            WriteBarrierOnHeapVectorSwap1);
-  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableVisitorTest,
+  FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
                            WriteBarrierOnHeapVectorSwap2);
 };
 

@@ -205,7 +205,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
    public:
     TemporaryScriptWrappableVisitorScope(
         v8::Isolate* isolate,
-        std::unique_ptr<ScriptWrappableVisitor> visitor)
+        std::unique_ptr<ScriptWrappableMarkingVisitor> visitor)
         : isolate_(isolate), saved_visitor_(std::move(visitor)) {
       SwapWithV8PerIsolateDataVisitor(saved_visitor_);
     }
@@ -213,23 +213,24 @@ class PLATFORM_EXPORT V8PerIsolateData {
       SwapWithV8PerIsolateDataVisitor(saved_visitor_);
     }
 
-    inline ScriptWrappableVisitor* CurrentVisitor() {
-      return V8PerIsolateData::From(isolate_)->GetScriptWrappableVisitor();
+    inline ScriptWrappableMarkingVisitor* CurrentVisitor() {
+      return V8PerIsolateData::From(isolate_)
+          ->GetScriptWrappableMarkingVisitor();
     }
 
    private:
     void SwapWithV8PerIsolateDataVisitor(
-        std::unique_ptr<ScriptWrappableVisitor>&);
+        std::unique_ptr<ScriptWrappableMarkingVisitor>&);
 
     v8::Isolate* isolate_;
-    std::unique_ptr<ScriptWrappableVisitor> saved_visitor_;
+    std::unique_ptr<ScriptWrappableMarkingVisitor> saved_visitor_;
   };
 
-  void SetScriptWrappableVisitor(
-      std::unique_ptr<ScriptWrappableVisitor> visitor) {
+  void SetScriptWrappableMarkingVisitor(
+      std::unique_ptr<ScriptWrappableMarkingVisitor> visitor) {
     script_wrappable_visitor_ = std::move(visitor);
   }
-  ScriptWrappableVisitor* GetScriptWrappableVisitor() {
+  ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() {
     return script_wrappable_visitor_.get();
   }
 
@@ -300,7 +301,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<Data> thread_debugger_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
-  std::unique_ptr<ScriptWrappableVisitor> script_wrappable_visitor_;
+  std::unique_ptr<ScriptWrappableMarkingVisitor> script_wrappable_visitor_;
 
   RuntimeCallStats runtime_call_stats_;
 };

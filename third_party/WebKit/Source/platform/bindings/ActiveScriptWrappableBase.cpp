@@ -21,7 +21,7 @@ ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
 
 void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     v8::Isolate* isolate,
-    ScriptWrappableVisitor* visitor) {
+    ScriptWrappableMarkingVisitor* visitor) {
   V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
   const auto* active_script_wrappables = isolate_data->ActiveScriptWrappables();
   if (!active_script_wrappables)

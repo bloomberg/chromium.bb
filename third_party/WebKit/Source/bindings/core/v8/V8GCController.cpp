@@ -123,11 +123,13 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
   v8::Isolate* isolate_;
 };
 
-class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
+// TODO(ulan): Refactor this class to derive from ScriptWrappableVisitor
+// and not rely on marking infrastructure.
+class HeapSnaphotWrapperVisitor : public ScriptWrappableMarkingVisitor,
                                   public v8::PersistentHandleVisitor {
  public:
   explicit HeapSnaphotWrapperVisitor(v8::Isolate* isolate)
-      : ScriptWrappableVisitor(isolate),
+      : ScriptWrappableMarkingVisitor(isolate),
         current_parent_(nullptr),
         only_trace_single_level_(false),
         first_script_wrappable_traced_(false) {

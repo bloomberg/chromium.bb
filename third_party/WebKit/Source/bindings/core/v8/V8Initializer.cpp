@@ -515,12 +515,12 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-  std::unique_ptr<ScriptWrappableVisitor> visitor(
-      new ScriptWrappableVisitor(isolate));
-  V8PerIsolateData::From(isolate)->SetScriptWrappableVisitor(
+  std::unique_ptr<ScriptWrappableMarkingVisitor> visitor(
+      new ScriptWrappableMarkingVisitor(isolate));
+  V8PerIsolateData::From(isolate)->SetScriptWrappableMarkingVisitor(
       std::move(visitor));
   isolate->SetEmbedderHeapTracer(
-      V8PerIsolateData::From(isolate)->GetScriptWrappableVisitor());
+      V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor());
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 
@@ -679,8 +679,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   DCHECK(ThreadState::MainThreadState());
   ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
       isolate, V8GCController::TraceDOMWrappers,
-      ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque,
-      ScriptWrappableVisitor::PerformCleanup);
+      ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableMarkingVisitor::PerformCleanup);
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
