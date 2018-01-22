@@ -179,14 +179,11 @@ bool CanBookmarkCurrentPageInternal(const Browser* browser,
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-bool GetBookmarkOverrideCommand(
-    Profile* profile,
-    const extensions::Extension** extension,
-    extensions::Command* command,
-    extensions::CommandService::ExtensionCommandType* command_type) {
+bool GetBookmarkOverrideCommand(Profile* profile,
+                                const extensions::Extension** extension,
+                                extensions::Command* command) {
   DCHECK(extension);
   DCHECK(command);
-  DCHECK(command_type);
 
   ui::Accelerator bookmark_page_accelerator =
       chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE);
@@ -201,13 +198,10 @@ bool GetBookmarkOverrideCommand(
        i != extension_set.end();
        ++i) {
     extensions::Command prospective_command;
-    extensions::CommandService::ExtensionCommandType prospective_command_type;
     if (command_service->GetSuggestedExtensionCommand(
-            (*i)->id(), bookmark_page_accelerator, &prospective_command,
-            &prospective_command_type)) {
+            (*i)->id(), bookmark_page_accelerator, &prospective_command)) {
       *extension = i->get();
       *command = prospective_command;
-      *command_type = prospective_command_type;
       return true;
     }
   }
@@ -801,17 +795,13 @@ void BookmarkCurrentPageAllowingExtensionOverrides(Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension = NULL;
   extensions::Command command;
-  extensions::CommandService::ExtensionCommandType command_type;
-  if (GetBookmarkOverrideCommand(browser->profile(),
-                                 &extension,
-                                 &command,
-                                 &command_type)) {
-    switch (command_type) {
-      case extensions::CommandService::NAMED:
+  if (GetBookmarkOverrideCommand(browser->profile(), &extension, &command)) {
+    switch (command.type()) {
+      case extensions::Command::Type::kNamed:
         browser->window()->ExecuteExtensionCommand(extension, command);
         break;
-      case extensions::CommandService::BROWSER_ACTION:
-      case extensions::CommandService::PAGE_ACTION:
+      case extensions::Command::Type::kBrowserAction:
+      case extensions::Command::Type::kPageAction:
         // BookmarkCurrentPage is called through a user gesture, so it is safe
         // to grant the active tab permission.
         extensions::ExtensionActionAPI::Get(browser->profile())->
