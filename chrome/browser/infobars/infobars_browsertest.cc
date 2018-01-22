@@ -61,6 +61,9 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
+#endif
+
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 #endif
 
@@ -386,7 +389,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS:
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
       SessionCrashedInfoBarDelegate::Create(browser());
 #else
       ADD_FAILURE() << "This infobar is not supported on this OS.";
