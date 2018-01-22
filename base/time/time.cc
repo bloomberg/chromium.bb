@@ -10,9 +10,9 @@
 #include <ostream>
 #include <sstream>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/nspr/prtime.h"
 #include "build/build_config.h"
@@ -298,27 +298,11 @@ std::ostream& operator<<(std::ostream& os, Time time) {
                             exploded.millisecond);
 }
 
-// Local helper class to hold the conversion from Time to TickTime at the
-// time of the Unix epoch.
-class UnixEpochSingleton {
- public:
-  UnixEpochSingleton()
-      : unix_epoch_(TimeTicks::Now() - (Time::Now() - Time::UnixEpoch())) {}
-
-  TimeTicks unix_epoch() const { return unix_epoch_; }
-
- private:
-  const TimeTicks unix_epoch_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnixEpochSingleton);
-};
-
-static LazyInstance<UnixEpochSingleton>::Leaky
-    leaky_unix_epoch_singleton_instance = LAZY_INSTANCE_INITIALIZER;
-
 // Static
 TimeTicks TimeTicks::UnixEpoch() {
-  return leaky_unix_epoch_singleton_instance.Get().unix_epoch();
+  static const base::NoDestructor<base::TimeTicks> epoch(
+      []() { return TimeTicks::Now() - (Time::Now() - Time::UnixEpoch()); }());
+  return *epoch;
 }
 
 TimeTicks TimeTicks::SnappedToNextTick(TimeTicks tick_phase,
