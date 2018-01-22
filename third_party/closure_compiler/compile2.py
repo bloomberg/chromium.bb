@@ -174,6 +174,8 @@ class Checker(object):
       closure_args: Arguments passed directly to the Closure compiler.
       custom_sources: Whether |sources| was customized by the target (e.g. not
           in GYP dependency order).
+      custom_includes: Whether <include>s are processed when |custom_sources|
+          is True.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
@@ -291,8 +293,8 @@ if __name__ == "__main__":
   parser.add_argument("--custom_sources", action="store_true",
                       help="Whether this rules has custom sources.")
   parser.add_argument("--custom_includes", action="store_true",
-                      help="If present, <include>s are processed when"
-                           "using --custom_files.")
+                      help="If present, <include>s are processed when "
+                           "using --custom_sources.")
   parser.add_argument("-o", "--out_file", required=True,
                       help="A file where the compiled output is written to")
   parser.add_argument("-c", "--closure_args", nargs=argparse.ZERO_OR_MORE,
