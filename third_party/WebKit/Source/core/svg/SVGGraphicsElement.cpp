@@ -105,7 +105,7 @@ void SVGGraphicsElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == SVGNames::transformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform, transform_->CurrentValue()->CssValue());
+        style, CSSPropertyTransform, *transform_->CurrentValue()->CssValue());
     return;
   }
   SVGElement::CollectStyleForPresentationAttribute(name, value, style);

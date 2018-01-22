@@ -855,10 +855,9 @@ class CORE_EXPORT Element : public ContainerNode {
   void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                const String& value);
-  // TODO(sashab): Make this take a const CSSValue&.
   void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
-                                               const CSSValue*);
+                                               const CSSValue&);
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;

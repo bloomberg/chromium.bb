@@ -94,7 +94,7 @@ void SVGPatternElement::CollectStyleForPresentationAttribute(
   if (name == SVGNames::patternTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform,
-        pattern_transform_->CurrentValue()->CssValue());
+        *pattern_transform_->CurrentValue()->CssValue());
     return;
   }
   SVGElement::CollectStyleForPresentationAttribute(name, value, style);
