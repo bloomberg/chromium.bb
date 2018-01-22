@@ -866,6 +866,8 @@ TEST_F(MessageCenterViewTest, LockScreen) {
   ASSERT_NE(nullptr, quiet_mode_button);
   views::Button* settings_button = GetButtonBar()->GetSettingsButtonForTest();
   ASSERT_NE(nullptr, settings_button);
+  views::Button* collapse_button = GetButtonBar()->GetCollapseButtonForTest();
+  ASSERT_NE(nullptr, collapse_button);
 
   EXPECT_TRUE(close_button->visible());
   EXPECT_TRUE(quiet_mode_button->visible());
@@ -904,6 +906,7 @@ TEST_F(MessageCenterViewTest, LockScreen) {
   EXPECT_FALSE(close_button->visible());
   EXPECT_FALSE(quiet_mode_button->visible());
   EXPECT_FALSE(settings_button->visible());
+  EXPECT_FALSE(collapse_button->visible());
 
   // Unlock!
   SetLockedState(false);
@@ -928,6 +931,7 @@ TEST_F(MessageCenterViewTest, LockScreen) {
   EXPECT_FALSE(close_button->visible());
   EXPECT_FALSE(quiet_mode_button->visible());
   EXPECT_FALSE(settings_button->visible());
+  EXPECT_FALSE(collapse_button->visible());
 }
 
 TEST_F(MessageCenterViewTest, NoNotification) {
