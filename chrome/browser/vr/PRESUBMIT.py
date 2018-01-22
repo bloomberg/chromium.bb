@@ -49,6 +49,8 @@ def PostUploadHook(cl, change, output_api):
   against all Chromium commits, but should be run against changes
   likely to affect these tests.
 
+  Also, it compiles the Linux VR tryserver to compile the UI testapp.
+
   When adding/removing tests here, ensure that both gpu/PRESUBMIT.py and
   ui/gl/PRESUBMIT.py are updated.
   """
@@ -59,5 +61,6 @@ def PostUploadHook(cl, change, output_api):
       'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
       'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
       'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
+      'master.tryserver.chromium.linux:linux_vr',
     ],
     'Automatically added optional GPU tests to run on CQ.')
