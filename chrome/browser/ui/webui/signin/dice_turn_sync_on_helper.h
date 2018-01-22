@@ -26,10 +26,6 @@ namespace browser_sync {
 class ProfileSyncService;
 }
 
-namespace syncer {
-class SyncSetupInProgressHandle;
-}
-
 // Handles details of signing the user in with SigninManager and turning on
 // sync for an account that is already present in the token service.
 class DiceTurnSyncOnHelper : public BrowserListObserver,
@@ -143,9 +139,6 @@ class DiceTurnSyncOnHelper : public BrowserListObserver,
 
   // Account information.
   const AccountInfo account_info_;
-
-  // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
   // Policy credentials we keep while determining whether to create
   // a new profile for an enterprise user or not.

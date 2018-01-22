@@ -377,9 +377,6 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 
   // Show Sync confirmation.
-  browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
-  if (sync_service)
-    sync_blocker_ = sync_service->GetSetupInProgressHandle();
   scoped_login_ui_service_observer_.Add(
       LoginUIServiceFactory::GetForProfile(profile_));
   browser_ = EnsureBrowser(browser_, profile_);
