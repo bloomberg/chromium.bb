@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1006017844123154345">Отваряне онлайн</translation>
-<translation id="1036348656032585052">Изключване</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> се добавя...</translation>
 <translation id="1041308826830691739">От уебсайтове</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1291207594882862231">Изчистване на историята, „бисквитките“, данните за сайтове и кеша…</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
-<translation id="1320663236730331991">Прекарайте пръст нагоре за лесен достъп до популярни сайтове и статии, изтеглени файлове и още много други неща</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
 <translation id="136248372334525878">Предварително зареждане на страниците с цел по-бързо отваряне и четене офлайн</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Представяме ви новата версия на Chrome</translation>
 <translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="209354263896846928">Осъществявайте достъп до адресната лента от долната част на екрана</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2111511281910874386">Към страницата</translation>
 <translation id="2122601567107267586">Приложението не можа да бъде отворено</translation>
-<translation id="2123074103454259350">Още не</translation>
 <translation id="2126426811489709554">Предоставено от Chrome</translation>
 <translation id="2131665479022868825">Спестихте <ph name="DATA" /></translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">Редактиране на картата</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Кажете ни защо изключихте новата версия на Chrome</translation>
-<translation id="2185784955520093231">Използвате новата версия на Chrome</translation>
 <translation id="219985413780390209">Защита от опасни сайтове за вас и устройството ви</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продължаване като <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome използва по-малко данни, за да ви покаже тази страница</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
-<translation id="2892933203342091350">Активиране на опростения изглед за всички статии</translation>
 <translation id="2900528713135656174">Създайте събитие</translation>
 <translation id="2902702728133930130">Стартирането на Chrome не бе успешно поради неочаквана грешка.</translation>
 <translation id="2903493209154104877">Адреси</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">Уебсайтовете на трети страни могат да запазват „бисквитки“ и да четат данни от такива</translation>
 <translation id="3662546969139119822">Тук няма история</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
-<translation id="3682249951633602029">Паролите ви ще бъдат видими за всички, които могат да видят съответния експортиран файл.</translation>
 <translation id="3712575778697986964">Да се нулира ли статистиката от Икономия на данни?</translation>
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716182511346448902">Тази страница използва твърде много памет, така че Chrome я постави на пауза.</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">Изтеглено: <ph name="GBS" /> ГБ</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
-<translation id="6550675742724504774">Опции</translation>
 <translation id="6556716549745717622">Блокиране, ако на сайта обикновено се показват натрапчиви реклами (препоръчително)</translation>
 <translation id="6560414384669816528">Търсене със Sogou</translation>
 <translation id="6566259936974865419">Chrome ви спести <ph name="GIGABYTES" /> ГБ</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">Отключете, за да копирате паролата си</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d отворен раздел}other{%1$d отворени раздела}}</translation>
 <translation id="6896758677409633944">Копиране</translation>
-<translation id="6905163627763043954">Изпробвайте</translation>
 <translation id="6910211073230771657">Изтрито</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6959661084585705671">Вторично хранилище</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">Предложенията не могат да бъдат показани</translation>
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
-<translation id="7581273696622423628">Участие в анкетата</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7589445247086920869">Блокиране за текущата търсеща машина</translation>
 <translation id="7593557518625677601">За старт на синхронизирането активирайте системното синхронизиране на Android</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
 <translation id="7612619742409846846">Влезли сте в Google като</translation>
 <translation id="7619072057915878432">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки в мрежата.</translation>
-<translation id="7620146066550602128">Изпробвайте <ph name="BEGIN_LINK" />по-лесен начин за сърфиране<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Получете помощ<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />сканирайте отново<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
 <translation id="7638584964844754484">Неправилен пропуск</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">Анулиране на избора</translation>
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>
-<translation id="785312750761189439">Прекарайте пръст нагоре от долната част на екрана или докоснете бутона за разгъване, за да осъществите лесен достъп до популярни сайтове и статии, изтеглени файлове и ощe много други неща</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
 <translation id="7882131421121961860">Няма намерена история</translation>

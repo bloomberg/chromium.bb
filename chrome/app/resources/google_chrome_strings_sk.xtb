@@ -56,7 +56,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 
 Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako sú záložky, história a iné nastavenia, sa priradia k účtu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
-<translation id="2416359993254398973">Chrome potrebuje povolenie pre tento web na prístup k vášmu fotoaparátu.</translation>
 <translation id="2429317896000329049">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="2446511512801740068">Chrome je zastaraný, pretože nebol dlhší čas reštartovaný. K dispozícii je aktualizácia, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
@@ -68,7 +67,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2665296953892887393">Pomôcť zlepšiť prehliadač Google Chrome odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
 <translation id="2689103672227170538">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="2705403826523567092">Ak chcete prehliadať v prispôsobenom prostredí synchronizovanom medzi zariadeniami, prihláste sa</translation>
-<translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="2847461019998147611">Zobrazovať Google Chrome v tomto jazyku</translation>
@@ -163,10 +161,8 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5495581687705680288">Moduly načítané do prehliadača Google Chrome</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome potrebuje povolenie pre tento web na prístup k vášmu mikrofónu.</translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
-<translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
 <translation id="5774845247549698882">Chrome OS sa zobrazuje v tomto jazyku</translation>
 <translation id="5855036575689098185">Softvér spustený vo vašom počítači nie je kompatibilný s prehliadačom Google Chrome.</translation>
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>
@@ -185,7 +181,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6291549208091401781">Google Chrome už majú nainštalovaný všetci používatelia na vašom počítači.</translation>
 <translation id="6338556085225130112">Chrome sa aktualizuje</translation>
 <translation id="6368958679917195344">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Chrome potrebuje povolenie pre tento web na prístup k vášmu fotoaparátu a mikrofónu.</translation>
 <translation id="6410540444482791104">Automatickým odosielaním niektorých informácií o systéme a obsahu stránok môžete prispieť k lepšiemu rozpoznávaniu nebezpečných aplikácií a webov a zvýšiť tak zabezpečenie Chromu a zjednodušiť jeho používanie.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Momentálne prebieha sťahovanie. Chcete ho zrušiť a ukončiť prehliadač Google Chrome?}few{Momentálne prebieha sťahovanie # položiek. Chcete ho zrušiť a ukončiť prehliadač Google Chrome?}many{Momentálne prebieha sťahovanie # položky. Chcete ho zrušiť a ukončiť prehliadač Google Chrome?}other{Momentálne prebieha sťahovanie # položiek. Chcete ho zrušiť a ukončiť prehliadač Google Chrome?}}</translation>
 <translation id="6566149418543181476">Aktualizuje sa Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -193,7 +188,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6600954340915313787">Skopírovaná do prehliadača Chrome</translation>
 <translation id="6634887557811630702">Prehliadač Google Chrome bol aktualizovaný.</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
-<translation id="6697947395630195233">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom.</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="686561893457936865">Vezmite si Chrome všade</translation>
 <translation id="6885412569789873916">Aplikácie pre Chrome beta verzie</translation>

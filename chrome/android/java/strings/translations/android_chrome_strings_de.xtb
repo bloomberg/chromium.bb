@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1006017844123154345">Online öffnen</translation>
-<translation id="1036348656032585052">Deaktivieren</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> wird hinzugefügt...</translation>
 <translation id="1041308826830691739">Von Websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
-<translation id="1320663236730331991">Durch Wischen nach oben erhalten Sie schnellen Zugriff auf beliebte Websites und Artikel, auf Downloads und vieles mehr</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
 <translation id="136248372334525878">Laden Sie Seiten vorab, um das Laden und Offlinelesen zu beschleunigen</translation>
@@ -123,7 +121,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB sonstiger Apps</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Das neue Chrome</translation>
 <translation id="2086652334978798447">Melden Sie sich in Chrome an, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten.</translation>
 <translation id="2091887806945687916">Ton</translation>
 <translation id="209354263896846928">Die Adressleiste befindet sich am unteren Bildschirmrand</translation>
@@ -131,7 +128,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="2111511281910874386">Seite aufrufen</translation>
 <translation id="2122601567107267586">App konnte nicht geöffnet werden</translation>
-<translation id="2123074103454259350">Noch nicht</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> eingespart</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> geschlossen</translation>
@@ -141,8 +137,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2154484045852737596">Karte bearbeiten</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Bitte teilen Sie uns mit, warum Sie das neue Chrome deaktiviert haben</translation>
-<translation id="2185784955520093231">Sie verwenden das neue Chrome</translation>
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
@@ -206,7 +200,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2876764156902388290">Chrome nutzt weniger Daten zum Anzeigen dieser Seite</translation>
 <translation id="2888126860611144412">Über Google Chrome</translation>
 <translation id="2891154217021530873">Laden der Seite anhalten</translation>
-<translation id="2892933203342091350">Vereinfachte Ansicht in allen Artikeln aktivieren</translation>
 <translation id="2900528713135656174">Termin erstellen</translation>
 <translation id="2902702728133930130">Während des Startvorgangs ist in Chrome ein unerwarteter Fehler aufgetreten.</translation>
 <translation id="2903493209154104877">Adressen</translation>
@@ -294,7 +287,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3661699943263275414">Websites Dritter können Cookiedaten speichern und lesen.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
-<translation id="3682249951633602029">Ihre Passwörter sind für jeden zugänglich, der die exportierte Passwortdatei sehen kann.</translation>
 <translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
@@ -619,7 +611,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6538442820324228105"><ph name="GBS" /> GB heruntergeladen</translation>
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
 <translation id="6545017243486555795">Alle Daten löschen</translation>
-<translation id="6550675742724504774">Optionen</translation>
 <translation id="6556716549745717622">Blockieren, wenn Website für gewöhnlich aufdringliche Werbung anzeigt (empfohlen)</translation>
 <translation id="6560414384669816528">Suche mit Sogou</translation>
 <translation id="6566259936974865419">Dank Chrome haben Sie <ph name="GIGABYTES" /> GB eingespart</translation>
@@ -663,7 +654,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6891726759199484455">Entsperren, um Ihr Passwort zu kopieren</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
 <translation id="6896758677409633944">Kopieren</translation>
-<translation id="6905163627763043954">Jetzt ausprobieren</translation>
 <translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6959661084585705671">Sekundärspeicher</translation>
@@ -728,7 +718,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7542481630195938534">Vorschläge können nicht abgerufen werden</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
-<translation id="7581273696622423628">An Umfrage teilnehmen</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Für aktuelle Suchmaschine blockieren</translation>
 <translation id="7593557518625677601">Einstellungen öffnen und Systemsynchr. aktivieren, um Chrome-Synchr. zu starten</translation>
@@ -737,7 +726,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7605594153474022051">Synchronisierung funktioniert nicht</translation>
 <translation id="7612619742409846846">Bei Google angemeldet als</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> konnte aufgrund von Netzwerkfehlern nicht heruntergeladen werden.</translation>
-<translation id="7620146066550602128">Testen Sie die <ph name="BEGIN_LINK" />einfachere Art zu browsen<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Hilfe aufrufen<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />noch einmal suchen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
 <translation id="7638584964844754484">Falsche Passphrase</translation>
@@ -762,7 +750,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
-<translation id="785312750761189439">Wischen Sie vom unteren Bildschirmrand nach oben oder tippen Sie auf die Schaltfläche "Maximieren", um schnell auf beliebte Websites, Artikel und mehr zugreifen zu können</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7882131421121961860">Kein Verlauf gefunden</translation>

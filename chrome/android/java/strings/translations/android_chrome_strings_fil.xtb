@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1006017844123154345">Buksan Online</translation>
-<translation id="1036348656032585052">I-off</translation>
 <translation id="1036727731225946849">Idinaragdag ang <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Mula sa mga website</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -37,7 +36,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
-<translation id="1320663236730331991">Mag-swipe pataas para sa madaling access sa mga sikat na site at artikulo, download, at higit pa</translation>
 <translation id="1326317727527857210">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, mag-sign in sa Chrome.</translation>
 <translation id="1332501820983677155">Mga shortcut ng feature ng Google Chrome</translation>
 <translation id="136248372334525878">Mag-preload ng mga page para sa mas mabilis na pag-load at offline na pagbabasa</translation>
@@ -123,7 +121,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB na iba pang mga app</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2082238445998314030">Resulta <ph name="RESULT_NUMBER" /> sa <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Ipinakikilala ang bagong Chrome</translation>
 <translation id="2086652334978798447">Upang makakuha ng naka-personalize na content na iminumungkahi ng Google, mag-sign in sa Chrome.</translation>
 <translation id="2091887806945687916">Tunog</translation>
 <translation id="209354263896846928">I-access ang address bar sa ibaba ng iyong screen</translation>
@@ -131,7 +128,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="2111511281910874386">Pumunta sa page</translation>
 <translation id="2122601567107267586">Hindi mabuksan ang app</translation>
-<translation id="2123074103454259350">Hindi muna</translation>
 <translation id="2126426811489709554">Pinapagana ng Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> ang natipid</translation>
 <translation id="213279576345780926">Isinarang <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2154484045852737596">I-edit ang card</translation>
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2156074688469523661">Mga natitirang site (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Ipaalam sa amin kung bakit mo na-off ang bagong Chrome</translation>
-<translation id="2185784955520093231">Ginagamit mo ang bagong Chrome</translation>
 <translation id="219985413780390209">Protektahan ang iyong sarili at ang iyong device mula sa mga mapanganib na site</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Magpatuloy bilang si <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2876764156902388290">Gumagamit ang Chrome ng mas kaunting data upang ipakita sa iyo ang page na ito</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
 <translation id="2891154217021530873">Ihinto ang pag-load ng page</translation>
-<translation id="2892933203342091350">I-enable ang pinasimpleng view sa lahat ng artikulo</translation>
 <translation id="2900528713135656174">Gumawa ng event</translation>
 <translation id="2902702728133930130">Nagkaroon ng hindi inaasahang error ang Chrome habang nagsasagawa ng pag-start up.</translation>
 <translation id="2903493209154104877">Mga Address</translation>
@@ -294,7 +287,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="3661699943263275414">Maaaring mag-save at magbasa ng data ng cookie ang mga third-party na website</translation>
 <translation id="3662546969139119822">Walang history rito</translation>
 <translation id="3672452749423051839">Mga suhestyon para sa error sa pag-navigate</translation>
-<translation id="3682249951633602029">Ang iyong mga password ay makikita ng sinumang nakakakita sa file ng mga na-export na password.</translation>
 <translation id="3712575778697986964">I-reset ang Data Saver?</translation>
 <translation id="3714981814255182093">Buksan ang Bar sa Paghahanap</translation>
 <translation id="3716182511346448902">Masyadong malaki ang ginagamit na memory ng page na ito kaya na-pause ito ng Chrome.</translation>
@@ -618,7 +610,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6538442820324228105"><ph name="GBS" /> GB ang na-download</translation>
 <translation id="654446541061731451">Pumili ng tab upang mag-beam</translation>
 <translation id="6545017243486555795">I-clear ang Lahat ng Data</translation>
-<translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6556716549745717622">I-block kung malamang na magpakita ang site ng mga nakakasagabal na ad (inirerekomenda)</translation>
 <translation id="6560414384669816528">Maghanap gamit ang Sogou</translation>
 <translation id="6566259936974865419">Nag-save ang Chrome ng <ph name="GIGABYTES" /> GB para sa iyo</translation>
@@ -662,7 +653,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6891726759199484455">I-unlock upang kopyahin ang iyong password</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d bukas na tab}one{%1$d bukas na tab}other{%1$d na bukas na tab}}</translation>
 <translation id="6896758677409633944">Copy</translation>
-<translation id="6905163627763043954">Subukan ito</translation>
 <translation id="6910211073230771657">Na-delete</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6959661084585705671">Pangalawang storage</translation>
@@ -727,7 +717,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7542481630195938534">Hindi makakuha ng mga suhestyon</translation>
 <translation id="7562080006725997899">Kini-clear ang data mula sa pagba-browse</translation>
 <translation id="756809126120519699">Na-clear ang data ng Chrome</translation>
-<translation id="7581273696622423628">Sagutan ang survey</translation>
 <translation id="7588950540487816470">Pisikal na Web</translation>
 <translation id="7589445247086920869">I-block para sa kasalukuyang search engine</translation>
 <translation id="7593557518625677601">Buksan ang mga setting ng Android at muling i-enable ang Android system sync upang simulan ang Chrome sync</translation>
@@ -736,7 +725,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7605594153474022051">Hindi gumagana ang pag-sync</translation>
 <translation id="7612619742409846846">Naka-sign in sa Google bilang</translation>
 <translation id="7619072057915878432">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga problema sa network.</translation>
-<translation id="7620146066550602128">Sumubok ng <ph name="BEGIN_LINK" />mas madaling paraan ng pag-browse<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Humingi ng tulong<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />muling mag-scan<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Maligayang pagdating sa Chrome</translation>
 <translation id="7638584964844754484">Maling passphrase</translation>
@@ -761,7 +749,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="784934925303690534">Sakop na oras</translation>
 <translation id="7851858861565204677">Iba pang mga device</translation>
-<translation id="785312750761189439">Mag-swipe pataas mula sa ibaba ng screen o i-tap ang button na i-expand para sa madaling pag-access sa mga sikat na site at artikulo, mga download, at higit pa</translation>
 <translation id="7875915731392087153">Gumawa ng email</translation>
 <translation id="7876243839304621966">Alisin lahat</translation>
 <translation id="7882131421121961860">Walang nakitang history</translation>

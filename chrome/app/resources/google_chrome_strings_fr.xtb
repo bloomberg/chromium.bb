@@ -57,7 +57,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 Si vous vous connectez quand même, toutes les informations Chrome, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
-<translation id="2416359993254398973">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site.</translation>
 <translation id="2429317896000329049">Impossible de synchroniser vos données dans Google Chrome, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="2446511512801740068">Chrome n'est plus à jour, car il n'a pas été relancé depuis quelque temps. La mise à jour disponible sera installée dès que vous le relancerez.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
@@ -69,7 +68,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="2705403826523567092">Connectez-vous pour profiter d'une expérience de navigation personnalisée et synchroniser vos données Chrome sur plusieurs appareils</translation>
-<translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2799223571221894425">Relancer</translation>
 <translation id="2847461019998147611">Afficher Google Chrome dans cette langue</translation>
@@ -165,10 +163,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5495581687705680288">Modules chargés dans Google Chrome</translation>
 <translation id="556024056938947818">Tentative d'affichage des mots de passe dans Google Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome a besoin de votre autorisation pour accéder à votre micro pour ce site.</translation>
 <translation id="565744775970812598">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier peut être dangereux.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
-<translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
 <translation id="5774845247549698882">Chrome OS est affiché dans cette langue</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
@@ -187,7 +183,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6291549208091401781">Google Chrome est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
 <translation id="6338556085225130112">Mise à jour de Google Chrome...</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Chrome a besoin de votre autorisation pour accéder à votre appareil photo et à votre micro pour ce site.</translation>
 <translation id="6410540444482791104">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous envoyant automatiquement des informations système et du contenu de page. Cela nous aidera à détecter les applications et les sites dangereux.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Google Chrome ?}}</translation>
 <translation id="6566149418543181476">Mise à jour de Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
@@ -195,7 +190,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6634887557811630702">Google Chrome est à jour.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
-<translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="686561893457936865">Chrome avec vous n'importe où</translation>
 <translation id="6885412569789873916">Applications pour la version bêta de Chrome</translation>

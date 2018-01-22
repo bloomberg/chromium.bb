@@ -54,7 +54,6 @@
 
 Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Tampilkan Menu Chrome</translation>
-<translation id="2416359993254398973">Chrome memerlukan izin akses ke kamera untuk situs ini.</translation>
 <translation id="2429317896000329049">Google Chrome tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="2446511512801740068">Chrome telah kedaluwarsa karena tidak diluncurkan selama beberapa waktu. Pembaruan telah tersedia dan akan diterapkan setelah Anda meluncurkan ulang.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
@@ -66,7 +65,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="2665296953892887393">Bantu Google Chrome jadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
 <translation id="2689103672227170538">Ekstensi ini telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chrome.</translation>
 <translation id="2705403826523567092">Login untuk mendapatkan pengalaman browsing yang dipersonalisasi, yang disinkronkan di seluruh perangkat</translation>
-<translation id="2769762047821873045">Google Chrome bukan browser default.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
 <translation id="2847461019998147611">Tampilkan Google Chrome dalam bahasa ini</translation>
@@ -157,10 +155,8 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5495581687705680288">Modul dimuat ke dalam Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome memerlukan izin akses ke mikrofon untuk situs ini.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
-<translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="5774845247549698882">Chrome OS ditampilkan dalam bahasa ini</translation>
 <translation id="5855036575689098185">Software yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
@@ -179,7 +175,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6291549208091401781">Google Chrome sudah terpasang untuk semua pengguna di komputer Anda.</translation>
 <translation id="6338556085225130112">Memperbarui Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS terwujud karena <ph name="BEGIN_LINK_CROS_OSS" />software sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
-<translation id="6393863479814692971">Chrome memerlukan izin akses ke kamera dan mikrofon untuk situs ini.</translation>
 <translation id="6410540444482791104">Anda dapat membantu menjadikan Chrome lebih aman dan lebih mudah digunakan dengan mengirim sebagian informasi sistem dan konten halaman secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Download sedang berlangsung. Ingin membatalkan download dan keluar dari Google Chrome?}other{# download sedang berlangsung. Ingin membatalkan download dan keluar dari Google Chrome?}}</translation>
 <translation id="6566149418543181476">Memperbarui Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6634887557811630702">Google Chrome sudah diperbarui.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
-<translation id="6697947395630195233">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini.</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="686561893457936865">Bawa Chrome ke mana saja</translation>
 <translation id="6885412569789873916">Aplikasi Chrome Beta</translation>

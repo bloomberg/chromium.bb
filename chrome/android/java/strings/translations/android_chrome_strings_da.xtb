@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1006017844123154345">Åbn på nettet</translation>
-<translation id="1036348656032585052">Deaktiver</translation>
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
-<translation id="1320663236730331991">Stryg opad for at få hurtig adgang til populære websites og artikler, downloads og meget mere</translation>
 <translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="1332501820983677155">Funktionsgenveje i Google Chrome</translation>
 <translation id="136248372334525878">Forudindlæs sider, så de indlæses hurtigere og kan ses offline</translation>
@@ -123,7 +121,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB af andre apps</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Her er det nye Chrome</translation>
 <translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="209354263896846928">Du finder adresselinjen nederst på din skærm</translation>
@@ -131,7 +128,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="2111511281910874386">Gå til side</translation>
 <translation id="2122601567107267586">Appen kunne ikke åbnes</translation>
-<translation id="2123074103454259350">Ikke endnu</translation>
 <translation id="2126426811489709554">Leveret af Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> gemt</translation>
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Fortæl os, hvorfor du har deaktiveret det nye Chrome</translation>
-<translation id="2185784955520093231">Du bruger det nye Chrome</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2876764156902388290">Chrome anvender færre data til at vise dig denne side</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Stop sideindlæsning</translation>
-<translation id="2892933203342091350">Aktivér Enkel visning for alle artikler</translation>
 <translation id="2900528713135656174">Opret begivenhed</translation>
 <translation id="2902702728133930130">Der opstod en uventet fejl under start af Chrome.</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -294,7 +287,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
-<translation id="3682249951633602029">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil med adgangskoder.</translation>
 <translation id="3712575778697986964">Vil du nulstille Datasparefunktion?</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3716182511346448902">Denne side anvender for meget hukommelse, så Chrome har sat den på pause.</translation>
@@ -618,7 +610,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6538442820324228105">Der er downloadet <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Vælg en fane, der skal overføres</translation>
 <translation id="6545017243486555795">Ryd alle data</translation>
-<translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6556716549745717622">Blokér, hvis websitet har tendens til at vise påtrængende annoncer (anbefales)</translation>
 <translation id="6560414384669816528">Søg via Sogou</translation>
 <translation id="6566259936974865419">Chrome har sparet dig <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6891726759199484455">Lås op for at kopiere din adgangskode</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åben fane}one{%1$d åben fane}other{%1$d åbne faner}}</translation>
 <translation id="6896758677409633944">Kopiér</translation>
-<translation id="6905163627763043954">Prøv det</translation>
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6959661084585705671">Sekundær lagerplads</translation>
@@ -727,7 +717,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7542481630195938534">Forslagene kan ikke hentes</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
 <translation id="756809126120519699">Chrome-dataene blev ryddet</translation>
-<translation id="7581273696622423628">Deltag i undersøgelsen</translation>
 <translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7589445247086920869">Bloker for den aktuelle søgemaskine</translation>
 <translation id="7593557518625677601">Åbn Android-indstillinger, og genaktiver synkronisering af Android-systemet for at starte Chrome-synkroniseringen</translation>
@@ -736,7 +725,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7612619742409846846">Du er logget ind på Google som</translation>
 <translation id="7619072057915878432">Download af <ph name="FILE_NAME" /> mislykkedes på grund af netværksfejl.</translation>
-<translation id="7620146066550602128">Prøv en <ph name="BEGIN_LINK" />hurtigere søgning<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjælp<ph name="END_LINK1" />, eller <ph name="BEGIN_LINK2" />scan igen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
 <translation id="7638584964844754484">Forkert adgangssætning</translation>
@@ -761,7 +749,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
-<translation id="785312750761189439">Stryg opad fra bunden af skærmen, eller tryk på Udvid-knappen for nemt at få adgang til populære sider og artikler, downloads og meget mere.</translation>
 <translation id="7875915731392087153">Opret e-mail</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
 <translation id="7882131421121961860">Der blev ikke fundet nogen historik</translation>

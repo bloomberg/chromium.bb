@@ -937,7 +937,7 @@
 
       Jika kebijakan ini tidak dikonfigurasi <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum default.
 
-      Jika tidak, kebijakan akan disetel ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih besar dari versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
+      Jika dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih besar daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4183229833636799228">Setelan <ph name="FLASH_PLUGIN_NAME" /> default</translation>
@@ -999,7 +999,7 @@
 <translation id="4346674324214534449">Memungkinkan Anda menyetel apakah iklan harus diblokir di situs yang menayangkan iklan mengganggu.
 
       Jika kebijakan ini disetel ke 2, iklan akan diblokir di situs yang menayangkan iklan mengganggu.
-      Namun perilaku ini tidak akan memicu jika kebijakan SafeBrowsingEnabled disetel ke False.
+      Namun perilaku ini tidak akan terpicu jika kebijakan SafeBrowsingEnabled disetel ke False.
       Jika kebijakan ini disetel ke 1, iklan tidak akan diblokir di situs yang menayangkan iklan mengganggu.
       Jika kebijakan ini tidak disetel, 2 akan digunakan.</translation>
 <translation id="4347908978527632940">Jika nilai disetel ke "true" dan pengguna adalah pengguna yang dilindungi, aplikasi Android lainnya dapat mengajukan kueri batasan web pengguna melalui penyedia konten.
@@ -2201,9 +2201,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8344454543174932833">Impor bookmark dari browser default saat pertama kali dijalankan</translation>
 <translation id="8359734107661430198">Aktifkan API ExampleDeprecatedFeature hingga 02/09/2008</translation>
 <translation id="8369602308428138533">Penundaan mematikan layar saat menggunakan daya AC</translation>
-<translation id="8370471134641900314">Jika kebijakan ini disetel ke true, pengguna harus login ke <ph name="PRODUCT_NAME" /> dengan profilnya sebelum menggunakan browser. Nilai default BrowserGuestModeEnabled akan disetel ke false.
-
-      Jika kebijakan ini disetel ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus login ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
 <translation id="8390049129576938611">Menonaktifkan penampil PDF internal di <ph name="PRODUCT_NAME" />. Bukan memperlakukannya sebagai download dan mengizinkan membuka file PDF menggunakan aplikasi default.

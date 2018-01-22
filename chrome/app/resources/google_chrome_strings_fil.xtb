@@ -58,7 +58,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 
 Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impormasyon sa Chrome gaya ng mga bookmark, kasaysayan, at iba pang mga setting.</translation>
 <translation id="2397416548179033562">Ipakita ang menu ng Chrome</translation>
-<translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
 <translation id="2429317896000329049">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="2446511512801740068">Luma na ang Chrome dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -70,7 +69,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2665296953892887393">Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK" /> sa Google</translation>
 <translation id="2689103672227170538">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chrome.</translation>
 <translation id="2705403826523567092">Mag-sign in para sa naka-personalize na karanasan sa pag-browse na naka-sync sa lahat ng device</translation>
-<translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2799223571221894425">Ilunsad Muli</translation>
 <translation id="2847461019998147611">Ipakita ang Google Chrome sa wikang ito</translation>
@@ -165,10 +163,8 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="5495581687705680288">Mga module na na-load sa Google Chrome</translation>
 <translation id="556024056938947818">Sinusubukan ng Google Chrome na magpakita ng mga password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Kailangan ng Chrome ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
 <translation id="565744775970812598">Maaaring mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
 <translation id="573759479754913123">Tungkol sa Chrome OS</translation>
-<translation id="5749068826913805084">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file.</translation>
 <translation id="5774845247549698882">Ipinapakita ang Chrome OS sa wikang ito</translation>
 <translation id="5855036575689098185">Hindi tumutugma ang software na tumatakbo sa iyong computer sa Google Chrome.</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
@@ -187,7 +183,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6291549208091401781">Naka-install na ang Google Chrome para sa lahat ng user sa iyong computer.</translation>
 <translation id="6338556085225130112">Ina-update ang Google Chrome</translation>
 <translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito.</translation>
 <translation id="6410540444482791104">Makakatulong kang gawing mas ligtas at madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pagpapadala ng ilang impormasyon ng system at content ng page sa Google upang makatulong na tumukoy ng mga mapanganib na app at site.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{May nagaganap na pagda-download sa kasalukuyan. Gusto mo bang kanselahin ang pag-download at umalis sa Google Chrome?}one{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Google Chrome?}other{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Google Chrome?}}</translation>
 <translation id="6566149418543181476">Ina-update ang Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -195,7 +190,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
 <translation id="6634887557811630702">Napapanahon ang Google Chrome.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
-<translation id="6697947395630195233">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito.</translation>
 <translation id="683440813066116847">Inbound na panuntunan para sa Google Chrome Canary upang payagan ang trapiko ng mDNS.</translation>
 <translation id="686561893457936865">Dalhin ang Chrome kahit saan</translation>
 <translation id="6885412569789873916">Mga Chrome Beta App</translation>

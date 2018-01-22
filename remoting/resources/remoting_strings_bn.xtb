@@ -65,7 +65,7 @@
 <translation id="2314101195544969792">আপনার <ph name="APPLICATION_NAME" />-এর সেশন কিছুক্ষণের জন্য নিষ্ক্রিয় করা হয়েছে এবং কিছুক্ষণের জন্য সংযোগ বিচ্ছিন্ন করা হবে।</translation>
 <translation id="2317666076142640974">বাকি সবার আগে <ph name="LINK_BEGIN" />Chrome দূরবর্তী ডেস্কটপ ওয়েব অ্যাপ<ph name="LINK_END" /> ব্যবহার করে দেখুন। অ্যাপটির বিষয়ে আপনার মতামত পেলে আমরা বাধিত হব।</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
-<translation id="2353140552984634198">Chromoting ব্যবহার করে আপনি হয়ত নিরাপদভাবে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
+<translation id="2353140552984634198">Chromoting ব্যবহার করে আপনি হয়তো নিরাপদভাবে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="2366718077645204424">হোস্টে পৌঁছাতে পারেনি৷ আপনার ব্যবহার করা নেটওয়ার্কের কনফিগারেশনের কারণে সম্ভবত এটি হয়েছে৷</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> অনলাইনে সর্বশেষ <ph name="RELATIVE_TIMESTAMP" /> দেখা গেছে।</translation>
@@ -105,7 +105,7 @@
 <translation id="3194245623920924351">Chrome দূরবর্তী ডেস্কটপ</translation>
 <translation id="3197730452537982411">দূরবর্তী ডেস্কটপ</translation>
 <translation id="324272851072175193">এই নির্দেশাবলী ইমেল করুন</translation>
-<translation id="3258789396564295715">Chrome দূরবর্তী ডেস্কটপ ব্যবহার করে আপনি হয়ত নিরাপদে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
+<translation id="3258789396564295715">Chrome দূরবর্তী ডেস্কটপ ব্যবহার করে আপনি হয়তো নিরাপদে এই কম্পিউটারটিকে অ্যাক্সেস করতে পারবেন৷</translation>
 <translation id="3286521253923406898">Chromoting হোস্ট নিয়ন্ত্রণকারী</translation>
 <translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> পরিবর্তন করতে চান।</translation>
 <translation id="331779822864701136">• এখন Android 8.0 Oreo এর সাথেও ব্যবহার করা যাবে।</translation>

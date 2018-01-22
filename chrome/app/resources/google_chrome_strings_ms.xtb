@@ -54,7 +54,6 @@
 
 Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halaman, sejarah dan tetapan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Paparkan menu Chrome</translation>
-<translation id="2416359993254398973">Chrome memerlukan kebenaran untuk mengakses kamera anda bagi tapak ini.</translation>
 <translation id="2429317896000329049">Google Chrome tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="2446511512801740068">Chrome sudah usang kerana telah lama tidak dilancarkan. Terdapat kemas kini tersedia dan akan digunakan sebaik sahaja anda melancarkannya semula.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
@@ -66,7 +65,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2665296953892887393">Bantu jadikan Google Chrome lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK" /> kepada Google.</translation>
 <translation id="2689103672227170538">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="2705403826523567092">Log masuk untuk mendapatkan pengalaman penyemakan imbas diperibadikan, yang disegerakkan merentas peranti</translation>
-<translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2847461019998147611">Paparkan Google Chrome dalam bahasa ini</translation>
@@ -157,10 +155,8 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5495581687705680288">Modul dimuatkan ke dalam Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome sedang cuba memaparkan kata laluan.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome memerlukan kebenaran untuk mengakses mikrofon anda bagi tapak ini.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, jadi Chrome telah menyekat fail itu.</translation>
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
-<translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
 <translation id="5774845247549698882">OS Chrome dipaparkan dalam bahasa ini</translation>
 <translation id="5855036575689098185">Perisian yang dijalankan pada komputer anda tidak serasi dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
@@ -179,7 +175,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6291549208091401781">Google Chrome telah dipasang untuk semua pengguna pada komputer anda.</translation>
 <translation id="6338556085225130112">Mengemas kini Google Chrome</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
-<translation id="6393863479814692971">Chrome memerlukan kebenaran untuk mengakses kamera dan mikrofon anda bagi tapak ini.</translation>
 <translation id="6410540444482791104">Anda boleh membantu kami menjadikan Chrome lebih selamat dan mudah digunakan dengan menghantar secara automatik beberapa maklumat sistem dan kandungan halaman kepada Google untuk membantu mengesan apl dan tapak yang berbahaya.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chrome?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Google Chrome?}}</translation>
 <translation id="6566149418543181476">Mengemas kini Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6634887557811630702">Google Chrome telah dikemas kini.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
-<translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="683440813066116847">Peraturan masuk bagi Google Chrome Canary untuk membenarkan trafik mDNS.</translation>
 <translation id="686561893457936865">Bawa Chrome ke mana-mana sahaja</translation>
 <translation id="6885412569789873916">Apl Chrome Beta</translation>

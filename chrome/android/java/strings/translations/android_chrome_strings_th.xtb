@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1006017844123154345">เปิดแบบออนไลน์</translation>
-<translation id="1036348656032585052">ปิด</translation>
 <translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">จากเว็บไซต์</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="1291207594882862231">ล้างประวัติการเข้าชม คุกกี้ ข้อมูลเว็บไซต์ แคช…</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
-<translation id="1320663236730331991">เลื่อนขึ้นเพื่อเข้าถึงไซต์และบทความยอดนิยม การดาวน์โหลด และอื่นๆ อย่างง่ายดาย</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="136248372334525878">โหลดหน้าเว็บไว้ล่วงหน้าเพื่อให้โหลดได้เร็วและไว้อ่านแบบออฟไลน์</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
-<translation id="2086116129690175316">ขอแนะนำ Chrome ใหม่</translation>
 <translation id="2086652334978798447">หากต้องการรับคำแนะนำเนื้อหาที่เหมาะสำหรับคุณจาก Google ให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2091887806945687916">เสียง</translation>
 <translation id="209354263896846928">ไปที่แถบที่อยู่เว็บที่ด้านล่างของหน้าจอ</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2111511281910874386">ไปที่หน้า</translation>
 <translation id="2122601567107267586">เปิดแอปไม่ได้</translation>
-<translation id="2123074103454259350">ยังก่อน</translation>
 <translation id="2126426811489709554">สนับสนุนโดย Chrome</translation>
 <translation id="2131665479022868825">ประหยัดไป <ph name="DATA" /></translation>
 <translation id="213279576345780926">ปิด <ph name="TAB_TITLE" /> แล้ว</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">แก้ไขบัตร</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">โปรดบอกเหตุผลที่คุณปิด Chrome ใหม่</translation>
-<translation id="2185784955520093231">คุณกำลังใช้ Chrome ใหม่</translation>
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome ใช้อินเทอร์เน็ตน้อยลงเพื่อแสดงหน้านี้</translation>
 <translation id="2888126860611144412">เกี่ยวกับ Chrome</translation>
 <translation id="2891154217021530873">หยุดการโหลดหน้า</translation>
-<translation id="2892933203342091350">เปิดใช้ "มุมมองอย่างง่าย" กับบทความทั้งหมด</translation>
 <translation id="2900528713135656174">สร้างกิจกรรม</translation>
 <translation id="2902702728133930130">Chrome ล้มเหลวในระหว่างเริ่มต้นเนื่องจากข้อผิดพลาดที่ไม่คาดคิด</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">เว็บไซต์ของบุคคลที่สามสามารถบันทึกและอ่านข้อมูลคุกกี้ได้</translation>
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
-<translation id="3682249951633602029">คนที่ดูไฟล์รหัสผ่านที่ส่งออกได้จะเห็นรหัสผ่านของคุณ</translation>
 <translation id="3712575778697986964">รีเซ็ตโปรแกรมประหยัดอินเทอร์เน็ตไหม</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3716182511346448902">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงหยุดหน้าชั่วคราว</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
-<translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6556716549745717622">บล็อกหากไซต์มักแสดงโฆษณาที่แทรก (แนะนำ)</translation>
 <translation id="6560414384669816528">ค้นหาด้วย Sogou</translation>
 <translation id="6566259936974865419">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">ปลดล็อกเพื่อคัดลอกรหัสผ่าน</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{แท็บที่เปิดอยู่ %1$d แท็บ}other{แท็บที่เปิดอยู่ %1$d แท็บ}}</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
-<translation id="6905163627763043954">ลอง</translation>
 <translation id="6910211073230771657">ลบแล้ว</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6959661084585705671">พื้นที่เก็บข้อมูลรอง</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
-<translation id="7581273696622423628">ตอบแบบสำรวจ</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">บล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7593557518625677601">เปิดการตั้งค่า Android และเปิดการซิงค์ Android ใหม่เพื่อเริ่มการซิงค์ของ Chrome</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">การซิงค์ไม่ทำงาน</translation>
 <translation id="7612619742409846846">ลงชื่อเข้าใช้ Google ด้วย</translation>
 <translation id="7619072057915878432">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเครือข่ายขัดข้อง</translation>
-<translation id="7620146066550602128">ลองใช้<ph name="BEGIN_LINK" />วิธีที่ง่ายกว่าในการท่องเว็บ<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />รับความช่วยเหลือ<ph name="END_LINK1" />หรือ<ph name="BEGIN_LINK2" />สแกนใหม่<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
 <translation id="7638584964844754484">รหัสผ่านไม่ถูกต้อง</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
-<translation id="785312750761189439">เลื่อนขึ้นจากด้านล่างของหน้าจอหรือแตะปุ่มขยายเพื่อเข้าถึงเว็บไซต์และบทความยอดนิยม การดาวน์โหลด และอื่นๆ ได้อย่างง่ายดาย</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7882131421121961860">ไม่พบประวัติ</translation>

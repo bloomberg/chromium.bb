@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1006017844123154345">Otvoriť online</translation>
-<translation id="1036348656032585052">Vypnúť</translation>
 <translation id="1036727731225946849">Pridáva sa <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webov</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="1291207594882862231">Vymazať históriu, súbory cookie, údaje stránok, vyrovnávaciu pamäť…</translation>
 <translation id="129553762522093515">Naposledy zatvorené</translation>
-<translation id="1320663236730331991">Potiahnite nahor a ľahko sa dostanete k obľúbeným webom a článkom, stiahnutým súborom a ďalšiemu obsahu.</translation>
 <translation id="1326317727527857210">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do Chromu.</translation>
 <translation id="1332501820983677155">Skratky pre funkcie prehliadača Google Chrome</translation>
 <translation id="136248372334525878">Predbežné načítanie urýchľujúce načítanie a čítanie offline</translation>
@@ -123,7 +121,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2045104531052923016">Ďalšie aplikácie: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Predstavujeme nový Chrome</translation>
 <translation id="2086652334978798447">Ak chcete získavať prispôsobený obsah navrhnutý Googlom, prihláste sa do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="209354263896846928">Prejdite na panel s adresou v dolnej časti obrazovky</translation>
@@ -131,7 +128,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2100273922101894616">Automatické prihlasovanie</translation>
 <translation id="2111511281910874386">Prejdite na stránku</translation>
 <translation id="2122601567107267586">Aplikáciu sa nepodarilo otvoriť</translation>
-<translation id="2123074103454259350">Ešte nie</translation>
 <translation id="2126426811489709554">Používa technológiu prehliadača Chrome</translation>
 <translation id="2131665479022868825">Uložené: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE" /> je zavretá</translation>
@@ -141,8 +137,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Povedzte nám, prečo ste vypli nový Chrome</translation>
-<translation id="2185784955520093231">Používate nový Chrome</translation>
 <translation id="219985413780390209">Chrániť mňa aj moje zariadenie pred nebezpečnými webmi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovať ako <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2876764156902388290">Chrome spotrebúva na zobrazenie tejto stránky menej dát</translation>
 <translation id="2888126860611144412">O aplikácii Chrome</translation>
 <translation id="2891154217021530873">Zastaviť načítavanie stránky</translation>
-<translation id="2892933203342091350">Aktivovať zjednodušené zobrazenie pre všetky články</translation>
 <translation id="2900528713135656174">Vytvorte udalosť</translation>
 <translation id="2902702728133930130">Prehliadač Chrome sa nepodarilo spustiť, pretože sa vyskytla neočakávaná chyba</translation>
 <translation id="2903493209154104877">Adresy</translation>
@@ -294,7 +287,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3661699943263275414">Webové stránky tretej strany môžu ukladať a čítať údaje súborov cookie</translation>
 <translation id="3662546969139119822">Žiadna história</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
-<translation id="3682249951633602029">Vaše heslá sa zobrazia všetkým používateľom, ktorí vidia exportovaný súbor hesiel.</translation>
 <translation id="3712575778697986964">Resetovať Šetrič dát?</translation>
 <translation id="3714981814255182093">Otvorenie Panela vyhľadávania</translation>
 <translation id="3716182511346448902">Táto stránka využíva príliš veľa pamäte, a preto ju Chrome pozastavil.</translation>
@@ -618,7 +610,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6538442820324228105">Stiahnuté: <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Vyberte kartu, ktorú chcete preniesť</translation>
 <translation id="6545017243486555795">Vymazať všetky dáta</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6556716549745717622">Blokovať, ak web zvykne zobrazovať obťažujúce reklamy (odporúčané)</translation>
 <translation id="6560414384669816528">Vyhľadávať pomocou Sogou</translation>
 <translation id="6566259936974865419">Chrome ušetril <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6891726759199484455">Heslo môžete kopírovať po odomknutí</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorená karta}few{%1$d otvorené karty}many{%1$d otvorenej karty}other{%1$d otvorených kariet}}</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
-<translation id="6905163627763043954">Vyskúšať</translation>
 <translation id="6910211073230771657">Odstránené</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6959661084585705671">Sekundárne úložisko</translation>
@@ -727,7 +717,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7542481630195938534">Návrhy sa nedajú získať</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
-<translation id="7581273696622423628">Zúčastniť sa prieskumu</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7589445247086920869">Blokovať pre aktuálny vyhľadávač</translation>
 <translation id="7593557518625677601">V nastaveniach Androidu spustite synchronizáciu Chromu opätovným povolením synchronizácie Androidu</translation>
@@ -736,7 +725,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7605594153474022051">Synchronizácia nefunguje</translation>
 <translation id="7612619742409846846">Prihlásený/-á do Googlu ako</translation>
 <translation id="7619072057915878432">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu problémov so sieťou.</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />Prehliadajte jednoduchšie<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Získajte pomoc<ph name="END_LINK1" /> alebo <ph name="BEGIN_LINK2" />znova spustite vyhľadávanie<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
 <translation id="7638584964844754484">Nesprávna prístupová fráza</translation>
@@ -761,7 +749,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7846076177841592234">Zrušiť výber</translation>
 <translation id="784934925303690534">Časové obdobie</translation>
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>
-<translation id="785312750761189439">Ak chcete rýchlo získať prístup k populárnym webom, článkom, stiahnutým súborom a ďalšiemu obsahu, potiahnite prstom nahor z dolnej časti obrazovky alebo klepnite na tlačidlo Rozbaliť</translation>
 <translation id="7875915731392087153">Vytvorte správu</translation>
 <translation id="7876243839304621966">Odstrániť všetko</translation>
 <translation id="7882131421121961860">Nenašla sa žiadna história</translation>

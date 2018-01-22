@@ -928,11 +928,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="4105989332710272578">Inhabilitar la aplicación del Certificado de transparencia para una lista de URL</translation>
-<translation id="4111405663956464686">Advertencia: La política de la versión de TLS máxima se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 72 aproximadamente (alrededor de enero de 2019).
+<translation id="4111405663956464686">Advertencia: La política de la versión máxima de TLS se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 72 aproximadamente (alrededor de enero de 2019).
 
-      Si para ese momento no se configura la política, <ph name="PRODUCT_NAME" /> usará la versión máxima predeterminada.
+      Si para ese momento no se configuró la política, <ph name="PRODUCT_NAME" /> usará la versión máxima predeterminada.
 
-      De lo contrario, se podrá establecer en uno de los siguientes valores: "tls1.2" or "tls1.3". De esta manera, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS posteriores a la versión especificada. Se ignorarán los valores que no se reconozcan.</translation>
+      De lo contrario, se podrá establecer como uno de los siguientes valores: "tls1.2" o "tls1.3". De esta manera, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS posteriores a la especificada. Se ignorarán los valores no reconocidos.</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
 <translation id="4157003184375321727">Informar la versión de firmware y SO.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -993,7 +993,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4346674324214534449">Te permite establecer si se bloquearán los anuncios en sitios con anuncios intrusivos.
 
-      Si se establece esta política en 2, se bloquearán los anuncios en sitios con anuncios intrusivos.
+      Si se establece esta política como 2, se bloquearán los anuncios en sitios con anuncios intrusivos.
       Sin embargo, este comportamiento no se activará si la política SafeBrowsingEnabled se establece como falsa.
       Si se establece como 1, no se bloquearán los anuncios en sitios con anuncios intrusivos.
       Si no se establece, se usará 2.</translation>
@@ -2211,9 +2211,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8344454543174932833">Importar favoritos del navegador predeterminado en la primera ejecución</translation>
 <translation id="8359734107661430198">Habilitar la API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
 <translation id="8369602308428138533">Demora de pantalla apagada con alimentación de CA</translation>
-<translation id="8370471134641900314">Si esta política se establece como verdadera, el usuario deberá acceder a <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado BrowserGuestModeEnabled se establecerá como falso.
-
-      Si esta política se establece como falsa o no se configura, el usuario podrá usar el navegador sin acceder a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.

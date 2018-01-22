@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1006017844123154345">Mở trực tuyến</translation>
-<translation id="1036348656032585052">Tắt</translation>
 <translation id="1036727731225946849">Đang thêm <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Từ trang web</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
@@ -37,7 +36,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ cache…</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
-<translation id="1320663236730331991">Vuốt lên để dễ dàng truy cập vào các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
 <translation id="1326317727527857210">Để có các tab từ các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="1332501820983677155">Phím tắt cho các tính năng của Google Chrome</translation>
 <translation id="136248372334525878">Tải trước trang để tải nhanh hơn và đọc ngoại tuyến</translation>
@@ -83,7 +81,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1660204651932907780">Cho phép các trang web phát âm thanh (được đề xuất)</translation>
 <translation id="1670399744444387456">Cơ bản</translation>
 <translation id="1671236975893690980">Đang chờ tải xuống...</translation>
-<translation id="1674523662097951983">“Dấu trang” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
+<translation id="1674523662097951983">Vị trí “Dấu trang” sắp thay đổi. Lần sau, bạn chỉ cần kéo thanh địa chỉ lên để truy cập.</translation>
 <translation id="169033420419426091">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu thẻ SD.</translation>
 <translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
@@ -123,7 +121,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2045104531052923016">Các ứng dụng khác chiếm <ph name="GIGABYTES" /> GB</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Giới thiệu Chrome mới</translation>
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="209354263896846928">Truy cập vào thanh địa chỉ ở cuối màn hình của bạn</translation>
@@ -131,7 +128,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="2111511281910874386">Chuyển đến trang</translation>
 <translation id="2122601567107267586">Không thể mở ứng dụng</translation>
-<translation id="2123074103454259350">Chưa được bật</translation>
 <translation id="2126426811489709554">Được hỗ trợ bởi Chrome</translation>
 <translation id="2131665479022868825">Đã lưu <ph name="DATA" /></translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Hãy cho chúng tôi biết lý do bạn tắt Chrome mới</translation>
-<translation id="2185784955520093231">Bạn đang sử dụng Chrome mới</translation>
 <translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2876764156902388290">Chrome đang sử dụng ít dữ liệu hơn để hiển thị cho bạn trang này</translation>
 <translation id="2888126860611144412">Giới thiệu Chrome</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
-<translation id="2892933203342091350">Bật chế độ xem đơn giản trên tất cả các bài viết</translation>
 <translation id="2900528713135656174">Tạo sự kiện</translation>
 <translation id="2902702728133930130">Chrome khởi động không thành công với lỗi không mong muốn.</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
@@ -294,7 +287,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
 <translation id="3662546969139119822">Không có lịch sử ở đây</translation>
 <translation id="3672452749423051839">Đề xuất cho lỗi điều hướng</translation>
-<translation id="3682249951633602029">Bất cứ ai có thể xem tệp mật khẩu đã xuất đều có thể biết mật khẩu của bạn.</translation>
 <translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
@@ -555,7 +547,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
 <translation id="5958275228015807058">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
-<translation id="5974562976030145789">“Tài nguyên đã tải xuống” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
+<translation id="5974562976030145789">Vị trí “Tài nguyên đã tải xuống” sắp thay đổi. Lần sau, bạn chỉ cần kéo thanh địa chỉ lên để truy cập.</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
 <translation id="6031101910111098835">Đã thu gọn - Nhấp để mở rộng</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
@@ -618,7 +610,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6538442820324228105">Đã tải xuống <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
-<translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6556716549745717622">Chặn nếu trang web thường hiển thị quảng cáo xâm nhập (được đề xuất)</translation>
 <translation id="6560414384669816528">Tìm kiếm với Sogou</translation>
 <translation id="6566259936974865419">Chrome đã tiết kiệm <ph name="GIGABYTES" /> GB cho bạn</translation>
@@ -662,7 +653,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6891726759199484455">Mở khóa để sao chép mật khẩu của bạn</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
 <translation id="6896758677409633944">Sao chép</translation>
-<translation id="6905163627763043954">Dùng thử</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6959661084585705671">Bộ nhớ phụ</translation>
@@ -727,7 +717,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7542481630195938534">Không thể nhận đề xuất</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
-<translation id="7581273696622423628">Thực hiện khảo sát</translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7589445247086920869">Chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7593557518625677601">Mở c.đặt Android &amp; bật lại đ.bộ hóa hệ thống Android để b.đầu đồng bộ hóa Chrome</translation>
@@ -736,7 +725,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
-<translation id="7620146066550602128">Hãy thử một <ph name="BEGIN_LINK" />cách duyệt web dễ dàng hơn<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />quét lại<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>
@@ -761,7 +749,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7846076177841592234">Hủy chọn</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
-<translation id="785312750761189439">Vuốt lên từ cuối màn hình hoặc nhấn vào nút mở rộng để dễ dàng truy cập các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
 <translation id="7875915731392087153">Tạo email</translation>
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7882131421121961860">Không tìm thấy lịch sử nào</translation>
@@ -820,7 +807,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8489271220582375723">Mở trang lịch sử</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
-<translation id="8494508527479967437">“Lịch sử” đang chuyển đổi. Vào lần tiếp theo, hãy kéo thanh địa chỉ lên.</translation>
+<translation id="8494508527479967437">Vị trí “Lịch sử” sắp thay đổi. Lần sau, bạn chỉ cần kéo thanh địa chỉ lên để truy cập.</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8514477925623180633">Xuất mật khẩu đã lưu trữ với Chrome</translation>

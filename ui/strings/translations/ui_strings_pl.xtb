@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{miesiąc temu}few{# miesiące temu}many{# miesięcy temu}other{# miesiąca temu}}</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
-<translation id="4320177379694898372">Brak połączenia z internetem</translation>
 <translation id="4588090240171750605">Przewiń w prawo</translation>
 <translation id="4724120544754982507">Centrum powiadomień, liczba nieprzeczytanych powiadomień: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">CZĘSTO UŻYWANE</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">Krawędź po lewej</translation>
 <translation id="8331626408530291785">Przewiń w górę</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 rok}few{# lata}many{# lat}other{# roku}}</translation>
-<translation id="8371695176452482769">Mów teraz</translation>
 <translation id="838869780401515933">zaznacz</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>
 <translation id="8394908167088220973">Odtwórz/wstrzymaj multimedia</translation>

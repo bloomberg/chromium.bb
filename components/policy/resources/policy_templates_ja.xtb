@@ -2197,9 +2197,6 @@
 <translation id="8344454543174932833">初回実行時にデフォルトのブラウザからブックマークをインポートする</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API を 2008 年 9 月 2 日いっぱい有効にする</translation>
 <translation id="8369602308428138533">画面がオフになるまでの時間（AC 電源での実行時）</translation>
-<translation id="8370471134641900314">このポリシーを true に設定した場合、ユーザーがブラウザを使用するには自分のプロフィールで <ph name="PRODUCT_NAME" /> にログインする必要があります。また、BrowserGuestModeEnabled の既定値は false に設定されます。
-
-      このポリシーを false に設定するか未設定のままにした場合、ユーザーは <ph name="PRODUCT_NAME" /> にログインしなくてもブラウザを使用できます。</translation>
 <translation id="8382184662529825177">デバイスのコンテンツ保護に関するリモート認証の使用を有効にする</translation>
 <translation id="838870586332499308">データ ローミングを有効にする</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> で内部 PDF ビューアを無効にします。この場合、ユーザーはダウンロードしたファイルと同じように、PDF ファイルをデフォルトのアプリで開くことができます。

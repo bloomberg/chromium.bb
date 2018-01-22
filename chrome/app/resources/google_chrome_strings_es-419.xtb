@@ -54,7 +54,6 @@
 
 Si accedes de todos modos, se fusionará la información de Google Chrome, como los favoritos, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar el menú de Chrome</translation>
-<translation id="2416359993254398973">Chrome necesita permiso para acceder a tu cámara para este sitio.</translation>
 <translation id="2429317896000329049">Google Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="2446511512801740068">Chrome no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
@@ -66,7 +65,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Google Chrome.</translation>
 <translation id="2689103672227170538">Esta extensión cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="2705403826523567092">Accede para obtener una experiencia de navegación personalizada y sincronizada entre dispositivos</translation>
-<translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="2770231113462710648">Cambiar el navegador predeterminado a:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2847461019998147611">Mostrar Google Chrome en este idioma</translation>
@@ -157,10 +155,8 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="5495581687705680288">Los módulos se cargaron en Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
-<translation id="557283862590186398">Chrome necesita permiso para acceder a tu micrófono para este sitio.</translation>
 <translation id="565744775970812598">Chrome bloqueó <ph name="FILE_NAME" /> porque es posible que sea un archivo peligroso.</translation>
 <translation id="573759479754913123">Acerca de Chrome OS</translation>
-<translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>
 <translation id="5774845247549698882">El Sistema operativo Chrome se muestra en este idioma</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
@@ -179,7 +175,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
-<translation id="6393863479814692971">Chrome necesita permiso para acceder a tu cámara y micrófono para este sitio.</translation>
 <translation id="6410540444482791104">Para ayudar a detectar apps y sitios peligrosos y que Chrome sea más seguro y fácil de usar, envía de forma automática información del sistema y contenido de la página a Google.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{En este momento, hay una descarga en curso. ¿Deseas cancelarla y salir de Google Chrome?}other{En este momento, hay # descargas en curso. ¿Deseas cancelarlas y salir de Google Chrome?}}</translation>
 <translation id="6566149418543181476">Actualizando Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="6634887557811630702">Google Chrome está actualizado.</translation>
 <translation id="6676384891291319759">Acceder a Internet</translation>
-<translation id="6697947395630195233">Chrome necesita acceso a tu ubicación para compartirla con este sitio.</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
 <translation id="686561893457936865">Usa Chrome donde sea</translation>
 <translation id="6885412569789873916">Apps de Chrome Beta</translation>

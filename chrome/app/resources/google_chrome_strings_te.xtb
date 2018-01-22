@@ -54,7 +54,6 @@
 
 ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chrome సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
 <translation id="2397416548179033562">Chrome మెనును చూపు</translation>
-<translation id="2416359993254398973">ఈ సైట్ కోసం మీ కెమెరాని యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం.</translation>
 <translation id="2429317896000329049">మీ డొమైన్ కోసం సమకాలీకరణ అందుబాటులో లేనందున Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="2446511512801740068">Chromeని కొంత కాలంగా పునఃప్రారంభించనందున దాని గడువు తేదీ ముగిసింది. నవీకరణ అందుబాటులో ఉంది, మీరు పునఃప్రారంభించిన తక్షణం వర్తింపజేయబడుతుంది.</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">Googleకు వినియోగ గణాంకాలు మరియు <ph name="UMA_LINK" />ను పంపడం ద్వారా Google Chromeను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="2689103672227170538">ఈ పొడిగింపు మీరు Chromeని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="2705403826523567092">వ్యక్తిగతీకరించిన బ్రౌజింగ్ అనుభవానికి, పరికరాలకు సమకాలీకరించడానికి సైన్ ఇన్ చేయండి</translation>
-<translation id="2769762047821873045">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు.</translation>
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
 <translation id="2799223571221894425">మళ్లీ ప్రారంభించు</translation>
 <translation id="2847461019998147611">Google Chromeను ఈ భాషలో ప్రదర్శించు</translation>
@@ -157,10 +155,8 @@
 <translation id="5495581687705680288">Google Chromeలో మాడ్యూళ్ళు లోడ్ చెయ్యబడ్డాయి</translation>
 <translation id="556024056938947818">Google Chrome పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> హానికరం కావచ్చు, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
 <translation id="573759479754913123">Chrome OS గురించి</translation>
-<translation id="5749068826913805084">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromeకు నిల్వ ప్రాప్యత అవసరం.</translation>
 <translation id="5774845247549698882">Chrome OS ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="5855036575689098185">మీ కంప్యూటర్‌లో అమలవుతున్న సాఫ్ట్‌వేర్ Google Chromeకు అనుకూలంగా లేదు.</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
@@ -179,7 +175,6 @@
 <translation id="6291549208091401781">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Google Chrome ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6338556085225130112">Google Chromeని నవీకరిస్తోంది</translation>
 <translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా  Chrome OS సాధ్యం అవుతుంది.</translation>
-<translation id="6393863479814692971">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం.</translation>
 <translation id="6410540444482791104">హానికరమైన అనువర్తనాలు మరియు సైట్‌లను గుర్తించడంలో సహాయపడటానికి కొంత సిస్టమ్ సమాచారాన్ని మరియు పేజీ కంటెంట్‌ను Googleకి స్వయంచాలకంగా పంపడం ద్వారా మీరు Chromeని ఉపయోగించడానికి సురక్షితమైనదిగా మరియు సులభమైనదిగా చేయడంలో సహాయపడవచ్చు.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{డౌన్‌లోడ్ ప్రస్తుతం ప్రోగ్రెస్‌లో ఉంది. మీరు డౌన్‌లోడ్‌ను రద్దు చేసి, Google Chrome నుండి నిష్క్రమించాలనుకుంటున్నారా?}other{# డౌన్‌లోడ్‌లు ప్రస్తుతం ప్రోగ్రెస్‌లో ఉన్నాయి. మీరు డౌన్‌లోడ్‌లను రద్దు చేసి, Google Chrome నుండి నిష్క్రమించాలనుకుంటున్నారా?}}</translation>
 <translation id="6566149418543181476">Google Chrome నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
-<translation id="6697947395630195233">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం.</translation>
 <translation id="683440813066116847">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కెనరీ కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="686561893457936865">Chromeని ప్రతిచోటుకు తీసుకెళ్లండి</translation>
 <translation id="6885412569789873916">Chrome బీటా అనువర్తనాలు</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
-<translation id="1036348656032585052">خاموش کردن</translation>
 <translation id="1036727731225946849">درحال افزودن <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">از وب‌سایت‌ها</translation>
 <translation id="1049743911850919806">ناشناس</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
-<translation id="1320663236730331991">برای دسترسی آسان به سایت‌ها و مقاله‌های محبوب، بارگیری‌ها و غیره، تند به بالا بکشید</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
 <translation id="136248372334525878">برای بارگیری سریع‌تر و خواندن درحالت آفلاین، صفحات را پیش‌بارگیری کنید</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> گیگابایت توسط سایر برنامه‌ها</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">‏معرفی Chrome جدید</translation>
 <translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
 <translation id="2091887806945687916">صدا</translation>
 <translation id="209354263896846928">در پایین صفحه‌نمایش به نوار نشانی دسترسی پیدا کنید</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2111511281910874386">رفتن به صفحه</translation>
 <translation id="2122601567107267586">باز کردن برنامه امکان‌پذیر نیست</translation>
-<translation id="2123074103454259350">هنوز نه</translation>
 <translation id="2126426811489709554">‏ارائه توسط Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> صرفه‌جویی شد</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> بسته شد</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">ویرایش کارت</translation>
 <translation id="2154710561487035718">کپی نشانی وب</translation>
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">‏علت خاموش کردن Chrome جدید را به ما بگویید</translation>
-<translation id="2185784955520093231">‏درحال استفاده از Chrome جدید هستید</translation>
 <translation id="219985413780390209">محافظت از شما و دستگاهتان دربرابر سایت‌های خطرناک</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، برنامه وب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">‏Chrome از داده کمتری برای نمایش این صفحه به شما استفاده می‌کند</translation>
 <translation id="2888126860611144412">‏درباره Chrome</translation>
 <translation id="2891154217021530873">توقف بارگیری صفحه</translation>
-<translation id="2892933203342091350">فعال کردن نمای ساده‌شده برای همه مقاله‌ها</translation>
 <translation id="2900528713135656174">ایجاد رویداد</translation>
 <translation id="2902702728133930130">‏Chrome در هنگام شروع به کار با خطایی غیرمنتظره متوقف شد.</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
 <translation id="3662546969139119822">سابقه‌ای اینجا نیست</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
-<translation id="3682249951633602029">گذرواژه شما برای همه افرادی که می‌توانند فایل گذرواژه‌های صادرشده را ببینید، قابل مشاهده خواهد بود.</translation>
 <translation id="3712575778697986964">صرفه‌جویی داده بازنشانی شود؟</translation>
 <translation id="3714981814255182093">باز کردن «نوار پیدا کردن»</translation>
 <translation id="3716182511346448902">‏این صفحه از حافظه بسیار زیادی استفاده می‌کند، بنابراین Chrome موقتاً آن را متوقف کرد.</translation>
@@ -617,7 +609,6 @@
 <translation id="6538442820324228105"><ph name="GBS" /> گیگابایت بارگیری شد</translation>
 <translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
 <translation id="6545017243486555795">پاک کردن همه داده‌ها</translation>
-<translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6556716549745717622">اگر سایت تمایل دارد آگهی‌های مزاحم نشان دهد مسدود شود (توصیه می‌شود)</translation>
 <translation id="6560414384669816528">‏جستجو با Sogou</translation>
 <translation id="6566259936974865419">‏Chrome‏ <ph name="GIGABYTES" /> گیگابایت از داده‌های شما را ذخیره کرده است</translation>
@@ -661,7 +652,6 @@
 <translation id="6891726759199484455">برای کپی کردن گذرواژه‌تان، قفل صفحه را باز کنید</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏%1$d برگه باز}one{‏%1$d برگه باز}other{‏%1$d برگه باز}}</translation>
 <translation id="6896758677409633944">کپی</translation>
-<translation id="6905163627763043954">امتحانش کنید</translation>
 <translation id="6910211073230771657">حذف شد</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6959661084585705671">حافظه ثانویه</translation>
@@ -726,7 +716,6 @@
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
-<translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>
 <translation id="7588950540487816470">وب فیزیکی</translation>
 <translation id="7589445247086920869">مسدود کردن موتور جستجوی کنونی</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
@@ -735,7 +724,6 @@
 <translation id="7605594153474022051">همگام‌سازی کار نمی‌کند</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>
 <translation id="7619072057915878432">به‌دلیل نقص‌هایی در شبکه، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />روش مرور آسان‌تری<ph name="END_LINK" /> را امتحان کنید</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />دریافت راهنمایی<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />اسکن مجدد<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>
@@ -760,7 +748,6 @@
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
-<translation id="785312750761189439">برای دسترسی آسان به سایت‌های پرطرفدار و مقاله‌ها، بارگیری‌ها و سایر موارد، از پایین صفحه تند به بالا بکشید یا روی دکمه بزرگ کردن ضربه بزنید</translation>
 <translation id="7875915731392087153">ایجاد رایانامه</translation>
 <translation id="7876243839304621966">حذف همه</translation>
 <translation id="7882131421121961860">هیچ سابقه‌ای پیدا نشد</translation>

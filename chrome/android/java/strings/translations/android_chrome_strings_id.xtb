@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1006017844123154345">Buka versi Online</translation>
-<translation id="1036348656032585052">Matikan</translation>
 <translation id="1036727731225946849">Menambahkan <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Dari situs</translation>
 <translation id="1049743911850919806">Penyamaran</translation>
@@ -37,7 +36,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
-<translation id="1320663236730331991">Geser ke atas untuk mengakses situs dan artikel populer, hasil download, dan lain-lain dengan mudah</translation>
 <translation id="1326317727527857210">Untuk mendapatkan tab dari perangkat lainnya, masuk ke Chrome.</translation>
 <translation id="1332501820983677155">Pintasan fitur Google Chrome</translation>
 <translation id="136248372334525878">Pramuat halaman agar loading dan membaca offline lebih cepat</translation>
@@ -116,14 +114,13 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1993768208584545658"><ph name="SITE" /> ingin menyandingkan</translation>
 <translation id="1994173015038366702">URL situs</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB aplikasi lain</translation>
-<translation id="2015632741368427174">Pengalihan diblokir ke situs:</translation>
+<translation id="2015632741368427174">Pengalihan ke situs di bawah ini diblokir:</translation>
 <translation id="2017836877785168846">Hapus histori dan pelengkapan otomatis di kolom URL.</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB aplikasi lain</translation>
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="2082238445998314030">Hasil <ph name="RESULT_NUMBER" /> dari <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Memperkenalkan Chrome baru</translation>
 <translation id="2086652334978798447">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, masuk ke Chrome.</translation>
 <translation id="2091887806945687916">Suara</translation>
 <translation id="209354263896846928">Akses kolom URL di bagian bawah halaman</translation>
@@ -131,7 +128,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2100273922101894616">Masuk Otomatis</translation>
 <translation id="2111511281910874386">Buka halaman</translation>
 <translation id="2122601567107267586">Tidak dapat membuka aplikasi</translation>
-<translation id="2123074103454259350">Belum</translation>
 <translation id="2126426811489709554">Diberdayakan oleh Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> tersimpan</translation>
 <translation id="213279576345780926">Menutup <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2154484045852737596">Edit kartu</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Situs yang tersisa (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Beri tahu kami alasan Anda menonaktifkan Chrome baru</translation>
-<translation id="2185784955520093231">Anda menggunakan Chrome baru</translation>
 <translation id="219985413780390209">Lindungi perangkat dan diri Anda dari situs berbahaya</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplikasi web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Lanjutkan sebagai <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2876764156902388290">Chrome menggunakan data lebih sedikit untuk menampilkan halaman ini kepada Anda</translation>
 <translation id="2888126860611144412">Tentang Chrome</translation>
 <translation id="2891154217021530873">Hentikan pemuatan halaman</translation>
-<translation id="2892933203342091350">Mengaktifkan tampilan sederhana di semua artikel</translation>
 <translation id="2900528713135656174">Buat acara</translation>
 <translation id="2902702728133930130">Chrome gagal memulai karena ada kesalahan yang tidak terduga.</translation>
 <translation id="2903493209154104877">Alamat</translation>
@@ -294,7 +287,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3661699943263275414">Situs web pihak ketiga dapat menyimpan dan membaca data cookie</translation>
 <translation id="3662546969139119822">Tidak ada histori di sini</translation>
 <translation id="3672452749423051839">Saran untuk kesalahan navigasi</translation>
-<translation id="3682249951633602029">Sandi akan terlihat oleh orang yang dapat melihat file sandi yang diekspor.</translation>
 <translation id="3712575778697986964">Setel ulang Penghemat Kuota Internet?</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
@@ -462,7 +454,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5224771365102442243">Dengan video</translation>
 <translation id="5233638681132016545">Tab baru</translation>
 <translation id="5271967389191913893">Perangkat tidak dapat membuka konten untuk didownload.</translation>
-<translation id="528192093759286357">Seret dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
+<translation id="528192093759286357">Tarik dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="5284584623296338184">Perubahan pada bookmark, histori, sandi, dan setelan lainnya tidak akan disinkronkan lagi dengan Akun Google Anda. Namun, data yang sudah ada akan tetap disimpan di akun Google Anda.</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
@@ -618,7 +610,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6538442820324228105">Terdownload <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="6545017243486555795">Hapus Semua Data</translation>
-<translation id="6550675742724504774">Opsi</translation>
 <translation id="6556716549745717622">Blokir jika situs cenderung menampilkan iklan mengganggu (direkomendasikan)</translation>
 <translation id="6560414384669816528">Menelusuri menggunakan Sogou</translation>
 <translation id="6566259936974865419">Chrome telah menghemat <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6891726759199484455">Buka kunci untuk menyalin sandi Anda</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab terbuka}other{%1$d tab terbuka}}</translation>
 <translation id="6896758677409633944">Salin</translation>
-<translation id="6905163627763043954">Cobalah</translation>
 <translation id="6910211073230771657">Dihapus</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6959661084585705671">Penyimpanan sekunder</translation>
@@ -727,7 +717,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7542481630195938534">Tidak bisa mendapatkan saran</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
-<translation id="7581273696622423628">Ikuti survei</translation>
 <translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7589445247086920869">Memblokir mesin telusur saat ini</translation>
 <translation id="7593557518625677601">Buka setelan Android dan aktifkan kembali sinkronisasi sistem Android untuk memulai Sinkronisasi Chrome</translation>
@@ -736,7 +725,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7605594153474022051">Sinkronisasi tidak berfungsi</translation>
 <translation id="7612619742409846846">Masuk ke Google sebagai</translation>
 <translation id="7619072057915878432">Download <ph name="FILE_NAME" /> gagal karena kesalahan jaringan.</translation>
-<translation id="7620146066550602128">Coba <ph name="BEGIN_LINK" />cara yang lebih mudah untuk browsing<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Dapatkan bantuan<ph name="END_LINK1" /> atau <ph name="BEGIN_LINK2" />pindai ulang<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Selamat Menggunakan Chrome</translation>
 <translation id="7638584964844754484">Frasa sandi salah</translation>
@@ -761,7 +749,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
-<translation id="785312750761189439">Geser ke atas dari bawah layar atau tap tombol luaskan untuk akses mudah ke artikel dan situs populer, hasil download, dan lainnya</translation>
 <translation id="7875915731392087153">Buat email</translation>
 <translation id="7876243839304621966">Hapus semua</translation>
 <translation id="7882131421121961860">Tidak ada histori</translation>

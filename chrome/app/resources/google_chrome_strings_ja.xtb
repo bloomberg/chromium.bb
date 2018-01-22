@@ -54,7 +54,6 @@
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW" /> と統合されます。</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
-<translation id="2416359993254398973">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります。</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2446511512801740068">Chrome はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK" />を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="2689103672227170538">この拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="2705403826523567092">ログインすると、個人向けにカスタマイズされたブラウジング環境をさまざまな端末間で同期して使用できます</translation>
-<translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
 <translation id="2847461019998147611">Google Chrome をこの言語で表示</translation>
@@ -157,10 +155,8 @@
 <translation id="5495581687705680288">Google Chrome に読み込まれているモジュール</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
-<translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
-<translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5774845247549698882">Chrome OS はこの言語で表示されています</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
@@ -179,7 +175,6 @@
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
 <translation id="6368958679917195344">Chrome OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
-<translation id="6393863479814692971">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります。</translation>
 <translation id="6410540444482791104">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}other{# 件のダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}}</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
@@ -187,7 +182,6 @@
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
-<translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="686561893457936865">どの端末でも同じ Chrome を使用できます</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>

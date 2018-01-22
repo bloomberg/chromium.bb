@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
 <translation id="4316910396681052118">TODOS OS APPS</translation>
-<translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="4724120544754982507">Central de Notificações: <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
 <translation id="4730374152663651037">USADOS FREQUENTEMENTE</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">Borda esquerda</translation>
 <translation id="8331626408530291785">Percorrer para cima</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{ ano}one{# ano}other{# anos}}</translation>
-<translation id="8371695176452482769">Fale agora</translation>
 <translation id="838869780401515933">marcar</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8394908167088220973">Reproduzir/pausar mídia</translation>

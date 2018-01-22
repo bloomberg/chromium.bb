@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1006017844123154345">Otvori online</translation>
-<translation id="1036348656032585052">Isključi</translation>
 <translation id="1036727731225946849">Dodavanje stavke <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">S web-lokacija</translation>
 <translation id="1049743911850919806">Anonimno</translation>
@@ -37,7 +36,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
-<translation id="1320663236730331991">Prijeđite prstom prema gore da biste lako pristupili popularnim web-lokacijama i člancima, sadržajima za preuzimanje i drugom</translation>
 <translation id="1326317727527857210">Da bi se prikazale kartice s vaših ostalih uređaja, prijavite se na Chrome.</translation>
 <translation id="1332501820983677155">Prečaci za značajke Google Chromea</translation>
 <translation id="136248372334525878">Prethodno učitajte stranice za brže učitavanje i čitanje izvan mreže</translation>
@@ -123,7 +121,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB ostale aplikacije</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /> rezultata</translation>
-<translation id="2086116129690175316">Predstavljamo novi Chrome</translation>
 <translation id="2086652334978798447">Prijavite se u Chrome ako želite da vam Google predlaže sadržaje.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="209354263896846928">Pristupite adresnoj traci u dnu zaslona</translation>
@@ -131,7 +128,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2100273922101894616">Automatska prijava</translation>
 <translation id="2111511281910874386">Idi na stranicu</translation>
 <translation id="2122601567107267586">Otvaranje aplikacije nije uspjelo</translation>
-<translation id="2123074103454259350">Još ne</translation>
 <translation id="2126426811489709554">Omogućuje Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> spremljeno</translation>
 <translation id="213279576345780926">Zatvorena je kartica <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2154484045852737596">Uredite karticu</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Recite nam zašto ste isključili novi Chrome</translation>
-<translation id="2185784955520093231">Upotrebljavate novi Chrome</translation>
 <translation id="219985413780390209">Zaštitite sebe i svoj uređaj od opasnih web-lokacija</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web-aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2876764156902388290">Chrome koristi manje podataka za prikaz ove stranice</translation>
 <translation id="2888126860611144412">O Chromeu</translation>
 <translation id="2891154217021530873">Zaustavljanje učitavanja stranice</translation>
-<translation id="2892933203342091350">Omogući pojednostavljeni prikaz na svim člancima</translation>
 <translation id="2900528713135656174">Stvori događaj</translation>
 <translation id="2902702728133930130">Chrome se nije pokrenuo zbog neočekivane pogreške.</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -294,7 +287,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3661699943263275414">Web-lokacije trećih strana mogu spremati i čitati podatke kolačića</translation>
 <translation id="3662546969139119822">Ovdje nema povijesti</translation>
 <translation id="3672452749423051839">Prijedlozi pogreške kretanja</translation>
-<translation id="3682249951633602029">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku sa zaporkama.</translation>
 <translation id="3712575778697986964">Želite li vratiti Uštedu podataka na zadano?</translation>
 <translation id="3714981814255182093">Otvaranje Trake za traženje</translation>
 <translation id="3716182511346448902">Ova stranica upotrebljava previše memorije, pa ju je Chrome pauzirao.</translation>
@@ -618,7 +610,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6538442820324228105">Preuzeto <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Odaberite karticu za emitiranje</translation>
 <translation id="6545017243486555795">Izbriši sve podatke</translation>
-<translation id="6550675742724504774">Opcije</translation>
 <translation id="6556716549745717622">Blokiraj ako web-lokacija često prikazuje ometajuće oglase (preporučeno)</translation>
 <translation id="6560414384669816528">Pretražujte na usluzi Sogou</translation>
 <translation id="6566259936974865419">Chrome vam je uštedio <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6891726759199484455">Otključajte za kopiranje zaporke</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorena kartica}one{%1$d otvorena kartica}few{%1$d otvorene kartice}other{%1$d otvorenih kartica}}</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
-<translation id="6905163627763043954">Isprobaj</translation>
 <translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6959661084585705671">Sekundarna pohrana</translation>
@@ -727,7 +717,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7542481630195938534">Prijedlozi se ne mogu dohvatiti</translation>
 <translation id="7562080006725997899">Brisanje podataka o pregledavanju</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>
-<translation id="7581273696622423628">Ispunite anketu</translation>
 <translation id="7588950540487816470">Fizički web</translation>
 <translation id="7589445247086920869">Blokiraj za trenutačnu tražilicu</translation>
 <translation id="7593557518625677601">U postavkama omogućite sink. sustava Android da se pokrene Chrome sinkronizacija</translation>
@@ -736,7 +725,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7605594153474022051">Sinkronizacija ne radi</translation>
 <translation id="7612619742409846846">Prijavljeni ste na Google kao</translation>
 <translation id="7619072057915878432">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog kvarova na mreži.</translation>
-<translation id="7620146066550602128">Isprobajte <ph name="BEGIN_LINK" />lakši način pregledavanja weba<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Potražite pomoć<ph name="END_LINK1" /> ili <ph name="BEGIN_LINK2" />pretražite ponovo<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
 <translation id="7638584964844754484">Pogrešna zaporka</translation>
@@ -761,7 +749,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7846076177841592234">Poništi odabir</translation>
 <translation id="784934925303690534">Vremenski raspon</translation>
 <translation id="7851858861565204677">Ostali uređaji</translation>
-<translation id="785312750761189439">Prijeđite prstom prema gore od dna zaslona ili dodirnite gumb Proširi da biste lako pristupili popularnim web-lokacijama i člancima, preuzimanjima i drugim sadržajima</translation>
 <translation id="7875915731392087153">Izradite e-poruku</translation>
 <translation id="7876243839304621966">Ukloni sve</translation>
 <translation id="7882131421121961860">Povijest nije pronađena</translation>

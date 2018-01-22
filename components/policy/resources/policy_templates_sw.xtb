@@ -768,7 +768,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3512226956150568738">Ikiwa muundo wa kifaa teja tayari unatumia ARC kabla ya kuhamishiwa kwenye ext4 ili kutumia ARC na sera ya ArcEnabled imewekwa kuwa ndivyo, chaguo hili litafanya kazi kama AskUser (thamani ya 3). Katika hali zingine zote (ikiwa muundo wa kifaa haukuwa unatumia ARC hapo awali, au kama sera ya ArcEnabled imewekwa kuwa sivyo), thamani hii inalingana na DisallowArc (thamani ya 0).</translation>
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
-<translation id="3577251398714997599">Mipangilio ya matangazo ya tovuti zilizo na matangazo yanayokatiza matumizi</translation>
+<translation id="3577251398714997599">Mipangilio ya matangazo kwa tovuti zilizo na matangazo yanayokatiza matumizi</translation>
 <translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
 <translation id="3627678165642179114">Wezesha au lemaza huduma ya wavuti ya ukaguzi tahajia</translation>
 <translation id="3646859102161347133">Weka aina ya kikuza skrini</translation>
@@ -1022,7 +1022,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4346674324214534449">Inakuruhusu kubaini ikiwa matangazo yanapaswa kuzuiliwa kwenye tovuti zilizo na matangazo yanayokatiza matumizi. 
 Ikiwa sera hii imewekwa kuwa 2, matangazo yatazuiliwa kwenye tovuti zilizo na matangazo yanayozuia matumizi. 
 Hata hivyo, utendaji huu hautafanyika ikiwa sera ya SafeBrowsingEnabled imewekwa kuwa Sivyo.
-Ikiwa sera hii imewekwa kuwa1, matangazo hayatazuiliwa kwenye tovuti zilizo na matangazo yanayokatiza matumizi. 
+Ikiwa sera hii imewekwa kuwa 1, matangazo hayatazuiliwa kwenye tovuti zilizo na matangazo yanayokatiza matumizi. 
 Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
 <translation id="4347908978527632940">Ikiwa ndivyo na mtumiaji ni anayesimamiwa, basi programu nyingine za Android zinaweza kudadisi vikwazo vya wavuti vya mtumiaji kupitia kwa mtoa huduma za maudhui.
 
@@ -2271,9 +2271,6 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8344454543174932833">Ingiza alamisho kutoka kivinjari chaguo-msingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="8359734107661430198">Washa API ya ExampleDeprecatedFeature kupitia 2008/09/02</translation>
 <translation id="8369602308428138533">Kuchelewa kwa kuzima skirini wakati nishati ya AC inapotumika</translation>
-<translation id="8370471134641900314">Sera hii ikiwekwa kuwa ndivyo, lazima mtumiaji aingie katika <ph name="PRODUCT_NAME" /> kwa kutumia wasifu wake kabla ya kutumia kivinjari. Na thamani chaguo-msingi ya BrowserGuestModeEnabled itawekwa kuwa sivyo.
-
-      Sera hii ikiwekwa kuwa sivyo au isipowekwa, mtumiaji anaweza kutumia kivinjari bila kuingia katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Washa matumizi ya usahihishaji wa mbali wa kulinda maudhui ya kifaa</translation>
 <translation id="838870586332499308">Wezesha utumiaji wa data nje ya mtandao wako wa kawaida</translation>
 <translation id="8390049129576938611">Huzima programu ya ndani ya kusoma PDF katika <ph name="PRODUCT_NAME" />. Badala yake huichukulia kama kupakuliwa na huruhusu mtumiaji kufungua faili za PDF kwa kutumia programu chaguo-msingi.

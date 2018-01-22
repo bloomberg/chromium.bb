@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1006017844123154345">Odpri v spletu</translation>
-<translation id="1036348656032585052">Izklop</translation>
 <translation id="1036727731225946849">Dodajanje <ph name="WEBAPK_NAME" /> ...</translation>
 <translation id="1041308826830691739">S spletnih mest</translation>
 <translation id="1049743911850919806">Način brez beleženja zgodovine</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
-<translation id="1320663236730331991">Povlecite navzgor za preprost dostop do priljubljenih spletnih mest in člankov, prenosov in drugega</translation>
 <translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="1332501820983677155">Bližnjice za funkcije Google Chroma</translation>
 <translation id="136248372334525878">Vnaprejšnje nalaganje strani za hitrejše nalaganje in branje brez povezave</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB drugih aplikacij</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Predstavljamo novi Chrome</translation>
 <translation id="2086652334978798447">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, se prijavite v Chrome.</translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="209354263896846928">Naslovna vrstica je dostopna na dnu zaslona</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2111511281910874386">Pojdi na stran</translation>
 <translation id="2122601567107267586">Aplikacije ni bilo mogoče odpreti</translation>
-<translation id="2123074103454259350">Ne še</translation>
 <translation id="2126426811489709554">Uporablja tehnologijo Chrome</translation>
 <translation id="2131665479022868825">Shranjeno <ph name="DATA" /></translation>
 <translation id="213279576345780926">Zaprt zavihek: <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostala spletna mesta (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Povejte nam, zakaj ste izklopili novi Chrome</translation>
-<translation id="2185784955520093231">Uporabljate novi Chrome</translation>
 <translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Nadaljujte kot <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome uporablja manj podatkov za prikaz te strani</translation>
 <translation id="2888126860611144412">O brskalniku Chrome</translation>
 <translation id="2891154217021530873">Ustavi nalaganje strani</translation>
-<translation id="2892933203342091350">Omogoči poenostavljen pogled na vse članke</translation>
 <translation id="2900528713135656174">Ustvarite dogodek</translation>
 <translation id="2902702728133930130">Zaradi nepričakovane napake se Chrome ni uspel zagnati.</translation>
 <translation id="2903493209154104877">Naslovi</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">Druga spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="3662546969139119822">Tu ni zgodovine</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
-<translation id="3682249951633602029">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko z gesli.</translation>
 <translation id="3712575778697986964">Želite ponastaviti varčevanje s podatki?</translation>
 <translation id="3714981814255182093">Odpiranje vrstice za iskanje</translation>
 <translation id="3716182511346448902">Ta stran uporablja preveč pomnilnika, zato jo je Chrome zaustavil.</translation>
@@ -618,7 +610,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6538442820324228105">Preneseno <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Izberite zavihek za prenos</translation>
 <translation id="6545017243486555795">Izbris vseh podatkov</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6556716549745717622">Blokiraj, če spletno mesto prikazuje vsiljive oglase (priporočljivo)</translation>
 <translation id="6560414384669816528">Iskanje z iskalnikom Sogou</translation>
 <translation id="6566259936974865419">S Chromom ste prihranili <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6891726759199484455">Odklenite, če želite kopirati geslo</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d odprt zavihek}one{%1$d odprt zavihek}two{%1$d odprta zavihka}few{%1$d odprti zavihki}other{%1$d odprtih zavihkov}}</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
-<translation id="6905163627763043954">Preskusi</translation>
 <translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6959661084585705671">Sekundarna shramba</translation>
@@ -727,7 +717,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7542481630195938534">Prejemanje predlogov ni mogoče</translation>
 <translation id="7562080006725997899">Brisanje podatkov brskanja</translation>
 <translation id="756809126120519699">Chromovi podatki so izbrisani.</translation>
-<translation id="7581273696622423628">Izpolnjevanje ankete</translation>
 <translation id="7588950540487816470">Fizični splet</translation>
 <translation id="7589445247086920869">Blokiraj za trenutni iskalnik</translation>
 <translation id="7593557518625677601">Odprite nast. za Android in znova omog. sinh. v Androidu za zač. sinh. za Chrome</translation>
@@ -736,7 +725,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi napak v omrežju.</translation>
-<translation id="7620146066550602128">Preskusite <ph name="BEGIN_LINK" />preprostejši način brskanja<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Poiščite pomoč<ph name="END_LINK1" /> ali <ph name="BEGIN_LINK2" />znova iščite<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Dobrodošli v brskalniku Chrome</translation>
 <translation id="7638584964844754484">Napačno geslo</translation>
@@ -761,7 +749,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="784934925303690534">Časovno obdobje</translation>
 <translation id="7851858861565204677">Druge naprave</translation>
-<translation id="785312750761189439">Povlecite navzgor z dna zaslona ali se dotaknite gumba za razširitev, da boste lažje dostopali do priljubljenih spletnih mest in člankov, prenosov in druge vsebine</translation>
 <translation id="7875915731392087153">Ustvarite e-poštno sporočilo</translation>
 <translation id="7876243839304621966">Odstrani vse</translation>
 <translation id="7882131421121961860">Ni zgodovine</translation>

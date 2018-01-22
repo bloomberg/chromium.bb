@@ -2168,9 +2168,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8344454543174932833">Importació de les adreces d'interès des del navegador predeterminat en la primera execució</translation>
 <translation id="8359734107661430198">Activa l'API de ExampleDeprecatedFeature fins al 02/09/2008</translation>
 <translation id="8369602308428138533">Retard de la desactivació de pantalla quan s'utilitza alimentació</translation>
-<translation id="8370471134641900314">Si aquesta política s'estableix en "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled és "false".
-
-      Si aquesta política s'estableix en "false" o no es configura, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8390049129576938611">Desactiva el lector de PDF intern a <ph name="PRODUCT_NAME" />. En el seu lloc, tracta els fitxers PDF com una baixada i permet que l'usuari els obri amb l'aplicació predeterminada.

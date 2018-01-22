@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1006017844123154345">መስመር ላይ ክፈት</translation>
-<translation id="1036348656032585052">አጥፋ</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ን በማከል ላይ...</translation>
 <translation id="1041308826830691739">ከድር ጣቢያዎች</translation>
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="1291207594882862231">ታሪክ፣ ኩኪዎች፣ የጣቢያ ውሂብ፣ መሸጎጫን አጽዳ…</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
-<translation id="1320663236730331991">የታዋቂ ጣቢያዎች እና ጽሑፎች፣ ውርዶች እና ተጨማሪ ነገሮች ቀላል መዳረሻ ለማግኘት ወደ ላይ ያንሸራትቱ</translation>
 <translation id="1326317727527857210">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="1332501820983677155">የGoogle Chrome ባህሪ አቋራጮች</translation>
 <translation id="136248372334525878">ለበለጠ ፈጣን ጭነት እና የመስመር ውጭ ንባብ ገጾችን አስቀድመው ይጫኑ</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ጊባ ሌሎች መተግበሪያዎች</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">አዲሱን Chrome በማስተዋወቅ ላይ</translation>
 <translation id="2086652334978798447">በGoogle የሚጠቆም ግላዊነት የተላበሰ ይዘትን ለማግኘት በመለያ ወደ Chrome ይግቡ።</translation>
 <translation id="2091887806945687916">ድምፅ</translation>
 <translation id="209354263896846928">በእርስዎ የማያ ገጽ ግርጌ ላይ ያለውን የአድራሻ አሞሌ ይድረሱበት</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">በራስ-ግባ</translation>
 <translation id="2111511281910874386">ወደዚህ ገጽ ይሂዱ</translation>
 <translation id="2122601567107267586">መተግበሪያውን መክፈት አልተቻለም</translation>
-<translation id="2123074103454259350">ቆይ ገና</translation>
 <translation id="2126426811489709554">በChrome የጎለበተ</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> ተቀምጧል</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> ተዘግቷል</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">ካርትን ያርትዑ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="2156074688469523661">ቀሪ ጣቢያዎች (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">አዲሱን Chrome ለምን እንዳጠፉት ይንገሩን</translation>
-<translation id="2185784955520093231">አዲሱን Chrome እየተጠቀሙ ነው</translation>
 <translation id="219985413780390209">እርስዎን እና መሣሪያዎን ከአደገኛ ጣቢያዎች ይጠብቃል</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />፣ የድር መተግበሪያ። <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">እንደ <ph name="USER_FULL_NAME" /> ሆነው ይቀጥሉ</translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome ይህን ገጽ ለእርስዎ ለማሳየት ያነሰ ውሂብ በመጠቀም ላይ ነው</translation>
 <translation id="2888126860611144412">ስለChrome</translation>
 <translation id="2891154217021530873">ገጹን መጫን አቁም</translation>
-<translation id="2892933203342091350">በሁሉም ጽሑፎች ላይ የተቃለለ እይታን ያንቁ</translation>
 <translation id="2900528713135656174">ክስተት ፍጠር</translation>
 <translation id="2902702728133930130">Chrome ባልተጠበቀ ስህተት ምክንያት ሊጀምር አልቻለም።</translation>
 <translation id="2903493209154104877">አድራሻዎች</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">የሶስተኛ ወገን የድርጣቢያዎች የኩኪ ውሂብን ማስቀመጥ እና ማንበብ ይችላሉ</translation>
 <translation id="3662546969139119822">እዚህ ምንም ታሪክ የለም</translation>
 <translation id="3672452749423051839">የአሰሳ ስህተት ጥቆማ አስተያየቶች</translation>
-<translation id="3682249951633602029">የእርስዎ የይለፍ ቃላት ወደ ውጭ የተላከውን የይለፍ ቃላት ፋይሉን መመልከት ለሚችል ማንኛውም ሰው የሚታዩ ይሆናሉ።</translation>
 <translation id="3712575778697986964">ውሂብ ቆጣቢ ዳግም ይጀመር?</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105"><ph name="GBS" /> ጊባ ወርዷል</translation>
 <translation id="654446541061731451">በሞገድ የሚለቅቁት ትር ይምረጡ</translation>
 <translation id="6545017243486555795">ሁሉንም ውሂብ አጽዳ</translation>
-<translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6556716549745717622">ጣቢያ ጣልቃ ገቢ ማስታወቂያዎችን የማሳየት አዝማሚያ ካለው አግድ (የሚመከር)</translation>
 <translation id="6560414384669816528">ከSogou ጋር ይፈልጉ</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> ጊባ ቆጥቦልዎታል</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">የይለፍ ቃልዎን ለመቅዳት ይክፈቱ</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ክፍት ትር}one{%1$d ክፍት ትሮች}other{%1$d ክፍት ትሮች}}</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
-<translation id="6905163627763043954">ሞክረው</translation>
 <translation id="6910211073230771657">ተሰርዟል</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6959661084585705671">ሁለተኛ ማከማቻ</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">የአስተያየት ጥቆማዎችን ማግኘት አልተቻለም</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
-<translation id="7581273696622423628">አጠቃላይ ጥናት ላይ ይሳተፉ</translation>
 <translation id="7588950540487816470">አካላዊ ድር</translation>
 <translation id="7589445247086920869">አሁን ላለው የፍለጋ ፕሮግራም አግድ</translation>
 <translation id="7593557518625677601">የChrome ስምረትን ለመጀመር የAndroid ቅንብሮችን ይክፈቱና የAndroid ስርዓት ስምረትን ዳግም ያንቁ</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">ስምረት እየሠራ አይደለም</translation>
 <translation id="7612619742409846846">እንደሚከተለው ሆነው ወደ Google ይግቡ፦</translation>
 <translation id="7619072057915878432">በአውታረ መረብ ችግሮች ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />ቀለል ያለ የሚያስሱበት መንገድ<ph name="END_LINK" /> ይሞክሩ</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />እገዛን ያግኙ<ph name="END_LINK1" /> ወይም <ph name="BEGIN_LINK2" />ዳግም ይቃኙ<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">ወደ Chrome እንኳን ደህና መጡ</translation>
 <translation id="7638584964844754484">ትክክል ያልሆነ የይለፍ ሐረግ</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
 <translation id="784934925303690534">የጊዜ ወሰን</translation>
 <translation id="7851858861565204677">ሌሎች መሣሪያዎች</translation>
-<translation id="785312750761189439">የታዋቂ ጣቢያዎች እና ጽሑፎች፣ ውርዶች እና ተጨማሪ ነገሮች ቀላል መዳረሻ ለማግኘት ከማያ ገጹ ታችኛው ክፍል ወደ ላይ ያንሸራትቱ</translation>
 <translation id="7875915731392087153">ኢሜይል ይፍጠሩ</translation>
 <translation id="7876243839304621966">ሁሉንም አስወግድ</translation>
 <translation id="7882131421121961860">ምንም ታሪክ አልተገኘም</translation>

@@ -54,7 +54,6 @@
 
 किसी भी तरह प्रवेश करने से बुकमार्क, इतिहास, और अन्य सेटिंग जैसी Chrome जानकारी <ph name="ACCOUNT_EMAIL_NEW" /> में मर्ज हो जाएगी.</translation>
 <translation id="2397416548179033562">Chrome मेनू दिखाएं</translation>
-<translation id="2416359993254398973">Chrome को इस साइट के लिए आपका कैमरा एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="2429317896000329049">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि समन्‍वयन आपके डोमेन के लिए उपलब्‍ध नहीं है.</translation>
 <translation id="2446511512801740068">Chrome पुराना हो गया है क्योंकि उसे कुछ समय से फिर से लॉन्च नहीं किया गया है. एक अपडेट उपलब्ध है और जैसे ही आप फिर से लॉन्च करेंगे, अपडेट लागू कर दिया जाएगा.</translation>
 <translation id="2485422356828889247">विस्थापित करें</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="2705403826523567092">ब्राउज़ करने के मनमुताबिक बनाए गए अनुभव के लिए साइन इन करें, सभी डिवाइस पर सिंक किया जाता है</translation>
-<translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
 <translation id="2799223571221894425">पुन: लॉन्‍च करें</translation>
 <translation id="2847461019998147611">Google Chrome इस भाषा में दिखाएं</translation>
@@ -159,10 +157,8 @@
 <translation id="5495581687705680288">Google Chrome में लोड किए गए मॉड्यूल</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome को इस साइट के लिए आपका माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
-<translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी ऐक्‍सेस की आवश्‍यकता होगी.</translation>
 <translation id="5774845247549698882">Chrome OS इस भाषा में प्रदर्शित किया जा रहा है</translation>
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
@@ -181,7 +177,6 @@
 <translation id="6291549208091401781">Google Chrome आपके कंप्यूटर पर मौजूद सभी उपयोगकर्ताओं के लिए पहले से इंंस्टॉल है.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
-<translation id="6393863479814692971">Chrome को इस साइट के लिए आपका कैमरा और माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="6410540444482791104">खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता करने के लिए Google को अपने आप कुछ सिस्टम जानकारी और पेज सामग्री भेजकर आप Chrome को उपयोग में अधिक सुरक्षित और अधिक आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{डाउनलोड वर्तमान में चल रहा है. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}one{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}other{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}}</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -189,7 +184,6 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
-<translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान साझा करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
 <translation id="6885412569789873916">Chrome बीटा ऐप्लिकेशन</translation>

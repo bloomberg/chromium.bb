@@ -56,7 +56,6 @@
 
 В случай че влезете въпреки това, данните в Chrome като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Показване на менюто на Chrome</translation>
-<translation id="2416359993254398973">Chrome се нуждае от разрешение за достъп до камерата ви за този сайт.</translation>
 <translation id="2429317896000329049">Google Chrome не можа да синхронизира данните ви, защото синхронизирането не е налице за домейна ви.</translation>
 <translation id="2446511512801740068">Chrome не е актуален, защото не е бил стартиран отново известно време. Налице е актуализация, която ще бъде приложена веднага, когато рестартирате.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
@@ -68,7 +67,6 @@
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
 <translation id="2705403826523567092">Влезте в профила си, за да сърфирате персонализирано и активността ви да се синхронизира на всички устройства</translation>
-<translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2847461019998147611">Показване на Google Chrome на този език</translation>
@@ -159,10 +157,8 @@
 <translation id="5495581687705680288">Модули, заредени в Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
-<translation id="557283862590186398">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт.</translation>
 <translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
 <translation id="573759479754913123">Всичко за Chrome OS</translation>
-<translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
 <translation id="5774845247549698882">Chrome OS се показва на този език</translation>
 <translation id="5855036575689098185">Софтуерът, изпълняван на компютъра ви, е несъвместим с Google Chrome.</translation>
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
@@ -181,7 +177,6 @@
 <translation id="6291549208091401781">Google Chrome вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Chrome се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт.</translation>
 <translation id="6410540444482791104">Можете да ни помогнете да направим браузъра Chrome по-надежден и по-лесен за използване, като автоматично изпращате до Google системна информация и част от съдържанието на страниците, за да ни съдействате при откриването на опасни приложения и сайтове.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{В момента се изтегля файл. Искате ли да анулирате изтеглянето и да излезете от Google Chrome?}other{В момента се изтеглят # файла. Искате ли да анулирате изтеглянията и да излезете от Google Chrome?}}</translation>
 <translation id="6566149418543181476">Google Chrome се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -189,7 +184,6 @@
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
-<translation id="6697947395630195233">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт.</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
 <translation id="686561893457936865">Използвайте Chrome навсякъде</translation>
 <translation id="6885412569789873916">Приложения за Chrome бета</translation>

@@ -259,7 +259,7 @@
 <translation id="2826760142808435982"><ph name="CIPHER" /> ব্যবহার করে এই সংযোগটি এনক্রিপ্টেড এবং প্রমাণীকৃত করা হয়েছে এবং কী এক্সচেঞ্জ প্রক্রিয়া হিসাবে <ph name="KX" /> ব্যবহার করে৷</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
 <translation id="2851634818064021665">এই সাইট দেখার জন্য আপনার অনুমতির প্রয়োজন</translation>
-<translation id="2856444702002559011">আক্রমণকারীরা হয়ত <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> থেকে আপনার তথ্য (যেমন পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ড) চুরি করার চেষ্টা করছে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2856444702002559011">আক্রমণকারীরা হয়তো <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> থেকে আপনার তথ্য (যেমন পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ড) চুরি করার চেষ্টা করছে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2909946352844186028">একটি নেটওয়ার্ক পরিবর্তন সনাক্ত হয়েছে৷</translation>
 <translation id="2916038427272391327">অন্যান্য প্রোগ্রামগুলি বন্ধ করুন</translation>
 <translation id="2922350208395188000">সার্ভারের শংসাপত্র চেক করা যাবে না৷</translation>
@@ -568,7 +568,7 @@
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="5205222826937269299">নাম প্রয়োজন</translation>
 <translation id="5222812217790122047">ইমেল প্রয়োজন</translation>
-<translation id="522700295135997067">এই সাইট হয়ত আপনার পাসওয়ার্ড চুরি করেছে</translation>
+<translation id="522700295135997067">এই সাইট হয়তো আপনার পাসওয়ার্ড চুরি করেছে</translation>
 <translation id="5230733896359313003">শিপিংয়ের ঠিকানা</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5277279256032773186">কর্মক্ষেত্রে Chrome ব্যবহার করছেন? ব্যবসাগুলো তাদের কর্মচারীদের জন্য Chrome সেটিংস পরিচালনা করতে পারে। আরও জানুন</translation>
@@ -613,7 +613,7 @@
     আপনার সিস্টেম প্রশাসকের সাথে যোগাযোগের চেষ্টা করুন।</translation>
 <translation id="5499929369096410817"><ph name="CREDIT_CARD" /> এর নিরাপত্তা কোড লিখুন। এই কোডটি সেভ করা হবে না।</translation>
 <translation id="5509780412636533143">পরিচালিত বুকমার্কগুলি</translation>
-<translation id="5510766032865166053">এটি হয়ত সরানো বা মুছে ফেলা হয়েছে।</translation>
+<translation id="5510766032865166053">এটি হয়তো সরানো বা মুছে ফেলা হয়েছে।</translation>
 <translation id="5523118979700054094">নীতি নাম</translation>
 <translation id="552553974213252141">পাঠ্য কি সঠিকভাবে প্রাপ্ত হয়েছে?</translation>
 <translation id="5540224163453853">অনুরোধকৃত নিবন্ধ খুঁজে পাওয়া যায়নি৷</translation>

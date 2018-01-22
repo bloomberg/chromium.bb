@@ -54,7 +54,6 @@
 
 Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW" /> zusammengeführt.</translation>
 <translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
-<translation id="2416359993254398973">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera zuzugreifen.</translation>
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="2446511512801740068">Chrome ist veraltet, da es über einen längeren Zeitraum nicht neu gestartet wurde. Ein Update ist verfügbar und wird übernommen, sobald Sie Chrome neu starten.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -66,7 +65,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2705403826523567092">Melden Sie sich an, um das Browsererlebnis zu personalisieren und auf allen Ihren Geräten zu synchronisieren</translation>
-<translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2847461019998147611">Google Chrome in dieser Sprache anzeigen</translation>
@@ -157,10 +155,8 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5495581687705680288">Module in Google Chrome geladen</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
-<translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5774845247549698882">Chrome OS wird in dieser Sprache angezeigt</translation>
 <translation id="5855036575689098185">Auf Ihrem Computer befindet sich Software, die nicht mit Google Chrome kompatibel ist.</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
@@ -179,7 +175,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6291549208091401781">Google Chrome ist bereits für alle Nutzer auf Ihrem Computer installiert.</translation>
 <translation id="6338556085225130112">Google Chrome wird aktualisiert</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
-<translation id="6393863479814692971">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen.</translation>
 <translation id="6410540444482791104">Sie können dazu beitragen, die Verwendung von Chrome sicherer und nutzerfreundlicher zu machen, indem Sie einige Systeminformationen und Seiteninhalte automatisch an Google senden. Google kann so schädliche Apps und Websites besser erfassen.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Ein Download wird derzeit ausgeführt. Möchten Sie den Download abbrechen und Google Chrome beenden?}other{# Downloads werden derzeit ausgeführt. Möchten Sie die Downloads abbrechen und Google Chrome beenden?}}</translation>
 <translation id="6566149418543181476">Google Chrome wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6600954340915313787">In Chrome kopiert</translation>
 <translation id="6634887557811630702">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
-<translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
 <translation id="686561893457936865">Chrome überall mitnehmen</translation>
 <translation id="6885412569789873916">Chrome Beta-Apps</translation>

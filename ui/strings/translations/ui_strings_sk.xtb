@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
 <translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
-<translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
 <translation id="4724120544754982507">Centrum upozornení – počet neprečítaných upozornení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">Ľavý okraj</translation>
 <translation id="8331626408530291785">Rolovať nahor</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 rok}few{# roky}many{# roka}other{# rokov}}</translation>
-<translation id="8371695176452482769">Hovorte…</translation>
 <translation id="838869780401515933">označiť</translation>
 <translation id="8393700583063109961">Odoslať správu</translation>
 <translation id="8394908167088220973">Média – prehrať / pozastaviť</translation>

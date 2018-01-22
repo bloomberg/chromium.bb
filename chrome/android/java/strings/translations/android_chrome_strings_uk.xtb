@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1006017844123154345">Відкрити в режимі онлайн</translation>
-<translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
-<translation id="1320663236730331991">Проведіть пальцем угору, щоб легко отримати доступ до популярних сайтів і статей, своїх завантажень тощо</translation>
 <translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1332501820983677155">Комбінації клавіш для функцій Google Chrome</translation>
 <translation id="136248372334525878">Попередньо завантажує сторінки, щоб швидше завантажувати та переглядати їх у режимі офлайн</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ГБ використовується іншими додатками</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Представляємо новий Chrome</translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
 <translation id="2091887806945687916">Сигнал</translation>
 <translation id="209354263896846928">Перейдіть до адресного рядка внизу екрана</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2111511281910874386">Перейти на сторінку</translation>
 <translation id="2122601567107267586">Не вдалося відкрити додаток</translation>
-<translation id="2123074103454259350">Поки що ні</translation>
 <translation id="2126426811489709554">Технології Chrome</translation>
 <translation id="2131665479022868825">Заощаджено <ph name="DATA" /></translation>
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">Редагувати картку</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Розкажіть, чому ви вимкнули новий Chrome</translation>
-<translation id="2185784955520093231">Ви користуєтеся новим Chrome</translation>
 <translation id="219985413780390209">Захистіть себе та свій пристрій від небезпечних сайтів</translation>
 <translation id="2206488550163399966">Веб-додаток <ph name="APP_NAME" />: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продовжити як <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome використовує менше даних, щоб показати цю сторінку</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
 <translation id="2891154217021530873">Припинити завантаження сторінки</translation>
-<translation id="2892933203342091350">Увімкнути спрощений перегляд для всіх статей</translation>
 <translation id="2900528713135656174">Створити подію</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
 <translation id="2903493209154104877">Адреси</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
 <translation id="3662546969139119822">Немає історії</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
-<translation id="3682249951633602029">Ваші паролі бачитимуть усі, хто може переглядати експортований файл із паролями.</translation>
 <translation id="3712575778697986964">Скинути дані Заощадження трафіку?</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716182511346448902">Ця сторінка займає велику кількість пам’яті, тому Chrome призупинив її роботу.</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">Завантажено <ph name="GBS" /> ГБ</translation>
 <translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="6545017243486555795">Видалити всі дані</translation>
-<translation id="6550675742724504774">Параметри</translation>
 <translation id="6556716549745717622">Блокувати, якщо сайт часто показує нав’язливі оголошення (рекомендовано)</translation>
 <translation id="6560414384669816528">Шукати за допомогою Sogou</translation>
 <translation id="6566259936974865419">Chrome заощадив <ph name="GIGABYTES" /> ГБ</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">Розблокуйте, щоб скопіювати пароль</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
 <translation id="6896758677409633944">Копіювати</translation>
-<translation id="6905163627763043954">Спробувати</translation>
 <translation id="6910211073230771657">Видалено</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6959661084585705671">Зовнішня пам’ять</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">Не вдається отримати пропозиції</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
-<translation id="7581273696622423628">Відповісти на запитання</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
 <translation id="7589445247086920869">Заблокувати для поточної пошукової системи</translation>
 <translation id="7593557518625677601">Щоб почати синхронізацію Chrome, відкрийте параметри Android і знову ввімкніть синхронізацію системи</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">Синхронізація не працює</translation>
 <translation id="7612619742409846846">Ви ввійшли в обліковий запис Google як</translation>
 <translation id="7619072057915878432">Не вдалося завантажити файл <ph name="FILE_NAME" />. Помилка мережі.</translation>
-<translation id="7620146066550602128">Спробуйте <ph name="BEGIN_LINK" />простіший спосіб перегляду веб-сторінок<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Отримайте допомогу<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />повторіть сканування<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
 <translation id="7638584964844754484">Неправильна парольна фраза</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="784934925303690534">Період часу</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
-<translation id="785312750761189439">Проведіть пальцем знизу вверх на екрані або торкніться кнопки "Розгорнути", щоб отримати доступ до популярних сайтів і статей, завантажень тощо</translation>
 <translation id="7875915731392087153">Створити електронну адресу</translation>
 <translation id="7876243839304621966">Видалити все</translation>
 <translation id="7882131421121961860">Історії не знайдено</translation>

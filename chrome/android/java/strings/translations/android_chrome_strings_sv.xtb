@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1006017844123154345">Öppna onlineversionen</translation>
-<translation id="1036348656032585052">Inaktivera</translation>
 <translation id="1036727731225946849">Lägger till <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Från webbplatser</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
-<translation id="1320663236730331991">Hitta snabbt till populära webbplatser och artiklar, nedladdningar med mera genom att svepa uppåt.</translation>
 <translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
 <translation id="136248372334525878">Genom att läsa in sidor i förväg går det snabbare att läsa in sidor och läsa offline</translation>
@@ -123,7 +121,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB används av övriga appar</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Detta är nya Chrome</translation>
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
 <translation id="2091887806945687916">Ljud</translation>
 <translation id="209354263896846928">Adressfältet finns längst ned på skärmen</translation>
@@ -131,7 +128,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2111511281910874386">Öppna sida</translation>
 <translation id="2122601567107267586">Det gick inte att öppna appen</translation>
-<translation id="2123074103454259350">Inte än</translation>
 <translation id="2126426811489709554">Drivs av Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> har sparats</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> har stängts</translation>
@@ -141,8 +137,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2154484045852737596">Redigera kortet</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Berätta varför du inaktiverade nya Chrome</translation>
-<translation id="2185784955520093231">Du använder nya Chrome</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2876764156902388290">Mängden data som krävs för att visa den här sidan har reducerats i Chrome</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Avbryt inläsningen av sidan</translation>
-<translation id="2892933203342091350">Aktivera förenklad visning för alla artiklar</translation>
 <translation id="2900528713135656174">Skapa händelse</translation>
 <translation id="2902702728133930130">Ett oväntat fel uppstod när Chrome skulle startas.</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -294,7 +287,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
 <translation id="3662546969139119822">Det finns ingen historik här</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
-<translation id="3682249951633602029">Alla med tillgång till den exporterade lösenordsfilen kan läsa dina lösenord.</translation>
 <translation id="3712575778697986964">Vill du återställa Databesparing?</translation>
 <translation id="3714981814255182093">Öppna sökfältet</translation>
 <translation id="3716182511346448902">Den här sidan har pausats i Chrome eftersom den använder för mycket minne.</translation>
@@ -618,7 +610,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6538442820324228105"><ph name="GBS" /> GB har laddats ned</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
-<translation id="6550675742724504774">Alternativ</translation>
 <translation id="6556716549745717622">Blockera om påträngande annonser brukar visas på webbplatsen (rekommenderas)</translation>
 <translation id="6560414384669816528">Sök med Sogou</translation>
 <translation id="6566259936974865419">Du har sparat <ph name="GIGABYTES" /> GB med Chrome</translation>
@@ -662,7 +653,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6891726759199484455">Lås upp om du vill kopiera lösenordet</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d öppen flik}other{%1$d öppna flikar}}</translation>
 <translation id="6896758677409633944">Kopiera</translation>
-<translation id="6905163627763043954">Testa det</translation>
 <translation id="6910211073230771657">Borttagen</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6959661084585705671">Sekundärt lagringsutrymme</translation>
@@ -727,7 +717,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7542481630195938534">Det går inte att få förslag</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
-<translation id="7581273696622423628">Svara på enkäten</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Blockera för den nuvarande sökmotorn</translation>
 <translation id="7593557518625677601">Återaktivera synkronisering i Android-inställningarna så börjar Chrome synkas</translation>
@@ -736,7 +725,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
-<translation id="7620146066550602128">Testa ett <ph name="BEGIN_LINK" />enklare sätt att surfa på<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
 <translation id="7638584964844754484">Felaktig lösenfras</translation>
@@ -761,7 +749,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
-<translation id="785312750761189439">Svep uppåt från skärmens nederkant eller tryck på knappen Utöka om du vill få enkel åtkomst till populära sidor och artiklar, nedladdningar och annat.</translation>
 <translation id="7875915731392087153">Skapa ett e-postmeddelande</translation>
 <translation id="7876243839304621966">Ta bort alla</translation>
 <translation id="7882131421121961860">Ingen historik hittades</translation>

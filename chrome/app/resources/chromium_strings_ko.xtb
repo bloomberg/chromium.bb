@@ -40,7 +40,6 @@
 <translation id="2396765026452590966">Chromium을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2483889755041906834">Chromium에서</translation>
 <translation id="2485422356828889247">제거</translation>
-<translation id="2486653164587200256">Windows XP 또는 Windows Vista에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="2527042973354814951"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
@@ -106,13 +105,11 @@
 <translation id="4488554488975128561">위험한 앱과 사이트를 감지할 수 있도록 일부 시스템 정보와 페이지 콘텐츠를 Google로 자동 전송함으로써 Chromium을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="459535195905078186">Chromium 앱</translation>
-<translation id="4611246891205775468">Chromium이 이 사이트에서 마이크에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="4621240073146040695">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="4677944499843243528">다른 컴퓨터(<ph name="HOST_NAME" />)의 다른 Chromium 프로세스(<ph name="PROCESS_ID" />)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chromium에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chromium을 다시 시작하세요.</translation>
 <translation id="469338717132742108">Chromium OS 도움말 보기</translation>
 <translation id="4708774505295300557">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chromium에 로그인했습니다. 새로운 Chromium 사용자를 만들어 정보를 별도로 관리하세요.</translation>
 <translation id="4714956846925717402">Chromium을 더 빠르게 사용해 보세요.</translation>
-<translation id="4825874709045178029">Chromium이 이 사이트에서 카메라에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="4943838377383847465">Chromium이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="4987820182225656817">손님으로 사용 기록을 남기지 않고 Chromium을 사용할 수 있습니다.</translation>
@@ -158,9 +155,7 @@
 <translation id="6403826409255603130">Chromium은 빠른 속도로 웹페이지와 애플리케이션을 실행하는 웹 브라우저입니다. 빠르고 안정적이며 사용하기에 편리합니다. Chromium에 내장된 멀웨어 및 악성 코드 방지 기능을 사용하여 더욱 안전하게 웹을 검색하세요.</translation>
 <translation id="6475912303565314141">또한 Chromium을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="6485906693002546646">Chromium 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chromium을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
-<translation id="6505742536731484931">Chromium이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
-<translation id="6526111688217511984">Chromium에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="6598877126913850652">Chromium 알림 설정으로 이동</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
@@ -200,7 +195,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7577193603922410712">Chromium 특별 보안 업데이트를 방금 적용했습니다. 실행하려면 지금 다시 시작하세요. 다시 시작 후 탭은 복원됩니다.</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>
-<translation id="7641113255207688324">Chromium이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="7729447699958282447">도메인에서 동기화를 사용할 수 없어 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7745317241717453663">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chromium에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
@@ -219,7 +213,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8222496066431494154">휴대전화에 Chromium을 설치하세요. 다음의 계정 복구 전화번호로 SMS를 보내 드리겠습니다. <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium 개선에 참여</translation>
 <translation id="8290862415967981663">이 파일은 위험할 수 있으므로 Chromium에서 차단했습니다.</translation>
-<translation id="8328596990138326317">Chromium이 이 사이트에서 카메라와 마이크에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />에서 이전에 Chromium을 사용한 적이 있음</translation>
 <translation id="8453117565092476964">설치 프로그램 아카이브가 손상되었거나 잘못되었습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>

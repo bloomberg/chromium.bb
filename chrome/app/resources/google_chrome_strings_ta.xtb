@@ -54,7 +54,6 @@
 
 எப்படியிருந்தாலும் உள்நுழைதல் <ph name="ACCOUNT_EMAIL_NEW" /> க்கான புக்மார்க்குகள், வரலாறு, மற்றும் பிற அமைப்புகள் போன்ற Chrome தகவலைப் பிணைக்கும்.</translation>
 <translation id="2397416548179033562">Chrome மெனுவைக் காட்டு</translation>
-<translation id="2416359993254398973">இந்தத் தளத்திற்காகக் கேமராவை அணுக, Chromeக்கு அனுமதி தேவை.</translation>
 <translation id="2429317896000329049">உங்கள் களத்திற்கு ஒத்திசைவு இல்லாததால், Google Chrome ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="2446511512801740068">சிறிது காலமாக மறுதொடக்கம் செய்யப்படாததால், Chrome காலாவதியாகிவிட்டது. புதுப்பிப்பு உள்ளது. நீங்கள் மறுதொடக்கம் செய்தவுடன் பயன்படுத்தப்படும்.</translation>
 <translation id="2485422356828889247">நிறுவல் நீக்கு</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">சிதைவு அறிக்கைகளையும் <ph name="UMA_LINK" /> உம் Google க்கு அனுப்புவதன் மூலம் Google Chrome ஐ மேலும் சிறப்பானதாக்க உதவவும்</translation>
 <translation id="2689103672227170538">Chromeஐத் தொடங்கும் போது காண்பிக்கப்படும் பக்கத்தை இந்த நீட்டிப்பு மாற்றியுள்ளது.</translation>
 <translation id="2705403826523567092">எல்லாச் சாதனங்களிலும் ஒத்திசைந்த, தனிப்பயனாக்கிய அனுபவத்திற்கு, உள்நுழையவும்</translation>
-<translation id="2769762047821873045">Google Chrome உங்கள் இயல்பு உலாவி அல்ல.</translation>
 <translation id="2770231113462710648">இயல்புநிலை உலாவியாக இதை அமை:</translation>
 <translation id="2799223571221894425">மீண்டும் தொடங்கு</translation>
 <translation id="2847461019998147611">Google Chromeஐ இந்த மொழியில் காட்டு</translation>
@@ -157,10 +155,8 @@
 <translation id="5495581687705680288">Google Chrome இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
 <translation id="556024056938947818">Google Chrome ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">இந்தத் தளத்திற்காக மைக்ரோஃபோனை அணுக, Chromeக்கு அனுமதி தேவை.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ஆபத்தானதாக இருக்கலாம் என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
-<translation id="5749068826913805084">கோப்புகளைப் பதிவிறக்க Chromeக்கு சேமிப்பிட அணுகல் தேவை.</translation>
 <translation id="5774845247549698882">Chrome OS இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="5855036575689098185">உங்கள் கணினியில் இயங்கும் மென்பொருள் Google Chrome உடன் இணங்கவில்லை.</translation>
 <translation id="5877064549588274448">சேனல் மாற்றப்பட்டது. மாற்றங்களைச் செயல்படுத்த உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்.</translation>
@@ -179,7 +175,6 @@
 <translation id="6291549208091401781">உங்கள் கணினியில் ஏற்கனவே எல்லாப் பயனர்களுக்கும் Google Chrome நிறுவப்பட்டுள்ளது.</translation>
 <translation id="6338556085225130112">Google Chromeஐப் புதுப்பிக்கிறது</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS" />ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS" /> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
-<translation id="6393863479814692971">இந்தத் தளத்திற்காகக் கேமராவையும் மைக்ரோஃபோனையும் அணுக, Chromeக்கு அனுமதி தேவை.</translation>
 <translation id="6410540444482791104">ஆபத்தான பயன்பாடுகளையும் தளங்களையும் கண்டறிவதற்கு உதவியாக, சில சாதனத் தகவலையும் பக்க உள்ளடக்கத்தையும் Googleக்குத் தானாக அனுப்புவதன் மூலம், Chromeஐ எளிதாகவும் பாதுகாப்பாகவும் பயன்படுத்தும்படி மேம்படுத்துவதற்கு நீங்கள் உதவலாம்.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{பதிவிறக்கம் தற்போது செயலில் உள்ளது. பதிவிறக்கத்தை ரத்துசெய்து, Google Chrome இலிருந்து வெளியேற விரும்புகிறீர்களா?}other{# பதிவிறக்கங்கள் தற்போது செயலில் உள்ளன. பதிவிறக்கங்களை ரத்துசெய்து, Google Chrome இலிருந்து வெளியேற விரும்புகிறீர்களா?}}</translation>
 <translation id="6566149418543181476">Google Chromeஐப் புதுப்பிக்கிறது (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@
 <translation id="6600954340915313787">Chromeக்கு நகலெடுக்கப்பட்டது</translation>
 <translation id="6634887557811630702">Google Chrome புதுப்பித்த நிலையில் உள்ளது.</translation>
 <translation id="6676384891291319759">இணையத்தை அணுகுதல்</translation>
-<translation id="6697947395630195233">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர, Chromeக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை.</translation>
 <translation id="683440813066116847">mDNS ட்ராஃபிக்கை அனுமதிப்பதற்கான, Google Chrome Canary க்கான உள்வரும் விதி.</translation>
 <translation id="686561893457936865">Chromeஐ எல்லா இடங்களுக்கும் எடுத்துச் செல்லலாம்</translation>
 <translation id="6885412569789873916">Chrome பீட்டா பயன்பாடுகள்</translation>

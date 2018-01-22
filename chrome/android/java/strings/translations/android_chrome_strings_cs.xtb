@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1006017844123154345">Otevřít online</translation>
-<translation id="1036348656032585052">Vypnout</translation>
 <translation id="1036727731225946849">Přidávání aplikace <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webů</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
@@ -37,7 +36,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
-<translation id="1320663236730331991">Přejetím prstem nahoru snadno otevřete oblíbené weby a články, soubory ke stažení a mnoho dalšího.</translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1332501820983677155">Zkratky funkcí prohlížeče Google Chrome</translation>
 <translation id="136248372334525878">Načítat stránky předem kvůli rychlejšímu načítání a čtení offline</translation>
@@ -123,7 +121,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2045104531052923016">Ostatní aplikace: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2079545284768500474" />
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Představujeme vám nový Chrome</translation>
 <translation id="2086652334978798447">Chcete-li od Googlu získat personalizované návrhy obsahu, přihlaste se do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="209354263896846928">Adresní řádek najdete v dolní části obrazovky</translation>
@@ -131,7 +128,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2111511281910874386">Přejít na stránku</translation>
 <translation id="2122601567107267586">Aplikaci nelze otevřít</translation>
-<translation id="2123074103454259350">Zatím ne</translation>
 <translation id="2126426811489709554">Používá technologii Chrome</translation>
 <translation id="2131665479022868825">Uspořeno: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Karta <ph name="TAB_TITLE" /> byla zavřena.</translation>
@@ -141,8 +137,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Sdělte nám, proč jste nový Chrome vypnuli</translation>
-<translation id="2185784955520093231">Používáte nový Chrome</translation>
 <translation id="219985413780390209">Chránit mě i mé zařízení před nebezpečnými weby</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikace <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2876764156902388290">Chrome tuto stránku zobrazuje s menším využitím dat</translation>
 <translation id="2888126860611144412">O aplikaci Chrome</translation>
 <translation id="2891154217021530873">Zastavit načítání stránky</translation>
-<translation id="2892933203342091350">Povolit zjednodušené zobrazení ve všech článcích</translation>
 <translation id="2900528713135656174">Vytvořit událost</translation>
 <translation id="2902702728133930130">Spuštění Chromu se nezdařilo kvůli neočekávané chybě.</translation>
 <translation id="2903493209154104877">Adresy</translation>
@@ -294,7 +287,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3661699943263275414">Weby třetích stran mohou ukládat a číst data souborů cookie</translation>
 <translation id="3662546969139119822">Zde žádná historie není</translation>
 <translation id="3672452749423051839">Návrhy při chybách navigace</translation>
-<translation id="3682249951633602029">Vaše hesla uvidí každý, kdo může zobrazit exportovaný soubor s hesly.</translation>
 <translation id="3712575778697986964">Resetovat Spořič dat?</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
@@ -618,7 +610,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6538442820324228105">Staženo: <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Vyberte kartu, kterou chcete přenést</translation>
 <translation id="6545017243486555795">Vymazat všechna data</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6556716549745717622">Blokovat, pokud web často zobrazuje rušivé reklamy (doporučeno)</translation>
 <translation id="6560414384669816528">Vyhledávat pomocí Sogou</translation>
 <translation id="6566259936974865419">Chrome vám ušetřil <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6891726759199484455">Chcete-li zkopírovat heslo, odemkněte zařízení</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otevřená karta}few{%1$d otevřené karty}many{%1$d otevřené karty}other{%1$d otevřených karet}}</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
-<translation id="6905163627763043954">Vyzkoušet</translation>
 <translation id="6910211073230771657">Smazáno</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6959661084585705671">Sekundární úložiště</translation>
@@ -727,7 +717,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7542481630195938534">Návrhy nelze načíst</translation>
 <translation id="7562080006725997899">Mazání údajů o prohlížení</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
-<translation id="7581273696622423628">Zúčastnit se průzkumu</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7589445247086920869">Blokovat pro aktuální vyhledávač</translation>
 <translation id="7593557518625677601">Chcete-li spustit synchronizaci Chromu, povolte synchronizaci systému Android.</translation>
@@ -736,7 +725,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7605594153474022051">Synchronizace nefunguje</translation>
 <translation id="7612619742409846846">Jste přihlášeni do Googlu jako</translation>
 <translation id="7619072057915878432">Stahování souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu selhání sítě.</translation>
-<translation id="7620146066550602128">Vyzkoušejte <ph name="BEGIN_LINK" />snazší způsob procházení<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Prohlédněte si nápovědu<ph name="END_LINK1" /> nebo zařízení <ph name="BEGIN_LINK2" />vyhledejte znovu<ph name="END_LINK2" />.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
 <translation id="7638584964844754484">Nesprávná heslová fráze</translation>
@@ -761,7 +749,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="784934925303690534">Časové období</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
-<translation id="785312750761189439">K populárním webům a článkům, staženým souborům a dalším položkám se snadno dostanete přejetím prstem nahoru z dolního okraje obrazovky nebo klepnutím na rozbalovací tlačítko.</translation>
 <translation id="7875915731392087153">Vytvořit e-mail</translation>
 <translation id="7876243839304621966">Odstranit vše</translation>
 <translation id="7882131421121961860">Nebyla nalezena žádná historie</translation>

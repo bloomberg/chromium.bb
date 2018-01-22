@@ -2180,9 +2180,6 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8344454543174932833">Importuj zakładki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="8359734107661430198">Włącz interfejs API ExampleDeprecatedFeature od 2 września 2008 r.</translation>
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
-<translation id="8370471134641900314">Po włączeniu tej zasady użytkownik może korzystać z przeglądarki, pod warunkiem, że zaloguje się w: <ph name="PRODUCT_NAME" /> za pomocą swojego profilu. Domyślnie zasada BrowserGuestModeEnabled jest wyłączona.
-
-      Gdy ta zasada jest wyłączona lub nie została skonfigurowana, użytkownik może korzystać z przeglądarki bez logowania się w: <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8390049129576938611">Wyłącza wewnętrzną przeglądarkę plików PDF w <ph name="PRODUCT_NAME" />. Pliki PDF będą traktowane jako pobrane i użytkownik będzie mógł je otwierać w aplikacji domyślnej.

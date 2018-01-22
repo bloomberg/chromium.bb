@@ -2317,9 +2317,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8344454543174932833">처음 실행 시 기본 브라우저에서 북마크 가져오기</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API를 2008년 9월 2일까지 사용하도록 설정</translation>
 <translation id="8369602308428138533">AC 전원으로 실행할 때 화면 꺼짐 지연</translation>
-<translation id="8370471134641900314">이 정책이 true로 설정되어 있으면 사용자가 브라우저를 사용하기 전에 자신의 프로필을 사용해 <ph name="PRODUCT_NAME" />에 로그인해야 합니다. BrowserGuestModeEnabled의 기본값은 false로 설정됩니다.
-
-      이 정책이 false로 설정되거나 설정되어 있지 않은 경우 사용자는 <ph name="PRODUCT_NAME" />에 로그인하지 않고도 브라우저를 사용할 수 있습니다.</translation>
 <translation id="8382184662529825177">기기의 콘텐츠 보호에 원격 인증을 사용합니다.</translation>
 <translation id="838870586332499308">데이터 로밍 사용</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지합니다. 대신 이를 다운로드 파일로 처리해 사용자가 기본 애플리케이션으로 PDF 파일을 열 수 있도록 합니다.

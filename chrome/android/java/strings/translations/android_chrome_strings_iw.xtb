@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1006017844123154345">פתח גרסה מקוונת</translation>
-<translation id="1036348656032585052">כבה</translation>
 <translation id="1036727731225946849">מוסיף את <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">מאתרים</translation>
 <translation id="1049743911850919806">גלישה פרטית</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
 <translation id="1291207594882862231">‏נקה את ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
-<translation id="1320663236730331991">החלקה כלפי מעלה מאפשרת לך לגשת בקלות אל אתרים ומאמרים פופולריים, הורדות ועוד</translation>
 <translation id="1326317727527857210">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, היכנס ל-Chrome.</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
 <translation id="136248372334525878">טעינה מקדימה של דפים מאפשרת טעינה מהירה יותר וקריאה במצב לא מקוון</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016">‏‎<ph name="GIGABYTES" /> GB ליישומים אחרים</translation>
 <translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">‏אנחנו משיקים גירסה חדשה של Chrome</translation>
 <translation id="2086652334978798447">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, היכנס אל Chrome.</translation>
 <translation id="2091887806945687916">צליל</translation>
 <translation id="209354263896846928">סרגל הכתובות נמצא בחלק התחתון של המסך</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2111511281910874386">מעבר לדף</translation>
 <translation id="2122601567107267586">לא ניתן היה לפתוח את היישום</translation>
-<translation id="2123074103454259350">עדיין לא</translation>
 <translation id="2126426811489709554">‏מבוסס על Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> נשמרו</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">עריכת כרטיס</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">‏חשוב לנו לדעת למה כיבית את הגירסה החדשה של Chrome</translation>
-<translation id="2185784955520093231">‏זו הגירסה החדשה של Chrome</translation>
 <translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">‏Chrome צורך פחות נתונים כדי להציג לך את הדף הזה</translation>
 <translation id="2888126860611144412">‏מידע כללי על Chrome</translation>
 <translation id="2891154217021530873">הפסק את טעינת הדף</translation>
-<translation id="2892933203342091350">הפעלה של תצוגה נקייה בכל המאמרים</translation>
 <translation id="2900528713135656174">צור אירוע</translation>
 <translation id="2902702728133930130">‏שגיאה בלתי צפויה גרמה לכשל של Chrome בעת ההפעלה.</translation>
 <translation id="2903493209154104877">כתובות</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">‏אתרים של צד שלישי יוכלו לשמור ולקרוא נתונים של קובצי Cookie</translation>
 <translation id="3662546969139119822">ההיסטוריה ריקה</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
-<translation id="3682249951633602029">כל מי שיוכל לגשת אל קובץ הסיסמאות המיוצא יוכל לראות את הסיסמאות שלך.</translation>
 <translation id="3712575778697986964">‏לאפס את חוסך הנתונים (Data Saver)?</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">‏בוצעה הורדה של GB <ph name="GBS" /></translation>
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
-<translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6556716549745717622">חסום אם האתר נוטה להציג מודעות שמפריעות (מומלץ)</translation>
 <translation id="6560414384669816528">‏השתמש ב-Sogou לחיפוש</translation>
 <translation id="6566259936974865419">‏Chrome חסך לך ‎<ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">ביטול הנעילה יאפשר להעתיק את הסיסמה</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת}two{שתי כרטיסיות פתוחות}many{‏%1$d כרטיסיות פתוחות}other{‏%1$d כרטיסיות פתוחות}}</translation>
 <translation id="6896758677409633944">העתק</translation>
-<translation id="6905163627763043954">נסה זאת</translation>
 <translation id="6910211073230771657">נמחק</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6959661084585705671">אחסון משני</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">לא ניתן לקבל הצעות</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
-<translation id="7581273696622423628">השתתף בסקר</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7589445247086920869">חסום למנוע החיפוש הנוכחי</translation>
 <translation id="7593557518625677601">‏פתח את הגדרות Android והפעל מחדש את הסנכרון של מערכת Android כדי להתחיל בסנכרון של Chrome</translation>
@@ -736,11 +725,10 @@
 <translation id="7605594153474022051">הסנכרון לא עובד</translation>
 <translation id="7612619742409846846">‏מחובר ל-Google בשם</translation>
 <translation id="7619072057915878432">הורדת <ph name="FILE_NAME" /> נכשלה עקב כשלים ברשת.</translation>
-<translation id="7620146066550602128">יש <ph name="BEGIN_LINK" />דרך קלה יותר לגלוש באינטרנט<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />קבל עזרה<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />חפש שוב<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
-<translation id="7641339528570811325">נקה את נתוני הגלישה...</translation>
+<translation id="7641339528570811325">מחיקת נתוני הגלישה...</translation>
 <translation id="7648422057306047504">‏הצפן סיסמאות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
-<translation id="785312750761189439">אפשר לגשת בקלות אל אתרים ומאמרים פופולריים, הורדות ועוד על-ידי החלקה כלפי מעלה מתחתית המסך או הקשה על לחצן ההרחבה.</translation>
 <translation id="7875915731392087153">צור הודעת אימייל</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="7882131421121961860">לא נמצאה היסטוריה</translation>

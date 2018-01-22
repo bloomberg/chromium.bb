@@ -58,7 +58,6 @@
 
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chrome 정보가 <ph name="ACCOUNT_EMAIL_NEW" />에 병합됩니다.</translation>
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
-<translation id="2416359993254398973">Chrome이 이 사이트에서 카메라에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="2429317896000329049">도메인에서 동기화를 사용할 수 없어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2446511512801740068">한동안 사용하지 않아 Chrome의 버전이 오래되었습니다. 업데이트를 사용할 수 있으며 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="2485422356828889247">제거</translation>
@@ -70,7 +69,6 @@
 <translation id="2665296953892887393">비정상 종료 보고서와 <ph name="UMA_LINK" />을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
 <translation id="2689103672227170538">Chrome을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2705403826523567092">모든 기기에서 동기화된 나만의 맞춤 인터넷 사용 환경을 확인하려면 로그인하세요</translation>
-<translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2799223571221894425">다시 시작</translation>
 <translation id="2847461019998147611">이 언어로 Chrome 표시</translation>
@@ -165,10 +163,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5495581687705680288">Chrome에 로드된 모듈</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
-<translation id="557283862590186398">Chrome이 이 사이트에서 마이크에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
-<translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5774845247549698882">현재 Chrome OS에서 사용 중인 언어</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
@@ -187,7 +183,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6291549208091401781">컴퓨터에 Chrome이 이미 설치되어 있으며 모든 사용자가 사용할 수 있습니다.</translation>
 <translation id="6338556085225130112">Chrome 업데이트 중</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용했습니다.</translation>
-<translation id="6393863479814692971">Chrome이 이 사이트에서 카메라와 마이크에 액세스하려면 권한이 필요합니다.</translation>
 <translation id="6410540444482791104">위험한 앱과 사이트를 감지할 수 있도록 일부 시스템 정보와 페이지 콘텐츠를 Google로 자동 전송함으로써 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{현재 다운로드가 진행 중입니다. 다운로드를 취소하고 Chrome을 종료하시겠습니까?}other{현재 #개의 다운로드가 진행 중입니다. 다운로드를 취소하고 Chrome을 종료하시겠습니까?}}</translation>
 <translation id="6566149418543181476">Chrome 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
@@ -195,7 +190,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6634887557811630702">Chrome이 최신 버전입니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
-<translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="686561893457936865">어디에서나 Chrome 사용</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>

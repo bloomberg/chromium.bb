@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1006017844123154345">Abrir online</translation>
-<translation id="1036348656032585052">Desativar</translation>
 <translation id="1036727731225946849">A adicionar <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De Websites</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
@@ -37,7 +36,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
-<translation id="1320663236730331991">Deslize rapidamente para cima de forma a aceder facilmente a sites e artigos populares, às transferências e a muito mais</translation>
 <translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1332501820983677155">Atalhos das funcionalidades do Google Chrome</translation>
 <translation id="136248372334525878">Pré-carregar páginas para um carregamento mais rápido e para leitura offline</translation>
@@ -116,14 +114,13 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1993768208584545658"><ph name="SITE" /> pretende sincronizar</translation>
 <translation id="1994173015038366702">URL do site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outras aplicações</translation>
-<translation id="2015632741368427174">Redirecionamento bloqueado para o site:</translation>
+<translation id="2015632741368427174">Redirecionamento bloqueado para o seguinte site:</translation>
 <translation id="2017836877785168846">Limpa o histórico e os preenchimentos automáticos da barra de endereço.</translation>
 <translation id="2021896219286479412">Controlos de site em ecrã int.</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outras aplicações</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Apresentação do novo Chrome</translation>
 <translation id="2086652334978798447">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
 <translation id="209354263896846928">Aceda à barra de endereço na parte inferior do ecrã.</translation>
@@ -131,7 +128,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir a aplicação.</translation>
-<translation id="2123074103454259350">Ainda não</translation>
 <translation id="2126426811489709554">Com tecnologia do Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> guardado(s)</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechado</translation>
@@ -141,8 +137,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Indique-nos porque desativou o novo Chrome</translation>
-<translation id="2185784955520093231">Está a utilizar o novo Chrome</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2876764156902388290">O Chrome está a utilizar menos dados para lhe mostrar esta página.</translation>
 <translation id="2888126860611144412">Acerca do Chrome</translation>
 <translation id="2891154217021530873">Parar carregamento da página</translation>
-<translation id="2892933203342091350">Ativar a vista simplificada em todos os artigos</translation>
 <translation id="2900528713135656174">Criar evento</translation>
 <translation id="2902702728133930130">O Chrome falhou durante o arranque com um erro inesperado.</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -294,7 +287,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3661699943263275414">Os Sites de terceiros podem guardar e ler dados de cookies</translation>
 <translation id="3662546969139119822">Sem histórico</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
-<translation id="3682249951633602029">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro de palavras-passe exportado.</translation>
 <translation id="3712575778697986964">Pretende repor a Poupança de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
@@ -618,7 +610,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s)</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
-<translation id="6550675742724504774">Opções</translation>
 <translation id="6556716549745717622">Bloquear se o site tiver tendência para mostrar anúncios intrusivos (recomendado)</translation>
 <translation id="6560414384669816528">Pesquisar com o Sogou</translation>
 <translation id="6566259936974865419">O Chrome permitiu-lhe poupar <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6891726759199484455">Desbloqueie para copiar a palavra-passe.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d separador aberto}other{%1$d separadores abertos}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
-<translation id="6905163627763043954">Testar</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6959661084585705671">Armazenamento secundário</translation>
@@ -727,7 +717,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7542481630195938534">Não é possível obter sugestões</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
-<translation id="7581273696622423628">Participar no inquérito</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7589445247086920869">Bloquear no motor de pesquisa atual</translation>
 <translation id="7593557518625677601">Abrir definiç. Android e reativar sinc. sistema Android p/ iniciar sinc. Chrome</translation>
@@ -736,7 +725,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7605594153474022051">A sincronização não está a funcionar</translation>
 <translation id="7612619742409846846">Iniciou sessão no Google como</translation>
 <translation id="7619072057915878432">A transferência de <ph name="FILE_NAME" /> falhou devido a falhas de rede.</translation>
-<translation id="7620146066550602128">Experimente uma <ph name="BEGIN_LINK" />forma mais fácil de navegar<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obter ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />voltar a procurar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
@@ -761,7 +749,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>
-<translation id="785312750761189439">Deslize rapidamente para cima a partir da parte inferior do ecrã ou toque no botão para expandir de forma a aceder facilmente a sites e artigos populares, a transferências, entre outros.</translation>
 <translation id="7875915731392087153">Criar email</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7882131421121961860">Nenhum histórico encontrado</translation>

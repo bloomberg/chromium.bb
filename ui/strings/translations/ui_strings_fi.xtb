@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 kuukausi sitten}other{# kuukautta sitten}}</translation>
 <translation id="4316910396681052118">KAIKKI SOVELLUKSET</translation>
-<translation id="4320177379694898372">Ei internetyhteyttä</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="4724120544754982507">Ilmoituskeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lukematonta ilmoitusta</translation>
 <translation id="4730374152663651037">USEIN KÄYTETYT</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">Vasen reuna</translation>
 <translation id="8331626408530291785">Vieritä ylös</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 vuosi}other{# vuotta}}</translation>
-<translation id="8371695176452482769">Puhu nyt</translation>
 <translation id="838869780401515933">valitse</translation>
 <translation id="8393700583063109961">Lähetä viesti</translation>
 <translation id="8394908167088220973">Media: toista/keskeytä</translation>

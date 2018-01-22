@@ -54,7 +54,6 @@
 
 Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" /> fiókkal az olyan Chrome-adatokat, mint a könyvjelzők, az előzmények és más beállítások.</translation>
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
-<translation id="2416359993254398973">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához ennél a webhelynél.</translation>
 <translation id="2429317896000329049">A Google Chrome nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="2446511512801740068">A Chrome elavult, mert nem volt újraindítva egy ideje. Megjelent egy frissítés, amelyik az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
@@ -66,7 +65,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2665296953892887393">Segítse a Google Chrome fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Ez a bővítmény módosította, hogy melyik oldal jelenik meg a Chrome indításakor.</translation>
 <translation id="2705403826523567092">Jelentkezzen be a személyre szabott, eszközök között szinkronizált böngészési környezetbe</translation>
-<translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2799223571221894425">Újraindítás</translation>
 <translation id="2847461019998147611">A Google Chrome megjelenítése ezen a nyelven</translation>
@@ -157,10 +155,8 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="5495581687705680288">A Google Chrome-ba betöltött modulok</translation>
 <translation id="556024056938947818">A Google Chrome megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">A Chrome számára engedély szükséges, hogy hozzáférjen a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="565744775970812598">A(z) <ph name="FILE_NAME" /> veszélyes lehet, ezért a Chrome letiltotta.</translation>
 <translation id="573759479754913123">A Chrome OS névjegye</translation>
-<translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5774845247549698882">A Chrome OS ezen a nyelven jelenik meg</translation>
 <translation id="5855036575689098185">A számítógépén futó szoftver nem kompatibilis a Google Chrome-mal.</translation>
 <translation id="5877064549588274448">Módosult a csatorna. Indítsa újra az eszközt a módosítások alkalmazásához.</translation>
@@ -179,7 +175,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6291549208091401781">A Google Chrome már telepítve van az összes felhasználó számára a számítógépen.</translation>
 <translation id="6338556085225130112">A Google Chrome frissítése</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS" /> is hozzájárult.</translation>
-<translation id="6393863479814692971">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához és a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="6410540444482791104">A rendszer-információk és oldaltartalmak automatikus küldésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez, illetve a veszélyes alkalmazások és webhelyek felderítéséhez.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Letöltés van folyamatban. Megszakítja a letöltést, és kilép a Google Chrome-ból?}other{# letöltés van folyamatban. Megszakítja a letöltéseket, és kilép a Google Chrome-ból?}}</translation>
 <translation id="6566149418543181476">A Google Chrome frissítése (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6600954340915313787">A Chrome-ba másolva</translation>
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
-<translation id="6697947395630195233">A Chrome-nak hozzáférésre van szüksége a helyadatokra ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét.</translation>
 <translation id="683440813066116847">Bejövő szabály a Google Chrome Canaryhoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="686561893457936865">Vigye magával a Chrome-ot mindenhova</translation>
 <translation id="6885412569789873916">Chrome Beta-alkalmazások</translation>

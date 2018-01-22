@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{ከ1 ወር በፊት}one{ከ# ወሮች በፊት}other{ከ# ወሮች በፊት}}</translation>
 <translation id="4316910396681052118">ሁሉም መተግበሪያዎች</translation>
-<translation id="4320177379694898372">ምንም የበይነመረብ ግንኙነት የለም</translation>
 <translation id="4588090240171750605">ወደ ቀኝ ሸብልል</translation>
 <translation id="4724120544754982507">የማሳወቂያ ማዕከል፣ <ph name="UNREAD_NOTIFICATION_COUNT" /> ያልተነበቡ ማሳወቂያዎች</translation>
 <translation id="4730374152663651037">በብዛት ጥቅም ላይ የዋለ</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">የግራ ጠርዝ</translation>
 <translation id="8331626408530291785">ወደ ላይ ሸብልል</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 አመት}one{# ዓመቶች}other{# ዓመቶች}}</translation>
-<translation id="8371695176452482769">አሁን ይናገሩ</translation>
 <translation id="838869780401515933">አመልክት</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
 <translation id="8394908167088220973">ሚዲያ አጫውት/ለአፍታ አቁም</translation>

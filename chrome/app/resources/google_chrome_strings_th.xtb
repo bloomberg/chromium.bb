@@ -54,7 +54,6 @@
 
 การลงชื่อเข้าใช้ต่อไปจะรวมข้อมูล Chrome เช่น บุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ เข้ากับ <ph name="ACCOUNT_EMAIL_NEW" /></translation>
 <translation id="2397416548179033562">แสดงเมนู Chrome</translation>
-<translation id="2416359993254398973">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="2429317896000329049">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="2446511512801740068">Chrome ล้าสมัยเพราะไม่ได้เปิดใช้งานใหม่มาระยะหนึ่งแล้ว มีเวอร์ชันอัปเดตพร้อมใช้งานและระบบจะนำเวอร์ชันอัปเดตดังกล่าวไปใช้เมื่อคุณเปิดแอปใหม่</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">ช่วยทำให้ Google Chrome ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
 <translation id="2689103672227170538">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="2705403826523567092">ลงชื่อเข้าใช้เพื่อรับประสบการณ์การท่องเว็บที่ปรับให้เข้ากับคุณและซิงค์กันในอุปกรณ์ทุกเครื่อง</translation>
-<translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
 <translation id="2847461019998147611">แสดง Google Chrome ในภาษานี้</translation>
@@ -158,10 +156,8 @@
 <translation id="5495581687705680288">โมดูลที่โหลดใน Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับไซต์นี้</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="573759479754913123">เกี่ยวกับ Chrome OS</translation>
-<translation id="5749068826913805084">Chrome ต้องสามารถเข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="5774845247549698882">Chrome OS แสดงในภาษานี้</translation>
 <translation id="5855036575689098185">ซอฟต์แวร์ที่ทำงานบนคอมพิวเตอร์ของคุณไม่สามารถใช้ได้กับ Google Chrome</translation>
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
@@ -180,7 +176,6 @@
 <translation id="6291549208091401781">มีการติดตั้ง Google Chrome สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="6338556085225130112">กำลังอัปเดต Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
-<translation id="6393863479814692971">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนและกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
 <translation id="6410540444482791104">คุณสามารถช่วยปรับปรุงให้ Chrome ปลอดภัยและใช้งานง่ายขึ้นด้วยการส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตราย</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ขณะนี้อยู่ระหว่างการดาวน์โหลด 1 รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}other{ขณะนี้อยู่ระหว่างการดาวน์โหลด # รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}}</translation>
 <translation id="6566149418543181476">กำลังอัปเดต Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -188,7 +183,6 @@
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
-<translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="686561893457936865">ใช้ Chrome ได้ทุกที่</translation>
 <translation id="6885412569789873916">แอป Chrome เบต้า</translation>
