@@ -39,7 +39,7 @@ class CORE_EXPORT InspectorSession
                    int session_id,
                    v8_inspector::V8Inspector*,
                    int context_group_id,
-                   const String* saved_state);
+                   const String& reattach_state);
   ~InspectorSession() override;
   // TODO(dgozman): remove session id once WokrerInspectorController
   // does not use it anymore.

@@ -36,7 +36,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   // DevToolsAgentHostImpl overrides.
   void AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
-  bool DispatchProtocolMessage(DevToolsSession* session,
+  void DispatchProtocolMessage(DevToolsSession* session,
                                const std::string& message) override;
 
   bool Matches(SharedWorkerHost* worker_host);

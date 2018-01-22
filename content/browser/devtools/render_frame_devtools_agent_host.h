@@ -100,9 +100,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
   void InspectElement(DevToolsSession* session, int x, int y) override;
-  bool DispatchProtocolMessage(
-      DevToolsSession* session,
-      const std::string& message) override;
+  void DispatchProtocolMessage(DevToolsSession* session,
+                               const std::string& message) override;
 
   // WebContentsObserver overrides.
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -146,16 +145,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   blink::mojom::DevToolsAgentAssociatedPtr agent_ptr_;
   base::flat_set<NavigationHandleImpl*> navigation_handles_;
   bool render_frame_alive_ = false;
-
-  // These messages were queued after suspending, not sent to the agent,
-  // and will be sent after resuming.
-  struct Message {
-    int call_id;
-    std::string method;
-    std::string message;
-  };
-  std::map<DevToolsSession*, std::vector<Message>>
-      suspended_messages_by_session_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

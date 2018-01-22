@@ -64,7 +64,6 @@ bool SharedWorkerDevToolsAgentHost::Close() {
 }
 
 void SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  session->SetFallThroughForNotFound(true);
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(GetId()));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
@@ -77,19 +76,10 @@ void SharedWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
 }
 
-bool SharedWorkerDevToolsAgentHost::DispatchProtocolMessage(
+void SharedWorkerDevToolsAgentHost::DispatchProtocolMessage(
     DevToolsSession* session,
     const std::string& message) {
-  int call_id = 0;
-  std::string method;
-  if (session->Dispatch(message, &call_id, &method) !=
-      protocol::Response::kFallThrough) {
-    return true;
-  }
-
-  session->DispatchProtocolMessageToAgent(call_id, method, message);
-  session->waiting_messages()[call_id] = {method, message};
-  return true;
+  session->DispatchProtocolMessage(message);
 }
 
 bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
@@ -100,15 +90,8 @@ void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   DCHECK(worker_host_);
   state_ = WORKER_READY;
-  for (DevToolsSession* session : sessions()) {
-    session->ReattachToAgent(EnsureAgent());
-    for (const auto& pair : session->waiting_messages()) {
-      int call_id = pair.first;
-      const DevToolsSession::Message& message = pair.second;
-      session->DispatchProtocolMessageToAgent(call_id, message.method,
-                                              message.message);
-    }
-  }
+  for (DevToolsSession* session : sessions())
+    session->AttachToAgent(EnsureAgent());
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerRestarted(

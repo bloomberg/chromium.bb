@@ -219,7 +219,8 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
   DevToolsSession* session = SessionByClient(client);
   if (!session)
     return false;
-  return DispatchProtocolMessage(session, message);
+  DispatchProtocolMessage(session, message);
+  return true;
 }
 
 void DevToolsAgentHostImpl::InnerDetachClient(DevToolsAgentHostClient* client) {
