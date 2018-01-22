@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace {
@@ -308,6 +309,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     } else {
       *transformed_point = point;
     }
+    if (target.flags & viz::mojom::kHitTestAsk)
+      query_renderer = true;
   } else {
     // Short circuit if owner_map has only one RenderWidgetHostView, no need for
     // hit testing.

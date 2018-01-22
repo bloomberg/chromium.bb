@@ -928,8 +928,8 @@ TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
   // point1 is inside e but we have to ask clients for targeting.
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
-  EXPECT_EQ(target1.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target1.location_in_target, gfx::Point());
+  EXPECT_EQ(target1.frame_sink_id, e_id);
+  EXPECT_EQ(target1.location_in_target, point1);
   EXPECT_EQ(target1.flags, mojom::kHitTestAsk | mojom::kHitTestMouse);
 
   // point2 is on the bounds of e so no target found.
@@ -992,8 +992,8 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   // shouldn't go back to e.
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
-  EXPECT_EQ(target3.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target3.location_in_target, gfx::Point());
+  EXPECT_EQ(target3.frame_sink_id, c2_id);
+  EXPECT_EQ(target3.location_in_target, gfx::Point(100, 100));
   EXPECT_EQ(target3.flags, mojom::kHitTestAsk | mojom::kHitTestMouse);
 }
 
