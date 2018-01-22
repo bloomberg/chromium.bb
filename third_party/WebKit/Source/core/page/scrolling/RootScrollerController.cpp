@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/fullscreen/DocumentFullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -118,12 +119,14 @@ void RootScrollerController::DidUpdateIFrameFrameView(
 }
 
 void RootScrollerController::RecomputeEffectiveRootScroller() {
-  bool root_scroller_valid =
-      root_scroller_ && IsValidRootScroller(*root_scroller_);
-
   Node* new_effective_root_scroller = document_;
-  if (root_scroller_valid)
-    new_effective_root_scroller = root_scroller_;
+
+  if (!DocumentFullscreen::fullscreenElement(*document_)) {
+    bool root_scroller_valid =
+        root_scroller_ && IsValidRootScroller(*root_scroller_);
+    if (root_scroller_valid)
+      new_effective_root_scroller = root_scroller_;
+  }
 
   // TODO(bokan): This is a terrible hack but required because the viewport
   // apply scroll works on Elements rather than Nodes. If we're going from
