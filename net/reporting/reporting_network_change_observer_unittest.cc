@@ -60,8 +60,8 @@ class ReportingNetworkChangeObserverTest : public ReportingTestBase {
 
 TEST_F(ReportingNetworkChangeObserverTest, ClearNothing) {
   ReportingPolicy new_policy = policy();
-  new_policy.clear_reports_on_network_changes = false;
-  new_policy.clear_clients_on_network_changes = false;
+  new_policy.persist_reports_across_network_changes = true;
+  new_policy.persist_clients_across_network_changes = true;
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
@@ -79,8 +79,8 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearNothing) {
 
 TEST_F(ReportingNetworkChangeObserverTest, ClearReports) {
   ReportingPolicy new_policy = policy();
-  new_policy.clear_reports_on_network_changes = true;
-  new_policy.clear_clients_on_network_changes = false;
+  new_policy.persist_reports_across_network_changes = false;
+  new_policy.persist_clients_across_network_changes = true;
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
@@ -98,8 +98,8 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearReports) {
 
 TEST_F(ReportingNetworkChangeObserverTest, ClearClients) {
   ReportingPolicy new_policy = policy();
-  new_policy.clear_reports_on_network_changes = false;
-  new_policy.clear_clients_on_network_changes = true;
+  new_policy.persist_reports_across_network_changes = true;
+  new_policy.persist_clients_across_network_changes = false;
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
@@ -117,8 +117,8 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearClients) {
 
 TEST_F(ReportingNetworkChangeObserverTest, ClearReportsAndClients) {
   ReportingPolicy new_policy = policy();
-  new_policy.clear_reports_on_network_changes = true;
-  new_policy.clear_clients_on_network_changes = true;
+  new_policy.persist_reports_across_network_changes = false;
+  new_policy.persist_clients_across_network_changes = false;
   UsePolicy(new_policy);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
