@@ -1837,10 +1837,17 @@ TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
   }
   // Receiving Packet 40 causes 20th ack to send. Session is informed and adds
   // WINDOW_UPDATE.
-  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
-      .WillOnce(
-          Invoke(testing::CreateFunctor(&QuicConnection::SendWindowUpdate,
-                                        base::Unretained(&connection_), 0, 0)));
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
+        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
+            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
+            QuicFrame(new QuicWindowUpdateFrame(1, 0, 0))))));
+  } else {
+    EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
+        .WillOnce(Invoke(
+            testing::CreateFunctor(&QuicConnection::SendWindowUpdate,
+                                   base::Unretained(&connection_), 0, 0)));
+  }
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_EQ(0u, writer_->window_update_frames().size());
   ProcessDataPacket(40);
@@ -1861,7 +1868,14 @@ TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
     EXPECT_EQ(0u, writer_->window_update_frames().size());
   }
   // Session does not add a retransmittable frame.
-  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(1);
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
+        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
+            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
+            QuicFrame(QuicPingFrame(1))))));
+  } else {
+    EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(1);
+  }
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_EQ(0u, writer_->ping_frames().size());
   ProcessDataPacket(99);
@@ -2378,12 +2392,25 @@ TEST_P(QuicConnectionTest, DoNotSendQueuedPacketForResetStream) {
   connection_.SendStreamDataWithString(stream_id, "foo", 0, NO_FIN);
 
   // Now that there is a queued packet, reset the stream.
-  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  if (connection_.use_control_frame_manager()) {
+    // This RST_STREAM_FRAME cannot be sent as writer is blocked.
+    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_ERROR_PROCESSING_STREAM,
+                                  14);
+    connection_.SendControlFrame(QuicFrame(&rst_stream));
+    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  }
 
   // Unblock the connection and verify that only the RST_STREAM is sent.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   writer_->SetWritable();
   connection_.OnCanWrite();
+  if (connection_.use_control_frame_manager()) {
+    // OnCanWrite will cause RST_STREAM be sent again.
+    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
+        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
+  }
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->rst_stream_frames().size());
 }
@@ -2396,13 +2423,25 @@ TEST_P(QuicConnectionTest, SendQueuedPacketForQuicRstStreamNoError) {
   connection_.SendStreamDataWithString(stream_id, "foo", 0, NO_FIN);
 
   // Now that there is a queued packet, reset the stream.
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  if (connection_.use_control_frame_manager()) {
+    // This RST_STREAM_FRAME cannot be sent as writer is blocked.
+    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_STREAM_NO_ERROR, 14);
+    connection_.SendControlFrame(QuicFrame(&rst_stream));
+    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  }
 
   // Unblock the connection and verify that the RST_STREAM is sent and the data
   // packet is sent.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AtLeast(2));
   writer_->SetWritable();
   connection_.OnCanWrite();
+  if (connection_.use_control_frame_manager()) {
+    // OnCanWrite will cause RST_STREAM be sent again.
+    connection_.SendControlFrame(QuicFrame(
+        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
+  }
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->rst_stream_frames().size());
 }
@@ -2415,7 +2454,13 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnNack) {
   SendStreamDataToPeer(stream_id, "fooos", 7, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
+        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
+    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  }
 
   // Lose a packet and ensure it does not trigger retransmission.
   QuicAckFrame nack_two = ConstructAckFrame(last_packet, last_packet - 1);
@@ -2434,7 +2479,13 @@ TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnNack) {
   SendStreamDataToPeer(stream_id, "fooos", 7, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(
+        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
+    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  }
 
   // Lose a packet, ensure it triggers retransmission.
   QuicAckFrame nack_two = ConstructAckFrame(last_packet, last_packet - 1);
@@ -2454,7 +2505,13 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
   SendStreamDataToPeer(stream_id, "foo", 0, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
+        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
+    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  }
 
   // Fire the RTO and verify that the RST_STREAM is resent, not stream data.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
@@ -2475,7 +2532,13 @@ TEST_P(QuicConnectionTest, CancelRetransmissionAlarmAfterResetStream) {
   // Cancel the stream.
   const QuicPacketNumber rst_packet = last_data_packet + 1;
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, rst_packet, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
+        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
+    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  }
 
   // Ack the RST_STREAM frame (since it's retransmittable), but not the data
   // packet, which is no longer retransmittable since the stream was cancelled.
@@ -2500,7 +2563,13 @@ TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnRTO) {
   SendStreamDataToPeer(stream_id, "foo", 0, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(
+        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
+    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  }
 
   // Fire the RTO and verify that the RST_STREAM is resent, the stream data
   // is sent.
@@ -2528,13 +2597,26 @@ TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessAckPacket(&ack);
 
-  connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  if (connection_.use_control_frame_manager()) {
+    // This RST_STREAM_FRAME will be failed to write as writer is blocked.
+    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_ERROR_PROCESSING_STREAM,
+                                  14);
+    connection_.SendControlFrame(QuicFrame(&rst_stream));
+    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
+  }
 
   // Unblock the connection and verify that the RST_STREAM is sent but not the
   // second data packet nor a retransmit.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   writer_->SetWritable();
   connection_.OnCanWrite();
+  if (connection_.use_control_frame_manager()) {
+    // OnCanWrite will cause this RST_STREAM_FRAME be sent again.
+    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
+        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
+  }
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->rst_stream_frames().size());
   EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
@@ -2559,15 +2641,31 @@ TEST_P(QuicConnectionTest, SendPendingRetransmissionForQuicRstStreamNoError) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessAckPacket(&ack);
 
-  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  if (connection_.use_control_frame_manager()) {
+    // This RST_STREAM_FRAME will be failed to sent as writer is blocked.
+    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_STREAM_NO_ERROR, 14);
+    connection_.SendControlFrame(QuicFrame(&rst_stream));
+    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
+  } else {
+    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+  }
 
   // Unblock the connection and verify that the RST_STREAM is sent and the
   // second data packet or a retransmit is sent.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AtLeast(2));
   writer_->SetWritable();
   connection_.OnCanWrite();
-  EXPECT_EQ(1u, writer_->frame_count());
-  EXPECT_EQ(0u, writer_->rst_stream_frames().size());
+  if (connection_.use_control_frame_manager()) {
+    // The RST_STREAM_FRAME is sent after queued packets and pending
+    // retransmission.
+    connection_.SendControlFrame(QuicFrame(
+        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
+    EXPECT_EQ(1u, writer_->frame_count());
+    EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+  } else {
+    EXPECT_EQ(1u, writer_->frame_count());
+    EXPECT_EQ(0u, writer_->rst_stream_frames().size());
+  }
 }
 
 TEST_P(QuicConnectionTest, RetransmitAckedPacket) {
@@ -3245,6 +3343,12 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
 
   writer_->Reset();
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, SendPing())
+        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
+            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
+            QuicFrame(QuicPingFrame(1))))));
+  }
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
   ASSERT_EQ(1u, writer_->ping_frames().size());
@@ -3290,6 +3394,12 @@ TEST_P(QuicConnectionTest, ReducedPingTimeout) {
 
   writer_->Reset();
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, SendPing())
+        .WillOnce(testing::IgnoreResult(Invoke(testing::CreateFunctor(
+            &QuicConnection::SendControlFrame, base::Unretained(&connection_),
+            QuicFrame(QuicPingFrame(1))))));
+  }
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
   ASSERT_EQ(1u, writer_->ping_frames().size());
@@ -5346,7 +5456,11 @@ TEST_P(QuicConnectionTest, SendPingImmediately) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _)).Times(1);
   EXPECT_CALL(debug_visitor, OnPingSent()).Times(1);
-  connection_.SendPing();
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+  } else {
+    connection_.SendPing();
+  }
   EXPECT_FALSE(connection_.HasQueuedData());
 }
 
@@ -5357,7 +5471,11 @@ TEST_P(QuicConnectionTest, SendBlockedImmediately) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _)).Times(1);
   EXPECT_EQ(0u, connection_.GetStats().blocked_frames_sent);
-  connection_.SendBlocked(3);
+  if (connection_.use_control_frame_manager()) {
+    connection_.SendControlFrame(QuicFrame(new QuicBlockedFrame(1, 3)));
+  } else {
+    connection_.SendBlocked(3);
+  }
   EXPECT_EQ(1u, connection_.GetStats().blocked_frames_sent);
   EXPECT_FALSE(connection_.HasQueuedData());
 }
@@ -5611,6 +5729,11 @@ TEST_P(QuicConnectionTest, ClientAlwaysSendConnectionId) {
 }
 
 TEST_P(QuicConnectionTest, HasPendingControlFramesWhenRetransmittingPackets) {
+  if (connection_.use_control_frame_manager()) {
+    // When use_control_frame_manager is true, the control frame will be
+    // buffered in the control frame manager.
+    return;
+  }
   // This test mimics this scenario: writer get blocked when generator tries to
   // add a control frame, which will be pending. When writer get unblocked, this
   // pending control frame is sent in a packet before retransmissions.

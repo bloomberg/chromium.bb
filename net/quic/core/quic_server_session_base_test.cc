@@ -205,8 +205,14 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   QuicRstStreamFrame rst1(kInvalidControlFrameId, GetNthClientInitiatedId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT, 0));
+  }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
@@ -223,8 +229,14 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
   QuicRstStreamFrame rst1(kInvalidControlFrameId, GetNthClientInitiatedId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT, 0));
+  }
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
@@ -252,8 +264,14 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
   QuicRstStreamFrame rst(kInvalidControlFrameId, GetNthClientInitiatedId(0),
                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT, 0));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(GetNthClientInitiatedId(0),
+                                            QUIC_RST_ACKNOWLEDGEMENT, 0));
+  }
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data
@@ -302,7 +320,12 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   // Now violate the server's internal stream limit.
   stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(stream_id, QUIC_REFUSED_STREAM));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
+  }
   // Even if the connection remains open, the stream creation should fail.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
       session_.get(), stream_id));

@@ -274,7 +274,9 @@ QuicConnection::QuicConnection(
       consecutive_num_packets_with_no_retransmittable_frames_(0),
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
-      last_control_frame_id_(kInvalidControlFrameId) {
+      last_control_frame_id_(kInvalidControlFrameId),
+      use_control_frame_manager_(
+          GetQuicReloadableFlag(quic_use_control_frame_manager)) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
@@ -1202,14 +1204,42 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
   return packet_generator_.ConsumeData(id, write_length, offset, state);
 }
 
+bool QuicConnection::SendControlFrame(const QuicFrame& frame) {
+  DCHECK(use_control_frame_manager_);
+  if (!CanWrite(HAS_RETRANSMITTABLE_DATA) && frame.type != PING_FRAME) {
+    QUIC_DVLOG(1) << "Failed to send control frame: " << frame;
+    // Do not check congestion window for ping.
+    return false;
+  }
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
+  packet_generator_.AddControlFrame(frame);
+  if (frame.type == PING_FRAME) {
+    // Flush PING frame immediately.
+    packet_generator_.FlushAllQueuedFrames();
+    if (debug_visitor_ != nullptr) {
+      debug_visitor_->OnPingSent();
+    }
+  }
+  if (frame.type == BLOCKED_FRAME) {
+    stats_.blocked_frames_sent++;
+  }
+  return true;
+}
+
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written) {
+  DCHECK(!use_control_frame_manager_);
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
       ++last_control_frame_id_, id, error, bytes_written)));
 
+  OnStreamReset(id, error);
+}
+
+void QuicConnection::OnStreamReset(QuicStreamId id,
+                                   QuicRstStreamErrorCode error) {
   if (error == QUIC_STREAM_NO_ERROR) {
     // All data for streams which are reset with QUIC_STREAM_NO_ERROR must
     // be received by the peer.
@@ -1217,11 +1247,13 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   }
   // Flush stream frames of reset stream.
   if (packet_generator_.HasPendingStreamFramesOfStream(id)) {
+    ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
     packet_generator_.FlushAllQueuedFrames();
   }
 
   sent_packet_manager_.CancelRetransmissionsForStream(id);
   // Remove all queued packets which only contain data for the reset stream.
+  // TODO(fayang): consider removing this because it should be rarely executed.
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end()) {
     QuicFrames* retransmittable_frames =
@@ -1245,6 +1277,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
 
 void QuicConnection::SendWindowUpdate(QuicStreamId id,
                                       QuicStreamOffset byte_offset) {
+  DCHECK(!use_control_frame_manager_);
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(
@@ -1252,6 +1285,7 @@ void QuicConnection::SendWindowUpdate(QuicStreamId id,
 }
 
 void QuicConnection::SendBlocked(QuicStreamId id) {
+  DCHECK(!use_control_frame_manager_);
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
@@ -1912,11 +1946,16 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
 
 void QuicConnection::OnPingTimeout() {
   if (!retransmission_alarm_->IsSet()) {
-    SendPing();
+    if (use_control_frame_manager_) {
+      visitor_->SendPing();
+    } else {
+      SendPing();
+    }
   }
 }
 
 void QuicConnection::SendPing() {
+  DCHECK(!use_control_frame_manager_);
   ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
   packet_generator_.AddControlFrame(
       QuicFrame(QuicPingFrame(++last_control_frame_id_)));
@@ -1947,10 +1986,12 @@ void QuicConnection::SendAck() {
   }
 
   visitor_->OnAckNeedsRetransmittableFrame();
-  if (!packet_generator_.HasRetransmittableFrames()) {
-    // Visitor did not add a retransmittable frame, add a ping frame.
-    packet_generator_.AddControlFrame(
-        QuicFrame(QuicPingFrame(++last_control_frame_id_)));
+  if (!use_control_frame_manager_) {
+    if (!packet_generator_.HasRetransmittableFrames()) {
+      // Visitor did not add a retransmittable frame, add a ping frame.
+      packet_generator_.AddControlFrame(
+          QuicFrame(QuicPingFrame(++last_control_frame_id_)));
+    }
   }
 }
 
@@ -2164,6 +2205,7 @@ void QuicConnection::CancelAllAlarms() {
 void QuicConnection::SendGoAway(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason) {
+  DCHECK(!use_control_frame_manager_);
   QUIC_DLOG(INFO) << ENDPOINT << "Going away with error "
                   << QuicErrorCodeToString(error) << " (" << error << ")";
 

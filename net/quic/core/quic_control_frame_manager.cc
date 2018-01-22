@@ -5,18 +5,90 @@
 #include "net/quic/core/quic_control_frame_manager.h"
 
 #include "net/quic/core/quic_constants.h"
+#include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_map_util.h"
 
+using std::string;
+
 namespace net {
 
-QuicControlFrameManager::QuicControlFrameManager() : least_unacked_(1) {}
+QuicControlFrameManager::QuicControlFrameManager(QuicSession* session)
+    : last_control_frame_id_(kInvalidControlFrameId),
+      least_unacked_(1),
+      least_unsent_(1),
+      session_(session) {}
 
 QuicControlFrameManager::~QuicControlFrameManager() {
   while (!control_frames_.empty()) {
     DeleteFrame(&control_frames_.front());
     control_frames_.pop_front();
   }
+}
+
+void QuicControlFrameManager::WriteOrBufferRstStream(
+    QuicStreamId id,
+    QuicRstStreamErrorCode error,
+    QuicStreamOffset bytes_written) {
+  QUIC_DVLOG(1) << "Writing RST_STREAM_FRAME";
+  const bool had_buffered_frames = HasBufferedFrames();
+  control_frames_.emplace_back((QuicFrame(new QuicRstStreamFrame(
+      ++last_control_frame_id_, id, error, bytes_written))));
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
+}
+
+void QuicControlFrameManager::WriteOrBufferGoAway(
+    QuicErrorCode error,
+    QuicStreamId last_good_stream_id,
+    const string& reason) {
+  QUIC_DVLOG(1) << "Writing GOAWAY_FRAME";
+  const bool had_buffered_frames = HasBufferedFrames();
+  control_frames_.emplace_back(QuicFrame(new QuicGoAwayFrame(
+      ++last_control_frame_id_, error, last_good_stream_id, reason)));
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
+}
+
+void QuicControlFrameManager::WriteOrBufferWindowUpdate(
+    QuicStreamId id,
+    QuicStreamOffset byte_offset) {
+  QUIC_DVLOG(1) << "Writing WINDOW_UPDATE_FRAME";
+  const bool had_buffered_frames = HasBufferedFrames();
+  control_frames_.emplace_back(QuicFrame(
+      new QuicWindowUpdateFrame(++last_control_frame_id_, id, byte_offset)));
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
+}
+
+void QuicControlFrameManager::WriteOrBufferBlocked(QuicStreamId id) {
+  QUIC_DVLOG(1) << "Writing BLOCKED_FRAME";
+  const bool had_buffered_frames = HasBufferedFrames();
+  control_frames_.emplace_back(
+      QuicFrame(new QuicBlockedFrame(++last_control_frame_id_, id)));
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
+}
+
+void QuicControlFrameManager::WritePing() {
+  QUIC_DVLOG(1) << "Writing PING_FRAME";
+  const bool had_buffered_frames = HasBufferedFrames();
+  QUIC_BUG_IF(had_buffered_frames)
+      << "Try to send PING when there is buffered control frames.";
+  control_frames_.emplace_back(
+      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
+  if (had_buffered_frames) {
+    return;
+  }
+  WriteBufferedFrames();
 }
 
 void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
@@ -26,17 +98,20 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
         << "Send or retransmit a control frame with invalid control frame id";
     return;
   }
-  if (id == least_unacked_ + control_frames_.size()) {
-    // This is a newly sent control frame. Save a copy of this frame.
-    control_frames_.emplace_back(CopyRetransmittableControlFrame(frame));
-    return;
-  }
   if (QuicContainsKey(pending_retransmissions_, id)) {
     // This is retransmitted control frame.
     pending_retransmissions_.erase(id);
     return;
   }
-  QUIC_BUG << frame << " is neither a new or retransmitted control frame.";
+  if (id > least_unsent_) {
+    QUIC_BUG << "Try to send control frames out of order, id: " << id
+             << " least_unsent: " << least_unsent_;
+    session_->connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR, "Try to send control frames out of order",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+  ++least_unsent_;
 }
 
 void QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
@@ -49,8 +124,11 @@ void QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
     // This frame has already been acked.
     return;
   }
-  if (id >= least_unacked_ + control_frames_.size()) {
+  if (id >= least_unsent_) {
     QUIC_BUG << "Try to ack unsent control frame";
+    session_->connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR, "Try to ack unsent control frame",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
 
@@ -74,14 +152,17 @@ void QuicControlFrameManager::OnControlFrameLost(const QuicFrame& frame) {
     // Frame does not have a valid control frame ID, ignore it.
     return;
   }
+  if (id >= least_unsent_) {
+    QUIC_BUG << "Try to mark unsent control frame as lost";
+    session_->connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR, "Try to mark unsent control frame as lost",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
   if (id < least_unacked_ ||
       GetControlFrameId(control_frames_.at(id - least_unacked_)) ==
           kInvalidControlFrameId) {
     // This frame has already been acked.
-    return;
-  }
-  if (id >= least_unacked_ + control_frames_.size()) {
-    QUIC_BUG << "Try to mark unsent control frame as lost";
     return;
   }
   if (!QuicContainsKey(pending_retransmissions_, id)) {
@@ -96,17 +177,17 @@ bool QuicControlFrameManager::IsControlFrameOutstanding(
     // Frame without a control frame ID should not be retransmitted.
     return false;
   }
-  if (id >= least_unacked_ + control_frames_.size()) {
-    QUIC_BUG << "Try to check retransmittability of an unsent frame.";
-    return false;
-  }
-  return id >= least_unacked_ &&
+  return id < least_unsent_ && id >= least_unacked_ &&
          GetControlFrameId(control_frames_.at(id - least_unacked_)) !=
              kInvalidControlFrameId;
 }
 
 bool QuicControlFrameManager::HasPendingRetransmission() const {
   return !pending_retransmissions_.empty();
+}
+
+bool QuicControlFrameManager::WillingToWrite() const {
+  return HasPendingRetransmission() || HasBufferedFrames();
 }
 
 QuicFrame QuicControlFrameManager::NextPendingRetransmission() const {
@@ -117,8 +198,44 @@ QuicFrame QuicControlFrameManager::NextPendingRetransmission() const {
   return control_frames_.at(id - least_unacked_);
 }
 
-size_t QuicControlFrameManager::size() const {
-  return control_frames_.size();
+void QuicControlFrameManager::OnCanWrite() {
+  if (HasPendingRetransmission()) {
+    // Exit early to allow streams to write pending retransmissions if any.
+    WritePendingRetransmission();
+    return;
+  }
+  WriteBufferedFrames();
+}
+
+void QuicControlFrameManager::WriteBufferedFrames() {
+  while (HasBufferedFrames()) {
+    QuicFrame frame_to_send =
+        control_frames_.at(least_unsent_ - least_unacked_);
+    QuicFrame copy = CopyRetransmittableControlFrame(frame_to_send);
+    if (!session_->WriteControlFrame(copy)) {
+      // Connection is write blocked.
+      DeleteFrame(&copy);
+      break;
+    }
+    OnControlFrameSent(frame_to_send);
+  }
+}
+
+void QuicControlFrameManager::WritePendingRetransmission() {
+  while (HasPendingRetransmission()) {
+    QuicFrame pending = NextPendingRetransmission();
+    QuicFrame copy = CopyRetransmittableControlFrame(pending);
+    if (!session_->WriteControlFrame(copy)) {
+      // Connection is write blocked.
+      DeleteFrame(&copy);
+      break;
+    }
+    OnControlFrameSent(pending);
+  }
+}
+
+bool QuicControlFrameManager::HasBufferedFrames() const {
+  return least_unsent_ < least_unacked_ + control_frames_.size();
 }
 
 }  // namespace net

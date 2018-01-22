@@ -94,6 +94,7 @@ class QuicEndpoint : public Endpoint,
   void OnPathDegrading() override {}
   void PostProcessAfterData() override {}
   void OnAckNeedsRetransmittableFrame() override {}
+  void SendPing() override {}
   bool AllowSelfAddressChange() const override;
   // End QuicConnectionVisitorInterface implementation.
 

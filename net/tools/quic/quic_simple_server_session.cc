@@ -141,7 +141,13 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
     size_t index = (frame.stream_id - next_outgoing_stream_id()) / 2;
     DCHECK(index <= promised_streams_.size());
     promised_streams_[index].is_cancelled = true;
-    connection()->SendRstStream(frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT, 0);
+    if (use_control_frame_manager()) {
+      control_frame_manager().WriteOrBufferRstStream(
+          frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT, 0);
+      connection()->OnStreamReset(frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT);
+    } else {
+      connection()->SendRstStream(frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT, 0);
+    }
   }
 }
 

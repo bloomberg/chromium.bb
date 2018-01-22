@@ -146,6 +146,11 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
     return QuicConsumedData(1, false);
   }
 
+  bool ClearControlFrame(const QuicFrame& frame) {
+    DeleteFrame(&const_cast<QuicFrame&>(frame));
+    return true;
+  }
+
  protected:
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
@@ -444,7 +449,13 @@ TEST_F(QuicStreamTest, StopReadingSendsFlowControl) {
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _))
       .Times(0);
-  EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(AtLeast(1));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(AtLeast(1))
+        .WillRepeatedly(Invoke(this, &QuicStreamTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(AtLeast(1));
+  }
 
   string data(1000, 'x');
   for (QuicStreamOffset offset = 0;
@@ -1172,7 +1183,12 @@ TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
-  EXPECT_CALL(*connection_, SendBlocked(stream_->id()));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(this, &QuicStreamTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendBlocked(stream_->id()));
+  }
   string data(1024, '.');
   stream_->WriteOrBufferData(data, false, nullptr);
   EXPECT_FALSE(HasWriteBlockedStreams());

@@ -2048,8 +2048,13 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
                                     callback_.callback()));
 
   // Do an async write to leave writer blocked.
-  if (async_write_before)
-    session->connection()->SendPing();
+  if (async_write_before) {
+    if (session->use_control_frame_manager()) {
+      session->SendPing();
+    } else {
+      session->connection()->SendPing();
+    }
+  }
 
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
@@ -2180,8 +2185,13 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
                                     callback_.callback()));
 
   // Do an async write to leave writer blocked.
-  if (async_write_before)
-    session->connection()->SendPing();
+  if (async_write_before) {
+    if (session->use_control_frame_manager()) {
+      session->SendPing();
+    } else {
+      session->connection()->SendPing();
+    }
+  }
 
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
