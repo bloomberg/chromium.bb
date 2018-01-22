@@ -33,7 +33,7 @@
 // Stops the coordinator.
 - (void)stop;
 
-// Show the animation when transitioning to a prerendered page.
+// Shows the animation when transitioning to a prerendered page.
 - (void)showPrerenderingAnimation;
 // Whether the omnibox is currently the first responder.
 - (BOOL)isOmniboxFirstResponder;
