@@ -17,8 +17,10 @@ FakeSensorProvider::FakeSensorProvider(mojom::SensorProviderRequest request)
 }
 
 FakeSensorProvider::~FakeSensorProvider() {
-  if (callback_)
-    std::move(callback_).Run(nullptr);
+  if (callback_) {
+    std::move(callback_).Run(mojom::SensorCreationResult::ERROR_NOT_AVAILABLE,
+                             nullptr);
+  }
 }
 
 void FakeSensorProvider::Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -31,7 +33,8 @@ void FakeSensorProvider::GetSensor(mojom::SensorType type,
 }
 
 void FakeSensorProvider::CallCallback(mojom::SensorInitParamsPtr param) {
-  std::move(callback_).Run(std::move(param));
+  std::move(callback_).Run(mojom::SensorCreationResult::SUCCESS,
+                           std::move(param));
 }
 
 }  // namespace device

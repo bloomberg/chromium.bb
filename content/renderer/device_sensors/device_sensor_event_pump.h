@@ -137,7 +137,8 @@ class CONTENT_EXPORT DeviceSensorEventPump
     }
 
     // Mojo callback for SensorProvider::GetSensor().
-    void OnSensorCreated(device::mojom::SensorInitParamsPtr params) {
+    void OnSensorCreated(device::mojom::SensorCreationResult result,
+                         device::mojom::SensorInitParamsPtr params) {
       // |sensor_state| can be SensorState::SHOULD_SUSPEND if Stop() is called
       // before OnSensorCreated() is called.
       DCHECK(sensor_state == SensorState::INITIALIZING ||
@@ -148,6 +149,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
         event_pump->DidStartIfPossible();
         return;
       }
+      DCHECK_EQ(device::mojom::SensorCreationResult::SUCCESS, result);
 
       constexpr size_t kReadBufferSize =
           sizeof(device::SensorReadingSharedBuffer);

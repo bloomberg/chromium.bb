@@ -99,10 +99,13 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void FocusedFrameChanged() override;
 
   // Generic handler for a fatal error.
-  void HandleSensorError();
+  void HandleSensorError(
+      device::mojom::blink::SensorCreationResult =
+          device::mojom::blink::SensorCreationResult::ERROR_NOT_AVAILABLE);
 
   // mojo call callbacks.
-  void OnSensorCreated(device::mojom::blink::SensorInitParamsPtr);
+  void OnSensorCreated(device::mojom::blink::SensorCreationResult,
+                       device::mojom::blink::SensorInitParamsPtr);
 
   void OnPollingTimer(TimerBase*);
 

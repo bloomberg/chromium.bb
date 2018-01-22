@@ -148,7 +148,7 @@ void SensorProxy::FocusedFrameChanged() {
   UpdateSuspendedStatus();
 }
 
-void SensorProxy::HandleSensorError() {
+void SensorProxy::HandleSensorError(SensorCreationResult error) {
   state_ = kUninitialized;
   active_frequencies_.clear();
   reading_ = device::SensorReading();
@@ -162,19 +162,28 @@ void SensorProxy::HandleSensorError() {
   default_config_.reset();
   client_binding_.Close();
 
+  ExceptionCode code = kNotReadableError;
+  String description = "Could not connect to a sensor";
+  if (error == SensorCreationResult::ERROR_NOT_ALLOWED) {
+    code = kNotAllowedError;
+    description = "Permissions to access sensor are not granted";
+  }
   auto copy = observers_;
   for (Observer* observer : copy) {
-    observer->OnSensorError(kNotReadableError, "Could not connect to a sensor",
-                            String());
+    observer->OnSensorError(code, description, String());
   }
 }
 
-void SensorProxy::OnSensorCreated(SensorInitParamsPtr params) {
+void SensorProxy::OnSensorCreated(SensorCreationResult result,
+                                  SensorInitParamsPtr params) {
   DCHECK_EQ(kInitializing, state_);
   if (!params) {
-    HandleSensorError();
+    DCHECK_NE(SensorCreationResult::SUCCESS, result);
+    HandleSensorError(result);
     return;
   }
+
+  DCHECK_EQ(SensorCreationResult::SUCCESS, result);
   const size_t kReadBufferSize = sizeof(ReadingBuffer);
 
   DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
@@ -212,7 +221,8 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params) {
             frequency_limits_.second);
 
   auto error_callback =
-      WTF::Bind(&SensorProxy::HandleSensorError, WrapWeakPersistent(this));
+      WTF::Bind(&SensorProxy::HandleSensorError, WrapWeakPersistent(this),
+                SensorCreationResult::ERROR_NOT_AVAILABLE);
   sensor_.set_connection_error_handler(std::move(error_callback));
 
   state_ = kInitialized;
