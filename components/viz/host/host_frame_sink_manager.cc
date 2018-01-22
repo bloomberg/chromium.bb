@@ -98,6 +98,9 @@ void HostFrameSinkManager::SetFrameSinkDebugLabel(
 
 void HostFrameSinkManager::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
+  // Should only be used with an out-of-process display compositor.
+  DCHECK(frame_sink_manager_ptr_);
+
   FrameSinkId frame_sink_id = params->frame_sink_id;
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
@@ -226,6 +229,9 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
 
   data.support = support.get();
   data.is_root = is_root;
+
+  if (is_root)
+    display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
 
   return support;
 }
