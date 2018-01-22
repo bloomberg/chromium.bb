@@ -598,7 +598,8 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(1));
+  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(
+      1, false, QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   Initialize();
@@ -622,7 +623,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
   MockQuicData quic_data;
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
-  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(1));
+  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(
+      1, false, QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   Initialize();
@@ -650,7 +652,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
   MockQuicData quic_data;
   quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
-  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(1));
+  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(
+      1, false, QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!"));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   Initialize();
