@@ -135,12 +135,12 @@ void ToolbarModelTest::NavigateAndCheckText(
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
+  EXPECT_EQ(expected_text, toolbar_model->GetFormattedFullURL());
   EXPECT_NE(expected_text.empty(), toolbar_model->ShouldDisplayURL());
 
   // Check after commit.
   CommitPendingLoad(controller);
-  EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
+  EXPECT_EQ(expected_text, toolbar_model->GetFormattedFullURL());
   EXPECT_NE(expected_text.empty(), toolbar_model->ShouldDisplayURL());
 }
 
@@ -152,15 +152,14 @@ void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
   const base::string16 toolbar_text_before(
-      toolbar_model->GetFormattedURL(nullptr));
+      toolbar_model->GetFormattedFullURL());
   EXPECT_LT(toolbar_text_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(toolbar_text_before,
                              base::string16(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
   // Check after commit.
   CommitPendingLoad(controller);
-  const base::string16 toolbar_text_after(
-      toolbar_model->GetFormattedURL(nullptr));
+  const base::string16 toolbar_text_after(toolbar_model->GetFormattedFullURL());
   EXPECT_LT(toolbar_text_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(toolbar_text_after,
                              base::string16(gfx::kEllipsisUTF16),
@@ -193,7 +192,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
   // Open an NTP. Its URL should not be displayed.
   AddTab(browser(), GURL("chrome://newtab"));
   ASSERT_FALSE(toolbar_model->ShouldDisplayURL());
-  ASSERT_TRUE(toolbar_model->GetFormattedURL(nullptr).empty());
+  ASSERT_TRUE(toolbar_model->GetFormattedFullURL().empty());
 
   const std::string other_url = "https://www.foo.com";
 
@@ -205,11 +204,11 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
                       ui::PAGE_TRANSITION_LINK, std::string());
   EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
   EXPECT_EQ(base::ASCIIToUTF16(other_url),
-            toolbar_model->GetFormattedURL(nullptr));
+            toolbar_model->GetFormattedFullURL());
 
   // Of course the same should still hold after committing.
   CommitPendingLoad(controller);
   EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
   EXPECT_EQ(base::ASCIIToUTF16(other_url),
-            toolbar_model->GetFormattedURL(nullptr));
+            toolbar_model->GetFormattedFullURL());
 }

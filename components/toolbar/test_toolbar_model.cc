@@ -18,7 +18,7 @@ TestToolbarModel::TestToolbarModel()
 
 TestToolbarModel::~TestToolbarModel() {}
 
-base::string16 TestToolbarModel::GetFormattedURL(size_t* prefix_end) const {
+base::string16 TestToolbarModel::GetFormattedFullURL() const {
   return text_;
 }
 

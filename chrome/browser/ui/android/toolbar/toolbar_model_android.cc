@@ -31,7 +31,7 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return base::android::ConvertUTF16ToJavaString(
-      env, toolbar_model_->GetFormattedURL(nullptr));
+      env, toolbar_model_->GetFormattedFullURL());
 }
 
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
