@@ -7198,7 +7198,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.ResourceLoadScheduler.DecodedBytes.KBPerFrameStatus"
-    enum="RendererSchedulerFrameType">
+    enum="RendererSchedulerFrameType2">
   <owner>toyoshim@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -7285,7 +7285,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Blink.ResourceLoadScheduler.TrafficBytes.KBPerFrameStatus"
-    enum="RendererSchedulerFrameType">
+    enum="RendererSchedulerFrameType2">
   <owner>toyoshim@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
