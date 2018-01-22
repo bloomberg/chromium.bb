@@ -14,7 +14,7 @@ async_test(t => {
   checkControlsClassName(video, 'phase-pre-ready state-no-source use-default-poster');
 
   video.onloadedmetadata = t.step_func_done(() => {
-    checkControlsClassName(video, 'phase-ready state-stopped use-default-poster');
+    checkControlsClassName(video, 'phase-ready state-stopped');
   });
 
   video.src = findMediaFile('video', '../content/counting');
