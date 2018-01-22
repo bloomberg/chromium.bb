@@ -82,6 +82,13 @@ bool KeyboardEvdev::SetCurrentLayoutByName(const std::string& layout_name) {
   return result;
 }
 
+void KeyboardEvdev::FlushInput(base::OnceClosure closure) {
+  // Post a task behind any pending key releases in the message loop
+  // FIFO. This ensures there's no spurious repeats during periods of UI
+  // thread jank.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
+}
+
 void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
   if (modifier_flag == EF_NONE)
     return;
