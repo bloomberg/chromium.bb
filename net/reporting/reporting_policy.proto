@@ -21,8 +21,8 @@ message ReportingPolicy {
   required uint64 garbage_collection_interval_us = 7;
   required uint64 max_report_age_us = 8;
   required int32 max_report_attempts = 9;
-  required bool clear_reports_on_network_changes = 10;
-  required bool clear_clients_on_network_changes = 11;
+  required bool persist_reports_across_network_changes = 10;
+  required bool persist_clients_across_network_changes = 11;
 }
 
 message ReportingHeaderParserFuzzInput {

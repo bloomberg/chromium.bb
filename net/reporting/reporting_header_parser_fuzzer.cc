@@ -55,10 +55,10 @@ void InitializeReportingPolicy(
   policy.max_report_age =
       base::TimeDelta::FromMicroseconds(policy_data.max_report_age_us());
   policy.max_report_attempts = policy_data.max_report_attempts();
-  policy.clear_reports_on_network_changes =
-      policy_data.clear_reports_on_network_changes();
-  policy.clear_clients_on_network_changes =
-      policy_data.clear_clients_on_network_changes();
+  policy.persist_reports_across_network_changes =
+      policy_data.persist_reports_across_network_changes();
+  policy.persist_clients_across_network_changes =
+      policy_data.persist_clients_across_network_changes();
 }
 
 DEFINE_BINARY_PROTO_FUZZER(

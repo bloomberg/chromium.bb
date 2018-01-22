@@ -513,8 +513,8 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     // settings than when Reporting is running in the browser.
     policy->persist_reports_across_restarts = true;
     policy->persist_clients_across_restarts = true;
-    policy->clear_reports_on_network_changes = false;
-    policy->clear_clients_on_network_changes = false;
+    policy->persist_reports_across_network_changes = true;
+    policy->persist_clients_across_network_changes = true;
 
     context_builder->set_reporting_policy(std::move(policy));
     context_builder->set_network_error_logging_enabled(true);

@@ -51,13 +51,13 @@ struct NET_EXPORT ReportingPolicy {
   // discarded as failed.
   int max_report_attempts;
 
-  // Whether to clear reports when the network changes to avoid leaking browsing
-  // data between networks.
-  bool clear_reports_on_network_changes;
+  // Whether to persist (versus clear) reports when the network changes to avoid
+  // leaking browsing data between networks.
+  bool persist_reports_across_network_changes;
 
-  // Whether to clear clients when the network changes to avoid leaking browsing
-  // data between networks.
-  bool clear_clients_on_network_changes;
+  // Whether to persist (versus clear) clients when the network changes to avoid
+  // leaking browsing data between networks.
+  bool persist_clients_across_network_changes;
 };
 
 }  // namespace net
