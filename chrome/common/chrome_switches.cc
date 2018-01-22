@@ -422,6 +422,9 @@ const char kForceFirstRunDialog[] = "force-first-run-dialog";
 // Forces Chrome to use localNTP instead of server (GWS) NTP.
 const char kForceLocalNtp[]                 = "force-local-ntp";
 
+// Forces Chrome to use a stacked tab strip layout.
+const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
+
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for
 // http://google.com.
