@@ -52,7 +52,6 @@ class CORE_EXPORT InspectorMemoryAgent final
   ~InspectorMemoryAgent() override;
 
   void Trace(blink::Visitor*) override;
-  void Restore() override;
 
   protocol::Response getDOMCounters(int* documents,
                                     int* nodes,
@@ -63,24 +62,11 @@ class CORE_EXPORT InspectorMemoryAgent final
   // BlinkLeakDetectorClient:
   void OnLeakDetectionComplete() override;
 
-  // Memory protocol domain:
-  protocol::Response startSampling(
-      protocol::Maybe<int> in_samplingInterval,
-      protocol::Maybe<bool> in_suppressRandomness) override;
-  protocol::Response stopSampling() override;
-  protocol::Response getSamplingProfile(
-      std::unique_ptr<protocol::Memory::SamplingProfile>*) override;
-
  private:
   explicit InspectorMemoryAgent(InspectedFrames*);
-
-  std::vector<std::string> Symbolize(const std::vector<void*>& addresses);
-
   std::unique_ptr<BlinkLeakDetector> detector_;
   std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
-  std::map<void*, std::string> symbols_cache_;
-
   DISALLOW_COPY_AND_ASSIGN(InspectorMemoryAgent);
 };
 
