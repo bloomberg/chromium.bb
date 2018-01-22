@@ -52,6 +52,12 @@ constexpr int kMouseDragUIDelayInMs = 200;
 // 650ms.
 constexpr int kTouchLongpressDelayInMs = 300;
 
+// The color of the title for the tiles within folder.
+constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
+
+// The color of the selected item view within folder.
+constexpr SkColor kFolderGridSelectedColor = SkColorSetARGBMacro(31, 0, 0, 0);
+
 }  // namespace
 
 // static
@@ -82,7 +88,9 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetFontList(font);
   title_->SetLineHeight(font.GetHeight());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  title_->SetEnabledColor(kGridTitleColor);
+  title_->SetEnabledColor(apps_grid_view_->is_in_folder()
+                              ? kFolderGridTitleColor
+                              : kGridTitleColor);
 
   SetTitleSubpixelAA();
 
@@ -335,7 +343,8 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
                (rect.height() - kGridSelectedSize) / 2);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kGridSelectedColor);
+    flags.setColor(apps_grid_view_->is_in_folder() ? kFolderGridSelectedColor
+                                                   : kGridSelectedColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
   }

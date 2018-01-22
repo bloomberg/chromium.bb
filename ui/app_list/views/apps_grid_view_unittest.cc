@@ -30,6 +30,7 @@
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
+#include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -37,6 +38,7 @@
 #include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
+#include "ui/app_list/views/folder_background_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
@@ -178,6 +180,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
     return apps_grid_view_->pagination_model();
   }
 
+  AppListFolderView* app_list_folder_view() const {
+    return contents_view_->apps_container_view()->app_list_folder_view();
+  }
+
   // Points are in |apps_grid_view_|'s coordinates, and fixed for RTL.
   AppListItemView* SimulateDrag(AppsGridView::Pointer pointer,
                                 const gfx::Point& from,
@@ -269,11 +275,6 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
   TestAppsGridViewFolderDelegate() = default;
   ~TestAppsGridViewFolderDelegate() override = default;
 
-  // Overridden from AppsGridViewFolderDelegate:
-  void UpdateFolderViewBackground(bool show_bubble) override {
-    show_bubble_ = show_bubble;
-  }
-
   void ReparentItem(AppListItemView* original_drag_view,
                     const gfx::Point& drag_point_in_folder_grid,
                     bool has_native_drag) override {}
@@ -293,11 +294,7 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
 
   void SetRootLevelDragViewVisible(bool visible) override {}
 
-  bool show_bubble() { return show_bubble_; }
-
  private:
-  bool show_bubble_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
 };
 
@@ -407,7 +404,8 @@ TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
 
 TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   // Create and add a folder with |kMaxFolderItemsFullscreen - 1| items.
-  size_t kTotalItems = kMaxFolderItems - 1;
+  const size_t kMaxItems = kMaxFolderItemsPerPage * kMaxFolderPages;
+  const size_t kTotalItems = kMaxItems - 1;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -421,9 +419,9 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   model_->PopulateAppWithId(kTotalItems + 1);
   EXPECT_EQ(3u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems - 1),
+  EXPECT_EQ(model_->GetItemName(kMaxItems - 1),
             model_->top_level_item_list()->item_at(1)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(model_->GetItemName(kMaxItems),
             model_->top_level_item_list()->item_at(2)->id());
 
   gfx::Point from = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
@@ -434,8 +432,8 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(kMaxItems, folder_item->ChildItemCount());
+  EXPECT_EQ(model_->GetItemName(kMaxItems),
             model_->top_level_item_list()->item_at(1)->id());
   test_api_->LayoutToIdealBounds();
 
@@ -444,7 +442,7 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
+  EXPECT_EQ(kMaxItems, folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();
 }
 
@@ -452,8 +450,9 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
 // folder.
 TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   // Create and add a folder with |kMaxFolderItemsFullscreen| in it.
-  size_t kTotalItems = kMaxFolderItems;
-  model_->CreateAndPopulateFolderWithApps(kTotalItems);
+  const size_t kMaxItems = kMaxFolderItemsPerPage * kMaxFolderPages;
+  size_t kTotalItems = kMaxItems;
+  model_->CreateAndPopulateFolderWithApps(kMaxItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
             model_->top_level_item_list()->item_at(0)->GetItemType());
@@ -465,7 +464,7 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   model_->PopulateAppWithId(kTotalItems);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(model_->GetItemName(kMaxItems),
             model_->top_level_item_list()->item_at(1)->id());
 
   AppListItemView* folder_view =
@@ -495,7 +494,7 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
 
   // The item should not have moved into the folder.
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
+  EXPECT_EQ(kMaxItems, folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();
 }
 
@@ -685,9 +684,7 @@ TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
 
   // Starts a mouse drag and then cancels it.
   SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
-  EXPECT_TRUE(folder_delegate.show_bubble());
   apps_grid_view_->EndDrag(true);
-  EXPECT_FALSE(folder_delegate.show_bubble());
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 }
@@ -1117,6 +1114,104 @@ TEST_F(AppsGridViewTest,
   apps_grid_view_->OnGestureEvent(&scroll_update);
   ASSERT_FALSE(app_list_view_->is_in_drag());
   ASSERT_NE(0, GetPaginationModel()->transition().progress);
+}
+
+TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
+  // Disable the animation for the folder top items for test purpose.
+  AppsContainerView* apps_container_view =
+      contents_view_->apps_container_view();
+  apps_container_view->set_folder_top_items_animation_enabled_for_test(false);
+
+  const size_t kTotalItems = kMaxFolderItemsPerPage;
+  model_->CreateAndPopulateFolderWithApps(kTotalItems);
+  EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(AppListFolderItem::kItemType,
+            model_->top_level_item_list()->item_at(0)->GetItemType());
+
+  // Open the folder.
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(apps_container_view->IsInFolderView());
+
+  // Simulate mouse press on folder background to close the folder.
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  apps_container_view->folder_background_view()->OnMouseEvent(&event);
+  EXPECT_FALSE(apps_container_view->IsInFolderView());
+}
+
+TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
+  // Disable the animation for the folder top items for test purpose.
+  contents_view_->apps_container_view()
+      ->set_folder_top_items_animation_enabled_for_test(false);
+
+  const size_t kTotalItems = kMaxFolderPages * kMaxFolderItemsPerPage;
+  model_->CreateAndPopulateFolderWithApps(kTotalItems);
+  EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
+  EXPECT_EQ(AppListFolderItem::kItemType,
+            model_->top_level_item_list()->item_at(0)->GetItemType());
+
+  // Open the folder. It should be at page 0.
+  test_api_->PressItemAt(0);
+  PaginationModel* pagination_model =
+      app_list_folder_view()->items_grid_view()->pagination_model();
+  EXPECT_EQ(3, pagination_model->total_pages());
+  EXPECT_EQ(0, pagination_model->selected_page());
+
+  // Select page 2.
+  pagination_model->SelectPage(2, false /* animate */);
+  EXPECT_EQ(2, pagination_model->selected_page());
+
+  // Close the folder and reopen it. It should be at page 0.
+  app_list_folder_view()->CloseFolderPage();
+  test_api_->PressItemAt(0);
+  EXPECT_EQ(3, pagination_model->total_pages());
+  EXPECT_EQ(0, pagination_model->selected_page());
+}
+
+TEST_F(AppsGridViewTest, FolderColsAndRows) {
+  // Disable the animation for the folder top items for test purpose.
+  contents_view_->apps_container_view()
+      ->set_folder_top_items_animation_enabled_for_test(false);
+
+  // Populate folders with different number of apps.
+  model_->CreateAndPopulateFolderWithApps(2);
+  model_->CreateAndPopulateFolderWithApps(5);
+  model_->CreateAndPopulateFolderWithApps(9);
+  model_->CreateAndPopulateFolderWithApps(15);
+  model_->CreateAndPopulateFolderWithApps(17);
+
+  // Check the number of cols and rows for each opened folder.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  test_api_->PressItemAt(0);
+  EXPECT_EQ(2, items_grid_view->view_model_for_test()->view_size());
+  EXPECT_EQ(2, items_grid_view->cols());
+  EXPECT_EQ(1, items_grid_view->rows_per_page());
+  app_list_folder_view()->CloseFolderPage();
+
+  test_api_->PressItemAt(1);
+  EXPECT_EQ(5, items_grid_view->view_model_for_test()->view_size());
+  EXPECT_EQ(3, items_grid_view->cols());
+  EXPECT_EQ(2, items_grid_view->rows_per_page());
+  app_list_folder_view()->CloseFolderPage();
+
+  test_api_->PressItemAt(2);
+  EXPECT_EQ(9, items_grid_view->view_model_for_test()->view_size());
+  EXPECT_EQ(3, items_grid_view->cols());
+  EXPECT_EQ(3, items_grid_view->rows_per_page());
+  app_list_folder_view()->CloseFolderPage();
+
+  test_api_->PressItemAt(3);
+  EXPECT_EQ(15, items_grid_view->view_model_for_test()->view_size());
+  EXPECT_EQ(4, items_grid_view->cols());
+  EXPECT_EQ(4, items_grid_view->rows_per_page());
+  app_list_folder_view()->CloseFolderPage();
+
+  test_api_->PressItemAt(4);
+  EXPECT_EQ(17, items_grid_view->view_model_for_test()->view_size());
+  EXPECT_EQ(4, items_grid_view->cols());
+  EXPECT_EQ(4, items_grid_view->rows_per_page());
+  app_list_folder_view()->CloseFolderPage();
 }
 
 }  // namespace test
