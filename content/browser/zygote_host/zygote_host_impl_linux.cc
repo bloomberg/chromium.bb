@@ -14,9 +14,7 @@
 #include "base/process/kill.h"
 #include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/sandbox_host_linux.h"
 #include "content/common/zygote_commands_linux.h"
-#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -152,19 +150,17 @@ int ZygoteHostImpl::GetRendererSandboxStatus() const {
   return renderer_sandbox_status_;
 }
 
-pid_t ZygoteHostImpl::LaunchZygote(base::CommandLine* cmd_line,
-                                   base::ScopedFD* control_fd) {
+pid_t ZygoteHostImpl::LaunchZygote(
+    base::CommandLine* cmd_line,
+    base::ScopedFD* control_fd,
+    base::FileHandleMappingVector additional_remapped_fds) {
   int fds[2];
   CHECK_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
   CHECK(base::UnixDomainSocket::EnableReceiveProcessId(fds[0]));
 
   base::LaunchOptions options;
-  options.fds_to_remap.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
-
-  // Start up the sandbox host process and get the file descriptor for the
-  // sandboxed processes to talk to it.
-  const int sfd = SandboxHostLinux::GetInstance()->GetChildSocket();
-  options.fds_to_remap.push_back(std::make_pair(sfd, GetSandboxFD()));
+  options.fds_to_remap = std::move(additional_remapped_fds);
+  options.fds_to_remap.emplace_back(fds[1], kZygoteSocketPairFd);
 
   base::ScopedFD dummy_fd;
   if (use_suid_sandbox_) {
