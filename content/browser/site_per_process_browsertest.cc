@@ -2964,13 +2964,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       DepictFrameTree(root));
 }
 
-// The test has been found flaky on Windows: crbug.com/803627
-#if defined(OS_WIN)
-#define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
-#else
-#define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3764,16 +3758,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // node1 is the root.
 // Initially, both node1.proxy_hosts_ and node3.proxy_hosts_ contain C.
 // After we kill B, make sure proxies for C are cleared.
-// Flaky on Windows: crbug.com/798476
-#if defined(OS_WIN)
-#define MAYBE_KillingRendererClearsDescendantProxies \
-  DISABLED_KillingRendererClearsDescendantProxies
-#else
-#define MAYBE_KillingRendererClearsDescendantProxies \
-  KillingRendererClearsDescendantProxies
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_KillingRendererClearsDescendantProxies) {
+                       KillingRendererClearsDescendantProxies) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_two_frames_nested.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4271,8 +4257,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // TODO(bokan): Pretty soon most/all platforms will use overlay scrollbars. This
 // test should find a better way to check for scrollability. crbug.com/662196.
 // Flaky on Linux. crbug.com/790929.
-// Flaky on Windows. crbug.com/803628.
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_FrameOwnerPropertiesPropagationScrolling \
         DISABLED_FrameOwnerPropertiesPropagationScrolling
 #else
@@ -5639,13 +5624,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
   EXPECT_EQ(1, GetReceivedMessages(child2));
 }
 
-// The test has been found flaky on Windows: crbug.com/803641
-#if defined(OS_WIN)
-#define MAYBE_RFPHDestruction DISABLED_RFPHDestruction
-#else
-#define MAYBE_RFPHDestruction RFPHDestruction
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_RFPHDestruction) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -6913,16 +6892,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   EXPECT_EQ(nullptr, router->wheel_target_.target);
 }
 
-// TODO: Flaking test crbug.com/802828 and related crbug.com/798476
 // Ensure that a cross-process subframe with a touch-handler can receive touch
 // events.
-#if defined(OS_WIN)
-#define MAYBE_SubframeTouchEventRouting DISABLED_SubframeTouchEventRouting
-#else
-#define MAYBE_SubframeTouchEventRouting SubframeTouchEventRouting
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_SubframeTouchEventRouting) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeTouchEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

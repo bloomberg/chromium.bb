@@ -301,12 +301,11 @@ class ContentSettingBubbleModelMixedScriptOopifTest
   }
 };
 
-// TODO: Flaking test crbug.com/802281
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel sends appropriate
 // IPCs to allow the renderer to load unsafe scripts inside out-of-processs
 // iframes.
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
-                       DISABLED_MixedContentInCrossSiteIframe) {
+                       MixedContentInCrossSiteIframe) {
   // Create a URL for the mixed content document and append it as a query
   // string to the main URL. This approach is taken because the test servers
   // run on random ports each time and it is not possible to use a static
