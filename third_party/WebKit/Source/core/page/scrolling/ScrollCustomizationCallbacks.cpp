@@ -40,4 +40,15 @@ ScrollStateCallback* ScrollCustomizationCallbacks::GetApplyScroll(
   return it->value.Get();
 }
 
+bool ScrollCustomizationCallbacks::InScrollPhase(Element* element) const {
+  return in_scrolling_phase_.Contains(element) &&
+         in_scrolling_phase_.at(element);
+}
+
+void ScrollCustomizationCallbacks::SetInScrollPhase(Element* element,
+                                                    bool value) {
+  DCHECK(element);
+  in_scrolling_phase_.Set(element, value);
+}
+
 }  // namespace blink

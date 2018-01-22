@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 
 #include "core/css/CSSColorValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
@@ -342,6 +343,49 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
   CSSParser::ParseSingleValue(CSSPropertyClipPath, "ellipse()", context);
   EXPECT_TRUE(
       UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
+}
+
+TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
+  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-down",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  DCHECK(value);
+  const CSSValueList* list = ToCSSValueList(value);
+  EXPECT_EQ(1U, list->length());
+  EXPECT_EQ(CSSValuePanDown, ToCSSIdentifierValue(list->Item(0U)).GetValueID());
+}
+
+TEST(CSSPropertyParserTest, ScrollCustomizationPropertyTwoValuesCombined) {
+  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-left pan-y",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  const CSSValueList* list = ToCSSValueList(value);
+  EXPECT_EQ(2U, list->length());
+  EXPECT_EQ(CSSValuePanLeft, ToCSSIdentifierValue(list->Item(0U)).GetValueID());
+  EXPECT_EQ(CSSValuePanY, ToCSSIdentifierValue(list->Item(1U)).GetValueID());
+}
+
+TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {
+  // We expect exactly one property value per coordinate.
+  RuntimeEnabledFeatures::SetScrollCustomizationEnabled(true);
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-left pan-right",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  EXPECT_FALSE(value);
+  value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-up pan-down",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  EXPECT_FALSE(value);
+  value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-x pan-left",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  EXPECT_FALSE(value);
+  value = CSSParser::ParseSingleValue(
+      CSSPropertyScrollCustomization, "pan-x pan-x",
+      StrictCSSParserContext(SecureContextMode::kSecureContext));
+  EXPECT_FALSE(value);
 }
 
 }  // namespace blink

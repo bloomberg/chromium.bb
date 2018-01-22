@@ -47,6 +47,7 @@
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/TouchAction.h"
+#include "platform/scroll/ScrollCustomization.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/WritingMode.h"
@@ -1508,6 +1509,34 @@ inline TouchAction CSSIdentifierValue::ConvertTo() const {
 
   NOTREACHED();
   return TouchAction::kTouchActionNone;
+}
+
+template <>
+inline ScrollCustomization::ScrollDirection CSSIdentifierValue::ConvertTo()
+    const {
+  switch (value_id_) {
+    case CSSValueNone:
+      return ScrollCustomization::kScrollDirectionNone;
+    case CSSValueAuto:
+      return ScrollCustomization::kScrollDirectionAuto;
+    case CSSValuePanLeft:
+      return ScrollCustomization::kScrollDirectionPanLeft;
+    case CSSValuePanRight:
+      return ScrollCustomization::kScrollDirectionPanRight;
+    case CSSValuePanX:
+      return ScrollCustomization::kScrollDirectionPanX;
+    case CSSValuePanUp:
+      return ScrollCustomization::kScrollDirectionPanUp;
+    case CSSValuePanDown:
+      return ScrollCustomization::kScrollDirectionPanDown;
+    case CSSValuePanY:
+      return ScrollCustomization::kScrollDirectionPanY;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return ScrollCustomization::kScrollDirectionNone;
 }
 
 template <>

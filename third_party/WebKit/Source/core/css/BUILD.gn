@@ -644,6 +644,7 @@ blink_core_sources("css") {
     "properties/longhands/RyCustom.cpp",
     "properties/longhands/ScaleCustom.cpp",
     "properties/longhands/ScrollBehaviorCustom.cpp",
+    "properties/longhands/ScrollCustomizationCustom.cpp",
     "properties/longhands/ScrollMarginBlockEndCustom.cpp",
     "properties/longhands/ScrollMarginBlockStartCustom.cpp",
     "properties/longhands/ScrollMarginBottomCustom.cpp",
