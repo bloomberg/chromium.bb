@@ -25,7 +25,6 @@
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshots_util.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/external_file_remover.h"
 #import "ios/chrome/browser/ui/external_file_remover_factory.h"
 #include "ios/web/public/web_thread.h"

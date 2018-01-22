@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
 #include "ios/chrome/browser/browsing_data/ios_browsing_data_counter_factory.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -38,6 +39,7 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -635,11 +637,29 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (void)clearDataForDataTypes:(int)dataTypeMask {
   DCHECK(dataTypeMask);
-  ClearBrowsingDataCommand* command =
-      [[ClearBrowsingDataCommand alloc] initWithBrowserState:_browserState
-                                                        mask:dataTypeMask
-                                                  timePeriod:_timePeriod];
-  [self chromeExecuteCommand:command];
+
+  BrowsingDataRemovalController* browsingDataRemovalController =
+      [[BrowsingDataRemovalController alloc] init];
+
+  if (dataTypeMask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
+    [self.dispatcher prepareForBrowsingDataRemoval];
+  }
+
+  [browsingDataRemovalController
+      removeBrowsingDataFromBrowserState:_browserState
+                                    mask:dataTypeMask
+                              timePeriod:_timePeriod
+                       completionHandler:^{
+                         [self.dispatcher browsingDataWasRemoved];
+                       }];
+
+  if (dataTypeMask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
+    base::Time beginDeleteTime =
+        browsing_data::CalculateBeginDeleteTime(_timePeriod);
+    [ChromeWebViewFactory clearExternalCookies:_browserState
+                                      fromTime:beginDeleteTime
+                                        toTime:base::Time::Max()];
+  }
 
   // Send the "Cleared Browsing Data" event to the feature_engagement::Tracker
   // when the user initiates a clear browsing data action. No event is sent if

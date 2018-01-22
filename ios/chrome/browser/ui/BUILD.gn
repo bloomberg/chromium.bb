@@ -405,14 +405,20 @@ source_set("ui_internal") {
     "//ui/base",
     "//ui/gfx",
     "//url",
+
+    # Fake dependencies to break cycles
+    "//ios/chrome/browser/browsing_data:browsing_data_internal",
+    "//ios/chrome/browser/ui/settings",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/toolbar",
   ]
   allow_circular_includes_from = [
+    "//ios/chrome/browser/browsing_data:browsing_data_internal",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
+    "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/stack_view",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tabs:coordinator",
