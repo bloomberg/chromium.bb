@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -57,6 +58,9 @@ PushPullFIFO::~PushPullFIFO() {
 // Push the data from |input_bus| to FIFO. The size of push is determined by
 // the length of |input_bus|.
 void PushPullFIFO::Push(const AudioBus* input_bus) {
+  TRACE_EVENT1("webaudio", "PushPullFIFO::Push",
+               "input_bus length", input_bus->length());
+
   MutexLocker locker(lock_);
 
   CHECK(input_bus);
@@ -108,6 +112,10 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
 // Pull the data out of FIFO to |output_bus|. If remaining frame in the FIFO
 // is less than the frames to pull, provides remaining frame plus the silence.
 size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
+  TRACE_EVENT2("webaudio", "PushPullFIFO::Pull",
+               "output_bus length", output_bus->length(),
+               "frames_requested", frames_requested);
+
   MutexLocker locker(lock_);
 
 #if defined(OS_ANDROID)
