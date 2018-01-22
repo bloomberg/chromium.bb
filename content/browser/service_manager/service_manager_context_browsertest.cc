@@ -112,8 +112,9 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
   loop.Run();
 }
 
-// Flaky timeout on Linux and Chrome OS ASAN: http://crbug.com/803814
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+// Flaky timeout on Linux and Chrome OS ASAN: http://crbug.com/803814,
+// crbug.com/804113.
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && defined(ADDRESS_SANITIZER)
 #define MAYBE_TerminateOnServiceQuit DISABLED_TerminateOnServiceQuit
 #else
 #define MAYBE_TerminateOnServiceQuit TerminateOnServiceQuit
