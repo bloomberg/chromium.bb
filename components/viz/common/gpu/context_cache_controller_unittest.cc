@@ -11,6 +11,9 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPixmap.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 using ::testing::Mock;
 using ::testing::StrictMock;
@@ -110,6 +113,52 @@ TEST(ContextCacheControllerTest, ScopedBusyMulitpleWhileVisible) {
 
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
   cache_controller.ClientBecameNotVisible(std::move(visible));
+}
+
+// Confirms that the Skia performDeferredCleanup API used by the cache
+// controller behaves as expected.
+TEST(ContextCacheControllerTest, CheckSkiaResourcePurgeAPI) {
+  StrictMock<MockContextSupport> context_support;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  ContextCacheController cache_controller(&context_support, task_runner);
+  auto context_provider = cc::TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  auto* gr_context = context_provider->GrContext();
+  cache_controller.SetGrContext(gr_context);
+
+  // Make us visible.
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  auto visibility = cache_controller.ClientBecameVisible();
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  // Now that we're visible, become busy, create and release a skia resource.
+  auto busy = cache_controller.ClientBecameBusy();
+  {
+    auto image_info = SkImageInfo::MakeN32Premul(200, 200);
+    std::vector<uint8_t> image_data(image_info.computeMinByteSize());
+    SkPixmap pixmap(image_info, image_data.data(), image_info.minRowBytes());
+    auto image = SkImage::MakeRasterCopy(pixmap);
+    auto image_gpu = image->makeTextureImage(gr_context, nullptr);
+    gr_context->flush();
+  }
+
+  // Ensure we see size taken up for the image (now released, but cached for
+  // re-use).
+  EXPECT_GT(gr_context->getResourceCachePurgeableBytes(), 0u);
+
+  // Make the client idle and wait for the idle callback to trigger.
+  cache_controller.ClientBecameNotBusy(std::move(busy));
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  // The Skia resource cache should now be empty.
+  EXPECT_EQ(gr_context->getResourceCachePurgeableBytes(), 0u);
+
+  // Set not-visible.
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  cache_controller.ClientBecameNotVisible(std::move(visibility));
 }
 
 }  // namespace
