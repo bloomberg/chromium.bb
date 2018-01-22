@@ -26,59 +26,54 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
  public:
   PrefRegistrySimple();
 
-  void RegisterBooleanPref(const std::string& path, bool default_value);
-  void RegisterIntegerPref(const std::string& path, int default_value);
-  void RegisterDoublePref(const std::string& path, double default_value);
+  // For each of these registration methods, |flags| is an optional bitmask of
+  // PrefRegistrationFlags.
+  void RegisterBooleanPref(const std::string& path,
+                           bool default_value,
+                           uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterIntegerPref(const std::string& path,
+                           int default_value,
+                           uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterDoublePref(const std::string& path,
+                          double default_value,
+                          uint32_t flags = NO_REGISTRATION_FLAGS);
+
   void RegisterStringPref(const std::string& path,
-                          const std::string& default_value);
+                          const std::string& default_value,
+                          uint32_t flags = NO_REGISTRATION_FLAGS);
+
   void RegisterFilePathPref(const std::string& path,
-                            const base::FilePath& default_value);
-  void RegisterListPref(const std::string& path);
-  void RegisterDictionaryPref(const std::string& path);
+                            const base::FilePath& default_value,
+                            uint32_t flags = NO_REGISTRATION_FLAGS);
+
   void RegisterListPref(const std::string& path,
-                        std::unique_ptr<base::ListValue> default_value);
+                        uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterListPref(const std::string& path,
+                        std::unique_ptr<base::ListValue> default_value,
+                        uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterDictionaryPref(const std::string& path,
+                              uint32_t flags = NO_REGISTRATION_FLAGS);
+
   void RegisterDictionaryPref(
       const std::string& path,
-      std::unique_ptr<base::DictionaryValue> default_value);
-  void RegisterInt64Pref(const std::string& path, int64_t default_value);
-  void RegisterUint64Pref(const std::string&, uint64_t default_value);
-  void RegisterTimePref(const std::string& path, base::Time default_value);
-
-  // Versions of registration functions that accept PrefRegistrationFlags.
-  // |flags| is a bitmask of PrefRegistrationFlags.
-  void RegisterBooleanPref(const std::string&,
-                           bool default_value,
-                           uint32_t flags);
-  void RegisterIntegerPref(const std::string&,
-                           int default_value,
-                           uint32_t flags);
-  void RegisterDoublePref(const std::string&,
-                          double default_value,
-                          uint32_t flags);
-  void RegisterStringPref(const std::string&,
-                          const std::string& default_value,
-                          uint32_t flags);
-  void RegisterFilePathPref(const std::string&,
-                            const base::FilePath& default_value,
-                            uint32_t flags);
-  void RegisterListPref(const std::string&, uint32_t flags);
-  void RegisterDictionaryPref(const std::string&, uint32_t flags);
-  void RegisterListPref(const std::string&,
-                        std::unique_ptr<base::ListValue> default_value,
-                        uint32_t flags);
-  void RegisterDictionaryPref(
-      const std::string&,
       std::unique_ptr<base::DictionaryValue> default_value,
-      uint32_t flags);
-  void RegisterInt64Pref(const std::string&,
+      uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterInt64Pref(const std::string& path,
                          int64_t default_value,
-                         uint32_t flags);
-  void RegisterUint64Pref(const std::string&,
+                         uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterUint64Pref(const std::string& path,
                           uint64_t default_value,
-                          uint32_t flags);
-  void RegisterTimePref(const std::string&,
+                          uint32_t flags = NO_REGISTRATION_FLAGS);
+
+  void RegisterTimePref(const std::string& path,
                         base::Time default_value,
-                        uint32_t flags);
+                        uint32_t flags = NO_REGISTRATION_FLAGS);
 
  protected:
   ~PrefRegistrySimple() override;
