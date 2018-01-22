@@ -56,9 +56,9 @@ static void RemoveWorkerIsolate(v8::Isolate* isolate) {
   Isolates().erase(isolate);
 }
 
-WorkerBackingThread::WorkerBackingThread(const char* name,
+WorkerBackingThread::WorkerBackingThread(const WebThreadCreationParams& params,
                                          bool should_call_gc_on_shutdown)
-    : backing_thread_(WebThreadSupportingGC::Create(name)),
+    : backing_thread_(WebThreadSupportingGC::Create(params)),
       is_owning_thread_(true),
       should_call_gc_on_shutdown_(should_call_gc_on_shutdown) {}
 

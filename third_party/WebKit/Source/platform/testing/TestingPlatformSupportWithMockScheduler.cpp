@@ -61,9 +61,10 @@ TestingPlatformSupportWithMockScheduler::
 }
 
 std::unique_ptr<WebThread>
-TestingPlatformSupportWithMockScheduler::CreateThread(const char* name) {
+TestingPlatformSupportWithMockScheduler::CreateThread(
+    const WebThreadCreationParams& params) {
   std::unique_ptr<scheduler::WebThreadBase> thread =
-      scheduler::WebThreadBase::CreateWorkerThread(name,
+      scheduler::WebThreadBase::CreateWorkerThread(params.name,
                                                    base::Thread::Options());
   thread->Init();
   WaitableEvent event;

@@ -39,7 +39,8 @@ namespace {
 class AnimationWorkletTestPlatform : public TestingPlatformSupport {
  public:
   AnimationWorkletTestPlatform()
-      : thread_(old_platform_->CreateThread("Compositor")) {}
+      : thread_(old_platform_->CreateThread(
+            WebThreadCreationParams("Compositor"))) {}
 
   WebThread* CompositorThread() const override { return thread_.get(); }
 

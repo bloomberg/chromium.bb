@@ -46,6 +46,12 @@ class WebTaskRunner;
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
 
+struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
+  explicit WebThreadCreationParams(const char* name);
+
+  const char* name;
+};
+
 // Provides an interface to an embedder-defined thread implementation.
 //
 // Deleting the thread blocks until all pending, non-delayed tasks have been

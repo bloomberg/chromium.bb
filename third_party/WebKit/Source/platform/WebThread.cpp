@@ -17,6 +17,9 @@
 
 namespace blink {
 
+WebThreadCreationParams::WebThreadCreationParams(const char* name)
+    : name(name) {}
+
 #if defined(OS_WIN)
 static_assert(sizeof(blink::PlatformThreadId) >= sizeof(DWORD),
               "size of platform thread id is too small");

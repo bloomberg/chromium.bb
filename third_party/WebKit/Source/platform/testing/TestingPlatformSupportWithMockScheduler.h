@@ -32,7 +32,8 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   ~TestingPlatformSupportWithMockScheduler() override;
 
   // Platform:
-  std::unique_ptr<WebThread> CreateThread(const char* name) override;
+  std::unique_ptr<WebThread> CreateThread(
+      const WebThreadCreationParams&) override;
   WebThread* CurrentThread() override;
 
   // Runs a single task.
