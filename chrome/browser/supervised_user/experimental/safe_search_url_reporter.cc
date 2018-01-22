@@ -33,9 +33,6 @@ const int kNumRetries = 1;
 
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
-// Request keys
-const char kUrlKey[] = "url";
-
 struct SafeSearchURLReporter::Report {
   Report(const GURL& url, const SuccessCallback& callback, int url_fetcher_id);
   ~Report();
@@ -149,7 +146,7 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
-  dict.SetKey(kUrlKey, base::Value((*it)->url.spec()));
+  dict.SetKey("url", base::Value((*it)->url.spec()));
 
   std::string body;
   base::JSONWriter::Write(dict, &body);
