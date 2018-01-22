@@ -43,13 +43,11 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_config.h"
-#include "net/reporting/reporting_policy.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/proxy_config_service_mojo.h"
-#include "services/network/public/cpp/network_features.h"
 #include "services/network/public/cpp/network_switches.h"
 
 namespace content {
@@ -380,16 +378,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #else  // BUILDFLAG(DISABLE_FTP_SUPPORT)
   DCHECK(!network_context_params->enable_ftp_url_support);
 #endif
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  if (base::FeatureList::IsEnabled(features::kReporting))
-    builder->set_reporting_policy(std::make_unique<net::ReportingPolicy>());
-  else
-    builder->set_reporting_policy(nullptr);
-
-  builder->set_network_error_logging_enabled(
-      base::FeatureList::IsEnabled(features::kNetworkErrorLogging));
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   net::HttpNetworkSession::Params session_params;
   bool is_quic_force_disabled = false;

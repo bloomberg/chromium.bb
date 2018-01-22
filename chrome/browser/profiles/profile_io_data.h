@@ -81,7 +81,6 @@ class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class HttpTransactionFactory;
-class NetworkErrorLoggingDelegate;
 class ReportingService;
 class ReportSender;
 class SSLConfigService;
@@ -301,9 +300,6 @@ class ProfileIOData {
     void SetJobFactory(std::unique_ptr<net::URLRequestJobFactory> job_factory);
     void SetReportingService(
         std::unique_ptr<net::ReportingService> reporting_service);
-    void SetNetworkErrorLoggingDelegate(
-        std::unique_ptr<net::NetworkErrorLoggingDelegate>
-            network_error_logging_delegate);
 
    private:
     ~AppRequestContext() override;
@@ -314,8 +310,6 @@ class ProfileIOData {
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
     std::unique_ptr<net::ReportingService> reporting_service_;
-    std::unique_ptr<net::NetworkErrorLoggingDelegate>
-        network_error_logging_delegate_;
   };
 
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy

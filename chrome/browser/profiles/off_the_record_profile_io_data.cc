@@ -1,3 +1,4 @@
+
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -33,9 +34,6 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_policy.h"
-#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
@@ -280,16 +278,6 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
       std::move(protocol_handler_interceptor), context->network_delegate(),
       context->host_resolver());
   context->SetJobFactory(std::move(top_job_factory));
-  if (context->reporting_service()) {
-    context->SetReportingService(net::ReportingService::Create(
-        context->reporting_service()->GetPolicy(), context));
-  }
-  if (context->network_error_logging_delegate()) {
-    context->SetNetworkErrorLoggingDelegate(
-        net::NetworkErrorLoggingService::Create());
-    context->network_error_logging_delegate()->SetReportingService(
-        context->reporting_service());
-  }
   return context;
 }
 

@@ -144,7 +144,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
-#include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
@@ -7048,12 +7047,6 @@ class TestReportingService : public ReportingService {
   bool RequestIsUpload(const URLRequest& request) override {
     NOTIMPLEMENTED();
     return true;
-  }
-
-  const ReportingPolicy& GetPolicy() const override {
-    static ReportingPolicy dummy_policy_;
-    NOTIMPLEMENTED();
-    return dummy_policy_;
   }
 
  private:

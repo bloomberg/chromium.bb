@@ -105,7 +105,6 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -629,16 +628,8 @@ void ProfileIOData::AppRequestContext::SetReportingService(
   set_reporting_service(reporting_service_.get());
 }
 
-void ProfileIOData::AppRequestContext::SetNetworkErrorLoggingDelegate(
-    std::unique_ptr<net::NetworkErrorLoggingDelegate>
-        network_error_logging_delegate) {
-  network_error_logging_delegate_ = std::move(network_error_logging_delegate);
-  set_network_error_logging_delegate(network_error_logging_delegate_.get());
-}
-
 ProfileIOData::AppRequestContext::~AppRequestContext() {
-  SetNetworkErrorLoggingDelegate(nullptr);
-  SetReportingService(nullptr);
+  SetReportingService(std::unique_ptr<net::ReportingService>());
   AssertNoURLRequests();
 }
 
