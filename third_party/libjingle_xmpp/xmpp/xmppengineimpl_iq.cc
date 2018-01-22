@@ -16,20 +16,16 @@
 namespace buzz {
 
 class XmppIqEntry {
-  XmppIqEntry(const std::string & id, const std::string & to,
-               XmppEngine * pxce, XmppIqHandler * iq_handler) :
-    id_(id),
-    to_(to),
-    engine_(pxce),
-    iq_handler_(iq_handler) {
-  }
+  XmppIqEntry(const std::string& id,
+              const std::string& to,
+              XmppIqHandler* iq_handler)
+      : id_(id), to_(to), iq_handler_(iq_handler) {}
 
-private:
+ private:
   friend class XmppEngineImpl;
 
   const std::string id_;
   const std::string to_;
-  XmppEngine * const engine_;
   XmppIqHandler * const iq_handler_;
 };
 
@@ -52,9 +48,7 @@ XmppEngineImpl::SendIq(const XmlElement * element, XmppIqHandler * iq_handler,
     return XMPP_RETURN_BADARGUMENT;
   const std::string& id = element->Attr(QN_ID);
 
-  XmppIqEntry * iq_entry = new XmppIqEntry(id,
-                                              element->Attr(QN_TO),
-                                              this, iq_handler);
+  XmppIqEntry* iq_entry = new XmppIqEntry(id, element->Attr(QN_TO), iq_handler);
   iq_entries_->push_back(iq_entry);
   SendStanza(element);
 
