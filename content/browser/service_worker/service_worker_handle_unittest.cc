@@ -138,9 +138,12 @@ class ServiceWorkerHandleTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
-  std::unique_ptr<ServiceWorkerHandle> handle =
-      ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
-                                  provider_host_->AsWeakPtr(), version_.get());
+  blink::mojom::ServiceWorkerObjectInfoPtr info;
+  // ServiceWorkerHandle lifetime is controlled by |info| and is also owned by
+  // |dispatcher_host_|.
+  auto handle = ServiceWorkerHandle::Create(
+      dispatcher_host_.get(), helper_->context()->AsWeakPtr(),
+      provider_host_->AsWeakPtr(), version_.get(), &info);
 
   // Start the worker, and then...
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

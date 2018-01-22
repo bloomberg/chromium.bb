@@ -13,63 +13,90 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 
 namespace content {
 
 class ServiceWorkerContextCore;
+class ServiceWorkerDispatcherHost;
+
+namespace service_worker_dispatcher_host_unittest {
+FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
+                     DispatchExtendableMessageEvent);
+}  // namespace service_worker_dispatcher_host_unittest
 
 // Roughly corresponds to one WebServiceWorker object in the renderer process.
 //
-// The renderer process maintains the reference count by owning a
-// ServiceWorkerHandleReference for each reference it has to the service worker
-// object. ServiceWorkerHandleReference creation and destruction sends an IPC to
-// the browser process, which adjusts the ServiceWorkerHandle refcount.
+// The WebServiceWorker object in the renderer process maintains a reference to
+// |this| by owning an associated interface pointer to
+// blink::mojom::ServiceWorkerObjectHost.
 //
 // Has references to the corresponding ServiceWorkerVersion in order to ensure
 // that the version is alive while this handle is around.
 class CONTENT_EXPORT ServiceWorkerHandle
-    : public ServiceWorkerVersion::Listener {
+    : public blink::mojom::ServiceWorkerObjectHost,
+      public ServiceWorkerVersion::Listener {
  public:
-  // Creates a handle for a live version. This may return nullptr if any of
-  // |context|, |provider_host| and |version| is nullptr.
-  static std::unique_ptr<ServiceWorkerHandle> Create(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerVersion* version);
-  // Does the same, but with a specific |handle_id|.
-  static std::unique_ptr<ServiceWorkerHandle> CreateWithID(
+  // Creates a newly created instance for a live version. |out_info| holds the
+  // first ServiceWorkerObjectHost Mojo connection to this instance, which will
+  // delete itself once it detects that all the Mojo connections have gone
+  // away.
+  //
+  // This instance registers itself into |dispatcher_host| to be owned by the
+  // dispatcher host. S13nServiceWorker: |dispatcher_host| may be null.
+  // RegisterIntoDispatcherHost() should be called later to register the handle
+  // once the host is known.
+  static base::WeakPtr<ServiceWorkerHandle> Create(
+      ServiceWorkerDispatcherHost* dispatcher_host,
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerVersion* version,
-      int handle_id);
+      blink::mojom::ServiceWorkerObjectInfoPtr* out_info);
 
-  ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
-                      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-                      ServiceWorkerVersion* version,
-                      int handle_id);
   ~ServiceWorkerHandle() override;
 
   // ServiceWorkerVersion::Listener overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
+  // Establishes a new mojo connection into |bindings_|.
   blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo();
+
+  // Should only be called on a ServiceWorkerHandle instance constructed with
+  // null |dispatcher_host| before.
+  void RegisterIntoDispatcherHost(ServiceWorkerDispatcherHost* dispatcher_host);
 
   int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
-  int ref_count() const { return ref_count_; }
-  bool HasNoRefCount() const { return ref_count_ <= 0; }
-  void IncrementRefCount();
-  void DecrementRefCount();
-
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
+      DispatchExtendableMessageEvent);
+
+  ServiceWorkerHandle(ServiceWorkerDispatcherHost* dispatcher_host,
+                      base::WeakPtr<ServiceWorkerContextCore> context,
+                      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+                      ServiceWorkerVersion* version);
+
+  base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
+
+  void OnConnectionError();
+
+  // |dispatcher_host_| may get a valid value via ctor or
+  // RegisterIntoDispatcherHost() function, after that |dispatcher_host_| starts
+  // to own |this|, then, |dispatcher_host_| is valid throughout the lifetime of
+  // |this|.
+  ServiceWorkerDispatcherHost* dispatcher_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   const int provider_id_;
   const int handle_id_;
-  int ref_count_;  // Created with 1.
   scoped_refptr<ServiceWorkerVersion> version_;
+  mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
+
+  base::WeakPtrFactory<ServiceWorkerHandle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandle);
 };

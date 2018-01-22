@@ -26,4 +26,20 @@ struct ServiceWorkerObjectInfo {
 
   // ServiceWorker#scriptURL
   url.mojom.Url url;
+
+  // This object's host in the browser process.
+  associated ServiceWorkerObjectHost? host_ptr_info;
+};
+
+// The browser-side host of one ServiceWorker JavaScript object. The renderer
+// uses this interface to ask the browser process to do operations needed to
+// implement ServiceWorker methods.
+interface ServiceWorkerObjectHost {
+  // TODO(leonhsl): Implement all methods.
+  // Replace ServiceWorkerHostMsg_PostMessageToWorker.
+  // PostMessage(string message, url.mojom.Origin source_origin,
+  //     array<handle<message_pipe>> sent_message_ports);
+
+  // Replace ServiceWorkerHostMsg_TerminateWorker.
+  // Terminate();
 };

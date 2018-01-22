@@ -16,7 +16,6 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
-#include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
@@ -327,7 +326,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       info->provider_id, std::move(info->client_request),
       std::move(info->host_ptr_info));
   context_->SetRegistrationForServiceWorkerGlobalScope(
-      std::move(info->registration), sender);
+      std::move(info->registration));
 
   if (info->script_loader_factory_ptr_info.is_valid()) {
     script_loader_factory_.Bind(

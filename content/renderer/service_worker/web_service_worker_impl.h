@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
@@ -22,21 +23,21 @@ class WebServiceWorkerProxy;
 
 namespace content {
 
-class ServiceWorkerHandleReference;
 class ThreadSafeSender;
 
 // Each instance corresponds to one ServiceWorker object in JS context, and
 // is held by ServiceWorker object in Blink's C++ layer via
 // WebServiceWorker::Handle.
 //
-// Each instance holds one ServiceWorkerHandleReference so that
-// corresponding ServiceWorkerHandle doesn't go away in the browser process
-// while the ServiceWorker object is alive.
+// Each instance holds one Mojo connection for interface
+// blink::mojom::ServiceWorkerObjectHost inside |info_|, so the corresponding
+// ServiceWorkerHandle doesn't go away in the browser process while the
+// ServiceWorker object is alive.
 class CONTENT_EXPORT WebServiceWorkerImpl
     : public blink::WebServiceWorker,
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
-  WebServiceWorkerImpl(std::unique_ptr<ServiceWorkerHandleReference> handle_ref,
+  WebServiceWorkerImpl(blink::mojom::ServiceWorkerObjectInfoPtr info,
                        ThreadSafeSender* thread_safe_sender);
 
   void OnStateChanged(blink::mojom::ServiceWorkerState new_state);
@@ -62,7 +63,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   friend class base::RefCounted<WebServiceWorkerImpl>;
   ~WebServiceWorkerImpl() override;
 
-  std::unique_ptr<ServiceWorkerHandleReference> handle_ref_;
+  blink::mojom::ServiceWorkerObjectInfoPtr info_;
   blink::mojom::ServiceWorkerState state_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   blink::WebServiceWorkerProxy* proxy_;
