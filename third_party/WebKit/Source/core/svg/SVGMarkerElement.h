@@ -82,8 +82,6 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
  private:
   explicit SVGMarkerElement(Document&);
 
-  bool NeedsPendingResourceHandling() const override { return false; }
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

@@ -67,8 +67,6 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
  private:
   explicit SVGFilterElement(Document&);
 
-  bool NeedsPendingResourceHandling() const override { return false; }
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

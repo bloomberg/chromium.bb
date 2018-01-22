@@ -43,6 +43,8 @@ class IdTargetObserver : public GarbageCollectedFinalized<IdTargetObserver> {
  protected:
   IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
 
+  const AtomicString& Id() const { return id_; }
+
  private:
   IdTargetObserverRegistry& Registry() { return *registry_; }
 
