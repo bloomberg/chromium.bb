@@ -2955,8 +2955,17 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                       "mypassword");
 }
 
+
+// Flaky on Linux. http://crbug.com/804398
+#if defined(OS_LINUX)
+#define MAYBE_InternalsPage_Renderer DISABLED_InternalsPage_Renderer
+#else
+#define MAYBE_InternalsPage_Renderer InternalsPage_Renderer
+#endif
+
 // Check that the internals page contains logs from the renderer.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage_Renderer) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+    MAYBE_InternalsPage_Renderer) {
   // Open the internals page.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"),
