@@ -1,11 +1,13 @@
+flackr@chromium.org
+
+# Legacy owners:
 alancutter@chromium.org
 dstockwell@chromium.org
 ericwilligers@chromium.org
-flackr@chromium.org
 shans@chromium.org
 timloh@chromium.org
 
 per-file Compositor*=loyso@chromium.org
 
-# TEAM: style-dev@chromium.org
+# TEAM: animations-dev@chromium.org
 # COMPONENT: Blink>Animation
