@@ -4,13 +4,18 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "content/public/test/test_navigation_observer.h"
 
 using content::WebContents;
 using ImageType = ContentSettingImageModel::ImageType;
@@ -100,4 +105,26 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
   WebContents* other_web_contents = WebContents::Create(create_params);
   browser()->tab_strip_model()->AppendWebContents(other_web_contents, true);
   EXPECT_TRUE(model->ShouldRunAnimation(other_web_contents));
+}
+
+// Tests that we go to the correct link when learn more is clicked in Ads
+// bubble.
+IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
+                       AdsLearnMoreLinkClicked) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  auto model = ContentSettingImageModel::CreateForContentType(ImageType::ADS);
+  Profile* profile = browser()->profile();
+  std::unique_ptr<ContentSettingBubbleModel> bubble(model->CreateBubbleModel(
+      browser()->content_setting_bubble_model_delegate(), web_contents,
+      profile));
+
+  content::TestNavigationObserver observer(nullptr);
+  observer.StartWatchingNewWebContents();
+  bubble->OnLearnMoreClicked();
+  observer.Wait();
+
+  std::string link_value(subresource_filter::kLearnMoreLink);
+  EXPECT_EQ(link_value, observer.last_navigation_url().spec());
 }
