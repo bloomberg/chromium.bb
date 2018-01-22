@@ -400,15 +400,6 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull())
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextImageSet);
-
-    if (document.PageDismissalEventBeingDispatched() !=
-        Document::kNoDismissal) {
-      resource_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
-                                          "max-age=0");
-      resource_request.SetKeepalive(true);
-      resource_request.SetRequestContext(WebURLRequest::kRequestContextPing);
-    }
-
     FetchParameters params(resource_request, resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());

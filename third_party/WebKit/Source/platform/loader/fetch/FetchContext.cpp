@@ -110,6 +110,8 @@ void FetchContext::DidLoadResource(Resource*) {}
 
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
+void FetchContext::SendImagePing(const KURL&) {}
+
 void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
 
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
