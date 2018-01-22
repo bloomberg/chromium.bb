@@ -13,6 +13,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,6 +30,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
@@ -139,7 +141,9 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
   // BubbleSyncPromoDelegate:
   void ShowBrowserSignin() override;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void EnableSync(const AccountInfo& account_info) override;
+#endif
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -291,10 +295,12 @@ void ExtensionInstalledBubbleView::ShowBrowserSignin() {
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ExtensionInstalledBubbleView::EnableSync(const AccountInfo& account) {
   NOTREACHED() << "Extension installl bubble does not display the DICE "
                << "personalized sign-in promo asking the user to enable sync.";
 }
+#endif
 
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
                                                int event_flags) {

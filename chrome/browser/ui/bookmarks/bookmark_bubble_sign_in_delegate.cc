@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 
 #include "build/buildflag.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -14,11 +13,10 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/signin/core/browser/signin_features.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #endif
 
 BookmarkBubbleSignInDelegate::BookmarkBubbleSignInDelegate(Browser* browser)
@@ -37,28 +35,17 @@ void BookmarkBubbleSignInDelegate::ShowBrowserSignin() {
       browser_, signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
 }
 
-void BookmarkBubbleSignInDelegate::EnableSync(const AccountInfo& account) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_));
-
-  if (SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated())
-    return;
-
+void BookmarkBubbleSignInDelegate::EnableSync(const AccountInfo& account) {
   EnsureBrowser();
-  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
-  // enabling sync).
-  new DiceTurnSyncOnHelper(
-      profile_, browser_,
-      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, account.account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+  signin_ui_util::EnableSync(
+      browser_, account,
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
 
-// TODO(msarda): Close the bookmarks bubble once the enable sync flow has
-// started.
-#else
-  NOTREACHED();
-#endif
+  // TODO(msarda): Close the bookmarks bubble once the enable sync flow has
+  // started.
 }
+#endif
 
 void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {
   if (browser == browser_)
