@@ -3416,6 +3416,9 @@ crbug.com/795250 [ Win7 Linux ] virtual/scroll_customization/fast/events/touch/g
 # Does not work on Mac
 crbug.com/793771 [ Mac ] virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Skip ]
 
+# Flaky on Windows
+crbug.com/801341 [ Win ] http/tests/misc/webtiming-resolution.html [ Failure Pass ]
+
 crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
 crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
 
