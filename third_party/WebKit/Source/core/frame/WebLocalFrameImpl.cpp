@@ -1312,8 +1312,9 @@ void WebLocalFrameImpl::MoveRangeSelection(
   if (granularity == WebFrame::kWordGranularity)
     blink_granularity = blink::TextGranularity::kWord;
   GetFrame()->Selection().MoveRangeSelection(
-      VisiblePositionForViewportPoint(base_in_viewport),
-      VisiblePositionForViewportPoint(extent_in_viewport), blink_granularity);
+      GetFrame()->View()->ViewportToContents(base_in_viewport),
+      GetFrame()->View()->ViewportToContents(extent_in_viewport),
+      blink_granularity);
 }
 
 void WebLocalFrameImpl::MoveCaretSelection(const WebPoint& point_in_viewport) {
