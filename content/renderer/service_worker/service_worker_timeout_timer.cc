@@ -113,6 +113,9 @@ void ServiceWorkerTimeoutTimer::UpdateStatus() {
     iter = inflight_events_.erase(iter);
     id_event_map_.erase(event_id);
     std::move(callback).Run();
+    // Shut down the worker as soon as possible since the worker may have gone
+    // into bad state.
+    zero_idle_timer_delay_ = true;
   }
 
   // If |inflight_events_| is empty, the worker is now idle.

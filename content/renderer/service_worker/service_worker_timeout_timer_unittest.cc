@@ -148,11 +148,9 @@ TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
                                ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
+  // |event| should have been aborted, and at the same time, the idle timeout
+  // should also be fired since there has been an aborted event.
   EXPECT_TRUE(event.has_aborted());
-  EXPECT_FALSE(is_idle);
-  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
-                               base::TimeDelta::FromSeconds(1));
-
   EXPECT_TRUE(is_idle);
 }
 
