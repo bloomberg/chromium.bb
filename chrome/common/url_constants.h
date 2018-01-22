@@ -24,9 +24,6 @@
 
 namespace chrome {
 
-// The URL for information on how to use the app launcher.
-extern const char kAppLauncherHelpURL[];
-
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
@@ -128,9 +125,6 @@ extern const char kGoogleAccountActivityControlsURL[];
 // TODO(michaelpg): Compile on Chrome OS only when Options is removed.
 extern const char kLanguageSettingsLearnMoreUrl[];
 
-// The URL for the "Learn more" page for register protocol handler infobars.
-extern const char kLearnMoreRegisterProtocolHandlerURL[];
-
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
@@ -141,9 +135,6 @@ extern const char kLegacySupervisedUserManagementDisplayURL[];
 
 // Management URL for Chrome Supervised Users.
 extern const char kLegacySupervisedUserManagementURL[];
-
-// The URL for the "Learn more" link in the media access infobar.
-extern const char kMediaAccessLearnMoreUrl[];
 
 // "myactivity.google.com" URL for the history checkbox in ClearBrowsingData.
 extern const char kMyActivityUrlInClearBrowsingData[];
@@ -180,10 +171,6 @@ extern const char kSyncEncryptionHelpURL[];
 // The URL for the "Learn more" link when there is a sync error.
 extern const char kSyncErrorsHelpURL[];
 
-// The URL for the "Learn more" page on the sync setup dialog, when syncing
-// everything.
-extern const char kSyncEverythingLearnMoreURL[];
-
 extern const char kSyncGoogleDashboardURL[];
 
 // The URL for the "Learn more" page for sync setup on the personal stuff page.
@@ -204,14 +191,8 @@ extern const char kEnhancedPlaybackNotificationLearnMoreURL[];
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 
-// "Learn more" URL for the attestation of content protection setting.
-extern const char kAttestationForContentProtectionLearnMoreURL[];
-
 // Accessibility help link for Chrome.
 extern const char kChromeAccessibilityHelpURL[];
-
-// Accessibility settings link for Chrome.
-extern const char kChromeAccessibilitySettingsURL[];
 
 extern const char kChromeOSAssetHost[];
 extern const char kChromeOSAssetPath[];
@@ -220,9 +201,6 @@ extern const char kChromeOSCreditsPath[];
 
 // Palette help link for Chrome.
 extern const char kChromePaletteHelpURL[];
-
-// "Learn more" URL for the Printing section under Options.
-extern const char kCrosPrintingLearnMoreURL[];
 
 extern const char kCrosScheme[];
 
@@ -262,8 +240,6 @@ extern const char kChromeEnterpriseSignInLearnMoreURL[];
 // The URL for the Learn More link in the Chrome Cleanup settings card.
 extern const char kChromeCleanerLearnMoreURL[];
 
-extern const char kNotificationsHelpURL[];
-
 // The URL for the Windows XP/Vista deprecation help center article.
 extern const char kWindowsXPVistaDeprecationURL[];
 #endif
@@ -271,10 +247,6 @@ extern const char kWindowsXPVistaDeprecationURL[];
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 // "Learn more" URL for the one click signin infobar.
 extern const char kChromeSyncLearnMoreURL[];
-
-// "Learn more" URL for the "Sign in with a different account" confirmation
-// dialog.
-extern const char kChromeSyncMergeTroubleshootingURL[];
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
