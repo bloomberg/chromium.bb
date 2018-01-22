@@ -54,6 +54,7 @@ static jint JNI_MyInnerClass_Init(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env, jobject
     jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Init");
   return JNI_MyInnerClass_Init(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }

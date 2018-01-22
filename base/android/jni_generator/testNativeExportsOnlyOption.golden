@@ -81,6 +81,7 @@ JNI_GENERATOR_EXPORT jint
     env, jobject jcaller,
     jlong nativeTest,
     jint arg1) {
+  TRACE_NATIVE_EXECUTION_SCOPED("StaticMethod");
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "StaticMethod", 0);
   return native->StaticMethod(env, base::android::JavaParamRef<jobject>(env,
@@ -92,6 +93,7 @@ JNI_GENERATOR_EXPORT jint
     env, jobject jcaller,
     jlong nativeTest,
     jint arg1) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Method");
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
   return native->Method(env, base::android::JavaParamRef<jobject>(env, jcaller),
@@ -104,6 +106,7 @@ static jint JNI_MyInnerClass_Init(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Init");
   return JNI_MyInnerClass_Init(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -114,6 +117,7 @@ static jint JNI_MyOtherInnerClass_Init(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Init");
   return JNI_MyOtherInnerClass_Init(env,
       base::android::JavaParamRef<jobject>(env, jcaller));
 }

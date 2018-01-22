@@ -109,6 +109,7 @@ JNI_GENERATOR_EXPORT jlong
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit(JNIEnv*
     env, jobject jcaller,
     jstring param) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Init");
   return JNI_SampleForTests_Init(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jstring>(env, param));
 }
@@ -117,6 +118,7 @@ JNI_GENERATOR_EXPORT void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeDestroy(JNIEnv*
     env, jobject jcaller,
     jlong nativeCPPClass) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Destroy");
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
   return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
@@ -129,6 +131,7 @@ static jdouble JNI_SampleForTests_GetDoubleFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jdouble
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction(JNIEnv*
     env, jobject jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("GetDoubleFunction");
   return JNI_SampleForTests_GetDoubleFunction(env,
       base::android::JavaParamRef<jobject>(env, jcaller));
 }
@@ -139,6 +142,7 @@ static jfloat JNI_SampleForTests_GetFloatFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jfloat
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction(JNIEnv*
     env, jclass jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("GetFloatFunction");
   return JNI_SampleForTests_GetFloatFunction(env,
       base::android::JavaParamRef<jclass>(env, jcaller));
 }
@@ -151,18 +155,20 @@ JNI_GENERATOR_EXPORT void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype(JNIEnv*
     env, jobject jcaller,
     jobject rect) {
+  TRACE_NATIVE_EXECUTION_SCOPED("SetNonPODDatatype");
   return JNI_SampleForTests_SetNonPODDatatype(env,
       base::android::JavaParamRef<jobject>(env, jcaller),
       base::android::JavaParamRef<jobject>(env, rect));
 }
 
 static base::android::ScopedJavaLocalRef<jobject>
-JNI_SampleForTests_GetNonPODDatatype(JNIEnv* env, const
+    JNI_SampleForTests_GetNonPODDatatype(JNIEnv* env, const
     base::android::JavaParamRef<jobject>& jcaller);
 
 JNI_GENERATOR_EXPORT jobject
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
     env, jobject jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("GetNonPODDatatype");
   return JNI_SampleForTests_GetNonPODDatatype(env,
       base::android::JavaParamRef<jobject>(env, jcaller)).Release();
 }
@@ -171,6 +177,7 @@ JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethod(JNIEnv*
     env, jobject jcaller,
     jlong nativeCPPClass) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Method");
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
   return native->Method(env, base::android::JavaParamRef<jobject>(env,
@@ -181,6 +188,7 @@ JNI_GENERATOR_EXPORT jdouble
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethodOtherP0(JNIEnv*
     env, jobject jcaller,
     jlong nativePtr) {
+  TRACE_NATIVE_EXECUTION_SCOPED("MethodOtherP0");
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
   CHECK_NATIVE_PTR(env, jcaller, native, "MethodOtherP0", 0);
@@ -193,6 +201,7 @@ JNI_GENERATOR_EXPORT void
     env, jobject jcaller,
     jlong nativeCPPClass,
     jobject b) {
+  TRACE_NATIVE_EXECUTION_SCOPED("AddStructB");
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddStructB");
   return native->AddStructB(env, base::android::JavaParamRef<jobject>(env,
@@ -203,6 +212,7 @@ JNI_GENERATOR_EXPORT void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeIterateAndDoSomethingWithStructB(JNIEnv*
     env, jobject jcaller,
     jlong nativeCPPClass) {
+  TRACE_NATIVE_EXECUTION_SCOPED("IterateAndDoSomethingWithStructB");
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
   return native->IterateAndDoSomethingWithStructB(env,
@@ -213,6 +223,7 @@ JNI_GENERATOR_EXPORT jstring
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeReturnAString(JNIEnv*
     env, jobject jcaller,
     jlong nativeCPPClass) {
+  TRACE_NATIVE_EXECUTION_SCOPED("ReturnAString");
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
   return native->ReturnAString(env, base::android::JavaParamRef<jobject>(env,
@@ -225,6 +236,7 @@ static jint JNI_InnerClass_GetInnerIntFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(JNIEnv*
     env, jclass jcaller) {
+  TRACE_NATIVE_EXECUTION_SCOPED("GetInnerIntFunction");
   return JNI_InnerClass_GetInnerIntFunction(env,
       base::android::JavaParamRef<jclass>(env, jcaller));
 }
