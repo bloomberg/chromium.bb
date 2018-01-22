@@ -190,7 +190,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   if (is_main_frame && !is_error_page) {
     DidStartMainFrameNavigation(validated_url,
                                 render_frame_host->GetSiteInstance(),
-                                render_frame_host->navigation_handle());
+                                render_frame_host->GetNavigationHandle());
   }
 }
 
@@ -238,8 +238,8 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
 
   // Discard the pending navigation entry if needed.
   int expected_pending_entry_id =
-      render_frame_host->navigation_handle()
-          ? render_frame_host->navigation_handle()->pending_nav_entry_id()
+      render_frame_host->GetNavigationHandle()
+          ? render_frame_host->GetNavigationHandle()->pending_nav_entry_id()
           : 0;
   DiscardPendingEntryIfNeeded(expected_pending_entry_id);
 }

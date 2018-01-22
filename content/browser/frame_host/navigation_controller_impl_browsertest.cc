@@ -7181,7 +7181,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
-  EXPECT_FALSE(main_frame->navigation_handle());
+  EXPECT_FALSE(main_frame->GetNavigationHandle());
   EXPECT_FALSE(root->navigation_request());
 
   // Start navigating to the second page.
@@ -7193,7 +7193,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   // This should create a NavigationHandle.
-  NavigationHandleImpl* handle = main_frame->navigation_handle();
+  NavigationHandleImpl* handle = main_frame->GetNavigationHandle();
   NavigationRequest* request = root->navigation_request();
   if (IsBrowserSideNavigationEnabled()) {
     EXPECT_TRUE(request);
@@ -7221,8 +7221,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(root->navigation_request());
     EXPECT_EQ(request, root->navigation_request());
   } else {
-    EXPECT_TRUE(main_frame->navigation_handle());
-    EXPECT_EQ(handle, main_frame->navigation_handle());
+    EXPECT_TRUE(main_frame->GetNavigationHandle());
+    EXPECT_EQ(handle, main_frame->GetNavigationHandle());
   }
 
   // Let the navigation finish. It should commit successfully.

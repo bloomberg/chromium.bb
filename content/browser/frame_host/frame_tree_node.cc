@@ -465,6 +465,13 @@ bool FrameTreeNode::CommitPendingFramePolicy() {
   return did_change_flags || did_change_container_policy;
 }
 
+void FrameTreeNode::TransferNavigationRequestOwnership(
+    RenderFrameHostImpl* render_frame_host) {
+  RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
+      navigation_request_.get());
+  render_frame_host->SetNavigationRequest(std::move(navigation_request_));
+}
+
 void FrameTreeNode::CreatedNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
   CHECK(IsBrowserSideNavigationEnabled());
