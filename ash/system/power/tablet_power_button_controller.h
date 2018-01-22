@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/ash_export.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -23,15 +24,19 @@ namespace base {
 class TickClock;
 }  // namespace base
 
-namespace ash {
+namespace views {
+class Widget;
+}  // namespace views
 
+namespace ash {
 class LockStateController;
 class PowerButtonDisplayController;
 
 // Handles power button events on convertible/tablet device. This class is
 // instantiated and used in PowerButtonController.
 class ASH_EXPORT TabletPowerButtonController
-    : public chromeos::PowerManagerClient::Observer,
+    : public BacklightsForcedOffSetter::Observer,
+      public chromeos::PowerManagerClient::Observer,
       public TabletModeObserver {
  public:
   // Public for tests.
@@ -48,23 +53,42 @@ class ASH_EXPORT TabletPowerButtonController
   static constexpr base::TimeDelta kIgnoreRepeatedButtonUpDelay =
       base::TimeDelta::FromMilliseconds(500);
 
-  TabletPowerButtonController(PowerButtonDisplayController* display_controller,
-                              bool show_power_button_menu,
-                              base::TickClock* tick_clock);
+  // Amount of time since last SuspendDone() that power button event needs to be
+  // ignored.
+  static constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
+      base::TimeDelta::FromSeconds(2);
+
+  TabletPowerButtonController(
+      PowerButtonDisplayController* display_controller,
+      BacklightsForcedOffSetter* backlights_forced_off_setter,
+      bool show_power_button_menu,
+      base::TickClock* tick_clock);
   ~TabletPowerButtonController() override;
 
   // Handles a power button event.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-  // Overridden from chromeos::PowerManagerClient::Observer:
+  // True if the menu is opened.
+  bool IsMenuOpened() const;
+
+  // Dismisses the menu.
+  void DismissMenu();
+
+  // Cancel the ongoing tablet power button behavior.
+  void CancelTabletPowerButton();
+
+  // BacklightsForcedOffSetter::Observer:
+  void OnBacklightsForcedOffChanged(bool forced_off) override;
+  void OnScreenStateChanged(
+      BacklightsForcedOffSetter::ScreenState screen_state) override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
-
-  // Cancel the ongoing tablet power button behavior.
-  void CancelTabletPowerButton();
 
  private:
   friend class TabletPowerButtonControllerTestApi;
@@ -106,10 +130,16 @@ class ASH_EXPORT TabletPowerButtonController
   // to show the power button menu.
   base::OneShotTimer power_button_menu_timer_;
 
+  // The fullscreen widget of power button menu.
+  std::unique_ptr<views::Widget> menu_widget_;
+
   LockStateController* lock_state_controller_;  // Not owned.
 
   // Used to interact with the display.
   PowerButtonDisplayController* display_controller_;  // Not owned.
+
+  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+      backlights_forced_off_observer_;
 
   // If true, start the |power_button_menu_timer_| to show the menu when the
   // power button is long pressed.
