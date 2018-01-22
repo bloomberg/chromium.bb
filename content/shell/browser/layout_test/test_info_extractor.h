@@ -32,7 +32,7 @@ struct TestInfo {
 
 class TestInfoExtractor {
  public:
-  explicit TestInfoExtractor(const base::CommandLine::StringVector& cmd_args);
+  explicit TestInfoExtractor(const base::CommandLine& cmd_line);
   ~TestInfoExtractor();
 
   std::unique_ptr<TestInfo> GetNextTest();
