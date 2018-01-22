@@ -81,4 +81,11 @@ void FakeSmbProviderClient::DeleteEntry(int32_t mount_id,
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
 }
 
+void FakeSmbProviderClient::CreateFile(int32_t mount_id,
+                                       const base::FilePath& file_path,
+                                       StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
+}
+
 }  // namespace chromeos
