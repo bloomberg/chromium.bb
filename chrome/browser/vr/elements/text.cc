@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
 
@@ -150,6 +151,7 @@ class TextTexture : public UiTexture {
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
 
   gfx::SizeF size_;
+  gfx::Vector2d texture_offset_;
   base::string16 text_;
   float font_height_dmms_ = 0;
   float text_width_ = 0;
@@ -295,12 +297,17 @@ void TextTexture::LayOutText() {
 
   // Note, there is no padding here whatsoever.
   size_ = gfx::SizeF(text_bounds.size());
+  if (parameters.shadows_enabled) {
+    texture_offset_ = gfx::Vector2d(gfx::ToFlooredInt(parameters.shadow_size),
+                                    gfx::ToFlooredInt(parameters.shadow_size));
+  }
 }
 
 void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   cc::SkiaPaintCanvas paint_canvas(sk_canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
   gfx::Canvas* canvas = &gfx_canvas;
+  canvas->Translate(texture_offset_);
 
   for (auto& render_text : lines_)
     render_text->Draw(canvas);

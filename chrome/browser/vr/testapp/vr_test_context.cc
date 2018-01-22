@@ -55,7 +55,7 @@ constexpr float kMaxViewScaleFactor = 5.0f;
 constexpr float kViewScaleAdjustmentFactor = 0.2f;
 constexpr float kPageLoadTimeMilliseconds = 500;
 
-constexpr gfx::Point3F kDefaultLaserOrigin = {0.5f, -0.5f, 0.f};
+constexpr gfx::Point3F kDefaultLaserOrigin = {0.1f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
 constexpr float kControllerScaleFactor = 1.5f;
 
