@@ -14,8 +14,6 @@ static_library("cpp") {
     "mutable_partial_network_traffic_annotation_tag_struct_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
-    "network_features.cc",
-    "network_features.h",
     "network_switches.cc",
     "network_switches.h",
     "proxy_resolving_client_socket.cc",

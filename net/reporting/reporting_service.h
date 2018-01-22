@@ -70,8 +70,6 @@ class NET_EXPORT ReportingService {
   // about report uploads.
   virtual bool RequestIsUpload(const URLRequest& request) = 0;
 
-  virtual const ReportingPolicy& GetPolicy() const = 0;
-
  protected:
   ReportingService() {}
 

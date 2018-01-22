@@ -29,13 +29,8 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
-#include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_builder.h"
-
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/reporting/reporting_policy.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace cronet {
 
@@ -109,11 +104,6 @@ const char kHostResolverRules[] = "host_resolver_rules";
 
 // NetworkQualityEstimator (NQE) experiment dictionary name.
 const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
-
-// Network Error Logging experiment dictionary name.
-const char kNetworkErrorLoggingFieldTrialName[] = "NetworkErrorLogging";
-// Name of boolean to enable Reporting API.
-const char kNetworkErrorLoggingEnable[] = "enable";
 
 // Disable IPv6 when on WiFi. This is a workaround for a known issue on certain
 // Android phones, and should not be necessary when not on one of those devices.
@@ -219,7 +209,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
   bool stale_dns_enable = false;
   bool host_resolver_rules_enable = false;
   bool disable_ipv6_on_wifi = false;
-  bool nel_enable = false;
 
   effective_experimental_options = dict->CreateDeepCopy();
   StaleHostResolver::StaleOptions stale_dns_options;
@@ -423,15 +412,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       }
       host_resolver_rules_enable = host_resolver_rules_args->GetString(
           kHostResolverRules, &host_resolver_rules_string);
-    } else if (it.key() == kNetworkErrorLoggingFieldTrialName) {
-      const base::DictionaryValue* nel_args = nullptr;
-      if (!it.value().GetAsDictionary(&nel_args)) {
-        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
-                   << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
-        continue;
-      }
-      nel_args->GetBoolean(kNetworkErrorLoggingEnable, &nel_enable);
     } else if (it.key() == kDisableIPv6OnWifi) {
       if (!it.value().GetAsBoolean(&disable_ipv6_on_wifi)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
@@ -503,23 +483,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     }
     context_builder->set_host_resolver(std::move(host_resolver));
   }
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  if (nel_enable) {
-    auto policy = std::make_unique<net::ReportingPolicy>();
-
-    // Apps (like Cronet embedders) are generally allowed to run in the
-    // background, even across network changes, so use more relaxed privacy
-    // settings than when Reporting is running in the browser.
-    policy->persist_reports_across_restarts = true;
-    policy->persist_clients_across_restarts = true;
-    policy->persist_reports_across_network_changes = true;
-    policy->persist_clients_across_network_changes = true;
-
-    context_builder->set_reporting_policy(std::move(policy));
-    context_builder->set_network_error_logging_enabled(true);
-  }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(

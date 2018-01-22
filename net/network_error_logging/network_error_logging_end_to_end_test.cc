@@ -5,12 +5,14 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_feature.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -55,6 +57,9 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
       : test_server_(test_server::EmbeddedTestServer::TYPE_HTTPS),
         upload_should_hang_(false),
         upload_received_(false) {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kReporting, features::kNetworkErrorLogging}, {});
+
     // Make report delivery happen instantly.
     auto policy = std::make_unique<ReportingPolicy>();
     policy->delivery_interval = base::TimeDelta::FromSeconds(0);
@@ -140,6 +145,7 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
     return std::move(response);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<URLRequestContext> url_request_context_;
   test_server::EmbeddedTestServer test_server_;
 
