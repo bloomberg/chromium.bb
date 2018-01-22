@@ -52,6 +52,8 @@ blink_platform_sources("scheduler") {
     "child/metrics_helper.h",
     "child/pollable_thread_safe_flag.cc",
     "child/pollable_thread_safe_flag.h",
+    "child/process_state.cc",
+    "child/process_state.h",
     "child/scheduler_helper.cc",
     "child/scheduler_helper.h",
     "child/single_thread_idle_task_runner.cc",

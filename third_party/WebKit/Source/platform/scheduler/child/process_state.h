@@ -1,0 +1,22 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <atomic>
+
+namespace blink {
+namespace scheduler {
+namespace internal {
+
+// Helper lock-free struct to share main state of the process between threads
+// for recording methods.
+// This class should not be used for synchronization between threads.
+struct ProcessState {
+  static ProcessState* Get();
+
+  std::atomic_bool is_process_backgrounded;
+};
+
+}  // namespace internal
+}  // namespace scheduler
+}  // namespace blink
