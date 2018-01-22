@@ -23,6 +23,8 @@
 namespace chromecast {
 namespace media {
 namespace {
+constexpr size_t kKeyStatusCount =
+    static_cast<size_t>(::media::CdmKeyInformation::KEY_STATUS_MAX) + 1;
 
 class CastCdmContextImpl : public CastCdmContext {
  public:
@@ -167,7 +169,7 @@ void CastCdm::OnSessionKeysChange(const std::string& session_id,
                                   ::media::CdmKeysInfo keys_info) {
   logging::LogMessage log_message(__FILE__, __LINE__, logging::LOG_INFO);
   log_message.stream() << "keystatuseschange ";
-  int status_count[::media::CdmKeyInformation::KEY_STATUS_MAX] = {0};
+  int status_count[kKeyStatusCount] = {0};
   for (const auto& key_info : keys_info) {
     status_count[key_info->status]++;
   }
