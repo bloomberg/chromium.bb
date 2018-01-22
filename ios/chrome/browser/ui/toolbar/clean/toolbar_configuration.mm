@@ -36,7 +36,7 @@
 }
 
 - (UIColor*)backgroundColor {
-  if (IsAdaptiveToolbarEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     switch (self.style) {
       case NORMAL:
         return UIColorFromRGB(kAdaptiveToolbarBackgroundColor);
@@ -54,7 +54,7 @@
 }
 
 - (UIColor*)omniboxBackgroundColor {
-  if (IsAdaptiveToolbarEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     switch (self.style) {
       case NORMAL:
         return UIColorFromRGB(kAdaptiveLocationBackgroundColor);

@@ -12,6 +12,7 @@
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -57,10 +58,10 @@ bool IsIPhoneX() {
           CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
 }
 
-bool IsAdaptiveToolbarEnabled() {
-  if (tests_hook::ForceAdaptiveToolbar())
+bool IsUIRefreshPhase1Enabled() {
+  if (tests_hook::ForceUIRefreshPhase1())
     return true;
-  return base::FeatureList::IsEnabled(kAdaptiveToolbar);
+  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
 bool IsSafeAreaCompatibleToolbarEnabled() {

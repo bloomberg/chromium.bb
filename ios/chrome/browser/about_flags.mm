@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/features.h"
@@ -232,9 +233,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillTypePredictionsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
-    {"adaptive-toolbar", flag_descriptions::kAdaptiveToolbarName,
-     flag_descriptions::kAdaptiveToolbarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAdaptiveToolbar)},
+    {"ui-refresh-phase-1", flag_descriptions::kUIRefreshPhase1Name,
+     flag_descriptions::kUIRefreshPhase1Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUIRefreshPhase1)},
+
 };
 
 // Add all switches from experimental flags to |command_line|.
