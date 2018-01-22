@@ -65,6 +65,10 @@ class ClientPolicyController {
   // are downloaded on behalf of user.
   bool IsSuggested(const std::string& name_space) const;
 
+  // Returns whether we should allow pages for |name_space| to trigger
+  // downloads.
+  bool ShouldAllowDownloads(const std::string& name_space) const;
+
   void AddPolicyForTest(const std::string& name_space,
                         const OfflinePageClientPolicyBuilder& builder);
 

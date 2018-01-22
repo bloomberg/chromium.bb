@@ -76,6 +76,7 @@ ClientPolicyController::ClientPolicyController() {
                                      kUnlimitedPages)
           .SetIsRemovedOnCacheReset(false)
           .SetIsSupportedByDownload(true)
+          .SetShouldAllowDownload(true)
           .Build()));
 
   // Fallback policy.
@@ -212,6 +213,11 @@ ClientPolicyController::GetNamespacesDisabledWhenPrefetchDisabled() const {
 
 bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
   return GetPolicy(name_space).feature_policy.is_suggested;
+}
+
+bool ClientPolicyController::ShouldAllowDownloads(
+    const std::string& name_space) const {
+  return GetPolicy(name_space).feature_policy.should_allow_download;
 }
 
 void ClientPolicyController::AddPolicyForTest(

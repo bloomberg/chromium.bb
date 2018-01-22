@@ -60,6 +60,8 @@ struct FeaturePolicy {
   bool disabled_when_prefetch_disabled;
   // Whether the pages originated from suggestions by zine or elsewhere.
   bool is_suggested;
+  // whether we should allow pages to trigger downloads.
+  bool should_allow_download;
 
   FeaturePolicy()
       : is_supported_by_download(false),
@@ -67,7 +69,8 @@ struct FeaturePolicy {
         only_shown_in_original_tab(false),
         is_removed_on_cache_reset(true),
         disabled_when_prefetch_disabled(false),
-        is_suggested(false) {}
+        is_suggested(false),
+        should_allow_download(false) {}
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -160,6 +163,12 @@ class OfflinePageClientPolicyBuilder {
 
   OfflinePageClientPolicyBuilder& SetIsSuggested(const bool is_suggested) {
     policy_.feature_policy.is_suggested = is_suggested;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetShouldAllowDownload(
+      const bool should_allow_download) {
+    policy_.feature_policy.should_allow_download = should_allow_download;
     return *this;
   }
 
