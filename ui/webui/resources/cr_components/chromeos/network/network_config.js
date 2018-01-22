@@ -348,6 +348,7 @@ Polymer({
     }
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
+    this.setShareNetwork_();
     requestAnimationFrame(() => {
       var e = this.$$(
           'network-config-input:not([disabled]),' +
@@ -540,6 +541,10 @@ Polymer({
       var source = this.getSource_();
       this.shareNetwork_ =
           source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
+      return;
+    }
+    if (!this.shareIsVisible_()) {
+      this.shareNetwork_ = false;
       return;
     }
     if (this.shareAllowEnable) {

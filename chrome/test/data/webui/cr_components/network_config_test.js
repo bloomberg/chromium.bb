@@ -28,6 +28,9 @@ suite('network-config', function() {
     networkConfig = document.createElement('network-config');
     networkConfig.networkingPrivate = api_;
     networkConfig.networkProperties = networkProperties;
+  }
+
+  function initNetworkConfig() {
     document.body.appendChild(networkConfig);
     networkConfig.init();
     Polymer.dom.flush();
@@ -44,6 +47,7 @@ suite('network-config', function() {
     setup(function() {
       api_.resetForTest();
       setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      initNetworkConfig();
     });
 
     teardown(function() {
@@ -69,6 +73,7 @@ suite('network-config', function() {
       };
       api_.addNetworksForTest([network]);
       setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
+      initNetworkConfig();
     });
 
     teardown(function() {
@@ -116,10 +121,11 @@ suite('network-config', function() {
     }
 
     test('New Config: Login or guest', function() {
-      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
-      setLoginOrGuest();
       // Insecure networks are always shared so test a secure config.
-      networkConfig.security_ = 'WEP-PSK';
+      setNetworkConfig(
+          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
+      setLoginOrGuest();
+      initNetworkConfig();
       return flushAsync().then(() => {
         let share = networkConfig.$$('#share');
         assertTrue(!!share);
@@ -129,10 +135,11 @@ suite('network-config', function() {
     });
 
     test('New Config: Kiosk', function() {
-      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
-      setKiosk();
       // Insecure networks are always shared so test a secure config.
-      networkConfig.security_ = 'WEP-PSK';
+      setNetworkConfig(
+          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
+      setKiosk();
+      initNetworkConfig();
       return flushAsync().then(() => {
         let share = networkConfig.$$('#share');
         assertTrue(!!share);
@@ -142,8 +149,10 @@ suite('network-config', function() {
     });
 
     test('New Config: Authenticated, Not secure', function() {
-      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setNetworkConfig(
+          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'None'}});
       setAuthenticated();
+      initNetworkConfig();
       return flushAsync().then(() => {
         let share = networkConfig.$$('#share');
         assertTrue(!!share);
@@ -153,9 +162,10 @@ suite('network-config', function() {
     });
 
     test('New Config: Authenticated, Secure', function() {
-      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setNetworkConfig(
+          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
       setAuthenticated();
-      networkConfig.security_ = 'WEP-PSK';
+      initNetworkConfig();
       return flushAsync().then(() => {
         let share = networkConfig.$$('#share');
         assertTrue(!!share);
@@ -176,6 +186,7 @@ suite('network-config', function() {
       api_.addNetworksForTest([network]);
       setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
       setAuthenticated();
+      initNetworkConfig();
       return flushAsync().then(() => {
         assertFalse(!!networkConfig.$$('#share'));
       });
@@ -190,6 +201,7 @@ suite('network-config', function() {
       };
       api_.addNetworksForTest([ethernet]);
       setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      initNetworkConfig();
       return flushAsync().then(() => {
         assertEquals('ethernetguid', networkConfig.guid);
         assertEquals('None', networkConfig.security_);
@@ -216,6 +228,7 @@ suite('network-config', function() {
       };
       api_.addNetworksForTest([ethernet, ethernetEap]);
       setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      initNetworkConfig();
       return flushAsync().then(() => {
         assertEquals('eapguid', networkConfig.guid);
         assertEquals('WPA-EAP', networkConfig.security_);
