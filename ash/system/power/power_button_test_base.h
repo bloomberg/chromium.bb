@@ -103,8 +103,17 @@ class PowerButtonTestBase : public AshTestBase {
   // Enables or disables tablet mode based on |enable|.
   void EnableTabletMode(bool enable);
 
+  // Advance clock to ensure the intended tablet power button display forcing
+  // off is not ignored since we will ignore the repeated power button up if
+  // they come too close.
+  void AdvanceClockToAvoidIgnoring();
+
   void set_has_tablet_mode_switch(bool has_tablet_mode_switch) {
     has_tablet_mode_switch_ = has_tablet_mode_switch;
+  }
+
+  void set_show_power_button_menu(bool show_power_button_menu) {
+    show_power_button_menu_ = show_power_button_menu;
   }
 
   // Ownership is passed on to chromeos::DBusThreadManager.
@@ -122,6 +131,9 @@ class PowerButtonTestBase : public AshTestBase {
 
   // Indicates whether switches::kAshEnableTabletMode is appended.
   bool has_tablet_mode_switch_ = true;
+
+  // Indicates whether switches::kShowPowerButtonMenu is appended.
+  bool show_power_button_menu_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonTestBase);
 };

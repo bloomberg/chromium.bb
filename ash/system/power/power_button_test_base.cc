@@ -48,6 +48,10 @@ void PowerButtonTestBase::SetUp() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTabletMode);
   }
+  if (show_power_button_menu_) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kShowPowerButtonMenu);
+  }
   AshTestBase::SetUp();
 
   lock_state_controller_ = Shell::Get()->lock_state_controller();
@@ -152,6 +156,12 @@ void PowerButtonTestBase::UnlockScreen() {
 
 void PowerButtonTestBase::EnableTabletMode(bool enable) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+}
+
+void PowerButtonTestBase::AdvanceClockToAvoidIgnoring() {
+  tick_clock_->Advance(
+      TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay +
+      base::TimeDelta::FromMilliseconds(1));
 }
 
 }  // namespace ash

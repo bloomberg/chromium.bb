@@ -35,9 +35,11 @@ class PowerButtonScreenshotControllerTest : public PowerButtonTestBase {
     screenshot_delegate_ = GetScreenshotDelegate();
     EnableTabletMode(true);
 
-    // Advances a long duration from initialized last resume time in
-    // TabletPowerButtonController to avoid cross interference.
-    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
+    // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
+    // avoid events being ignored.
+    tick_clock_->Advance(
+        TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
+        base::TimeDelta::FromMilliseconds(2));
   }
 
  protected:
@@ -407,6 +409,68 @@ TEST_F(ClamshellPowerButtonScreenshotControllerTest,
   EXPECT_TRUE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
   ReleasePowerButton();
   EXPECT_FALSE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
+}
+
+// Same as PowerButtonTestBase except that switches::kShowPowerButtonMenu is
+// set.
+class PowerButtonScreenshotControllerShowMenuTest
+    : public PowerButtonScreenshotControllerTest {
+ public:
+  PowerButtonScreenshotControllerShowMenuTest() {
+    set_show_power_button_menu(true);
+  }
+  ~PowerButtonScreenshotControllerShowMenuTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PowerButtonScreenshotControllerShowMenuTest);
+};
+
+// Tests volume key pressed stops showing the power button menu.
+TEST_F(PowerButtonScreenshotControllerShowMenuTest,
+       PowerButtonPressedFirst_VolumeKeyCancelTabletPowerButton) {
+  // Tests volume down key can stop the power button menu timer.
+  PressPowerButton();
+  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  ReleasePowerButton();
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  // Tests volume up key can stop power button menu timer. Also tests that
+  // volume up key is not consumed.
+  PressPowerButton();
+  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  PressKey(ui::VKEY_VOLUME_UP);
+  EXPECT_FALSE(LastKeyConsumed());
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  ReleasePowerButton();
+  ReleaseKey(ui::VKEY_VOLUME_UP);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(LastKeyConsumed());
+}
+
+// Tests volume key pressed first invalidates showing the power button menu.
+TEST_F(PowerButtonScreenshotControllerShowMenuTest,
+       VolumeKeyPressedFirst_InvalidateTabletPowerButton) {
+  // Tests volume down key invalidates showing the power button menu.
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  PressPowerButton();
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  ReleasePowerButton();
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  // Tests volume up key invalidates showing the power button menu. Also tests
+  // that volume up key is not consumed.
+  PressKey(ui::VKEY_VOLUME_UP);
+  PressPowerButton();
+  EXPECT_FALSE(LastKeyConsumed());
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  ReleasePowerButton();
+  ReleaseKey(ui::VKEY_VOLUME_UP);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(LastKeyConsumed());
 }
 
 }  // namespace ash

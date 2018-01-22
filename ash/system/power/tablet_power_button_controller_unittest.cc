@@ -44,9 +44,11 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
     EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-    // Advance a long duration from initialized last resume time in
-    // |tablet_controller_| to avoid cross interference.
-    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
+    // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
+    // avoid events being ignored.
+    tick_clock_->Advance(
+        TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
+        base::TimeDelta::FromMilliseconds(2));
 
     // Run the event loop so that PowerButtonDisplayController can receive the
     // initial backlights-forced-off state.
@@ -65,15 +67,6 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
   bool GetGlobalTouchscreenEnabled() const {
     return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
         TouchscreenEnabledSource::GLOBAL);
-  }
-
-  // Advance clock to ensure the intended tablet power button display forcing
-  // off is not ignored since we will ignore the repeated power button up if
-  // they come too close.
-  void AdvanceClockToAvoidIgnoring() {
-    tick_clock_->Advance(
-        TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay +
-        base::TimeDelta::FromMilliseconds(1));
   }
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
@@ -687,6 +680,168 @@ TEST_F(NoTabletModePowerButtonControllerTest,
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableTabletMode));
   EXPECT_FALSE(tablet_controller_);
+}
+
+class TabletPowerButtonControllerShowMenuTest : public PowerButtonTestBase {
+ public:
+  TabletPowerButtonControllerShowMenuTest() {
+    set_show_power_button_menu(true);
+  }
+  ~TabletPowerButtonControllerShowMenuTest() override = default;
+
+  void SetUp() override {
+    PowerButtonTestBase::SetUp();
+
+    InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
+    EnableTabletMode(true);
+
+    // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
+    // avoid events being ignored.
+    tick_clock_->Advance(
+        TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
+        base::TimeDelta::FromMilliseconds(2));
+  }
+
+  // Press the power button to show the menu.
+  void OpenPowerButtonMenu() {
+    PressPowerButton();
+    EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+    ASSERT_TRUE(tablet_test_api_->TriggerPowerButtonMenuTimeout());
+    ReleasePowerButton();
+    ASSERT_TRUE(tablet_test_api_->IsMenuOpened());
+  }
+
+  // Tap outside of the menu view to dismiss the menu.
+  void TapToDismissPowerButtonMenu() {
+    gfx::Rect menu_bounds = tablet_test_api_->GetMenuBoundsInScreen();
+    GetEventGenerator().GestureTapAt(
+        gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
+    EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerShowMenuTest);
+};
+
+// Tests that the power off menu will not be shown if the power button is
+// released quickly.
+TEST_F(TabletPowerButtonControllerShowMenuTest,
+       ReleasePowerButtonBeforeShowPowerButtonMenu) {
+  // Tap the power button when screen is on will turn screen off.
+  PressPowerButton();
+  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, true);
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+
+  AdvanceClockToAvoidIgnoring();
+  // Tap the power button when screen is off will turn screen on.
+  PressPowerButton();
+  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  ReleasePowerButton();
+  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+}
+
+// Tests that tap outside of the menu bounds will dimiss the menu.
+TEST_F(TabletPowerButtonControllerShowMenuTest, TapToDismissMenu) {
+  OpenPowerButtonMenu();
+  TapToDismissPowerButtonMenu();
+}
+
+// Tests the menu items according to the login status.
+TEST_F(TabletPowerButtonControllerShowMenuTest, MenuItemsToLoginStatus) {
+  // No sign out item if user is not logged in.
+  ClearLogin();
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
+  OpenPowerButtonMenu();
+  EXPECT_FALSE(tablet_test_api_->MenuHasSignOutItem());
+  TapToDismissPowerButtonMenu();
+
+  // Should have sign out item if user is login.
+  CreateUserSessions(1);
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+  OpenPowerButtonMenu();
+  EXPECT_TRUE(tablet_test_api_->MenuHasSignOutItem());
+  TapToDismissPowerButtonMenu();
+
+  // Should have sign out item if user is logged in but screen is locked.
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::LOCKED);
+  OpenPowerButtonMenu();
+  EXPECT_TRUE(tablet_test_api_->MenuHasSignOutItem());
+}
+
+// Repeat long press should redisplay the menu.
+TEST_F(TabletPowerButtonControllerShowMenuTest, PressButtonWhenMenuIsOpened) {
+  OpenPowerButtonMenu();
+  AdvanceClockToAvoidIgnoring();
+  OpenPowerButtonMenu();
+}
+
+// Tests that we do not show power button menu if kShowPowerButtonMenu is set
+// but the device is in clamshell mode.
+TEST_F(TabletPowerButtonControllerShowMenuTest, ClamshellShowPowerButtonMenu) {
+  OpenPowerButtonMenu();
+
+  // Change from tablet mode to clamshell mode should dismiss the menu.
+  EnableTabletMode(false);
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+
+  // Should not show the power button menu even if the kShowPowerButtonMenu of
+  // the device is set but not in tablet mode.
+  PressPowerButton();
+  ASSERT_FALSE(tablet_test_api_->TriggerPowerButtonMenuTimeout());
+  ReleasePowerButton();
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+}
+
+// Tests that screen changes to idle off will dismiss the opened menu.
+TEST_F(TabletPowerButtonControllerShowMenuTest,
+       DismissMenuWhenScreenIsIdleOff) {
+  OpenPowerButtonMenu();
+  // Mock screen idle off.
+  power_manager_client_->SendBrightnessChanged(0, true);
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+}
+
+// Tests that tapping the power button should dimiss the opened menu.
+TEST_F(TabletPowerButtonControllerShowMenuTest,
+       TappingPowerButtonWhenMenuIsOpened) {
+  OpenPowerButtonMenu();
+
+  // Tapping the power button when menu is opened will dismiss the menu.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, true);
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+
+  // Long press the power button when backlights are off will show the menu.
+  PressPowerButton();
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  EXPECT_TRUE(tablet_test_api_->TriggerPowerButtonMenuTimeout());
+  ReleasePowerButton();
+  EXPECT_TRUE(tablet_test_api_->IsMenuOpened());
+  // Tapping the power button will dismiss the menu.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, true);
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+}
+
+// Tests that suspend will dismiss the opened menu.
+TEST_F(TabletPowerButtonControllerShowMenuTest, SuspendWithMenuOn) {
+  OpenPowerButtonMenu();
+  power_manager_client_->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_OTHER);
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
+  power_manager_client_->SendSuspendDone();
+  EXPECT_FALSE(tablet_test_api_->IsMenuOpened());
 }
 
 }  // namespace ash
