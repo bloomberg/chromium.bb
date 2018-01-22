@@ -6,6 +6,8 @@
 
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/events/Event.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/html/forms/HTMLLabelElement.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
@@ -19,6 +21,9 @@ namespace {
 
 // The default size of an overflow button in pixels.
 constexpr int kDefaultButtonSize = 36;
+
+const char kOverflowContainerWithSubtitleCSSClass[] = "with-subtitle";
+const char kOverflowSubtitleCSSClass[] = "subtitle";
 
 }  // namespace
 
@@ -52,8 +57,9 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // We don't want the button visible within the overflow menu.
   button->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
-  overflow_menu_text_ =
-      Text::Create(GetDocument(), button->GetOverflowMenuString());
+  overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
+  overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
+                                    ASSERT_NO_EXCEPTION);
 
   HTMLLabelElement* element = HTMLLabelElement::Create(GetDocument());
   element->SetShadowPseudoId(
@@ -61,7 +67,15 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
   element->AppendChild(button);
-  element->AppendChild(overflow_menu_text_);
+
+  if (MediaControlsImpl::IsModern()) {
+    overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
+    overflow_menu_container_->AppendChild(overflow_menu_text_);
+    UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
+    element->AppendChild(overflow_menu_container_);
+  } else {
+    element->AppendChild(overflow_menu_text_);
+  }
 
   // Initialize the internal states of the main element and the overflow one.
   button->is_overflow_element_ = true;
@@ -74,6 +88,39 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   SetOverflowElementIsWanted(false);
 
   return element;
+}
+
+void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
+  DCHECK(overflow_menu_container_);
+
+  if (!text) {
+    // If setting the text to null, we want to remove the element.
+    RemoveOverflowSubtitleElement();
+    return;
+  }
+
+  if (overflow_menu_subtitle_) {
+    // If element exists, just update the text.
+    overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
+  } else {
+    // Otherwise, create a new element.
+    overflow_menu_subtitle_ = HTMLSpanElement::Create(GetDocument());
+    overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
+    overflow_menu_subtitle_->setAttribute("class", kOverflowSubtitleCSSClass);
+
+    overflow_menu_container_->AppendChild(overflow_menu_subtitle_);
+    overflow_menu_container_->setAttribute(
+        "class", kOverflowContainerWithSubtitleCSSClass);
+  }
+}
+
+void MediaControlInputElement::RemoveOverflowSubtitleElement() {
+  if (!overflow_menu_subtitle_)
+    return;
+
+  overflow_menu_container_->RemoveChild(overflow_menu_subtitle_);
+  overflow_menu_container_->removeAttribute("class");
+  overflow_menu_subtitle_ = nullptr;
 }
 
 void MediaControlInputElement::SetOverflowElementIsWanted(bool wanted) {
@@ -105,7 +152,11 @@ void MediaControlInputElement::UpdateOverflowString() {
     return;
 
   DCHECK(overflow_element_);
-  overflow_menu_text_->ReplaceWholeText(GetOverflowMenuString());
+  overflow_menu_text_->setInnerText(GetOverflowMenuString(),
+                                    ASSERT_NO_EXCEPTION);
+
+  if (MediaControlsImpl::IsModern())
+    UpdateOverflowSubtitleElement(GetOverflowMenuSubtitleString());
 }
 
 MediaControlInputElement::MediaControlInputElement(
@@ -184,6 +235,10 @@ String MediaControlInputElement::GetOverflowMenuString() const {
   return MediaElement().GetLocale().QueryString(GetOverflowStringName());
 }
 
+String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
+  return String();
+}
+
 void MediaControlInputElement::RecordCTREvent(CTREvent event) {
   String histogram_name("Media.Controls.CTR.");
   histogram_name.append(GetNameForHistograms());
@@ -219,7 +274,9 @@ void MediaControlInputElement::Trace(blink::Visitor* visitor) {
   HTMLInputElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);
   visitor->Trace(overflow_element_);
+  visitor->Trace(overflow_menu_container_);
   visitor->Trace(overflow_menu_text_);
+  visitor->Trace(overflow_menu_subtitle_);
 }
 
 }  // namespace blink
