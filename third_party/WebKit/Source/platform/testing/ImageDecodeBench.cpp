@@ -17,6 +17,8 @@
 // using the image corpii used to assess Blink image decode performance. Refer
 // to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
+#include <fstream>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
@@ -29,14 +31,9 @@
 
 #if defined(_WIN32)
 #include <mmsystem.h>
-#include <sys/stat.h>
 #include <time.h>
-#define stat(x, y) _stat(x, y)
-typedef struct _stat sttype;
 #else
-#include <sys/stat.h>
 #include <sys/time.h>
-typedef struct stat sttype;
 #endif
 
 namespace blink {
@@ -181,26 +178,30 @@ static double GetCurrentTime() {
 
 #endif
 
-scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-  FILE* fp = fopen(file_name, "rb");
-  if (!fp) {
-    fprintf(stderr, "Can't open file %s\n", file_name);
+scoped_refptr<SharedBuffer> ReadFile(const char* name) {
+  std::ifstream file;
+
+  file.open(name, std::ios::in | std::ios::binary);
+  if (!file) {
+    fprintf(stderr, "Can't open file %s\n", name);
     exit(2);
   }
 
-  sttype s;
-  stat(file_name, &s);
-  size_t file_size = s.st_size;
-  if (s.st_size <= 0)
+  file.seekg(0, std::ios::end);
+  size_t file_size = file.tellg();
+  file.seekg(0, std::ios::beg);
+
+  if (!file_size)
     return SharedBuffer::Create();
 
   Vector<char> buffer(file_size);
-  if (file_size != fread(buffer.data(), 1, file_size, fp)) {
-    fprintf(stderr, "Error reading file %s\n", file_name);
+  file.read(buffer.data(), file_size);
+
+  if (file.bad()) {
+    fprintf(stderr, "Error reading file %s\n", name);
     exit(2);
   }
 
-  fclose(fp);
   return SharedBuffer::AdoptVector(buffer);
 }
 
