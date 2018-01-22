@@ -5,12 +5,16 @@
 #ifndef UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_DELEGATE_H_
 #define UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_DELEGATE_H_
 
+#include "base/win/windows_types.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
 class Insets;
 class Path;
 class Point;
+class Rect;
 class Size;
 }
 
@@ -19,6 +23,8 @@ class Accelerator;
 class InputMethod;
 class KeyEvent;
 class MouseEvent;
+class PointerEvent;
+class ScrollEvent;
 class TouchEvent;
 }
 

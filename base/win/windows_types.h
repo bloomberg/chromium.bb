@@ -78,6 +78,7 @@ CHROME_DECLARE_HANDLE(HGLRC);
 CHROME_DECLARE_HANDLE(HICON);
 CHROME_DECLARE_HANDLE(HINSTANCE);
 CHROME_DECLARE_HANDLE(HKEY);
+CHROME_DECLARE_HANDLE(HKL);
 CHROME_DECLARE_HANDLE(HMENU);
 CHROME_DECLARE_HANDLE(HWND);
 typedef HINSTANCE HMODULE;
@@ -102,6 +103,7 @@ typedef struct _FILETIME FILETIME;
 
 typedef struct tagMENUITEMINFOW MENUITEMINFOW, MENUITEMINFO;
 
+typedef struct tagNMHDR NMHDR;
 
 // Declare Chrome versions of some Windows structures. These are needed for
 // when we need a concrete type but don't want to pull in Windows.h. We can't
