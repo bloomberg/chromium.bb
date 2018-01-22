@@ -368,7 +368,7 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     {
       // Reset scroll back to the origin, will go back to the old
       // value when scroll_reset is out of scope.
-      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset,
+      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
                                                    gfx::Vector2dF());
       compositor_->DidChangeRootLayerScrollOffset(
           gfx::ScrollOffset(scroll_offset));
