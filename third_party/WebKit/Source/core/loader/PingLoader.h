@@ -65,6 +65,7 @@ class CORE_EXPORT PingLoader {
     kXSSAuditorViolationReport
   };
 
+  static void LoadImage(LocalFrame*, const KURL&);
   static void SendLinkAuditPing(LocalFrame*,
                                 const KURL& ping_url,
                                 const KURL& destination_url);
