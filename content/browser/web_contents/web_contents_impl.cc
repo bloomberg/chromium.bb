@@ -52,6 +52,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -645,18 +646,15 @@ WebContentsImpl::~WebContentsImpl() {
   RenderFrameHostManager* root = GetRenderManager();
 
   root->current_frame_host()->SetRenderFrameCreated(false);
-  root->current_frame_host()->SetNavigationHandle(
-      std::unique_ptr<NavigationHandleImpl>());
+  root->current_frame_host()->SetNavigationRequest(
+      std::unique_ptr<NavigationRequest>());
 
-  // PlzNavigate: clear up state specific to browser-side navigation.
-  if (IsBrowserSideNavigationEnabled()) {
-    // Do not update state as the WebContents is being destroyed.
-    frame_tree_.root()->ResetNavigationRequest(true, true);
-    if (root->speculative_frame_host()) {
-      root->speculative_frame_host()->SetRenderFrameCreated(false);
-      root->speculative_frame_host()->SetNavigationHandle(
-          std::unique_ptr<NavigationHandleImpl>());
-    }
+  // Do not update state as the WebContents is being destroyed.
+  frame_tree_.root()->ResetNavigationRequest(true, true);
+  if (root->speculative_frame_host()) {
+    root->speculative_frame_host()->SetRenderFrameCreated(false);
+    root->speculative_frame_host()->SetNavigationRequest(
+        std::unique_ptr<NavigationRequest>());
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

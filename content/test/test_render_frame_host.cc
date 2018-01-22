@@ -188,12 +188,12 @@ void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
     return;
   }
 
-  navigation_handle()->CallWillRedirectRequestForTesting(new_url, false, GURL(),
-                                                         false);
+  GetNavigationHandle()->CallWillRedirectRequestForTesting(new_url, false,
+                                                           GURL(), false);
 }
 
 void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
-  if (frame_tree_node()->navigation_request())
+  if (frame_tree_node_->navigation_request())
     PrepareForCommit();
 
   bool is_auto_subframe =
@@ -267,20 +267,20 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 }
 
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
-  CHECK(navigation_handle());
+  CHECK(GetNavigationHandle());
   GURL error_url = GURL(kUnreachableWebDataURL);
   OnDidStartProvisionalLoad(error_url, std::vector<GURL>(),
                             base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
-  params.url = navigation_handle()->GetURL();
+  params.url = GetNavigationHandle()->GetURL();
   params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
                                   : ui::PAGE_TRANSITION_LINK;
   params.was_within_same_document = false;
   params.url_is_unreachable = true;
-  params.page_state = PageState::CreateForTesting(navigation_handle()->GetURL(),
-                                                  false, nullptr, nullptr);
+  params.page_state = PageState::CreateForTesting(
+      GetNavigationHandle()->GetURL(), false, nullptr, nullptr);
   SendNavigateWithParams(&params);
 }
 
@@ -472,12 +472,12 @@ void TestRenderFrameHost::SendNavigateWithParams(
 void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     service_manager::mojom::InterfaceProviderRequest request) {
-  if (navigation_handle()) {
+  if (GetNavigationHandle()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 contents_mime_type_);
-    navigation_handle()->set_response_headers_for_testing(response_headers);
+    GetNavigationHandle()->set_response_headers_for_testing(response_headers);
   }
   DidCommitProvisionalLoad(
       std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params),

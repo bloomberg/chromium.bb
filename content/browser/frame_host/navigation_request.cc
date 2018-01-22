@@ -578,9 +578,9 @@ void NavigationRequest::CreateNavigationHandle() {
   }
 }
 
-void NavigationRequest::TransferNavigationHandleOwnership(
-    RenderFrameHostImpl* render_frame_host) {
-  render_frame_host->SetNavigationHandle(std::move(navigation_handle_));
+std::unique_ptr<NavigationHandleImpl>
+NavigationRequest::TakeNavigationHandle() {
+  return std::move(navigation_handle_);
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -1240,9 +1240,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 void NavigationRequest::CommitErrorPage(
     RenderFrameHostImpl* render_frame_host,
     const base::Optional<std::string>& error_page_content) {
-  TransferNavigationHandleOwnership(render_frame_host);
-  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
-      render_frame_host);
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  navigation_handle_->ReadyToCommitNavigation(render_frame_host);
   render_frame_host->FailedNavigation(common_params_, request_params_,
                                       has_stale_copy_in_cache_, net_error_,
                                       error_page_content);
@@ -1261,14 +1260,11 @@ void NavigationRequest::CommitNavigation() {
          render_frame_host ==
              frame_tree_node_->render_manager()->speculative_frame_host());
 
-  TransferNavigationHandleOwnership(render_frame_host);
-
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   render_frame_host->CommitNavigation(
       response_.get(), std::move(url_loader_client_endpoints_),
       std::move(body_), common_params_, request_params_, is_view_source_,
       std::move(subresource_loader_params_), devtools_navigation_token_);
-
-  frame_tree_node_->ResetNavigationRequest(true, true);
 }
 
 NavigationRequest::ContentSecurityPolicyCheckResult

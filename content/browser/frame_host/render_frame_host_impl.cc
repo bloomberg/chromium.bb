@@ -578,9 +578,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
-  // Destroying navigation handle may call into delegates/observers,
+  // Destroying |navigation_request_| may call into delegates/observers,
   // so we do it early while |this| object is still in a sane state.
-  navigation_handle_.reset();
+  navigation_request_.reset();
 
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
@@ -1061,8 +1061,8 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
   // The renderer process is gone, so this frame can no longer be loading.
-  if (navigation_handle_)
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+  if (GetNavigationHandle())
+    GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);
   ResetLoadingState();
 
   // The renderer process is gone, so the |stream_handle_| will no longer be
@@ -1496,8 +1496,8 @@ void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
   // happening in practice. See https://crbug.com/605289.
 
   // Update the error code in the NavigationHandle of the navigation.
-  if (navigation_handle_) {
-    navigation_handle_->set_net_error_code(
+  if (GetNavigationHandle()) {
+    GetNavigationHandle()->set_net_error_code(
         static_cast<net::Error>(params.error_code));
   }
 
@@ -1678,7 +1678,7 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     return;
   }
 
-  if (!navigation_handle_) {
+  if (!navigation_request_) {
     // The browser has not been notified about the start of the load in this
     // renderer yet (e.g., for same-document navigations that start in the
     // renderer). Do it now.
@@ -1759,9 +1759,14 @@ GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
 }
 
-void RenderFrameHostImpl::SetNavigationHandle(
-    std::unique_ptr<NavigationHandleImpl> navigation_handle) {
-  navigation_handle_ = std::move(navigation_handle);
+NavigationHandleImpl* RenderFrameHostImpl::GetNavigationHandle() {
+  return navigation_request() ? navigation_request()->navigation_handle()
+                              : nullptr;
+}
+
+void RenderFrameHostImpl::SetNavigationRequest(
+    std::unique_ptr<NavigationRequest> navigation_request) {
+  navigation_request_ = std::move(navigation_request);
 }
 
 void RenderFrameHostImpl::SwapOut(
@@ -2734,7 +2739,7 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   }
 
   is_loading_ = false;
-  navigation_handle_.reset();
+  navigation_request_.reset();
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
@@ -3679,9 +3684,8 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  if (navigation_handle_)
-    DCHECK_NE(net::OK, navigation_handle_->GetNetErrorCode());
-  frame_tree_node_->ResetNavigationRequest(true, true);
+  DCHECK(GetNavigationHandle() &&
+         GetNavigationHandle()->GetNetErrorCode() != net::OK);
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {
@@ -4368,14 +4372,19 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   bool is_browser_initiated = (params.nav_entry_id != 0);
 
+  NavigationHandleImpl* navigation_handle = GetNavigationHandle();
+
   if (params.was_within_same_document) {
     // A NavigationHandle is created for browser-initiated same-document
     // navigation. Try to take it if it's still available and matches the
     // current navigation.
-    if (is_browser_initiated && navigation_handle_ &&
-        navigation_handle_->IsSameDocument() &&
-        navigation_handle_->GetURL() == params.url) {
-      return std::move(navigation_handle_);
+    if (is_browser_initiated && navigation_handle &&
+        navigation_handle->IsSameDocument() &&
+        navigation_handle->GetURL() == params.url) {
+      std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
+          navigation_request()->TakeNavigationHandle();
+      navigation_request_.reset();
+      return result_navigation_handle;
     }
 
     // No existing NavigationHandle has been found. Create a new one, but don't
@@ -4406,8 +4415,11 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   }
 
   // Determine if the current NavigationHandle can be used.
-  if (navigation_handle_ && navigation_handle_->GetURL() == params.url) {
-    return std::move(navigation_handle_);
+  if (navigation_handle && navigation_handle->GetURL() == params.url) {
+    std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
+        navigation_request()->TakeNavigationHandle();
+    navigation_request_.reset();
+    return result_navigation_handle;
   }
 
   // If the URL does not match what the NavigationHandle expects, treat the
@@ -4426,26 +4438,22 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   // and that it matches this handle.  TODO(csharrison): The pending entry's
   // base url should equal |params.base_url|. This is not the case for loads
   // with invalid base urls.
-  if (navigation_handle_) {
+  if (navigation_handle) {
     NavigationEntryImpl* pending_entry =
         NavigationEntryImpl::FromNavigationEntry(
             frame_tree_node()->navigator()->GetController()->GetPendingEntry());
     bool pending_entry_matches_handle =
-        pending_entry &&
-        pending_entry->GetUniqueID() ==
-            navigation_handle_->pending_nav_entry_id();
+        pending_entry && pending_entry->GetUniqueID() ==
+                             navigation_handle->pending_nav_entry_id();
     // TODO(csharrison): The pending entry's base url should equal
     // |validated_params.base_url|. This is not the case for loads with invalid
     // base urls.
-    if (navigation_handle_->GetURL() == params.base_url &&
+    if (navigation_handle->GetURL() == params.base_url &&
         pending_entry_matches_handle &&
         !pending_entry->GetBaseURLForDataURL().is_empty()) {
-      entry_id_for_data_nav = navigation_handle_->pending_nav_entry_id();
+      entry_id_for_data_nav = navigation_handle->pending_nav_entry_id();
       is_renderer_initiated = pending_entry->is_renderer_initiated();
     }
-
-    // Reset any existing NavigationHandle.
-    navigation_handle_.reset();
   }
 
   // There is no pending NavigationEntry in these cases, so pass 0 as the

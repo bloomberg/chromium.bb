@@ -372,9 +372,9 @@ void RenderFrameHostManager::SwapOutOldFrame(
       CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
                                  old_render_frame_host->render_view_host());
 
-  // Reset any NavigationHandle in the RenderFrameHost. This will prevent any
-  // ongoing navigation from attempting to transfer.
-  old_render_frame_host->SetNavigationHandle(nullptr);
+  // Reset any NavigationRequest in the RenderFrameHost. A swapped out
+  // RenderFrameHost should not be trying to commit a navigation.
+  old_render_frame_host->SetNavigationRequest(nullptr);
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);
@@ -505,10 +505,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // navigation was started from BeginNavigation. If the navigation was
       // started through the NavigationController, the NavigationController has
       // already updated its state properly, and doesn't need to be notified.
-      if (speculative_render_frame_host_->navigation_handle() &&
+      if (speculative_render_frame_host_->GetNavigationHandle() &&
           request.from_begin_navigation()) {
         frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-            speculative_render_frame_host_->navigation_handle()
+            speculative_render_frame_host_->GetNavigationHandle()
                 ->pending_nav_entry_id());
       }
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
@@ -544,10 +544,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // has already updated its state properly, and doesn't need to be
       // notified.
       if (speculative_render_frame_host_ &&
-          speculative_render_frame_host_->navigation_handle() &&
+          speculative_render_frame_host_->GetNavigationHandle() &&
           request.from_begin_navigation()) {
         frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-            speculative_render_frame_host_->navigation_handle()
+            speculative_render_frame_host_->GetNavigationHandle()
                 ->pending_nav_entry_id());
       }
 
