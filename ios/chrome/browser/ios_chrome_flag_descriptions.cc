@@ -11,11 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kBookmarkNewEditPageName[] = "Bookmark New Edit Page";
-const char kBookmarkNewEditPageDescription[] =
-    "When enabled, the new bookmark edit page and folder picker will be used "
-    "in the new bookmark UI.";
-
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

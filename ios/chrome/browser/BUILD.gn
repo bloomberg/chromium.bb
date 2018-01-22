@@ -112,7 +112,6 @@ source_set("browser") {
     "//components/webdata_services",
     "//google_apis",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/drag_and_drop",

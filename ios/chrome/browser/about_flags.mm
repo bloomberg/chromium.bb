@@ -36,7 +36,6 @@
 #include "components/security_state/core/features.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
@@ -218,9 +217,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"clipping-textfield", flag_descriptions::kClippingTextfieldName,
      flag_descriptions::kClippingTextfieldDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kClippingTextfield)},
-    {"bookmark-new-edit-page", flag_descriptions::kBookmarkNewEditPageName,
-     flag_descriptions::kBookmarkNewEditPageDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kBookmarkNewEditPage)},
     {"PasswordExport", flag_descriptions::kPasswordExportName,
      flag_descriptions::kPasswordExportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
