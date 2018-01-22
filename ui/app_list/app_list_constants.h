@@ -55,6 +55,8 @@ APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
 APP_LIST_EXPORT extern const SkColor kFolderShadowColor;
 APP_LIST_EXPORT extern const float kFolderBubbleOpacity;
 
+APP_LIST_EXPORT extern const int kFolderBackgroundBubbleRadius;
+
 APP_LIST_EXPORT extern const SkColor kCardBackgroundColor;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
@@ -105,14 +107,11 @@ APP_LIST_EXPORT extern const int kSearchBoxPreferredHeight;
 APP_LIST_EXPORT extern const int kPeekingAppListHeight;
 APP_LIST_EXPORT extern const int kShelfSize;
 
-APP_LIST_EXPORT extern const size_t kMaxFolderPages;
-APP_LIST_EXPORT extern const size_t kMaxFolderItemsPerPage;
+APP_LIST_EXPORT extern const size_t kMaxFolderItems;
+APP_LIST_EXPORT extern const size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kMaxFolderNameChars;
 
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
-
-APP_LIST_EXPORT extern const float kAllAppsOpacityStartPx;
-APP_LIST_EXPORT extern const float kAllAppsOpacityEndPx;
 
 // The different ways that the app list can transition from PEEKING to
 // FULLSCREEN_ALL_APPS. These values are written to logs.  New enum
