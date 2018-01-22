@@ -429,6 +429,18 @@ SelectFileDialog* CreateSelectFileDialog(
   return [url isFileURL];
 }
 
+- (BOOL)panel:(id)sender validateURL:(NSURL*)url error:(NSError**)outError {
+  // Refuse to accept users closing the dialog with a key repeat, since the key
+  // may have been first pressed while the user was looking at insecure content.
+  // See https://crbug.com/637098.
+  if ([[NSApp currentEvent] type] == NSKeyDown &&
+      [[NSApp currentEvent] isARepeat]) {
+    return NO;
+  }
+
+  return YES;
+}
+
 @end
 
 @implementation ExtensionDropdownHandler
