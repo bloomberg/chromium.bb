@@ -34,8 +34,6 @@
 
 namespace blink {
 
-static const char kCrlfLineEnding[] = "\r\n";
-
 static size_t LengthOfLineEndingAtIndex(const char* input,
                                         size_t input_length,
                                         size_t index) {
@@ -84,7 +82,7 @@ void QuotedPrintableEncode(const char* input,
       size_t length_of_line_ending =
           LengthOfLineEndingAtIndex(input, input_length, i);
       if (length_of_line_ending) {
-        out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+        out.Append("\r\n", 2);
         current_line_length = 0;
         i += (length_of_line_ending -
               1);  // -1 because we'll ++ in the for() above.
