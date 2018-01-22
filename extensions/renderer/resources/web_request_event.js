@@ -84,7 +84,7 @@ WebRequestEventImpl.prototype.addListener =
 
   var subEvent = createSubEvent(subEventName, this.argSchemas);
   var subEventCallback = cb;
-  if (opt_extraInfo && opt_extraInfo.indexOf('blocking') >= 0) {
+  if (opt_extraInfo && $Array.indexOf(opt_extraInfo, 'blocking') >= 0) {
     var eventName = this.eventName;
     subEventCallback = function() {
       var requestId = arguments[0].requestId;
@@ -98,7 +98,8 @@ WebRequestEventImpl.prototype.addListener =
         throw e;
       }
     };
-  } else if (opt_extraInfo && opt_extraInfo.indexOf('asyncBlocking') >= 0) {
+  } else if (
+      opt_extraInfo && $Array.indexOf(opt_extraInfo, 'asyncBlocking') >= 0) {
     var eventName = this.eventName;
     subEventCallback = function() {
       var details = arguments[0];

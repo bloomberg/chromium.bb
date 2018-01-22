@@ -141,9 +141,11 @@ Dialog.prototype.getInterfaceObject = function() {
 Dialog.prototype.showWarningMessage = function() {
   var VOWELS = ['a', 'e', 'i', 'o', 'u'];
   var dialogType = this.event.messageType;
-  var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
-  this.WARNING_MSG_REQUEST_BLOCKED = this.WARNING_MSG_REQUEST_BLOCKED.
-      replace('%1', article).replace('%2', dialogType);
+  var article =
+      ($Array.indexOf(VOWELS, dialogType.charAt(0)) >= 0) ? 'An' : 'A';
+  this.WARNING_MSG_REQUEST_BLOCKED = $String.replace(
+      $String.replace(this.WARNING_MSG_REQUEST_BLOCKED, '%1', article), '%2',
+      dialogType);
   window.console.warn(this.WARNING_MSG_REQUEST_BLOCKED);
 };
 
@@ -255,13 +257,13 @@ PermissionRequest.prototype.getInterfaceObject = function() {
 };
 
 PermissionRequest.prototype.showWarningMessage = function() {
-  window.console.warn(
-      this.WARNING_MSG_REQUEST_BLOCKED.replace('%1', this.event.permission));
+  window.console.warn($String.replace(
+      this.WARNING_MSG_REQUEST_BLOCKED, '%1', this.event.permission));
 };
 
 // Checks that the requested permission is valid. Returns true if valid.
 PermissionRequest.prototype.validPermissionCheck = function() {
-  if (PERMISSION_TYPES.indexOf(this.event.permission) < 0) {
+  if ($Array.indexOf(PERMISSION_TYPES, this.event.permission) < 0) {
     // The permission type is not allowed. Trigger the default response.
     this.defaultAction();
     return false;

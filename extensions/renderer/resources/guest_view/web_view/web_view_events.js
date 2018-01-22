@@ -244,27 +244,16 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
   for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {
     var eventSchema = DeclarativeWebRequestSchema.events[i];
     var webRequestEvent = createDeclarativeWebRequestEvent(eventSchema);
-    Object.defineProperty(
-        request,
-        eventSchema.name,
-        {
-          get: webRequestEvent,
-          enumerable: true
-        }
-        );
+    $Object.defineProperty(
+        request, eventSchema.name, {get: webRequestEvent, enumerable: true});
   }
 
   // Populate the WebRequest events from the API definition.
   for (var i = 0; i < WebRequestSchema.events.length; ++i) {
     var webRequestEvent = createWebRequestEvent(WebRequestSchema.events[i]);
-    Object.defineProperty(
-        request,
-        WebRequestSchema.events[i].name,
-        {
-          get: webRequestEvent,
-          enumerable: true
-        }
-        );
+    $Object.defineProperty(
+        request, WebRequestSchema.events[i].name,
+        {get: webRequestEvent, enumerable: true});
   }
 
   this.view.setRequestPropertyOnWebViewElement(request);
@@ -291,8 +280,8 @@ WebViewEvents.prototype.handleLoadAbortEvent = function(event, eventName) {
   var showWarningMessage = function(code, reason) {
     var WARNING_MSG_LOAD_ABORTED = '<webview>: ' +
         'The load has aborted with error %1: %2.';
-    window.console.warn(
-        WARNING_MSG_LOAD_ABORTED.replace('%1', code).replace('%2', reason));
+    window.console.warn($String.replace(
+        $String.replace(WARNING_MSG_LOAD_ABORTED, '%1', code), '%2', reason));
   };
   var webViewEvent = this.makeDomEvent(event, eventName);
   if (this.view.dispatchEvent(webViewEvent)) {

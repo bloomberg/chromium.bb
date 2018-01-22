@@ -42,7 +42,7 @@ binding.registerCustomHook(function(api) {
   // Setup all data types for the declarative webRequest API from the schema.
   for (var i = 0; i < declarativeWebRequestSchema.types.length; ++i) {
     var typeSchema = declarativeWebRequestSchema.types[i];
-    var typeId = typeSchema.id.replace('declarativeWebRequest.', '');
+    var typeId = $String.replace(typeSchema.id, 'declarativeWebRequest.', '');
     var action = function(typeId) {
       return function(parameters) {
         setupInstance(this, parameters, typeId);

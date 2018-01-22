@@ -79,23 +79,19 @@ WebViewImpl.prototype.onElementDetached = function() {
 
 // Sets the <webview>.request property.
 WebViewImpl.prototype.setRequestPropertyOnWebViewElement = function(request) {
-  Object.defineProperty(
-      this.element,
-      'request',
-      {
-        value: request,
-        enumerable: true
-      }
-  );
+  $Object.defineProperty(
+      this.element, 'request', {value: request, enumerable: true});
 };
 
 WebViewImpl.prototype.setupElementProperties = function() {
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
-  Object.defineProperty(this.element, 'contentWindow', {
-    get: $Function.bind(function() {
-      return this.guest.getContentWindow();
-    }, this),
+  $Object.defineProperty(this.element, 'contentWindow', {
+    get: $Function.bind(
+        function() {
+          return this.guest.getContentWindow();
+        },
+        this),
     // No setter.
     enumerable: true
   });

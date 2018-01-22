@@ -23,14 +23,15 @@ var VIEW_TYPES = [
 
 // Registers a GuestView custom element.
 function registerGuestViewElement(viewType) {
-  var proto = Object.create(HTMLElement.prototype);
+  var proto = $Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
-    window.console.error(ERROR_MESSAGE.replace(/%1/g, viewType.toLowerCase()));
+    window.console.error(
+        $String.replace(ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
   };
 
-  window[viewType] = DocumentNatives.RegisterElement(viewType.toLowerCase(),
-                                                     {prototype: proto});
+  window[viewType] = DocumentNatives.RegisterElement(
+      $String.toLowerCase(viewType), {prototype: proto});
 
   // Delete the callbacks so developers cannot call them and produce unexpected
   // behavior.
