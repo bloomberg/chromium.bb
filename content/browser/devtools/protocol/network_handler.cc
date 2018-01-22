@@ -1287,6 +1287,10 @@ std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
        it.GetNext();) {
     headers_dict->setString(it.name(), it.value());
   }
+  if (!request->referrer().empty()) {
+    headers_dict->setString(net::HttpRequestHeaders::kReferer,
+                            request->referrer());
+  }
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()
           .SetUrl(ClearUrlRef(request->url()).spec())

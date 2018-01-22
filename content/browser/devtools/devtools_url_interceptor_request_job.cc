@@ -112,6 +112,8 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       request_details.url, request_details.priority, this, traffic_annotation);
   request_->set_method(request_details.method);
   request_->SetExtraRequestHeaders(request_details.extra_request_headers);
+  request_->SetReferrer(request_details.referrer);
+  request_->set_referrer_policy(request_details.referrer_policy);
 
   // Mimic the ResourceRequestInfoImpl of the original request.
   const ResourceRequestInfoImpl* resource_request_info =
@@ -534,6 +536,8 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
                        original_request->method(),
                        GetUploadData(original_request),
                        original_request->extra_request_headers(),
+                       original_request->referrer(),
+                       original_request->referrer_policy(),
                        original_request->priority(),
                        original_request->context()),
       waiting_for_user_response_(WaitingForUserResponse::NOT_WAITING),
@@ -1092,10 +1096,17 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
       std::unique_ptr<protocol::DictionaryValue> headers =
           modifications->modified_headers.fromJust()->toValue();
       for (size_t i = 0; i < headers->size(); i++) {
+        protocol::DictionaryValue::Entry entry = headers->at(i);
         std::string value;
-        if (headers->at(i).second->asString(&value)) {
-          request_details_.extra_request_headers.SetHeader(headers->at(i).first,
-                                                           value);
+        if (!entry.second->asString(&value))
+          continue;
+        if (base::EqualsCaseInsensitiveASCII(
+                entry.first, net::HttpRequestHeaders::kReferer)) {
+          request_details_.referrer = value;
+          request_details_.referrer_policy =
+              net::URLRequest::NEVER_CLEAR_REFERRER;
+        } else {
+          request_details_.extra_request_headers.SetHeader(entry.first, value);
         }
       }
     }
@@ -1149,12 +1160,16 @@ DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
     const std::string& method,
     std::unique_ptr<net::UploadDataStream> post_data,
     const net::HttpRequestHeaders& extra_request_headers,
+    const std::string& referrer,
+    net::URLRequest::ReferrerPolicy referrer_policy,
     const net::RequestPriority& priority,
     const net::URLRequestContext* url_request_context)
     : url(url),
       method(method),
       post_data(std::move(post_data)),
       extra_request_headers(extra_request_headers),
+      referrer(referrer),
+      referrer_policy(referrer_policy),
       priority(priority),
       url_request_context(url_request_context) {}
 
