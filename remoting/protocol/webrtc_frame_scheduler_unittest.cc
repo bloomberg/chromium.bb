@@ -110,8 +110,6 @@ TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter200ms) {
   frame.mutable_updated_region()->Clear();
   bool result = scheduler_->OnFrameCaptured(&frame, &out_params);
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(300), out_params.duration);
-
   // Empty frames should be sent at the throttled rate.
   EXPECT_TRUE(result);
 };
