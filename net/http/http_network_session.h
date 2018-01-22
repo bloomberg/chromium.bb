@@ -59,7 +59,7 @@ class NetLog;
 class NetworkQualityProvider;
 class NetworkThrottleManager;
 class ProxyDelegate;
-class ProxyService;
+class ProxyResolutionService;
 class QuicClock;
 class QuicCryptoClientStreamFactory;
 class SocketPerformanceWatcherFactory;
@@ -227,7 +227,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
-    ProxyService* proxy_service;
+    ProxyResolutionService* proxy_resolution_service;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
     HttpServerProperties* http_server_properties;
@@ -277,7 +277,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
       const HostPortPair& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
-  ProxyService* proxy_service() { return proxy_service_; }
+  ProxyResolutionService* proxy_resolution_service() {
+      return proxy_resolution_service_;
+  }
   SSLConfigService* ssl_config_service() { return ssl_config_service_.get(); }
   SpdySessionPool* spdy_session_pool() { return &spdy_session_pool_; }
   QuicStreamFactory* quic_stream_factory() { return &quic_stream_factory_; }
@@ -357,7 +359,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 
   // Not const since it's modified by HttpNetworkSessionPeer for testing.
-  ProxyService* proxy_service_;
+  ProxyResolutionService* proxy_resolution_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;

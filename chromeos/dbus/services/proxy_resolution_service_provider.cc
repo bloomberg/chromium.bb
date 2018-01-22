@@ -124,9 +124,9 @@ void ProxyResolutionServiceProvider::ResolveProxy(
                  weak_ptr_factory_.GetWeakPtr());
 
   // This would ideally call PostTaskAndReply() instead of PostTask(), but
-  // ResolveProxyOnNetworkThread()'s call to net::ProxyService::ResolveProxy()
-  // can result in an asynchronous lookup, in which case the result won't be
-  // available immediately.
+  // ResolveProxyOnNetworkThread()'s call to
+  // net::ProxyResolutionService::ResolveProxy() can result in an asynchronous
+  // lookup, in which case the result won't be available immediately.
   context_getter->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread,
@@ -142,9 +142,9 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
   DCHECK(request->context_getter->GetNetworkTaskRunner()
              ->BelongsToCurrentThread());
 
-  net::ProxyService* proxy_service =
-      request->context_getter->GetURLRequestContext()->proxy_service();
-  if (!proxy_service) {
+  net::ProxyResolutionService* proxy_resolution_service =
+      request->context_getter->GetURLRequestContext()->proxy_resolution_service();
+  if (!proxy_resolution_service) {
     request->error = "No proxy service in chrome";
     OnResolutionComplete(std::move(request), notify_thread, notify_callback,
                          net::ERR_UNEXPECTED);
@@ -158,7 +158,7 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
 
   VLOG(1) << "Starting network proxy resolution for "
           << request_ptr->source_url;
-  const int result = proxy_service->ResolveProxy(
+  const int result = proxy_resolution_service->ResolveProxy(
       GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
       callback, nullptr, nullptr, net::NetLogWithSource());
   if (result != net::ERR_IO_PENDING) {

@@ -35,8 +35,8 @@ class NET_EXPORT ProxyInfo {
   //
   // Note that this method resets this instance unlike Fallback(), etc. which
   // only modify |proxy_list_|. For example, since |config_id_| is cleared, the
-  // ProxyService may recognize this instance as a new config after UseDirect()
-  // call.
+  // ProxyResolutionService may recognize this instance as a new config after
+  // UseDirect() call.
   void UseDirect();
 
   // Uses a direct connection. did_bypass_proxy() will return true to indicate
@@ -178,7 +178,7 @@ class NET_EXPORT ProxyInfo {
   }
 
  private:
-  friend class ProxyService;
+  friend class ProxyResolutionService;
   FRIEND_TEST_ALL_PREFIXES(ProxyInfoTest, UseVsOverrideProxyList);
 
   const ProxyRetryInfoMap& proxy_retry_info() const {

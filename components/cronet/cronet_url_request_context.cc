@@ -320,7 +320,7 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
       std::make_unique<BasicNetworkDelegate>());
   context_builder.set_net_log(g_net_log.Get().net_log());
 
-  context_builder.set_proxy_service(cronet::CreateProxyService(
+  context_builder.set_proxy_resolution_service(cronet::CreateProxyService(
       std::move(proxy_config_service), g_net_log.Get().net_log()));
 
   config->ConfigureURLRequestContextBuilder(&context_builder,

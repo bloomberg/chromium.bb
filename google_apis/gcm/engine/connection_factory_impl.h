@@ -161,7 +161,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   net::NetLogWithSource net_log_;
   // The current proxy resolution request, if one exists. Owned by the proxy
   // service.
-  net::ProxyService::Request* proxy_resolve_request_;
+  net::ProxyResolutionService::Request* proxy_resolve_request_;
   // The current proxy info.
   net::ProxyInfo proxy_info_;
   // The handle to the socket for the current connection, if one exists.

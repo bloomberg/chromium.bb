@@ -364,7 +364,7 @@ void Job::StartCreateV8Resolver(
 
   // Script initialization uses blocking DNS since there isn't any
   // advantage to using non-blocking mode here. That is because the
-  // parent ProxyService can't submit any ProxyResolve requests until
+  // parent ProxyResolutionService can't submit any ProxyResolve requests until
   // initialization has completed successfully!
   Start(CREATE_V8_RESOLVER, true /*blocking*/, callback);
 }

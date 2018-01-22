@@ -1206,7 +1206,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
   // cached_config_, where GetLatestProxyConfig() running on the main TaskRunner
   // will expect to find it. This is safe to do because we return
   // before this ProxyConfigServiceLinux is passed on to
-  // the ProxyService.
+  // the ProxyResolutionService.
 
   // Note: It would be nice to prioritize environment variables
   // and only fall back to gsettings if env vars were unset. But

@@ -109,7 +109,7 @@ HttpStreamFactoryImpl::JobController::~JobController() {
   bound_job_ = nullptr;
   if (proxy_resolve_request_) {
     DCHECK_EQ(STATE_RESOLVE_PROXY_COMPLETE, next_state_);
-    session_->proxy_service()->CancelRequest(proxy_resolve_request_);
+    session_->proxy_resolution_service()->CancelRequest(proxy_resolve_request_);
   }
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER);
 }
@@ -158,7 +158,8 @@ void HttpStreamFactoryImpl::JobController::Preconnect(int num_streams) {
 LoadState HttpStreamFactoryImpl::JobController::GetLoadState() const {
   DCHECK(request_);
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE)
-    return session_->proxy_service()->GetLoadState(proxy_resolve_request_);
+    return session_->proxy_resolution_service()
+                   ->GetLoadState(proxy_resolve_request_);
   if (bound_job_)
     return bound_job_->GetLoadState();
   if (main_job_)
@@ -749,7 +750,7 @@ int HttpStreamFactoryImpl::JobController::DoResolveProxy() {
   HostPortPair destination(HostPortPair::FromURL(request_info_.url));
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
-  return session_->proxy_service()->ResolveProxy(
+  return session_->proxy_resolution_service()->ResolveProxy(
       origin_url, request_info_.method, &proxy_info_, io_callback_,
       &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
 }
@@ -981,7 +982,7 @@ void HttpStreamFactoryImpl::JobController::OnAlternativeProxyJobFailed(
   // by an event such as a network change.
   if (net_error != ERR_NETWORK_CHANGED &&
       net_error != ERR_INTERNET_DISCONNECTED) {
-    session_->proxy_service()->MarkProxiesAsBadUntil(
+    session_->proxy_resolution_service()->MarkProxiesAsBadUntil(
         alternative_job_->proxy_info(), base::TimeDelta::Max(), {}, net_log_);
   }
 }
@@ -1298,7 +1299,7 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
   HostPortPair destination(HostPortPair::FromURL(request_info_.url));
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
-  int rv = session_->proxy_service()->ReconsiderProxyAfterError(
+  int rv = session_->proxy_resolution_service()->ReconsiderProxyAfterError(
       origin_url, request_info_.method, error, &proxy_info_, io_callback_,
       &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
   if (rv == OK || rv == ERR_IO_PENDING) {

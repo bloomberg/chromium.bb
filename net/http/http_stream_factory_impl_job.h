@@ -172,11 +172,11 @@ class HttpStreamFactoryImpl::Job {
   // HttpNetworkSession::Params::origins_to_force_quic_on.
   //
   // If |alternative_proxy_server| is a valid proxy server, then the Job will
-  // use that instead of using ProxyService for proxy resolution.  Further, if
-  // |alternative_proxy_server| is a valid but bad proxy, then fallback proxies
-  // are not used. It is illegal to call this constructor with a valid
-  // |alternative_proxy_server| and an |alternate_protocol| different from
-  // kProtoUnknown.
+  // use that instead of using ProxyResolutionService for proxy resolution.
+  // Further, if |alternative_proxy_server| is a valid but bad proxy, then
+  // fallback proxies are not used. It is illegal to call this constructor with
+  // a valid |alternative_proxy_server| and an |alternate_protocol| different
+  // from kProtoUnknown.
   Job(Delegate* delegate,
       JobType job_type,
       HttpNetworkSession* session,

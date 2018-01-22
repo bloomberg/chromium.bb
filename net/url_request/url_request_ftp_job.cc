@@ -44,14 +44,15 @@ URLRequestFtpJob::URLRequestFtpJob(
     FtpAuthCache* ftp_auth_cache)
     : URLRequestJob(request, network_delegate),
       priority_(DEFAULT_PRIORITY),
-      proxy_service_(request_->context()->proxy_service()),
+      proxy_resolution_service_(
+          request_->context()->proxy_resolution_service()),
       proxy_resolve_request_(NULL),
       http_response_info_(NULL),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache),
       weak_factory_(this) {
-  DCHECK(proxy_service_);
+  DCHECK(proxy_resolution_service_);
   DCHECK(ftp_transaction_factory);
   DCHECK(ftp_auth_cache);
 }
@@ -112,8 +113,9 @@ void URLRequestFtpJob::Start() {
   if (request_->load_flags() & LOAD_BYPASS_PROXY) {
     proxy_info_.UseDirect();
   } else {
-    DCHECK_EQ(request_->context()->proxy_service(), proxy_service_);
-    rv = proxy_service_->ResolveProxy(
+    DCHECK_EQ(request_->context()->proxy_resolution_service(),
+              proxy_resolution_service_);
+    rv = proxy_resolution_service_->ResolveProxy(
         request_->url(), "GET", &proxy_info_,
         base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
                    base::Unretained(this)),
@@ -127,7 +129,7 @@ void URLRequestFtpJob::Start() {
 
 void URLRequestFtpJob::Kill() {
   if (proxy_resolve_request_) {
-    proxy_service_->CancelRequest(proxy_resolve_request_);
+    proxy_resolution_service_->CancelRequest(proxy_resolve_request_);
     proxy_resolve_request_ = nullptr;
   }
   if (ftp_transaction_)
@@ -278,7 +280,7 @@ void URLRequestFtpJob::RestartTransactionWithAuth() {
 
 LoadState URLRequestFtpJob::GetLoadState() const {
   if (proxy_resolve_request_)
-    return proxy_service_->GetLoadState(proxy_resolve_request_);
+    return proxy_resolution_service_->GetLoadState(proxy_resolve_request_);
   if (proxy_info_.is_direct()) {
     return ftp_transaction_ ?
         ftp_transaction_->GetLoadState() : LOAD_STATE_IDLE;

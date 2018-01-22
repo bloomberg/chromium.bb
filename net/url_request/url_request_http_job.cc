@@ -409,7 +409,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
   if (network_delegate()) {
     network_delegate()->NotifyBeforeSendHeaders(
         request_, proxy_info,
-        request_->context()->proxy_service()->proxy_retry_info(),
+        request_->context()->proxy_resolution_service()->proxy_retry_info(),
         request_headers);
   }
 }

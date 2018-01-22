@@ -59,7 +59,7 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
 
     getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(
         temp_dir_.GetPath(), temp_dir_.GetPath().AppendASCII("ChannelID"),
-        net::ProxyService::CreateSystemProxyConfigService(
+        net::ProxyResolutionService::CreateSystemProxyConfigService(
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::IO)),
         pref_service_.get(), &net_log_);

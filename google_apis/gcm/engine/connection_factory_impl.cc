@@ -79,7 +79,7 @@ ConnectionFactoryImpl::~ConnectionFactoryImpl() {
   CloseSocket();
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   if (proxy_resolve_request_) {
-    gcm_network_session_->proxy_service()->CancelRequest(
+    gcm_network_session_->proxy_resolution_service()->CancelRequest(
         proxy_resolve_request_);
     proxy_resolve_request_ = NULL;
   }
@@ -326,7 +326,7 @@ void ConnectionFactoryImpl::StartConnection() {
   GURL current_endpoint = GetCurrentEndpoint();
   recorder_->RecordConnectionInitiated(current_endpoint.host());
   UpdateFromHttpNetworkSession();
-  int status = gcm_network_session_->proxy_service()->ResolveProxy(
+  int status = gcm_network_session_->proxy_resolution_service()->ResolveProxy(
       current_endpoint, std::string(), &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -548,7 +548,8 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
         proxy_info_.proxy_server().host_port_pair());
   }
 
-  int status = gcm_network_session_->proxy_service()->ReconsiderProxyAfterError(
+  int status = gcm_network_session_->proxy_resolution_service()
+                                   ->ReconsiderProxyAfterError(
       GetCurrentEndpoint(), std::string(), error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -575,8 +576,9 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
 }
 
 void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {
-  if (gcm_network_session_ && gcm_network_session_->proxy_service())
-    gcm_network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
+  if (gcm_network_session_ && gcm_network_session_->proxy_resolution_service())
+    gcm_network_session_->proxy_resolution_service()->ReportSuccess(proxy_info_,
+        NULL);
 }
 
 void ConnectionFactoryImpl::CloseSocket() {

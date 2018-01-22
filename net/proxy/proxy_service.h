@@ -47,9 +47,10 @@ class ProxyScriptFetcher;
 // This class can be used to resolve the proxy server to use when loading a
 // HTTP(S) URL.  It uses the given ProxyResolver to handle the actual proxy
 // resolution.  See ProxyResolverV8 for example.
-class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
-                                public NetworkChangeNotifier::DNSObserver,
-                                public ProxyConfigService::Observer {
+class NET_EXPORT ProxyResolutionService
+    : public NetworkChangeNotifier::IPAddressObserver,
+      public NetworkChangeNotifier::DNSObserver,
+      public ProxyConfigService::Observer {
  public:
   // Enumerates the policy to use when sanitizing URLs for proxy resolution
   // (before passing them off to PAC scripts).
@@ -112,12 +113,12 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   };
 
   // |net_log| is a possibly NULL destination to send log events to. It must
-  // remain alive for the lifetime of this ProxyService.
-  ProxyService(std::unique_ptr<ProxyConfigService> config_service,
-               std::unique_ptr<ProxyResolverFactory> resolver_factory,
-               NetLog* net_log);
+  // remain alive for the lifetime of this ProxyResolutionService.
+  ProxyResolutionService(std::unique_ptr<ProxyConfigService> config_service,
+                         std::unique_ptr<ProxyResolverFactory> resolver_factory,
+                         NetLog* net_log);
 
-  ~ProxyService() override;
+  ~ProxyResolutionService() override;
 
   // Used to track proxy resolution requests that complete asynchronously.
   class Request;
@@ -221,14 +222,15 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   ProxyScriptFetcher* GetProxyScriptFetcher() const;
 
   // Cancels all network requests, and prevents the service from creating new
-  // ones.  Must be called before the URLRequestContext the ProxyService was
-  // created with is torn down, if it's torn down before th ProxyService itself.
+  // ones.  Must be called before the URLRequestContext the
+  // ProxyResolutionService was created with is torn down, if it's torn down
+  // before th ProxyResolutionService itself.
   void OnShutdown();
 
-  // Tells this ProxyService to start using a new ProxyConfigService to
-  // retrieve its ProxyConfig from. The new ProxyConfigService will immediately
-  // be queried for new config info which will be used for all subsequent
-  // ResolveProxy calls.
+  // Tells this ProxyResolutionService to start using a new ProxyConfigService
+  // to retrieve its ProxyConfig from. The new ProxyConfigService will
+  // immediately be queried for new config info which will be used for all
+  // subsequent ResolveProxy calls.
   void ResetConfigService(
       std::unique_ptr<ProxyConfigService> new_proxy_config_service);
 
@@ -260,31 +262,34 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // Same as CreateProxyServiceUsingV8ProxyResolver, except it uses system
   // libraries for evaluating the PAC script if available, otherwise skips
   // proxy autoconfig.
-  static std::unique_ptr<ProxyService> CreateUsingSystemProxyResolver(
+  static std::unique_ptr<ProxyResolutionService> CreateUsingSystemProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
       NetLog* net_log);
 
-  // Creates a ProxyService without support for proxy autoconfig.
-  static std::unique_ptr<ProxyService> CreateWithoutProxyResolver(
+  // Creates a ProxyResolutionService without support for proxy autoconfig.
+  static std::unique_ptr<ProxyResolutionService> CreateWithoutProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
       NetLog* net_log);
 
   // Convenience methods that creates a proxy service using the
   // specified fixed settings.
-  static std::unique_ptr<ProxyService> CreateFixed(const ProxyConfig& pc);
-  static std::unique_ptr<ProxyService> CreateFixed(const std::string& proxy);
+  static std::unique_ptr<ProxyResolutionService> CreateFixed(
+      const ProxyConfig& pc);
+  static std::unique_ptr<ProxyResolutionService> CreateFixed(
+      const std::string& proxy);
 
   // Creates a proxy service that uses a DIRECT connection for all requests.
-  static std::unique_ptr<ProxyService> CreateDirect();
-  // |net_log|'s lifetime must exceed ProxyService.
-  static std::unique_ptr<ProxyService> CreateDirectWithNetLog(NetLog* net_log);
+  static std::unique_ptr<ProxyResolutionService> CreateDirect();
+  // |net_log|'s lifetime must exceed ProxyResolutionService.
+  static std::unique_ptr<ProxyResolutionService> CreateDirectWithNetLog(
+      NetLog* net_log);
 
-  // This method is used by tests to create a ProxyService that returns a
-  // hardcoded proxy fallback list (|pac_string|) for every URL.
+  // This method is used by tests to create a ProxyResolutionService that
+  // returns a hardcoded proxy fallback list (|pac_string|) for every URL.
   //
   // |pac_string| is a list of proxy servers, in the format that a PAC script
   // would return it. For example, "PROXY foobar:99; SOCKS fml:2; DIRECT"
-  static std::unique_ptr<ProxyService> CreateFixedFromPacResult(
+  static std::unique_ptr<ProxyResolutionService> CreateFixedFromPacResult(
       const std::string& pac_string);
 
   // Creates a config service appropriate for this platform that fetches the
@@ -303,7 +308,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
       const PacPollPolicy* policy);
 
   // This method should only be used by unit tests. Creates an instance
-  // of the default internal PacPollPolicy used by ProxyService.
+  // of the default internal PacPollPolicy used by ProxyResolutionService.
   static std::unique_ptr<PacPollPolicy> CreateDefaultPacPollPolicy();
 
   void set_quick_check_enabled(bool value) {
@@ -478,7 +483,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyService);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolutionService);
 };
 
 }  // namespace net

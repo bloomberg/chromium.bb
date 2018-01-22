@@ -16,7 +16,7 @@
 std::unique_ptr<net::ProxyConfigService>
 ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   std::unique_ptr<net::ProxyConfigService> base_service(
-      net::ProxyService::CreateSystemProxyConfigService(
+      net::ProxyResolutionService::CreateSystemProxyConfigService(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::IO)));
   return tracker->CreateTrackingProxyConfigService(std::move(base_service));
 }
@@ -41,16 +41,17 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
 }
 
 // static
-std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
+std::unique_ptr<net::ProxyResolutionService>
+ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     bool quick_check_enabled) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  std::unique_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateUsingSystemProxyResolver(
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+      net::ProxyResolutionService::CreateUsingSystemProxyResolver(
           std::move(proxy_config_service), net_log));
-  proxy_service->set_quick_check_enabled(quick_check_enabled);
-  return proxy_service;
+  proxy_resolution_service->set_quick_check_enabled(quick_check_enabled);
+  return proxy_resolution_service;
 }

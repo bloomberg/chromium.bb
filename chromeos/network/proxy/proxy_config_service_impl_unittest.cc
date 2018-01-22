@@ -78,17 +78,17 @@ TEST_F(ProxyConfigServiceImplTest, IgnoresNestedProxyConfigServiceByDefault) {
   ProxyConfigServiceImpl proxy_tracker(&profile_prefs, &local_state_prefs,
                                        base::ThreadTaskRunnerHandle::Get());
 
-  std::unique_ptr<net::ProxyConfigService> proxy_service =
+  std::unique_ptr<net::ProxyConfigService> proxy_resolution_service =
       proxy_tracker.CreateTrackingProxyConfigService(std::move(nested_service));
 
   net::ProxyConfig config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-            proxy_service->GetLatestProxyConfig(&config));
+            proxy_resolution_service->GetLatestProxyConfig(&config));
   EXPECT_TRUE(config.Equals(net::ProxyConfig::CreateDirect()));
 
   environment_.RunUntilIdle();
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-            proxy_service->GetLatestProxyConfig(&config));
+            proxy_resolution_service->GetLatestProxyConfig(&config));
   EXPECT_TRUE(config.Equals(net::ProxyConfig::CreateDirect()));
 
   proxy_tracker.DetachFromPrefService();
@@ -112,17 +112,17 @@ TEST_F(ProxyConfigServiceImplTest, UsesNestedProxyConfigService) {
   ProxyConfigServiceImpl proxy_tracker(&profile_prefs, &local_state_prefs,
                                        base::ThreadTaskRunnerHandle::Get());
 
-  std::unique_ptr<net::ProxyConfigService> proxy_service =
+  std::unique_ptr<net::ProxyConfigService> proxy_resolution_service =
       proxy_tracker.CreateTrackingProxyConfigService(std::move(nested_service));
 
   net::ProxyConfig config;
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-            proxy_service->GetLatestProxyConfig(&config));
+            proxy_resolution_service->GetLatestProxyConfig(&config));
   EXPECT_TRUE(config.Equals(fixed_config));
 
   environment_.RunUntilIdle();
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-            proxy_service->GetLatestProxyConfig(&config));
+            proxy_resolution_service->GetLatestProxyConfig(&config));
   EXPECT_TRUE(config.Equals(fixed_config));
 
   proxy_tracker.DetachFromPrefService();

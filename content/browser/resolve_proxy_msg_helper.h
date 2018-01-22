@@ -35,7 +35,8 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
  public:
   explicit ResolveProxyMsgHelper(net::URLRequestContextGetter* getter);
   // Constructor used by unittests.
-  explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
+  explicit ResolveProxyMsgHelper(
+      net::ProxyResolutionService* proxy_resolution_service);
 
   // BrowserMessageFilter implementation
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -48,7 +49,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   ~ResolveProxyMsgHelper() override;
 
  private:
-  // Callback for the ProxyService (bound to |callback_|).
+  // Callback for the ProxyResolutionService (bound to |callback_|).
   void OnResolveProxyCompleted(int result);
 
   // Starts the first pending request.
@@ -67,7 +68,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
     IPC::Message* reply_msg;
 
     // Handle for cancelling the current request if it has started (else NULL).
-    net::ProxyService::Request* request;
+    net::ProxyResolutionService::Request* request;
   };
 
   // Info about the current outstanding proxy request.
@@ -78,7 +79,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   PendingRequestList pending_requests_;
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  net::ProxyService* proxy_service_;
+  net::ProxyResolutionService* proxy_resolution_service_;
 };
 
 }  // namespace content

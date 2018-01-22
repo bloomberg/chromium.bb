@@ -357,7 +357,7 @@ void IOSIOThread::Init() {
       base::CommandLine(base::CommandLine::NO_PROGRAM),
       /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_);
 
-  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
+  globals_->system_proxy_resolution_service = ProxyServiceFactory::CreateProxyService(
       net_log_, nullptr, globals_->system_network_delegate.get(),
       std::move(system_proxy_config_service_), true /* quick_check_enabled */);
 
@@ -437,7 +437,8 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
   context->set_ssl_config_service(globals->ssl_config_service.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
-  context->set_proxy_service(globals->system_proxy_service.get());
+  context->set_proxy_resolution_service(
+      globals->system_proxy_resolution_service.get());
   context->set_ct_policy_enforcer(globals->ct_policy_enforcer.get());
 
   net::URLRequestJobFactoryImpl* system_job_factory =

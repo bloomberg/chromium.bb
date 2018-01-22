@@ -274,7 +274,7 @@ bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     const net::ProxyConfig& data_reduction_proxy_config) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request.context());
-  DCHECK(request.context()->proxy_service());
+  DCHECK(request.context()->proxy_resolution_service());
   net::ProxyInfo result;
   data_reduction_proxy_config.proxy_rules().Apply(
       request.url(), &result);
@@ -291,9 +291,9 @@ bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
     base::TimeDelta* min_retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (request.context() != nullptr &&
-      request.context()->proxy_service() != nullptr) {
+      request.context()->proxy_resolution_service() != nullptr) {
     return AreProxiesBypassed(
-        request.context()->proxy_service()->proxy_retry_info(),
+        request.context()->proxy_resolution_service()->proxy_retry_info(),
         data_reduction_proxy_config.proxy_rules(),
         request.url().SchemeIsCryptographic(), min_retry_delay);
   }

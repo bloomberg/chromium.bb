@@ -52,7 +52,7 @@ class ListValue;
 namespace net {
 class HostResolver;
 class SSLConfigService;
-class ProxyService;
+class ProxyResolutionService;
 class TransportSecurityState;
 class URLRequestContextGetter;
 }
@@ -468,8 +468,8 @@ class Predictor {
   // redirects).
   net::SSLConfigService* ssl_config_service_;
 
-  // The ProxyService, used to determine whether preresolve is useful.
-  net::ProxyService* proxy_service_;
+  // The ProxyResolutionService, used to determine whether preresolve is useful.
+  net::ProxyResolutionService* proxy_resolution_service_;
 
   // Most recent suggestion from Omnibox provided via AnticipateOmniboxUrl().
   std::string last_omnibox_host_;

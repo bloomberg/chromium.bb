@@ -265,7 +265,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
                       false),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
-        proxy_service_(ProxyService::CreateDirect()),
+        proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         random_generator_(0),
@@ -559,7 +559,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
     session_context_.ct_policy_enforcer = &ct_policy_enforcer_;
     session_context_.socket_performance_watcher_factory =
         &test_socket_performance_watcher_factory_;
-    session_context_.proxy_service = proxy_service_.get();
+    session_context_.proxy_resolution_service = proxy_resolution_service_.get();
     session_context_.ssl_config_service = ssl_config_service_.get();
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
     session_context_.http_server_properties = &http_server_properties_;
@@ -747,8 +747,9 @@ class QuicNetworkTransactionTest : public PlatformTest,
         ProxyServer::FromPacString("QUIC myproxy.org:443"));
 
     session_context_.proxy_delegate = &test_proxy_delegate;
-    proxy_service_ =
-        ProxyService::CreateFixedFromPacResult("HTTPS myproxy.org:443");
+    proxy_resolution_service_ =
+        ProxyResolutionService::CreateFixedFromPacResult(
+            "HTTPS myproxy.org:443");
 
     CreateSession();
     EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_valid());
@@ -758,7 +759,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
 
     // Since the main job succeeded only the alternative proxy server should be
     // marked as bad.
-    EXPECT_THAT(session_->proxy_service()->proxy_retry_info(),
+    EXPECT_THAT(session_->proxy_resolution_service()->proxy_retry_info(),
                 ElementsAre(Key("quic://myproxy.org:443")));
 
     // Verify that the second request completes successfully, and the
@@ -798,7 +799,7 @@ class QuicNetworkTransactionTest : public PlatformTest,
   CTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
   HttpServerPropertiesImpl http_server_properties_;
@@ -1163,8 +1164,8 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   session_params_.enable_quic = true;
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("QUIC mail.example.org:70");
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "QUIC mail.example.org:70");
 
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
@@ -1205,8 +1206,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   const std::string proxy_host = "www.example.org";
 
   session_params_.enable_quic = true;
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70");
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "QUIC " + proxy_host + ":70");
 
   client_maker_.set_hostname(origin_host);
   MockQuicData mock_quic_data;
@@ -3444,8 +3445,8 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
 
   TestProxyDelegate test_proxy_delegate;
 
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "HTTPS mail.example.org:443");
 
   test_proxy_delegate.set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC mail.example.org:443"));
@@ -3841,8 +3842,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
 // alternative proxy server.
 TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
   base::HistogramTester histogram_tester;
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "HTTPS mail.example.org:443");
 
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
@@ -3884,7 +3885,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
   EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
   // Verify that the proxy server is not marked as broken.
-  EXPECT_TRUE(session_->proxy_service()->proxy_retry_info().empty());
+  EXPECT_TRUE(session_->proxy_resolution_service()->proxy_retry_info().empty());
 
   histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
                                       1 /* ALTERNATIVE_PROXY_USAGE_WON_RACE */,
@@ -4007,7 +4008,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
-  proxy_service_ = ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
+  proxy_resolution_service_ =
+      ProxyResolutionService::CreateFixedFromPacResult("PROXY myproxy:70");
 
   // Since we are using a proxy, the QUIC job will not succeed.
   MockWrite http_writes[] = {
@@ -4733,8 +4735,8 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
   EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
   session_context_.proxy_delegate = &test_proxy_delegate;
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("HTTPS myproxy.org:443");
+  proxy_resolution_service_ =
+      ProxyResolutionService::CreateFixedFromPacResult("HTTPS myproxy.org:443");
   request_.url = GURL("http://mail.example.org/");
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -4750,7 +4752,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
 
   CreateSession();
   SendRequestAndExpectHttpResponseFromProxy("hello world", true, 443);
-  EXPECT_THAT(session_->proxy_service()->proxy_retry_info(),
+  EXPECT_THAT(session_->proxy_resolution_service()->proxy_retry_info(),
               ElementsAre(Key("quic://myproxy.org:443")));
 }
 
@@ -4788,8 +4790,8 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
 TEST_P(QuicNetworkTransactionTest,
        DISABLED_QuicUploadToAlternativeProxyServer) {
   base::HistogramTester histogram_tester;
-  proxy_service_ =
-      ProxyService::CreateFixedFromPacResult("HTTPS mail.example.org:443");
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "HTTPS mail.example.org:443");
 
   TestProxyDelegate test_proxy_delegate;
 
@@ -4826,7 +4828,7 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
   // Verify that the proxy server is not marked as broken.
-  EXPECT_TRUE(session_->proxy_service()->proxy_retry_info().empty());
+  EXPECT_TRUE(session_->proxy_resolution_service()->proxy_retry_info().empty());
 
   histogram_tester.ExpectUniqueSample("Net.QuicAlternativeProxy.Usage",
                                       1 /* ALTERNATIVE_PROXY_USAGE_WON_RACE */,
@@ -5225,7 +5227,8 @@ class QuicURLRequestContext : public URLRequestContext {
     storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
         std::make_unique<TransportSecurityState>());
-    storage_.set_proxy_service(ProxyService::CreateDirect());
+    storage_.set_proxy_resolution_service(
+        ProxyResolutionService::CreateDirect());
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault(host_resolver()));
@@ -5461,7 +5464,7 @@ class QuicNetworkTransactionWithDestinationTest
         destination_type_(GetParam().destination_type),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
-        proxy_service_(ProxyService::CreateDirect()),
+        proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         random_generator_(0),
@@ -5499,7 +5502,7 @@ class QuicNetworkTransactionWithDestinationTest
     session_context.socket_performance_watcher_factory =
         &test_socket_performance_watcher_factory_;
     session_context.ssl_config_service = ssl_config_service_.get();
-    session_context.proxy_service = proxy_service_.get();
+    session_context.proxy_resolution_service = proxy_resolution_service_.get();
     session_context.http_auth_handler_factory = auth_handler_factory_.get();
     session_context.http_server_properties = &http_server_properties_;
 
@@ -5689,7 +5692,7 @@ class QuicNetworkTransactionWithDestinationTest
   CTPolicyEnforcer ct_policy_enforcer_;
   TestSocketPerformanceWatcherFactory test_socket_performance_watcher_factory_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
   HttpServerPropertiesImpl http_server_properties_;

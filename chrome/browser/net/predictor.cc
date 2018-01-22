@@ -153,7 +153,7 @@ Predictor::Predictor(bool predictor_enabled)
           TimeDelta::FromMilliseconds(g_max_queueing_delay_ms)),
       transport_security_state_(nullptr),
       ssl_config_service_(nullptr),
-      proxy_service_(nullptr),
+      proxy_resolution_service_(nullptr),
       consecutive_omnibox_preconnect_count_(0),
       referrers_(kMaxReferrers),
       observer_(nullptr),
@@ -651,7 +651,7 @@ void Predictor::FinalizeInitializationOnIOThread(
       url_request_context_getter_->GetURLRequestContext();
   transport_security_state_ = context->transport_security_state();
   ssl_config_service_ = context->ssl_config_service();
-  proxy_service_ = context->proxy_service();
+  proxy_resolution_service_ = context->proxy_resolution_service();
 
   // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. Initialize the IO thread weak factory now.
@@ -978,11 +978,11 @@ void Predictor::LookupFinished(const GURL& url, bool found) {
 }
 
 bool Predictor::WouldLikelyProxyURL(const GURL& url) {
-  if (!proxy_service_)
+  if (!proxy_resolution_service_)
     return false;
 
   net::ProxyInfo info;
-  bool synchronous_success = proxy_service_->TryResolveProxySynchronously(
+  bool synchronous_success = proxy_resolution_service_->TryResolveProxySynchronously(
       url, std::string(), &info, nullptr, net::NetLogWithSource());
 
   return synchronous_success && !info.is_direct();

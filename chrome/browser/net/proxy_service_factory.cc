@@ -34,7 +34,7 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // configuration in case nothing is configured through prefs (Note: prefs
   // include command line and configuration policy).
 
-  base_service = net::ProxyService::CreateSystemProxyConfigService(
+  base_service = net::ProxyResolutionService::CreateSystemProxyConfigService(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
 #endif  // !defined(OS_CHROMEOS)
 

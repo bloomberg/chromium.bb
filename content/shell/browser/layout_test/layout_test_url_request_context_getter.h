@@ -42,7 +42,7 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() override;
   std::unique_ptr<net::CertVerifier> GetCertVerifier() override;
   std::unique_ptr<net::ProxyConfigService> GetProxyConfigService() override;
-  std::unique_ptr<net::ProxyService> GetProxyService() override;
+  std::unique_ptr<net::ProxyResolutionService> GetProxyService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestURLRequestContextGetter);

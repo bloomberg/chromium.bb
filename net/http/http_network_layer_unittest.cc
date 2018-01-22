@@ -37,13 +37,14 @@ class HttpNetworkLayerTest : public PlatformTest {
   HttpNetworkLayerTest() : ssl_config_service_(new SSLConfigServiceDefaults) {}
 
   void SetUp() override {
-    ConfigureTestDependencies(ProxyService::CreateDirect());
+    ConfigureTestDependencies(ProxyResolutionService::CreateDirect());
   }
 
-  void ConfigureTestDependencies(std::unique_ptr<ProxyService> proxy_service) {
+  void ConfigureTestDependencies(
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
     cert_verifier_.reset(new MockCertVerifier);
     transport_security_state_.reset(new TransportSecurityState);
-    proxy_service_ = std::move(proxy_service);
+    proxy_resolution_service_ = std::move(proxy_resolution_service);
     HttpNetworkSession::Context session_context;
     session_context.client_socket_factory = &mock_socket_factory_;
     session_context.host_resolver = &host_resolver_;
@@ -51,7 +52,7 @@ class HttpNetworkLayerTest : public PlatformTest {
     session_context.transport_security_state = transport_security_state_.get();
     session_context.cert_transparency_verifier = &ct_verifier_;
     session_context.ct_policy_enforcer = &ct_policy_enforcer_;
-    session_context.proxy_service = proxy_service_.get();
+    session_context.proxy_resolution_service = proxy_resolution_service_.get();
     session_context.ssl_config_service = ssl_config_service_.get();
     session_context.http_server_properties = &http_server_properties_;
     network_session_.reset(
@@ -95,7 +96,8 @@ class HttpNetworkLayerTest : public PlatformTest {
   // These will be, in order, |bad_proxy| and |bad_proxy2|".
   void TestBadProxies(unsigned int proxy_count, const std::string& bad_proxy,
                       const std::string& bad_proxy2) {
-    const ProxyRetryInfoMap& retry_info = proxy_service_->proxy_retry_info();
+    const ProxyRetryInfoMap& retry_info =
+        proxy_resolution_service_->proxy_retry_info();
     ASSERT_EQ(proxy_count, retry_info.size());
     if (proxy_count > 0)
       ASSERT_TRUE(retry_info.find(bad_proxy) != retry_info.end());
@@ -269,7 +271,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   CTPolicyEnforcer ct_policy_enforcer_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpNetworkSession> network_session_;
   std::unique_ptr<HttpNetworkLayer> factory_;

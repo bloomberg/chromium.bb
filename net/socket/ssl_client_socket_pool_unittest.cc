@@ -92,7 +92,7 @@ class SSLClientSocketPoolTest : public testing::Test {
   SSLClientSocketPoolTest()
       : cert_verifier_(new MockCertVerifier),
         transport_security_state_(new TransportSecurityState),
-        proxy_service_(ProxyService::CreateDirect()),
+        proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
@@ -181,7 +181,7 @@ class SSLClientSocketPoolTest : public testing::Test {
     session_context.transport_security_state = transport_security_state_.get();
     session_context.cert_transparency_verifier = &ct_verifier_;
     session_context.ct_policy_enforcer = &ct_policy_enforcer_;
-    session_context.proxy_service = proxy_service_.get();
+    session_context.proxy_resolution_service = proxy_resolution_service_.get();
     session_context.client_socket_factory = &socket_factory_;
     session_context.ssl_config_service = ssl_config_service_.get();
     session_context.http_auth_handler_factory =
@@ -199,7 +199,7 @@ class SSLClientSocketPoolTest : public testing::Test {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   CTPolicyEnforcer ct_policy_enforcer_;
-  const std::unique_ptr<ProxyService> proxy_service_;
+  const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   const std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;

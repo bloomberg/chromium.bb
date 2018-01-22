@@ -167,17 +167,17 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
   std::vector<net::ProxyServer> proxies;
   proxies.push_back(net::ProxyServer::FromURI("http://foo1.com",
                                               net::ProxyServer::SCHEME_HTTP));
-  net::ProxyService* proxy_service =
+  net::ProxyResolutionService* proxy_resolution_service =
       io_data->url_request_context_getter_->GetURLRequestContext()
-          ->proxy_service();
+          ->proxy_resolution_service();
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("http://foo2.com");
   net::NetLogWithSource net_log_with_source;
   const net::ProxyRetryInfoMap& bad_proxy_list =
-      proxy_service->proxy_retry_info();
+      proxy_resolution_service->proxy_retry_info();
 
   // Simulate network error to add proxies to the bad proxy list.
-  proxy_service->MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromDays(1),
+  proxy_resolution_service->MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromDays(1),
                                        proxies, net_log_with_source);
   base::RunLoop().RunUntilIdle();
 

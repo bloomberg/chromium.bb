@@ -64,8 +64,9 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     auth_handler_factory_.reset(new HttpAuthHandlerMock::Factory());
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
 
-    proxy_service_ = ProxyService::CreateDirect();
-    session_context_.proxy_service = proxy_service_.get();
+    proxy_resolution_service_ = ProxyResolutionService::CreateDirect();
+    session_context_.proxy_resolution_service =
+        proxy_resolution_service_.get();
 
     session_context_.client_socket_factory = &mock_socket_factory_;
     session_context_.host_resolver = &mock_resolver_;
@@ -86,7 +87,7 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
 
   scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
 
   MockClientSocketFactory mock_socket_factory_;
   MockHostResolver mock_resolver_;

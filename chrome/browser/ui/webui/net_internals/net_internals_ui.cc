@@ -683,7 +683,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetNetInfo(
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
     const base::ListValue* list) {
   DCHECK(!list);
-  GetMainContext()->proxy_service()->ForceReloadProxyConfig();
+  GetMainContext()->proxy_resolution_service()->ForceReloadProxyConfig();
 
   // Cause the renderer to be notified of the new values.
   SendNetInfo(net::NET_INFO_PROXY_SETTINGS);
@@ -692,7 +692,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
     const base::ListValue* list) {
   DCHECK(!list);
-  GetMainContext()->proxy_service()->ClearBadProxiesCache();
+  GetMainContext()->proxy_resolution_service()->ClearBadProxiesCache();
 
   // Cause the renderer to be notified of the new values.
   SendNetInfo(net::NET_INFO_BAD_PROXIES);

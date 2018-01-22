@@ -32,8 +32,8 @@ class TestURLRequestContextWithProxy : public net::TestURLRequestContext {
  public:
   TestURLRequestContextWithProxy(const std::string& pac_result)
       : TestURLRequestContext(true) {
-    context_storage_.set_proxy_service(
-        net::ProxyService::CreateFixedFromPacResult(pac_result));
+    context_storage_.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateFixedFromPacResult(pac_result));
     // net::MockHostResolver maps all hosts to localhost.
     auto host_resolver = std::make_unique<net::MockHostResolver>();
     context_storage_.set_host_resolver(std::move(host_resolver));
@@ -300,7 +300,7 @@ TEST_F(ProxyResolvingClientSocketTest, ReportsBadProxies) {
   net::URLRequestContext* context =
       context_getter_with_proxy_->GetURLRequestContext();
   const net::ProxyRetryInfoMap& retry_info =
-      context->proxy_service()->proxy_retry_info();
+      context->proxy_resolution_service()->proxy_retry_info();
 
   EXPECT_EQ(1u, retry_info.size());
   net::ProxyRetryInfoMap::const_iterator iter = retry_info.find("bad:99");
@@ -450,10 +450,10 @@ TEST_F(ProxyResolvingClientSocketTest, URLSanitized) {
       std::make_unique<net::MockAsyncProxyResolverFactory>(false);
   net::MockAsyncProxyResolverFactory* proxy_resolver_factory_raw =
       proxy_resolver_factory.get();
-  net::ProxyService service(
+  net::ProxyResolutionService service(
       std::make_unique<net::ProxyConfigServiceFixed>(proxy_config),
       std::move(proxy_resolver_factory), nullptr);
-  context->set_proxy_service(&service);
+  context->set_proxy_resolution_service(&service);
   context->Init();
 
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_with_proxy(
@@ -483,9 +483,9 @@ TEST_F(ProxyResolvingClientSocketTest, URLSanitized) {
 TEST_F(ProxyResolvingClientSocketTest, ProxyConfigChanged) {
   auto context = std::make_unique<net::TestURLRequestContext>(true);
   // Use direct connection.
-  std::unique_ptr<net::ProxyService> proxy_service =
-      net::ProxyService::CreateDirect();
-  context->set_proxy_service(proxy_service.get());
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service =
+      net::ProxyResolutionService::CreateDirect();
+  context->set_proxy_resolution_service(proxy_resolution_service.get());
   context->Init();
 
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_with_proxy(
@@ -517,7 +517,7 @@ TEST_F(ProxyResolvingClientSocketTest, ProxyConfigChanged) {
   // change. It will still be the direct connection but the configuration
   // version will be bumped. That is enough for the job controller to restart
   // the jobs.
-  proxy_service->ForceReloadProxyConfig();
+  proxy_resolution_service->ForceReloadProxyConfig();
   EXPECT_EQ(net::OK, callback.WaitForResult());
   EXPECT_TRUE(data_1.AllReadDataConsumed());
   EXPECT_TRUE(data_1.AllWriteDataConsumed());
@@ -572,7 +572,7 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
       context_getter_with_proxy_->GetURLRequestContext();
 
   // Before starting the test, verify that there are no proxies marked as bad.
-  ASSERT_TRUE(context->proxy_service()->proxy_retry_info().empty())
+  ASSERT_TRUE(context->proxy_resolution_service()->proxy_retry_info().empty())
       << mock_error;
 
   net::MockClientSocketFactory socket_factory;
@@ -603,7 +603,7 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   EXPECT_EQ(net::OK, status);
 
   const net::ProxyRetryInfoMap& retry_info =
-      context->proxy_service()->proxy_retry_info();
+      context->proxy_resolution_service()->proxy_retry_info();
   EXPECT_EQ(2u, retry_info.size()) << mock_error;
   EXPECT_NE(retry_info.end(), retry_info.find("https://badproxy:99"));
   EXPECT_NE(retry_info.end(), retry_info.find("https://badfallbackproxy:98"));

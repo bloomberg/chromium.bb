@@ -171,11 +171,11 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     net::TestURLRequestContext context(true);
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);
-    // Set the |proxy_service| to use |test_case.proxy_server| for requests.
-    std::unique_ptr<net::ProxyService> proxy_service(
-        net::ProxyService::CreateFixedFromPacResult(
+    // Set the |proxy_resolution_service| to use |test_case.proxy_server| for requests.
+    std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+        net::ProxyResolutionService::CreateFixedFromPacResult(
             test_case.proxy_server.ToPacString()));
-    context.set_proxy_service(proxy_service.get());
+    context.set_proxy_resolution_service(proxy_resolution_service.get());
     context.Init();
 
     // Create a fake URLRequest and fill it with the appropriate response
@@ -204,7 +204,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
       net::ProxyInfo proxy_info;
       proxy_info.UseProxyList(
           data_reduction_proxy_config.proxy_rules().proxies_for_http);
-      EXPECT_TRUE(context.proxy_service()->MarkProxiesAsBadUntil(
+      EXPECT_TRUE(context.proxy_resolution_service()->MarkProxiesAsBadUntil(
           proxy_info, test_case.bypass_duration,
           std::vector<net::ProxyServer>(),
           net::NetLogWithSource::Make(context.net_log(),

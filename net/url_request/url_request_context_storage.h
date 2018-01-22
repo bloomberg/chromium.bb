@@ -29,7 +29,7 @@ class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
 class ProxyDelegate;
-class ProxyService;
+class ProxyResolutionService;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
@@ -63,7 +63,8 @@ class NET_EXPORT URLRequestContextStorage {
       std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory);
   void set_proxy_delegate(std::unique_ptr<ProxyDelegate> proxy_delegate);
   void set_network_delegate(std::unique_ptr<NetworkDelegate> network_delegate);
-  void set_proxy_service(std::unique_ptr<ProxyService> proxy_service);
+  void set_proxy_resolution_service(
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service);
   void set_ssl_config_service(SSLConfigService* ssl_config_service);
   void set_http_server_properties(
       std::unique_ptr<HttpServerProperties> http_server_properties);
@@ -112,7 +113,7 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   // TODO(willchan): Remove refcounting on this member.
   scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;

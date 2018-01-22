@@ -305,10 +305,11 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kProxyServerSwitch)) {
     std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
-    builder.set_proxy_service(net::ProxyService::CreateFixed(proxy));
+    builder.set_proxy_resolution_service(net::ProxyResolutionService::CreateFixed(proxy));
   } else {
-    builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-        std::move(proxy_config_service_), net_log_));
+    builder.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateWithoutProxyResolver(
+            std::move(proxy_config_service_), net_log_));
   }
   builder.set_net_log(net_log_);
   builder.SetCookieAndChannelIdStores(std::make_unique<AwCookieStoreWrapper>(),

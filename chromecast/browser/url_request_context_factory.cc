@@ -246,7 +246,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
 
   DCHECK(proxy_config_service_);
-  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+  proxy_resolution_service_ = net::ProxyResolutionService::CreateUsingSystemProxyResolver(
       std::move(proxy_config_service_), NULL);
   system_dependencies_initialized_ = true;
 }
@@ -342,7 +342,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_cert_transparency_verifier(
       cert_transparency_verifier_.get());
   system_context->set_ct_policy_enforcer(ct_policy_enforcer_.get());
-  system_context->set_proxy_service(proxy_service_.get());
+  system_context->set_proxy_resolution_service(proxy_resolution_service_.get());
   system_context->set_ssl_config_service(ssl_config_service_.get());
   system_context->set_transport_security_state(
       transport_security_state_.get());
@@ -409,7 +409,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
   main_context->set_cert_transparency_verifier(
       cert_transparency_verifier_.get());
   main_context->set_ct_policy_enforcer(ct_policy_enforcer_.get());
-  main_context->set_proxy_service(proxy_service_.get());
+  main_context->set_proxy_resolution_service(proxy_resolution_service_.get());
   main_context->set_ssl_config_service(ssl_config_service_.get());
   main_context->set_transport_security_state(transport_security_state_.get());
   main_context->set_http_auth_handler_factory(

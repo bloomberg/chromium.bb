@@ -77,7 +77,7 @@ AwBrowserContext* g_browser_context = NULL;
 
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
   std::unique_ptr<net::ProxyConfigService> config_service =
-      net::ProxyService::CreateSystemProxyConfigService(
+      net::ProxyResolutionService::CreateSystemProxyConfigService(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   // TODO(csharrison) Architect the wrapper better so we don't need a cast for

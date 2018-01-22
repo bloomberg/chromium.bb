@@ -157,8 +157,8 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
                          const NetLogWithSource& net_log) {
   // TODO(eroman): It would be good if instead of removing failed proxies
   // from the list, we simply annotated them with the error code they failed
-  // with. Of course, ProxyService::ReconsiderProxyAfterError() would need to
-  // be given this information by the network transaction.
+  // with. Of course, ProxyResolutionService::ReconsiderProxyAfterError() would
+  // need to be given this information by the network transaction.
   //
   // The advantage of this approach is when the network transaction
   // fails, we could output the full list of proxies that were attempted, and

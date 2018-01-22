@@ -58,9 +58,9 @@ LayoutTestURLRequestContextGetter::GetProxyConfigService() {
   return nullptr;
 }
 
-std::unique_ptr<net::ProxyService>
+std::unique_ptr<net::ProxyResolutionService>
 LayoutTestURLRequestContextGetter::GetProxyService() {
-  return net::ProxyService::CreateDirect();
+  return net::ProxyResolutionService::CreateDirect();
 }
 
 }  // namespace content

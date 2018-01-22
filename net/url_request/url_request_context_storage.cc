@@ -79,10 +79,10 @@ void URLRequestContextStorage::set_network_delegate(
   network_delegate_ = std::move(network_delegate);
 }
 
-void URLRequestContextStorage::set_proxy_service(
-    std::unique_ptr<ProxyService> proxy_service) {
-  context_->set_proxy_service(proxy_service.get());
-  proxy_service_ = std::move(proxy_service);
+void URLRequestContextStorage::set_proxy_resolution_service(
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
+  context_->set_proxy_resolution_service(proxy_resolution_service.get());
+  proxy_resolution_service_ = std::move(proxy_resolution_service);
 }
 
 void URLRequestContextStorage::set_ssl_config_service(
