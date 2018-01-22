@@ -15,6 +15,7 @@ source_set("libunwind") {
   if (libcpp_is_static) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   }
+  include_dirs = [ "//buildtools/third_party/libunwind/trunk/include" ]
   sources = [
     # C++ sources
     "trunk/src/Unwind-EHABI.cpp",
