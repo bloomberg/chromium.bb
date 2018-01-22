@@ -298,7 +298,8 @@ bool IsInternalURL(const GURL& url) {
 }
 
 - (void)showWindow:(id)sender {
-  BrowserWindowController* controller = [[self parentWindow] windowController];
+  BrowserWindowController* controller = [BrowserWindowController
+      browserWindowControllerForWindow:[self parentWindow]];
   LocationBarViewMac* locationBar = [controller locationBarBridge];
   if (locationBar) {
     decoration_ = locationBar->page_info_decoration();

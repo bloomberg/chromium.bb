@@ -196,7 +196,8 @@ WEAK_IMPORT_ATTRIBUTE
   // If there is a profile avatar icon present, shift the button over by its
   // width and some padding. The new avatar button is displayed to the right
   // of the fullscreen icon, so it doesn't need to be shifted.
-  auto* bwc = static_cast<BrowserWindowController*>([self windowController]);
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:self];
   if ([bwc shouldShowAvatar] && ![bwc shouldUseNewAvatarButton]) {
     NSView* avatarButton = [[bwc avatarButtonController] view];
     return NSWidth([avatarButton frame]) - 3;

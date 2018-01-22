@@ -212,8 +212,9 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (void)showWindow:(id)sender {
-  LocationBarViewMac* locationBar =
-      [[[self parentWindow] windowController] locationBarBridge];
+  BrowserWindowController* browserWindowController = [BrowserWindowController
+      browserWindowControllerForWindow:self.parentWindow];
+  LocationBarViewMac* locationBar = [browserWindowController locationBarBridge];
   if (locationBar) {
     NSPoint anchorPoint =
         locationBar->GetBubblePointForDecoration([self decorationForBubble]);
@@ -225,8 +226,9 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (LocationBarDecoration*)decorationForBubble {
-  LocationBarViewMac* locationBar =
-      [[[self parentWindow] windowController] locationBarBridge];
+  BrowserWindowController* browserWindowController = [BrowserWindowController
+      browserWindowControllerForWindow:self.parentWindow];
+  LocationBarViewMac* locationBar = [browserWindowController locationBarBridge];
   return locationBar ? locationBar->translate_decoration() : nullptr;
 }
 
