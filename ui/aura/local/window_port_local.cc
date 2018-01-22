@@ -4,7 +4,7 @@
 
 #include "ui/aura/local/window_port_local.h"
 
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
@@ -171,15 +171,8 @@ void WindowPortLocal::OnEventTargetingPolicyChanged() {}
 void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
   DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
   DCHECK_EQ(surface_info.id().local_surface_id(), local_surface_id_);
-  scoped_refptr<viz::SurfaceReferenceFactory> reference_factory =
-      aura::Env::GetInstance()
-          ->context_factory_private()
-          ->GetFrameSinkManager()
-          ->surface_manager()
-          ->reference_factory();
-  window_->layer()->SetShowPrimarySurface(surface_info.id(),
-                                          window_->bounds().size(),
-                                          SK_ColorWHITE, reference_factory);
+  window_->layer()->SetShowPrimarySurface(
+      surface_info.id(), window_->bounds().size(), SK_ColorWHITE);
   window_->layer()->SetFallbackSurfaceId(surface_info.id());
 }
 

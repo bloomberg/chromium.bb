@@ -158,8 +158,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   friend class RenderWidgetHostView;
 
   void SendSurfaceInfoToEmbedderImpl(
-      const viz::SurfaceInfo& surface_info,
-      const viz::SurfaceSequence& sequence) override;
+      const viz::SurfaceInfo& surface_info) override;
 
   RenderWidgetHostViewGuest(
       RenderWidgetHost* widget,

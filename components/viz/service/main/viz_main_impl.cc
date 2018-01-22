@@ -277,7 +277,6 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
   mojom::FrameSinkManagerClientPtr client(
       std::move(params->frame_sink_manager_client));
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(
-      SurfaceManager::LifetimeType::REFERENCES,
       params->number_of_frames_to_activation_deadline, display_provider_.get());
   frame_sink_manager_->BindAndSetClient(std::move(params->frame_sink_manager),
                                         nullptr, std::move(client));

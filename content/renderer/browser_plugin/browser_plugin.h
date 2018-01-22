@@ -34,7 +34,6 @@ class UnguessableToken;
 
 namespace viz {
 class SurfaceInfo;
-struct SurfaceSequence;
 }
 
 namespace content {
@@ -76,9 +75,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
-
-  // Called by CompositingHelper to send current SurfaceSequence to browser.
-  void SendSatisfySequence(const viz::SurfaceSequence& sequence);
 
   // Provided that a guest instance ID has been allocated, this method attaches
   // this BrowserPlugin instance to that guest.
@@ -190,8 +186,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   void OnResizeDueToAutoResize(int browser_plugin_instance_id,
                                uint64_t sequence_number);
   void OnSetChildFrameSurface(int instance_id,
-                              const viz::SurfaceInfo& surface_info,
-                              const viz::SurfaceSequence& sequence);
+                              const viz::SurfaceInfo& surface_info);
   void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);

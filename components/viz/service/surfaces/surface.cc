@@ -436,20 +436,6 @@ void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect) {
       surface_id().local_surface_id(), damage_rect, active_frame_data_->frame);
 }
 
-void Surface::AddDestructionDependency(SurfaceSequence sequence) {
-  destruction_dependencies_.push_back(sequence);
-}
-
-void Surface::SatisfyDestructionDependencies(
-    base::flat_set<SurfaceSequence>* sequences,
-    base::flat_map<FrameSinkId, std::string>* valid_frame_sink_ids) {
-  base::EraseIf(destruction_dependencies_,
-                [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
-                  return (!!sequences->erase(seq) ||
-                          !valid_frame_sink_ids->count(seq.frame_sink_id));
-                });
-}
-
 void Surface::OnDeadline() {
   TRACE_EVENT1("viz", "Surface::OnDeadline", "FrameSinkId",
                surface_id().frame_sink_id().ToString());

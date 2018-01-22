@@ -273,10 +273,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
 
-  // Returns SurfaceReferenceFactory instance. If |enable_viz| is true then it
-  // will be a stub factory, otherwise it will be the real factory.
-  scoped_refptr<viz::SurfaceReferenceFactory> GetSurfaceReferenceFactory();
-
   const viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;

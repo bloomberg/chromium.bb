@@ -18,12 +18,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -312,8 +310,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateResizeParams,
                         OnUpdateResizeParams)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SatisfySequence, OnSatisfySequence)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -433,27 +429,13 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 }
 
 void BrowserPluginGuest::SetChildFrameSurface(
-    const viz::SurfaceInfo& surface_info,
-    const viz::SurfaceSequence& sequence) {
+    const viz::SurfaceInfo& surface_info) {
   has_attached_since_surface_set_ = false;
   if (!switches::IsMusHostingViz()) {
     SendMessageToEmbedder(
         std::make_unique<BrowserPluginMsg_SetChildFrameSurface>(
-            browser_plugin_instance_id(), surface_info, sequence));
+            browser_plugin_instance_id(), surface_info));
   }
-}
-
-void BrowserPluginGuest::OnSatisfySequence(
-    int instance_id,
-    const viz::SurfaceSequence& sequence) {
-  GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
-}
-
-void BrowserPluginGuest::OnRequireSequence(
-    int instance_id,
-    const viz::SurfaceId& id,
-    const viz::SurfaceSequence& sequence) {
-  GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
 
 void BrowserPluginGuest::ResendEventToEmbedder(

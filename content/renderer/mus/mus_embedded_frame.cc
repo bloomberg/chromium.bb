@@ -12,7 +12,6 @@
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/renderer/mus/renderer_window_tree_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"

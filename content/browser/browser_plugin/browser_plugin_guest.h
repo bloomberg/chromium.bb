@@ -59,9 +59,7 @@ class Range;
 
 namespace viz {
 class LocalSurfaceId;
-class SurfaceId;
 class SurfaceInfo;
-struct SurfaceSequence;
 }  // namespace viz
 
 namespace content {
@@ -260,8 +258,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void PointerLockPermissionResponse(bool allow);
 
   // The next function is virtual for test purposes.
-  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                                    const viz::SurfaceSequence& sequence);
+  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info);
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 
@@ -300,10 +297,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
                     WebContentsImpl* owner_web_contents);
 
-  void OnSatisfySequence(int instance_id, const viz::SurfaceSequence& sequence);
-  void OnRequireSequence(int instance_id,
-                         const viz::SurfaceId& id,
-                         const viz::SurfaceSequence& sequence);
   // Message handlers for messages from embedder.
   void OnDetach(int instance_id);
   // Handles drag events from the embedder.

@@ -19,7 +19,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -268,7 +267,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Surface-related state.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   viz::LocalSurfaceId last_received_local_surface_id_;
-  uint32_t next_surface_sequence_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
   gfx::Rect last_screen_rect_;
@@ -289,8 +287,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation);
 
   virtual void SendSurfaceInfoToEmbedderImpl(
-      const viz::SurfaceInfo& surface_info,
-      const viz::SurfaceSequence& sequence);
+      const viz::SurfaceInfo& surface_info);
 
   void SubmitSurfaceCopyRequest(const gfx::Rect& src_subrect,
                                 const gfx::Size& dst_size,

@@ -16,13 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/surface_layer.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace cc {
-struct SurfaceSequence;
-}
 
 namespace blink {
 class WebLayer;
@@ -56,8 +51,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
                            const gfx::Size& frame_size_in_dip);
   void SetFallbackSurfaceId(const viz::SurfaceId& surface_id,
-                            const gfx::Size& frame_size_in_dip,
-                            const viz::SurfaceSequence& sequence);
+                            const gfx::Size& frame_size_in_dip);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
@@ -93,13 +87,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
   std::unique_ptr<blink::WebLayer> web_layer_;
   blink::WebRemoteFrame* frame_;
-
-  // If surface references are enabled use a stub reference factory.
-  // TODO(kylechar): Remove variable along with surface sequences.
-  // See https://crbug.com/676384.
-  bool enable_surface_references_;
-
-  scoped_refptr<viz::SurfaceReferenceFactory> surface_reference_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };

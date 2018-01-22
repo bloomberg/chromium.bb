@@ -14,7 +14,6 @@ namespace switches {
 
 // Keep list in alphabetical order.
 VIZ_COMMON_EXPORT extern const char kDeadlineToSynchronizeSurfaces[];
-VIZ_COMMON_EXPORT extern const char kDisableSurfaceReferences[];
 VIZ_COMMON_EXPORT extern const char kEnableSurfaceSynchronization[];
 
 VIZ_COMMON_EXPORT uint32_t GetDeadlineToSynchronizeSurfaces();

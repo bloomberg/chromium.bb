@@ -13,7 +13,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -124,8 +123,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
     BrowserPluginGuest::set_attached_for_test(attached);
   }
 
-  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
-                            const viz::SurfaceSequence& sequence) override {
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override {
     last_surface_info_ = surface_info;
   }
 

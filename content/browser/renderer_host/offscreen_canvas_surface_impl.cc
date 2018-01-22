@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 
@@ -75,29 +74,6 @@ void OffscreenCanvasSurfaceImpl::OnFirstSurfaceActivation(
 void OffscreenCanvasSurfaceImpl::OnFrameTokenChanged(uint32_t frame_token) {
   // TODO(yiyix, fsamuel): To complete plumbing of frame tokens for offscreen
   // canvas
-}
-
-void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,
-                                         const viz::SurfaceSequence& sequence) {
-  // TODO(kylechar): This is a hacky workaround for https://crbug.com/796700
-  // to unblock video with surfaces work. Delete function M65 branch.
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    return;
-
-  auto* surface_manager = GetFrameSinkManager()->surface_manager();
-  if (!surface_manager->using_surface_references())
-    surface_manager->RequireSequence(surface_id, sequence);
-}
-
-void OffscreenCanvasSurfaceImpl::Satisfy(const viz::SurfaceSequence& sequence) {
-  // TODO(kylechar): This is a hacky workaround for https://crbug.com/796700
-  // to unblock video with surfaces work. Delete function after M65 branch.
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    return;
-
-  auto* surface_manager = GetFrameSinkManager()->surface_manager();
-  if (!surface_manager->using_surface_references())
-    surface_manager->SatisfySequence(sequence);
 }
 
 void OffscreenCanvasSurfaceImpl::OnSurfaceConnectionClosed() {

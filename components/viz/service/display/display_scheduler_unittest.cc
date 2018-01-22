@@ -123,7 +123,7 @@ class DisplaySchedulerTest : public testing::Test {
   explicit DisplaySchedulerTest(bool wait_for_all_surfaces_before_draw = false)
       : fake_begin_frame_source_(0.f, false),
         task_runner_(new base::NullTaskRunner),
-        surface_manager_(SurfaceManager::LifetimeType::REFERENCES, 4u),
+        surface_manager_(4u),
         scheduler_(&fake_begin_frame_source_,
                    &surface_manager_,
                    task_runner_.get(),

@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/viz/client/local_surface_id_provider.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
@@ -661,18 +661,13 @@ void WindowPortMus::UpdateClientSurfaceEmbedder() {
 }
 
 void WindowPortMus::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
+  // TODO(fsamuel): Rename OnFirstSurfaceActivation() and set primary earlier
+  // based on feedback from LayerTreeFrameSinkLocal.
   DCHECK(!switches::IsMusHostingViz());
   DCHECK_EQ(surface_info.id().frame_sink_id(), GetFrameSinkId());
   DCHECK_EQ(surface_info.id().local_surface_id(), local_surface_id_);
-  scoped_refptr<viz::SurfaceReferenceFactory> reference_factory =
-      aura::Env::GetInstance()
-          ->context_factory_private()
-          ->GetFrameSinkManager()
-          ->surface_manager()
-          ->reference_factory();
-  window_->layer()->SetShowPrimarySurface(surface_info.id(),
-                                          window_->bounds().size(),
-                                          SK_ColorWHITE, reference_factory);
+  window_->layer()->SetShowPrimarySurface(
+      surface_info.id(), window_->bounds().size(), SK_ColorWHITE);
   window_->layer()->SetFallbackSurfaceId(surface_info.id());
 }
 
