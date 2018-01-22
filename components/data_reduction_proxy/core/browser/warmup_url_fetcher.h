@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -59,29 +60,47 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
   // delayed.
   virtual base::TimeDelta GetFetchWaitTime() const;
 
+  // Returns the timeout value for fetching the secure proxy URL. Virtualized
+  // for testing.
+  virtual base::TimeDelta GetFetchTimeout() const;
+
+  // Called when the fetch timeouts.
+  void OnFetchTimeout();
+
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
+  // The URLFetcher being used for fetching the warmup URL. Protected for
+  // testing.
+  std::unique_ptr<net::URLFetcher> fetcher_;
+
+  // Timer used to delay the fetching of the warmup probe URL.
+  base::OneShotTimer fetch_delay_timer_;
+
+  // Timer to enforce timeout of fetching the warmup URL.
+  base::OneShotTimer fetch_timeout_timer_;
+
+  // True if the fetcher for warmup URL is in-flight.
+  bool is_fetch_in_flight_;
+
  private:
   // Creates and immediately starts a URLFetcher that fetches the warmup URL.
   void FetchWarmupURLNow();
 
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Resets the variable after the fetching of the warmup URL has completed or
+  // timed out. Must be called after |callback_| has been run.
+  void CleanupAfterFetch();
 
   // Count of fetch attempts that have been made to the proxy which is being
   // probed.
   size_t previous_attempt_counts_;
 
-  // Timer used to delay the fetching of the warmup probe URL.
-  base::OneShotTimer fetch_delay_timer_;
-
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-
-  // The URLFetcher being used for fetching the warmup URL.
-  std::unique_ptr<net::URLFetcher> fetcher_;
-
-  bool is_fetch_in_flight_;
 
   // Callback that should be executed when the fetching of the warmup URL is
   // completed.
   WarmupURLFetcherCallback callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WarmupURLFetcher);
 };
