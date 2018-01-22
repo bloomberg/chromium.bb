@@ -195,6 +195,8 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 @synthesize legacyFullscreenControllerDelegate =
     legacyFullscreenControllerDelegate_;
 
+#pragma mark - Initializers
+
 - (instancetype)initWithWebState:(web::WebState*)webState {
   DCHECK(webState);
   self = [super init];
@@ -214,19 +216,12 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return self;
 }
 
+#pragma mark - NSObject protocol
+
 - (void)dealloc {
   // The WebState owns the Tab, so -webStateDestroyed: should be called before
   // -dealloc and _webStateImpl set to nullptr.
   DCHECK(!_webStateImpl);
-}
-
-- (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
-  return self;
-}
-
-- (void)setParentTabModel:(TabModel*)model {
-  DCHECK(!model || !_parentTabModel);
-  _parentTabModel = model;
 }
 
 - (NSString*)description {
@@ -235,30 +230,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
                                  self.webState->GetVisibleURL().spec().c_str()];
 }
 
-- (id<TabDialogDelegate>)dialogDelegate {
-  return dialogDelegate_;
-}
-
-- (BOOL)loadFinished {
-  return self.webState && !self.webState->IsLoading();
-}
-
-- (BOOL)isVoiceSearchResultsTab {
-  // TODO(crbug.com/778416): Move this logic entirely into helper.
-  // If nothing has been loaded in the Tab, it cannot be displaying a voice
-  // search results page.
-  web::NavigationItem* item =
-      self.webState->GetNavigationManager()->GetVisibleItem();
-  if (!item)
-    return NO;
-  // Navigating through history to a NavigationItem that was created for a voice
-  // search query should just be treated like a normal page load.
-  if ((item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) != 0)
-    return NO;
-  // Check whether |item| has been marked as a voice search result navigation.
-  return VoiceSearchNavigationTabHelper::FromWebState(self.webState)
-      ->IsNavigationFromVoiceSearch(item);
-}
+#pragma mark - Properties
 
 - (NSString*)title {
   base::string16 title = self.webState->GetTitle();
@@ -289,28 +261,16 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return _webStateImpl;
 }
 
-- (UIView*)view {
-  if (!self.webState)
-    return nil;
-
-  // Record reload of previously-evicted tab.
-  if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
-    [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
-
-  // Do not trigger the load if the tab has crashed. SadTabTabHelper is
-  // responsible for handing reload logic for crashed tabs.
-  if (!self.webState->IsCrashed()) {
-    self.webState->GetNavigationManager()->LoadIfNecessary();
-  }
-  return self.webState->GetView();
+- (BOOL)canGoBack {
+  return self.navigationManager && self.navigationManager->CanGoBack();
 }
 
-- (UIView*)viewForPrinting {
-  return self.webController.viewForPrinting;
+- (BOOL)canGoForward {
+  return self.navigationManager && self.navigationManager->CanGoForward();
 }
 
-- (web::NavigationManager*)navigationManager {
-  return self.webState ? self.webState->GetNavigationManager() : nullptr;
+- (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
+  return self;
 }
 
 - (void)setLegacyFullscreenControllerDelegate:
@@ -360,6 +320,54 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
 }
 
+- (BOOL)isVoiceSearchResultsTab {
+  // TODO(crbug.com/778416): Move this logic entirely into helper.
+  // If nothing has been loaded in the Tab, it cannot be displaying a voice
+  // search results page.
+  web::NavigationItem* item =
+      self.webState->GetNavigationManager()->GetVisibleItem();
+  if (!item)
+    return NO;
+  // Navigating through history to a NavigationItem that was created for a voice
+  // search query should just be treated like a normal page load.
+  if ((item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) != 0)
+    return NO;
+  // Check whether |item| has been marked as a voice search result navigation.
+  return VoiceSearchNavigationTabHelper::FromWebState(self.webState)
+      ->IsNavigationFromVoiceSearch(item);
+}
+
+- (BOOL)loadFinished {
+  return self.webState && !self.webState->IsLoading();
+}
+
+#pragma mark - Public API
+
+- (void)setParentTabModel:(TabModel*)model {
+  DCHECK(!model || !_parentTabModel);
+  _parentTabModel = model;
+}
+
+- (UIView*)view {
+  if (!self.webState)
+    return nil;
+
+  // Record reload of previously-evicted tab.
+  if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
+    [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
+
+  // Do not trigger the load if the tab has crashed. SadTabTabHelper is
+  // responsible for handing reload logic for crashed tabs.
+  if (!self.webState->IsCrashed()) {
+    self.webState->GetNavigationManager()->LoadIfNecessary();
+  }
+  return self.webState->GetView();
+}
+
+- (UIView*)viewForPrinting {
+  return self.webController.viewForPrinting;
+}
+
 // Halt the tab, which amounts to halting its webController.
 - (void)terminateNetworkActivity {
   [self.webController terminateNetworkActivity];
@@ -368,6 +376,17 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 - (void)dismissModals {
   [_openInController disable];
   [self.webController dismissModals];
+}
+
+- (web::NavigationManager*)navigationManager {
+  return self.webState ? self.webState->GetNavigationManager() : nullptr;
+}
+
+- (void)goToItem:(const web::NavigationItem*)item {
+  DCHECK(item);
+  int index = self.navigationManager->GetIndexOfItem(item);
+  DCHECK_NE(index, -1);
+  self.navigationManager->GoToIndex(index);
 }
 
 - (void)goBack {
@@ -394,21 +413,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
 }
 
-- (BOOL)canGoBack {
-  return self.navigationManager && self.navigationManager->CanGoBack();
-}
-
-- (BOOL)canGoForward {
-  return self.navigationManager && self.navigationManager->CanGoForward();
-}
-
-- (void)goToItem:(const web::NavigationItem*)item {
-  DCHECK(item);
-  int index = self.navigationManager->GetIndexOfItem(item);
-  DCHECK_NE(index, -1);
-  self.navigationManager->GoToIndex(index);
-}
-
 - (void)wasShown {
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     [self updateFullscreenWithToolbarVisible:YES];
@@ -429,63 +433,14 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   [_overscrollActionsController clear];
 }
 
-- (OpenInController*)openInController {
-  if (!_openInController) {
-    _openInController = [[OpenInController alloc]
-        initWithRequestContext:_browserState->GetRequestContext()
-                 webController:self.webController];
-  }
-  return _openInController;
-}
-
-- (void)handleExportableFile:(net::HttpResponseHeaders*)headers {
-  // Only "application/pdf" is supported for now.
-  if (self.webState->GetContentsMimeType() != "application/pdf")
-    return;
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabIsShowingExportableNotificationForCrashReporting
-                    object:self];
-  // Try to generate a filename by first looking at |content_disposition_|, then
-  // at the last component of WebState's last committed URL and if both of these
-  // fail use the default filename "document".
-  std::string contentDisposition;
-  if (headers)
-    headers->GetNormalizedHeader("content-disposition", &contentDisposition);
-  std::string defaultFilename =
-      l10n_util::GetStringUTF8(IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE);
-  const GURL& lastCommittedURL = self.webState->GetLastCommittedURL();
-  base::string16 filename =
-      net::GetSuggestedFilename(lastCommittedURL, contentDisposition,
-                                "",                 // referrer-charset
-                                "",                 // suggested-name
-                                "application/pdf",  // mime-type
-                                defaultFilename);
-  [[self openInController]
-      enableWithDocumentURL:lastCommittedURL
-          suggestedFilename:base::SysUTF16ToNSString(filename)];
-}
-
-#pragma mark -
-#pragma mark FindInPageControllerDelegate
-
-- (void)willAdjustScrollPosition {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // Skip the next attempt to correct the scroll offset for the toolbar
-    // height.  Used when programatically scrolling down the y offset.
-    [_legacyFullscreenController shouldSkipNextScrollOffsetForHeader];
-  }
-}
-
-#pragma mark -
-#pragma mark FullScreen
+#pragma mark - Public API (relating to Fullscreen)
 
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible {
   DCHECK(!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
   [_legacyFullscreenController moveHeaderToRestingPosition:visible];
 }
 
-#pragma mark -
+#pragma mark - Public API (relatinge to User agent)
 
 - (BOOL)usesDesktopUserAgent {
   if (!self.navigationManager)
@@ -543,10 +498,22 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   navigationManager->LoadURLWithParams(params);
 }
 
+#pragma mark - Public API (relating to U2F)
+
 - (void)evaluateU2FResultFromURL:(const GURL&)URL {
   DCHECK(_secondFactorController);
   [_secondFactorController evaluateU2FResultFromU2FURL:URL
                                               webState:self.webState];
+}
+
+#pragma mark - FindInPageControllerDelegate protocol
+
+- (void)willAdjustScrollPosition {
+  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    // Skip the next attempt to correct the scroll offset for the toolbar
+    // height.  Used when programatically scrolling down the y offset.
+    [_legacyFullscreenController shouldSkipNextScrollOffsetForHeader];
+  }
 }
 
 #pragma mark - CRWWebStateObserver protocol
@@ -781,6 +748,43 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
       PrerenderServiceFactory::GetForBrowserState(_browserState);
   return prerenderService &&
          prerenderService->IsWebStatePrerendered(self.webState);
+}
+
+- (OpenInController*)openInController {
+  if (!_openInController) {
+    _openInController = [[OpenInController alloc]
+        initWithRequestContext:_browserState->GetRequestContext()
+                 webController:self.webController];
+  }
+  return _openInController;
+}
+
+- (void)handleExportableFile:(net::HttpResponseHeaders*)headers {
+  // Only "application/pdf" is supported for now.
+  if (self.webState->GetContentsMimeType() != "application/pdf")
+    return;
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kTabIsShowingExportableNotificationForCrashReporting
+                    object:self];
+  // Try to generate a filename by first looking at |content_disposition_|, then
+  // at the last component of WebState's last committed URL and if both of these
+  // fail use the default filename "document".
+  std::string contentDisposition;
+  if (headers)
+    headers->GetNormalizedHeader("content-disposition", &contentDisposition);
+  std::string defaultFilename =
+      l10n_util::GetStringUTF8(IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE);
+  const GURL& lastCommittedURL = self.webState->GetLastCommittedURL();
+  base::string16 filename =
+      net::GetSuggestedFilename(lastCommittedURL, contentDisposition,
+                                "",                 // referrer-charset
+                                "",                 // suggested-name
+                                "application/pdf",  // mime-type
+                                defaultFilename);
+  [[self openInController]
+      enableWithDocumentURL:lastCommittedURL
+          suggestedFilename:base::SysUTF16ToNSString(filename)];
 }
 
 @end

@@ -103,9 +103,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) id<FindInPageControllerDelegate>
     findInPageControllerDelegate;
 
-// Whether or not desktop user agent is used for the currently visible page.
-@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
-
 // The delegate to use for the legacy fullscreen controller.  It should not be
 // set if the new fullscreen is enabled.
 // TODO(crbug.com/778823): Remove this property.
@@ -171,15 +168,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Updates the timestamp of the last time the tab is visited.
 - (void)updateLastVisitedTimestamp;
 
-// Loads the original url of the last non-redirect item (including non-history
-// items). Used by request desktop/mobile site so that the updated user agent is
-// used.
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
-
-// Ensures the toolbar visibility matches |visible|.
-// TODO(crbug.com/778823): Remove this code.
-- (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
-
 // Called when this tab is shown.
 - (void)wasShown;
 
@@ -188,6 +176,18 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;
+
+// Ensures the toolbar visibility matches |visible|.
+// TODO(crbug.com/778823): Remove this code.
+- (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
+
+// Whether or not desktop user agent is used for the currently visible page.
+@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
+
+// Loads the original url of the last non-redirect item (including non-history
+// items). Used by request desktop/mobile site so that the updated user agent is
+// used.
+- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
 
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;
