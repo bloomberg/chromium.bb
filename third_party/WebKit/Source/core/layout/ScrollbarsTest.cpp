@@ -9,6 +9,7 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/DevToolsEmulator.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -1656,6 +1657,95 @@ TEST_P(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
   EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
+}
+
+class ScrollbarTrackMarginsTest : public ScrollbarsTest {
+ public:
+  void PrepareTest(const String& track_style) {
+    WebView().Resize(WebSize(200, 200));
+
+    SimRequest request("https://example.com/test.html", "text/html");
+    LoadURL("https://example.com/test.html");
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+        <style>
+        ::-webkit-scrollbar {
+          width: 10px;
+        })HTML" + track_style +
+                     R"HTML(
+        #d1 {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          overflow-x:scroll;
+          overflow-y:scroll;
+        }
+      </style>
+      <div id='d1'/>
+    )HTML");
+
+    // No DCHECK failure. Issue 801123.
+    Compositor().BeginFrame();
+
+    Element* div = GetDocument().getElementById("d1");
+    ASSERT_TRUE(div);
+
+    ScrollableArea* div_scrollable =
+        ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+    ASSERT_TRUE(div_scrollable->HorizontalScrollbar());
+    LayoutScrollbar* horizontal_scrollbar =
+        ToLayoutScrollbar(div_scrollable->HorizontalScrollbar());
+    horizontal_track_ = horizontal_scrollbar->GetPart(kTrackBGPart);
+    ASSERT_TRUE(horizontal_track_);
+
+    ASSERT_TRUE(div_scrollable->VerticalScrollbar());
+    LayoutScrollbar* vertical_scrollbar =
+        ToLayoutScrollbar(div_scrollable->VerticalScrollbar());
+    vertical_track_ = vertical_scrollbar->GetPart(kTrackBGPart);
+    ASSERT_TRUE(vertical_track_);
+  }
+
+  LayoutScrollbarPart* horizontal_track_ = nullptr;
+  LayoutScrollbarPart* vertical_track_ = nullptr;
+};
+
+INSTANTIATE_TEST_CASE_P(All, ScrollbarTrackMarginsTest, ::testing::Bool());
+
+TEST_P(ScrollbarTrackMarginsTest,
+       CustomScrollbarFractionalMarginsWillNotCauseDCHECKFailure) {
+  PrepareTest(R"CSS(
+    ::-webkit-scrollbar-track {
+      margin-left: 10.2px;
+      margin-top: 20.4px;
+      margin-right: 30.6px;
+      margin-bottom: 40.8px;
+    })CSS");
+
+  EXPECT_EQ(10, horizontal_track_->MarginLeft());
+  EXPECT_EQ(31, horizontal_track_->MarginRight());
+  EXPECT_EQ(20, vertical_track_->MarginTop());
+  EXPECT_EQ(41, vertical_track_->MarginBottom());
+}
+
+TEST_P(ScrollbarTrackMarginsTest,
+       CustomScrollbarScaledMarginsWillNotCauseDCHECKFailure) {
+  WebView().SetZoomFactorForDeviceScaleFactor(1.25f);
+
+  PrepareTest(R"CSS(
+    ::-webkit-scrollbar-track {
+      margin-left: 11px;
+      margin-top: 21px;
+      margin-right: 31px;
+      margin-bottom: 41px;
+    })CSS");
+
+  EXPECT_EQ(14, horizontal_track_->MarginLeft());
+  EXPECT_EQ(39, horizontal_track_->MarginRight());
+  EXPECT_EQ(26, vertical_track_->MarginTop());
+  EXPECT_EQ(51, vertical_track_->MarginBottom());
 }
 
 }  // namespace
