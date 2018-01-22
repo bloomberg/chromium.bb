@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.preferences.password;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
@@ -102,16 +102,14 @@ public final class PasswordUIView implements PasswordManagerHandler {
     private native SavedPasswordEntry nativeGetSavedPasswordEntry(
             long nativePasswordUIViewAndroid, int index);
 
-    private native String nativeGetSavedPasswordException(long nativePasswordUIViewAndroid,
-            int index);
+    private native String nativeGetSavedPasswordException(
+            long nativePasswordUIViewAndroid, int index);
 
     private native void nativeHandleRemoveSavedPasswordEntry(
-            long nativePasswordUIViewAndroid,
-            int index);
+            long nativePasswordUIViewAndroid, int index);
 
     private native void nativeHandleRemoveSavedPasswordException(
-            long nativePasswordUIViewAndroid,
-            int index);
+            long nativePasswordUIViewAndroid, int index);
 
     private static native String nativeGetAccountDashboardURL();
 
