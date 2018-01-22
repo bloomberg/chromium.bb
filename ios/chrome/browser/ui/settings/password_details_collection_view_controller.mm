@@ -37,9 +37,6 @@
 
 namespace {
 
-// A help article on how to set up a passcode.
-constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
-
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSite = kSectionIdentifierEnumZero,
   SectionIdentifierUsername,
@@ -383,6 +380,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     [_weakReauthenticationModule
         attemptReauthWithLocalizedReason:
             l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW)
+                    canReusePreviousAuth:YES
                                  handler:showPasswordHandler];
   } else {
     [self showPasscodeDialog];
@@ -444,6 +442,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     [_weakReauthenticationModule
         attemptReauthWithLocalizedReason:
             l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY)
+                    canReusePreviousAuth:YES
                                  handler:copyPasswordHandler];
   } else {
     [self showPasscodeDialog];

@@ -9,6 +9,9 @@
 
 #import "ios/chrome/browser/ui/settings/reauthentication_protocol.h"
 
+// A help article on how to set up a passcode.
+extern const char kPasscodeArticleURL[];
+
 @protocol SuccessfulReauthTimeAccessor<NSObject>
 
 // Method meant to be called by the |ReauthenticationModule| to update
@@ -21,9 +24,9 @@
 @end
 
 /**
- * This is used by |PasswordsDetailsCollectionViewController| to re-authenticate
- * the user before displaying the password in plain text, or allowing it to be
- * copied.
+ * This is used by |PasswordsDetailsCollectionViewController| and
+ * |PasswordExporter|to re-authenticate the user before displaying the password
+ * in plain text, allowing it to be copied, or exporting passwords.
  */
 @interface ReauthenticationModule : NSObject<ReauthenticationProtocol>
 

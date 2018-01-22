@@ -38,6 +38,7 @@ class ChromeBrowserState;
 // |getLoginsFromPasswordStore| finishes.
 - (void)onGetPasswordStoreResults:
     (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SAVE_PASSWORDS_COLLECTION_VIEW_CONTROLLER_H_
