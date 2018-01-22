@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -334,7 +333,7 @@ void PermissionContextBase::DecidePermission(
     return;
 
   std::unique_ptr<PermissionRequest> request_ptr =
-      base::MakeUnique<PermissionRequestImpl>(
+      std::make_unique<PermissionRequestImpl>(
           requesting_origin, content_settings_type_, user_gesture,
           base::Bind(&PermissionContextBase::PermissionDecided,
                      weak_factory_.GetWeakPtr(), id, requesting_origin,

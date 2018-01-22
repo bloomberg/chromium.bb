@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -60,7 +59,7 @@ void PermissionBlacklistClient::StartCheck(const GURL& request_origin) {
   // Start the timer to interrupt into the client callback method with an
   // empty response if Safe Browsing times out.
   safe_browsing::ThreatMetadata empty_metadata;
-  timer_ = base::MakeUnique<base::OneShotTimer>();
+  timer_ = std::make_unique<base::OneShotTimer>();
   elapsed_timer_.reset(new base::ElapsedTimer());
   timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),

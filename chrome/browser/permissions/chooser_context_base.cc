@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 
@@ -92,7 +91,7 @@ ChooserContextBase::GetAllGrantedObjects() {
         continue;
       }
 
-      results.push_back(base::MakeUnique<Object>(
+      results.push_back(std::make_unique<Object>(
           requesting_origin, embedding_origin, object_dict,
           content_setting.source, content_setting.incognito));
     }
@@ -114,7 +113,7 @@ void ChooserContextBase::GrantObjectPermission(
   base::ListValue* object_list;
   if (!setting->GetList(kObjectListKey, &object_list)) {
     object_list =
-        setting->SetList(kObjectListKey, base::MakeUnique<base::ListValue>());
+        setting->SetList(kObjectListKey, std::make_unique<base::ListValue>());
   }
   object_list->AppendIfNotPresent(std::move(object));
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
