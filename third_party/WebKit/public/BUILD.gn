@@ -833,6 +833,7 @@ mojom("android_mojo_bindings") {
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/payments/payment_request.mojom",
     "platform/modules/webshare/webshare.mojom",
+    "web/remote_objects.mojom",
   ]
   public_deps = [
     "//components/payments/mojom",
