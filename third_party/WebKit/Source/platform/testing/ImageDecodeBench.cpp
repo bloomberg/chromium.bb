@@ -14,8 +14,8 @@
 // the decoded image frame md5 and output that value.
 //
 // TODO(noel): Consider integrating this tool in Chrome telemetry for realz,
-// using the image corpii used to assess Blink image decode performance. Refer
-// to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
+// using the image corpora used to assess Blink image decode performance. See
+// http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
 #include <fstream>
 
