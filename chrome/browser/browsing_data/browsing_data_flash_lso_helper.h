@@ -20,15 +20,15 @@ class BrowserContext;
 class BrowsingDataFlashLSOHelper
     : public base::RefCounted<BrowsingDataFlashLSOHelper> {
  public:
-  typedef base::Callback<void(const std::vector<std::string>&)>
+  typedef base::OnceCallback<void(const std::vector<std::string>&)>
       GetSitesWithFlashDataCallback;
 
   static BrowsingDataFlashLSOHelper* Create(
       content::BrowserContext* browser_context);
 
-  virtual void StartFetching(const GetSitesWithFlashDataCallback& callback) = 0;
+  virtual void StartFetching(GetSitesWithFlashDataCallback callback) = 0;
   virtual void DeleteFlashLSOsForSite(const std::string& site,
-                                      const base::Closure& callback) = 0;
+                                      base::OnceClosure callback) = 0;
 
  protected:
   friend class base::RefCounted<BrowsingDataFlashLSOHelper>;
