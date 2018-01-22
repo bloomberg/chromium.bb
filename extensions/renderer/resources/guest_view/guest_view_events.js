@@ -160,7 +160,7 @@ GuestViewEvents.prototype.makeDomEvent = function(event, eventName) {
 // Adds an 'on<event>' property on the view, which can be used to set/unset
 // an event handler.
 GuestViewEvents.prototype.setupEventProperty = function(eventName) {
-  var propertyName = 'on' + eventName.toLowerCase();
+  var propertyName = 'on' + $String.toLowerCase(eventName);
   $Object.defineProperty(this.view.element, propertyName, {
     get: $Function.bind(function() {
       return this.on[propertyName];
