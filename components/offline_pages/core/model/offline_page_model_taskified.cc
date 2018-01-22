@@ -480,6 +480,7 @@ void OfflinePageModelTaskified::PostClearCachedPagesTask(bool is_initializing) {
         base::Bind(&OfflinePageModelTaskified::PostClearCachedPagesTask,
                    weak_ptr_factory_.GetWeakPtr(), false),
         kInitializingTaskDelay);
+    return;
   }
 
   // If not enough time has passed, do not post the task.
