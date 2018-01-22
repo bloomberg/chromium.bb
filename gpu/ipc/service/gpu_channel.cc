@@ -572,6 +572,7 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
+  int32_t stream_id = init_params.stream_id;
   int32_t share_group_id = init_params.share_group_id;
   CommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
 
@@ -580,18 +581,9 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  int32_t stream_id = init_params.stream_id;
   if (share_group && stream_id != share_group->stream_id()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "stream id does not match share group stream id";
-    return;
-  }
-
-  SchedulingPriority stream_priority = init_params.stream_priority;
-  if (stream_priority <= SchedulingPriority::kHigh && !is_gpu_host_) {
-    LOG(ERROR)
-        << "ContextResult::kFatalFailure: "
-           "high priority stream not allowed on a non-privileged channel";
     return;
   }
 
@@ -616,7 +608,7 @@ void GpuChannel::OnCreateCommandBuffer(
 
   SequenceId sequence_id = stream_sequences_[stream_id];
   if (sequence_id.is_null()) {
-    sequence_id = scheduler_->CreateSequence(stream_priority);
+    sequence_id = scheduler_->CreateSequence(init_params.stream_priority);
     stream_sequences_[stream_id] = sequence_id;
   }
 

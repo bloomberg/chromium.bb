@@ -1460,7 +1460,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
           gpu_channel_host, GetGpuMemoryBufferManager(), limits,
           support_locking, support_gles2_interface, support_raster_interface,
           support_oop_rasterization, ui::command_buffer_metrics::MEDIA_CONTEXT,
-          kGpuStreamIdDefault, kGpuStreamPriorityDefault);
+          kGpuStreamIdMedia, kGpuStreamPriorityMedia);
   auto result = media_context_provider->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
     return nullptr;
