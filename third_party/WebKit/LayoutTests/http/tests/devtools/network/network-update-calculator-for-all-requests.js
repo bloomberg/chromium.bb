@@ -15,7 +15,7 @@
   function appendRequest(id, type, startTime, endTime) {
     var request = new SDK.NetworkRequest('', '', '', '', '');
     request.setResourceType(type);
-    request.setRequestId(id);
+    request.setRequestIdForTest(id);
     request.setIssueTime(startTime);
     request.endTime = endTime;
     TestRunner.networkManager._dispatcher._startNetworkRequest(request);

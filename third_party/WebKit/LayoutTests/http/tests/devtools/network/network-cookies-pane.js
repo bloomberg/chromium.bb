@@ -14,7 +14,7 @@
 
     var requestFoo = new SDK.NetworkRequest('', '', '', '', '');
     requestFoo.setResourceType(types.XHR);
-    requestFoo.setRequestId('foo');
+    requestFoo.setRequestIdForTest('foo');
     requestFoo.setRequestHeaders([{name: 'Cookie', value: 'mycookie=myvalue;myother=myvalue2'}]);
     panel._showRequest(requestFoo);
     panel._networkItemView._selectTab('cookies');
