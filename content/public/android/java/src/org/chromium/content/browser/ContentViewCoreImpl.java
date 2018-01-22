@@ -147,6 +147,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     private final Context mContext;
     private final String mProductVersion;
+    private final ObserverList<WindowEventObserver> mWindowEventObservers = new ObserverList<>();
+
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsImpl mWebContents;
@@ -329,6 +331,12 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_UNBUFFERED_DISPATCH)
                 && !nativeUsingSynchronousCompositing(mNativeContentViewCore);
         getGestureListenerManager().addListener(new ContentGestureStateListener());
+
+        mWindowEventObservers.addObserver(controller);
+        mWindowEventObservers.addObserver(getGestureListenerManager());
+        mWindowEventObservers.addObserver(mTextSuggestionHost);
+        mWindowEventObservers.addObserver(imeAdapter);
+        mWindowEventObservers.addObserver(mWebContentsAccessibility);
     }
 
     @Override
@@ -426,6 +434,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         getImeAdapter().resetAndHideKeyboard();
+        mWindowEventObservers.clear();
         hidePopupsAndPreserveSelection();
         mWebContents = null;
         mNativeContentViewCore = 0;
@@ -587,14 +596,13 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void onAttachedToWindow() {
         mAttachedToWindow = true;
+        for (WindowEventObserver observer : mWindowEventObservers) observer.onAttachedToWindow();
         addDisplayAndroidObserverIfNeeded();
         if (mWebContents != null) {
             updateTextSelectionUI(true);
-            getImeAdapter().onViewAttachedToWindow();
         }
         GamepadList.onAttachedToWindow(mContext);
         mSystemCaptioningBridge.addListener(this);
-        mWebContentsAccessibility.onAttachedToWindow();
     }
 
     @Override
@@ -612,6 +620,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void onDetachedFromWindow() {
         mAttachedToWindow = false;
+        for (WindowEventObserver observer : mWindowEventObservers) observer.onDetachedFromWindow();
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
 
@@ -622,10 +631,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             // preserve the underlying selection for detachment cases like screen
             // locking and app switching.
             updateTextSelectionUI(false);
-            getImeAdapter().onViewDetachedFromWindow();
         }
         mSystemCaptioningBridge.removeListener(this);
-        mWebContentsAccessibility.onDetachedFromWindow();
     }
 
     @SuppressWarnings("javadoc")
@@ -669,10 +676,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         if (!hasWindowFocus) resetGestureDetection();
-        if (isAlive()) {
-            getImeAdapter().onWindowFocusChanged(hasWindowFocus);
-            getSelectionPopupController().onWindowFocusChanged(hasWindowFocus);
-            getGestureListenerManager().updateOnWindowFocusChanged(hasWindowFocus);
+        for (WindowEventObserver observer : mWindowEventObservers) {
+            observer.onWindowFocusChanged(hasWindowFocus);
         }
     }
 

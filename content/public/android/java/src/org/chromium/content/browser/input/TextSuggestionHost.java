@@ -8,6 +8,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCoreImpl;
+import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
 
@@ -17,9 +18,10 @@ import org.chromium.content_public.browser.WebContents;
  * the commands in that menu (by calling back to the C++ class).
  */
 @JNINamespace("content")
-public class TextSuggestionHost {
+public class TextSuggestionHost implements WindowEventObserver {
     private long mNativeTextSuggestionHost;
     private final ContentViewCoreImpl mContentViewCore;
+    private boolean mIsAttachedToWindow;
 
     private SpellCheckPopupWindow mSpellCheckPopupWindow;
     private TextSuggestionsPopupWindow mTextSuggestionsPopupWindow;
@@ -33,10 +35,22 @@ public class TextSuggestionHost {
         return ((WebContentsImpl) webContents).getRenderCoordinates().getContentOffsetYPix();
     }
 
+    // WindowEventObserver
+
+    @Override
+    public void onAttachedToWindow() {
+        mIsAttachedToWindow = true;
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        mIsAttachedToWindow = false;
+    }
+
     @CalledByNative
     private void showSpellCheckSuggestionMenu(
             double caretXPx, double caretYPx, String markedText, String[] suggestions) {
-        if (!mContentViewCore.isAttachedToWindow()) {
+        if (!mIsAttachedToWindow) {
             // This can happen if a new browser window is opened immediately after tapping a spell
             // check underline, before the timer to open the menu fires.
             onSuggestionMenuClosed(false);
@@ -55,7 +69,7 @@ public class TextSuggestionHost {
     @CalledByNative
     private void showTextSuggestionMenu(
             double caretXPx, double caretYPx, String markedText, SuggestionInfo[] suggestions) {
-        if (!mContentViewCore.isAttachedToWindow()) {
+        if (!mIsAttachedToWindow) {
             // This can happen if a new browser window is opened immediately after tapping a spell
             // check underline, before the timer to open the menu fires.
             onSuggestionMenuClosed(false);

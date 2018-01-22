@@ -23,7 +23,7 @@ import org.chromium.content_public.browser.WebContents;
  * managed by {@link WebContents}.
  */
 @JNINamespace("content")
-public class GestureListenerManagerImpl implements GestureListenerManager {
+public class GestureListenerManagerImpl implements GestureListenerManager, WindowEventObserver {
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<GestureListenerManagerImpl> INSTANCE =
                 GestureListenerManagerImpl::new;
@@ -65,13 +65,12 @@ public class GestureListenerManagerImpl implements GestureListenerManager {
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onTouchDown();
     }
 
-    /**
-     * Update all the listeners after window focus has changed.
-     * @param hasFocus {@code true} if we're gaining focus.
-     */
-    public void updateOnWindowFocusChanged(boolean hasFocus) {
+    // WindowEventObserver
+
+    @Override
+    public void onWindowFocusChanged(boolean gainFocus) {
         for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onWindowFocusChanged(hasFocus);
+            mIterator.next().onWindowFocusChanged(gainFocus);
         }
     }
 
