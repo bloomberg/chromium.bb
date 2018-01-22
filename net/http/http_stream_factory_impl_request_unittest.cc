@@ -11,8 +11,8 @@
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_job_controller.h"
 #include "net/http/http_stream_factory_test_util.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

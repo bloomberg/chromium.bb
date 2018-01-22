@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "chrome/service/service_process.h"
 #include "components/version_info/version_info.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

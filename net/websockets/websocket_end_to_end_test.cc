@@ -26,7 +26,7 @@
 #include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/proxy_delegate.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"

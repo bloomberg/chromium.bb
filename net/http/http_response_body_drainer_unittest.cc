@@ -26,7 +26,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

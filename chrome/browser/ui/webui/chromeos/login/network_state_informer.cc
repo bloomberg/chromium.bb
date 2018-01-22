@@ -17,7 +17,7 @@
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_prefs.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

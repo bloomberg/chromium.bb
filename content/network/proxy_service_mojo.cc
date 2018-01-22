@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/network/proxy_resolver_factory_mojo.h"
 #include "net/dns/mojo_host_resolver_impl.h"
-#include "net/proxy/network_delegate_error_observer.h"
-#include "net/proxy/proxy_resolver_factory.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/network_delegate_error_observer.h"
+#include "net/proxy_resolution/proxy_resolver_factory.h"
+#include "net/proxy_resolution/proxy_service.h"
 
 namespace content {
 

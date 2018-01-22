@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 
 namespace {
 

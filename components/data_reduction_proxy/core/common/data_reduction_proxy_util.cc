@@ -17,8 +17,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_info.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_info.h"
 #include "net/url_request/url_request.h"
 
 #if defined(USE_GOOGLE_API_KEYS)

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/proxy/proxy_retry_info.h"
+#include "net/proxy_resolution/proxy_retry_info.h"
 
 class GURL;
 

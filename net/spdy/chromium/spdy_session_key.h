@@ -7,7 +7,7 @@
 
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 #include "net/socket/socket_tag.h"
 
 namespace net {

@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/proxy_server.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_entry.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy/proxy_server.h"
 
 namespace data_reduction_proxy {
 

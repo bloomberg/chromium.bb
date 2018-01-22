@@ -17,7 +17,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "net/proxy/proxy_server.h"
+#include "net/base/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

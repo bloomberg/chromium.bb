@@ -16,7 +16,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "content/public/common/content_switches.h"
-#include "net/proxy/proxy_config_service_common_unittest.h"
+#include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "url/gurl.h"
 
 namespace {

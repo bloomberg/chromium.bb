@@ -27,8 +27,8 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_config_service_fixed.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

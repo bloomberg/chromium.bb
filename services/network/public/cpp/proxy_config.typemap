@@ -4,10 +4,10 @@
 
 mojom = "//services/network/public/interfaces/proxy_config.mojom"
 public_headers = [
-  "//net/proxy/proxy_bypass_rules.h",
-  "//net/proxy/proxy_config.h",
-  "//net/proxy/proxy_config_source.h",
-  "//net/proxy/proxy_list.h",
+  "//net/proxy_resolution/proxy_bypass_rules.h",
+  "//net/proxy_resolution/proxy_config.h",
+  "//net/proxy_resolution/proxy_config_source.h",
+  "//net/proxy_resolution/proxy_list.h",
 ]
 traits_headers = [ "//services/network/public/cpp/proxy_config_traits.h" ]
 deps = [

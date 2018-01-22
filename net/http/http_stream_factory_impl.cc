@@ -21,7 +21,7 @@
 #include "net/http/http_stream_factory_impl_job_controller.h"
 #include "net/http/http_stream_factory_impl_request.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy/proxy_info.h"
+#include "net/proxy_resolution/proxy_info.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/chromium/spdy_http_stream.h"

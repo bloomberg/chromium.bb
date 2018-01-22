@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_TRUSTED_SOURCES_MANAGER_H_
 
 #include "base/macros.h"
-#include "net/proxy/proxy_bypass_rules.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
 
 class GURL;
 

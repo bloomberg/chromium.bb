@@ -11,7 +11,7 @@
 #include <string>
 
 #include "components/proxy_config/proxy_prefs.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 
 class ProxyConfigDictionary;
 

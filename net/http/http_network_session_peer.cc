@@ -6,7 +6,7 @@
 
 #include "net/base/network_throttle_manager.h"
 #include "net/http/http_proxy_client_socket_pool.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"

@@ -9,8 +9,8 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/interfaces/proxy_config.mojom.h"
 
 namespace net {

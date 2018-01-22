@@ -11,9 +11,9 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
-#include "net/proxy/mock_proxy_resolver.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy_resolution/mock_proxy_resolver.h"
+#include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

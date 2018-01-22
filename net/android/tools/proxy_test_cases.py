@@ -6,7 +6,7 @@
 """Generator script for proxy tests.
 
 See AndroidProxySelectorTest.java
-and net/proxy/proxy_config_service_android_unittest.cc
+and net/proxy_resolution/proxy_config_service_android_unittest.cc
 
 To generate C++, run this script without arguments.
 To generate Java, run this script with -j argument.

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "net/proxy/proxy_config.h"
+#include "net/proxy_resolution/proxy_config.h"
 #include "url/url_constants.h"
 
 namespace {

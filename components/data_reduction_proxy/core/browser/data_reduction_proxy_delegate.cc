@@ -20,11 +20,11 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_server.h"
+#include "net/proxy_resolution/proxy_info.h"
 
 namespace data_reduction_proxy {
 

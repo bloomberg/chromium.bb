@@ -29,8 +29,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_LINUX)
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service_fixed.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service_fixed.h"
 #endif
 
 namespace {

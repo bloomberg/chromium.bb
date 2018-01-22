@@ -33,8 +33,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service_common_unittest.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -61,7 +61,7 @@ struct Input {
 // Shortcuts to declare enums within chromeos's ProxyConfig.
 #define MK_MODE(mode) UIProxyConfig::MODE_##mode
 
-// Inspired from net/proxy/proxy_config_service_linux_unittest.cc.
+// Inspired from net/proxy_resolution/proxy_config_service_linux_unittest.cc.
 const struct TestParams {
   // Short description to identify the test
   std::string description;
