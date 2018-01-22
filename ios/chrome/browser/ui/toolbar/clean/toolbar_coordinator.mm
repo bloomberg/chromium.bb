@@ -218,11 +218,6 @@
   // TODO(crbug.com/803383): This should be done inside the location bar.
   // Updates the omnibox.
   [self.locationBarCoordinator updateOmniboxState];
-  // Updates the toolbar buttons.
-  // TODO(crbug.com/803386): This call is needed for interstitials. Check if it
-  // is possible to remove it.
-  if ([self getWebState])
-    [self.mediator updateConsumerForWebState:[self getWebState]];
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
