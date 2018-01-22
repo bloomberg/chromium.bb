@@ -334,8 +334,9 @@ const int ThreadWatcherList::kSleepSeconds = 1;
 const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
 const int ThreadWatcherList::kUnresponsiveCount = 9;
-// static
-const int ThreadWatcherList::kLiveThreadsThreshold = 2;
+// static, configured high to catch single thread hangs
+// TODO(gab): Clean this up, https://crbug.com/804345
+const int ThreadWatcherList::kLiveThreadsThreshold = BrowserThread::ID_COUNT;
 // static, non-const for tests.
 int ThreadWatcherList::g_initialize_delay_seconds = 120;
 
