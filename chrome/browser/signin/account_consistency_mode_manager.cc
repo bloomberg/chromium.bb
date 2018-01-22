@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -76,6 +77,9 @@ void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
 // static
 bool AccountConsistencyModeManager::IsDiceEnabledForProfile(
     const Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+
   return profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE &&
          signin::IsDiceEnabledForProfile(profile->GetPrefs());
 }
@@ -93,3 +97,16 @@ bool AccountConsistencyModeManager::IsReadyForDiceMigration() {
          profile_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref);
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+// static
+bool AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+    const Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+
+#if defined(OS_CHROMEOS)
+  return profile->IsChild();
+#else
+  return signin::IsAccountConsistencyMirrorEnabled();
+#endif
+}
