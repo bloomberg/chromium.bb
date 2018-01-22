@@ -251,17 +251,34 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
     return;
   }
 
-  source_ = callback;
-
-  // Ensure that the endpoint buffer is prepared with silence.
+  // Ensure that the endpoint buffer is prepared with silence. Also serves as
+  // a sanity check for the IAudioClient and IAudioRenderClient which may have
+  // been invalidated by Windows since the last Stop() call.
+  //
+  // While technically we only need to retry when WASAPI tells us the device has
+  // been invalidated (AUDCLNT_E_DEVICE_INVALIDATED), we retry for all errors
+  // for simplicity and due to large sites like YouTube reporting high success
+  // rates with a simple retry upon detection of an audio output error.
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
     if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
             audio_client_.Get(), audio_render_client_.Get())) {
-      LOG(ERROR) << "Failed to prepare endpoint buffers with silence.";
-      callback->OnError();
-      return;
+      DLOG(WARNING) << "Failed to prepare endpoint buffers with silence. "
+                       "Attempting recovery with a new IAudioClient and "
+                       "IAudioRenderClient.";
+
+      opened_ = false;
+      audio_client_.Reset();
+      audio_render_client_.Reset();
+      if (!Open() || !CoreAudioUtil::FillRenderEndpointBufferWithSilence(
+                         audio_client_.Get(), audio_render_client_.Get())) {
+        DLOG(ERROR) << "Failed recovery of audio clients; Start() failed.";
+        callback->OnError();
+        return;
+      }
     }
   }
+
+  source_ = callback;
   num_written_frames_ = endpoint_buffer_size_frames_;
 
   // Create and start the thread that will drive the rendering by waiting for
