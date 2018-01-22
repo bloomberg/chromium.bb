@@ -33,8 +33,8 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   void DidStopLoading(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
-  // Setter for whether the current page's SSL is broken.
-  void SetIsSSLBroken(bool broken);
+  // Setter for whether the current page's SSL should disable fullscreen.
+  void SetDisableFullscreenForSSL(bool disable);
   // Setter for whether the WebState is currently loading.
   void SetIsLoading(bool loading);
 
@@ -47,7 +47,7 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   // Observer for |web_state_|'s scroll view proxy.
   __strong FullscreenWebScrollViewReplacementHandler*
       scroll_view_replacement_handler_;
-  // The disabler for broken SSL.
+  // The disabler for invalid SSL states.
   std::unique_ptr<ScopedFullscreenDisabler> ssl_disabler_;
   // The disabler for loading.
   std::unique_ptr<ScopedFullscreenDisabler> loading_disabler_;
