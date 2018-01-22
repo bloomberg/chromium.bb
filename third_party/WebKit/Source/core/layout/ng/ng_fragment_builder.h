@@ -6,6 +6,7 @@
 #define NGFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_border_edges.h"
+#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/geometry/ng_physical_rect.h"
 #include "core/layout/ng/inline/ng_baseline.h"
@@ -44,6 +45,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGLogicalSize Size() const final { return {inline_size_, block_size_}; }
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
+  NGFragmentBuilder& SetPadding(const NGBoxStrut&);
 
   using NGContainerFragmentBuilder::AddChild;
 
@@ -185,6 +187,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   LayoutObject* layout_object_;
 
   LayoutUnit intrinsic_block_size_;
+  NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_old_layout_root_;

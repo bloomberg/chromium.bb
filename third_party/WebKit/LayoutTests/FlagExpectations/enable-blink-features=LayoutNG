@@ -1361,7 +1361,6 @@ crbug.com/714962 external/wpt/css/css-backgrounds/background-image-003.html [ Fa
 crbug.com/714962 external/wpt/css/css-backgrounds/background-image-004.html [ Failure Pass ]
 crbug.com/714962 external/wpt/css/css-backgrounds/background-image-005.html [ Failure ]
 crbug.com/714962 external/wpt/css/css-backgrounds/background-image-006.html [ Failure Pass ]
-crbug.com/714962 external/wpt/css/css-backgrounds/css3-background-clip.html [ Failure ]
 crbug.com/714962 external/wpt/css/css-display/display-contents-dynamic-before-after-001.html [ Failure ]
 crbug.com/714962 external/wpt/css/css-display/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]

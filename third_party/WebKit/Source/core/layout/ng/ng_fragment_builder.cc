@@ -51,6 +51,11 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::SetPadding(const NGBoxStrut& padding) {
+  padding_ = padding;
+  return *this;
+}
+
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
     scoped_refptr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
@@ -268,6 +273,8 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   scoped_refptr<NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), physical_size, children_,
+          padding_.ConvertToPhysical(GetWritingMode(), Direction())
+              .SnapToDevicePixels(),
           contents_visual_rect, baselines_, BoxType(), is_old_layout_root_,
           border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
 

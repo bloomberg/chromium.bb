@@ -574,6 +574,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
   DCHECK(item.Style());
   item_result->margins =
       ComputeMarginsForVisualContainer(constraint_space_, *item.Style());
+  item_result->padding = ComputePadding(constraint_space_, *item.Style());
   item_result->inline_size += item_result->margins.InlineSum();
 
   line_.position += item_result->inline_size;
@@ -694,6 +695,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
       (style.HasMargin() && item_result->has_edge)) {
     NGBoxStrut borders = ComputeBorders(constraint_space_, style);
     NGBoxStrut paddings = ComputePadding(constraint_space_, style);
+    item_result->padding = paddings;
     item_result->borders_paddings_block_start =
         borders.block_start + paddings.block_start;
     item_result->borders_paddings_block_end =

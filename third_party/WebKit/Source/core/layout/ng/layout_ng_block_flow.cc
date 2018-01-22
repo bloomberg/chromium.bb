@@ -106,6 +106,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
 
   container_builder.SetInlineSize(containing_block_logical_width);
   container_builder.SetBlockSize(containing_block_logical_height);
+  container_builder.SetPadding(
+      ComputePadding(*constraint_space, *container_style));
 
   // Determine static position.
 

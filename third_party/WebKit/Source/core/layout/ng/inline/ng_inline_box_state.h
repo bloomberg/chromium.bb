@@ -58,6 +58,7 @@ struct NGInlineBoxState {
   // is set.
   bool has_start_edge = false;
   bool has_end_edge = false;
+  NGBoxStrut padding;
   // |CreateBoxFragment()| needs margin, border+padding, and the sum of them.
   LayoutUnit margin_inline_start;
   LayoutUnit margin_inline_end;
@@ -180,6 +181,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
     bool has_line_left_edge = false;
     bool has_line_right_edge = false;
+    NGBoxStrut padding;
     // |CreateBoxFragment()| needs margin, border+padding, and the sum of them.
     LayoutUnit margin_line_left;
     LayoutUnit margin_line_right;

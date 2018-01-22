@@ -47,8 +47,9 @@ struct CORE_EXPORT NGInlineItemResult {
   // NGLayoutResult for atomic inline items.
   scoped_refptr<NGLayoutResult> layout_result;
 
-  // Margins for atomic inline items and open/close tags.
+  // Margins and padding for atomic inline items and open/close tags.
   NGBoxStrut margins;
+  NGBoxStrut padding;
 
   // Borders/padding for open tags.
   LayoutUnit borders_paddings_block_start;
