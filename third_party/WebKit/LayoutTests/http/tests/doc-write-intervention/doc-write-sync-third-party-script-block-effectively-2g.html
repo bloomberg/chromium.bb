@@ -7,12 +7,11 @@
     var loadSuccess = false;
     if (window.internals && window.testRunner) {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G(true);
-        internals.setNetworkConnectionInfoOverride(true, 'cellular3g', 2.0);
+        internals.setNetworkConnectionInfoOverride(true, 'cellular3g', 'slow-2g', 2000, 2.0);
         internals.evictAllResources();
-        window.testRunner.setEffectiveConnectionType('TypeSlow2G');
         window.addEventListener('beforeunload', function() {
             internals.clearNetworkConnectionInfoOverride();
-            window.testRunner.setEffectiveConnectionType('TypeUnknown');
+            internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '4g', 100, 2.0);
             internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G(false);
         }, false);
     }

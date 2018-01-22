@@ -47,7 +47,7 @@ function convertType(type) {
 }
 
 for(var i = 0; i < types.length; i++)
-  internals.setNetworkConnectionInfoOverride(isTypeOnline(types[i][0]), convertType(types[i][0]), types[i][1]);
+  internals.setNetworkConnectionInfoOverride(isTypeOnline(types[i][0]), convertType(types[i][0]), initialEffectiveType, initialRtt, types[i][1]);
 
 </script>
 </body>

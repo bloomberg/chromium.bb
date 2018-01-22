@@ -29,11 +29,11 @@ var handler = function(e) {
     shouldBe('connection.downlink', 'initialDownlink', false, initialDownlinkMaxNoise);
     connection.removeEventListener('change', handler);
     connection.addEventListener('change', otherHandler);
-    internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialDownlinkMax);
+    internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialEffectiveType, initialRtt, initialDownlinkMax);
 };
 
 connection.addEventListener('change', handler);
-internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, initialEffectiveType, initialRtt, newDownlinkMax);
 
 </script>
 </body>

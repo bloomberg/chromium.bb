@@ -3191,6 +3191,8 @@ bool Internals::ignoreLayoutWithPendingStylesheets(Document* document) {
 void Internals::setNetworkConnectionInfoOverride(
     bool on_line,
     const String& type,
+    const String& effective_type,
+    unsigned long http_rtt_msec,
     double downlink_max_mbps,
     ExceptionState& exception_state) {
   WebConnectionType webtype;
@@ -3220,14 +3222,6 @@ void Internals::setNetworkConnectionInfoOverride(
         ExceptionMessages::FailedToEnumerate("connection type", type));
     return;
   }
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(on_line, webtype,
-                                                             downlink_max_mbps);
-}
-
-void Internals::setNetworkQualityInfoOverride(const String& effective_type,
-                                              unsigned long transport_rtt_msec,
-                                              double downlink_throughput_mbps,
-                                              ExceptionState& exception_state) {
   WebEffectiveConnectionType web_effective_type =
       WebEffectiveConnectionType::kTypeUnknown;
   if (effective_type == "offline") {
@@ -3246,10 +3240,8 @@ void Internals::setNetworkQualityInfoOverride(const String& effective_type,
                             "effective connection type", effective_type));
     return;
   }
-
-  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
-      web_effective_type, transport_rtt_msec, downlink_throughput_mbps);
-
+  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+      on_line, webtype, web_effective_type, http_rtt_msec, downlink_max_mbps);
   GetFrame()->Client()->SetEffectiveConnectionTypeForTesting(
       web_effective_type);
 }

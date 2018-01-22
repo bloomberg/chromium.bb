@@ -39,7 +39,7 @@ connection.addEventListener('change', function(e) {
 });
 
 for(var i = 0; i < values.length; i++)
-  internals.setNetworkQualityInfoOverride(values[i][0], values[i][1], values[i][2]);
+  internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, values[i][0], values[i][1], values[i][2]);
 
 </script>
 </body>

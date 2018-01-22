@@ -328,8 +328,7 @@ enum EffectiveConnectionType {
     boolean ignoreLayoutWithPendingStylesheets(Document document);
 
     // These functions are for testing NetInfo. You must call clearNetworkConnectionInfoOverride() at the end.
-    [RaisesException] void setNetworkConnectionInfoOverride(boolean onLine, DOMString type, double downlinkMaxMbps);
-    [RaisesException] void setNetworkQualityInfoOverride(EffectiveConnectionType effective_type, unsigned long transport_rtt_msec, double downlink_throughput_mbps);
+    [RaisesException] void setNetworkConnectionInfoOverride(boolean onLine, DOMString type, EffectiveConnectionType effective_type, unsigned long http_rtt_msec, double downlink_max_mbps);
     void setSaveDataEnabled(boolean enabled);
     void clearNetworkConnectionInfoOverride();
 

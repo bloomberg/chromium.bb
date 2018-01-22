@@ -76,6 +76,7 @@
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
@@ -1460,11 +1461,13 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
   }
   // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
   // have per-frame override instead.
-  if (offline || latency || download_throughput || upload_throughput)
+  if (offline || latency || download_throughput || upload_throughput) {
     GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-        !offline, type, download_throughput / (1024 * 1024 / 8));
-  else
+        !offline, type, base::nullopt, latency,
+        download_throughput / (1024 * 1024 / 8));
+  } else {
     GetNetworkStateNotifier().ClearOverride();
+  }
   return Response::OK();
 }
 

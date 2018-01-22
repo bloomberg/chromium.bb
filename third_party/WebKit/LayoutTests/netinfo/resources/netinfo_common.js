@@ -24,8 +24,8 @@ var newDownlinkMaxNoise = newDownlink * 0.11 + 50;
 
 // Suppress connection messages information from the host.
 if (window.internals) {
-    internals.setNetworkConnectionInfoOverride(true, initialType, initialDownlinkMax);
-    internals.setNetworkQualityInfoOverride(initialEffectiveType, initialRtt, initialDownlink);
+    internals.setNetworkConnectionInfoOverride(true, initialType,
+        initialEffectiveType, initialRtt, initialDownlinkMax);
 
     // Reset the state of the singleton network state notifier.
     window.addEventListener('beforeunload', function() {

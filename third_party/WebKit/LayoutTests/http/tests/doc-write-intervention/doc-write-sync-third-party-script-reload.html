@@ -11,7 +11,7 @@
     }, "window.internals is required for the test to run");
 
     internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
-    internals.setNetworkConnectionInfoOverride(true, 'cellular2g', 1.0);
+    internals.setNetworkConnectionInfoOverride(true, 'cellular2g', '4g', 100, 1.0);
     internals.evictAllResources();
 
     window.addEventListener('beforeunload', function() {

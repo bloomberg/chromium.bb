@@ -22,7 +22,7 @@ if (window.testRunner)
 // Slow network that allows effectively 3G cellular network speed will cause an
 // User-Agent Intervention. Under the situation, 'auto' should behave as 'swap'.
 if (window.internals) {
-    internals.setNetworkQualityInfoOverride('3g', 10.0, 0.1);
+    internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '3g', 2000, 0.1);
 
     // Reset the state of the singleton network state notifier.
     window.addEventListener('beforeunload', function() {

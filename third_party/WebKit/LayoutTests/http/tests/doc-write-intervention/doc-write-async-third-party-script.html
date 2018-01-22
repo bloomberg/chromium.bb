@@ -8,7 +8,7 @@
     var loadSuccess = false;
     if (window.internals) {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
-        internals.setNetworkConnectionInfoOverride(true, 'cellular2g', 2.0);
+        internals.setNetworkConnectionInfoOverride(true, 'cellular2g', '4g', 100, 2.0);
         internals.evictAllResources();
 
         window.addEventListener('beforeunload', function() {

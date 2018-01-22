@@ -16,14 +16,14 @@ PASS connection.saveData is false
 PASS connection.downlinkMax is initialDownlinkMax
 PASS connection.effectiveType is newEffectiveType
 PASS connection.rtt is newRtt
-PASS connection.downlink is newDownlink
+PASS connection.downlink is newDownlinkMax
 PASS typeof connection.type is "string"
 PASS connection.type is newConnectionType
 PASS connection.saveData is false
 PASS connection.downlinkMax is newDownlinkMax
 PASS connection.effectiveType is newEffectiveType
 PASS connection.rtt is newRtt
-PASS connection.downlink is newDownlink
+PASS connection.downlink is newDownlinkMax
 PASS successfullyParsed is true
 
 TEST COMPLETE
