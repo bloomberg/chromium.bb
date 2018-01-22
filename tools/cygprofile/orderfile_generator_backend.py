@@ -541,6 +541,9 @@ class OrderfileGenerator(object):
         assert os.path.exists(self._compiler.lib_chrome_so)
         offsets = process_profiles.GetReachedOffsetsFromDumpFiles(
             files, self._compiler.lib_chrome_so)
+        if not offsets:
+          raise Exception('No profiler offsets found in {}'.format(
+                          '\n'.join(files)))
         with open(self._MERGED_CYGLOG_FILENAME, 'w') as f:
           f.write('\n'.join(map(str, offsets)))
       else:
@@ -548,7 +551,7 @@ class OrderfileGenerator(object):
           self._step_recorder.RunCommand([self._MERGE_TRACES_SCRIPT] + files,
                                          constants.DIR_SOURCE_ROOT,
                                          stdout=merged_cyglog)
-    except CommandError:
+    except Exception:
       for f in files:
         self._SaveForDebugging(f)
       raise

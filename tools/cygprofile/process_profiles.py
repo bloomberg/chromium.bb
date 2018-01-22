@@ -18,6 +18,17 @@ sys.path.append(path)
 import symbol_extractor
 
 
+def _Median(items):
+  if not items:
+    return None
+  sorted_items = sorted(items)
+  if len(sorted_items) & 1:
+    return sorted_items[len(sorted_items)/2]
+  else:
+    return (sorted_items[len(sorted_items)/2 - 1] +
+            sorted_items[len(sorted_items)/2]) / 2
+
+
 class SymbolOffsetProcessor(object):
   """Utility for processing symbols in binaries.
 
@@ -167,44 +178,145 @@ class SymbolOffsetProcessor(object):
     return offset_to_symbol_info
 
 
-def _SortedFilenames(filenames):
-  """Returns filenames in ascending timestamp order.
+class ProfileManager(object):
+  """Manipulates sets of profiles.
 
-  Args:
-    filenames: (str iterable) List of filenames, matching.  *-TIMESTAMP.*.
+  The manager supports only lightweight-style profiles (see
+  lightweight_cygprofile.cc) and not the older cygprofile offset lists.
 
-  Returns:
-    [str] Ordered by ascending timestamp.
+  A "profile set" refers to a set of data from an instrumented version of chrome
+  that will be processed together, usually to produce a single orderfile. A
+  "run" refers to a session of chrome, visiting several pages and thus
+  comprising a browser process and at least one renderer process. A "dump"
+  refers to the instrumentation in chrome writing out offsets of instrumented
+  functions. There may be several dumps per run, for example one describing
+  chrome startup and a second describing steady-state page interaction. Each
+  process in a run produces one file per dump.
+
+  These dump files have a timestamp of the dump time. Each process produces its
+  own timestamp, but the dumps from each process occur very near in time to each
+  other (< 1 second). If there are several dumps per run, each set of dumps is
+  marked by a "phase" in the filename which is consistent across processes. For
+  example the dump for the startup could be phase 0 and then the steady-state
+  would be labeled phase 1.
+
+  We assume the files are named like *-TIMESTAMP.SUFFIX_PHASE, where TIMESTAMP
+  is in nanoseconds, SUFFIX is string without dashes, PHASE is an integer
+  numbering the phases as 0, 1, 2..., and the only dot is the one between
+  TIMESTAMP and SUFFIX. Note that the current dump filename also includes a
+  process id which is currently unused.
+
+  This manager supports several configurations of dumps.
+
+  * A single dump from a single run. These files are merged together to produce
+    a single dump without regard for browser versus renderer methods.
+
+  * Several phases of dumps from a single run. Files are grouped by phase as
+    described above.
+
+  * Several phases of dumps from multiple runs from a set of telemetry
+    benchmarks. The timestamp is used to distinguish each run because each
+    benchmark takes < 10 seconds to run but there are > 50 seconds of setup
+    time. This files can be grouped into run sets that are within 30 seconds of
+    each other. Each run set is then grouped into phases as before.
   """
-  filename_timestamp = []
-  for filename in filenames:
-    dash_index = filename.rindex('-')
-    dot_index = filename.rindex('.')
-    timestamp = int(filename[dash_index+1:dot_index])
-    filename_timestamp.append((filename, timestamp))
-  filename_timestamp.sort(key=operator.itemgetter(1))
-  return [x[0] for x in filename_timestamp]
 
+  class _RunGroup(object):
+    RUN_GROUP_THRESHOLD_NS = 30e9
 
-def MergeDumps(filenames):
-  """Merges several dumps.
+    def __init__(self):
+      self._filenames = []
 
-  Args:
-    filenames: (str iterable) List of dump filenames.
+    def Filenames(self, phase=None):
+      if phase is None:
+        return self._filenames
+      return [f for f in self._filenames
+              if ProfileManager._Phase(f) == phase]
 
-  Returns:
-    [int] Ordered list of reached offsets. Each offset only appears
-    once in the output, in the order of the first dump that contains it.
-  """
-  dumps = [[int(x.strip()) for x in open(filename)] for filename in filenames]
-  seen_offsets = set()
-  result = []
-  for dump in dumps:
-    for offset in dump:
-      if offset not in seen_offsets:
-        result.append(offset)
-        seen_offsets.add(offset)
-  return result
+    def Add(self, filename):
+      self._filenames.append(filename)
+
+    def IsCloseTo(self, filename):
+      run_group_ts = _Median(
+          [ProfileManager._Timestamp(f) for f in self._filenames])
+      return abs(ProfileManager._Timestamp(filename) -
+                 run_group_ts) < self.RUN_GROUP_THRESHOLD_NS
+
+  def __init__(self, filenames):
+    """Initialize a ProfileManager.
+
+    Args:
+      filenames ([str]): List of filenames describe the profile set.
+    """
+    self._filenames = sorted(filenames, key=self._Timestamp)
+    self._run_groups = None
+
+  def GetMergedOffsets(self, phase=None):
+    """Merges files, as if from a single dump.
+
+    Args:
+      phase (int, optional) If present, restrict to this phase.
+
+    Returns:
+      [int] Ordered list of reached offsets. Each offset only appears
+      once in the output, in the order of the first dump that contains it.
+    """
+    if phase is None:
+      return self._GetOffsetsForGroup(self._filenames)
+    return self._GetOffsetsForGroup(f for f in self._filenames
+                                    if self._Phase(f) == phase)
+
+  def GetRunGroupOffsets(self, phase=None):
+    """Merges files from each run group and returns offset list for each.
+
+    Args:
+      phase (int, optional) If present, restrict to this phase.
+
+    Returns:
+     [ [int] ] List of offsets lists, each as from GetMergedOffsets.
+    """
+    return [self._GetOffsetsForGroup(g) for g in self._GetRunGroups(phase)]
+
+  def _GetOffsetsForGroup(self, filenames):
+    dumps = [self._ReadOffsets(f) for f in filenames]
+    seen_offsets = set()
+    result = []
+    for dump in dumps:
+      for offset in dump:
+        if offset not in seen_offsets:
+          result.append(offset)
+          seen_offsets.add(offset)
+    return result
+
+  def _GetRunGroups(self, phase=None):
+    if self._run_groups is None:
+      self._ComputeRunGroups()
+    return [g.Filenames(phase) for g in self._run_groups]
+
+  @classmethod
+  def _Timestamp(cls, filename):
+      dash_index = filename.rindex('-')
+      dot_index = filename.rindex('.')
+      return int(filename[dash_index+1:dot_index])
+
+  @classmethod
+  def _Phase(cls, filename):
+    return int(filename.split('_')[-1])
+
+  def _ReadOffsets(self, filename):
+    return [int(x.strip()) for x in open(filename)]
+
+  def _ComputeRunGroups(self):
+    self._run_groups = []
+    for f in self._filenames:
+      for g in self._run_groups:
+        if g.IsCloseTo(f):
+          g.Add(f)
+          break
+      else:
+        g = self._RunGroup()
+        g.Add(f)
+        self._run_groups.append(g)
 
 
 def GetReachedOffsetsFromDumpFiles(dump_filenames, library_filename):
@@ -219,7 +331,10 @@ def GetReachedOffsetsFromDumpFiles(dump_filenames, library_filename):
       given by the deduplicated order of offsets found in dump_filenames (see
       also MergeDumps().
   """
-  dump = MergeDumps(dump_filenames)
+  dump = ProfileManager(dump_filenames).GetMergedOffsets()
+  if not dump:
+    logging.error('Empty dump, cannot continue: %s', '\n'.join(dump_filenames))
+    return None
   logging.info('Reached offsets = %d', len(dump))
   processor = SymbolOffsetProcessor(library_filename)
   return processor.GetReachedOffsetsFromDump(dump)
@@ -251,7 +366,9 @@ def main():
   args = parser.parse_args()
   logging.info('Merging dumps')
   dump_files = args.dumps.split(',')
-  dumps = MergeDumps(_SortedFilenames(dump_files))
+  profile_manager = ProfileManager(dump_files)
+  profile_manager.SortByTimestamp()
+  dumps = profile_manager.GetMergedOffsets()
 
   instrumented_native_lib = os.path.join(args.instrumented_build_dir,
                                          'lib.unstripped', args.library_name)
