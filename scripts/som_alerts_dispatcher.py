@@ -541,6 +541,10 @@ def GenerateAlertsSummary(db, builds=None,
       logging.error('Invalid build tuple: %s' % str(build_tuple))
       continue
 
+    if master is None:
+      logging.warn('Could not locate build %s %s', waterfall, build_config)
+      continue
+
     statuses = [master]
     stages = db.GetBuildStages(master['id'])
     exceptions = db.GetBuildsFailures([master['id']])
