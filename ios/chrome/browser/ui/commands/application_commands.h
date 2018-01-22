@@ -98,6 +98,12 @@
 // Shows the Add Account UI, presenting from |baseViewController|.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController;
 
+// Prepares the UI for ClearBrowsingData.
+- (void)prepareForBrowsingDataRemoval;
+
+// Updates the UI once ClearBrowsingData has occured.
+- (void)browsingDataWasRemoved;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_

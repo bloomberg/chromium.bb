@@ -10,9 +10,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
@@ -110,9 +107,6 @@
 
 // Creates an autoreleased "CANCEL" button that closes the settings when tapped.
 - (UIBarButtonItem*)cancelButton;
-
-// Intercepts some commands and forwards all others up the responder chain.
-- (void)chromeExecuteCommand:(id)sender;
 
 @end
 
@@ -486,30 +480,6 @@ initWithRootViewController:(UIViewController*)rootViewController
 // Ensures that the keyboard is always dismissed during a navigation transition.
 - (BOOL)disablesAutomaticKeyboardDismissal {
   return NO;
-}
-
-#pragma mark - UIResponder (ChromeExecuteCommand)
-
-- (void)chromeExecuteCommand:(id)sender {
-  switch ([sender tag]) {
-    case IDC_CLEAR_BROWSING_DATA_IOS: {
-      // Check that the data for the right browser state is being cleared before
-      // forwarding it up the responder chain.
-      ios::ChromeBrowserState* commandBrowserState =
-          [base::mac::ObjCCast<ClearBrowsingDataCommand>(sender) browserState];
-
-      // Clearing browsing data for the wrong profile is a destructive action.
-      // Executing it on the wrong profile is a privacy issue. Kill the
-      // app if this ever happens.
-      CHECK_EQ(commandBrowserState, [self mainBrowserState]);
-      break;
-    }
-    default:
-      NOTREACHED()
-          << "Unexpected command " << [sender tag]
-          << " Settings commands must execute on the main browser state.";
-  }
-  [[self nextResponder] chromeExecuteCommand:sender];
 }
 
 #pragma mark - UIResponder
