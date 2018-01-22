@@ -163,7 +163,8 @@
       </div>
     </template>
 
-    <template is="dom-if" if="[[propertiesSent_]]">
+    <template is="dom-if"
+        if="[[connectingIsVisible_(propertiesSent_, error_)]]">
       <div class="property-box">
         <div class="start layout horizontal center">
           <cr-network-icon is-list-item

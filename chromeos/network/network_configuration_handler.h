@@ -161,6 +161,10 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const network_handler::ServiceResultCallback& callback,
       const dbus::ObjectPath& service_path);
 
+  void ConfigurationFailed(const network_handler::ErrorCallback& error_callback,
+                           const std::string& dbus_error_name,
+                           const std::string& dbus_error_message);
+
   // Called from ProfileEntryDeleter instances when they complete causing
   // this class to delete the instance.
   void ProfileEntryDeleterCompleted(const std::string& service_path,
