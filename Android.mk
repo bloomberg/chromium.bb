@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := \
 	i915.c \
 	marvell.c \
 	mediatek.c \
+	msm.c \
 	nouveau.c \
 	rockchip.c \
 	tegra.c \

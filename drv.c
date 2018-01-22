@@ -39,6 +39,9 @@ extern const struct backend backend_marvell;
 #ifdef DRV_MEDIATEK
 extern const struct backend backend_mediatek;
 #endif
+#ifdef DRV_MSM
+extern const struct backend backend_msm;
+#endif
 extern const struct backend backend_nouveau;
 #ifdef DRV_RADEON
 extern const struct backend backend_radeon;
@@ -85,6 +88,9 @@ static const struct backend *drv_get_backend(int fd)
 #endif
 #ifdef DRV_MEDIATEK
 		&backend_mediatek,
+#endif
+#ifdef DRV_MSM
+		&backend_msm,
 #endif
 		&backend_nouveau,
 #ifdef DRV_RADEON
