@@ -272,11 +272,11 @@ void VrGLThread::SetAudioCaptureEnabled(bool enabled) {
                             browser_ui_, enabled));
 }
 
-void VrGLThread::SetLocationAccess(bool enabled) {
+void VrGLThread::SetLocationAccessEnabled(bool enabled) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::BrowserUiInterface::SetLocationAccess,
-                                     browser_ui_, enabled));
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetLocationAccessEnabled,
+                            browser_ui_, enabled));
 }
 
 void VrGLThread::SetVideoCaptureEnabled(bool enabled) {

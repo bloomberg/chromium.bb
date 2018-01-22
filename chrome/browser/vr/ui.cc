@@ -112,23 +112,23 @@ void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {
 }
 
 void Ui::SetVideoCaptureEnabled(bool enabled) {
-  model_->permissions.video_capture_enabled = enabled;
+  model_->capturing_state.video_capture_enabled = enabled;
 }
 
 void Ui::SetScreenCaptureEnabled(bool enabled) {
-  model_->permissions.screen_capture_enabled = enabled;
+  model_->capturing_state.screen_capture_enabled = enabled;
 }
 
 void Ui::SetAudioCaptureEnabled(bool enabled) {
-  model_->permissions.audio_capture_enabled = enabled;
+  model_->capturing_state.audio_capture_enabled = enabled;
 }
 
 void Ui::SetBluetoothConnected(bool enabled) {
-  model_->permissions.bluetooth_connected = enabled;
+  model_->capturing_state.bluetooth_connected = enabled;
 }
 
-void Ui::SetLocationAccess(bool enabled) {
-  model_->permissions.location_access = enabled;
+void Ui::SetLocationAccessEnabled(bool enabled) {
+  model_->capturing_state.location_access_enabled = enabled;
 }
 
 void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {

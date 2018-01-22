@@ -113,7 +113,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetScreenCaptureEnabled(true);
   ui_->SetAudioCaptureEnabled(true);
   ui_->SetBluetoothConnected(true);
-  ui_->SetLocationAccess(true);
+  ui_->SetLocationAccessEnabled(true);
   ui_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
 }

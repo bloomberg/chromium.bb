@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_VR_MODEL_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_MODEL_H_
 
+#include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/modal_prompt_type.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/permissions_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -73,7 +73,7 @@ struct Model {
 
   // State affecting both VR browsing and WebVR.
   ModalPromptType active_modal_prompt_type = kModalPromptTypeNone;
-  PermissionsModel permissions;
+  CapturingStateModel capturing_state;
   bool experimental_features_enabled = false;
   bool skips_redraw_when_not_dirty = false;
   bool exiting_vr = false;
