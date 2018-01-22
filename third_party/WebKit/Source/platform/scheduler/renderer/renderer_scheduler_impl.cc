@@ -25,6 +25,7 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
+#include "platform/scheduler/child/process_state.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
@@ -271,6 +272,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   }
   delay_for_background_tab_stopping_ = base::TimeDelta::FromMilliseconds(
       delay_for_background_tab_stopping_millis);
+
+  internal::ProcessState::Get()->is_process_backgrounded =
+      main_thread_only().renderer_backgrounded;
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -880,6 +884,7 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   }
 
   main_thread_only().renderer_backgrounded = backgrounded;
+  internal::ProcessState::Get()->is_process_backgrounded = backgrounded;
 
   main_thread_only().background_status_changed_at = tick_clock()->NowTicks();
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();

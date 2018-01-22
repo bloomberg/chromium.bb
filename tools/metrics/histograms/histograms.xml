@@ -110251,6 +110251,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="RendererScheduler.RendererMainThreadLoad5"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="RendererScheduler.ProcessVisibilityStateSplit"
+    separator=".">
+  <suffix name="Background"/>
+  <suffix name="Foreground"/>
+  <affected-histogram name="RendererScheduler.TaskCPUDurationPerThreadType"/>
+  <affected-histogram name="RendererScheduler.TaskDurationPerThreadType"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="RendererScheduler.TaskCountPerTaskLength"
     separator=".">
   <suffix name="LongerThan16ms"/>
