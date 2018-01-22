@@ -360,7 +360,7 @@ willPositionSheet:(NSWindow*)sheet
   // Have to do this here, otherwise later calls can crash because the window
   // has no delegate.
   [sourceWindow setDelegate:nil];
-  [destWindow setDelegate:self];
+  [destWindow setDelegate:[self nsWindowController]];
 
   // With this call, valgrind complains that a "Conditional jump or move depends
   // on uninitialised value(s)".  The error happens in -[NSThemeFrame
@@ -389,7 +389,7 @@ willPositionSheet:(NSWindow*)sheet
 
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];
-  [destWindow setWindowController:self];
+  [destWindow setWindowController:[self nsWindowController]];
 
   // Move the status bubble over, if we have one.
   if (statusBubble_)
@@ -608,9 +608,8 @@ willPositionSheet:(NSWindow*)sheet
 
       NSWindow* windowForToolbar = [window _windowForToolbar];
       if ([windowForToolbar isKindOfClass:[FramedBrowserWindow class]]) {
-        BrowserWindowController* bwc =
-            base::mac::ObjCCastStrict<BrowserWindowController>(
-                [windowForToolbar windowController]);
+        BrowserWindowController* bwc = [BrowserWindowController
+            browserWindowControllerForWindow:windowForToolbar];
         if ([bwc hasToolbar])
           [[window contentView] setHidden:YES];
       }

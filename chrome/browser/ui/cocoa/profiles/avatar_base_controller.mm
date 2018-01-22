@@ -184,12 +184,11 @@ bool ProfileUpdateObserver::HasAvatarError() {
 
   DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
 
-  NSWindowController* wc =
-      [browser_->window()->GetNativeWindow() windowController];
-  if ([wc isKindOfClass:[BrowserWindowController class]]) {
-    [static_cast<BrowserWindowController*>(wc)
-        lockToolbarVisibilityForOwner:self
-                        withAnimation:NO];
+  BrowserWindowController* bwc = [BrowserWindowController
+      browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
+
+  if (bwc) {
+    [bwc lockToolbarVisibilityForOwner:self withAnimation:NO];
   }
 
   // The new avatar bubble does not have an arrow, and it should be anchored
@@ -233,12 +232,10 @@ bool ProfileUpdateObserver::HasAvatarError() {
 }
 
 - (void)bubbleWillClose {
-  NSWindowController* wc =
-      [browser_->window()->GetNativeWindow() windowController];
-  if ([wc isKindOfClass:[BrowserWindowController class]]) {
-    [static_cast<BrowserWindowController*>(wc)
-        releaseToolbarVisibilityForOwner:self
-                           withAnimation:YES];
+  BrowserWindowController* bwc = [BrowserWindowController
+      browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
+  if (bwc) {
+    [bwc releaseToolbarVisibilityForOwner:self withAnimation:YES];
   }
   profileChooserViewObserverBridge_.reset();
   menuController_ = nil;

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_properties.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/base/theme_provider.h"
 
@@ -26,24 +27,28 @@ const CGFloat kDarkThemeTabTextColorLowerBound = 0.7;
 @implementation ChromeBrowserWindow
 
 - (const ui::ThemeProvider*)themeProvider {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themeProvider)])
+  id tabWindowController =
+      [TabWindowController tabWindowControllerForWindow:self];
+  if (![tabWindowController respondsToSelector:@selector(themeProvider)])
     return NULL;
-  return [delegate themeProvider];
+  return [tabWindowController themeProvider];
 }
 
 - (ThemedWindowStyle)themedWindowStyle {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themedWindowStyle)])
+  id tabWindowController =
+      [TabWindowController tabWindowControllerForWindow:self];
+  if (![tabWindowController respondsToSelector:@selector(themedWindowStyle)])
     return THEMED_NORMAL;
-  return [delegate themedWindowStyle];
+  return [tabWindowController themedWindowStyle];
 }
 
 - (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themeImagePositionForAlignment:)])
+  id tabWindowController =
+      [TabWindowController tabWindowControllerForWindow:self];
+  if (![tabWindowController
+          respondsToSelector:@selector(themeImagePositionForAlignment:)])
     return NSZeroPoint;
-  return [delegate themeImagePositionForAlignment:alignment];
+  return [tabWindowController themeImagePositionForAlignment:alignment];
 }
 
 - (BOOL)inIncognitoMode {

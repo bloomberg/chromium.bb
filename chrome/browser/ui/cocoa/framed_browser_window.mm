@@ -88,8 +88,7 @@
 
 - (BOOL)makeFirstResponder:(NSResponder*)responder {
   BrowserWindowController* bwc =
-      base::mac::ObjCCastStrict<BrowserWindowController>(
-          [self windowController]);
+      [BrowserWindowController browserWindowControllerForWindow:self];
   [bwc firstResponderUpdated:responder];
   return [super makeFirstResponder:responder];
 }
@@ -192,8 +191,7 @@
 - (NSTouchBar*)makeTouchBar {
   if (@available(macOS 10.12.2, *)) {
     BrowserWindowController* bwc =
-        base::mac::ObjCCastStrict<BrowserWindowController>(
-            [self windowController]);
+        [BrowserWindowController browserWindowControllerForWindow:self];
     return [[bwc browserWindowTouchBar] makeTouchBar];
   } else {
     return nil;

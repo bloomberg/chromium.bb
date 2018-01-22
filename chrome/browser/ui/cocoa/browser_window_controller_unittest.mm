@@ -84,7 +84,7 @@ class BrowserWindowControllerTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    [controller_ close];
+    [[controller_ nsWindowController] close];
     CocoaProfileTest::TearDown();
   }
 
@@ -136,13 +136,13 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
       new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile(), true)));
   NSWindow* cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
-      static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
   ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
   EXPECT_FALSE([controller isTabbedWindow]);
   EXPECT_FALSE([controller hasTabStrip]);
   EXPECT_TRUE([controller hasTitleBar]);
   EXPECT_FALSE([controller isBookmarkBarVisible]);
-  [controller close];
+  [[controller nsWindowController] close];
 }
 
 TEST_F(BrowserWindowControllerTest, TestSetBounds) {
@@ -152,7 +152,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
-    static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
 
   ASSERT_TRUE([controller isTabbedWindow]);
   BrowserWindow* browser_window = [controller browserWindow];
@@ -163,7 +163,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
   EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
 
-  [controller close];
+  [[controller nsWindowController] close];
 }
 
 // https://crbug.com/667698 - When Auto Layout is in use, adding the download
@@ -205,7 +205,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
-    static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
 
   ASSERT_FALSE([controller isTabbedWindow]);
   BrowserWindow* browser_window = [controller browserWindow];
@@ -220,7 +220,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   EXPECT_EQ(100, bounds.width());
   EXPECT_EQ(122, bounds.height());
 
-  [controller close];
+  [[controller nsWindowController] close];
 }
 
 TEST_F(BrowserWindowControllerTest, TestTheme) {
@@ -245,7 +245,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
   Browser* browser = new Browser(params);
   NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
-   static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+      [BrowserWindowController browserWindowControllerForWindow:cocoaWindow];
   BrowserWindow* browser_window = [controller browserWindow];
   gfx::Rect bounds = browser_window->GetBounds();
   EXPECT_EQ(280, bounds.height());
@@ -257,7 +257,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
   bounds = browser_window->GetBounds();
   EXPECT_EQ(272, bounds.height());
 
-  [controller close];
+  [[controller nsWindowController] close];
 }
 
 #if 0
@@ -783,7 +783,7 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    [controller_ close];
+    [[controller_ nsWindowController] close];
     CocoaProfileTest::TearDown();
   }
 
@@ -809,7 +809,7 @@ void WaitForFullScreenTransition() {
 // http://crbug.com/53586
 TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-  [controller_ showWindow:nil];
+  [[controller_ nsWindowController] showWindow:nil];
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
   // The fix for http://crbug.com/447740 , where the omnibox would lose focus
@@ -844,7 +844,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
 // http://crbug.com/53586
 TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-  [controller_ showWindow:nil];
+  [[controller_ nsWindowController] showWindow:nil];
 
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 

@@ -11,6 +11,9 @@
 // know anything about the actual tab implementation or model, as that is fairly
 // application-specific. It only provides an API to be overridden by subclasses
 // to fill in the details.
+// Note that under the hood the TabWindowController is neither an
+// NSWindowController nor its window's delegate, though it receives all
+// NSWindowDelegate methods as if it were.
 
 #import <Cocoa/Cocoa.h>
 
@@ -23,7 +26,7 @@
 @class TabStripView;
 @class TabView;
 
-@interface TabWindowController : NSWindowController<NSWindowDelegate> {
+@interface TabWindowController : NSObject<NSWindowDelegate> {
  @private
   // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
@@ -54,12 +57,24 @@
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
 
+// Returns the NSWindowController that manages the TabWindowController's
+// NSWindow. In the past the TabWindowController was also the window's
+// NSWindowController but they are now separate objects. Use
+// +tabWindowControllerForWindow: to retrieve a TabWindowController from a
+// given NSWindow.
+@property(readonly, nonatomic)
+    NSWindowController<NSWindowDelegate>* nsWindowController;
+@property(retain, nonatomic) NSWindow* window;
 @property(readonly, nonatomic) API_AVAILABLE(macos(10.10))
     NSVisualEffectView* visualEffectView;
 @property(readonly, nonatomic) NSView* tabStripBackgroundView;
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
 @property(readonly, nonatomic) NSView* chromeContentView;
+
+// A convenience class method which returns the |TabWindowController| for a
+// given window, or nil if no window in the chain has one.
++ (TabWindowController*)tabWindowControllerForWindow:(NSWindow*)window;
 
 // This is the designated initializer for this class.
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip

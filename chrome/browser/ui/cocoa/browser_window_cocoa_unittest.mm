@@ -30,7 +30,7 @@ class BrowserWindowCocoaTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    [controller_ close];
+    [[controller_ nsWindowController] close];
     CocoaProfileTest::TearDown();
   }
 
