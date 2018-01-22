@@ -44,6 +44,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/SimplifyMarkupCommand.h"
 #include "core/editing/commands/SmartReplace.h"
 #include "core/editing/iterators/TextIterator.h"

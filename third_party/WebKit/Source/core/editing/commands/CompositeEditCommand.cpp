@@ -48,6 +48,7 @@
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/DeleteFromTextNodeCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/InsertIntoTextNodeCommand.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/editing/commands/InsertNodeBeforeCommand.h"

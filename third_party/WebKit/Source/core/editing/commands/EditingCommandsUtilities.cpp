@@ -1,0 +1,506 @@
+/*
+ * Copyright (C) 2004, 2005, 2006, 2007 Apple Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/editing/commands/EditingCommandsUtilities.h"
+
+#include "core/editing/EditingUtilities.h"
+#include "core/editing/SelectionTemplate.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/html_element_factory.h"
+#include "core/layout/LayoutObject.h"
+
+namespace blink {
+
+static bool HasARenderedDescendant(const Node* node,
+                                   const Node* excluded_node) {
+  for (const Node* n = node->firstChild(); n;) {
+    if (n == excluded_node) {
+      n = NodeTraversal::NextSkippingChildren(*n, node);
+      continue;
+    }
+    if (n->GetLayoutObject())
+      return true;
+    n = NodeTraversal::Next(*n, node);
+  }
+  return false;
+}
+
+Node* HighestNodeToRemoveInPruning(Node* node, const Node* exclude_node) {
+  Node* previous_node = nullptr;
+  Element* element = node ? RootEditableElement(*node) : nullptr;
+  for (; node; node = node->parentNode()) {
+    if (LayoutObject* layout_object = node->GetLayoutObject()) {
+      if (!layout_object->CanHaveChildren() ||
+          HasARenderedDescendant(node, previous_node) || element == node ||
+          exclude_node == node)
+        return previous_node;
+    }
+    previous_node = node;
+  }
+  return nullptr;
+}
+
+Element* EnclosingTableCell(const Position& p) {
+  return ToElement(EnclosingNodeOfType(p, IsTableCell));
+}
+
+bool IsTableStructureNode(const Node* node) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  return (layout_object &&
+          (layout_object->IsTableCell() || layout_object->IsTableRow() ||
+           layout_object->IsTableSection() ||
+           layout_object->IsLayoutTableCol()));
+}
+
+bool IsNodeRendered(const Node& node) {
+  LayoutObject* layout_object = node.GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  return layout_object->Style()->Visibility() == EVisibility::kVisible;
+}
+
+// FIXME: This method should not need to call
+// isStartOfParagraph/isEndOfParagraph
+Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
+  DCHECK(visible_pos.IsValid());
+
+  // Check that position is on a line by itself inside a list item
+  Node* list_child_node =
+      EnclosingListChild(visible_pos.DeepEquivalent().AnchorNode());
+  if (!list_child_node || !IsStartOfParagraph(visible_pos) ||
+      !IsEndOfParagraph(visible_pos))
+    return nullptr;
+
+  VisiblePosition first_in_list_child =
+      CreateVisiblePosition(FirstPositionInOrBeforeNode(*list_child_node));
+  VisiblePosition last_in_list_child =
+      CreateVisiblePosition(LastPositionInOrAfterNode(*list_child_node));
+
+  if (first_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent() ||
+      last_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent())
+    return nullptr;
+
+  return list_child_node;
+}
+
+bool AreIdenticalElements(const Node& first, const Node& second) {
+  if (!first.IsElementNode() || !second.IsElementNode())
+    return false;
+
+  const Element& first_element = ToElement(first);
+  const Element& second_element = ToElement(second);
+  if (!first_element.HasTagName(second_element.TagQName()))
+    return false;
+
+  if (!first_element.HasEquivalentAttributes(&second_element))
+    return false;
+
+  return HasEditableStyle(first_element) && HasEditableStyle(second_element);
+}
+
+// FIXME: need to dump this
+static bool IsSpecialHTMLElement(const Node& n) {
+  if (!n.IsHTMLElement())
+    return false;
+
+  if (n.IsLink())
+    return true;
+
+  LayoutObject* layout_object = n.GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  if (layout_object->Style()->Display() == EDisplay::kTable ||
+      layout_object->Style()->Display() == EDisplay::kInlineTable)
+    return true;
+
+  if (layout_object->Style()->IsFloating())
+    return true;
+
+  return false;
+}
+
+static HTMLElement* FirstInSpecialElement(const Position& pos) {
+  DCHECK(!NeedsLayoutTreeUpdate(pos));
+  Element* element = RootEditableElement(*pos.ComputeContainerNode());
+  for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*pos.AnchorNode())) {
+    if (RootEditableElement(runner) != element)
+      break;
+    if (IsSpecialHTMLElement(runner)) {
+      HTMLElement* special_element = ToHTMLElement(&runner);
+      VisiblePosition v_pos = CreateVisiblePosition(pos);
+      VisiblePosition first_in_element =
+          CreateVisiblePosition(FirstPositionInOrBeforeNode(*special_element));
+      if (IsDisplayInsideTable(special_element) &&
+          v_pos.DeepEquivalent() ==
+              NextPositionOf(first_in_element).DeepEquivalent())
+        return special_element;
+      if (v_pos.DeepEquivalent() == first_in_element.DeepEquivalent())
+        return special_element;
+    }
+  }
+  return nullptr;
+}
+
+static HTMLElement* LastInSpecialElement(const Position& pos) {
+  DCHECK(!NeedsLayoutTreeUpdate(pos));
+  Element* element = RootEditableElement(*pos.ComputeContainerNode());
+  for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*pos.AnchorNode())) {
+    if (RootEditableElement(runner) != element)
+      break;
+    if (IsSpecialHTMLElement(runner)) {
+      HTMLElement* special_element = ToHTMLElement(&runner);
+      VisiblePosition v_pos = CreateVisiblePosition(pos);
+      VisiblePosition last_in_element =
+          CreateVisiblePosition(LastPositionInOrAfterNode(*special_element));
+      if (IsDisplayInsideTable(special_element) &&
+          v_pos.DeepEquivalent() ==
+              PreviousPositionOf(last_in_element).DeepEquivalent())
+        return special_element;
+      if (v_pos.DeepEquivalent() == last_in_element.DeepEquivalent())
+        return special_element;
+    }
+  }
+  return nullptr;
+}
+
+Position PositionBeforeContainingSpecialElement(
+    const Position& pos,
+    HTMLElement** containing_special_element) {
+  DCHECK(!NeedsLayoutTreeUpdate(pos));
+  HTMLElement* n = FirstInSpecialElement(pos);
+  if (!n)
+    return pos;
+  Position result = Position::InParentBeforeNode(*n);
+  if (result.IsNull() || RootEditableElement(*result.AnchorNode()) !=
+                             RootEditableElement(*pos.AnchorNode()))
+    return pos;
+  if (containing_special_element)
+    *containing_special_element = n;
+  return result;
+}
+
+Position PositionAfterContainingSpecialElement(
+    const Position& pos,
+    HTMLElement** containing_special_element) {
+  DCHECK(!NeedsLayoutTreeUpdate(pos));
+  HTMLElement* n = LastInSpecialElement(pos);
+  if (!n)
+    return pos;
+  Position result = Position::InParentAfterNode(*n);
+  if (result.IsNull() || RootEditableElement(*result.AnchorNode()) !=
+                             RootEditableElement(*pos.AnchorNode()))
+    return pos;
+  if (containing_special_element)
+    *containing_special_element = n;
+  return result;
+}
+
+bool LineBreakExistsAtPosition(const Position& position) {
+  if (position.IsNull())
+    return false;
+
+  if (IsHTMLBRElement(*position.AnchorNode()) &&
+      position.AtFirstEditingPositionForNode())
+    return true;
+
+  if (!position.AnchorNode()->GetLayoutObject())
+    return false;
+
+  if (!position.AnchorNode()->IsTextNode() ||
+      !position.AnchorNode()->GetLayoutObject()->Style()->PreserveNewline())
+    return false;
+
+  const Text* text_node = ToText(position.AnchorNode());
+  unsigned offset = position.OffsetInContainerNode();
+  return offset < text_node->length() && text_node->data()[offset] == '\n';
+}
+
+// return first preceding DOM position rendered at a different location, or
+// "this"
+static Position PreviousCharacterPosition(const Position& position,
+                                          TextAffinity affinity) {
+  DCHECK(!NeedsLayoutTreeUpdate(position));
+  if (position.IsNull())
+    return Position();
+
+  Element* from_root_editable_element =
+      RootEditableElement(*position.AnchorNode());
+
+  bool at_start_of_line =
+      IsStartOfLine(CreateVisiblePosition(position, affinity));
+  bool rendered = IsVisuallyEquivalentCandidate(position);
+
+  Position current_pos = position;
+  while (!current_pos.AtStartOfTree()) {
+    // TODO(yosin) When we use |previousCharacterPosition()| other than
+    // finding leading whitespace, we should use |Character| instead of
+    // |CodePoint|.
+    current_pos = PreviousPositionOf(current_pos, PositionMoveType::kCodeUnit);
+
+    if (RootEditableElement(*current_pos.AnchorNode()) !=
+        from_root_editable_element)
+      return position;
+
+    if (at_start_of_line || !rendered) {
+      if (IsVisuallyEquivalentCandidate(current_pos))
+        return current_pos;
+    } else if (RendersInDifferentPosition(position, current_pos)) {
+      return current_pos;
+    }
+  }
+
+  return position;
+}
+
+// This assumes that it starts in editable content.
+Position LeadingCollapsibleWhitespacePosition(const Position& position,
+                                              TextAffinity affinity,
+                                              WhitespacePositionOption option) {
+  DCHECK(!NeedsLayoutTreeUpdate(position));
+  DCHECK(IsEditablePosition(position)) << position;
+  if (position.IsNull())
+    return Position();
+
+  if (IsHTMLBRElement(*MostBackwardCaretPosition(position).AnchorNode()))
+    return Position();
+
+  const Position& prev = PreviousCharacterPosition(position, affinity);
+  if (prev == position)
+    return Position();
+  const Node* const anchor_node = prev.AnchorNode();
+  if (!anchor_node || !anchor_node->IsTextNode())
+    return Position();
+  if (EnclosingBlockFlowElement(*anchor_node) !=
+      EnclosingBlockFlowElement(*position.AnchorNode()))
+    return Position();
+  if (option == kNotConsiderNonCollapsibleWhitespace &&
+      anchor_node->GetLayoutObject() &&
+      !anchor_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
+    return Position();
+  const String& string = ToText(anchor_node)->data();
+  const UChar previous_character = string[prev.ComputeOffsetInContainerNode()];
+  const bool is_space = option == kConsiderNonCollapsibleWhitespace
+                            ? (IsSpaceOrNewline(previous_character) ||
+                               previous_character == kNoBreakSpaceCharacter)
+                            : IsCollapsibleWhitespace(previous_character);
+  if (!is_space || !IsEditablePosition(prev))
+    return Position();
+  return prev;
+}
+
+// This assumes that it starts in editable content.
+Position TrailingWhitespacePosition(const Position& position,
+                                    WhitespacePositionOption option) {
+  DCHECK(!NeedsLayoutTreeUpdate(position));
+  DCHECK(IsEditablePosition(position)) << position;
+  if (position.IsNull())
+    return Position();
+
+  VisiblePosition visible_position = CreateVisiblePosition(position);
+  UChar character_after_visible_position = CharacterAfter(visible_position);
+  bool is_space =
+      option == kConsiderNonCollapsibleWhitespace
+          ? (IsSpaceOrNewline(character_after_visible_position) ||
+             character_after_visible_position == kNoBreakSpaceCharacter)
+          : IsCollapsibleWhitespace(character_after_visible_position);
+  // The space must not be in another paragraph and it must be editable.
+  if (is_space && !IsEndOfParagraph(visible_position) &&
+      NextPositionOf(visible_position, kCannotCrossEditingBoundary).IsNotNull())
+    return position;
+  return Position();
+}
+
+unsigned NumEnclosingMailBlockquotes(const Position& p) {
+  unsigned num = 0;
+  for (const Node* n = p.AnchorNode(); n; n = n->parentNode()) {
+    if (IsMailHTMLBlockquoteElement(n))
+      num++;
+  }
+  return num;
+}
+
+bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
+  return LineBreakExistsAtPosition(
+      MostForwardCaretPosition(visible_position.DeepEquivalent()));
+}
+
+HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
+  return HTMLElementFactory::createHTMLElement(name.LocalName(), document,
+                                               kCreatedByCloneNode);
+}
+
+HTMLElement* EnclosingList(const Node* node) {
+  if (!node)
+    return nullptr;
+
+  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
+
+  for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
+    if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
+      return ToHTMLElement(&runner);
+    if (runner == root)
+      return nullptr;
+  }
+
+  return nullptr;
+}
+
+Node* EnclosingListChild(const Node* node) {
+  if (!node)
+    return nullptr;
+  // Check for a list item element, or for a node whose parent is a list
+  // element. Such a node will appear visually as a list item (but without a
+  // list marker)
+  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
+
+  // FIXME: This function is inappropriately named if it starts with node
+  // instead of node->parentNode()
+  for (Node* n = const_cast<Node*>(node); n && n->parentNode();
+       n = n->parentNode()) {
+    if (IsHTMLLIElement(*n) ||
+        (IsHTMLListElement(n->parentNode()) && n != root))
+      return n;
+    if (n == root || IsTableCell(n))
+      return nullptr;
+  }
+
+  return nullptr;
+}
+
+HTMLElement* OutermostEnclosingList(const Node* node,
+                                    const HTMLElement* root_list) {
+  HTMLElement* list = EnclosingList(node);
+  if (!list)
+    return nullptr;
+
+  while (HTMLElement* next_list = EnclosingList(list)) {
+    if (next_list == root_list)
+      break;
+    list = next_list;
+  }
+
+  return list;
+}
+
+// Determines whether two positions are visibly next to each other (first then
+// second) while ignoring whitespaces and unrendered nodes
+static bool IsVisiblyAdjacent(const Position& first, const Position& second) {
+  return CreateVisiblePosition(first).DeepEquivalent() ==
+         CreateVisiblePosition(MostBackwardCaretPosition(second))
+             .DeepEquivalent();
+}
+
+bool CanMergeLists(const Element& first_list, const Element& second_list) {
+  if (!first_list.IsHTMLElement() || !second_list.IsHTMLElement())
+    return false;
+
+  DCHECK(!NeedsLayoutTreeUpdate(first_list));
+  DCHECK(!NeedsLayoutTreeUpdate(second_list));
+  return first_list.HasTagName(
+             second_list
+                 .TagQName())  // make sure the list types match (ol vs. ul)
+         && HasEditableStyle(first_list) &&
+         HasEditableStyle(second_list)  // both lists are editable
+         &&
+         RootEditableElement(first_list) ==
+             RootEditableElement(second_list)  // don't cross editing boundaries
+         && IsVisiblyAdjacent(Position::InParentAfterNode(first_list),
+                              Position::InParentBeforeNode(second_list));
+  // Make sure there is no visible content between this li and the previous list
+}
+
+// Modifies selections that have an end point at the edge of a table
+// that contains the other endpoint so that they don't confuse
+// code that iterates over selected paragraphs.
+VisibleSelection SelectionForParagraphIteration(
+    const VisibleSelection& original) {
+  VisibleSelection new_selection(original);
+  VisiblePosition start_of_selection(new_selection.VisibleStart());
+  VisiblePosition end_of_selection(new_selection.VisibleEnd());
+
+  // If the end of the selection to modify is just after a table, and if the
+  // start of the selection is inside that table, then the last paragraph that
+  // we'll want modify is the last one inside the table, not the table itself (a
+  // table is itself a paragraph).
+  if (Element* table = TableElementJustBefore(end_of_selection)) {
+    if (start_of_selection.DeepEquivalent().AnchorNode()->IsDescendantOf(
+            table)) {
+      const VisiblePosition& new_end =
+          PreviousPositionOf(end_of_selection, kCannotCrossEditingBoundary);
+      if (new_end.IsNotNull()) {
+        new_selection = CreateVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .Collapse(start_of_selection.ToPositionWithAffinity())
+                .Extend(new_end.DeepEquivalent())
+                .Build());
+      } else {
+        new_selection = CreateVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .Collapse(start_of_selection.ToPositionWithAffinity())
+                .Build());
+      }
+    }
+  }
+
+  // If the start of the selection to modify is just before a table, and if the
+  // end of the selection is inside that table, then the first paragraph we'll
+  // want to modify is the first one inside the table, not the paragraph
+  // containing the table itself.
+  if (Element* table = TableElementJustAfter(start_of_selection)) {
+    if (end_of_selection.DeepEquivalent().AnchorNode()->IsDescendantOf(table)) {
+      const VisiblePosition new_start =
+          NextPositionOf(start_of_selection, kCannotCrossEditingBoundary);
+      if (new_start.IsNotNull()) {
+        new_selection = CreateVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .Collapse(new_start.ToPositionWithAffinity())
+                .Extend(end_of_selection.DeepEquivalent())
+                .Build());
+      } else {
+        new_selection = CreateVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .Collapse(end_of_selection.ToPositionWithAffinity())
+                .Build());
+      }
+    }
+  }
+
+  return new_selection;
+}
+
+const String& NonBreakingSpaceString() {
+  DEFINE_STATIC_LOCAL(String, non_breaking_space_string,
+                      (&kNoBreakSpaceCharacter, 1));
+  return non_breaking_space_string;
+}
+
+}  // namespace blink

@@ -41,6 +41,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
 #include "core/editing/commands/DeleteSelectionCommand.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/InsertIncrementalTextCommand.h"
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/editing/commands/InsertParagraphSeparatorCommand.h"

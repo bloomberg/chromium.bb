@@ -244,36 +244,6 @@ TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate) {
             NextVisuallyDistinctCandidate(PositionInFlatTree(one, 1)));
 }
 
-TEST_F(EditingUtilitiesTest, AreaIdenticalElements) {
-  SetBodyContent(
-      "<style>li:nth-child(even) { -webkit-user-modify: read-write; "
-      "}</style><ul><li>first item</li><li>second item</li><li "
-      "class=foo>third</li><li>fourth</li></ul>");
-  StaticElementList* items =
-      GetDocument().QuerySelectorAll("li", ASSERT_NO_EXCEPTION);
-  DCHECK_EQ(items->length(), 4u);
-
-  EXPECT_FALSE(AreIdenticalElements(*items->item(0)->firstChild(),
-                                    *items->item(1)->firstChild()))
-      << "Can't merge non-elements.  e.g. Text nodes";
-
-  // Compare a LI and a UL.
-  EXPECT_FALSE(
-      AreIdenticalElements(*items->item(0), *items->item(0)->parentNode()))
-      << "Can't merge different tag names.";
-
-  EXPECT_FALSE(AreIdenticalElements(*items->item(0), *items->item(2)))
-      << "Can't merge a element with no attributes and another element with an "
-         "attribute.";
-
-  // We can't use contenteditable attribute to make editability difference
-  // because the hasEquivalentAttributes check is done earier.
-  EXPECT_FALSE(AreIdenticalElements(*items->item(0), *items->item(1)))
-      << "Can't merge non-editable nodes.";
-
-  EXPECT_TRUE(AreIdenticalElements(*items->item(1), *items->item(3)));
-}
-
 TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_FirstLetter) {
   SetBodyContent(
       "<style>p::first-letter {color:red;}</style><p id='target'>abc</p>");
