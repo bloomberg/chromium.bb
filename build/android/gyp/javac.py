@@ -35,8 +35,22 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'NarrowingCompoundAssignment',
   # TODO(crbug.com/802073): Follow steps in bug.
   'TypeParameterUnusedInFormals',
-  # TODO(crbug.com/802075): Follow steps in bug
+  # TODO(crbug.com/802075): Follow steps in bug.
   'ReferenceEquality',
+  # TODO(crbug.com/803482): Follow steps in bug.
+  'UseCorrectAssertInTests',
+  # TODO(crbug.com/803484): Follow steps in bug.
+  'CatchFail',
+  # TODO(crbug.com/803485): Follow steps in bug.
+  'JUnitAmbiguousTestClass',
+  # TODO(crbug.com/803486): Follow steps in bug.
+  'AssertionFailureIgnored',
+  # TODO(crbug.com/803587): Follow steps in bug.
+  'MissingOverride',
+  # TODO(crbug.com/803589): Follow steps in bug.
+  'MissingFail',
+  # TODO(crbug.com/803625): Follow steps in bug.
+  'StaticGuardedByInstance',
   # Android platform default is always UTF-8.
   # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
   'DefaultCharset',
@@ -78,6 +92,14 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'TypeParameterShadowing',
   # Good to have immutable enums, also low priority.
   'ImmutableEnumChecker',
+  # False positives for testing.
+  'InputStreamSlowMultibyteRead',
+  # Nice to have better primitives.
+  'BoxedPrimitiveConstructor',
+  # Not necessary for tests.
+  'OverrideThrowableToString',
+  # Nice to have better type safety.
+  'CollectionToArraySafeParameter',
 ]
 
 ERRORPRONE_WARNINGS_TO_ERROR = [
