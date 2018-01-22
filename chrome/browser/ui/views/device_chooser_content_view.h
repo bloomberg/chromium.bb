@@ -114,7 +114,7 @@ class DeviceChooserContentView : public views::View,
 
   views::TableView* table_view_ = nullptr;
   views::View* table_parent_ = nullptr;
-  views::StyledLabel* turn_adapter_off_help_ = nullptr;
+  views::StyledLabel* adapter_off_help_ = nullptr;
   BluetoothStatusContainer* bluetooth_status_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceChooserContentView);

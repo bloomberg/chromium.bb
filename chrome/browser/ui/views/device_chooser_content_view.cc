@@ -147,12 +147,12 @@ DeviceChooserContentView::DeviceChooserContentView(
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, link_text, &offset);
-  turn_adapter_off_help_ = new views::StyledLabel(text, this);
-  turn_adapter_off_help_->AddStyleRange(
+  adapter_off_help_ = new views::StyledLabel(text, this);
+  adapter_off_help_->AddStyleRange(
       gfx::Range(0, link_text.size()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
-  turn_adapter_off_help_->SetVisible(false);
-  AddChildView(turn_adapter_off_help_);
+  adapter_off_help_->SetVisible(false);
+  AddChildView(adapter_off_help_);
 }
 
 DeviceChooserContentView::~DeviceChooserContentView() {
@@ -170,15 +170,13 @@ void DeviceChooserContentView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   table_parent_->SetBoundsRect(rect);
 
-  // Set the adapter off message in the center of the chooser.
-  // The adapter off message will only be shown when the adapter is off,
-  // and in that case, the system won't be able to scan for devices, so
-  // the throbber won't be shown at the same time.
-  turn_adapter_off_help_->SetPosition(
-      gfx::Point((rect.width() - turn_adapter_off_help_->width()) / 2,
-                 (rect.height() - turn_adapter_off_help_->height()) / 2));
-  turn_adapter_off_help_->SizeToFit(rect.width() -
-                                    2 * kAdapterOffHelpLinkPadding);
+  // Set the adapter off message in the center of the chooser. It will only be
+  // shown when the adapter is off.
+  adapter_off_help_->SetPosition(
+      gfx::Point((width() - adapter_off_help_->width()) / 2,
+                 (height() - adapter_off_help_->height()) / 2));
+  adapter_off_help_->SizeToFit(table_view_->width() -
+                               2 * kAdapterOffHelpLinkPadding);
   views::View::Layout();
 }
 
@@ -268,7 +266,7 @@ void DeviceChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   table_view_->Select(-1);
   UpdateTableView();
   table_view_->SetVisible(enabled);
-  turn_adapter_off_help_->SetVisible(!enabled);
+  adapter_off_help_->SetVisible(!enabled);
 
   bluetooth_status_container_->ShowReScanButton(enabled);
   refreshing_ = false;
@@ -297,7 +295,7 @@ void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
 void DeviceChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       const gfx::Range& range,
                                                       int event_flags) {
-  DCHECK_EQ(turn_adapter_off_help_, label);
+  DCHECK_EQ(adapter_off_help_, label);
   chooser_controller_->OpenAdapterOffHelpUrl();
 }
 
