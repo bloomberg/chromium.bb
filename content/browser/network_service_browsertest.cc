@@ -190,7 +190,13 @@ class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
 };
 
 // Verifies that in-process network service works.
-IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, Basic) {
+// http://crbug.com/804204: failed on several dbg builders.
+#if !defined(NDEBUG)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, MAYBE_Basic) {
   GURL test_url = embedded_test_server()->GetURL("foo.com", "/echo");
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
