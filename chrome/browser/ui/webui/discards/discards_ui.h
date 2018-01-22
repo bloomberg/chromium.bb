@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DISCARDS_DISCARDS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_DISCARDS_DISCARDS_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
