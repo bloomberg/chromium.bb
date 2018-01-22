@@ -70,14 +70,9 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
 
   // This method is described at the top of this file.
   //
-  // Note: Pass in |started_in_background| because depending on the state the
-  // navigation is in, we need additional data to determine whether it started
-  // in the background.
-  //
   // Note: This method should be robust to navigations at any stage.
   static bool IsSuspiciousClientRedirect(
-      content::NavigationHandle* navigation_handle,
-      bool started_in_background);
+      content::NavigationHandle* navigation_handle);
 
   content::NavigationThrottle::ThrottleCheckResult MaybeBlockNavigation();
   void ShowUI();
@@ -91,8 +86,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   // Store whether we're off the record as a member to avoid looking it up all
   // the time.
   bool off_the_record_ = false;
-
-  bool started_in_background_ = false;
 
   // True if the experiment is turned on and the class should actually attempt
   // to block tab-unders.
