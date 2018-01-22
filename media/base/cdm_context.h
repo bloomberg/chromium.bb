@@ -52,6 +52,21 @@ typedef base::Callback<void(bool)> CdmAttachedCB;
 // A dummy implementation of CdmAttachedCB.
 MEDIA_EXPORT void IgnoreCdmAttached(bool success);
 
+// A reference holder to make sure the CdmContext is always valid as long as
+// |this| is alive. Typically |this| will hold a reference (directly or
+// indirectly) to the host, e.g. a ContentDecryptionModule or a CdmProxy.
+// This class must be held on the same thread where the host lives. The raw
+// CdmContext pointer returned by GetCdmContext() may be used on other threads
+// if it's supported by the CdmContext implementation.
+class MEDIA_EXPORT CdmContextRef {
+ public:
+  virtual ~CdmContextRef() {}
+
+  // Returns the CdmContext which is guaranteed to be alive as long as |this| is
+  // alive. This function should never return nullptr.
+  virtual CdmContext* GetCdmContext() = 0;
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_CDM_CONTEXT_H_

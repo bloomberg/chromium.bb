@@ -8,14 +8,14 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
 
-class ContentDecryptionModule;
+class CdmContextRef;
 class MojoCdmService;
 
 // A class that creates, owns and manages all MojoCdmService instances.
@@ -31,7 +31,7 @@ class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
   void UnregisterCdm(int cdm_id);
 
   // Returns the CDM associated with |cdm_id|.
-  scoped_refptr<ContentDecryptionModule> GetCdm(int cdm_id);
+  std::unique_ptr<CdmContextRef> GetCdmContextRef(int cdm_id);
 
  private:
   // A map between CDM ID and MojoCdmService.
