@@ -107,11 +107,44 @@ TEST_F(DialMediaSinkServiceImplTest, TestOnDeviceDescriptionAvailable) {
   EXPECT_CALL(*mock_description_service_,
               GetDeviceDescriptions(device_list, _));
 
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
   media_sink_service_->OnDialDeviceEvent(device_list);
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
 
   EXPECT_EQ(1u, media_sink_service_->current_sinks_.size());
+}
+
+TEST_F(DialMediaSinkServiceImplTest,
+       TestOnDeviceDescriptionAvailableIPAddressChanged) {
+  DialDeviceData device_data("first", GURL("http://127.0.0.1/dd.xml"),
+                             base::Time::Now());
+  ParsedDialDeviceDescription device_description;
+  device_description.model_name = "model name";
+  device_description.friendly_name = "friendly name";
+  device_description.app_url = GURL("http://192.168.1.1/apps");
+  device_description.unique_id = "unique id";
+
+  std::vector<DialDeviceData> device_list = {device_data};
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(device_list, _));
+  media_sink_service_->OnDialDeviceEvent(device_list);
+
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
+  media_sink_service_->OnDeviceDescriptionAvailable(device_data,
+                                                    device_description);
+  EXPECT_EQ(1u, media_sink_service_->current_sinks_.size());
+
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
+  device_description.app_url = GURL("http://192.168.1.100/apps");
+  media_sink_service_->OnDeviceDescriptionAvailable(device_data,
+                                                    device_description);
+
+  EXPECT_EQ(1u, media_sink_service_->current_sinks_.size());
+  for (const auto& dial_sink_it : media_sink_service_->current_sinks_) {
+    EXPECT_EQ(device_description.app_url,
+              dial_sink_it.second.dial_data().app_url);
+  }
 }
 
 TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
@@ -128,6 +161,7 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
               GetDeviceDescriptions(device_list, _));
 
   EXPECT_FALSE(mock_timer_->IsRunning());
+  EXPECT_CALL(dial_sink_added_cb_, Run(_));
   media_sink_service_->OnDialDeviceEvent(device_list);
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);

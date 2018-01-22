@@ -71,6 +71,8 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestTimer);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            TestOnDeviceDescriptionAvailable);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
+                           TestOnDeviceDescriptionAvailableIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest, TestRestartAfterStop);
   FRIEND_TEST_ALL_PREFIXES(DialMediaSinkServiceImplTest,
                            OnDialSinkAddedCallback);

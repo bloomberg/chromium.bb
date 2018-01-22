@@ -69,8 +69,8 @@ void DialMediaSinkServiceImpl::OnUserGesture() {
            << " sinks to CastMediaSinkService";
 
   if (dial_sink_added_cb_) {
-    for (const auto& sink : current_sinks_)
-      dial_sink_added_cb_.Run(sink);
+    for (const auto& sink_it : current_sinks_)
+      dial_sink_added_cb_.Run(sink_it.second);
   }
 }
 
@@ -126,7 +126,8 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   }
 
   MediaSinkInternal dial_sink(sink, extra_data);
-  current_sinks_.insert(dial_sink);
+  std::string sink_id = dial_sink.sink().id();
+  current_sinks_.insert_or_assign(sink_id, dial_sink);
   if (dial_sink_added_cb_)
     dial_sink_added_cb_.Run(dial_sink);
 

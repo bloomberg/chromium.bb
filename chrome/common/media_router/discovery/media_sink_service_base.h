@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/containers/flat_set.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
@@ -44,21 +44,24 @@ class MediaSinkServiceBase {
   // |StartTimer()| is called.
   void RestartTimer();
 
-  // Sorted sinks from current round of discovery.
-  base::flat_set<MediaSinkInternal> current_sinks_;
+  // Sorted sinks from current round of discovery, keyed by sink ID.
+  base::flat_map<std::string, MediaSinkInternal> current_sinks_;
 
  private:
   friend class MediaSinkServiceBaseTest;
   FRIEND_TEST_ALL_PREFIXES(MediaSinkServiceBaseTest,
                            TestOnDiscoveryComplete_SameSink);
+  FRIEND_TEST_ALL_PREFIXES(MediaSinkServiceBaseTest,
+                           TestOnDiscoveryComplete_SameSinkDifferentOrders);
 
   // Helper method to start |discovery_timer_|.
   void DoStart();
 
   OnSinksDiscoveredCallback on_sinks_discovered_cb_;
 
-  // Sorted sinks sent to Media Router Provider in last |OnDiscoveryComplete()|
-  base::flat_set<MediaSinkInternal> mrp_sinks_;
+  // Sorted sinks sent to Media Router Provider in last |OnDiscoveryComplete()|,
+  // keyed by sink ID.
+  base::flat_map<std::string, MediaSinkInternal> mrp_sinks_;
 
   // Timer for completing the current round of discovery.
   std::unique_ptr<base::Timer> discovery_timer_;

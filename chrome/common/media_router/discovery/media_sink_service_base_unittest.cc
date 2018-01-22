@@ -58,13 +58,25 @@ class MediaSinkServiceBaseTest : public ::testing::Test {
     media_sink_service_.SetTimerForTest(base::WrapUnique(mock_timer_));
   }
 
+  void PopulateSinks(const std::vector<MediaSinkInternal>& old_sinks,
+                     const std::vector<MediaSinkInternal>& new_sinks) {
+    media_sink_service_.mrp_sinks_.clear();
+    for (const auto& old_sink : old_sinks) {
+      std::string sink_id = old_sink.sink().id();
+      media_sink_service_.mrp_sinks_[sink_id] = old_sink;
+    }
+
+    media_sink_service_.current_sinks_.clear();
+    for (const auto& new_sink : new_sinks) {
+      std::string sink_id = new_sink.sink().id();
+      media_sink_service_.current_sinks_[sink_id] = new_sink;
+    }
+  }
+
   void TestOnDiscoveryComplete(
       const std::vector<MediaSinkInternal>& old_sinks,
       const std::vector<MediaSinkInternal>& new_sinks) {
-    media_sink_service_.mrp_sinks_ =
-        base::flat_set<MediaSinkInternal>(old_sinks.begin(), old_sinks.end());
-    media_sink_service_.current_sinks_ =
-        base::flat_set<MediaSinkInternal>(new_sinks.begin(), new_sinks.end());
+    PopulateSinks(old_sinks, new_sinks);
     EXPECT_CALL(mock_sink_discovered_cb_, Run(new_sinks));
     media_sink_service_.OnDiscoveryComplete();
   }
@@ -84,6 +96,17 @@ TEST_F(MediaSinkServiceBaseTest, TestOnDiscoveryComplete_SameSink) {
   TestOnDiscoveryComplete(old_sinks, new_sinks);
 
   // Same sink
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(new_sinks)).Times(0);
+  media_sink_service_.OnDiscoveryComplete();
+}
+
+TEST_F(MediaSinkServiceBaseTest,
+       TestOnDiscoveryComplete_SameSinkDifferentOrders) {
+  std::vector<MediaSinkInternal> old_sinks = CreateDialMediaSinks();
+  std::vector<MediaSinkInternal> new_sinks = CreateDialMediaSinks();
+  std::reverse(new_sinks.begin(), new_sinks.end());
+
+  PopulateSinks(old_sinks, new_sinks);
   EXPECT_CALL(mock_sink_discovered_cb_, Run(new_sinks)).Times(0);
   media_sink_service_.OnDiscoveryComplete();
 }
