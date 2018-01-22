@@ -84,8 +84,8 @@ void WorkerBackingThread::InitializeOnBackingThread(
 
   ThreadState::Current()->RegisterTraceDOMWrappers(
       isolate_, V8GCController::TraceDOMWrappers,
-      ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque,
-      ScriptWrappableVisitor::PerformCleanup);
+      ScriptWrappableMarkingVisitor::InvalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableMarkingVisitor::PerformCleanup);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled())
     V8PerIsolateData::EnableIdleTasks(
         isolate_, WTF::WrapUnique(new V8IdleTaskRunner(

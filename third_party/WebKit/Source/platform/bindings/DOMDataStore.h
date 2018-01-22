@@ -137,8 +137,8 @@ class DOMDataStore {
       return object->SetWrapper(isolate, wrapper_type_info, wrapper);
     bool updated = wrapper_map_->Set(object, wrapper_type_info, wrapper);
     if (updated) {
-      ScriptWrappableVisitor::WriteBarrier(isolate, &wrapper_map_.value(),
-                                           object);
+      ScriptWrappableMarkingVisitor::WriteBarrier(
+          isolate, &wrapper_map_.value(), object);
     }
     return updated;
   }

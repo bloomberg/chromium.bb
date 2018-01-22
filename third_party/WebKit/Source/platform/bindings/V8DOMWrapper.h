@@ -97,7 +97,7 @@ inline void V8DOMWrapper::SetNativeInfo(
   // so the visitor can make sure to trace the association (in case it is
   // currently tracing).  Because of some optimizations, V8 will not
   // necessarily detect wrappers created during its incremental marking.
-  per_isolate_data->GetScriptWrappableVisitor()->RegisterV8Reference(
+  per_isolate_data->GetScriptWrappableMarkingVisitor()->RegisterV8Reference(
       std::make_pair(const_cast<WrapperTypeInfo*>(wrapper_type_info),
                      script_wrappable));
 }

@@ -4684,10 +4684,10 @@ void Document::SetCSSTarget(Element* new_target) {
 static void LiveNodeListBaseWriteBarrier(void* parent,
                                          const LiveNodeListBase* list) {
   if (IsHTMLCollectionType(list->GetType())) {
-    ScriptWrappableVisitor::WriteBarrier(
+    ScriptWrappableMarkingVisitor::WriteBarrier(
         static_cast<const HTMLCollection*>(list));
   } else {
-    ScriptWrappableVisitor::WriteBarrier(
+    ScriptWrappableMarkingVisitor::WriteBarrier(
         static_cast<const LiveNodeList*>(list));
   }
 }
