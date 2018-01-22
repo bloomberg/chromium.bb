@@ -215,9 +215,8 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
 
 void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
   const OmniboxViewMacState* state = GetStateFromTab(web_contents);
-  model()->RestoreState(
-      controller()->GetToolbarModel()->GetFormattedURL(nullptr),
-      state ? &state->model_state : NULL);
+  model()->RestoreState(controller()->GetToolbarModel()->GetFormattedFullURL(),
+                        state ? &state->model_state : NULL);
   // Restore focus and selection if they were present when the tab
   // was switched away.
   if (state && state->has_focus) {
@@ -239,7 +238,7 @@ void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
 
 void OmniboxViewMac::Update() {
   if (model()->SetPermanentText(
-          controller()->GetToolbarModel()->GetFormattedURL(nullptr))) {
+          controller()->GetToolbarModel()->GetFormattedFullURL())) {
     // Restore everything to the baseline look.
     RevertAll();
 

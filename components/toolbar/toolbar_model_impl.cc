@@ -37,7 +37,7 @@ ToolbarModelImpl::~ToolbarModelImpl() {
 }
 
 // ToolbarModelImpl Implementation.
-base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
+base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
@@ -46,7 +46,7 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
       delegate_->FormattedStringWithEquivalentMeaning(
           url, url_formatter::FormatUrl(
                    url, url_formatter::kFormatUrlOmitDefaults,
-                   net::UnescapeRule::NORMAL, nullptr, prefix_end, nullptr));
+                   net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   if (formatted_text.length() <= max_url_display_chars_)
     return formatted_text;
 
