@@ -23,7 +23,8 @@ namespace chromeos {
 namespace {
 
 // Dialog height for configured networks that only require a passphrase.
-constexpr int kDialogHeightPasswordOnly = 320;
+// This height includes room for a 'connecting' or error message.
+constexpr int kDialogHeightPasswordOnly = 365;
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   // Add default strings first.

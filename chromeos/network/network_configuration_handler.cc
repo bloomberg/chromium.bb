@@ -73,6 +73,16 @@ void LogConfigProperties(const std::string& desc,
   }
 }
 
+// Returns recognized dbus error names or |default_error_name|.
+// TODO(stevenjb): Expand this list and update
+// network_element::AddErrorLocalizedStrings.
+std::string GetErrorName(const std::string& dbus_error_name,
+                         const std::string& default_error_name) {
+  if (dbus_error_name == shill::kErrorResultInvalidPassphrase)
+    return dbus_error_name;
+  return default_error_name;
+}
+
 }  // namespace
 
 // Helper class to request from Shill the profile entries associated with a
@@ -362,8 +372,8 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
       base::Bind(&NetworkConfigurationHandler::ConfigurationCompleted,
                  weak_ptr_factory_.GetWeakPtr(), profile_path, source,
                  base::Passed(&properties_copy), callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "Config.CreateConfiguration Failed", "", error_callback));
+      base::Bind(&NetworkConfigurationHandler::ConfigurationFailed,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void NetworkConfigurationHandler::RemoveConfiguration(
@@ -478,6 +488,16 @@ void NetworkConfigurationHandler::Init(
 
   // Observer is removed in OnShuttingDown() observer override.
   network_state_handler_->AddObserver(this, FROM_HERE);
+}
+
+void NetworkConfigurationHandler::ConfigurationFailed(
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  std::string error_name =
+      GetErrorName(dbus_error_name, "Config.CreateConfiguration Failed");
+  network_handler::ShillErrorCallbackFunction(
+      error_name, "", error_callback, dbus_error_name, dbus_error_message);
 }
 
 void NetworkConfigurationHandler::ConfigurationCompleted(
@@ -596,9 +616,11 @@ void NetworkConfigurationHandler::SetPropertiesErrorCallback(
     const network_handler::ErrorCallback& error_callback,
     const std::string& dbus_error_name,
     const std::string& dbus_error_message) {
-  network_handler::ShillErrorCallbackFunction(
-      "Config.SetProperties Failed", service_path, error_callback,
-      dbus_error_name, dbus_error_message);
+  std::string error_name =
+      GetErrorName(dbus_error_name, "Config.SetProperties Failed");
+  network_handler::ShillErrorCallbackFunction(error_name, service_path,
+                                              error_callback, dbus_error_name,
+                                              dbus_error_message);
   // Some properties may have changed so request an update regardless.
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
