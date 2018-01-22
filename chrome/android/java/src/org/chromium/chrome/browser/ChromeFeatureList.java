@@ -168,13 +168,9 @@ public abstract class ChromeFeatureList {
             "ChromeHomeInactivitySheetExpansion";
     public static final String CHROME_HOME_MENU_ITEMS_EXPAND_SHEET =
             "ChromeHomeMenuItemsExpandSheet";
-    public static final String CHROME_HOME_OPT_OUT_SNACKBAR = "ChromeHomeOptOutSnackbar";
     public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
     public static final String CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS =
             "ChromeHomePersonalizedOmniboxSuggestions";
-    public static final String CHROME_HOME_PROMO = "ChromeHomePromo";
-    public static final String CHROME_HOME_PROMO_INFO_ONLY = "ChromeHomePromoInfoOnly";
-    public static final String CHROME_HOME_PROMO_ON_STARTUP = "ChromeHomePromoOnStartup";
     public static final String CHROME_HOME_PULL_TO_REFRESH_IPH_AT_TOP =
             "ChromeHomePullToRefreshIphAtTop";
     public static final String CHROME_HOME_SHOW_GOOGLE_G_WHEN_URL_CLEARED =

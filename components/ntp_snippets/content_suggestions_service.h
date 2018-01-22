@@ -186,9 +186,6 @@ class ContentSuggestionsService : public KeyedService,
   // meantime).
   void ReloadSuggestions();
 
-  // Must be called when Chrome Home is turned on or off.
-  void OnChromeHomeStatusChanged(bool is_chrome_home_enabled);
-
   // Observer accessors.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

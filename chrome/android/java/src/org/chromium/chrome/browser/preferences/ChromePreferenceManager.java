@@ -403,61 +403,12 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Set whether or not Chrome Home is enabled by the user.
-     * @param isEnabled If Chrome Home is enabled by the user.
+     * Clean up unused Chrome Home preferences.
      */
-    public void setChromeHomeUserEnabled(boolean isEnabled) {
-        writeBoolean(CHROME_HOME_USER_ENABLED_KEY, isEnabled);
-    }
-
-    /**
-     * Get whether or not Chrome Home is enabled by the user.
-     * @return True if Chrome Home is enabled by the user.
-     */
-    public boolean isChromeHomeUserEnabled() {
-        return mSharedPreferences.getBoolean(CHROME_HOME_USER_ENABLED_KEY, false);
-    }
-
-    /**
-     * @return Whether or not the user has set their Chrome Home preference.
-     */
-    public boolean isChromeHomeUserPreferenceSet() {
-        return mSharedPreferences.contains(CHROME_HOME_USER_ENABLED_KEY);
-    }
-
-    /**
-     * Remove the Chrome Home user preference.
-     */
-    public void clearChromeHomeUserPreference() {
+    public void clearObsoleteChromeHomePrefs() {
         removeKey(CHROME_HOME_USER_ENABLED_KEY);
-    }
-
-    /**
-     * Set that the Chrome Home info-promo has been shown.
-     */
-    public void setChromeHomeInfoPromoShown() {
-        writeBoolean(CHROME_HOME_INFO_PROMO_SHOWN_KEY, true);
-    }
-
-    /**
-     * @return Whether the info-only version of the Chrome Home promo has been shown.
-     */
-    public boolean hasChromeHomeInfoPromoShown() {
-        return mSharedPreferences.getBoolean(CHROME_HOME_INFO_PROMO_SHOWN_KEY, false);
-    }
-
-    /**
-     * Mark that the Chrome Home opt-out snackbar has been shown.
-     */
-    public void setChromeHomeOptOutSnackbarShown() {
-        writeBoolean(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN, true);
-    }
-
-    /**
-     * @return Whether the Chrome Home opt-out snackbar has been shown.
-     */
-    public boolean getChromeHomeOptOutSnackbarShown() {
-        return mSharedPreferences.getBoolean(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN, false);
+        removeKey(CHROME_HOME_INFO_PROMO_SHOWN_KEY);
+        removeKey(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN);
     }
 
     /**

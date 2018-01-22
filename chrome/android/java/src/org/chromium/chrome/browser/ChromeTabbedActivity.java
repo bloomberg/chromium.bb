@@ -130,8 +130,6 @@ import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomeIphMenuHeader;
-import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoDialog;
-import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoMenuHeader;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -608,14 +606,8 @@ public class ChromeTabbedActivity
                 isShowingPromo = SigninPromoUtil.launchSigninPromoIfNeeded(this)
                         || DataReductionPromoScreen.launchDataReductionPromo(
                                    this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
-                if (!isShowingPromo) {
-                    if (FeatureUtilities.shouldShowChromeHomePromoForStartup()) {
-                        new ChromeHomePromoDialog(this, ChromeHomePromoDialog.ShowReason.STARTUP)
-                                .show();
-                        isShowingPromo = true;
-                    } else if (getBottomSheet() != null) {
-                        getBottomSheet().showColdStartHelpBubble();
-                    }
+                if (!isShowingPromo && getBottomSheet() != null) {
+                    getBottomSheet().showColdStartHelpBubble();
                 }
             } else {
                 preferenceManager.setPromosSkippedOnFirstStart(true);
@@ -1687,17 +1679,6 @@ public class ChromeTabbedActivity
                 boolean isPageMenu = getAppMenuPropertiesDelegate().shouldShowPageMenu();
                 LayoutInflater inflater = LayoutInflater.from(ChromeTabbedActivity.this);
 
-                // Show the Chrome Home promo header if available.
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
-                    if (!isPageMenu) return null;
-
-                    ChromeHomePromoMenuHeader menuHeader =
-                            (ChromeHomePromoMenuHeader) inflater.inflate(
-                                    R.layout.chrome_home_promo_header, null);
-                    menuHeader.initialize(ChromeTabbedActivity.this);
-                    return menuHeader;
-                }
-
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                 if (!tracker.wouldTriggerHelpUI(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
                     return DataReductionProxySettings.getInstance()
@@ -1739,9 +1720,7 @@ public class ChromeTabbedActivity
                 if (getBottomSheet() == null) return super.shouldShowHeader(maxMenuHeight);
 
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)
-                        || tracker.wouldTriggerHelpUI(
-                                   FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
+                if (tracker.wouldTriggerHelpUI(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
                     return true;
                 }
 
@@ -2181,8 +2160,6 @@ public class ChromeTabbedActivity
         }
 
         super.onDestroyInternal();
-
-        FeatureUtilities.finalizePendingFeatures();
     }
 
     @Override

@@ -434,22 +434,6 @@ void ContentSuggestionsService::ReloadSuggestions() {
   }
 }
 
-void ContentSuggestionsService::OnChromeHomeStatusChanged(
-    bool is_chrome_home_enabled) {
-  debug_logger_->Log(
-      FROM_HERE, base::StringPrintf("Chrome Home enabled: %s",
-                                    is_chrome_home_enabled ? "true" : "false"));
-  if (is_chrome_home_enabled) {
-    // TODO(vitaliii): Make this code more general and do not hardcode specific
-    // categories.
-    DestroyCategoryAndItsProvider(
-        Category::FromKnownCategory(KnownCategories::BOOKMARKS));
-    DestroyCategoryAndItsProvider(
-        Category::FromKnownCategory(KnownCategories::DOWNLOADS));
-  }
-  // TODO(vitaliii): Recreate providers when Chrome Home is turned off.
-}
-
 bool ContentSuggestionsService::AreRemoteSuggestionsEnabled() const {
   return remote_suggestions_provider_ &&
          !remote_suggestions_provider_->IsDisabled();
