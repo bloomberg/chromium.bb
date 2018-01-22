@@ -92,11 +92,6 @@ bool IsDistilledPage(const GURL& url) {
   return url.is_valid() && url.scheme() == kDomDistillerScheme;
 }
 
-base::StringPiece GetIsDistillableJs() {
-  return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_IS_DISTILLABLE_JS);
-}
-
 }  // namespace url_utils
 
 }  // namespace dom_distiller

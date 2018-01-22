@@ -48,10 +48,6 @@ bool IsUrlDistillable(const GURL& url);
 // Returns whether the given |url| is for a distilled page.
 bool IsDistilledPage(const GURL& url);
 
-// Returns a JavaScript snippet that returns whether or not a page should be
-// used with DomDistillerService and can be executed in a live page.
-base::StringPiece GetIsDistillableJs();
-
 }  // namespace url_utils
 
 }  // namespace dom_distiller

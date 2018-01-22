@@ -63,21 +63,6 @@ jboolean JNI_DomDistillerUrlUtils_IsDistilledPage(
   return dom_distiller::url_utils::IsDistilledPage(url);
 }
 
-jboolean JNI_DomDistillerUrlUtils_IsUrlDistillable(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& j_url) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
-  return dom_distiller::url_utils::IsUrlDistillable(url);
-}
-
-ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetIsDistillableJs(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return base::android::ConvertUTF8ToJavaString(
-      env, dom_distiller::url_utils::GetIsDistillableJs());
-}
-
 ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetValueForKeyInUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
