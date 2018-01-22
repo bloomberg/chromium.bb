@@ -266,8 +266,8 @@ void CastWindowManagerAura::TearDown() {
   wm::SetActivationClient(window_tree_host_->window(), nullptr);
   aura::client::SetFocusClient(window_tree_host_->window(), nullptr);
   focus_client_.reset();
-  window_tree_host_.reset();
   system_gesture_event_handler_.reset();
+  window_tree_host_.reset();
 }
 
 void CastWindowManagerAura::SetWindowId(gfx::NativeView window,
