@@ -292,7 +292,6 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 }
 
 void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  session->SetFallThroughForNotFound(true);
   session->SetRenderer(frame_host_ ? frame_host_->GetProcess() : nullptr,
                        frame_host_);
 
@@ -334,7 +333,6 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
 void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
-  suspended_messages_by_session_.erase(session);
   if (sessions().empty()) {
     frame_trace_recorder_.reset();
     RevokePolicy();
@@ -344,25 +342,10 @@ void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   }
 }
 
-bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
+void RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     DevToolsSession* session,
     const std::string& message) {
-  int call_id = 0;
-  std::string method;
-  if (session->Dispatch(message, &call_id, &method) !=
-      protocol::Response::kFallThrough) {
-    return true;
-  }
-
-  if (!navigation_handles_.empty()) {
-    suspended_messages_by_session_[session].push_back(
-        {call_id, method, message});
-    return true;
-  }
-
-  session->DispatchProtocolMessageToAgent(call_id, method, message);
-  session->waiting_messages()[call_id] = {method, message};
-  return true;
+  session->DispatchProtocolMessage(message);
 }
 
 void RenderFrameDevToolsAgentHost::InspectElement(
@@ -425,16 +408,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   UpdateFrameHost(frame_tree_node_->current_frame_host());
 
   if (navigation_handles_.empty()) {
-    for (auto& pair : suspended_messages_by_session_) {
-      DevToolsSession* session = pair.first;
-      for (const Message& message : pair.second) {
-        session->DispatchProtocolMessageToAgent(message.call_id, message.method,
-                                                message.message);
-        session->waiting_messages()[message.call_id] = {message.method,
-                                                        message.message};
-      }
-    }
-    suspended_messages_by_session_.clear();
+    for (DevToolsSession* session : sessions())
+      session->ResumeSendingMessagesToAgent();
   }
   if (handle->HasCommitted()) {
     for (auto* target : protocol::TargetHandler::ForAgentHost(this))
@@ -476,15 +451,8 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 void RenderFrameDevToolsAgentHost::MaybeReattachToRenderFrame() {
   if (!EnsureAgent())
     return;
-  for (DevToolsSession* session : sessions()) {
-    session->ReattachToAgent(agent_ptr_);
-    for (const auto& pair : session->waiting_messages()) {
-      int call_id = pair.first;
-      const DevToolsSession::Message& message = pair.second;
-      session->DispatchProtocolMessageToAgent(call_id, message.method,
-                                              message.message);
-    }
-  }
+  for (DevToolsSession* session : sessions())
+    session->AttachToAgent(agent_ptr_);
 }
 
 void RenderFrameDevToolsAgentHost::GrantPolicy() {
@@ -527,6 +495,10 @@ void RenderFrameDevToolsAgentHost::DidStartNavigation(
       static_cast<NavigationHandleImpl*>(navigation_handle);
   if (handle->frame_tree_node() != frame_tree_node_)
     return;
+  if (navigation_handles_.empty()) {
+    for (DevToolsSession* session : sessions())
+      session->SuspendSendingMessagesToAgent();
+  }
   navigation_handles_.insert(handle);
 }
 
@@ -655,8 +627,11 @@ void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
   frame_tree_node_ = nullptr;
   navigation_handles_.clear();
   WebContentsObserver::Observe(nullptr);
-  UpdateFrameHost(nullptr);
   // UpdateFrameHost may destruct |this|.
+  scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
+  UpdateFrameHost(nullptr);
+  for (DevToolsSession* session : sessions())
+    session->ResumeSendingMessagesToAgent();
 }
 
 void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {

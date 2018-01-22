@@ -55,13 +55,11 @@ void ForwardingAgentHost::DetachSession(DevToolsSession* session) {
   session_proxies_.erase(session);
 }
 
-bool ForwardingAgentHost::DispatchProtocolMessage(
-    DevToolsSession* session,
-    const std::string& message) {
+void ForwardingAgentHost::DispatchProtocolMessage(DevToolsSession* session,
+                                                  const std::string& message) {
   auto it = session_proxies_.find(session);
   if (it != session_proxies_.end())
     delegate_->SendMessageToBackend(it->second.get(), message);
-  return true;
 }
 
 std::string ForwardingAgentHost::GetType() {

@@ -36,7 +36,9 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
       process_(nullptr),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  dispatcher_->setFallThroughForNotFound(true);
+}
 
 DevToolsSession::~DevToolsSession() {
   dispatcher_.reset();
@@ -60,8 +62,9 @@ void DevToolsSession::SetRenderer(RenderProcessHost* process_host,
     pair.second->SetRenderer(process_, host_);
 }
 
-void DevToolsSession::SetFallThroughForNotFound(bool value) {
-  dispatcher_->setFallThroughForNotFound(value);
+void DevToolsSession::SetBrowserOnly(bool browser_only) {
+  browser_only_ = browser_only;
+  dispatcher_->setFallThroughForNotFound(!browser_only);
 }
 
 void DevToolsSession::AttachToAgent(
@@ -70,20 +73,21 @@ void DevToolsSession::AttachToAgent(
   binding_.Bind(mojo::MakeRequest(&host_ptr_info));
   agent->AttachDevToolsSession(
       std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
-      mojo::MakeRequest(&io_session_ptr_), base::Optional<std::string>());
-  session_ptr_.set_connection_error_handler(base::BindOnce(
-      &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
-}
-
-void DevToolsSession::ReattachToAgent(
-    const blink::mojom::DevToolsAgentAssociatedPtr& agent) {
-  blink::mojom::DevToolsSessionHostAssociatedPtrInfo host_ptr_info;
-  binding_.Bind(mojo::MakeRequest(&host_ptr_info));
-  agent->AttachDevToolsSession(
-      std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
       mojo::MakeRequest(&io_session_ptr_), state_cookie_);
   session_ptr_.set_connection_error_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
+
+  if (!suspended_sending_messages_to_agent_) {
+    for (const auto& pair : waiting_for_response_messages_) {
+      int call_id = pair.first;
+      const WaitingMessage& message = pair.second;
+      DispatchProtocolMessageToAgent(call_id, message.method, message.message);
+    }
+  }
+
+  // Set cookie to an empty string to reattach next time instead of attaching.
+  if (!state_cookie_.has_value())
+    state_cookie_ = std::string();
 }
 
 void DevToolsSession::SendResponse(
@@ -99,10 +103,7 @@ void DevToolsSession::MojoConnectionDestroyed() {
   io_session_ptr_.reset();
 }
 
-protocol::Response::Status DevToolsSession::Dispatch(
-    const std::string& message,
-    int* call_id,
-    std::string* method) {
+void DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
 
   DevToolsManagerDelegate* delegate =
@@ -112,23 +113,40 @@ protocol::Response::Status DevToolsSession::Dispatch(
         static_cast<base::DictionaryValue*>(value.get());
 
     if (delegate->HandleCommand(agent_host_, client_, dict_value))
-      return protocol::Response::kSuccess;
+      return;
 
     if (delegate->HandleAsyncCommand(agent_host_, client_, dict_value,
                                      base::Bind(&DevToolsSession::SendResponse,
                                                 weak_factory_.GetWeakPtr()))) {
-      return protocol::Response::kAsync;
+      return;
     }
   }
 
-  return dispatcher_->dispatch(protocol::toProtocolValue(value.get(), 1000),
-                               call_id, method);
+  int call_id;
+  std::string method;
+  if (dispatcher_->dispatch(protocol::toProtocolValue(value.get(), 1000),
+                            &call_id,
+                            &method) != protocol::Response::kFallThrough) {
+    return;
+  }
+
+  // In browser-only mode, we should've handled everything in dispatcher.
+  DCHECK(!browser_only_);
+
+  if (suspended_sending_messages_to_agent_) {
+    suspended_messages_.push_back({call_id, method, message});
+    return;
+  }
+
+  DispatchProtocolMessageToAgent(call_id, method, message);
+  waiting_for_response_messages_[call_id] = {method, message};
 }
 
 void DevToolsSession::DispatchProtocolMessageToAgent(
     int call_id,
     const std::string& method,
     const std::string& message) {
+  DCHECK(!browser_only_);
   if (ShouldSendOnIO(method)) {
     if (io_session_ptr_)
       io_session_ptr_->DispatchProtocolMessage(call_id, method, message);
@@ -136,6 +154,23 @@ void DevToolsSession::DispatchProtocolMessageToAgent(
     if (session_ptr_)
       session_ptr_->DispatchProtocolMessage(call_id, method, message);
   }
+}
+
+void DevToolsSession::SuspendSendingMessagesToAgent() {
+  DCHECK(!browser_only_);
+  suspended_sending_messages_to_agent_ = true;
+}
+
+void DevToolsSession::ResumeSendingMessagesToAgent() {
+  DCHECK(!browser_only_);
+  suspended_sending_messages_to_agent_ = false;
+  for (const SuspendedMessage& message : suspended_messages_) {
+    DispatchProtocolMessageToAgent(message.call_id, message.method,
+                                   message.message);
+    waiting_for_response_messages_[message.call_id] = {message.method,
+                                                       message.message};
+  }
+  suspended_messages_.clear();
 }
 
 void DevToolsSession::InspectElement(const gfx::Point& point) {

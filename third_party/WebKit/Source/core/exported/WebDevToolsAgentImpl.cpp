@@ -425,12 +425,6 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolMessageInternal(
 
 void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
     const String& reattach_state) {
-  String state = reattach_state;
-  // TODO(dgozman): make InspectorSession check for IsNull() instead.
-  String* state_ptr = nullptr;
-  if (!reattach_state.IsNull())
-    state_ptr = &state;
-
   ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated();
   MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
@@ -440,7 +434,7 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
       this, agent_->probe_sink_.Get(), 0,
       main_thread_debugger->GetV8Inspector(),
       main_thread_debugger->ContextGroupId(inspected_frames->Root()),
-      state_ptr);
+      reattach_state);
 
   InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
       isolate, inspected_frames, inspector_session_->V8Session());
@@ -520,12 +514,11 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
       inspector_session_, agent_->include_view_agents_, dom_agent,
       inspected_frames, frame_->ViewImpl()->GetPage());
 
-  if (!reattach_state.IsNull())
+  if (!reattach_state.IsNull()) {
     inspector_session_->Restore();
-
-  // TODO(dgozman): do not send empty state from the browser side.
-  if (agent_->worker_client_ && !reattach_state.IsEmpty())
-    agent_->worker_client_->ResumeStartup();
+    if (agent_->worker_client_)
+      agent_->worker_client_->ResumeStartup();
+  }
 }
 
 // --------- WebDevToolsAgentImpl -------------
