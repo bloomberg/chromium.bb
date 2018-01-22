@@ -20,6 +20,11 @@ void RecordLoadSeedResult(LoadSeedResult state) {
                             LoadSeedResult::ENUM_SIZE);
 }
 
+void RecordLoadSafeSeedResult(LoadSeedResult state) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.SafeMode.LoadSafeSeed.Result", state,
+                            LoadSeedResult::ENUM_SIZE);
+}
+
 void RecordStoreSeedResult(StoreSeedResult result) {
   UMA_HISTOGRAM_ENUMERATION("Variations.SeedStoreResult", result,
                             StoreSeedResult::ENUM_SIZE);

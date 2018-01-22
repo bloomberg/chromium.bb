@@ -41,8 +41,6 @@ class FakeSeedStore : public VariationsSeedStore {
     return true;
   }
 
-  // TODO(isherman): Replace these with a LoadSafeSeed() function once that's
-  // implemented on the seed store.
   const std::string& seed_data() const { return seed_data_; }
   const std::string& signature() const { return signature_; }
   const base::Time& date() const { return date_; }

@@ -95016,8 +95016,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Variations.LoadSeedSignature" enum="VariationSeedSignature">
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    The result of verifying the variations seed signature, recorded when the
-    variations seed is loaded from Local State.
+    The result of verifying the latest variations seed's signature, recorded
+    when the seed is loaded from Local State.  Not recorded when running in safe
+    mode.
   </summary>
 </histogram>
 
@@ -95057,6 +95058,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Whether or not the VariationsService fell back to Safe Mode, due to either
     too many crashes or too many failures to fetch a new seed. Recorded during
     Chrome startup, when the VariationsService is created.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.LoadSafeSeed.Result"
+    enum="VariationsSeedLoadResult">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Records whether the safe variations seed was successfully read from local
+    state on startup. Records a detailed reason on read failure. Only recorded
+    when attempting to run in safe mode.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SafeMode.LoadSafeSeed.SignatureValidity"
+    enum="VariationSeedSignature">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    The result of verifying the safe variations seed's signature, recorded when
+    the seed is loaded from Local State. Only recorded when attempting to run in
+    safe mode.
   </summary>
 </histogram>
 
@@ -95214,8 +95235,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Variations.SeedLoadResult" enum="VariationsSeedLoadResult">
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    Records whether the variations seed was successfully read from local state
-    on startup. Records a detailed reason on read failure.
+    Records whether the latest variations seed was successfully read from local
+    state on startup. Records a detailed reason on read failure. Not recorded
+    when running in safe mode.
   </summary>
 </histogram>
 

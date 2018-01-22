@@ -4,9 +4,14 @@
 
 #include "components/variations/variations_seed_store.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/time/time.h"
+#include "base/version.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/client_filterable_state.h"
@@ -83,6 +88,25 @@ VariationsSeed CreateTestSeed() {
   return seed;
 }
 
+// Returns a ClientFilterableState with all fields set to "interesting" values
+// for testing.
+std::unique_ptr<ClientFilterableState> CreateTestClientFilterableState() {
+  std::unique_ptr<ClientFilterableState> client_state =
+      std::make_unique<ClientFilterableState>();
+  client_state->locale = "es-MX";
+  client_state->reference_date =
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(12345));
+  client_state->version = base::Version("1.2.3.4");
+  client_state->channel = Study::CANARY;
+  client_state->form_factor = Study::PHONE;
+  client_state->platform = Study::PLATFORM_MAC;
+  client_state->hardware_class = "mario";
+  client_state->is_low_end_device = true;
+  client_state->session_consistency_country = "mx";
+  client_state->permanent_consistency_country = "br";
+  return client_state;
+}
+
 // Serializes |seed| to protobuf binary format.
 std::string SerializeSeed(const VariationsSeed& seed) {
   std::string serialized_seed;
@@ -106,6 +130,20 @@ std::string SerializeSeedBase64(const VariationsSeed& seed) {
   return base64_serialized_seed;
 }
 
+// Sets all seed-related prefs to non-default values. Used to verify whether
+// pref values were cleared.
+void SetAllSeedPrefsToNonDefaultValues(PrefService* prefs) {
+  prefs->SetString(prefs::kVariationsCompressedSeed, "a");
+  prefs->SetString(prefs::kVariationsSafeCompressedSeed, "b");
+  prefs->SetString(prefs::kVariationsSafeSeedLocale, "c");
+  prefs->SetString(prefs::kVariationsSafeSeedPermanentConsistencyCountry, "d");
+  prefs->SetString(prefs::kVariationsSafeSeedSessionConsistencyCountry, "e");
+  prefs->SetString(prefs::kVariationsSafeSeedSignature, "f");
+  prefs->SetString(prefs::kVariationsSeedSignature, "g");
+  prefs->SetTime(prefs::kVariationsSafeSeedDate, base::Time::Now());
+  prefs->SetTime(prefs::kVariationsSeedDate, base::Time::Now());
+}
+
 // Checks whether the pref with name |pref_name| is at its default value in
 // |prefs|.
 bool PrefHasDefaultValue(const TestingPrefServiceSimple& prefs,
@@ -115,11 +153,11 @@ bool PrefHasDefaultValue(const TestingPrefServiceSimple& prefs,
 
 }  // namespace
 
-TEST(VariationsSeedStoreTest, LoadSeed) {
+TEST(VariationsSeedStoreTest, LoadSeed_ValidSeed) {
   // Store good seed data to test if loading from prefs works.
   const VariationsSeed seed = CreateTestSeed();
   const std::string base64_seed = SerializeSeedBase64(seed);
-  const std::string base64_seed_signature = "a test signature, clearly forged.";
+  const std::string base64_seed_signature = "a test signature, ignored.";
 
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
@@ -142,18 +180,83 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   // Make sure the pref hasn't been changed.
   EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
   EXPECT_EQ(base64_seed, prefs.GetString(prefs::kVariationsCompressedSeed));
+}
 
-  // Check that loading a bad seed returns false and clears the pref.
+TEST(VariationsSeedStoreTest, LoadSeed_InvalidSeed) {
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  SetAllSeedPrefsToNonDefaultValues(&prefs);
   prefs.SetString(prefs::kVariationsCompressedSeed, "this should fail");
-  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+
+  // Loading an invalid seed should return false and clear all associated prefs.
+  TestVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::string loaded_seed_data;
+  std::string loaded_base64_seed_signature;
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed, &loaded_seed_data,
                                    &loaded_base64_seed_signature));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
 
-  // Check that having no seed in prefs results in a return value of false.
-  prefs.ClearPref(prefs::kVariationsCompressedSeed);
+  // However, only the latest seed prefs should be cleared; the safe seed prefs
+  // should not be modified.
+  EXPECT_FALSE(
+      PrefHasDefaultValue(prefs, prefs::kVariationsSafeCompressedSeed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedDate));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedLocale));
+  EXPECT_FALSE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedPermanentConsistencyCountry));
+  EXPECT_FALSE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedSessionConsistencyCountry));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedSignature));
+}
+
+TEST(VariationsSeedStoreTest, LoadSeed_InvalidSignature) {
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string base64_seed = SerializeSeedBase64(seed);
+  const std::string base64_seed_signature = "a deeply compromised signature.";
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  SetAllSeedPrefsToNonDefaultValues(&prefs);
+  prefs.SetString(prefs::kVariationsCompressedSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
+
+  // Loading a valid seed with an invalid signature should return false and
+  // clear all associated prefs when signature verification is enabled.
+  SignatureVerifyingVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::string loaded_seed_data;
+  std::string loaded_base64_seed_signature;
+  EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed, &loaded_seed_data,
+                                   &loaded_base64_seed_signature));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
+
+  // However, only the latest seed prefs should be cleared; the safe seed prefs
+  // should not be modified.
+  EXPECT_FALSE(
+      PrefHasDefaultValue(prefs, prefs::kVariationsSafeCompressedSeed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedDate));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedLocale));
+  EXPECT_FALSE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedPermanentConsistencyCountry));
+  EXPECT_FALSE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedSessionConsistencyCountry));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedSignature));
+}
+
+TEST(VariationsSeedStoreTest, LoadSeed_EmptySeed) {
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+
+  // Loading an empty seed should return false.
+  TestVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::string loaded_seed_data;
+  std::string loaded_base64_seed_signature;
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed, &loaded_seed_data,
                                    &loaded_base64_seed_signature));
 }
@@ -234,6 +337,152 @@ TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
                                        std::string(), base::Time::Now(), false,
                                        true, false, &parsed_seed));
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
+}
+
+TEST(VariationsSeedStoreTest, LoadSafeSeed_ValidSeed) {
+  // Store good seed data to test if loading from prefs works.
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string base64_seed = SerializeSeedBase64(seed);
+  const std::string base64_seed_signature = "a test signature, ignored.";
+  const base::Time reference_date = base::Time::Now();
+  const std::string locale = "en-US";
+  const std::string permanent_consistency_country = "us";
+  const std::string session_consistency_country = "ca";
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  prefs.SetString(prefs::kVariationsSafeCompressedSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsSafeSeedSignature, base64_seed_signature);
+  prefs.SetTime(prefs::kVariationsSafeSeedDate, reference_date);
+  prefs.SetString(prefs::kVariationsSafeSeedLocale, locale);
+  prefs.SetString(prefs::kVariationsSafeSeedPermanentConsistencyCountry,
+                  permanent_consistency_country);
+  prefs.SetString(prefs::kVariationsSafeSeedSessionConsistencyCountry,
+                  session_consistency_country);
+
+  TestVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::unique_ptr<ClientFilterableState> client_state =
+      CreateTestClientFilterableState();
+  EXPECT_TRUE(seed_store.LoadSafeSeed(&loaded_seed, client_state.get()));
+
+  // Check that the loaded data is the same as the original.
+  EXPECT_EQ(SerializeSeed(seed), SerializeSeed(loaded_seed));
+  EXPECT_EQ(locale, client_state->locale);
+  EXPECT_EQ(reference_date, client_state->reference_date);
+  EXPECT_EQ(permanent_consistency_country,
+            client_state->permanent_consistency_country);
+  EXPECT_EQ(session_consistency_country,
+            client_state->session_consistency_country);
+
+  // Make sure that other data in the |client_state| hasn't been changed.
+  std::unique_ptr<ClientFilterableState> original_state =
+      CreateTestClientFilterableState();
+  EXPECT_EQ(original_state->version, client_state->version);
+  EXPECT_EQ(original_state->channel, client_state->channel);
+  EXPECT_EQ(original_state->form_factor, client_state->form_factor);
+  EXPECT_EQ(original_state->platform, client_state->platform);
+  EXPECT_EQ(original_state->hardware_class, client_state->hardware_class);
+  EXPECT_EQ(original_state->is_low_end_device, client_state->is_low_end_device);
+
+  // Make sure the pref hasn't been changed.
+  EXPECT_FALSE(
+      PrefHasDefaultValue(prefs, prefs::kVariationsSafeCompressedSeed));
+  EXPECT_EQ(base64_seed, prefs.GetString(prefs::kVariationsSafeCompressedSeed));
+}
+
+TEST(VariationsSeedStoreTest, LoadSafeSeed_InvalidSeed) {
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  SetAllSeedPrefsToNonDefaultValues(&prefs);
+  prefs.SetString(prefs::kVariationsSafeCompressedSeed, "this should fail");
+
+  // Loading an invalid seed should return false and clear all associated prefs.
+  TestVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::unique_ptr<ClientFilterableState> client_state =
+      CreateTestClientFilterableState();
+  EXPECT_FALSE(seed_store.LoadSafeSeed(&loaded_seed, client_state.get()));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeCompressedSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedDate));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedLocale));
+  EXPECT_TRUE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedPermanentConsistencyCountry));
+  EXPECT_TRUE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedSessionConsistencyCountry));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedSignature));
+
+  // However, only the safe seed prefs should be cleared; the latest seed prefs
+  // should not be modified.
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
+
+  // Moreover, loading an invalid seed should leave the |client_state|
+  // unmodified.
+  std::unique_ptr<ClientFilterableState> original_state =
+      CreateTestClientFilterableState();
+  EXPECT_EQ(original_state->locale, client_state->locale);
+  EXPECT_EQ(original_state->reference_date, client_state->reference_date);
+  EXPECT_EQ(original_state->session_consistency_country,
+            client_state->session_consistency_country);
+  EXPECT_EQ(original_state->permanent_consistency_country,
+            client_state->permanent_consistency_country);
+}
+
+TEST(VariationsSeedStoreTest, LoadSafeSeed_InvalidSignature) {
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string base64_seed = SerializeSeedBase64(seed);
+  const std::string base64_seed_signature = "a deeply compromised signature.";
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  SetAllSeedPrefsToNonDefaultValues(&prefs);
+  prefs.SetString(prefs::kVariationsSafeCompressedSeed, base64_seed);
+  prefs.SetString(prefs::kVariationsSafeSeedSignature, base64_seed_signature);
+
+  // Loading a valid seed with an invalid signature should return false and
+  // clear all associated prefs when signature verification is enabled.
+  SignatureVerifyingVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  std::unique_ptr<ClientFilterableState> client_state =
+      CreateTestClientFilterableState();
+  EXPECT_FALSE(seed_store.LoadSafeSeed(&loaded_seed, client_state.get()));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeCompressedSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedDate));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedLocale));
+  EXPECT_TRUE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedPermanentConsistencyCountry));
+  EXPECT_TRUE(PrefHasDefaultValue(
+      prefs, prefs::kVariationsSafeSeedSessionConsistencyCountry));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSafeSeedSignature));
+
+  // However, only the safe seed prefs should be cleared; the latest seed prefs
+  // should not be modified.
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsCompressedSeed));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
+
+  // Moreover, the passed-in |client_state| should remain unmodified.
+  std::unique_ptr<ClientFilterableState> original_state =
+      CreateTestClientFilterableState();
+  EXPECT_EQ(original_state->locale, client_state->locale);
+  EXPECT_EQ(original_state->reference_date, client_state->reference_date);
+  EXPECT_EQ(original_state->session_consistency_country,
+            client_state->session_consistency_country);
+  EXPECT_EQ(original_state->permanent_consistency_country,
+            client_state->permanent_consistency_country);
+}
+
+TEST(VariationsSeedStoreTest, LoadSafeSeed_EmptySeed) {
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+
+  // Loading an empty seed should return false.
+  TestVariationsSeedStore seed_store(&prefs);
+  VariationsSeed loaded_seed;
+  ClientFilterableState client_state;
+  EXPECT_FALSE(seed_store.LoadSafeSeed(&loaded_seed, &client_state));
 }
 
 TEST(VariationsSeedStoreTest, StoreSafeSeed_ValidSeed) {
