@@ -301,27 +301,29 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                 completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
   // Hide the rightView button so its not visibile on its initial layout
   // while the expan animation is happening.
-  self.rightView.hidden = YES;
-  self.rightView.alpha = 0;
-  self.rightView.frame = CGRectLayoutOffset(
-      [self rightViewRectForBounds:self.bounds], kToolbarButtonAnimationOffset);
+  self.clearButton.hidden = YES;
+  self.clearButton.alpha = 0;
+  self.clearButton.frame =
+      CGRectLayoutOffset([self rightViewRectForBounds:self.bounds],
+                         [self clearButtonAnimationOffset]);
 
   [completionAnimator addAnimations:^{
-    self.rightView.hidden = NO;
-    self.rightView.alpha = 1.0;
-    self.rightView.frame = CGRectLayoutOffset(self.rightView.frame,
-                                              -kToolbarButtonAnimationOffset);
+    self.clearButton.hidden = NO;
+    self.clearButton.alpha = 1.0;
+
+    self.clearButton.frame = CGRectLayoutOffset(
+        self.clearButton.frame, -[self clearButtonAnimationOffset]);
   }];
 }
 
 - (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
   [animator addAnimations:^{
-    self.rightView.alpha = 0;
-    self.rightView.frame =
-        CGRectLayoutOffset(self.rightView.frame, kToolbarButtonAnimationOffset);
+    self.clearButton.alpha = 0;
+    self.clearButton.frame = CGRectLayoutOffset(self.clearButton.frame,
+                                                kToolbarButtonAnimationOffset);
   }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    self.rightView = nil;
+    [self resetClearButton];
   }];
 }
 
@@ -939,6 +941,31 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (CGRect)layoutLeftViewForBounds:(CGRect)bounds {
   return CGRectZero;
+}
+
+// Accesses the clear button view when it's available; correctly resolves RTL.
+- (UIView*)clearButton {
+  if ([self isTextFieldLTR]) {
+    return self.rightView;
+  } else {
+    return self.leftView;
+  }
+}
+
+- (void)resetClearButton {
+  if ([self isTextFieldLTR]) {
+    self.rightView = nil;
+  } else {
+    self.rightView = nil;
+  }
+}
+
+- (CGFloat)clearButtonAnimationOffset {
+  if ([self isTextFieldLTR]) {
+    return kToolbarButtonAnimationOffset;
+  } else {
+    return -kToolbarButtonAnimationOffset;
+  }
 }
 
 @end
