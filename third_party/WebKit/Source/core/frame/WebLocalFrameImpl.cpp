@@ -1104,7 +1104,7 @@ bool WebLocalFrameImpl::IsSelectionAnchorFirst() const {
     return false;
   }
 
-  return selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsBaseFirst();
+  return selection.GetSelectionInDOMTree().IsBaseFirst();
 }
 
 void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
