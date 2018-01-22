@@ -54,12 +54,11 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   bool UsesImageContainerSize() const override { return !fixed_size_; }
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
-  // The |container_size| is the container size
-  scoped_refptr<Image> GetImage(
-      const ImageResourceObserver&,
-      const Document&,
-      const ComputedStyle&,
-      const LayoutSize& container_size) const override;
+  // The |target_size| is the desired image size
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const FloatSize& target_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
   virtual void Trace(blink::Visitor*);

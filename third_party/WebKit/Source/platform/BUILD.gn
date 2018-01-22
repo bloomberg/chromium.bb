@@ -885,7 +885,6 @@ jumbo_component("platform") {
     "geometry/LayoutRectOutsets.h",
     "geometry/LayoutSize.cpp",
     "geometry/LayoutSize.h",
-    "geometry/LayoutSizeHash.h",
     "geometry/Region.cpp",
     "geometry/Region.h",
     "geometry/TransformState.cpp",

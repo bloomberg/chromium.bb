@@ -59,8 +59,7 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
   if (source_image->IsSVGImage()) {
     UseCounter::Count(GetElement().GetDocument(), WebFeature::kSVGInCanvas2D);
     SVGImage* svg_image = ToSVGImage(source_image.get());
-    LayoutSize image_size =
-        RoundedLayoutSize(svg_image->ConcreteObjectSize(default_object_size));
+    FloatSize image_size = svg_image->ConcreteObjectSize(default_object_size);
     source_image = SVGImageForContainer::Create(
         svg_image, image_size, 1,
         GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()));

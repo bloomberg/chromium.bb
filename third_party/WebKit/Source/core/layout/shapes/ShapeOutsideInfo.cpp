@@ -149,7 +149,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
 
   scoped_refptr<Image> image =
       style_image->GetImage(layout_box_, layout_box_.GetDocument(),
-                            layout_box_.StyleRef(), image_size);
+                            layout_box_.StyleRef(), FloatSize(image_size));
 
   return Shape::CreateRasterShape(image.get(), shape_image_threshold,
                                   image_rect, margin_rect, writing_mode,

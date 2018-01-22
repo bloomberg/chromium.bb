@@ -47,7 +47,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,
     const ComputedStyle&,
-    const LayoutSize& container_size) {
+    const FloatSize& target_size) {
   if (!generator_) {
     generator_ = CSSPaintImageGenerator::Create(
         GetName(), document, paint_image_generator_observer_);
@@ -56,7 +56,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   if (!ParseInputArguments(document))
     return nullptr;
 
-  return generator_->Paint(client, RoundedIntSize(container_size),
+  return generator_->Paint(client, RoundedIntSize(target_size),
                            parsed_input_arguments_);
 }
 

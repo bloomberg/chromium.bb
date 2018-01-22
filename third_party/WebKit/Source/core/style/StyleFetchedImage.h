@@ -63,11 +63,10 @@ class StyleFetchedImage final : public StyleImage,
   void RemoveClient(ImageResourceObserver*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
   String DebugName() const override { return "StyleFetchedImage"; }
-  scoped_refptr<Image> GetImage(
-      const ImageResourceObserver&,
-      const Document&,
-      const ComputedStyle&,
-      const LayoutSize& container_size) const override;
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const FloatSize& target_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
