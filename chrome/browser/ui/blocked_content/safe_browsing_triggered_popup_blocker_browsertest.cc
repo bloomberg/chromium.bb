@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        NoFeature_AllowCreatingNewWindows) {
   // Disable Abusive enforcement.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("", "AbusiveAdEnforcement");
+  scoped_feature_list.InitAndDisableFeature(kAbusiveExperienceEnforce);
   // Open a new tab to ensure it has the right variation params.
   chrome::NewTab(browser());
   ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(web_contents()));
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   // SubresourceFilter.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("SubresourceFilter",
-                                          "AbusiveAdEnforcement");
+                                          "AbusiveExperienceEnforce");
   // Open a new tab to ensure it has the right variation params.
   chrome::NewTab(browser());
   ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(web_contents()));
