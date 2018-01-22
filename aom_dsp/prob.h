@@ -27,8 +27,6 @@
 extern "C" {
 #endif
 
-typedef uint8_t aom_prob;
-
 // TODO(negge): Rename this aom_prob once we remove vpxbool.
 typedef uint16_t aom_cdf_prob;
 
@@ -625,30 +623,13 @@ typedef uint16_t aom_cdf_prob;
 
 #define BR_NODE 1
 
-#define aom_prob_half ((aom_prob)128)
-
-typedef int8_t aom_tree_index;
-
-#define TREE_SIZE(leaf_count) (-2 + 2 * (leaf_count))
-
-#define MODE_MV_COUNT_SAT 20
-
-/* We build coding trees compactly in arrays.
-   Each node of the tree is a pair of aom_tree_indices.
-   Array index often references a corresponding probability table.
-   Index <= 0 means done encoding/decoding and value = -Index,
-   Index > 0 means need another bit, specification at index.
-   Nonnegative indices are always even;  processing begins at node 0. */
-
-typedef const aom_tree_index aom_tree[];
-
-static INLINE aom_prob get_prob(unsigned int num, unsigned int den) {
+static INLINE uint8_t get_prob(unsigned int num, unsigned int den) {
   assert(den != 0);
   {
     const int p = (int)(((uint64_t)num * 256 + (den >> 1)) / den);
     // (p > 255) ? 255 : (p < 1) ? 1 : p;
     const int clipped_prob = p | ((255 - p) >> 23) | (p == 0);
-    return (aom_prob)clipped_prob;
+    return (uint8_t)clipped_prob;
   }
 }
 

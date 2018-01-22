@@ -96,8 +96,6 @@ static INLINE int get_segdata(const struct segmentation *seg, int segment_id,
   return seg->feature_data[segment_id][feature_id];
 }
 
-extern const aom_tree_index av1_segment_tree[TREE_SIZE(MAX_SEGMENTS)];
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -28,64 +28,22 @@
 #include "./aom_config.h"
 #include "av1/common/entropymode.h"
 
-const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
-  -DC_PRED,
-  2, /* 0 = DC_NODE */
-  -PAETH_PRED,
-  4, /* 1 = PAETH_NODE */
-  -V_PRED,
-  6, /* 2 = V_NODE */
-  8,
-  12, /* 3 = COM_NODE */
-  -H_PRED,
-  10, /* 4 = H_NODE */
-  -D135_PRED,
-  -D117_PRED, /* 5 = D135_NODE */
-  -D45_PRED,
-  14, /* 6 = D45_NODE */
-  -D63_PRED,
-  16, /* 7 = D63_NODE */
-  -D153_PRED,
-  18, /* 8 = D153_NODE */
-  -D207_PRED,
-  20, /* 9 = D207_NODE */
-  -SMOOTH_PRED,
-  22, /* 10 = SMOOTH_NODE */
-  -SMOOTH_V_PRED,
-  -SMOOTH_H_PRED /* 11 = SMOOTH_V_NODE */
-};
-
 #define SPACES_PER_TAB 2
 
 typedef unsigned int aom_count_type;
 // A log file recording parsed counts
 static FILE *logfile;  // TODO(yuec): make it a command line option
 
-static INLINE aom_prob get_binary_prob_new(unsigned int n0, unsigned int n1) {
+static INLINE uint8_t get_binary_prob_new(unsigned int n0, unsigned int n1) {
   // The "+1" will prevent this function from generating extreme probability
   // when both n0 and n1 are small
   const unsigned int den = n0 + 1 + n1 + 1;
   return get_prob(n0 + 1, den);
 }
 
-// Optimized probabilities will be stored in probs[].
-static unsigned int optimize_tree_probs(const aom_tree_index *tree,
-                                        unsigned int idx,
-                                        const unsigned int *counts,
-                                        aom_prob *probs) {
-  const int l = tree[idx];
-  const unsigned int left_count =
-      (l <= 0) ? counts[-l] : optimize_tree_probs(tree, l, counts, probs);
-  const int r = tree[idx + 1];
-  const unsigned int right_count =
-      (r <= 0) ? counts[-r] : optimize_tree_probs(tree, r, counts, probs);
-  probs[idx >> 1] = get_binary_prob_new(left_count, right_count);
-  return left_count + right_count;
-}
-
 static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
                        int dim_of_cts, int *cts_each_dim,
-                       const aom_tree_index *tree, int flatten_last_dim) {
+                       int flatten_last_dim) {
   if (dim_of_cts < 1) {
     fprintf(stderr, "The dimension of a counts vector should be at least 1!\n");
     return 1;
@@ -93,7 +51,7 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
   if (dim_of_cts == 1) {
     const int total_modes = cts_each_dim[0];
     aom_count_type *counts1d = *ct_ptr;
-    aom_prob *probs = aom_malloc(sizeof(*probs) * (total_modes - 1));
+    uint8_t *probs = aom_malloc(sizeof(*probs) * (total_modes - 1));
 
     if (probs == NULL) {
       fprintf(stderr, "Allocating prob array failed!\n");
@@ -101,12 +59,8 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
     }
 
     (*ct_ptr) += total_modes;
-    if (tree != NULL) {
-      optimize_tree_probs(tree, 0, counts1d, probs);
-    } else {
-      assert(total_modes == 2);
-      probs[0] = get_binary_prob_new(counts1d[0], counts1d[1]);
-    }
+    assert(total_modes == 2);
+    probs[0] = get_binary_prob_new(counts1d[0], counts1d[1]);
     if (tabs > 0) fprintf(probsfile, "%*c", tabs * SPACES_PER_TAB, ' ');
     for (int k = 0; k < total_modes - 1; ++k) {
       if (k == total_modes - 2)
@@ -141,7 +95,7 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
         tabs_next_level = tabs + 1;
       }
       if (parse_stats(ct_ptr, probsfile, tabs_next_level, dim_of_cts - 1,
-                      cts_each_dim + 1, tree, flatten_last_dim)) {
+                      cts_each_dim + 1, flatten_last_dim)) {
         return 1;
       }
       if (dim_of_cts == 2 || (dim_of_cts == 3 && flatten_last_dim)) {
@@ -167,7 +121,6 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
 //   probsfile: output file
 //   dim_of_cts: number of dimensions of counts array
 //   cts_each_dim: an array storing size of each dimension of counts array
-//   tree: binary tree for a multi-symbol syntax, or NULL for a binary one
 //   flatten_last_dim: for a binary syntax, if flatten_last_dim is 0, probs in
 //                     different contexts will be written separately, e.g.,
 //                     {{p1}, {p2}, ...};
@@ -177,15 +130,14 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
 //   prefix: declaration header for the entropy table
 static void optimize_entropy_table(aom_count_type *counts,
                                    FILE *const probsfile, int dim_of_cts,
-                                   int *cts_each_dim,
-                                   const aom_tree_index *tree,
-                                   int flatten_last_dim, char *prefix) {
+                                   int *cts_each_dim, int flatten_last_dim,
+                                   char *prefix) {
   aom_count_type *ct_ptr = counts;
 
   assert(!flatten_last_dim || cts_each_dim[dim_of_cts - 1] == 2);
 
   fprintf(probsfile, "%s = {\n", prefix);
-  if (parse_stats(&ct_ptr, probsfile, 1, dim_of_cts, cts_each_dim, tree,
+  if (parse_stats(&ct_ptr, probsfile, 1, dim_of_cts, cts_each_dim,
                   flatten_last_dim)) {
     fprintf(probsfile, "Optimizer failed!\n");
   }
@@ -402,7 +354,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = NEWMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
-      &fc.newmv_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
+      &fc.newmv_mode[0][0], probsfile, 2, cts_each_dim, 1,
       "static const aom_prob default_newmv_prob[NEWMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.newmv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
@@ -411,7 +363,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = GLOBALMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
-      &fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
+      &fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim, 1,
       "static const aom_prob default_zeromv_prob[GLOBALMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
@@ -420,7 +372,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = REFMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
-      &fc.refmv_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
+      &fc.refmv_mode[0][0], probsfile, 2, cts_each_dim, 1,
       "static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.refmv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
@@ -587,7 +539,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;
   cts_each_dim[2] = 2;
   optimize_entropy_table(
-      &fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
+      &fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim, 1,
       "static const aom_prob "
       "default_txk_skip[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
   optimize_cdf_table(&fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim,
@@ -600,7 +552,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[2] = EOB_COEF_CONTEXTS;
   cts_each_dim[3] = 2;
   optimize_entropy_table(
-      &fc.eob_flag[0][0][0][0], probsfile, 4, cts_each_dim, NULL, 1,
+      &fc.eob_flag[0][0][0][0], probsfile, 4, cts_each_dim, 1,
       "static const aom_prob "
       "default_eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]");
 
@@ -609,7 +561,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[2] = EOB_COEF_CONTEXTS;
   cts_each_dim[3] = 2;
   optimize_entropy_table(
-      &fc.eob_extra[0][0][0][0], probsfile, 4, cts_each_dim, NULL, 1,
+      &fc.eob_extra[0][0][0][0], probsfile, 4, cts_each_dim, 1,
       "static const aom_prob "
       "default_eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]");
 
@@ -668,7 +620,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[3] = LEVEL_CONTEXTS;
   cts_each_dim[4] = 2;
   optimize_entropy_table(&fc.coeff_lps[0][0][0][0][0], probsfile, 5,
-                         cts_each_dim, NULL, 1,
+                         cts_each_dim, 1,
                          "static const aom_prob "
                          "default_coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE-"
                          "1][LEVEL_CONTEXTS]");
@@ -709,7 +661,7 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = SKIP_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
-      &fc.skip_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
+      &fc.skip_mode[0][0], probsfile, 2, cts_each_dim, 1,
       "static const aom_prob default_skip_mode_probs[SKIP_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.skip_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
