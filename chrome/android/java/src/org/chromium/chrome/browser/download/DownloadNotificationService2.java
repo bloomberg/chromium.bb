@@ -80,7 +80,6 @@ public class DownloadNotificationService2 {
 
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
-    private int mNextNotificationId;
     private Bitmap mDownloadSuccessLargeIcon;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
@@ -104,8 +103,6 @@ public class DownloadNotificationService2 {
                         Context.NOTIFICATION_SERVICE);
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
-        mNextNotificationId =
-                mSharedPrefs.getInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
         mDownloadForegroundServiceManager = new DownloadForegroundServiceManager();
     }
 
@@ -558,12 +555,15 @@ public class DownloadNotificationService2 {
      * Get the next notificationId based on stored value and update shared preferences.
      * @return notificationId that is next based on stored value.
      */
-    private int getNextNotificationId() {
-        int nextNotificationId = mNextNotificationId;
-        mNextNotificationId = mNextNotificationId == Integer.MAX_VALUE ? STARTING_NOTIFICATION_ID
-                                                                       : mNextNotificationId + 1;
-        SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
+    static int getNextNotificationId() {
+        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        int nextNotificationId = sharedPreferences.getInt(
+                KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
+        int nextNextNotificationId = nextNotificationId == Integer.MAX_VALUE
+                ? STARTING_NOTIFICATION_ID
+                : nextNotificationId + 1;
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, nextNextNotificationId);
         editor.apply();
         return nextNotificationId;
     }
