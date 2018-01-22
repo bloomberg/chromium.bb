@@ -17,14 +17,13 @@
 // using the image corpii used to assess Blink image decode performance. Refer
 // to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
-#include <memory>
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "ui/gfx/test/icc_profiles.h"
 
@@ -98,8 +97,8 @@ static double HighResUpTime() {
       tick_count_elapsed = tick_count_large - tick_count_last;
     }
 
-    // Force a re-sync if QueryPerformanceCounter differs from GetTickCount() by
-    // more than 500ms. (The 500ms value is from
+    // Force a re-sync if QueryPerformanceCounter differs from GetTickCount()
+    // by more than 500ms. (The 500ms value is from
     // http://support.microsoft.com/kb/274323).
     __int64 diff = tick_count_elapsed - qpc_elapsed;
     if (diff > 500 || diff < -500)
@@ -133,8 +132,8 @@ static double GetCurrentTime() {
   // resolution.  QueryPerformanceCounter has high resolution, but is only
   // usable to measure time intervals.  To combine them, we call ftime and
   // QueryPerformanceCounter initially. Later calls will use
-  // QueryPerformanceCounter by itself, adding the delta to the saved ftime.  We
-  // periodically re-sync to correct for drift.
+  // QueryPerformanceCounter by itself, adding the delta to the saved ftime.
+  // We periodically re-sync to correct for drift.
   static double sync_low_res_utc_time;
   static double sync_high_res_up_time;
   static double last_utc_time;
@@ -195,14 +194,14 @@ scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
   if (s.st_size <= 0)
     return SharedBuffer::Create();
 
-  auto buffer = std::make_unique<unsigned char[]>(file_size);
-  if (file_size != fread(buffer.get(), 1, file_size, fp)) {
+  Vector<char> buffer(file_size);
+  if (file_size != fread(buffer.data(), 1, file_size, fp)) {
     fprintf(stderr, "Error reading file %s\n", file_name);
     exit(2);
   }
 
   fclose(fp);
-  return SharedBuffer::Create(buffer.get(), file_size);
+  return SharedBuffer::AdoptVector(buffer);
 }
 
 bool DecodeImageData(SharedBuffer* data,
