@@ -344,25 +344,4 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
   }
 }
 
-void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
-    const std::string& name,
-    const LatencyInfo::LatencyComponent& start_component,
-    const LatencyInfo::LatencyComponent& end_component) {
-  CONFIRM_EVENT_TIMES_EXIST(start_component, end_component)
-  rappor::RapporService* rappor_service =
-      GetContentClient()->browser()->GetRapporService();
-  if (rappor_service && render_widget_host_delegate_) {
-    std::unique_ptr<rappor::Sample> sample =
-        rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
-    render_widget_host_delegate_->AddDomainInfoToRapporSample(sample.get());
-    sample->SetUInt64Field(
-        "Latency",
-        std::max(static_cast<int64_t>(0), (end_component.last_event_time -
-                                           start_component.first_event_time)
-                                              .InMicroseconds()),
-        rappor::NO_NOISE);
-    rappor_service->RecordSample(name, std::move(sample));
-  }
-}
-
 }  // namespace content

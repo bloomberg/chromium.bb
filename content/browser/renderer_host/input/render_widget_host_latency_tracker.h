@@ -64,12 +64,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   int64_t latency_component_id() const { return latency_component_id_; }
 
  private:
-  // ui::LatencyTracker:
-  void ReportRapporScrollLatency(
-      const std::string& name,
-      const ui::LatencyInfo::LatencyComponent& start_component,
-      const ui::LatencyInfo::LatencyComponent& end_component) override;
-
   int64_t last_event_id_;
   int64_t latency_component_id_;
   bool has_seen_first_gesture_scroll_update_;

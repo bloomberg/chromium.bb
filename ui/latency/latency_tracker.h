@@ -29,11 +29,6 @@ class LatencyTracker {
  protected:
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
-  virtual void ReportRapporScrollLatency(
-      const std::string& name,
-      const LatencyInfo::LatencyComponent& start_component,
-      const LatencyInfo::LatencyComponent& end_component);
-
  private:
   enum class InputMetricEvent {
     SCROLL_BEGIN_TOUCH = 0,
