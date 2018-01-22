@@ -7,17 +7,16 @@ package org.chromium.content_shell_apk;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.content.app.ContentApplication;
 
 /**
  * Entry point for the content shell application.  Handles initialization of information that needs
  * to be shared across the main activity and the child services created.
  */
-public class ContentShellApplication extends ContentApplication {
-
+public class ContentShellApplication extends BaseChromiumApplication {
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 

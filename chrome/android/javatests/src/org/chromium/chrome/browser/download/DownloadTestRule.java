@@ -22,7 +22,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.ApplicationUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -212,7 +211,6 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
         cleanUpAllDownloads();
 
-        ApplicationUtils.waitForLibraryDependencies(InstrumentationRegistry.getInstrumentation());
         final Context context = InstrumentationRegistry.getTargetContext().getApplicationContext();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
