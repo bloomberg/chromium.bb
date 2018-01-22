@@ -22,7 +22,6 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -825,8 +824,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
       report->mutable_environment()->mutable_process();
 
   process->set_metrics_consent(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-          g_browser_process->local_state()));
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 
   // Associate process-wide incidents with any eligible profile. If there is no
   // eligible profile, drop the incidents.

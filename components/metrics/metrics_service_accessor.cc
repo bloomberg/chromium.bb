@@ -12,31 +12,20 @@
 #include "components/variations/metrics_util.h"
 
 namespace metrics {
-namespace {
 
-bool g_force_official_enabled_test = false;
-
-bool IsMetricsReportingEnabledForOfficialBuild(PrefService* pref_service) {
+// static
+bool MetricsServiceAccessor::IsMetricsReportingEnabled(
+    PrefService* pref_service) {
+#if defined(GOOGLE_CHROME_BUILD)
   // In official builds, disable metrics when reporting field trials are
   // forced; otherwise, use the value of the user's preference to determine
   // whether to enable metrics reporting.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kForceFieldTrials) &&
          pref_service->GetBoolean(prefs::kMetricsReportingEnabled);
-}
-
-}  // namespace
-
-// static
-bool MetricsServiceAccessor::IsMetricsReportingEnabled(
-    PrefService* pref_service) {
-#if defined(GOOGLE_CHROME_BUILD)
-  return IsMetricsReportingEnabledForOfficialBuild(pref_service);
 #else
   // In non-official builds, disable metrics reporting completely.
-  return g_force_official_enabled_test
-             ? IsMetricsReportingEnabledForOfficialBuild(pref_service)
-             : false;
+  return false;
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
@@ -84,12 +73,6 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameAndGroupHash(
   metrics_service->synthetic_trial_registry()->RegisterSyntheticFieldTrial(
       trial_group);
   return true;
-}
-
-// static
-void MetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
-    bool value) {
-  g_force_official_enabled_test = value;
 }
 
 }  // namespace metrics

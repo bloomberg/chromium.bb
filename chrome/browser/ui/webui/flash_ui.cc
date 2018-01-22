@@ -26,7 +26,6 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -301,8 +300,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Crash information.
   AddPair(list.get(), base::string16(), "--- Crash data ---");
   bool crash_reporting_enabled =
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-          g_browser_process->local_state());
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   if (crash_reporting_enabled) {
     std::vector<UploadList::UploadInfo> crashes;
     upload_list_->GetUploads(10, &crashes);

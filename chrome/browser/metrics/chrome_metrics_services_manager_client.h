@@ -19,10 +19,6 @@
 
 class PrefService;
 
-namespace metrics_services_manager {
-class MetricsServicesManager;
-}
-
 namespace metrics {
 class EnabledStateProvider;
 class MetricsStateManager;
@@ -43,11 +39,6 @@ class ChromeMetricsServicesManagerClient
  public:
   explicit ChromeMetricsServicesManagerClient(PrefService* local_state);
   ~ChromeMetricsServicesManagerClient() override;
-
-  // Called once MetricsServicesManager has been created. Used to attach state
-  // associated with the MetricsServicesManager.
-  void OnMetricsServiceManagerCreated(
-      metrics_services_manager::MetricsServicesManager* manager);
 
   // Unconditionally attempts to create a field trial to control client side
   // metrics/crash sampling to use as a fallback when one hasn't been

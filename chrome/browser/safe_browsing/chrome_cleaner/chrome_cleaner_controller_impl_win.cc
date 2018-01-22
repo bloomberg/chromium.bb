@@ -195,8 +195,7 @@ void ChromeCleanerControllerDelegate::FetchAndVerifyChromeCleaner(
 }
 
 bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {
-  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-      g_browser_process->local_state());
+  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 }
 
 void ChromeCleanerControllerDelegate::TagForResetting(Profile* profile) {

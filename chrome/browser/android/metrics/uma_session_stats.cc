@@ -110,9 +110,7 @@ static void JNI_UmaSessionStats_ChangeMetricsReportingConsent(
     JNIEnv*,
     const JavaParamRef<jclass>&,
     jboolean consent) {
-  UpdateMetricsPrefsOnPermissionChange(g_browser_process->local_state(),
-                                       g_browser_process->metrics_service(),
-                                       consent);
+  UpdateMetricsPrefsOnPermissionChange(consent);
 
   // This function ensures a consent file in the data directory is either
   // created, or deleted, depending on consent. Starting up metrics services
