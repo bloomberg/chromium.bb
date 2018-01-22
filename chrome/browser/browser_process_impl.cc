@@ -1239,7 +1239,14 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
     return;
   }
 
+  // Runner for tasks critical for user experience.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
+  // Runner for tasks that do not influence user experience.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
@@ -1254,7 +1261,7 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
           blocking_task_runner);
   subresource_filter_ruleset_service_->set_ruleset_service(
       base::MakeUnique<subresource_filter::RulesetService>(
-          local_state(), blocking_task_runner,
+          local_state(), blocking_task_runner, background_task_runner,
           subresource_filter_ruleset_service_.get(), indexed_ruleset_base_dir));
 }
 
