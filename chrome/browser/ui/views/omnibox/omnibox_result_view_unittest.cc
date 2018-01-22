@@ -235,4 +235,7 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
   ui::AXNodeData popup_node_data;
   popup_view()->GetAccessibleNodeData(&popup_node_data);
   EXPECT_EQ(popup_node_data.role, ui::AX_ROLE_LIST_BOX);
+  EXPECT_FALSE(popup_node_data.HasState(ui::AX_STATE_EXPANDED));
+  EXPECT_TRUE(popup_node_data.HasState(ui::AX_STATE_COLLAPSED));
+  EXPECT_TRUE(popup_node_data.HasState(ui::AX_STATE_INVISIBLE));
 }

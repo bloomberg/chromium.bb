@@ -185,6 +185,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
     if (popup_) {
+      NotifyAccessibilityEvent(ui::AX_EVENT_EXPANDED_CHANGED, true);
       size_animation_.Stop();
 
       // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
@@ -294,6 +295,11 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       return;
     }
     popup_->ShowInactive();
+
+    // Popup is now expanded and first item will be selected.
+    NotifyAccessibilityEvent(ui::AX_EVENT_EXPANDED_CHANGED, true);
+    if (result_view_at(0))
+      result_view_at(0)->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.
@@ -454,6 +460,12 @@ OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
 void OmniboxPopupContentsView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_LIST_BOX;
+  if (IsOpen()) {
+    node_data->AddState(ui::AX_STATE_EXPANDED);
+  } else {
+    node_data->AddState(ui::AX_STATE_COLLAPSED);
+    node_data->AddState(ui::AX_STATE_INVISIBLE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
