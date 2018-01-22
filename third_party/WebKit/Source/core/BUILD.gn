@@ -775,6 +775,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/Ry.h",
     "$blink_core_output_dir/css/properties/longhands/Scale.h",
     "$blink_core_output_dir/css/properties/longhands/ScrollBehavior.h",
+    "$blink_core_output_dir/css/properties/longhands/ScrollCustomization.h",
     "$blink_core_output_dir/css/properties/longhands/ScrollMarginBlockEnd.h",
     "$blink_core_output_dir/css/properties/longhands/ScrollMarginBlockStart.h",
     "$blink_core_output_dir/css/properties/longhands/ScrollMarginBottom.h",

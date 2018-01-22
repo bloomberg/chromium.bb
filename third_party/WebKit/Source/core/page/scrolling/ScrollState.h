@@ -63,6 +63,14 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
   // True if this scroll is the result of the user interacting directly with
   // the screen, e.g., via touch.
   bool isDirectManipulation() const { return data_->is_direct_manipulation; }
+  // When gesture begins it equals deltaXHint(). Otherwise, it returns deltaX().
+  double effectiveDeltaX() const {
+    return data_->is_beginning ? data_->delta_x_hint : data_->delta_x;
+  }
+  // When gesture begins it equals deltaYHint(). Otherwise, it returns deltaY().
+  double effectiveDeltaY() const {
+    return data_->is_beginning ? data_->delta_y_hint : data_->delta_y;
+  }
 
   // Non web exposed methods.
   void ConsumeDeltaNative(double x, double y);

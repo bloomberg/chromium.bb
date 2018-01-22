@@ -2194,6 +2194,18 @@
       },
     },
     {
+      name: "scroll-customization",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      converter: "ConvertFlags<blink::ScrollCustomization::ScrollDirection>",
+      type_name: "ScrollCustomization::ScrollDirection",
+      field_group: "*",
+      field_size: 4,
+      field_template: "primitive",
+      default_value: "ScrollCustomization::kScrollDirectionNone",
+      include_paths: ["platform/scroll/ScrollCustomization.h"],
+      runtime_flag: "ScrollCustomization",
+    },
+    {
       name: "scroll-margin-block-start",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",

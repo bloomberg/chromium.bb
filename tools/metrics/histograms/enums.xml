@@ -27752,6 +27752,7 @@ Called by update_use_counter_css.py.-->
   <int value="587" label="overscroll-behavior-y"/>
   <int value="588" label="font-variant-east-asian"/>
   <int value="589" label="text-decoration-skip-ink"/>
+  <int value="590" label="scroll-customization"/>
 </enum>
 
 <enum name="MappedEditingCommands">

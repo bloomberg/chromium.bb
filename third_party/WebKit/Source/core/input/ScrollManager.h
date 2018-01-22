@@ -122,6 +122,9 @@ class CORE_EXPORT ScrollManager
 
   void SnapAtGestureScrollEnd();
 
+  void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
+  void NotifyScrollPhaseEndForCustomizedScroll();
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
