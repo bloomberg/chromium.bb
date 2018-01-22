@@ -172,12 +172,12 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
   void OnFocus() override {
-    search_box_view_->SetSelected(true);
+    search_box_view_->OnOnSearchBoxFocusedChanged();
     Textfield::OnFocus();
   }
 
   void OnBlur() override {
-    search_box_view_->SetSelected(false);
+    search_box_view_->OnOnSearchBoxFocusedChanged();
     // Clear selection and set the caret to the end of the text.
     ClearSelection();
     Textfield::OnBlur();
@@ -547,14 +547,7 @@ views::View* SearchBoxView::GetSelectedViewInContentsView() const {
   return static_cast<ContentsView*>(contents_view_)->GetSelectedView();
 }
 
-void SearchBoxView::SetSelected(bool selected) {
-  if (selected_ == selected)
-    return;
-  selected_ = selected;
-  if (selected) {
-    // Set the ChromeVox focus to the search box.
-    search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
-  }
+void SearchBoxView::OnOnSearchBoxFocusedChanged() {
   UpdateSearchBoxBorder();
   Layout();
   SchedulePaint();
@@ -726,7 +719,7 @@ bool SearchBoxView::IsSearchBoxTrimmedQueryEmpty() const {
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
-  if (selected() && !is_search_box_active()) {
+  if (search_box_->HasFocus() && !is_search_box_active()) {
     // Show a gray ring around search box to indicate that the search box is
     // selected. Do not show it when search box is active, because blinking
     // cursor already indicates that.

@@ -297,9 +297,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns all apps tiles per page based on |page|.
   int TilesPerPage(int page) const;
 
-  // Returns the last index of |page|.
-  int LastIndexOfPage(int page) const;
-
   // Updates from model.
   void Update();
 
@@ -333,20 +330,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Gets the index of the AppListItemView at the end of the view model.
   Index GetLastViewIndex() const;
-
-  void MoveSelected(int page_delta, int slot_x_delta, int slot_y_delta);
-
-  // Returns true if the given moving operation should be handled by
-  // |suggestions_container_|, otherwise false.
-  bool HandleSuggestionsMove(int page_delta,
-                             int slot_x_delta,
-                             int slot_y_delta);
-
-  // Returns true if the given moving operation should be handled by
-  // |expand_arrow_view_|, otherwise false.
-  bool HandleExpandArrowMove(int page_delta,
-                             int slot_x_delta,
-                             int slot_y_delta);
 
   // Calculates the offset for |page_of_view| based on current page and
   // transition target page.
