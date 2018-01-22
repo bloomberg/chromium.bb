@@ -159,7 +159,9 @@ declare_args() {
   use_lld = is_clang && !is_msan &&
             ((is_win && host_os != "win") || is_fuchsia ||
              (use_thin_lto && target_os != "chromeos") ||
-             (is_linux && current_cpu == "x64" && target_os != "chromeos"))
+             (is_linux && current_cpu == "x64" && target_os != "chromeos") ||
+             (is_android && (current_cpu != "arm" || arm_version >= 7) &&
+              current_cpu != "mipsel" && current_cpu != "mips64el"))
 }
 
 declare_args() {
