@@ -84,9 +84,9 @@ function runTest(t, test) {
 
   internals.setSaveDataEnabled(test.conditions.dataSaver);
   if (test.conditions.cellular)
-    internals.setNetworkConnectionInfoOverride(true, 'cellular3g', 2.0);
+    internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '4g', 100, 2.0);
   else
-    internals.setNetworkConnectionInfoOverride(true, 'wifi', 2.0);
+    internals.setNetworkConnectionInfoOverride(true, 'wifi', '4g', 100, 2.0);
   internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
 
   // Generic required settings.

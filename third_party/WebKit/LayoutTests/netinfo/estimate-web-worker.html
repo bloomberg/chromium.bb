@@ -19,11 +19,11 @@ worker.addEventListener('message', function(e) {
     if (msg_count == 0) {
         verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
             connection.effectiveType, connection.rtt, connection.downlink);
-       internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
+       internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, newEffectiveType, newRtt, newDownlinkMax);
     } else if (msg_count == 1) {
         verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
             newEffectiveType, connection.rtt, connection.downlink);
-        internals.setNetworkQualityInfoOverride(initialEffectiveType, initialRtt, initialDownlink);
+        internals.setNetworkConnectionInfoOverride(isTypeOnline(initialType), initialType, initialEffectiveType, initialRtt, initialDownlink);
     } else if (msg_count == 2) {
         verifyOnChangeMessage(e.data, connection.type, connection.downlinkMax,
             initialEffectiveType, connection.rtt, connection.downlink);

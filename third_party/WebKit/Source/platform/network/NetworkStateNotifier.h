@@ -211,15 +211,18 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // and supplied overridden values are used instead until clearOverride() is
   // called.  This is used for layout tests (see crbug.com/377736) and inspector
   // emulation.
+  // If |effective_type| is null, its value is computed using |http_rtt_msec|.
+  // |max_bandwidth_mbps| is used to override both the |max_bandwidth_mbps| and
+  // |downlink_throughput_mbps|.
   //
   // Since this class is a singleton, tests must clear override when completed
   // to avoid indeterminate state across the test harness.
-  void SetNetworkConnectionInfoOverride(bool on_line,
-                                        WebConnectionType,
-                                        double max_bandwidth_mbps);
-  void SetNetworkQualityInfoOverride(WebEffectiveConnectionType effective_type,
-                                     unsigned long transport_rtt_msec,
-                                     double downlink_throughput_mbps);
+  void SetNetworkConnectionInfoOverride(
+      bool on_line,
+      WebConnectionType,
+      Optional<WebEffectiveConnectionType> effective_type,
+      unsigned long http_rtt_msec,
+      double max_bandwidth_mbps);
   void SetSaveDataEnabledOverride(bool enabled);
   void ClearOverride();
 

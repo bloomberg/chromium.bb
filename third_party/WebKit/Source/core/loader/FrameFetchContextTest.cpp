@@ -887,9 +887,10 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
   Settings* settings = document->GetSettings();
   FrameFetchContext* childFetchContext = CreateChildFrame();
-  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
-      WebEffectiveConnectionType::kType3G, 1 /* transport_rtt_msec */,
-      10000 /* downlink_throughput_mbps */);
+  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+      true, WebConnectionType::kWebConnectionTypeCellular3G,
+      WebEffectiveConnectionType::kType3G, 1 /* http_rtt_msec */,
+      10.0 /* max_bandwidth_mbps */);
 
   // Experiment is not enabled, expect default values.
   EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
@@ -917,9 +918,10 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
 
   // Low priority iframes enabled and network is slow, main frame request's
   // priorities should not change.
-  GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
-      WebEffectiveConnectionType::kType2G, 1 /* transport_rtt_msec */,
-      10000 /* downlink_throughput_mbps */);
+  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+      true, WebConnectionType::kWebConnectionTypeCellular3G,
+      WebEffectiveConnectionType::kType2G, 1 /* http_rtt_msec */,
+      10.0 /* max_bandwidth_mbps */);
   EXPECT_EQ(ResourceLoadPriority::kVeryHigh,
             fetch_context->ModifyPriorityForExperiments(
                 ResourceLoadPriority::kVeryHigh));

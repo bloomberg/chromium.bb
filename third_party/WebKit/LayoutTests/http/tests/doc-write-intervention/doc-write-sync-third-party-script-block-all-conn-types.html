@@ -20,7 +20,7 @@
 <script>
     if (window.internals) {
         internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(true);
-        internals.setNetworkConnectionInfoOverride(true, 'wifi', 2.0);
+        internals.setNetworkConnectionInfoOverride(true, 'wifi', '4g', 100, 2.0);
         internals.evictAllResources();
 
         window.addEventListener('beforeunload', function() {

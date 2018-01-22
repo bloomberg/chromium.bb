@@ -7,7 +7,7 @@ PASS connection.type is newConnectionType
 PASS connection.downlinkMax is newDownlinkMax
 PASS connection.effectiveType is newEffectiveType
 PASS connection.rtt is newRtt
-PASS connection.downlink is newDownlink
+PASS connection.downlink is newDownlinkMax
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -468,5 +468,7 @@ crbug.com/779366 fast/shapes/crash-allocating-very-large-raster-shape.html [ Slo
 
 crbug.com/787971 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Slow ]
 
+crbug.com/564109 http/tests/webfont/font-display-intervention.html [ Slow ]
+
 # This test has many test cases and each case requires a gesture scroll with pauses in between.
 crbug.com/765326 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Slow ]

@@ -126,7 +126,8 @@ TEST_P(HTMLMediaElementTest, preloadType) {
         data.force_preload_none_for_media_elements);
     if (data.is_cellular) {
       GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-          true, WebConnectionType::kWebConnectionTypeCellular3G, 2.0);
+          true, WebConnectionType::kWebConnectionTypeCellular3G,
+          WebEffectiveConnectionType::kTypeUnknown, 1.0, 2.0);
     } else {
       GetNetworkStateNotifier().ClearOverride();
     }

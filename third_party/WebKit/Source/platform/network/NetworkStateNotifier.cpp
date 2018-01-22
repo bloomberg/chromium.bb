@@ -26,6 +26,8 @@
 #include "platform/network/NetworkStateNotifier.h"
 
 #include <memory>
+#include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
@@ -168,6 +170,8 @@ NetworkStateNotifier::AddOnLineObserver(
 void NetworkStateNotifier::SetNetworkConnectionInfoOverride(
     bool on_line,
     WebConnectionType type,
+    Optional<WebEffectiveConnectionType> effective_type,
+    unsigned long http_rtt_msec,
     double max_bandwidth_mbps) {
   DCHECK(IsMainThread());
   ScopedNotifier notifier(*this);
@@ -179,25 +183,29 @@ void NetworkStateNotifier::SetNetworkConnectionInfoOverride(
     override_.connection_initialized = true;
     override_.type = type;
     override_.max_bandwidth_mbps = max_bandwidth_mbps;
-  }
-}
 
-void NetworkStateNotifier::SetNetworkQualityInfoOverride(
-    WebEffectiveConnectionType effective_type,
-    unsigned long transport_rtt_msec,
-    double downlink_throughput_mbps) {
-  DCHECK(IsMainThread());
-  ScopedNotifier notifier(*this);
-  {
-    MutexLocker locker(mutex_);
-    has_override_ = true;
-    override_.on_line_initialized = true;
-    override_.connection_initialized = true;
-    override_.effective_type = effective_type;
-    override_.http_rtt = base::TimeDelta::FromMilliseconds(transport_rtt_msec);
-    override_.downlink_throughput_mbps = base::nullopt;
-    if (downlink_throughput_mbps >= 0)
-      override_.downlink_throughput_mbps = downlink_throughput_mbps;
+    if (!effective_type && http_rtt_msec > 0) {
+      base::TimeDelta http_rtt(TimeDelta::FromMilliseconds(http_rtt_msec));
+      // Threshold values taken from
+      // net/nqe/network_quality_estimator_params.cc.
+      if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
+                          [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G]) {
+        effective_type = WebEffectiveConnectionType::kTypeSlow2G;
+      } else if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
+                                 [net::EFFECTIVE_CONNECTION_TYPE_2G]) {
+        effective_type = WebEffectiveConnectionType::kType2G;
+      } else if (http_rtt >= net::kHttpRttEffectiveConnectionTypeThresholds
+                                 [net::EFFECTIVE_CONNECTION_TYPE_3G]) {
+        effective_type = WebEffectiveConnectionType::kType3G;
+      } else {
+        effective_type = WebEffectiveConnectionType::kType4G;
+      }
+    }
+    override_.effective_type = effective_type
+                                   ? effective_type.value()
+                                   : WebEffectiveConnectionType::kTypeUnknown;
+    override_.http_rtt = TimeDelta::FromMilliseconds(http_rtt_msec);
+    override_.downlink_throughput_mbps = max_bandwidth_mbps;
   }
 }
 
