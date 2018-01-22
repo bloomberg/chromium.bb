@@ -304,3 +304,248 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
     } while (++i < h);
   }
 }
+
+void av1_convolve_y_sr_sse2(const uint8_t *src, int src_stride,
+                            const uint8_t *dst, int dst_stride, int w, int h,
+                            InterpFilterParams *filter_params_x,
+                            InterpFilterParams *filter_params_y,
+                            const int subpel_x_q4, const int subpel_y_q4,
+                            ConvolveParams *conv_params) {
+  const int fo_vert = filter_params_y->taps / 2 - 1;
+  const uint8_t *src_ptr = src - fo_vert * src_stride;
+  const __m128i round_const = _mm_set1_epi32((1 << FILTER_BITS) >> 1);
+  const __m128i round_shift = _mm_cvtsi32_si128(FILTER_BITS);
+  __m128i coeffs[4];
+
+  (void)filter_params_x;
+  (void)subpel_x_q4;
+  (void)conv_params;
+
+  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
+
+  if (w <= 4) {
+    __m128i s[8], src6, res, res_round, res16;
+    uint32_t res_int;
+    src6 = _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 6 * src_stride));
+    s[0] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 0 * src_stride)),
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 1 * src_stride)));
+    s[1] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 1 * src_stride)),
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 2 * src_stride)));
+    s[2] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 2 * src_stride)),
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 3 * src_stride)));
+    s[3] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 3 * src_stride)),
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 4 * src_stride)));
+    s[4] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 4 * src_stride)),
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 5 * src_stride)));
+    s[5] = _mm_unpacklo_epi8(
+        _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 5 * src_stride)), src6);
+
+    do {
+      s[6] = _mm_unpacklo_epi8(
+          src6, _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 7 * src_stride)));
+      src6 = _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 8 * src_stride));
+      s[7] = _mm_unpacklo_epi8(
+          _mm_cvtsi32_si128(*(uint32_t *)(src_ptr + 7 * src_stride)), src6);
+
+      res = convolve_lo_y(s + 0, coeffs);
+      res_round = _mm_sra_epi32(_mm_add_epi32(res, round_const), round_shift);
+      res16 = _mm_packs_epi32(res_round, res_round);
+      res_int = _mm_cvtsi128_si32(_mm_packus_epi16(res16, res16));
+
+      if (w == 2)
+        *(uint16_t *)dst = res_int;
+      else
+        *(uint32_t *)dst = res_int;
+
+      src_ptr += src_stride;
+      dst += dst_stride;
+
+      res = convolve_lo_y(s + 1, coeffs);
+      res_round = _mm_sra_epi32(_mm_add_epi32(res, round_const), round_shift);
+      res16 = _mm_packs_epi32(res_round, res_round);
+      res_int = _mm_cvtsi128_si32(_mm_packus_epi16(res16, res16));
+
+      if (w == 2)
+        *(uint16_t *)dst = res_int;
+      else
+        *(uint32_t *)dst = res_int;
+
+      src_ptr += src_stride;
+      dst += dst_stride;
+
+      s[0] = s[2];
+      s[1] = s[3];
+      s[2] = s[4];
+      s[3] = s[5];
+      s[4] = s[6];
+      s[5] = s[7];
+      h -= 2;
+    } while (h);
+  } else {
+    assert(!(w % 8));
+    int j = 0;
+    do {
+      __m128i s[8], src6, res_lo, res_hi;
+      __m128i res_lo_round, res_hi_round, res16, res;
+      const uint8_t *data = &src_ptr[j];
+
+      src6 = _mm_loadl_epi64((__m128i *)(data + 6 * src_stride));
+      s[0] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 0 * src_stride)),
+          _mm_loadl_epi64((__m128i *)(data + 1 * src_stride)));
+      s[1] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 1 * src_stride)),
+          _mm_loadl_epi64((__m128i *)(data + 2 * src_stride)));
+      s[2] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 2 * src_stride)),
+          _mm_loadl_epi64((__m128i *)(data + 3 * src_stride)));
+      s[3] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 3 * src_stride)),
+          _mm_loadl_epi64((__m128i *)(data + 4 * src_stride)));
+      s[4] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 4 * src_stride)),
+          _mm_loadl_epi64((__m128i *)(data + 5 * src_stride)));
+      s[5] = _mm_unpacklo_epi8(
+          _mm_loadl_epi64((__m128i *)(data + 5 * src_stride)), src6);
+
+      int i = 0;
+      do {
+        data = &src_ptr[i * src_stride + j];
+        s[6] = _mm_unpacklo_epi8(
+            src6, _mm_loadl_epi64((__m128i *)(data + 7 * src_stride)));
+        src6 = _mm_loadl_epi64((__m128i *)(data + 8 * src_stride));
+        s[7] = _mm_unpacklo_epi8(
+            _mm_loadl_epi64((__m128i *)(data + 7 * src_stride)), src6);
+
+        res_lo = convolve_lo_y(s, coeffs);  // Filter low index pixels
+        res_hi = convolve_hi_y(s, coeffs);  // Filter high index pixels
+
+        res_lo_round =
+            _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
+        res_hi_round =
+            _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
+
+        res16 = _mm_packs_epi32(res_lo_round, res_hi_round);
+        res = _mm_packus_epi16(res16, res16);
+
+        _mm_storel_epi64((__m128i *)(dst + i * dst_stride + j), res);
+        i++;
+
+        res_lo = convolve_lo_y(s + 1, coeffs);  // Filter low index pixels
+        res_hi = convolve_hi_y(s + 1, coeffs);  // Filter high index pixels
+
+        res_lo_round =
+            _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
+        res_hi_round =
+            _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
+
+        res16 = _mm_packs_epi32(res_lo_round, res_hi_round);
+        res = _mm_packus_epi16(res16, res16);
+
+        _mm_storel_epi64((__m128i *)(dst + i * dst_stride + j), res);
+        i++;
+
+        s[0] = s[2];
+        s[1] = s[3];
+        s[2] = s[4];
+        s[3] = s[5];
+        s[4] = s[6];
+        s[5] = s[7];
+      } while (i < h);
+      j += 8;
+    } while (j < w);
+  }
+}
+
+void av1_convolve_x_sr_sse2(const uint8_t *src, int src_stride,
+                            const uint8_t *dst, int dst_stride, int w, int h,
+                            InterpFilterParams *filter_params_x,
+                            InterpFilterParams *filter_params_y,
+                            const int subpel_x_q4, const int subpel_y_q4,
+                            ConvolveParams *conv_params) {
+  const int fo_horiz = filter_params_x->taps / 2 - 1;
+  const uint8_t *src_ptr = src - fo_horiz;
+  const __m128i round_const = _mm_set1_epi32(
+      ((1 << conv_params->round_0) >> 1) + (1 << (FILTER_BITS - 1)));
+  const __m128i round_shift = _mm_cvtsi32_si128(FILTER_BITS);
+  __m128i coeffs[4];
+
+  (void)filter_params_y;
+  (void)subpel_y_q4;
+
+  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
+
+  if (w <= 4) {
+    do {
+      const __m128i data = _mm_loadu_si128((__m128i *)src_ptr);
+      __m128i s[4];
+
+      s[0] = _mm_unpacklo_epi8(data, _mm_srli_si128(data, 1));
+      s[1] =
+          _mm_unpacklo_epi8(_mm_srli_si128(data, 2), _mm_srli_si128(data, 3));
+      s[2] =
+          _mm_unpacklo_epi8(_mm_srli_si128(data, 4), _mm_srli_si128(data, 5));
+      s[3] =
+          _mm_unpacklo_epi8(_mm_srli_si128(data, 6), _mm_srli_si128(data, 7));
+      const __m128i res_lo = convolve_lo_x(s, coeffs);
+      const __m128i res_lo_round =
+          _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
+
+      const __m128i res16 = _mm_packs_epi32(res_lo_round, res_lo_round);
+      const __m128i res = _mm_packus_epi16(res16, res16);
+
+      uint32_t r = _mm_cvtsi128_si32(res);
+      if (w == 2)
+        *(uint16_t *)dst = r;
+      else
+        *(uint32_t *)dst = r;
+
+      src_ptr += src_stride;
+      dst += dst_stride;
+    } while (--h);
+  } else {
+    assert(!(w % 8));
+    int i = 0;
+    do {
+      int j = 0;
+      do {
+        const __m128i data =
+            _mm_loadu_si128((__m128i *)&src_ptr[i * src_stride + j]);
+        __m128i s[4];
+
+        // Filter even-index pixels
+        s[0] = data;
+        s[1] = _mm_srli_si128(data, 2);
+        s[2] = _mm_srli_si128(data, 4);
+        s[3] = _mm_srli_si128(data, 6);
+        const __m128i res_even = convolve_lo_x(s, coeffs);
+
+        // Filter odd-index pixels
+        s[0] = _mm_srli_si128(data, 1);
+        s[1] = _mm_srli_si128(data, 3);
+        s[2] = _mm_srli_si128(data, 5);
+        s[3] = _mm_srli_si128(data, 7);
+        const __m128i res_odd = convolve_lo_x(s, coeffs);
+
+        // Rearrange pixels back into the order 0 ... 7
+        const __m128i res_lo = _mm_unpacklo_epi32(res_even, res_odd);
+        const __m128i res_hi = _mm_unpackhi_epi32(res_even, res_odd);
+        const __m128i res_lo_round =
+            _mm_sra_epi32(_mm_add_epi32(res_lo, round_const), round_shift);
+        const __m128i res_hi_round =
+            _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
+
+        const __m128i res16 = _mm_packs_epi32(res_lo_round, res_hi_round);
+        const __m128i res = _mm_packus_epi16(res16, res16);
+
+        _mm_storel_epi64((__m128i *)(dst + i * dst_stride + j), res);
+        j += 8;
+      } while (j < w);
+    } while (++i < h);
+  }
+}
