@@ -31,7 +31,7 @@
 #include "modules/mediastream/URLMediaStream.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "core/url/DOMURL.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/bindings/ScriptState.h"
@@ -47,7 +47,8 @@ String URLMediaStream::createObjectURL(ScriptState* script_state,
   DCHECK(execution_context);
   DCHECK(stream);
 
-  UseCounter::Count(execution_context, WebFeature::kCreateObjectURLMediaStream);
+  Deprecation::CountDeprecation(execution_context,
+                                WebFeature::kCreateObjectURLMediaStream);
   return DOMURL::CreatePublicURL(execution_context, stream);
 }
 

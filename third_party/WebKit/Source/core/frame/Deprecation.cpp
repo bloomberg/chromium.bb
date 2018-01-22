@@ -549,6 +549,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               String("CSS cannot be loaded from `file:` URLs unless they end "
                      "in a `.css` file extension.")};
 
+    case WebFeature::kCreateObjectURLMediaStream:
+      return {"CreateObjectURLMediaStreamDeprecated", M68,
+              replacedWillBeRemoved("URL.createObjectURL with media streams",
+                                    "HTMLMediaElement.srcObject", M68,
+                                    "5618491470118912")};
+
     case WebFeature::kWebAudioDezipperGainNodeGain:
       return {"WebAudioDezipperGainNodeGain", Unknown,
               DeprecatedWebAudioDezippering("GainNode.gain")};
