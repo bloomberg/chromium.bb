@@ -64,7 +64,7 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   views::TableView* table_view() { return content_view().table_view_; }
   ui::TableModel* table_model() { return table_view()->model(); }
   views::StyledLabel* adapter_off_help_link() {
-    return content_view().turn_adapter_off_help_;
+    return content_view().adapter_off_help_;
   }
   views::LabelButton* re_scan_button() {
     return content_view().bluetooth_status_container_->re_scan_button();
