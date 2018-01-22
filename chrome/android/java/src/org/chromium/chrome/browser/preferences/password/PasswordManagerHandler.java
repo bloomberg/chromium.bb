@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.preferences.password;
 
 import org.chromium.base.Callback;
 
@@ -15,7 +15,7 @@ public interface PasswordManagerHandler {
      * An interface which a client can use to listen to changes to password and password exception
      * lists.
      */
-    public interface PasswordListObserver {
+    interface PasswordListObserver {
         /**
          * Called when passwords list is updated.
          * @param count Number of entries in the password list.
@@ -32,7 +32,7 @@ public interface PasswordManagerHandler {
     /**
      * Called to start fetching password and exception lists.
      */
-    public void updatePasswordLists();
+    void updatePasswordLists();
 
     /**
      * Get the saved password entry at index.
@@ -40,7 +40,7 @@ public interface PasswordManagerHandler {
      * @param index Index of Password.
      * @return SavedPasswordEntry at index.
      */
-    public SavedPasswordEntry getSavedPasswordEntry(int index);
+    SavedPasswordEntry getSavedPasswordEntry(int index);
 
     /**
      * Get saved password exception at index.
@@ -48,26 +48,26 @@ public interface PasswordManagerHandler {
      * @param index of exception
      * @return Origin of password exception.
      */
-    public String getSavedPasswordException(int index);
+    String getSavedPasswordException(int index);
 
     /**
      * Remove saved password entry at index.
      *
      * @param index of password entry to remove.
      */
-    public void removeSavedPasswordEntry(int index);
+    void removeSavedPasswordEntry(int index);
 
     /**
      * Remove saved exception entry at index.
      *
      * @param index of exception entry.
      */
-    public void removeSavedPasswordException(int index);
+    void removeSavedPasswordException(int index);
 
     /**
      * Trigger serializing the saved passwords in the background.
      *
      * @param callback is called on completion, with the serialized passwords as argument.
      */
-    public void serializePasswords(Callback<String> callback);
+    void serializePasswords(Callback<String> callback);
 }
