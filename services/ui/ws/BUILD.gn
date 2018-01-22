@@ -320,6 +320,10 @@ source_set("tests") {
     "//ui/gl",
     "//ui/gl/init",
   ]
+
+  data_deps = [
+    "//services/ui",
+  ]
 }
 
 service_manifest("unittests_manifest") {

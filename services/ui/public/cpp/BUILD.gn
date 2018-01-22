@@ -34,10 +34,6 @@ source_set("cpp") {
     "//ui/gfx/geometry",
   ]
 
-  data_deps = [
-    "//services/ui",
-  ]
-
   defines = [ "GL_GLEXT_PROTOTYPES" ]
 
   allow_circular_includes_from = [ ":internal" ]
@@ -70,10 +66,6 @@ source_set("internal") {
     "//ui/display",
     "//ui/events",
     "//ui/gfx/geometry",
-  ]
-
-  data_deps = [
-    "//services/ui",
   ]
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
