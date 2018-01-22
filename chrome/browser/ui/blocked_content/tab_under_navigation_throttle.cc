@@ -130,12 +130,11 @@ TabUnderNavigationThrottle::TabUnderNavigationThrottle(
 
 // static
 bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
-    content::NavigationHandle* navigation_handle,
-    bool started_in_background) {
+    content::NavigationHandle* navigation_handle) {
   // Some browser initiated navigations have HasUserGesture set to false. This
   // should eventually be fixed in crbug.com/617904. In the meantime, just dont
   // block browser initiated ones.
-  if (!started_in_background || !navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->HasUserGesture() ||
       !navigation_handle->IsRendererInitiated()) {
     return false;
@@ -167,7 +166,7 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
 
   if (!seen_tab_under_ && popup_opener &&
       popup_opener->has_opened_popup_since_last_user_gesture() &&
-      IsSuspiciousClientRedirect(navigation_handle(), started_in_background_)) {
+      IsSuspiciousClientRedirect(navigation_handle())) {
     seen_tab_under_ = true;
     popup_opener->OnDidTabUnder();
 
@@ -210,7 +209,6 @@ void TabUnderNavigationThrottle::ShowUI() {
 content::NavigationThrottle::ThrottleCheckResult
 TabUnderNavigationThrottle::WillStartRequest() {
   LogAction(Action::kStarted, off_the_record_);
-  started_in_background_ = !navigation_handle()->GetWebContents()->IsVisible();
   return MaybeBlockNavigation();
 }
 
