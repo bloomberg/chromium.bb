@@ -527,6 +527,7 @@ crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines.html [ Fail
 crbug.com/714962 virtual/layout_ng/fast/inline/drawStyledEmptyInlines.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-borders-with-bidi-override.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-focus-ring-under-absolute-enclosing-relative-div.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/layout-after-inserting-nested-br.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
