@@ -101,7 +101,8 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
 
   // Run all callbacks
   for (const auto& callback : request->callbacks) {
-    callback.Run(request->id, image, metadata);
+    if (callback)
+      callback.Run(request->id, image, metadata);
   }
 
   // Inform the ImageFetcherDelegate.

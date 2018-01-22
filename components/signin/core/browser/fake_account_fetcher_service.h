@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/image_fetcher/core/image_decoder.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 
 class KeyedService;
@@ -42,6 +43,25 @@ class FakeAccountFetcherService : public AccountFetcherService {
   void StartFetchingChildInfo(const std::string& account_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
+};
+
+// This dummy class implements |image_fetcher::ImageDecoder|, and is passed
+// as an argument to |AccountFetcherService::Initialize|.
+class TestImageDecoder : public image_fetcher::ImageDecoder {
+ public:
+  TestImageDecoder();
+  ~TestImageDecoder() override;
+
+  // image_fetcher::Decoder implementation:
+
+  // Passes an empty image to callback.
+  void DecodeImage(
+      const std::string& image_data,
+      const gfx::Size& desired_image_frame_size,
+      const image_fetcher::ImageDecodedCallback& callback) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestImageDecoder);
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_

@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "ui/gfx/image/image.h"
 
 class PrefService;
 class SigninClient;
@@ -94,6 +95,10 @@ class AccountTrackerService : public KeyedService {
   AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id) const;
   AccountInfo FindAccountInfoByEmail(const std::string& email) const;
 
+  // Returns the account image associated to the account id |account_id|.
+  // If the account id is not known an empty image is returned.
+  gfx::Image GetAccountImage(const std::string& account_id);
+
   // Picks the correct account_id for the specified account depending on the
   // migration state.
   std::string PickAccountIdForAccount(const std::string& gaia,
@@ -129,11 +134,16 @@ class AccountTrackerService : public KeyedService {
   void SetAccountStateFromUserInfo(const std::string& account_id,
                                    const base::DictionaryValue* user_info);
 
+  // Assumes that there already exists an account with |account_id| in
+  // |accounts_|.
+  void SetAccountImage(const std::string& account_id, const gfx::Image& image);
+
  private:
   friend class AccountFetcherService;
   friend class FakeAccountFetcherService;
   struct AccountState {
     AccountInfo info;
+    gfx::Image image;
   };
 
   void NotifyAccountUpdated(const AccountState& state);

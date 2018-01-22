@@ -97,7 +97,8 @@ class SigninManagerTest : public testing::Test {
     SigninManagerBase::RegisterPrefs(local_state_.registry());
     account_tracker_.Initialize(&test_signin_client_);
     account_fetcher_.Initialize(&test_signin_client_, &token_service_,
-                                &account_tracker_);
+                                &account_tracker_,
+                                std::make_unique<TestImageDecoder>());
   }
 
   ~SigninManagerTest() override {

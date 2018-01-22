@@ -118,17 +118,20 @@ static_library("browser") {
     "//components/signin/core/browser:signin_features",
     "//google_apis",
     "//net",
+    "//ui/gfx",
     "//url",
   ]
   deps = [
     "//base:i18n",
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
+    "//components/image_fetcher/core",
     "//components/metrics",
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/webdata/common",
     "//crypto",
+    "//skia",
     "//sql",
     "//third_party/icu",
     "//third_party/re2",
@@ -186,6 +189,7 @@ static_library("test_support") {
   public_deps = [
     ":browser",
     "//base",
+    "//components/image_fetcher/core/",
     "//components/prefs:test_support",
     "//components/webdata/common",
     "//google_apis:test_support",

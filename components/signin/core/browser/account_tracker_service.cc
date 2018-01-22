@@ -145,6 +145,12 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
   return AccountInfo();
 }
 
+gfx::Image AccountTrackerService::GetAccountImage(
+    const std::string& account_id) {
+  return base::ContainsKey(accounts_, account_id) ? accounts_[account_id].image
+                                                  : gfx::Image();
+}
+
 AccountTrackerService::AccountIdMigrationState
 AccountTrackerService::GetMigrationState() const {
   return GetMigrationState(signin_client_->GetPrefs());
@@ -241,6 +247,12 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
   if (!state.info.gaia.empty())
     NotifyAccountUpdated(state);
   SaveToPrefs(state);
+}
+
+void AccountTrackerService::SetAccountImage(const std::string& account_id,
+                                            const gfx::Image& image) {
+  DCHECK(base::ContainsKey(accounts_, account_id));
+  accounts_[account_id].image = image;
 }
 
 void AccountTrackerService::SetIsChildAccount(const std::string& account_id,

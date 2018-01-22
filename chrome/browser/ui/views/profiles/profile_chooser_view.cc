@@ -1063,11 +1063,13 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   }
 
   // Create a hover button to sign in the first account of |accounts|.
-  // TODO(http://crbug.com/794522): Use the account picture instead of the
-  // default avatar.
   gfx::Image account_icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          profiles::GetPlaceholderAvatarIconResourceID());
+      AccountTrackerServiceFactory::GetForProfile(browser_->profile())
+          ->GetAccountImage(accounts[0].account_id);
+  if (account_icon.IsEmpty()) {
+    account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
+  }
   auto account_photo = std::make_unique<BadgedProfilePhoto>(
       BadgedProfilePhoto::BADGE_TYPE_NONE, account_icon);
   base::string16 first_account_button_title =

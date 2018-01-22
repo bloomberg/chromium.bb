@@ -74,7 +74,8 @@ std::string AccountIdToLocale(const std::string& account_id) {
 }
 
 std::string AccountIdToPictureURL(const std::string& account_id) {
-  return "picture_url-" + account_id;
+  return "https://example.com/-" + account_id +
+         "/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg";
 }
 
 void CheckAccountDetails(const std::string& account_id,
@@ -276,9 +277,9 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_->Initialize(signin_client_.get());
 
     account_fetcher_.reset(new AccountFetcherService());
-    account_fetcher_->Initialize(signin_client_.get(),
-                                 fake_oauth2_token_service_.get(),
-                                 account_tracker_.get());
+    account_fetcher_->Initialize(
+        signin_client_.get(), fake_oauth2_token_service_.get(),
+        account_tracker_.get(), std::make_unique<TestImageDecoder>());
 
     account_fetcher_->EnableNetworkFetchesForTest();
   }
@@ -460,7 +461,8 @@ TEST_F(AccountTrackerServiceTest, TokenAlreadyExists) {
   tracker.AddObserver(&observer);
   tracker.Initialize(signin_client());
 
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   ASSERT_FALSE(fetcher.IsAllUserInfoFetched());
   ASSERT_TRUE(observer.CheckEvents());
@@ -542,7 +544,8 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
   tracker.Initialize(signin_client());
 
   AccountFetcherService fetcher_service;
-  fetcher_service.Initialize(signin_client(), token_service(), &tracker);
+  fetcher_service.Initialize(signin_client(), token_service(), &tracker,
+                             std::make_unique<TestImageDecoder>());
 
   SimulateTokenAvailable("alpha");
   IssueAccessToken("alpha");
@@ -629,7 +632,8 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     CheckAccountDetails("beta", infos[1]);
 
     FakeAccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
     fetcher.EnableNetworkFetchesForTest();
     // Remove an account.
     // This will allow testing removal as well as child accounts which is only
@@ -727,7 +731,8 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
     fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("incomplete");
     ReturnOAuthUrlFetchSuccessIncomplete("incomplete");
@@ -739,7 +744,8 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
     fetcher.EnableNetworkFetchesForTest();
     // Validate that the loaded AccountInfo from prefs is considered invalid.
     std::vector<AccountInfo> infos = tracker.GetAccounts();
@@ -767,7 +773,8 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     tracker.AddObserver(&observer);
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
 
     ASSERT_TRUE(observer.CheckEvents(TrackingEvent(UPDATED, "incomplete")));
     // Enabling network fetches shouldn't cause any actual fetch since the
@@ -793,7 +800,8 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
     fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("alpha");
     ReturnOAuthUrlFetchSuccess("alpha");
@@ -816,7 +824,8 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountInfo> infos = tracker.GetAccounts();
@@ -842,7 +851,8 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountInfo> infos = tracker.GetAccounts();
@@ -865,7 +875,8 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
     fetcher.EnableNetworkFetchesForTest();
     SimulateTokenAvailable("foo.bar@gmail.com");
     SimulateTokenAvailable("foobar@gmail.com");
@@ -885,7 +896,8 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
     AccountTrackerService tracker;
     tracker.Initialize(signin_client());
     AccountFetcherService fetcher;
-    fetcher.Initialize(signin_client(), token_service(), &tracker);
+    fetcher.Initialize(signin_client(), token_service(), &tracker,
+                       std::make_unique<TestImageDecoder>());
 
     ASSERT_TRUE(fetcher.IsAllUserInfoFetched());
     std::vector<AccountInfo> infos = tracker.GetAccounts();
@@ -1085,7 +1097,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountBasic) {
   AccountTrackerService tracker;
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
@@ -1114,7 +1127,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevoked) {
   AccountTrackerService tracker;
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
@@ -1143,7 +1157,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedAndRevokedWithUpdate) {
   AccountTrackerService tracker;
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
@@ -1178,7 +1193,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountUpdatedTwiceThenRevoked) {
   AccountTrackerService tracker;
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);
@@ -1215,7 +1231,8 @@ TEST_F(AccountTrackerServiceTest, ChildAccountGraduation) {
   AccountTrackerService tracker;
   tracker.Initialize(signin_client());
   FakeAccountFetcherService fetcher;
-  fetcher.Initialize(signin_client(), token_service(), &tracker);
+  fetcher.Initialize(signin_client(), token_service(), &tracker,
+                     std::make_unique<TestImageDecoder>());
   fetcher.EnableNetworkFetchesForTest();
   AccountTrackerObserver observer;
   tracker.AddObserver(&observer);

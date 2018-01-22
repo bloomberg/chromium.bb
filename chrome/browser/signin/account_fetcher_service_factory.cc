@@ -6,6 +6,7 @@
 
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -48,6 +49,7 @@ KeyedService* AccountFetcherServiceFactory::BuildServiceInstanceFor(
   AccountFetcherService* service = new AccountFetcherService();
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
                       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-                      AccountTrackerServiceFactory::GetForProfile(profile));
+                      AccountTrackerServiceFactory::GetForProfile(profile),
+                      std::make_unique<suggestions::ImageDecoderImpl>());
   return service;
 }
