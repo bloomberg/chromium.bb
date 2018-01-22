@@ -483,8 +483,16 @@ base::TimeDelta SourceBufferRangeByPts::GetBufferedEndTimestamp() const {
 
   DCHECK(!buffers_.empty());
   base::TimeDelta duration = highest_frame_->duration();
-  if (duration == kNoTimestamp || duration.is_zero())
-    duration = GetApproximateDuration();
+
+  // FrameProcessor should protect against unknown buffer durations.
+  DCHECK_NE(duration, kNoTimestamp);
+
+  // Because media::Ranges<base::TimeDelta>::Add() ignores 0 duration ranges,
+  // report 1 microsecond for the last buffer's duration if it is a 0 duration
+  // buffer.
+  if (duration.is_zero())
+    duration = base::TimeDelta::FromMicroseconds(1);
+
   return GetEndTimestamp() + duration;
 }
 

@@ -452,7 +452,7 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
 
   new_coded_frame_group_ = false;
 
-  MergeWithAdjacentRangeIfNecessary(range_for_next_append_);
+  MergeWithNextRangeIfNecessary(range_for_next_append_);
 
   // Some SAP-Type-2 append sequences, when buffering ByPts, require that we
   // coalesce |range_for_next_append_| with the range that is *before* it.
@@ -461,7 +461,7 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
   if (range_for_next_append_ != ranges_.begin()) {
     auto prior_range = range_for_next_append_;
     prior_range--;
-    MergeWithAdjacentRangeIfNecessary(prior_range);
+    MergeWithNextRangeIfNecessary(prior_range);
   }
 
   // Seek to try to fulfill a previous call to Seek().
@@ -1198,9 +1198,9 @@ size_t SourceBufferStream<RangeClass>::FreeBuffers(size_t total_bytes_to_free,
     if (range_for_next_append_ != ranges_.begin()) {
       typename RangeList::iterator range_before_next = range_for_next_append_;
       --range_before_next;
-      MergeWithAdjacentRangeIfNecessary(range_before_next);
+      MergeWithNextRangeIfNecessary(range_before_next);
     }
-    MergeWithAdjacentRangeIfNecessary(range_for_next_append_);
+    MergeWithNextRangeIfNecessary(range_for_next_append_);
   }
   return bytes_freed;
 }
@@ -1225,7 +1225,7 @@ void SourceBufferStream<RangeClass>::TrimSpliceOverlap(
   // Search for overlapped buffer needs exclusive end value. Choosing smallest
   // possible value.
   const DecodeTimestamp end_dts =
-      splice_dts + base::TimeDelta::FromInternalValue(1);
+      splice_dts + base::TimeDelta::FromMicroseconds(1);
 
   // Find if new buffer's start would overlap an existing buffer.
   BufferQueue overlapped_buffers;
@@ -1432,13 +1432,17 @@ void SourceBufferStream<SourceBufferRangeByDts>::GetTimestampInterval(
   // estimated, use 1 microsecond instead to ensure frames are not accidentally
   // removed due to over-estimation.
   base::TimeDelta duration = buffers.back()->duration();
-  if (duration != kNoTimestamp && duration > base::TimeDelta() &&
+
+  // FrameProcessor should protect against unknown buffer durations.
+  DCHECK_NE(duration, kNoTimestamp);
+
+  if (duration > base::TimeDelta() &&
       !buffers.back()->is_duration_estimated()) {
     *end += duration;
   } else {
     // TODO(chcunningham): Emit warning when 0ms durations are not expected.
     // http://crbug.com/312836
-    *end += base::TimeDelta::FromInternalValue(1);
+    *end += base::TimeDelta::FromMicroseconds(1);
   }
 }
 
@@ -1455,13 +1459,16 @@ void SourceBufferStream<SourceBufferRangeByPts>::GetTimestampInterval(
     base::TimeDelta timestamp = buffer->timestamp();
     start_pts = std::min(timestamp, start_pts);
     base::TimeDelta duration = buffer->duration();
-    if (duration != kNoTimestamp && duration > base::TimeDelta() &&
-        !buffer->is_duration_estimated()) {
+
+    // FrameProcessor should protect against unknown buffer durations.
+    DCHECK_NE(duration, kNoTimestamp);
+
+    if (duration > base::TimeDelta() && !buffer->is_duration_estimated()) {
       timestamp += duration;
     } else {
       // TODO(chcunningham): Emit warning when 0ms durations are not expected.
       // http://crbug.com/312836
-      timestamp += base::TimeDelta::FromInternalValue(1);
+      timestamp += base::TimeDelta::FromMicroseconds(1);
     }
     end_pts = std::max(timestamp, end_pts);
   }
@@ -1511,7 +1518,7 @@ void SourceBufferStream<RangeClass>::PruneTrackBuffer(
 }
 
 template <typename RangeClass>
-void SourceBufferStream<RangeClass>::MergeWithAdjacentRangeIfNecessary(
+void SourceBufferStream<RangeClass>::MergeWithNextRangeIfNecessary(
     const typename RangeList::iterator& range_with_new_buffers_itr) {
   DCHECK(range_with_new_buffers_itr != ranges_.end());
 
@@ -1549,8 +1556,12 @@ void SourceBufferStream<RangeClass>::MergeAllAdjacentRanges() {
   typename RangeList::iterator range_itr = ranges_.begin();
 
   while (range_itr != ranges_.end()) {
-    MergeWithAdjacentRangeIfNecessary(range_itr);
-    range_itr++;
+    const size_t old_ranges_size = ranges_.size();
+    MergeWithNextRangeIfNecessary(range_itr);
+
+    // Only proceed to the next range if the current range didn't merge with it.
+    if (old_ranges_size == ranges_.size())
+      range_itr++;
   }
 
   DVLOG(1) << __func__ << " " << GetStreamTypeName()
@@ -2044,8 +2055,8 @@ void SourceBufferStream<RangeClass>::SetSelectedRangeIfNeeded(
       return;
     }
 
-    start_timestamp = highest_output_buffer_timestamp_ +
-                      base::TimeDelta::FromInternalValue(1);
+    start_timestamp =
+        highest_output_buffer_timestamp_ + base::TimeDelta::FromMicroseconds(1);
   }
 
   DecodeTimestamp seek_timestamp =

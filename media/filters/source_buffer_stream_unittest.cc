@@ -5710,6 +5710,72 @@ TEST_P(SourceBufferStreamTest, PreciselyOverlapLastAudioFrameAppended_2) {
   CheckNoNextBuffer();
 }
 
+TEST_P(SourceBufferStreamTest, ZeroDurationBuffersThenIncreasingFudgeRoom) {
+  // Appends some zero duration buffers to result in disjoint buffered ranges.
+  // Verifies that increasing the fudge room allows those that become within
+  // adjacency threshold to merge, including those for which the new fudge room
+  // is well more than sufficient to let them be adjacent.
+  SetAudioStream();
+
+  NewCodedFrameGroupAppend("0uD0K");
+  CheckExpectedRangesByTimestamp("{ [0,1) }", TimeGranularity::kMicrosecond);
+
+  NewCodedFrameGroupAppend("1uD0K");
+  CheckExpectedRangesByTimestamp("{ [0,2) }", TimeGranularity::kMicrosecond);
+
+  // Initial fudge room allows for up to 2ms gap to coalesce.
+  NewCodedFrameGroupAppend("5000uD0K");
+  CheckExpectedRangesByTimestamp("{ [0,2) [5000,5001) }",
+                                 TimeGranularity::kMicrosecond);
+  NewCodedFrameGroupAppend("2002uD0K");
+  CheckExpectedRangesByTimestamp("{ [0,2) [2002,2003) [5000,5001) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Grow the fudge room enough to coalesce the first two ranges.
+  NewCodedFrameGroupAppend("8000uD1001uK");
+  CheckExpectedRangesByTimestamp("{ [0,2003) [5000,5001) [8000,9001) }",
+                                 TimeGranularity::kMicrosecond);
+
+  // Append a buffer with duration 4ms, much larger than previous buffers. This
+  // grows the fudge room to 8ms (2 * 4ms). Expect that the first three ranges
+  // are retroactively merged due to being adjacent per the new, larger fudge
+  // room.
+  NewCodedFrameGroupAppend("100D4K");
+  CheckExpectedRangesByTimestamp("{ [0,9001) [100000,104000) }",
+                                 TimeGranularity::kMicrosecond);
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K 1K 2002K 5000K 8000K",
+                       TimeGranularity::kMicrosecond);
+  CheckNoNextBuffer();
+  SeekToTimestampMs(100);
+  CheckExpectedBuffers("100K");
+  CheckNoNextBuffer();
+}
+
+TEST_P(SourceBufferStreamTest, NonZeroDurationBuffersThenIncreasingFudgeRoom) {
+  // Verifies that a single fudge room increase which merges more than 2
+  // previously disjoint ranges in a row performs the merging correctly.
+  NewCodedFrameGroupAppend("0D10K");
+  NewCodedFrameGroupAppend("50D10K");
+  NewCodedFrameGroupAppend("100D10K");
+  NewCodedFrameGroupAppend("150D10K");
+  NewCodedFrameGroupAppend("500D10K");
+  CheckExpectedRangesByTimestamp(
+      "{ [0,10) [50,60) [100,110) [150,160) [500,510) }");
+
+  NewCodedFrameGroupAppend("600D30K");
+  CheckExpectedRangesByTimestamp("{ [0,160) [500,510) [600,630) }");
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K 50K 100K 150K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(500);
+  CheckExpectedBuffers("500K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(600);
+  CheckExpectedBuffers("600K");
+  CheckNoNextBuffer();
+}
+
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));

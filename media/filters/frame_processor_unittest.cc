@@ -1309,41 +1309,6 @@ TEST_P(FrameProcessorTest, LargeTimestampOffsetJumpForward) {
 }
 
 TEST_P(FrameProcessorTest,
-       SegmentsMode_BufferingByPts_InitialZeroDurationBuffers) {
-  // When buffering ByPts in segments append mode, verifies that initial
-  // zero-duration keyframes that are not adjacent in PTS, but may be adjacent
-  // if the default fudge room is large enough, doesn't result in inconsistent
-  // range adjacency determination on a subsequent overlapping append of a
-  // non-zero duration keyframe with a duration smaller than half the default
-  // initial fudge room.
-  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts ||
-      use_sequence_mode_) {
-    DVLOG(1) << "Skipping kLegacyByDts and sequence mode versions of this test";
-    return;
-  }
-
-  InSequence s;
-  AddTestTracks(HAS_AUDIO);
-  frame_processor_->SetSequenceMode(use_sequence_mode_);
-
-  frame_duration_ = Milliseconds(0);
-  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(10)));
-  EXPECT_TRUE(ProcessFrames("0K 10|1K", ""));
-
-  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(3)));
-  EXPECT_TRUE(ProcessFrames("3|2K", ""));
-
-  EXPECT_CALL(callbacks_, PossibleDurationIncrease(
-                              base::TimeDelta::FromMicroseconds(6001)));
-  frame_duration_ = base::TimeDelta::FromMicroseconds(1);
-  EXPECT_TRUE(ProcessFrames("6|3K", ""));
-
-  // Note the following includes a truncated 6001 microseconds end time for the
-  // third range.
-  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,1) [3,4) [6,6) [10,11) }");
-}
-
-TEST_P(FrameProcessorTest,
        BufferingByPts_ContinuousDts_SapType2_and_PtsJumpForward) {
   if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
     DVLOG(1) << "Skipping kLegacyByDts versions of this test";

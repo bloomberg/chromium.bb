@@ -227,7 +227,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Checks to see if |range_with_new_buffers_itr| can be merged with the range
   // next to it, and merges them if so while preserving correctness of
   // |range_for_next_append_| and |selected_range_|.
-  void MergeWithAdjacentRangeIfNecessary(
+  void MergeWithNextRangeIfNecessary(
       const typename RangeList::iterator& range_with_new_buffers_itr);
 
   // Merges any adjacent ranges while preserving correctness of
