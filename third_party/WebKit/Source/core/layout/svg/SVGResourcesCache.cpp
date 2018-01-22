@@ -76,8 +76,13 @@ void SVGResourcesCache::RemoveResourcesFromLayoutObject(LayoutObject* object) {
   HashSet<LayoutSVGResourceContainer*> resource_set;
   resources->BuildSetOfResources(resource_set);
 
+  bool did_empty_client_set = false;
   for (auto* resource_container : resource_set)
-    resource_container->RemoveClient(object);
+    did_empty_client_set |= resource_container->RemoveClient(object);
+
+  // Remove any registrations that became empty after the above.
+  if (did_empty_client_set)
+    SVGResources::RemoveUnreferencedResources(*object);
 }
 
 static inline SVGResourcesCache& ResourcesCache(Document& document) {
@@ -154,6 +159,26 @@ void SVGResourcesCache::ClientStyleChanged(LayoutObject* layout_object,
 
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
       layout_object, needs_layout);
+}
+
+void SVGResourcesCache::ResourceReferenceChanged(LayoutObject& layout_object) {
+  DCHECK(layout_object.IsSVG());
+  DCHECK(layout_object.GetNode());
+  DCHECK(layout_object.GetNode()->IsSVGElement());
+
+  if (!layout_object.Parent())
+    return;
+
+  // Only LayoutObjects that can actually have resources should be pending and
+  // hence be able to call this method.
+  DCHECK(LayoutObjectCanHaveResources(&layout_object));
+
+  SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
+  cache.RemoveResourcesFromLayoutObject(&layout_object);
+  cache.AddResourcesFromLayoutObject(&layout_object, layout_object.StyleRef());
+
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+      &layout_object, true);
 }
 
 void SVGResourcesCache::ClientWasAddedToTree(LayoutObject* layout_object,

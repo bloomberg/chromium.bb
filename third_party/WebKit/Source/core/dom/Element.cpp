@@ -124,6 +124,7 @@
 #include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/svg/SVGResources.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -140,7 +141,6 @@
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/svg/SVGAElement.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg_names.h"
 #include "core/xml_names.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -1804,11 +1804,8 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
     if (this == GetDocument().CssTarget())
       GetDocument().SetCSSTarget(nullptr);
 
-    if (HasPendingResources()) {
-      GetTreeScope()
-          .EnsureSVGTreeScopedResources()
-          .RemoveElementFromPendingResources(*this);
-    }
+    if (HasPendingResources())
+      SVGResources::RemoveWatchesForElement(*this);
 
     if (GetCustomElementState() == CustomElementState::kCustom)
       CustomElement::EnqueueDisconnectedCallback(this);

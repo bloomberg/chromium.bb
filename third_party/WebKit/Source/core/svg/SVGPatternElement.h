@@ -80,7 +80,6 @@ class SVGPatternElement final : public SVGElement,
   explicit SVGPatternElement(Document&);
 
   bool IsValid() const override { return SVGTests::IsValid(); }
-  bool NeedsPendingResourceHandling() const override { return false; }
 
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

@@ -37,7 +37,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect",
-      "reason": "style change"
+      "reason": "full"
     }
   ]
 }

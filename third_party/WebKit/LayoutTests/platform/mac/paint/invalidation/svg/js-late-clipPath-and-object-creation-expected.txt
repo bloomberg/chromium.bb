@@ -29,7 +29,7 @@
         {
           "object": "LayoutSVGText text",
           "rect": [16, 39, 784, 174],
-          "reason": "style change"
+          "reason": "full"
         },
         {
           "object": "LayoutSVGText text",
@@ -66,11 +66,11 @@
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "style change"
+      "reason": "full"
     },
     {
       "object": "RootInlineBox",
-      "reason": "style change"
+      "reason": "full"
     },
     {
       "object": "LayoutSVGInlineText #text",
