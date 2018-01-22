@@ -313,10 +313,8 @@ void av1_convolve_2d_sr_sse2(const uint8_t *src, int src_stride, uint8_t *dst,
     const __m128i coeff_67 = _mm_unpackhi_epi64(tmp_1, tmp_1);
 
     const __m128i round_const = _mm_set1_epi32(
-        (((1 << (bits - 1)) - ((1 << (offset_bits - conv_params->round_1)) +
-                               (1 << (offset_bits - conv_params->round_1 - 1))))
-         << conv_params->round_1) +
-        (1 << offset_bits) + ((1 << conv_params->round_1) >> 1));
+        ((((1 << bits) + 1) << conv_params->round_1) - (1 << offset_bits)) >>
+        1);
     const __m128i round_shift = _mm_cvtsi32_si128(bits + conv_params->round_1);
 
     for (i = 0; i < h; ++i) {
