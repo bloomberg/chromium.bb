@@ -152,6 +152,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ViewPositionObserver.java",
     "java/src/org/chromium/content/browser/WindowAndroidProvider.java",
     "java/src/org/chromium/content/browser/WindowAndroidChangedObserver.java",
+    "java/src/org/chromium/content/browser/WindowEventObserver.java",
     "java/src/org/chromium/content/browser/accessibility/KitKatWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/LollipopWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/OWebContentsAccessibility.java",
