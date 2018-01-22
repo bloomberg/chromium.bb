@@ -25,7 +25,9 @@ class BookmarkBubbleSignInDelegate : public BubbleSyncPromoDelegate,
 
   // BubbleSyncPromoDelegate:
   void ShowBrowserSignin() override;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void EnableSync(const AccountInfo& account) override;
+#endif
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

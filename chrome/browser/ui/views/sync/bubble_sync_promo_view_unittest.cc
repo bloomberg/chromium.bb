@@ -26,7 +26,10 @@ class BubbleSyncPromoViewTest : public views::ViewsTestBase,
  protected:
   // BubbleSyncPromoDelegate:
   void ShowBrowserSignin() override { ++show_browser_signin_count_; }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void EnableSync(const AccountInfo& account_info) override { NOTREACHED(); }
+#endif
 
   // Number of times that OnSignInLinkClicked has been called.
   int show_browser_signin_count_ = 0;

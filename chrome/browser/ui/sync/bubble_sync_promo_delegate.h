@@ -7,6 +7,9 @@
 
 #include "components/signin/core/browser/account_info.h"
 
+#include "build/buildflag.h"
+#include "components/signin/core/browser/signin_features.h"
+
 class BubbleSyncPromoDelegate {
  public:
   virtual ~BubbleSyncPromoDelegate() {}
@@ -14,8 +17,10 @@ class BubbleSyncPromoDelegate {
   // Shows the chrome sign-in page.
   virtual void ShowBrowserSignin() = 0;
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Enables sync for |account|.
   virtual void EnableSync(const AccountInfo& account) = 0;
+#endif
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_

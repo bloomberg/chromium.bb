@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/views/profiles/badged_profile_photo.h"
 #include "chrome/browser/ui/views/profiles/signin_view_controller_delegate_views.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -653,13 +652,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_current_profile_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == signin_with_gaia_account_button_) {
-    // DiceTurnSyncOnHelper deletes itself once it's done.
-    new DiceTurnSyncOnHelper(
-        browser_->profile(), browser_, access_point_,
-        signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-        signin_with_gaia_account_id_,
-        DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
-
+    signin_ui_util::EnableSync(browser_, dice_sync_promo_account_,
+                               access_point_);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -1088,7 +1082,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   promo_button_container->AddChildView(signin_button_view);
 
   signin_with_gaia_account_button_ = first_account_button;
-  signin_with_gaia_account_id_ = accounts[0].account_id;
+  dice_sync_promo_account_ = accounts[0];
 
   constexpr int kSmallMenuIconSize = 16;
   HoverButton* sync_to_another_account_button = new HoverButton(

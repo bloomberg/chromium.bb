@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +31,11 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#endif
 
 namespace signin_ui_util {
 
@@ -81,6 +87,7 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
   return email;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // TODO(tangltom): Add a unit test for this function.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
@@ -112,5 +119,41 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   }
   return accounts;
 }
+
+void EnableSync(Browser* browser,
+                const AccountInfo& account,
+                signin_metrics::AccessPoint access_point) {
+  DCHECK(browser);
+  DCHECK(!account.account_id.empty());
+  DCHECK(!account.email.empty());
+  DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
+
+  Profile* profile = browser->profile();
+  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
+  if (SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+    DVLOG(1) << "There is already a primary account.";
+    return;
+  }
+
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  bool needs_reauth_before_enable_sync =
+      !token_service->RefreshTokenIsAvailable(account.account_id) ||
+      token_service->RefreshTokenHasError(account.account_id);
+  if (needs_reauth_before_enable_sync) {
+    browser->signin_view_controller()->ShowDiceSigninTab(
+        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point,
+        account.email);
+    return;
+  }
+
+  // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
+  // enabling sync).
+  new DiceTurnSyncOnHelper(
+      profile, browser, access_point,
+      signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
+      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace signin_ui_util

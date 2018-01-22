@@ -229,9 +229,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 
-  // ID of the GAIA account that should be signed in when
-  // |signin_with_gaia_account_button_| is pressed.
-  std::string signin_with_gaia_account_id_;
+  // Account that is presented in the enable sync promo.
+  AccountInfo dice_sync_promo_account_;
 
   const bool dice_enabled_;
 
