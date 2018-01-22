@@ -22,7 +22,9 @@ source_set("fuzzer_support") {
     "//content/shell:content_shell_lib",
     "//content/test:test_support",
     "//gin",
+    "//tools/v8_context_snapshot",
   ]
+  configs += [ "//tools/v8_context_snapshot:use_v8_context_snapshot" ]
   testonly = true
 }
 
