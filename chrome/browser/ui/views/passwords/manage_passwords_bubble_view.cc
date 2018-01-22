@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -301,9 +300,6 @@ void ManagePasswordsBubbleView::StyledLabelLinkClicked(
 void ManagePasswordsBubbleView::CreateChild() {
   if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     AddChildView(new ManagePasswordPendingView(this));
-  } else if (model()->state() ==
-             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    AddChildView(new ManagePasswordUpdatePendingView(this));
   } else {
     // This model state should be handled by separate dialogs.
     NOTREACHED();

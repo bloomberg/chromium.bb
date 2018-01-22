@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -94,6 +95,11 @@ ManagePasswordsBubbleDelegateViewBase::CreateBubble(
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
     view = new ManagePasswordSaveConfirmationView(web_contents, anchor_view,
                                                   anchor_point, reason);
+  } else if (model_state ==
+             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    view = new ManagePasswordUpdatePendingView(web_contents, anchor_view,
+                                               anchor_point, reason);
+
   } else {
     // TODO(crbug.com/654115): Get rid of the one-bubble-for-everything
     // BubbleView.
