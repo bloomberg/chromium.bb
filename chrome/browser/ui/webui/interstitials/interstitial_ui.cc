@@ -162,6 +162,8 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents,
   if (net::GetValueForKeyInQuery(web_contents->GetURL(), "type", &type_param)) {
     if (type_param == "hpkp_failure") {
       cert_error = net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    } else if (type_param == "ct_failure") {
+      cert_error = net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
     }
   }
   net::SSLInfo ssl_info;

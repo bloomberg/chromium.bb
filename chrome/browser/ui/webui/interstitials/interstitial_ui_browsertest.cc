@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 
 class InterstitialUITest : public InProcessBrowserTest {
@@ -74,6 +75,18 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, MITMSoftwareInterstitial) {
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, PinnedCertInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/ssl?type=hpkp_failure"),
                    "Privacy error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, CTInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/ssl?type=ct_failure"),
+                   "Privacy error");
+  bool found_ct_error = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(document.body.textContent.indexOf('"
+      "CERTIFICATE_TRANSPARENCY') != -1);",
+      &found_ct_error));
+  EXPECT_TRUE(found_ct_error);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitial) {
