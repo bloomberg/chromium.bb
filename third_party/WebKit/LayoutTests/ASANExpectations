@@ -64,3 +64,6 @@ crbug.com/572723 [ Linux ] http/tests/devtools/sources/debugger/debugger-complet
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 
+# Memory allocation hooks are disabled on ASAN/MSAN
+crbug.com/803276 inspector-protocol/memory/sampling-native-profile.js [ Skip ]
+
