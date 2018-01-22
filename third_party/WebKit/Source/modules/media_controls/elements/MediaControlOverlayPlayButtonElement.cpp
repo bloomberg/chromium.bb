@@ -111,7 +111,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
       internal_button_(nullptr),
       left_jump_arrow_(nullptr),
       right_jump_arrow_(nullptr) {
-  EnsureUserAgentShadowRootV1();
+  EnsureUserAgentShadowRoot();
   setType(InputTypeNames::button);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 

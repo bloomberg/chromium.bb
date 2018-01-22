@@ -242,7 +242,7 @@ void ImageDocument::CreateDocumentStructure() {
     HTMLSlotElement* slot = HTMLSlotElement::CreateUserAgentDefaultSlot(*this);
     div_element_->AppendChild(slot);
 
-    ShadowRoot& shadow_root = body->EnsureUserAgentShadowRootV1();
+    ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
     body->setAttribute(styleAttr, "margin: 0px;");

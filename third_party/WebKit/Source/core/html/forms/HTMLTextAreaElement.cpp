@@ -79,7 +79,7 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
 
 HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
   HTMLTextAreaElement* text_area = new HTMLTextAreaElement(document);
-  text_area->EnsureUserAgentShadowRootV1();
+  text_area->EnsureUserAgentShadowRoot();
   return text_area;
 }
 

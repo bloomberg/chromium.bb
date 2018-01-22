@@ -735,7 +735,7 @@ CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(
 
 ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {
   DCHECK(host);
-  return &host->EnsureUserAgentShadowRootV1();
+  return &host->EnsureUserAgentShadowRoot();
 }
 
 void Internals::setBrowserControlsState(float top_height,
@@ -792,7 +792,7 @@ String Internals::shadowRootType(const Node* root,
   }
 
   switch (ToShadowRoot(root)->GetType()) {
-    case ShadowRootType::kUserAgentV1:
+    case ShadowRootType::kUserAgent:
       return String("UserAgentShadowRoot");
     case ShadowRootType::V0:
       return String("V0ShadowRoot");
