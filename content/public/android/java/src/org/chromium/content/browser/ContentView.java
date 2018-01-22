@@ -23,6 +23,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.ui.base.EventForwarder;
 
@@ -131,13 +132,14 @@ public class ContentView extends FrameLayout
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return ImeAdapter.fromWebContents(mContentViewCore.getWebContents())
-                .onCreateInputConnection(outAttrs);
+        if (getWebContents() == null) return null;
+        return ImeAdapter.fromWebContents(getWebContents()).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        return ImeAdapter.fromWebContents(mContentViewCore.getWebContents()).onCheckIsTextEditor();
+        if (getWebContents() == null) return false;
+        return ImeAdapter.fromWebContents(getWebContents()).onCheckIsTextEditor();
     }
 
     @Override
@@ -197,6 +199,10 @@ public class ContentView extends FrameLayout
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return mContentViewCore.onGenericMotionEvent(event);
+    }
+
+    private WebContentsImpl getWebContents() {
+        return (WebContentsImpl) mContentViewCore.getWebContents();
     }
 
     private EventForwarder getEventForwarder() {
