@@ -2316,9 +2316,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8344454543174932833">Impordi järjehoidjad vaikebrauserist esmakordsel käitamisel</translation>
 <translation id="8359734107661430198">Luba ExampleDeprecatedFeature API kuni 02.09.2008</translation>
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
-<translation id="8370471134641900314">Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist rakendusse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär.
-
-      Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit rakendusse <ph name="PRODUCT_NAME" /> sisse logimata kasutada.</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
 <translation id="8390049129576938611">Keelab sisemise PDF-vaaturi rakenduses <ph name="PRODUCT_NAME" />. Selle asemel koheldakse seda allalaadimisena ja kasutaja saab PDF-faile vaikerakendusega avada.

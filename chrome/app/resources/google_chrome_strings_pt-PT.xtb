@@ -54,7 +54,6 @@
 
 Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, histórico e outras definições, fundir-se-ão com <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar menu do Chrome</translation>
-<translation id="2416359993254398973">O Chrome necessita de autorização de acesso à câmara para este site.</translation>
 <translation id="2429317896000329049">O Google Chrome não conseguiu sincronizar os dados porque a Sincronização não está disponível para o seu domínio.</translation>
 <translation id="2446511512801740068">O Chrome está desatualizado porque não é reiniciado há algum tempo. Está disponível uma atualização que será aplicada logo que o reinicie.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -66,7 +65,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="2705403826523567092">Inicie sessão para obter uma experiência de navegação personalizada, sincronizada entre dispositivos.</translation>
-<translation id="2769762047821873045">O Google Chrome não é o seu navegador predefinido.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2847461019998147611">Apresentar o Google Chrome neste idioma</translation>
@@ -157,10 +155,8 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5495581687705680288">Módulos carregados no Google Chrome</translation>
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">O Chrome necessita de autorização de acesso ao microfone para este site.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chrome bloqueou-o.</translation>
 <translation id="573759479754913123">Acerca do Chrome OS</translation>
-<translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5774845247549698882">O Chrome OS é apresentado neste idioma</translation>
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
@@ -179,7 +175,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6291549208091401781">O Google Chrome já está instalado para todos os utilizadores no seu computador.</translation>
 <translation id="6338556085225130112">A atualizar o Google Chrome…</translation>
 <translation id="6368958679917195344">O Chrome OS é possível através de <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
-<translation id="6393863479814692971">O Chrome necessita de autorização de acesso à câmara e ao microfone para este site.</translation>
 <translation id="6410540444482791104">Pode ajudar a tornar o Chrome mais seguro e fácil de utilizar ao enviar automaticamente algumas informações do sistema e conteúdo de páginas para a Google para ajudar a detetar aplicações e sites perigosos.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Google Chrome?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Google Chrome?}}</translation>
 <translation id="6566149418543181476">A atualizar o Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
@@ -187,7 +182,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
-<translation id="6697947395630195233">O Chrome precisa de acesso à sua localização para a partilhar com este site.</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
 <translation id="686561893457936865">Leve o Chrome para todo o lado</translation>
 <translation id="6885412569789873916">Aplicações do Chrome Beta</translation>

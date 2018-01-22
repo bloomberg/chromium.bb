@@ -2140,9 +2140,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8369602308428138533">Ritardo disattivazione schermo in caso di utilizzo di CA</translation>
-<translation id="8370471134641900314">Se la norma viene impostata su true, l'utente deve accedere a <ph name="PRODUCT_NAME" /> con il proprio profilo per utilizzare il browser e il valore predefinito BrowserGuestModeEnabled viene impostato su false.
-
-Se la norma viene impostata su false o non viene configurata, l'utente può utilizzare il browser senza accedere a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.

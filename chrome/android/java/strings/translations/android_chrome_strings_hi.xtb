@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1006017844123154345">ऑनलाइन खोलें</translation>
-<translation id="1036348656032585052">बंद करें</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> जोड़ा जा रहा है...</translation>
 <translation id="1041308826830691739">वेबसाइटों से</translation>
 <translation id="1049743911850919806">गुप्त</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
 <translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, संचय साफ़ करें…</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
-<translation id="1320663236730331991">लोकप्रिय साइटों और लेखों, डाउनलोड आदि तक आसानी से पहुंचने के लिए ऊपर स्वाइप करें</translation>
 <translation id="1326317727527857210">अपने अन्य डिवाइस से अपने टैब प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="1332501820983677155">Google Chrome सुविधा शॉर्टकट</translation>
 <translation id="136248372334525878">तेज़ी से लोड करने और ऑफ़लाइन पढ़ने के लिए पेज पहले से लोड करें</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB अन्य ऐप्लिकेशन</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
-<translation id="2086116129690175316">पेश है नया Chrome</translation>
 <translation id="2086652334978798447">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="2091887806945687916">ध्वनि</translation>
 <translation id="209354263896846928">अपनी स्क्रीन के नीचे दिया गया पता बार एक्सेस करें</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
 <translation id="2122601567107267586">ऐप नहीं खोला जा सका</translation>
-<translation id="2123074103454259350">अभी नहीं</translation>
 <translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> बचाया गया</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">कार्ड संपादित करें</translation>
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">हमें बताएं कि आपने नए Chrome को बंद क्यों कर दिया है</translation>
-<translation id="2185784955520093231">आप नए Chrome का उपयोग कर रहे हैं</translation>
 <translation id="219985413780390209">खतरनाक साइटों से आपकी और आपके डिवाइस की सुरक्षा करता है</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> के रूप में जारी रखें</translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome आपको यह पेज दिखाने के लिए कम डेटा का उपयोग कर रहा है</translation>
 <translation id="2888126860611144412">क्रोम के बारे में</translation>
 <translation id="2891154217021530873">पेज को लोड करना रोकें</translation>
-<translation id="2892933203342091350">सभी लेखों पर सरल बनाया गया व्यू चालू करें</translation>
 <translation id="2900528713135656174">इवेंट बनाएं</translation>
 <translation id="2902702728133930130">अनपेक्षित गड़बड़ी के साथ स्टार्टअप के दौरान Chrome विफल रहा.</translation>
 <translation id="2903493209154104877">पते</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
 <translation id="3662546969139119822">यहां कोई इतिहास नहीं है</translation>
 <translation id="3672452749423051839">मार्गदर्शक गड़बड़ी सुझाव</translation>
-<translation id="3682249951633602029">आपके पासवर्ड, निर्यात की गई पासवर्ड फ़ाइल देख सकने वाले सभी व्यक्तियों को दिखाई देंगे.</translation>
 <translation id="3712575778697986964">डेटा बचाने का साधन रीसेट करें?</translation>
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105"><ph name="GBS" /> जीबी डाउनलोड किया गया</translation>
 <translation id="654446541061731451">बीम के लिए टैब को चुनें</translation>
 <translation id="6545017243486555795">सभी डेटा साफ़ करें</translation>
-<translation id="6550675742724504774">विकल्प</translation>
 <translation id="6556716549745717622">अगर साइट तंग करने वाले विज्ञापन दिखाने के लिए जानी जाती है, तो ब्लॉक करें (सुझाया गया)</translation>
 <translation id="6560414384669816528">Sogou से खोजें</translation>
 <translation id="6566259936974865419">Chrome ने आपके <ph name="GIGABYTES" /> GB की बचत की</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">अपना पासवर्ड कॉपी करने के लिए अनलॉक करें</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
 <translation id="6896758677409633944">कॉपी बनाएं</translation>
-<translation id="6905163627763043954">इसे आज़माएं</translation>
 <translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6959661084585705671">दूसरी मेमोरी</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">सुझाव नहीं मिल पा रहे हैं</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
-<translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>
 <translation id="7588950540487816470">जीता-जागता वेब</translation>
 <translation id="7589445247086920869">वर्तमान खोज इंजन के लिए अवरुद्ध करें</translation>
 <translation id="7593557518625677601">Android सेटिंग खोलें व Chrome सिंक शुरू करने हेतु Android सिस्टम समन्वयन फिर से सक्षम करें</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">समन्वयन काम नहीं कर रहा है</translation>
 <translation id="7612619742409846846">Google में इस रूप में प्रवेश किया हुआ है</translation>
 <translation id="7619072057915878432">नेटवर्क विफलताओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />ब्राउज़ करने का अधिक आसान तरीका<ph name="END_LINK" /> आज़माएं</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />सहायता पाएं<ph name="END_LINK1" /> या <ph name="BEGIN_LINK2" />फिर से स्कैन करें<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
 <translation id="7638584964844754484">गलत पासफ़्रेज़</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">चयन हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
-<translation id="785312750761189439">लोकप्रिय साइटों और लेखों, डाउनलोड आदि की आसान एक्सेस के लिए स्क्रीन पर नीचे से ऊपर स्वाइप करें या विस्तार करें बटन को टैप करें</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>
 <translation id="7876243839304621966">सभी को निकालें</translation>
 <translation id="7882131421121961860">कोई इतिहास नहीं मिला</translation>

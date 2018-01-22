@@ -40,7 +40,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2396765026452590966">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chromium.</translation>
 <translation id="2483889755041906834">In Chromium</translation>
 <translation id="2485422356828889247">Uninstall</translation>
-<translation id="2486653164587200256">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista.</translation>
 <translation id="2527042973354814951">Restart Chromium to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
@@ -106,13 +105,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4488554488975128561">You can help make Chromium safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
-<translation id="4611246891205775468">Chromium needs permission to access your microphone for this site.</translation>
 <translation id="4621240073146040695">Nearly up to date! Relaunch Chromium to finish updating.</translation>
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
 <translation id="4714956846925717402">Get to Chromium faster</translation>
-<translation id="4825874709045178029">Chromium needs permission to access your camera for this site.</translation>
 <translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
@@ -158,9 +155,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
 <translation id="6475912303565314141">It also controls what page is shown when you start Chromium.</translation>
 <translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL" /> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6505742536731484931">Chromium needs access to your location to share your location with this site.</translation>
 <translation id="6510925080656968729">Uninstall Chromium</translation>
-<translation id="6526111688217511984">Chromium needs storage access to download files.</translation>
 <translation id="6598877126913850652">Go to Chromium notification settings</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
@@ -200,7 +195,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7577193603922410712">A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
-<translation id="7641113255207688324">Chromium isn't your default browser.</translation>
 <translation id="7729447699958282447">Chromium could not sync your data because Sync is not available for your domain.</translation>
 <translation id="7745317241717453663">This will delete your browsing data from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
@@ -219,7 +213,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>
 <translation id="8290862415967981663">This file may be dangerous, so Chromium has blocked it.</translation>
-<translation id="8328596990138326317">Chromium needs permission to access your camera and microphone for this site.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> was previously using Chromium</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>

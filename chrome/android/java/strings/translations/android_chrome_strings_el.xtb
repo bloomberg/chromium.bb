@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1006017844123154345">Άνοιγμα στο διαδίκτυο</translation>
-<translation id="1036348656032585052">Απενεργοποίηση</translation>
 <translation id="1036727731225946849">Προσθήκη <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Από ιστοτόπους</translation>
 <translation id="1049743911850919806">Ανώνυμη περιήγηση</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
 <translation id="1291207594882862231">Διαγραφή ιστορικού, cookie, δεδομένων ιστότοπου, κρυφής μνήμης…</translation>
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
-<translation id="1320663236730331991">Σύρετε προς τα επάνω, για να αποκτήσετε εύκολα πρόσβαση σε δημοφιλείς ιστοτόπους, άρθρα κ.ά.</translation>
 <translation id="1326317727527857210">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="1332501820983677155">Συντομεύσεις λειτουργιών Google Chrome</translation>
 <translation id="136248372334525878">Προφόρτωση ιστοσελίδων για ταχύτερη φόρτωση και ανάγνωση εκτός σύνδεσης</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB από άλλες εφαρμογές</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Παρουσίαση του νέου Chrome</translation>
 <translation id="2086652334978798447">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, συνδεθείτε στο Chrome.</translation>
 <translation id="2091887806945687916">Ήχος</translation>
 <translation id="209354263896846928">Χρησιμοποιήστε τη γραμμή διευθύνσεων στο κάτω μέρος της οθόνης σας</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">Αυτόματη σύνδεση</translation>
 <translation id="2111511281910874386">Μετάβαση στη σελίδα</translation>
 <translation id="2122601567107267586">Δεν ήταν δυνατό το άνοιγμα της εφαρμογής</translation>
-<translation id="2123074103454259350">Όχι ακόμη</translation>
 <translation id="2126426811489709554">Με την υποστήριξη του Chrome</translation>
 <translation id="2131665479022868825">Αποθηκεύτηκαν <ph name="DATA" /></translation>
 <translation id="213279576345780926">Η καρτέλα <ph name="TAB_TITLE" /> έκλεισε</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
 <translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Πείτε μας γιατί απενεργοποιήσατε το νέο Chrome</translation>
-<translation id="2185784955520093231">Χρησιμοποιείτε το νέο Chrome</translation>
 <translation id="219985413780390209">Προστατεύει εσάς και τη συσκευή σας από επικίνδυνους ιστότοπους</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, εφαρμογή ιστού. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Συνέχεια ως <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Το Chrome χρησιμοποιεί λιγότερα δεδομένα για να εμφανίσει αυτήν τη σελίδα</translation>
 <translation id="2888126860611144412">Σχετικά με το Chrome</translation>
 <translation id="2891154217021530873">Διακοπή φόρτωσης σελίδας</translation>
-<translation id="2892933203342091350">Ενεργοποίηση της απλοποιημένης προβολής σε όλα τα άρθρα</translation>
 <translation id="2900528713135656174">Δημιουργία συμβάντος</translation>
 <translation id="2902702728133930130">Η εκκίνηση του Chrome απέτυχε λόγω ενός μη αναμενόμενου σφάλματος.</translation>
 <translation id="2903493209154104877">Διευθύνσεις</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">Οι ιστότοποι τρίτου μέρους μπορούν να αποθηκεύουν και να διαβάζουν δεδομένα cookie</translation>
 <translation id="3662546969139119822">Δεν υπάρχει ιστορικό εδώ</translation>
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
-<translation id="3682249951633602029">Οι κωδικοί πρόσβασής σας θα είναι ορατοί σε οποιονδήποτε μπορεί να δει το αρχείο εξαγωγής κωδικών πρόσβασης.</translation>
 <translation id="3712575778697986964">Επαναφορά δεδομένων Εξοικονόμησης δεδομένων;</translation>
 <translation id="3714981814255182093">Άνοιγμα της γραμμής εύρεσης</translation>
 <translation id="3716182511346448902">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome την έθεσε σε παύση.</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">Έγινε λήψη <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
-<translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6556716549745717622">Αποκλεισμός εάν ο ιστότοπος τείνει να εμφανίζει παρεμβατικές διαφημίσεις (συνιστάται)</translation>
 <translation id="6560414384669816528">Αναζήτηση με το Sogou</translation>
 <translation id="6566259936974865419">Το Chrome έχει εξοικονομήσει <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">Ξεκλειδώστε για αντιγραφή του κωδικού πρόσβασης</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ανοικτή καρτέλα}other{%1$d ανοικτές καρτέλες}}</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
-<translation id="6905163627763043954">Δοκιμάστε το</translation>
 <translation id="6910211073230771657">Διαγράφηκε</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6959661084585705671">Δευτερεύων αποθηκευτικός χώρος</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">Δεν είναι δυνατή η λήψη προτάσεων</translation>
 <translation id="7562080006725997899">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="756809126120519699">Τα δεδομένα του Chrome διαγράφηκαν</translation>
-<translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>
 <translation id="7588950540487816470">Φυσικό δίκτυο</translation>
 <translation id="7589445247086920869">Αποκλεισμός για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="7593557518625677601">Ανοίξτε Ρυθμίσεις Android και ενεργοποιήστε τον συγχρ. συστ. Android για έναρξη Συγχρ. Chrome</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">Ο συγχρονισμός δεν λειτουργεί</translation>
 <translation id="7612619742409846846">Έχετε συνδεθεί στο Google ως</translation>
 <translation id="7619072057915878432">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στο δίκτυο.</translation>
-<translation id="7620146066550602128">Δοκιμάστε έναν <ph name="BEGIN_LINK" />ευκολότερο τρόπο περιήγησης<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Λήψη βοήθειας<ph name="END_LINK1" /> ή <ph name="BEGIN_LINK2" />επανάληψη σάρωσης<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
 <translation id="7638584964844754484">Εσφαλμένη φράση πρόσβασης</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
 <translation id="784934925303690534">Χρονικό εύρος</translation>
 <translation id="7851858861565204677">Άλλες συσκευές</translation>
-<translation id="785312750761189439">Σύρετε το δάχτυλό σας από το κάτω μέρος της οθόνης ή αγγίξτε το κουμπί επέκτασης για να αποκτήσετε εύκολη πρόσβαση σε δημοφιλείς ιστοτόπους και άρθρα, λήψεις και περισσότερα</translation>
 <translation id="7875915731392087153">Δημιουργία μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="7876243839304621966">Κατάργηση όλων</translation>
 <translation id="7882131421121961860">Δεν βρέθηκε ιστορικό</translation>

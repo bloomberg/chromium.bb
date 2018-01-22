@@ -730,7 +730,7 @@
 <translation id="3512226956150568738">如果客户端设备型号在需要迁移到 ext4 才能运行 ARC 之前就已支持 ARC，且 ArcEnabled 政策已设为 true，该选项的行为便会和 AskUser（值 3）的行为一样。在所有其他情形（如果相应的设备型号之前不支持 ARC，或者如果 ArcEnabled 政策被设为 false）下，此值将会等同于 DisallowArc（值 0）。</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
 <translation id="3547954654003013442">代理设置</translation>
-<translation id="3577251398714997599">针对展示侵扰性广告的网站指定广告设置</translation>
+<translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
@@ -790,7 +790,7 @@
       如果此政策未设置，系统将使用默认的下载目录，并且用户可以更改此目录。</translation>
 <translation id="3805659594028420438">启用TLS网域绑定证书扩展程序（已弃用）</translation>
 <translation id="3808945828600697669">指定已停用插件的列表</translation>
-<translation id="3811562426301733860">允许在所有网站上显示广告</translation>
+<translation id="3811562426301733860">允许所有网站展示广告</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
 <translation id="3820526221169548563">启用屏幕键盘辅助功能。
 
@@ -967,11 +967,11 @@
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
 <translation id="4322842393287974810">允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本</translation>
 <translation id="4325690621216251241">向系统任务栏添加退出按钮</translation>
-<translation id="4346674324214534449">可让您设置是否应在展示侵扰性广告的网站上屏蔽广告。
+<translation id="4346674324214534449">可让您设置是否应禁止含侵扰性广告的网站展示广告。
 
-      如果此政策设为 2，系统将会在展示侵扰性广告的网站上屏蔽广告。
+      如果此政策设为 2，系统将禁止含侵扰性广告的网站展示广告。
       不过，如果 SafeBrowsingEnabled 政策设为 False，此行为便不会触发。
-      如果此政策设为 1，系统将不会在展示侵扰性广告的网站上屏蔽广告。
+      如果此政策设为 1，系统将不会禁止含侵扰性广告的网站展示广告。
       如果未设置此政策，系统的行为则会与将此政策设为 2 时一样。</translation>
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
@@ -1274,7 +1274,7 @@
 <translation id="5469484020713359236">可让您设置网址格式的列表，这些网址格式用于指定允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
 <translation id="5475361623548884387">启用打印功能</translation>
-<translation id="547601067149622666">不允许在展示侵扰性广告的网站上显示广告</translation>
+<translation id="547601067149622666">不允许含侵扰性广告的网站展示广告</translation>
 <translation id="5499375345075963939">此策略仅在零售模式下有效。
 
       当该策略值已设置，且不为零，那么当不活动期达到指定的时间期间后，当前登录的演示用户就会自动退出。
@@ -2137,9 +2137,6 @@
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
 <translation id="8359734107661430198">从 2008 年 9 月 2 日开始启用 ExampleDeprecatedFeature API</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
-<translation id="8370471134641900314">如果此政策设为 true，用户必须先使用其个人资料登录 <ph name="PRODUCT_NAME" />，然后才能使用该浏览器。另外，BrowserGuestModeEnabled 的默认值将会设为 false。
-
-      如果此政策设为 false 或未配置，用户无需登录 <ph name="PRODUCT_NAME" /> 即可使用该浏览器。</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。

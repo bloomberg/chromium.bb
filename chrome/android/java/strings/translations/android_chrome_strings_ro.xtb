@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1006017844123154345">Deschide online</translation>
-<translation id="1036348656032585052">Dezactivează</translation>
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -37,7 +36,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
 <translation id="129553762522093515">Închise recent</translation>
-<translation id="1320663236730331991">Glisează în sus pentru acces facil la site-uri și articole populare, descărcări și altele</translation>
 <translation id="1326317727527857210">Pentru a accesa filele de pe alte dispozitive, conectează-te la Chrome.</translation>
 <translation id="1332501820983677155">Comenzi rapide pentru funcțiile Google Chrome</translation>
 <translation id="136248372334525878">Preîncarcă paginile pentru încărcare mai rapidă și lectură offline</translation>
@@ -116,14 +114,13 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1993768208584545658"><ph name="SITE" /> dorește să se asocieze</translation>
 <translation id="1994173015038366702">Adresa URL a site-ului</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB pentru alte aplicații</translation>
-<translation id="2015632741368427174">Redirecționarea a fost blocată pentru site-ul:</translation>
+<translation id="2015632741368427174">S-a blocat redirecționarea către site-ul:</translation>
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB pentru alte aplicații</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Îți prezentăm noul Chrome</translation>
 <translation id="2086652334978798447">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te la Chrome.</translation>
 <translation id="2091887806945687916">Sunet</translation>
 <translation id="209354263896846928">Accesează bara de adrese din partea de jos a ecranului</translation>
@@ -131,7 +128,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2100273922101894616">Conectare automată</translation>
 <translation id="2111511281910874386">Accesează pagina</translation>
 <translation id="2122601567107267586">Aplicația nu poate fi deschisă</translation>
-<translation id="2123074103454259350">Nu încă</translation>
 <translation id="2126426811489709554">Afișată de Chrome</translation>
 <translation id="2131665479022868825">Date economisite: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Fila <ph name="TAB_TITLE" /> a fost închisă</translation>
@@ -141,8 +137,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2154484045852737596">Editează cardul</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Spune-ne de ce ai dezactivat noul Chrome</translation>
-<translation id="2185784955520093231">Folosești noul Chrome</translation>
 <translation id="219985413780390209">Protecție împotriva site-urilor periculoase</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicație web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuă ca <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2876764156902388290">Chrome folosește mai puține date pentru a afișa această pagină</translation>
 <translation id="2888126860611144412">Despre Chrome</translation>
 <translation id="2891154217021530873">Oprește încărcarea paginii</translation>
-<translation id="2892933203342091350">Activează afișarea simplificată pentru toate articolele</translation>
 <translation id="2900528713135656174">Creează un eveniment</translation>
 <translation id="2902702728133930130">Chrome nu a pornit. A apărut o eroare neașteptată.</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -294,7 +287,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3661699943263275414">Site-urile terță parte pot să salveze și să citească datele asociate cookie-urilor</translation>
 <translation id="3662546969139119822">Istoric gol</translation>
 <translation id="3672452749423051839">Sugestii pentru erori de navigare</translation>
-<translation id="3682249951633602029">Parolele vor fi vizibile pentru toți cei care pot vedea fișierul de parole exportat.</translation>
 <translation id="3712575778697986964">Resetezi Economizorul de date?</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
 <translation id="3716182511346448902">Această pagină folosește prea multă memorie, prin urmare Chrome a întrerupt-o.</translation>
@@ -618,7 +610,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6538442820324228105"><ph name="GBS" /> GB descărcați</translation>
 <translation id="654446541061731451">Selectează o filă pentru transmitere</translation>
 <translation id="6545017243486555795">Șterge toate datele</translation>
-<translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6556716549745717622">Blochează dacă site-ul tinde să afișeze anunțuri deranjante (recomandat)</translation>
 <translation id="6560414384669816528">Caută cu Sogou</translation>
 <translation id="6566259936974865419">Chrome a economisit <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6891726759199484455">Deblochează pentru a copia parola</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d filă deschisă}few{%1$d file deschise}other{%1$d de file deschise}}</translation>
 <translation id="6896758677409633944">Copiază</translation>
-<translation id="6905163627763043954">Încearcă-l</translation>
 <translation id="6910211073230771657">Șters</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6959661084585705671">Stocare secundară</translation>
@@ -727,7 +717,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7542481630195938534">Nu se pot obține sugestii</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
-<translation id="7581273696622423628">Participă la sondaj</translation>
 <translation id="7588950540487816470">Web material</translation>
 <translation id="7589445247086920869">Blochează pentru motorul de căutare actual</translation>
 <translation id="7593557518625677601">Deschide setările Android și reactivează sincronizarea sistemului Android pentru a porni sincronizarea Chrome</translation>
@@ -736,7 +725,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7605594153474022051">Sincronizarea nu funcționează</translation>
 <translation id="7612619742409846846">Conectat(ă) la Google ca</translation>
 <translation id="7619072057915878432">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza erorilor de rețea.</translation>
-<translation id="7620146066550602128">Încearcă un <ph name="BEGIN_LINK" />mod mai simplu de a naviga<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obține ajutor<ph name="END_LINK1" /> sau <ph name="BEGIN_LINK2" />scanează din nou<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
 <translation id="7638584964844754484">Expresie de acces incorectă</translation>
@@ -761,7 +749,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7846076177841592234">Anulează selecția</translation>
 <translation id="784934925303690534">Interval de timp</translation>
 <translation id="7851858861565204677">Alte dispozitive</translation>
-<translation id="785312750761189439">Glisează în sus din partea de jos a ecranului sau atinge butonul de extindere pentru acces ușor la site-uri și articole populare, la descărcări și la altele</translation>
 <translation id="7875915731392087153">Creează un e-mail</translation>
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7882131421121961860">Nu s-a găsit niciun istoric</translation>

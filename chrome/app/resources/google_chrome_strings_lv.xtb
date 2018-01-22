@@ -56,7 +56,6 @@
 
 Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, vēsture un citi iestatījumi, tiks apvienota ar konta <ph name="ACCOUNT_EMAIL_NEW" /> informāciju.</translation>
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
-<translation id="2416359993254398973">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai šajā vietnē.</translation>
 <translation id="2429317896000329049">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2446511512801740068">Pārlūks Chrome ir novecojis, jo jau kādu laiku tas nav atkārtoti palaists. Atjauninājums ir pieejams un tiks lietots, tiklīdz atkārtoti palaidīsiet pārlūku.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
@@ -68,7 +67,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2665296953892887393">Palīdzēt uzlabot pārlūku Google Chrome, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
 <translation id="2705403826523567092">Pierakstieties, lai personalizētu pārlūkošanas iespējas, kas tiek sinhronizētas ierīcēs.</translation>
-<translation id="2769762047821873045">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2799223571221894425">Restartēt</translation>
 <translation id="2847461019998147611">Rādīt Google Chrome šajā valodā</translation>
@@ -161,10 +159,8 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5495581687705680288">Pārlūkā Google Chrome ielādētie moduļi</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
-<translation id="557283862590186398">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
 <translation id="565744775970812598">Fails <ph name="FILE_NAME" /> var būt bīstams, tādēļ Chrome to bloķēja.</translation>
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
-<translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5774845247549698882">Chrome OS tiek rādīta šajā valodā.</translation>
 <translation id="5855036575689098185">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar pārlūku Google Chrome.</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
@@ -183,7 +179,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6291549208091401781">Pārlūks Google Chrome jau ir instalēts visiem jūsu datora lietotājiem.</translation>
 <translation id="6338556085225130112">Notiek Google Chrome atjaunināšana</translation>
 <translation id="6368958679917195344">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai un mikrofonam šajā vietnē.</translation>
 <translation id="6410540444482791104">Varat palīdzēt uzlabot Chrome drošību un lietošanas ērtumu, automātiski nosūtot noteiktu drošības informāciju un lapas saturu Google serveriem, lai palīdzētu noteikt bīstamas lietotnes un vietnes.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Pašlaik notiek lejupielāde. Vai vēlaties atcelt lejupielādi un iziet no pārlūka Google Chrome?}zero{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}one{Pašlaik notiek # lejupielāde. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}other{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Google Chrome?}}</translation>
 <translation id="6566149418543181476">Notiek Google Chrome atjaunināšana (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -191,7 +186,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6634887557811630702">Pārlūks Google Chrome ir atjaunināts.</translation>
 <translation id="6676384891291319759">Piekļūt internetam</translation>
-<translation id="6697947395630195233">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>
 <translation id="686561893457936865">Paņemiet Chrome sev līdzi</translation>
 <translation id="6885412569789873916">Chrome Beta lietotnes</translation>

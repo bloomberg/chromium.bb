@@ -2195,9 +2195,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="8359734107661430198">Omogući ExampleDeprecatedFeature API do 2008/09/02</translation>
 <translation id="8369602308428138533">Odgoda isključivanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
-<translation id="8370471134641900314">Ako se to pravilo postavi na True, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False.
-
-      Ako se to pravilo postavi na False ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Omogući upotrebu daljinske ovjere za zaštitu sadržaja za uređaj</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
 <translation id="8390049129576938611">Onemogućuje interni preglednik PDF-ova na usluzi <ph name="PRODUCT_NAME" />. Tretira ga kao preuzimanje i omogućuje uređaju da otvara PDF datoteke zadanom aplikacijom.

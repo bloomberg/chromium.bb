@@ -54,7 +54,6 @@
 
 Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja asetukset, yhdistetään tiliin <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Näytä Chrome-valikko</translation>
-<translation id="2416359993254398973">Chrome tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
 <translation id="2429317896000329049">Google Chrome ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="2446511512801740068">Chrome on vanhentunut, koska sitä ei ole käynnistetty uudelleen viime aikoina. Päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="2485422356828889247">Poista</translation>
@@ -66,7 +65,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2665296953892887393">Auta parantamaan Google Chromea lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
 <translation id="2689103672227170538">Tämä laajennus on vaihtanut Chromen aloitussivun.</translation>
 <translation id="2705403826523567092">Kirjautumalla saat yksilöllisemmän selauskokemuksen, joka synkronoidaan kaikkien laitteidesi välillä.</translation>
-<translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="2799223571221894425">Käynnistä uudelleen</translation>
 <translation id="2847461019998147611">Näytä Google Chrome tällä kielellä</translation>
@@ -158,10 +156,8 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="5495581687705680288">Google Chromeen ladatut moduulit</translation>
 <translation id="556024056938947818">Google Chrome yrittää näyttää salasanoja.</translation>
 <translation id="5566025111015594046">Google Chrome (saapuva mDNS)</translation>
-<translation id="557283862590186398">Chrome tarvitsee oikeuden käyttää mikrofoniasi tällä sivustolla.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> voi olla vaarallinen, joten Chrome on estänyt sen.</translation>
 <translation id="573759479754913123">Tietoja Chrome-käyttöjärjestelmästä</translation>
-<translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="5774845247549698882">Chrome-käyttöjärjestelmä näytetään tällä kielellä.</translation>
 <translation id="5855036575689098185">Tietokoneellasi käynnissä oleva ohjelmisto on yhteensopimaton Google Chromen kanssa.</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
@@ -180,7 +176,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="6291549208091401781">Google Chrome on jo asennettuna kaikille tietokoneen käyttäjille.</translation>
 <translation id="6338556085225130112">Päivitetään Google Chromea.</translation>
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS" />avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Chrome tarvitsee oikeuden käyttää kameraasi ja mikrofoniasi tällä sivustolla.</translation>
 <translation id="6410540444482791104">Voit auttaa meitä kehittämään Chromen turvallisuutta ja käytettävyyttä lähettämällä automaattisesti joitain järjestelmän tietoja ja sivun sisältöjä Googlelle. Näin autat havaitsemaan vaarallisia sovelluksia ja sivustoja.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Lataus on parhaillaan käynnissä. Haluatko peruuttaa latauksen ja poistua Google Chromesta?}other{# latausta on parhaillaan käynnissä. Haluatko peruuttaa latauksen ja poistua Google Chromesta?}}</translation>
 <translation id="6566149418543181476">Päivitetään Google Chromea (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -188,7 +183,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="6600954340915313787">Kopioitiin Chromeen.</translation>
 <translation id="6634887557811630702">Google Chrome on ajan tasalla.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
-<translation id="6697947395630195233">Chrome tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
 <translation id="683440813066116847">Google Chrome Canaryn saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="686561893457936865">Ota Chrome mukaan kaikkialle</translation>
 <translation id="6885412569789873916">Chromen betaversion sovellukset</translation>

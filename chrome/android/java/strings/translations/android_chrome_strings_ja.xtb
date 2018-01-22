@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
-<translation id="1036348656032585052">オフにする</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> を追加しています...</translation>
 <translation id="1041308826830691739">ウェブサイトから</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを消去…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
-<translation id="1320663236730331991">上にスワイプすると、人気の高いサイトや記事、ダウンロードしたアイテムなどにすばやくアクセスできます</translation>
 <translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1332501820983677155">Google Chrome 機能のショートカット</translation>
 <translation id="136248372334525878">ページをプリロードすると、読み込みが速くなり、オフラインでの閲覧も可能になります</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB を他のアプリで使用中</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
-<translation id="2086116129690175316">新しい Chrome のご紹介</translation>
 <translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
 <translation id="2091887806945687916">音声</translation>
 <translation id="209354263896846928">アドレスバーは画面下部にあります</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2111511281910874386">ページを開く</translation>
 <translation id="2122601567107267586">アプリを開けませんでした</translation>
-<translation id="2123074103454259350">いいえ</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> 削減しました</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> を閉じました</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">カードを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
-<translation id="2172731970979873816">新しい Chrome を無効にした理由をお聞かせください</translation>
-<translation id="2185784955520093231">新しい Chrome を使用しています</translation>
 <translation id="219985413780390209">危険なサイトからユーザーとデバイスを保護する</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> として続行</translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome ではデータ使用量を削減してこのページを表示しています</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
-<translation id="2892933203342091350">すべての記事で簡易表示を有効にする</translation>
 <translation id="2900528713135656174">予定を作成</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
 <translation id="2903493209154104877">住所</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">サードパーティのウェブサイトに Cookie データの保存と読み取りを許可する</translation>
 <translation id="3662546969139119822">履歴はありません</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
-<translation id="3682249951633602029">あなたのパスワードは、エクスポートしたパスワード ファイルにアクセスできるユーザーに見られる可能性があります。</translation>
 <translation id="3712575778697986964">データセーバーをリセットしますか？</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3716182511346448902">このページは大量のメモリを使用しているため、Chrome により一時停止されました。</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
 <translation id="6545017243486555795">すべてのデータを消去</translation>
-<translation id="6550675742724504774">オプション</translation>
 <translation id="6556716549745717622">煩わしい広告がよく表示されるサイトの場合にブロック（推奨）</translation>
 <translation id="6560414384669816528">Sogou で検索します</translation>
 <translation id="6566259936974865419">Chrome で <ph name="GIGABYTES" /> GB の容量を節約しました</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">パスワードをコピーするにはロックを解除してください</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
 <translation id="6896758677409633944">コピー</translation>
-<translation id="6905163627763043954">使ってみる</translation>
 <translation id="6910211073230771657">削除済み</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6959661084585705671">予備の保存先</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">候補を取得できません</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
-<translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7589445247086920869">現在の検索エンジンをブロックする</translation>
 <translation id="7593557518625677601">Chrome の同期を開始するには、Android の設定で Android システムの同期を再度有効にします</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています:</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />より簡単な閲覧方法<ph name="END_LINK" />をお試しください</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ヘルプ<ph name="END_LINK1" />または<ph name="BEGIN_LINK2" />再スキャン<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">その他のデバイス</translation>
-<translation id="785312750761189439">画面を下から上にスワイプするか、展開ボタンをタップすると、人気の高いサイトや記事、ダウンロードしたアイテムなどにすばやくアクセスできます</translation>
 <translation id="7875915731392087153">メールを作成</translation>
 <translation id="7876243839304621966">すべて削除</translation>
 <translation id="7882131421121961860">履歴が見つかりません</translation>

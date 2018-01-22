@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1006017844123154345">Open Online</translation>
-<translation id="1036348656032585052">Turn off</translation>
 <translation id="1036727731225946849">Adding <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">From websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -37,7 +36,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
-<translation id="1320663236730331991">Swipe up for easy access to popular sites and articles, downloads and more</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
 <translation id="136248372334525878">Preload pages for faster loading and offline reading</translation>
@@ -123,7 +121,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB other apps</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Introducing the new Chrome</translation>
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="209354263896846928">Access the address bar at the bottom of your screen</translation>
@@ -131,7 +128,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2111511281910874386">Go to page</translation>
 <translation id="2122601567107267586">Could not open app</translation>
-<translation id="2123074103454259350">Not yet</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> saved</translation>
 <translation id="213279576345780926">Closed <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Tell us why you turned off the new Chrome</translation>
-<translation id="2185784955520093231">You’re using the new Chrome</translation>
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2876764156902388290">Chrome is using less data to show you this page</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
-<translation id="2892933203342091350">Enable simplified view on all articles</translation>
 <translation id="2900528713135656174">Create event</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
 <translation id="2903493209154104877">Addresses</translation>
@@ -294,7 +287,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
 <translation id="3662546969139119822">No history here</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
-<translation id="3682249951633602029">Your passwords will be visible to anyone who can see the exported passwords file.</translation>
 <translation id="3712575778697986964">Reset Data Saver?</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
@@ -618,7 +610,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6538442820324228105">Downloaded <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
-<translation id="6550675742724504774">Options</translation>
 <translation id="6556716549745717622">Block if site tends to show intrusive ads (recommended)</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="6566259936974865419">Chrome has saved you <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6891726759199484455">Unlock to copy your password</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
-<translation id="6905163627763043954">Try it</translation>
 <translation id="6910211073230771657">Deleted</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6959661084585705671">Secondary storage</translation>
@@ -727,7 +717,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7542481630195938534">Can’t get suggestions</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
-<translation id="7581273696622423628">Take survey</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
@@ -736,7 +725,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
-<translation id="7620146066550602128">Try an <ph name="BEGIN_LINK" />easier way to browse<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Get help<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />re-scan<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
@@ -761,7 +749,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other Devices</translation>
-<translation id="785312750761189439">Swipe up from the bottom of the screen or tap the expand button for easy access to popular sites and articles, downloads and more</translation>
 <translation id="7875915731392087153">Create email</translation>
 <translation id="7876243839304621966">Remove all</translation>
 <translation id="7882131421121961860">No history found</translation>

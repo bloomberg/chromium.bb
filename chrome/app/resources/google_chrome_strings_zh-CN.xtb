@@ -54,7 +54,6 @@
 
 如果您仍然登录，Chrome 信息（例如书签、历史记录和其他设置）将合并到 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
-<translation id="2416359993254398973">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
 <translation id="2429317896000329049">由于您的网域停用了同步功能，Google Chrome无法同步您的数据。</translation>
 <translation id="2446511512801740068">Chrome 已有一段时间未重新启动，因此现在已不是最新版本。目前有可用更新，系统会在您重新启动 Chrome 后应用这些更新。</translation>
 <translation id="2485422356828889247">卸载</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="2705403826523567092">登录后可畅享合乎个人需求的浏览体验，并在不同设备间保持同步</translation>
-<translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2847461019998147611">以这种语言显示 Google Chrome</translation>
@@ -158,10 +156,8 @@
 <translation id="5495581687705680288">模块已加载到 Google Chrome 浏览器中</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
-<translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5774845247549698882">Chrome 操作系统界面目前使用的是这种语言</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
@@ -180,7 +176,6 @@
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
-<translation id="6393863479814692971">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风。</translation>
 <translation id="6410540444482791104">您可以选择自动向 Google 发送某些系统信息和网页内容，以帮助我们检测危险应用和网站，从而提高 Chrome 的安全性和易用性。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}}</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -188,7 +183,6 @@
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
-<translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>

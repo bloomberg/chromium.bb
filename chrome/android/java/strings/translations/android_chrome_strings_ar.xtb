@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح عبر الإنترنت</translation>
-<translation id="1036348656032585052">إيقاف</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
-<translation id="1320663236730331991">ما عليك سوى التمرير سريعًا لأعلى للوصول بسهولة إلى المواقع والمقالات والتنزيلات الرائجة وغيرها</translation>
 <translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="1332501820983677155">‏اختصارات ميزات Google Chrome</translation>
 <translation id="136248372334525878">التحميل المسبق للصفحات للحصول على تحميل أسرع والقراءة بلا اتصال بالإنترنت</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016">تطبيقات أخرى بحجم <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">‏إليك متصفّح Chrome الجديد</translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="209354263896846928">الوصول إلى شريط العناوين في أسفل الشاشة</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
 <translation id="2111511281910874386">الانتقال إلى الصفحة</translation>
 <translation id="2122601567107267586">تعذر فتح التطبيق</translation>
-<translation id="2123074103454259350">ليس الآن</translation>
 <translation id="2126426811489709554">‏يدعمها Chrome</translation>
 <translation id="2131665479022868825">تم توفير <ph name="DATA" /></translation>
 <translation id="213279576345780926">تم إغلاق <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">‏أخبرنا عن سبب إيقاف تشغيل متصفّح Chrome الجديد</translation>
-<translation id="2185784955520093231">‏أنت تستخدم متصفّح Chrome الجديد</translation>
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">متابعة باسم <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">‏يستخدم Chrome بيانات أقل لعرض هذه الصفحة لك</translation>
 <translation id="2888126860611144412">‏حول Chrome</translation>
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
-<translation id="2892933203342091350">تفعيل العرض المبسَّط في جميع المقالات</translation>
 <translation id="2900528713135656174">إنشاء حدث</translation>
 <translation id="2902702728133930130">‏تعذّر Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
 <translation id="2903493209154104877">العناوين</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">يمكن للمواقع الإلكترونية التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
-<translation id="3682249951633602029">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على ملف كلمات المرور الذي تم تصديره.</translation>
 <translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
@@ -619,7 +611,6 @@
 <translation id="6538442820324228105">تم التنزيل بحجم <ph name="GBS" /> غيغابايت</translation>
 <translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="6545017243486555795">مسح جميع البيانات</translation>
-<translation id="6550675742724504774">خيارات</translation>
 <translation id="6556716549745717622">الحظر إذا كان موقع الويب يميل إلى عرض إعلانات متداخلة (مستحسن)</translation>
 <translation id="6560414384669816528">‏البحث باستخدام Sogou</translation>
 <translation id="6566259936974865419">‏لقد وفر Chrome لك <ph name="GIGABYTES" /> غيغابايت</translation>
@@ -663,7 +654,6 @@
 <translation id="6891726759199484455">إلغاء القفل لنسخ كلمة المرور</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏علامة تبويب واحدة (%1$d) مفتوحة}zero{‏%1$d علامة تبويب مفتوحة}two{‏علامتا تبويب (%1$d) مفتوحتان}few{‏%1$d علامات تبويب مفتوحة}many{‏%1$d علامة تبويب مفتوحة}other{‏%1$d علامة تبويب مفتوحة}}</translation>
 <translation id="6896758677409633944">نسخ</translation>
-<translation id="6905163627763043954">جرّبه</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6959661084585705671">سعة التخزين الثانوية</translation>
@@ -728,7 +718,6 @@
 <translation id="7542481630195938534">يتعذر الحصول على الاقتراحات</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
-<translation id="7581273696622423628">المشاركة في استطلاع الرأي</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
 <translation id="7589445247086920869">حظر محرك البحث الحالي</translation>
 <translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تمكين مزامنة نظام Android لبدء مزامنة Chrome</translation>
@@ -737,7 +726,6 @@
 <translation id="7605594153474022051">المزامنة لا تعمل</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
 <translation id="7619072057915878432">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
-<translation id="7620146066550602128">تجربة <ph name="BEGIN_LINK" />طريقة أسهل للتصفّح<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />الحصول على مساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />إعادة الفحص<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
@@ -762,8 +750,6 @@
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
-<translation id="785312750761189439">ما عليك سوى التمرير سريعًا من أسفل الشاشة إلى أعلاها أو النقر على زر التوسيع للوصول بسهولة إلى التنزيلات والمواقع 
- الإلكترونية والمقالات الرائجة وغيرها</translation>
 <translation id="7875915731392087153">إنشاء بريد إلكتروني</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
 <translation id="7882131421121961860">لم يتم العثور على أي سجلّ</translation>

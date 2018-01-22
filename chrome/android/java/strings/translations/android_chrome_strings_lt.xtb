@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1006017844123154345">Atidaryti prisijungus</translation>
-<translation id="1036348656032585052">Išjungti</translation>
 <translation id="1036727731225946849">Pridedamas APK „<ph name="WEBAPK_NAME" />“...</translation>
 <translation id="1041308826830691739">Iš svetainių</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="1291207594882862231">Išvalykite istoriją, slapukus, svetainės duomenis, talpyklą…</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
-<translation id="1320663236730331991">Perbraukite aukštyn, kad lengvai pasiektumėte populiarius straipsnius, svetaines, atsisiuntimus ir daugiau</translation>
 <translation id="1326317727527857210">Prisijunkite prie „Chrome“, kad pasiektumėte skirtukus iš kitų įrenginių.</translation>
 <translation id="1332501820983677155">„Google Chrome“ funkcijų spartieji klavišai</translation>
 <translation id="136248372334525878">Iš anksto įkeliami puslapiai, kad įkėlimo procesas vyktų greičiau ir būtų galima skaityti neprisijungus</translation>
@@ -123,7 +121,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB užima kitos programos</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Pristatome naująją „Chrome“</translation>
 <translation id="2086652334978798447">Jei norite gauti „Google“ siūlomo suasmeninto turinio, prisijunkite prie „Chrome“.</translation>
 <translation id="2091887806945687916">Garsas</translation>
 <translation id="209354263896846928">Pasiekite adreso juostą, esančią ekrano apačioje</translation>
@@ -131,7 +128,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2100273922101894616">Automatinis prisijungimas</translation>
 <translation id="2111511281910874386">Eiti į puslapį</translation>
 <translation id="2122601567107267586">Nepavyko atidaryti programos</translation>
-<translation id="2123074103454259350">Dar ne</translation>
 <translation id="2126426811489709554">Teikia „Chrome“</translation>
 <translation id="2131665479022868825">Išsaugota: <ph name="DATA" /></translation>
 <translation id="213279576345780926">„<ph name="TAB_TITLE" />“ uždaryta</translation>
@@ -141,8 +137,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2154484045852737596">Kortelės informacijos redagavimas</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
 <translation id="2156074688469523661">Likusios svetainės (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Nurodykite, kodėl išjungėte naująją „Chrome“</translation>
-<translation id="2185784955520093231">Naudojate naująją „Chrome“</translation>
 <translation id="219985413780390209">Apsaugokite save ir įrenginį nuo pavojingų svetainių</translation>
 <translation id="2206488550163399966">„<ph name="APP_NAME" />“, žiniatinklio programa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tęsti kaip <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2876764156902388290">„Chrome“ naudoja mažiau duomenų, kad parodytų jums šį puslapį</translation>
 <translation id="2888126860611144412">Apie „Chrome“</translation>
 <translation id="2891154217021530873">Sustabdyti puslapio įkėlimą</translation>
-<translation id="2892933203342091350">Visuose straipsniuose įgalinti supaprastintą rodinį</translation>
 <translation id="2900528713135656174">Sukurti įvykį</translation>
 <translation id="2902702728133930130">Nepavyko paleisti „Chrome“, nes kilo netikėta klaida.</translation>
 <translation id="2903493209154104877">Adresai</translation>
@@ -294,7 +287,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3661699943263275414">Trečiųjų šalių svetainės gali saugoti ir nuskaityti slapukų duomenis</translation>
 <translation id="3662546969139119822">Nėra istorijos elementų</translation>
 <translation id="3672452749423051839">Naršymo klaidų pasiūlymai</translation>
-<translation id="3682249951633602029">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą slaptažodžių failą.</translation>
 <translation id="3712575778697986964">Iš naujo nustatyti Duomenų taupymo priemonę?</translation>
 <translation id="3714981814255182093">Atidaryti radimo juostą</translation>
 <translation id="3716182511346448902">Šis puslapis naudoja per daug atminties, todėl „Chrome“ jį pristabdė.</translation>
@@ -618,7 +610,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6538442820324228105">Atsisiųsta <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Kad perduotumėte, pasirinkite skirtuką</translation>
 <translation id="6545017243486555795">Išvalyti visus duomenis</translation>
-<translation id="6550675742724504774">Parinktys</translation>
 <translation id="6556716549745717622">Blokuoti, jei svetainėje bandoma rodyti nepageidaujamus skelbimus (rekomenduojama)</translation>
 <translation id="6560414384669816528">Atlikti paiešką naudojant „Sogou“</translation>
 <translation id="6566259936974865419">„Chrome“ sutaupė jums <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6891726759199484455">Atrakinkite, kad galėtumėte kopijuoti slaptažodį</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{Atidarytas %1$d skirtukas}one{Atidarytas %1$d skirtukas}few{Atidaryti %1$d skirtukai}many{Atidaryta %1$d skirtuko}other{Atidaryta %1$d skirtukų}}</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
-<translation id="6905163627763043954">Išbandyti</translation>
 <translation id="6910211073230771657">Ištrintas</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6959661084585705671">Antrinė saugykla</translation>
@@ -727,7 +717,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7542481630195938534">Nepavyksta gauti pasiūlymų</translation>
 <translation id="7562080006725997899">Naršymo duomenų išvalymas</translation>
 <translation id="756809126120519699">Išvalyti „Chrome“ duomenys</translation>
-<translation id="7581273696622423628">Dalyvauti apklausoje</translation>
 <translation id="7588950540487816470">Fizinis žiniatinklis</translation>
 <translation id="7589445247086920869">Blokuoti dabartiniam paieškos varikliui</translation>
 <translation id="7593557518625677601">Atid. „Android“ nust. ir iš n. įgal. „Android“ sist., kad prad. „Chrome“ sinchr.</translation>
@@ -736,7 +725,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7605594153474022051">Sinchronizavimas neveikia</translation>
 <translation id="7612619742409846846">Prisijungta prie „Google“ kaip</translation>
 <translation id="7619072057915878432">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl tinklo trikčių.</translation>
-<translation id="7620146066550602128">Išbandykite <ph name="BEGIN_LINK" />paprastesnį naršymo būdą<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Gaukite pagalbos<ph name="END_LINK1" /> arba <ph name="BEGIN_LINK2" />ieškokite iš naujo<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
 <translation id="7638584964844754484">Neteisinga slaptafrazė</translation>
@@ -761,7 +749,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
 <translation id="784934925303690534">Laikotarpis</translation>
 <translation id="7851858861565204677">Kiti įrenginiai</translation>
-<translation id="785312750761189439">Nuo ekrano apačios perbraukite aukštyn arba palieskite išskleidimo mygtuką, kad matytumėte populiarias svetaines, straipsnius, atsisiuntimus ir daugiau</translation>
 <translation id="7875915731392087153">Kurti el. laišką</translation>
 <translation id="7876243839304621966">Pašalinti viską</translation>
 <translation id="7882131421121961860">Nerasta istorijos</translation>

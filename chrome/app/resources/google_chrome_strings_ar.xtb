@@ -56,7 +56,6 @@
 
 سيؤدي تسجيل الدخول على أيّ حال إلى دمج معلومات Chrome مثل الإشارات المرجعية والسجل والإعدادات الأخرى مع <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">‏لإظهار قائمة Chrome</translation>
-<translation id="2416359993254398973">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا لموقع الويب هذا.</translation>
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="2446511512801740068">‏Chrome غير محدّث لأنه لم تتم إعادة تشغيله منذ فترة. هناك تحديث متوفر وسيتم تطبيقه بمجرد إعادة تشغيله.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
@@ -68,7 +67,6 @@
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
 <translation id="2705403826523567092">تسجيل الدخول للتمتع بتجربة تصفح مخصصة، والمزامنة في جميع الأجهزة</translation>
-<translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="2847461019998147611">‏عرض Google Chrome بهذه اللغة</translation>
@@ -161,10 +159,8 @@
 <translation id="5495581687705680288">‏الوحدات المحملة في Google Chrome</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
-<translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
 <translation id="5774845247549698882">‏يتم عرض نظام التشغيل Chrome بهذه اللغة</translation>
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
@@ -183,7 +179,6 @@
 <translation id="6291549208091401781">‏تم تثبيت Google Chrome من قبل لجميع المستخدمين على الكمبيوتر.</translation>
 <translation id="6338556085225130112">‏تحديث Google Chrome</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" /> إضافي.</translation>
-<translation id="6393863479814692971">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا والميكروفون لموقع الويب هذا.</translation>
 <translation id="6410540444482791104">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا عن طريق إرسال بعض معلومات النظام ومحتوى الصفحة تلقائيًا إلى Google للمساعدة في اكتشاف المواقع والتطبيقات الضارة.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏هناك تنزيل قيد التقدم حاليًا. هل تريد إلغاء التنزيل والخروج من Google Chrome؟}zero{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}two{‏هناك تنزيلان (#) قيد التقدم حاليًا. هل تريد إلغاء التنزيلين والخروج من Google Chrome؟}few{‏هناك # تنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}many{‏هناك # تنزيلاً قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}other{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}}</translation>
 <translation id="6566149418543181476">‏جارٍ تحديث Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -191,7 +186,6 @@
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome محدّث.</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
-<translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="686561893457936865">‏إمكانية استخدام Chrome في كل مكان</translation>
 <translation id="6885412569789873916">‏تطبيقات الإصدار التجريبي من Chrome</translation>

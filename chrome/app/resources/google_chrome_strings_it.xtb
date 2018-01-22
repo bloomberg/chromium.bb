@@ -54,7 +54,6 @@
 
 Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronologia e altre impostazioni verranno unite a quelle di <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
-<translation id="2416359993254398973">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera.</translation>
 <translation id="2429317896000329049">Impossibile sincronizzare i dati in Google Chrome perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="2446511512801740068">Chrome non è aggiornato perché non viene riavviato da un po'. È disponibile un aggiornamento che verrà applicato non appena riavvierai.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
@@ -66,7 +65,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2665296953892887393">Aiutaci a migliorare Google Chrome inviando a Google rapporti sugli arresti anomali e <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Questa estensione ha cambiato la pagina mostrata all'avvio di Chrome.</translation>
 <translation id="2705403826523567092">Accedi per un'esperienza di navigazione personalizzata e sincronizzata su più dispositivi</translation>
-<translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2799223571221894425">Riavvia</translation>
 <translation id="2847461019998147611">Visualizza Google Chrome in questa lingua</translation>
@@ -158,10 +156,8 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="5495581687705680288">Moduli caricati in Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> potrebbe essere pericoloso, pertanto è stato bloccato da Chrome.</translation>
 <translation id="573759479754913123">Informazioni su Chrome OS</translation>
-<translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="5774845247549698882">Chrome OS è visualizzato in questa lingua</translation>
 <translation id="5855036575689098185">Il software in esecuzione sul computer non è compatibile con Google Chrome.</translation>
 <translation id="5877064549588274448">Canale cambiato. Riavvia il dispositivo per applicare le modifiche.</translation>
@@ -180,7 +176,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6291549208091401781">Google Chrome è già installato per tutti gli utenti sul computer.</translation>
 <translation id="6338556085225130112">Aggiornamento di Google Chrome in corso</translation>
 <translation id="6368958679917195344">Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> aggiuntivi.</translation>
-<translation id="6393863479814692971">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono.</translation>
 <translation id="6410540444482791104">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare inviando automaticamente a Google alcune informazioni sul sistema e alcuni contenuti delle pagine per contribuire a rilevare app e siti pericolosi.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{È in corso un download. Vuoi annullare il download e uscire da Google Chrome?}other{Sono in corso # download. Vuoi annullare i download e uscire da Google Chrome?}}</translation>
 <translation id="6566149418543181476">Aggiornamento di Google Chrome in corso (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -188,7 +183,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6600954340915313787">Copiata in Chrome</translation>
 <translation id="6634887557811630702">Google Chrome è aggiornato.</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
-<translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 <translation id="683440813066116847">Regola inbound per consentire il traffico mDNS in Google Chrome Canary.</translation>
 <translation id="686561893457936865">Porta Chrome ovunque</translation>
 <translation id="6885412569789873916">App di Chrome Beta</translation>

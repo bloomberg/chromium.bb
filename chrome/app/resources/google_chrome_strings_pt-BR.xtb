@@ -54,7 +54,6 @@
 
 Se você decidir fazer login assim mesmo, as informações do Google Chrome, como favoritos, histórico e outras configurações serão mescladas com as informações de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Exibir o menu do Google Chrome</translation>
-<translation id="2416359993254398973">O Chrome precisa de permissão para este site acessar sua câmera.</translation>
 <translation id="2429317896000329049">O Google Chrome não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="2446511512801740068">O Chrome está desatualizado porque não foi reiniciado durante algum tempo. Uma atualização está disponível e será aplicada assim que você reiniciá-lo.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -66,7 +65,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2665296953892887393">Ajude a melhorar o Google Chrome. Envie relatórios de erros e  <ph name="UMA_LINK" /> para o Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página que é exibida quando você inicia o Chrome.</translation>
 <translation id="2705403826523567092">Faça login para ter uma experiência de navegação personalizada e sincronizada entre seus dispositivos</translation>
-<translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2847461019998147611">Exibir o Google Chrome neste idioma</translation>
@@ -158,10 +156,8 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="5495581687705680288">Módulos carregados no Google Chrome</translation>
 <translation id="556024056938947818">O Google Chrome está tentando mostrar senhas.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">O Chrome precisa de permissão para este site acessar seu microfone.</translation>
 <translation id="565744775970812598">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso, ele foi bloqueado pelo Chrome.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
-<translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5774845247549698882">O Chrome OS é exibido neste idioma</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
@@ -180,7 +176,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="6291549208091401781">O Google Chrome já está instalado para todos os usuários do seu computador.</translation>
 <translation id="6338556085225130112">Atualizando o Google Chrome</translation>
 <translation id="6368958679917195344">O sistema operacional do Chrome tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
-<translation id="6393863479814692971">O Chrome precisa de permissão para este site acessar sua câmera e seu microfone.</translation>
 <translation id="6410540444482791104">Você pode ajudar a tornar o Chrome mais seguro e mais fácil de usar, enviando automaticamente algumas informações do sistema e conteúdos de página ao Google para ajudar a detectar apps e sites perigosos.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Quer cancelar o download e sair do Google Chrome?}one{# downloads estão em andamento. Quer cancelar os downloads e sair do Google Chrome?}other{# downloads estão em andamento. Quer cancelar os downloads e sair do Google Chrome?}}</translation>
 <translation id="6566149418543181476">Atualizando o Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -188,7 +183,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
-<translation id="6697947395630195233">O Chrome precisa acessar sua localização para compartilhá-la com este site.</translation>
 <translation id="683440813066116847">Regra interna do Google Chrome Canary para permitir tráfego mDNS.</translation>
 <translation id="686561893457936865">Leve o Chrome para todos os lugares</translation>
 <translation id="6885412569789873916">Apps do Chrome Beta</translation>

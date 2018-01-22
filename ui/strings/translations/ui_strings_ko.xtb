@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">캡처화면</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
 <translation id="4316910396681052118">모든 앱</translation>
-<translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
 <translation id="4724120544754982507">알림 센터, 읽지 않은 알림 <ph name="UNREAD_NOTIFICATION_COUNT" />개</translation>
 <translation id="4730374152663651037">자주 사용하는 앱</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">왼쪽 모서리</translation>
 <translation id="8331626408530291785">위로 스크롤</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1년}other{#년}}</translation>
-<translation id="8371695176452482769">말하세요</translation>
 <translation id="838869780401515933">선택</translation>
 <translation id="8393700583063109961">메시지 보내기</translation>
 <translation id="8394908167088220973">미디어 재생/일시중지</translation>

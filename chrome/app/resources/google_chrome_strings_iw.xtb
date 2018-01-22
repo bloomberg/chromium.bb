@@ -54,7 +54,6 @@
 
 אם תמשיך ותיכנס, המידע ב-Chrome, כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">‏הצג את תפריט Chrome</translation>
-<translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="2446511512801740068">‏Chrome אינו מעודכן מכיוון שהוא לא הופעל לאחרונה. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
@@ -66,7 +65,6 @@
 <translation id="2665296953892887393">‏עזור לשפר את Google Chrome על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
 <translation id="2689103672227170538">‏התוסף הזה שינה את הדף שמוצג כשאתה מפעיל את Chrome.</translation>
 <translation id="2705403826523567092">אפשר להיכנס לחשבון כדי ליהנות מחוויית גלישה מותאמת אישית עם סנכרון בין המכשירים השונים שלך</translation>
-<translation id="2769762047821873045">‏Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="2847461019998147611">‏הצג את Google Chrome בשפה זו</translation>
@@ -157,10 +155,8 @@
 <translation id="5495581687705680288">‏מודולים שנטענו ב-Google Chrome</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
-<translation id="557283862590186398">‏Chrome זקוק להרשאת גישה אל המיקרופון בשביל האתר הזה.</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
-<translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5774845247549698882">‏Chrome OS מוצג בשפה זו</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
@@ -179,7 +175,6 @@
 <translation id="6291549208091401781">‏Google Chrome כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
 <translation id="6338556085225130112">‏מעדכן את Google Chrome</translation>
 <translation id="6368958679917195344">‏השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS" />תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספת.</translation>
-<translation id="6393863479814692971">‏Chrome זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה.</translation>
 <translation id="6410540444482791104">‏תוכל לעזור בשיפור האבטחה וקלות השימוש של Chrome על-ידי שליחה אוטומטית של חלק מפרטי המערכת ותוכן הדף אל Google כדי לעזור בזיהוי של יישומים ואתרים מסוכנים.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Google Chrome?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Google Chrome?}}</translation>
 <translation id="6566149418543181476">‏מעדכן את Google Chrome‏ (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome מעודכן.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
-<translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="686561893457936865">‏לוקחים את Chrome לכל מקום</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הביטא של Chrome</translation>

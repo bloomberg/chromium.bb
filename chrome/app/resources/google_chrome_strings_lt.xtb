@@ -58,7 +58,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 
 Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija ir kiti nustatymai, bus sujungta su <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Rodyti „Chrome“ meniu</translation>
-<translation id="2416359993254398973">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų fotoaparatą šioje svetainėje.</translation>
 <translation id="2429317896000329049">„Google Chrome“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="2446511512801740068">„Chrome“ yra pasenusi, nes kurį nebuvo paleista iš naujo. Naujinys pasiekiamas ir jis bus pritaikytas, kai paleisite „Chrome“ iš naujo.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
@@ -70,7 +69,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chrome“.</translation>
 <translation id="2705403826523567092">Prisijunkite ir gaukite suasmenintų naršymo funkcijų, sinchronizuojamų skirtinguose įrenginiuose</translation>
-<translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2847461019998147611">Pateikti „Google Chrome“ šia kalba</translation>
@@ -166,10 +164,8 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5495581687705680288">Į „Google Chrome“ įkelti moduliai</translation>
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
-<translation id="557283862590186398">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų mikrofoną šioje svetainėje.</translation>
 <translation id="565744775970812598">Failas „<ph name="FILE_NAME" />“ gali būti pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
-<translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
 <translation id="5774845247549698882">„Chrome“ OS pateikiama šia kalba</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
@@ -188,7 +184,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6291549208091401781">„Google Chrome“ jau įdiegta visiems kompiuterio naudotojams.</translation>
 <translation id="6338556085225130112">Atnaujinama „Google Chrome“</translation>
 <translation id="6368958679917195344">„Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų fotoaparatą ir mikrofoną šioje svetainėje.</translation>
 <translation id="6410540444482791104">Galite padėti sustiprinti „Chrome“ saugą ir palengvinti jos naudojimą automatiškai „Google“ siųsdami tam tikrą sistemos informaciją ir puslapių turinį, kad padėtumėte aptikti pavojingas programas ir svetaines.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Šiuo metu vykdomas atsisiuntimas. Ar norite atšaukti atsisiuntimą ir išeiti iš „Google Chrome“?}one{Šiuo metu vykdomas # atsisiuntimas. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}few{Šiuo metu vykdomi # atsisiuntimai. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}many{Šiuo metu vykdoma # atsisiuntimo. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}other{Šiuo metu vykdoma # atsisiuntimų. Ar norite atšaukti atsisiuntimus ir išeiti iš „Google Chrome“?}}</translation>
 <translation id="6566149418543181476">Atnaujinama „Google Chrome“ (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -196,7 +191,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6600954340915313787">Nukopijuota į „Chrome“</translation>
 <translation id="6634887557811630702">„Google Chrome“ naujausios versijos.</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>
-<translation id="6697947395630195233">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine.</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
 <translation id="686561893457936865">Pasiimkite „Chrome“ bet kur</translation>
 <translation id="6885412569789873916">„Chrome“ beta versijos programos</translation>

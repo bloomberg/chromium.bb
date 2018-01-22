@@ -54,7 +54,6 @@
 
 Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricul și alte setări vor fi îmbinate cu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Afișează meniul Chrome</translation>
-<translation id="2416359993254398973">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site.</translation>
 <translation id="2429317896000329049">Google Chrome nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2446511512801740068">Chrome este neactualizat, deoarece în ultimul timp nu a fost repornit. Este disponibilă o actualizare, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
@@ -66,7 +65,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2665296953892887393">Contribuie la îmbunătățirea browserului Google Chrome trimițând rapoarte de blocare și <ph name="UMA_LINK" /> la Google</translation>
 <translation id="2689103672227170538">Această extensie a modificat ce pagină se afișează când pornești Chrome.</translation>
 <translation id="2705403826523567092">Conectează-te pentru o experiență de navigare personalizată, sincronizată pe toate dispozitivele</translation>
-<translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="2799223571221894425">Repornește</translation>
 <translation id="2847461019998147611">Afișează Google Chrome în această limbă</translation>
@@ -157,10 +155,8 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5495581687705680288">Module încărcate în Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome are nevoie de permisiune ca să acceseze microfonul pentru acest site.</translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
-<translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
 <translation id="5774845247549698882">Sistemul de operare Chrome este afișat în această limbă</translation>
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
@@ -179,7 +175,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="6291549208091401781">Google Chrome este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="6338556085225130112">Google Chrome se actualizează</translation>
 <translation id="6368958679917195344">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar.</translation>
-<translation id="6393863479814692971">Chrome are nevoie de permisiune ca să acceseze camera foto și microfonul pentru acest site.</translation>
 <translation id="6410540444482791104">Ne poți ajuta să facem Chrome mai sigur și mai ușor de folosit trimițând automat anumite informații despre sistem și conținutul paginii la Google pentru a detecta aplicațiile și site-urile periculoase.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{O descărcare este în desfășurare. Dorești să anulezi descărcarea și să ieși din Google Chrome?}few{# descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}other{# de descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}}</translation>
 <translation id="6566149418543181476">Google Chrome se actualizează (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -187,7 +182,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6634887557811630702">Google Chrome este actualizat.</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
-<translation id="6697947395630195233">Chrome are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
 <translation id="686561893457936865">Ia Chrome pretutindeni</translation>
 <translation id="6885412569789873916">Aplicații Chrome Beta</translation>

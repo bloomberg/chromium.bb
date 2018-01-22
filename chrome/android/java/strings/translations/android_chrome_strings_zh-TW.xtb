@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1006017844123154345">在網路上開啟</translation>
-<translation id="1036348656032585052">關閉</translation>
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」...</translation>
 <translation id="1041308826830691739">來自網站</translation>
 <translation id="1049743911850919806">無痕模式</translation>
@@ -37,7 +36,6 @@
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1291207594882862231">清除歷史紀錄、Cookie、網站資料、快取…</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
-<translation id="1320663236730331991">向上滑動即可輕鬆瀏覽熱門網站和文章、下載項目等內容</translation>
 <translation id="1326317727527857210">如要存取您在其他裝置上開啟的分頁，請登入 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快速鍵</translation>
 <translation id="136248372334525878">預先載入網頁，以加快載入速度，並提供離線瀏覽功能</translation>
@@ -123,7 +121,6 @@
 <translation id="2045104531052923016">其他應用程式佔 <ph name="GIGABYTES" /> GB</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
-<translation id="2086116129690175316">新版 Chrome 隆重登場</translation>
 <translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
 <translation id="2091887806945687916">音訊</translation>
 <translation id="209354263896846928">在畫面底部存取網址列</translation>
@@ -131,7 +128,6 @@
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2111511281910874386">前往指定頁面</translation>
 <translation id="2122601567107267586">無法開啟應用程式</translation>
-<translation id="2123074103454259350">暫時不要</translation>
 <translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已關閉的「<ph name="TAB_TITLE" />」</translation>
@@ -141,8 +137,6 @@
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">請告訴我們您為何不想使用新版 Chrome</translation>
-<translation id="2185784955520093231">你目前使用的是新版 Chrome</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
@@ -206,7 +200,6 @@
 <translation id="2876764156902388290">Chrome 正以較少的數據用量顯示這個網頁</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
 <translation id="2891154217021530873">停止載入網頁</translation>
-<translation id="2892933203342091350">為所有文章啟用「簡易檢視」模式</translation>
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
 <translation id="2903493209154104877">地址</translation>
@@ -294,7 +287,6 @@
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3662546969139119822">這裡沒有任何紀錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
-<translation id="3682249951633602029">凡是可查看匯出的密碼檔案者都看得到你的密碼。</translation>
 <translation id="3712575778697986964">確定要重設 Data Saver 嗎？</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用了過多記憶體，因此遭到 Chrome 暫停。</translation>
@@ -618,7 +610,6 @@
 <translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
-<translation id="6550675742724504774">選項</translation>
 <translation id="6556716549745717622">針對經常顯示侵入式廣告的網站封鎖廣告 (建議)</translation>
 <translation id="6560414384669816528">使用 Sogou 搜尋</translation>
 <translation id="6566259936974865419">Chrome 為你節省了 <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@
 <translation id="6891726759199484455">解鎖即可複製你的密碼</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個開啟的分頁}other{%1$d 個開啟的分頁}}</translation>
 <translation id="6896758677409633944">複製</translation>
-<translation id="6905163627763043954">試用</translation>
 <translation id="6910211073230771657">已刪除</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6959661084585705671">次要儲存空間</translation>
@@ -727,7 +717,6 @@
 <translation id="7542481630195938534">無法取得建議</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
-<translation id="7581273696622423628">填寫問卷</translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7589445247086920869">對目前的搜尋引擎封鎖</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
@@ -736,7 +725,6 @@
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="7620146066550602128">體驗<ph name="BEGIN_LINK" />更輕鬆的瀏覽方式<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />查看說明<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新掃描<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
@@ -761,7 +749,6 @@
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>
-<translation id="785312750761189439">從畫面底部向上滑動或輕觸展開按鈕，即可輕鬆瀏覽熱門網站和文章，並查看各項下載內容等等</translation>
 <translation id="7875915731392087153">建立電子郵件</translation>
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7882131421121961860">找不到瀏覽紀錄</translation>

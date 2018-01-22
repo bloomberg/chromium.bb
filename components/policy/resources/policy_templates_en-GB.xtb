@@ -2324,9 +2324,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="8359734107661430198">Enable ExampleDeprecatedFeature API through 2008/09/02</translation>
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
-<translation id="8370471134641900314">If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false.
-
-      If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="8390049129576938611">Disables the internal PDF viewer in <ph name="PRODUCT_NAME" />. Instead, it treats it as download and allows the user to open PDF files with the default application.

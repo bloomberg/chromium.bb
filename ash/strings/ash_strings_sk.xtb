@@ -150,7 +150,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="4481530544597605423">Nespárované zariadenia</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: pripája sa...</translation>
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
-<translation id="453661520163887813">Zostávajúci čas do úplného nabitia: <ph name="TIME" /></translation>
+<translation id="453661520163887813"><ph name="TIME" /> do úplného nabitia</translation>
 <translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">Funkcia ChromeVox je povolená</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>

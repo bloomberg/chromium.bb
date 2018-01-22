@@ -785,7 +785,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3512226956150568738">Nếu cần có kiểu thiết bị khách đã hỗ trợ ARC trước khi di chuyển sang ext4 để chạy ARC và nếu chính sách ArcEnabled được đặt thành true thì tùy chọn này sẽ hoạt động giống như AskUser (giá trị 3). Trong tất cả các trường hợp khác (nếu kiểu thiết bị không hỗ trợ ARC từ trước hoặc nếu chính sách ArcEnabled được đặt thành false), thì giá trị này sẽ tương đương với DisallowArc (giá trị 0).</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
-<translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web có quảng cáo xâm nhập</translation>
+<translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3646859102161347133">Đặt loại kính lúp màn hình</translation>
@@ -1030,11 +1030,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
-<translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web có quảng cáo xâm nhập hay không.
+<translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
 
-      Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web có quảng cáo xâm nhập.
+      Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web chứa quảng cáo xâm nhập.
       Tuy nhiên, hành vi này sẽ không kích hoạt nếu bạn đặt chính sách SafeBrowsingEnabled thành False.
-      Nếu bạn đặt chính sách này thành 1, quảng cáo sẽ không bị chặn trên các trang web có quảng cáo xâm nhập.
+      Nếu bạn đặt chính sách này thành 1, quảng cáo sẽ không bị chặn trên các trang web chứa quảng cáo xâm nhập.
       Nếu bạn không đặt chính sách này, tùy chọn 2 sẽ được sử dụng.</translation>
 <translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
 
@@ -1389,7 +1389,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
 <translation id="5475361623548884387">Bật tính năng in</translation>
-<translation id="547601067149622666">Không cho phép quảng cáo trên các trang web có quảng cáo xâm nhập</translation>
+<translation id="547601067149622666">Không cho phép quảng cáo trên các trang web chứa quảng cáo xâm nhập</translation>
 <translation id="5499375345075963939">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Khi giá trị của chính sách này được đặt và giá trị đó khác 0, người dùng hiện được đăng nhập vào bản trình diễn sẽ tự động bị đăng xuất sau khi thời gian không hoạt động của khoảng thời gian đã chỉ định trôi qua.
@@ -2319,9 +2319,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8344454543174932833">Nhập dấu trang từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="8359734107661430198">Bật API ExampleDeprecatedFeature đến ngày 2 tháng 9 năm 2008</translation>
 <translation id="8369602308428138533">Độ trễ tắt màn hình khi chạy trên nguồn AC</translation>
-<translation id="8370471134641900314">Nếu chính sách này được đặt thành true, người dùng phải đăng nhập vào <ph name="PRODUCT_NAME" /> bằng hồ sơ của họ trước khi sử dụng trình duyệt. Và giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt thành false.
-
-      Nếu chính sách này được đặt thành false hoặc không được định cấu hình, người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Cho phép sử dụng chứng thực từ xa để bảo vệ nội dung cho thiết bị</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
 <translation id="8390049129576938611">Tắt trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" />. Thay vào đó, thiết bị sẽ coi các tệp PDF là nội dung tải xuống và cho phép người dùng mở các tệp PDF này bằng ứng dụng mặc định.

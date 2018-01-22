@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1006017844123154345">Åpne på nettet</translation>
-<translation id="1036348656032585052">Slå av</translation>
 <translation id="1036727731225946849">Legger til <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Fra nettsteder</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -37,7 +36,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
-<translation id="1320663236730331991">Sveip opp for enkel tilgang til populære nettsteder og artikler, nedlastinger med mer</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
 <translation id="136248372334525878">Last inn sider på forhånd for raskere innlasting og lesing uten nett</translation>
@@ -123,7 +121,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB andre apper</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Dette er nye Chrome</translation>
 <translation id="2086652334978798447">For å få forslag om personlig tilpasset innhold fra Google, logg på Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="209354263896846928">Du finner adressefeltet nederst på skjermen</translation>
@@ -131,7 +128,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2111511281910874386">Gå til side</translation>
 <translation id="2122601567107267586">Kunne ikke åpne appen</translation>
-<translation id="2123074103454259350">Ikke ennå</translation>
 <translation id="2126426811489709554">Drevet av Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> spart</translation>
 <translation id="213279576345780926">Lukket <ph name="TAB_TITLE" /></translation>
@@ -141,8 +137,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2154484045852737596">Endre kortet</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Fortell oss hvorfor du slo av nye Chrome</translation>
-<translation id="2185784955520093231">Du bruker nye Chrome</translation>
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2876764156902388290">Chrome bruker mindre data for å vise deg denne siden</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Stopp innlastingen av siden</translation>
-<translation id="2892933203342091350">Slå på forenklet visning for alle artikler</translation>
 <translation id="2900528713135656174">Opprett hendelse</translation>
 <translation id="2902702728133930130">Kunne ikke starte Chrome på grunn av en uventet feil.</translation>
 <translation id="2903493209154104877">Adresser</translation>
@@ -294,7 +287,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3662546969139119822">Her er det ingen logg</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
-<translation id="3682249951633602029">Passordene dine blir synlige for alle som kan se den eksporterte passordfilen.</translation>
 <translation id="3712575778697986964">Vil du tilbakestille Datasparing?</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
 <translation id="3716182511346448902">Denne siden bruker for mye minne, så Chrome har satt den på pause.</translation>
@@ -618,7 +610,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6538442820324228105"><ph name="GBS" /> GB er lastet ned</translation>
 <translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
-<translation id="6550675742724504774">Alternativer</translation>
 <translation id="6556716549745717622">Blokkér hvis nettstedet ofte viser forstyrrende annonser (anbefalt)</translation>
 <translation id="6560414384669816528">Søk med Sogou</translation>
 <translation id="6566259936974865419">Chrome har spart deg for <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6891726759199484455">Lås opp for å kopiere passordet ditt</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åpen fane}other{%1$d åpne faner}}</translation>
 <translation id="6896758677409633944">Kopiér</translation>
-<translation id="6905163627763043954">Prøv det</translation>
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6959661084585705671">Sekundær lagring</translation>
@@ -727,7 +717,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
-<translation id="7581273696622423628">Besvar undersøkelsen</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7589445247086920869">Blokkert for den aktive søkemotoren</translation>
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
@@ -736,7 +725,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
-<translation id="7620146066550602128">Prøv en <ph name="BEGIN_LINK" />enklere måte å se nettsider på<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />skann på nytt<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
@@ -761,7 +749,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
-<translation id="785312750761189439">Sveip opp fra bunnen av skjermen, eller trykk på knappen for å vise mer. Da får du enkel tilgang til populære nettsteder og artikler, nedlastinger med mer</translation>
 <translation id="7875915731392087153">Opprett e-post</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7882131421121961860">Fant ingen logg</translation>

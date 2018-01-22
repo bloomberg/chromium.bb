@@ -58,7 +58,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 
 Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Show Chrome menu</translation>
-<translation id="2416359993254398973">Chrome needs permission to access your camera for this site.</translation>
 <translation id="2429317896000329049">Google Chrome could not sync your data because Sync is not available for your domain.</translation>
 <translation id="2446511512801740068">Chrome is out of date because it hasn't been relaunched for a while. An update is available and will be applied as soon as you relaunch.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
@@ -70,7 +69,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="2689103672227170538">This extension has changed the page that is shown when you start Chrome.</translation>
 <translation id="2705403826523567092">Sign in for a personalised browsing experience, synced across devices</translation>
-<translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2847461019998147611">Display Google Chrome in this language</translation>
@@ -165,10 +163,8 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5495581687705680288">Modules loaded into Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> may be dangerous, so Chrome has blocked it.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>
-<translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5774845247549698882">Chrome OS is displayed in this language</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
@@ -187,7 +183,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6291549208091401781">Google Chrome is already installed for all users on your computer.</translation>
 <translation id="6338556085225130112">Updating Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open-source software<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6393863479814692971">Chrome needs permission to access your camera and microphone for this site.</translation>
 <translation id="6410540444482791104">You can help make Chrome safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{A download is currently in progress. Do you want to cancel the download and exit Google Chrome?}other{# downloads are currently in progress. Do you want to cancel the downloads and exit Google Chrome?}}</translation>
 <translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -195,7 +190,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
-<translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="686561893457936865">Take Chrome everywhere</translation>
 <translation id="6885412569789873916">Chrome Beta Apps</translation>

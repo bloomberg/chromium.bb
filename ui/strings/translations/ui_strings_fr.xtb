@@ -64,7 +64,6 @@
 <translation id="4250229828105606438">Capture d'écran</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Il y a 1 mois}one{Il y a # mois}other{Il y a # mois}}</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
-<translation id="4320177379694898372">Aucune connexion Internet.</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
 <translation id="4724120544754982507">Centre de notification, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifications non lues</translation>
 <translation id="4730374152663651037">SOUVENT UTILISÉES</translation>
@@ -142,7 +141,6 @@
 <translation id="8328145009876646418">Côté gauche</translation>
 <translation id="8331626408530291785">Défilement vers le haut</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 an}one{# an}other{# ans}}</translation>
-<translation id="8371695176452482769">Parlez maintenant.</translation>
 <translation id="838869780401515933">cocher</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
 <translation id="8394908167088220973">Contenu multimédia : lecture/pause</translation>

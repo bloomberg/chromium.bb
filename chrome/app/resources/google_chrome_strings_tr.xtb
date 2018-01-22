@@ -54,7 +54,6 @@
 
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chrome bilgileriniz <ph name="ACCOUNT_EMAIL_NEW" /> ile birleştirilecektir.</translation>
 <translation id="2397416548179033562">Chrome menüsünü göster</translation>
-<translation id="2416359993254398973">Chrome'un bu sitede kameranıza erişmesi için izin gerekiyor.</translation>
 <translation id="2429317896000329049">Senkronizasyon, alan adınızda kullanılamadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
 <translation id="2446511512801740068">Bir süredir çalıştırılmadığından Chrome güncel değil. Kullanılabilir bir güncelleme var ve yeniden başlattığınızda hemen uygulanacak.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
@@ -66,7 +65,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="2665296953892887393">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek Google Chrome'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="2689103672227170538">Bu uzantı, Chrome'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2705403826523567092">Cihazlar arasında senkronize edilen kişiselleştirilmiş bir tarama deneyimi için oturum açın</translation>
-<translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2799223571221894425">Yeniden başlat</translation>
 <translation id="2847461019998147611">Google Chrome'u bu dilde görüntüle</translation>
@@ -160,10 +158,8 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5495581687705680288">Google Chrome'a yüklenen modüller</translation>
 <translation id="556024056938947818">Google Chrome şifreleri göstermeyi deniyor.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">Chrome'un bu sitede mikrofonunuza erişmesi için izin gerekiyor.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> tehlikeli olabileceği için Chrome tarafından engellendi.</translation>
 <translation id="573759479754913123">Chrome OS hakkında</translation>
-<translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5774845247549698882">Chrome OS bu dilde görüntüleniyor</translation>
 <translation id="5855036575689098185">Bilgisayarınızda çalışan yazılım Google Chrome ile uyumsuz.</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
@@ -182,7 +178,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6291549208091401781">Google Chrome zaten bilgisayarınızdaki tüm kullanıcılar için yüklendi.</translation>
 <translation id="6338556085225130112">Google Chrome güncelleniyor</translation>
 <translation id="6368958679917195344">Chrome OS, ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
-<translation id="6393863479814692971">Chrome'un bu sitede kameranıza ve mikrofonunuza erişmesi için izin gerekiyor.</translation>
 <translation id="6410540444482791104">Tehlikeli uygulamalar ve sitelerin tespit edilmesine yardımcı olmak üzere Google'a bazı sistem bilgilerini ve sayfa içeriklerini otomatik olarak göndererek, Chrome'un daha güvenli olmasını ve daha kolay kullanılmasını sağlayabilirsiniz.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Şu anda devam eden bir indirme işlemi var. İndirme işlemini iptal etmek ve Google Chrome'dan çıkmak istiyor musunuz?}other{Şu anda devam eden # indirme işlemi var. İndirme işlemlerini iptal etmek ve Google Chrome'dan çıkmak istiyor musunuz?}}</translation>
 <translation id="6566149418543181476">Google Chrome güncelleniyor (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -190,7 +185,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6600954340915313787">Chrome'a kopyalandı</translation>
 <translation id="6634887557811630702">Google Chrome güncel durumda.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
-<translation id="6697947395630195233">Konumunuzu bu siteyle paylaşabilmek için Chrome'un konum bilgilerinize erişmesi gerekiyor.</translation>
 <translation id="683440813066116847">Google Chrome Canary'nin mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="686561893457936865">Chrome'u her yere götürün</translation>
 <translation id="6885412569789873916">Chrome Beta Uygulamaları</translation>

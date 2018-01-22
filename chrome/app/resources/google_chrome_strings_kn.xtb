@@ -56,7 +56,6 @@
 
 ಸೈನ್‌ ಇನ್ ಮಾಡುವುದು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಹಾಗೂ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಂತಹ Chrome ಮಾಹಿತಿಯನ್ನು <ph name="ACCOUNT_EMAIL_NEW" /> ಗೆ ಹೇಗಿದ್ದರೂ ವಿಲೀನಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="2397416548179033562">Chrome ಮೆನು ತೋರಿಸು</translation>
-<translation id="2416359993254398973">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2429317896000329049">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್‌ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ Google Chrome ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="2446511512801740068">ದೀರ್ಘ ಸಮಯದ ಕಾಲ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸದೇ ಇರುವ ಕಾರಣದಿಂದ ಅದರ ಅವಧಿ ಮುಗಿದಿದೆ. ಒಂದು ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದ್ದು ನೀವು ಮರುಪ್ರಾರಂಭಿಸಿದ ತಕ್ಷಣವೇ ಅದನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
@@ -68,7 +67,6 @@
 <translation id="2665296953892887393">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Google Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="2689103672227170538">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಯಾವ ಪುಟ ತೋರಿಸಬೇಕು ಎಂಬ ಪುಟವನ್ನು ಈ ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="2705403826523567092">ಸಿಂಕ್‌ ಮಾಡಿದ ಸಾಧನಗಳಾದ್ಯಂತ ವೈಯಕ್ತೀಕರಿಸಿದ ಬ್ರೌಸಿಂಗ್ ಅನುಭವಕ್ಕಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
-<translation id="2769762047821873045">Google Chrome ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ.</translation>
 <translation id="2770231113462710648">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
 <translation id="2799223571221894425">ಮರುಪ್ರಾರಂಭಿಸು</translation>
 <translation id="2847461019998147611">ಈ ಭಾಷೆಯಲ್ಲಿ Google Chrome ಪ್ರದರ್ಶಿಸು</translation>
@@ -159,10 +157,8 @@
 <translation id="5495581687705680288">ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು Google Chrome ನಲ್ಲಿ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="557283862590186398">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
-<translation id="5749068826913805084">ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು Chrome ಗೆ ಸಂಗ್ರಹಣೆ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="5774845247549698882">ಈ ಭಾಷೆಯಲ್ಲಿ Chrome OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="5855036575689098185">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿರುವ ಸಾಫ್ಟ್‌ವೇರ್ Google Chrome ನೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5877064549588274448">ಚಾನಲ್ ಬದಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಅನ್ವಯಿಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
@@ -181,7 +177,6 @@
 <translation id="6291549208091401781">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಈಗಾಗಲೇ Google Chrome ಸ್ಥಾಪಿತವಾಗಿದೆ.</translation>
 <translation id="6338556085225130112">Google Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
-<translation id="6393863479814692971">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6410540444482791104">ಅಪಾಯಕಾರಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಸೈಟ್‌ಗಳ ಪತ್ತೆಗೆ ಸಹಾಯಮಾಡಲು Google ಗೆ ಕೆಲವು ಸಿಸ್ಟಂ ಮಾಹಿತಿ ಮತ್ತು ಪುಟ ವಿಷಯವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವ ಮೂಲಕ, ನೀವು Chrome ಅನ್ನು ಬಳಸುವುದಕ್ಕಾಗಿ ಸುರಕ್ಷಿತ ಮತ್ತು ಸರಳವಾಗಿ ಮಾಡಲು ಸಹಾಯ ಮಾಡಬಹುದು.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ಡೌನ್‌ಲೋಡ್ ಪ್ರಸ್ತುತ ಪ್ರಗತಿಯಲ್ಲಿದೆ. ನೀವು ಡೌನ್‌ಲೋಡ್ ರದ್ದುಮಾಡಲು ಮತ್ತು Google Chrome ನಿರ್ಗಮಿಸಲು ಬಯಸುವಿರಾ?}one{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಪ್ರಸ್ತುತ ಪ್ರಗತಿಯಲ್ಲಿವೆ. ನೀವು ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಲು ಮತ್ತು Google Chrome ನಿರ್ಗಮಿಸಲು ಬಯಸುವಿರಾ?}other{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಪ್ರಸ್ತುತ ಪ್ರಗತಿಯಲ್ಲಿವೆ. ನೀವು ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಲು ಮತ್ತು Google Chrome ನಿರ್ಗಮಿಸಲು ಬಯಸುವಿರಾ?}}</translation>
 <translation id="6566149418543181476">Google Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -189,7 +184,6 @@
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6634887557811630702">Google Chrome ಅನ್ನು ನವೀಕರಿಸಿದೆ</translation>
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="6697947395630195233">ಈ ಸೈಟ್‌ ಮೂಲಕ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ನಿಮ್ಮ ಸ್ಥಳದ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="683440813066116847">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Google Chrome ಕ್ಯಾನರಿಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="686561893457936865">ಎಲ್ಲೆಡೆ Chrome ಅನ್ನು ಕೊಂಡೊಯ್ಯಿರಿ</translation>
 <translation id="6885412569789873916">Chrome ಬೀಟಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>

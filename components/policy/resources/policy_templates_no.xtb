@@ -1007,7 +1007,7 @@
 <translation id="4346674324214534449">Lar deg angi om annonser skal blokkeres på nettsteder med forstyrrende annonser.
 
       Hvis denne regelen er satt til «2», blokkeres annonser på nettsteder med forstyrrende annonser.
-      Denne atferden utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til «Usann».
+      Denne funksjonaliteten utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til «Usann».
       Hvis denne regelen er satt til «1», blokkeres ikke annonser på nettsteder med forstyrrende annonser.
       Hvis denne regelen ikke er angitt, brukes «2».</translation>
 <translation id="4347908978527632940">Hvis verdien er «true» (sann) og brukeren er en administrert bruker, kan andre Android-apper sende forespørsler om brukerens nettbegrensninger gjennom en innholdsleverandør.
@@ -1295,7 +1295,7 @@
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="5366745336748853475">Gjør det mulig å spesifisere en liste over nettadressemønstre som angir hvilke nettsteder det automatisk skal velges et klientsertifikat for. Dette skjer på påloggingsskjermen i rammen som er vert for SAML-flyten, hvis nettstedet krever et sertifikat. Et eksempel på bruk er å konfigurere et enhetsgjeldende sertifikat som skal presenteres til SAML IdP.
 
-      Verdien må være en matrise med JSON-kataloger i strengformat. Hver katalog må ha formen { "mønster": "$URL_PATTERN", "filter" : $FILTER }, der $URL_PATTERN er et mønster for spesifisering av innhold. $FILTER begrenser klientsertifikatene nettleseren automatisk velger fra. Uavhengig av hvilket filter som brukes, blir det bare valgt sertifikater som samsvarer med tjenerens sertifikatforespørsel. Hvis $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } }, velges det bare klientsertifikater som er utstedt av et sertifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme katalogen {}, brukes det ikke ytterligere begrensninger for valg av klientsertifikater.
+      Verdien må være en matrise med JSON-kataloger i strengformat. Hver katalog må ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, der $URL_PATTERN er et mønster for spesifisering av innhold. $FILTER begrenser klientsertifikatene nettleseren automatisk velger fra. Uavhengig av hvilket filter som brukes, blir det bare valgt sertifikater som samsvarer med tjenerens sertifikatforespørsel. Hvis $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } }, velges det bare klientsertifikater som er utstedt av et sertifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme katalogen {}, brukes det ikke ytterligere begrensninger for valg av klientsertifikater.
 
       Hvis du ikke spesifiserer denne regelen, blir det ikke valgt klientsertifikat automatisk for noen nettsteder.</translation>
 <translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette administrerte brukere. Eksisterende administrerte brukere er fortsatt tilgjengelige.
@@ -1775,7 +1775,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       logge på kontoene sine fra andre domener, men de får opp en feil
       når de prøver å bruke G Suite med disse kontoene.
 
-      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har brukerne
+      Hvis du lar denne innstillingen stå tom / ikke konfigurert, har brukerne
       tilgang til G Suite med hvilken som helst konto.
 
       Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
@@ -2259,9 +2259,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
-<translation id="8370471134641900314">Hvis denne regelen angitt som «true» (sann), må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled er «false» (usann).
-
-      Hvis denne regelen er satt til «false» eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer i <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.

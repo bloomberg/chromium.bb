@@ -60,7 +60,6 @@
 <translation id="4250229828105606438">Posnetek zaslona</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pred 1 mesecem}one{Pred # mesecem}two{Pred # mesecema}few{Pred # meseci}other{Pred # meseci}}</translation>
 <translation id="4316910396681052118">VSE APLIKACIJE</translation>
-<translation id="4320177379694898372">Ni internetne povezave</translation>
 <translation id="4588090240171750605">Pomik desno</translation>
 <translation id="4724120544754982507">Središče za obvestila, št. neprebranih sporočil: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">POGOSTO UPORABLJENE</translation>
@@ -135,7 +134,6 @@
 <translation id="8328145009876646418">Levi rob</translation>
 <translation id="8331626408530291785">Pomik gor</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 leto}one{# leto}two{# leti}few{# leta}other{# let}}</translation>
-<translation id="8371695176452482769">Začnite govoriti</translation>
 <translation id="838869780401515933">potrdi</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
 <translation id="8394908167088220973">Ustavitev/začasna ustavitev</translation>

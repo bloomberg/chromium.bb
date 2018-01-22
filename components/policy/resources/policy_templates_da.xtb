@@ -2179,9 +2179,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
 <translation id="8359734107661430198">Aktivér ExampleDeprecatedFeature API frem til 02/09/2008</translation>
 <translation id="8369602308428138533">Skærmslukforsinkelse, når strømforsyning er tilsluttet</translation>
-<translation id="8370471134641900314">Hvis denne politik er angivet som sand, skal brugeren logge ind på <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til falsk.
-
-      Hvis denne politik er angivet som falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.

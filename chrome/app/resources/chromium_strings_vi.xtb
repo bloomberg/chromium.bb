@@ -38,7 +38,6 @@
 <translation id="2396765026452590966">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="2483889755041906834">Trong Chromium</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
-<translation id="2486653164587200256">Chromium có thể không hoạt động chính xác do không được hỗ trợ trên Windows XP hoặc Windows Vista nữa.</translation>
 <translation id="2527042973354814951">Khởi động lại Chromium để bật <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>
@@ -104,13 +103,11 @@
 <translation id="4488554488975128561">Bạn có thể giúp Chromium an toàn và dễ sử dụng hơn bằng cách tự động gửi một số thông tin hệ thống và nội dung trang cho Google để giúp phát hiện các ứng dụng và trang web nguy hiểm.</translation>
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
-<translation id="4611246891205775468">Chromium cần có quyền truy cập micrô của bạn cho trang web này.</translation>
 <translation id="4621240073146040695">Gần được cập nhật! Hãy khởi chạy lại Chromium để hoàn tất cập nhật.</translation>
 <translation id="4677944499843243528">Dường như cấu hình này đang được quy trình Chromium khác (<ph name="PROCESS_ID" />) trên máy tính khác (<ph name="HOST_NAME" />) sử dụng. Chromium đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chromium.</translation>
 <translation id="469338717132742108">Nhận trợ giúp về Chromium OS</translation>
 <translation id="4708774505295300557">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này bằng <ph name="ACCOUNT_EMAIL_LAST" />. Vui lòng tạo người dùng Chromium mới để giữ riêng biệt thông tin của bạn.</translation>
 <translation id="4714956846925717402">Truy cập Chromium nhanh hơn</translation>
-<translation id="4825874709045178029">Chromium cần có quyền truy cập máy ảnh của bạn cho trang web này.</translation>
 <translation id="4888717733111232871">Quy tắc kết nối để Chromium cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="4943838377383847465">Chromium đang chạy trong nền.</translation>
 <translation id="4987820182225656817">Khách có thể sử dụng Chromium mà không phải thoát khỏi bất cứ nội dung nào.</translation>
@@ -156,9 +153,7 @@
 <translation id="6403826409255603130">Chromium là trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Đây là một trình duyệt web nhanh, ổn định và dễ sử dụng. Duyệt web trở nên an toàn hơn với tính năng bảo vệ chống lại phần mềm độc hại và lừa đảo được tích hợp sẵn vào Chromium.</translation>
 <translation id="6475912303565314141">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
-<translation id="6505742536731484931">Chromium cần truy cập vị trí của bạn để chia sẻ thông tin vị trí của bạn với trang web này.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
-<translation id="6526111688217511984">Chromium cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="6598877126913850652">Đi tới cài đặt thông báo của Chromium</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
@@ -198,7 +193,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7577193603922410712">Cập nhật bảo mật đặc biệt cho Chromium vừa được áp dụng; bạn phải khởi động lại ngay bây giờ để cập nhật có hiệu lực (chúng tôi sẽ khôi phục các tab của bạn).</translation>
 <translation id="761356813943268536">Chromium đang sử dụng máy ảnh và micrô của bạn.</translation>
 <translation id="7617377681829253106">Chromium được cải tiến hơn</translation>
-<translation id="7641113255207688324">Chromium không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7729447699958282447">Chromium không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng cho miền của bạn.</translation>
 <translation id="7745317241717453663">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
@@ -217,7 +211,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="8222496066431494154">Cài đặt Chromium trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới số điện thoại khôi phục tài khoản của bạn: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Giúp cải thiện Chromium</translation>
 <translation id="8290862415967981663">Tệp này nguy hiểm, do đó Chromium đã chặn tệp.</translation>
-<translation id="8328596990138326317">Chromium cần có quyền truy cập máy ảnh và micrô của bạn cho trang web này.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> trước đó đã sử dụng Chromium</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>

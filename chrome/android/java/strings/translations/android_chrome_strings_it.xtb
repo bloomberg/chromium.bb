@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1006017844123154345">Apri online</translation>
-<translation id="1036348656032585052">Disattiva</translation>
 <translation id="1036727731225946849">Aggiunta di <ph name="WEBAPK_NAME" /> in corso…</translation>
 <translation id="1041308826830691739">Da siti web</translation>
 <translation id="1049743911850919806">In incognito</translation>
@@ -37,7 +36,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
-<translation id="1320663236730331991">Scorri verso l'alto per accedere facilmente a siti e articoli più letti, download e altro ancora</translation>
 <translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="1332501820983677155">Scorciatoie delle funzioni di Google Chrome</translation>
 <translation id="136248372334525878">Le pagine vengono precaricate per velocizzare il caricamento e per la lettura offline</translation>
@@ -116,14 +114,13 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1993768208584545658">Il sito <ph name="SITE" /> desidera accoppiarsi</translation>
 <translation id="1994173015038366702">URL sito</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB per altre app</translation>
-<translation id="2015632741368427174">Reindirizzamento al sito bloccato:</translation>
+<translation id="2015632741368427174">Reindirizzamento bloccato al seguente sito:</translation>
 <translation id="2017836877785168846">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi.</translation>
 <translation id="2021896219286479412">Controlli sito a schermo intero</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB per altre app</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Ecco il nuovo Chrome</translation>
 <translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
 <translation id="2091887806945687916">Audio</translation>
 <translation id="209354263896846928">Accedi alla barra degli indirizzi nella parte inferiore dello schermo</translation>
@@ -131,7 +128,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2111511281910874386">Vai alla pagina</translation>
 <translation id="2122601567107267586">Impossibile aprire l'app</translation>
-<translation id="2123074103454259350">Non ancora</translation>
 <translation id="2126426811489709554">Con tecnologia Chrome</translation>
 <translation id="2131665479022868825">Dati salvati: <ph name="DATA" /></translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
@@ -141,8 +137,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2154484045852737596">Modifica la carta</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Dicci perché hai disattivato il nuovo Chrome</translation>
-<translation id="2185784955520093231">Stai usando il nuovo Chrome</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continua come <ph name="USER_FULL_NAME" /></translation>
@@ -206,7 +200,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2876764156902388290">Chrome usa meno dati per mostrarti questa pagina</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
 <translation id="2891154217021530873">Interrompe il caricamento della pagina</translation>
-<translation id="2892933203342091350">Attiva la Visualizzazione semplificata per tutti gli articoli</translation>
 <translation id="2900528713135656174">Crea evento</translation>
 <translation id="2902702728133930130">Impossibile avviare Chrome a causa di un errore imprevisto.</translation>
 <translation id="2903493209154104877">Indirizzi</translation>
@@ -294,7 +287,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3662546969139119822">Nessuna cronologia presente</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
-<translation id="3682249951633602029">Le tue password saranno visibili a chiunque abbia accesso al file di password esportato.</translation>
 <translation id="3712575778697986964">Vuoi reimpostare il Risparmio dati?</translation>
 <translation id="3714981814255182093">Apri la barra Trova</translation>
 <translation id="3716182511346448902">Questa pagina è stata messa in pausa da Chromium perché utilizza troppa memoria.</translation>
@@ -618,7 +610,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6538442820324228105">Sono stati scaricati <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Seleziona una scheda da trasmettere</translation>
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
-<translation id="6550675742724504774">Opzioni</translation>
 <translation id="6556716549745717622">Blocca se il sito tende a mostrare annunci invasivi (opzione consigliata)</translation>
 <translation id="6560414384669816528">Ricerche con Sogou</translation>
 <translation id="6566259936974865419">Chrome ti ha fatto risparmiare <ph name="GIGABYTES" /> GB</translation>
@@ -662,7 +653,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6891726759199484455">Sblocca per copiare la password</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d scheda aperta}other{%1$d schede aperte}}</translation>
 <translation id="6896758677409633944">Copia</translation>
-<translation id="6905163627763043954">Prova</translation>
 <translation id="6910211073230771657">Eliminato</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6959661084585705671">Archiviazione secondaria</translation>
@@ -727,7 +717,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7542481630195938534">Impossibile ricevere suggerimenti</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
-<translation id="7581273696622423628">Vai al sondaggio</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Blocca motore di ricerca corrente</translation>
 <translation id="7593557518625677601">Apri le impostazioni di Android e abilita nuovamente la sincronizzazione del sistema Android per poter avviare la Sicronizzazione Chrome</translation>
@@ -736,7 +725,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7605594153474022051">La sincronizzazione non funziona</translation>
 <translation id="7612619742409846846">Accesso effettuato a Google come</translation>
 <translation id="7619072057915878432">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori di rete.</translation>
-<translation id="7620146066550602128">Prova un <ph name="BEGIN_LINK" />modo più semplice di navigare<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Richiedi assistenza<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />ripeti la ricerca<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Benvenuto in Chrome</translation>
 <translation id="7638584964844754484">Passphrase sbagliata</translation>
@@ -761,7 +749,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="784934925303690534">Intervallo di tempo</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>
-<translation id="785312750761189439">Scorri verso l'alto dalla parte inferiore dello schermo o tocca il pulsante di espansione per accedere facilmente a siti e articoli più letti, download e altro ancora</translation>
 <translation id="7875915731392087153">Crea email</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
 <translation id="7882131421121961860">Nessuna cronologia trovata</translation>
