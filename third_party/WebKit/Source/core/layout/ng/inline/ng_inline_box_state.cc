@@ -119,6 +119,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
+  box->padding = item_result.padding;
   box->has_start_edge = item_result.has_edge;
   if (box->has_start_edge) {
     box->margin_inline_start = item_result.margins.inline_start;
@@ -241,6 +242,7 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   box_data_list_.push_back(
       BoxData{box->fragment_start, fragment_end, box->item, size});
   BoxData& box_data = box_data_list_.back();
+  box_data.padding = box->padding;
   if (box->has_start_edge) {
     box_data.has_line_left_edge = true;
     box_data.margin_line_left = box->margin_inline_start;
@@ -441,6 +443,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   size.inline_size += border_padding_line_left + border_padding_line_right;
   box.SetInlineSize(size.inline_size.ClampNegativeToZero());
   box.SetBlockSize(size.block_size);
+  box.SetPadding(padding);
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];

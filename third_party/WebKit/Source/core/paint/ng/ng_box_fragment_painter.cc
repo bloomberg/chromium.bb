@@ -50,7 +50,8 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
           box.Style(),
           box.GetLayoutObject()->GeneratingNode(),
           BoxStrutToLayoutRectOutsets(box.PhysicalFragment().BorderWidths()),
-          LayoutRectOutsets()),
+          BoxStrutToLayoutRectOutsets(
+              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding())),
       box_fragment_(box),
       border_edges_(
           NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),

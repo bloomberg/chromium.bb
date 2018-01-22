@@ -187,6 +187,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   }
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
+  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
   return container_builder_.ToBoxFragment();
 }

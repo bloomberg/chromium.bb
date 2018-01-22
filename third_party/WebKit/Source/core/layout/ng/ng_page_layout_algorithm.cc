@@ -72,6 +72,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   border_box_size.block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), intrinsic_block_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
+  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
   NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
                         Node().IsFixedContainer(), Node().GetScrollbarSizes(),

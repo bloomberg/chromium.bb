@@ -498,6 +498,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   container_builder_.SetEndMarginStrut(end_margin_strut);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
   // We only finalize for fragmentation if the fragment has a BFC offset. This
   // may occur with a zero block size fragment. We need to know the BFC offset
