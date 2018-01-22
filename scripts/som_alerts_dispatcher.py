@@ -532,17 +532,19 @@ def GenerateAlertsSummary(db, builds=None,
       build_id, severity = build_tuple
       # pylint: enable=unbalanced-tuple-unpacking
       master = db.GetBuildStatus(build_id)
+      if master is None:
+        logging.warn('Could not locate build id %s', build_id)
+        continue
       wfall = master['waterfall']
       build_config = master['build_config']
     elif len(build_tuple) == 3:
       wfall, build_config, severity = build_tuple
       master = db.GetMostRecentBuild(wfall, build_config)
+      if master is None:
+        logging.warn('Could not locate build %s %s', wfall, build_config)
+        continue
     else:
       logging.error('Invalid build tuple: %s' % str(build_tuple))
-      continue
-
-    if master is None:
-      logging.warn('Could not locate build %s %s', waterfall, build_config)
       continue
 
     statuses = [master]
