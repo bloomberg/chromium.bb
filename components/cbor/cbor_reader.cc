@@ -5,6 +5,7 @@
 #include "components/cbor/cbor_reader.h"
 
 #include <math.h>
+
 #include <utility>
 
 #include "base/numerics/checked_math.h"
@@ -54,15 +55,16 @@ const char kOutOfRangeIntegerValue[] =
 
 }  // namespace
 
-CBORReader::CBORReader(Bytes::const_iterator it, Bytes::const_iterator end)
+CBORReader::CBORReader(base::span<const uint8_t>::const_iterator it,
+                       const base::span<const uint8_t>::const_iterator end)
     : it_(it), end_(end), error_code_(DecoderError::CBOR_NO_ERROR) {}
 CBORReader::~CBORReader() {}
 
 // static
-base::Optional<CBORValue> CBORReader::Read(const Bytes& data,
+base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
-  CBORReader reader(data.begin(), data.end());
+  CBORReader reader(data.cbegin(), data.cend());
   base::Optional<CBORValue> decoded_cbor = reader.DecodeCBOR(max_nesting_level);
 
   if (decoded_cbor)
@@ -212,7 +214,7 @@ base::Optional<CBORValue> CBORReader::ReadBytes(uint64_t num_bytes) {
     return base::nullopt;
   }
 
-  Bytes cbor_byte_string(it_, it_ + num_bytes);
+  std::vector<uint8_t> cbor_byte_string(it_, it_ + num_bytes);
   it_ += num_bytes;
 
   return CBORValue(std::move(cbor_byte_string));
