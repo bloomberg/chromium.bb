@@ -60,6 +60,12 @@ class WaylandKeyboard {
 
   void UpdateModifier(int modifier_flag, bool down);
 
+  void DispatchKey(unsigned int key,
+                   bool down,
+                   bool repeat,
+                   base::TimeTicks timestamp,
+                   int device_id);
+
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
   EventDispatchCallback callback_;
