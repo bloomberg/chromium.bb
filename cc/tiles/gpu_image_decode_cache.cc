@@ -1216,9 +1216,9 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 #endif
 }
 
-// Ensures that we can fit a new image of size |required_size| in our working
-// set. In doing so, this function will free unreferenced image data as
-// necessary to create rooom.
+// Checks whether we can fit a new image of size |required_size| in our
+// working set. Also frees unreferenced entries to keep us below our preferred
+// items limit.
 bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::EnsureCapacity");
@@ -1227,12 +1227,10 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
   lifetime_max_items_in_cache_ =
       std::max(lifetime_max_items_in_cache_, persistent_cache_.size());
 
-  if (CanFitInWorkingSet(required_size) && !ExceedsPreferredCount())
-    return true;
-
-  // While we are over memory or preferred item capacity, we iterate through
-  // our set of cached image data in LRU order, removing unreferenced images.
-  for (auto it = persistent_cache_.rbegin(); it != persistent_cache_.rend();) {
+  // While we are over preferred item capacity, we iterate through our set of
+  // cached image data in LRU order, removing unreferenced images.
+  for (auto it = persistent_cache_.rbegin();
+       it != persistent_cache_.rend() && ExceedsPreferredCount();) {
     if (it->second->decode.ref_count != 0 ||
         it->second->upload.ref_count != 0) {
       ++it;
@@ -1241,22 +1239,19 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
 
     // Current entry has no refs. Ensure it is not locked.
     DCHECK(!it->second->decode.is_locked());
+    DCHECK(!it->second->upload.is_locked());
 
-    // If an image without refs is budgeted, it must have an associated image
-    // upload.
-    DCHECK(!it->second->upload.budgeted || it->second->HasUploadedData());
+    // Unlocked images must not be budgeted.
+    DCHECK(!it->second->upload.budgeted);
 
     // Free the uploaded image if it exists.
     if (it->second->HasUploadedData())
       DeleteImage(it->second.get());
 
     it = persistent_cache_.Erase(it);
-
-    if (CanFitInWorkingSet(required_size) && !ExceedsPreferredCount())
-      return true;
   }
 
-  return false;
+  return CanFitInWorkingSet(required_size);
 }
 
 bool GpuImageDecodeCache::CanFitInWorkingSet(size_t size) const {
