@@ -1640,7 +1640,11 @@ void QuicChromiumClientSession::WriteToNewSocket() {
     // Unblock the connection before sending a PING packet, since it
     // may have been blocked before the migration started.
     connection()->OnCanWrite();
-    connection()->SendPing();
+    if (use_control_frame_manager()) {
+      SendPing();
+    } else {
+      connection()->SendPing();
+    }
     return;
   }
 

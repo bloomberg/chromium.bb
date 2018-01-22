@@ -35,10 +35,18 @@ class MockFlowController : public QuicFlowControllerInterface {
 class QuicFlowControllerTest : public QuicTest {
  public:
   void Initialize() {
+    connection_ = new MockQuicConnection(&helper_, &alarm_factory_,
+                                         Perspective::IS_CLIENT);
+    session_ = QuicMakeUnique<MockQuicSession>(connection_);
     flow_controller_.reset(new QuicFlowController(
-        &connection_, stream_id_, Perspective::IS_CLIENT, send_window_,
-        receive_window_, should_auto_tune_receive_window_,
+        session_.get(), connection_, stream_id_, Perspective::IS_CLIENT,
+        send_window_, receive_window_, should_auto_tune_receive_window_,
         &session_flow_controller_));
+  }
+
+  bool ClearControlFrame(const QuicFrame& frame) {
+    DeleteFrame(&const_cast<QuicFrame&>(frame));
+    return true;
   }
 
  protected:
@@ -48,8 +56,8 @@ class QuicFlowControllerTest : public QuicTest {
   std::unique_ptr<QuicFlowController> flow_controller_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
-  MockQuicConnection connection_ = {&helper_, &alarm_factory_,
-                                    Perspective::IS_CLIENT};
+  MockQuicConnection* connection_;
+  std::unique_ptr<MockQuicSession> session_;
   MockFlowController session_flow_controller_;
   bool should_auto_tune_receive_window_ = false;
 };
@@ -72,7 +80,11 @@ TEST_F(QuicFlowControllerTest, SendingBytes) {
   EXPECT_EQ(0u, flow_controller_->SendWindowSize());
 
   // BLOCKED frame should get sent.
-  EXPECT_CALL(connection_, SendBlocked(stream_id_)).Times(1);
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  } else {
+    EXPECT_CALL(*connection_, SendBlocked(stream_id_)).Times(1);
+  }
   flow_controller_->MaybeSendBlocked();
 
   // Update the send window, and verify this has unblocked.
@@ -85,7 +97,7 @@ TEST_F(QuicFlowControllerTest, SendingBytes) {
   EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
 
   // Try to send more bytes, violating flow control.
-  EXPECT_CALL(connection_,
+  EXPECT_CALL(*connection_,
               CloseConnection(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA, _, _));
   EXPECT_QUIC_BUG(
       flow_controller_->AddBytesSent(send_window_ * 10),
@@ -111,7 +123,12 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 
   // Consume enough bytes to send a WINDOW_UPDATE frame.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(1);
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(stream_id_, ::testing::_))
+        .Times(1);
+  }
 
   flow_controller_->AddBytesConsumed(1 + receive_window_ / 2);
 
@@ -136,7 +153,14 @@ TEST_F(QuicFlowControllerTest, OnlySendBlockedFrameOncePerOffset) {
   EXPECT_EQ(0u, flow_controller_->SendWindowSize());
 
   // Expect that 2 BLOCKED frames should get sent in total.
-  EXPECT_CALL(connection_, SendBlocked(stream_id_)).Times(2);
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(
+            Invoke(this, &QuicFlowControllerTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendBlocked(stream_id_)).Times(2);
+  }
 
   // BLOCKED frame should get sent.
   flow_controller_->MaybeSendBlocked();
@@ -161,18 +185,22 @@ TEST_F(QuicFlowControllerTest, OnlySendBlockedFrameOncePerOffset) {
 }
 
 TEST_F(QuicFlowControllerTest, ReceivingBytesFastIncreasesFlowWindow) {
-  // This test will generate two WINDOW_UPDATE frames.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(1);
-
   should_auto_tune_receive_window_ = true;
   Initialize();
+  // This test will generate two WINDOW_UPDATE frames.
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(stream_id_, ::testing::_))
+        .Times(1);
+  }
   EXPECT_TRUE(flow_controller_->auto_tune_receive_window());
 
   // Make sure clock is inititialized.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManager* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_);
+      QuicConnectionPeer::GetSentPacketManager(connection_);
 
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
@@ -204,7 +232,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastIncreasesFlowWindow) {
   EXPECT_EQ(2 * kInitialSessionFlowControlWindowForTest,
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
   receive_offset += threshold + 1;
   EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
   flow_controller_->AddBytesConsumed(threshold + 1);
@@ -215,17 +243,24 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastIncreasesFlowWindow) {
 }
 
 TEST_F(QuicFlowControllerTest, ReceivingBytesFastNoAutoTune) {
-  // This test will generate two WINDOW_UPDATE frames.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
-
   Initialize();
+  // This test will generate two WINDOW_UPDATE frames.
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(
+            Invoke(this, &QuicFlowControllerTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(stream_id_, ::testing::_))
+        .Times(2);
+  }
   EXPECT_FALSE(flow_controller_->auto_tune_receive_window());
 
   // Make sure clock is inititialized.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManager* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_);
+      QuicConnectionPeer::GetSentPacketManager(connection_);
 
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
@@ -257,7 +292,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastNoAutoTune) {
   // Move time forward, but by less than two RTTs.  Then receive and consume
   // some more, forcing a second WINDOW_UPDATE with an increased max window
   // size.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt - 1));
   receive_offset += threshold + 1;
   EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
   flow_controller_->AddBytesConsumed(threshold + 1);
@@ -268,18 +303,22 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastNoAutoTune) {
 }
 
 TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStableFlowWindow) {
-  // This test will generate two WINDOW_UPDATE frames.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(1);
-
   should_auto_tune_receive_window_ = true;
   Initialize();
+  // This test will generate two WINDOW_UPDATE frames.
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(stream_id_, ::testing::_))
+        .Times(1);
+  }
   EXPECT_TRUE(flow_controller_->auto_tune_receive_window());
 
   // Make sure clock is inititialized.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManager* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_);
+      QuicConnectionPeer::GetSentPacketManager(connection_);
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
                        QuicTime::Delta::Zero(), QuicTime::Zero());
@@ -311,7 +350,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStableFlowWindow) {
 
   // Move time forward, but by more than two RTTs.  Then receive and consume
   // some more, forcing a second WINDOW_UPDATE with unchanged max window size.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
 
   receive_offset += threshold + 1;
   EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));
@@ -325,17 +364,24 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStableFlowWindow) {
 }
 
 TEST_F(QuicFlowControllerTest, ReceivingBytesNormalNoAutoTune) {
-  // This test will generate two WINDOW_UPDATE frames.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(2);
-
   Initialize();
+  // This test will generate two WINDOW_UPDATE frames.
+  if (connection_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .Times(2)
+        .WillRepeatedly(
+            Invoke(this, &QuicFlowControllerTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(stream_id_, ::testing::_))
+        .Times(2);
+  }
   EXPECT_FALSE(flow_controller_->auto_tune_receive_window());
 
   // Make sure clock is inititialized.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManager* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_);
+      QuicConnectionPeer::GetSentPacketManager(connection_);
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
                        QuicTime::Delta::Zero(), QuicTime::Zero());
@@ -365,7 +411,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalNoAutoTune) {
 
   // Move time forward, but by more than two RTTs.  Then receive and consume
   // some more, forcing a second WINDOW_UPDATE with unchanged max window size.
-  connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
+  connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(2 * kRtt + 1));
 
   receive_offset += threshold + 1;
   EXPECT_TRUE(flow_controller_->UpdateHighestReceivedOffset(receive_offset));

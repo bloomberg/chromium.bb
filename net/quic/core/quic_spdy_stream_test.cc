@@ -414,7 +414,11 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   const uint64_t kOverflow = 15;
   string body(kWindow + kOverflow, 'a');
 
-  EXPECT_CALL(*connection_, SendBlocked(GetNthClientInitiatedId(0)));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+  } else {
+    EXPECT_CALL(*connection_, SendBlocked(GetNthClientInitiatedId(0)));
+  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow, true)));
   stream_->WriteOrBufferData(body, false, nullptr);
@@ -501,11 +505,15 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlWindowUpdate) {
   // window of kWindow bytes.
   QuicStreamFrame frame2(GetNthClientInitiatedId(0), false, kWindow / 3,
                          QuicStringPiece(body));
-  EXPECT_CALL(*connection_,
-              SendWindowUpdate(GetNthClientInitiatedId(0),
-                               QuicFlowControllerPeer::ReceiveWindowOffset(
-                                   stream_->flow_controller()) +
-                                   2 * kWindow / 3));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+  } else {
+    EXPECT_CALL(*connection_,
+                SendWindowUpdate(GetNthClientInitiatedId(0),
+                                 QuicFlowControllerPeer::ReceiveWindowOffset(
+                                     stream_->flow_controller()) +
+                                     2 * kWindow / 3));
+  }
   stream_->OnStreamFrame(frame2);
   EXPECT_EQ(kWindow, QuicFlowControllerPeer::ReceiveWindowSize(
                          stream_->flow_controller()));
@@ -554,14 +562,18 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
   // Now receive a further single byte on one stream - again this does not
   // trigger a stream WINDOW_UPDATE, but now the connection flow control window
   // is over half full and thus a connection WINDOW_UPDATE is sent.
-  EXPECT_CALL(*connection_, SendWindowUpdate(GetNthClientInitiatedId(0), _))
-      .Times(0);
-  EXPECT_CALL(*connection_, SendWindowUpdate(GetNthClientInitiatedId(1), _))
-      .Times(0);
-  EXPECT_CALL(*connection_,
-              SendWindowUpdate(0, QuicFlowControllerPeer::ReceiveWindowOffset(
-                                      session_->flow_controller()) +
-                                      1 + kWindow / 2));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+  } else {
+    EXPECT_CALL(*connection_, SendWindowUpdate(GetNthClientInitiatedId(0), _))
+        .Times(0);
+    EXPECT_CALL(*connection_, SendWindowUpdate(GetNthClientInitiatedId(1), _))
+        .Times(0);
+    EXPECT_CALL(*connection_,
+                SendWindowUpdate(0, QuicFlowControllerPeer::ReceiveWindowOffset(
+                                        session_->flow_controller()) +
+                                        1 + kWindow / 2));
+  }
   QuicStreamFrame frame3(GetNthClientInitiatedId(0), false, (kWindow / 4),
                          QuicStringPiece("a"));
   stream_->OnStreamFrame(frame3);
