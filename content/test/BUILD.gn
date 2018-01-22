@@ -960,9 +960,6 @@ test("content_browsertests") {
     ]
   }
 
-  if (is_win || is_linux || is_android) {
-  }
-
   if (is_win) {
     sources += [ "../browser/accessibility/accessibility_win_browsertest.cc" ]
 
@@ -1123,6 +1120,7 @@ test("content_browsertests") {
       "//ui/touch_selection:test_support",
       "//ui/touch_selection:touch_selection",
     ]
+    data_deps += [ "//services/ui" ]
   } else {
     sources -= [
       "../browser/accessibility/touch_accessibility_aura_browsertest.cc",
@@ -2001,6 +1999,7 @@ test("content_unittests") {
       "//ui/aura_extra",
       "//ui/wm",
     ]
+    data_deps += [ "//services/ui" ]
   } else {
     sources -= [
       "../browser/renderer_host/render_widget_host_view_aura_unittest.cc",

@@ -593,6 +593,10 @@ if (is_android) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
+
+    if (use_aura) {
+      data_deps += [ "//services/ui" ]
+    }
   }
 
   if (is_fuchsia) {

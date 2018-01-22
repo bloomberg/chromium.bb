@@ -176,10 +176,6 @@ jumbo_component("aura") {
     "//ui/compositor",
   ]
 
-  data_deps = [
-    "//services/ui",
-  ]
-
   if (use_x11) {
     deps += [
       "//ui/events/platform/x11",

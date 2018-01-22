@@ -26,10 +26,6 @@ source_set("lib") {
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
-
-  data_deps = [
-    "//services/ui",
-  ]
 }
 
 service("touch_hud") {
