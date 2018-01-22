@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -139,8 +138,7 @@ void SessionCrashedBubbleView::ShowForReal(
   bool offer_uma_optin = false;
 
   if (DoesSupportConsentCheck() && !uma_opted_in_already)
-    offer_uma_optin =
-        !IsMetricsReportingPolicyManaged(g_browser_process->local_state());
+    offer_uma_optin = !IsMetricsReportingPolicyManaged();
 
   Browser* browser = browser_observer->browser();
 
@@ -338,9 +336,7 @@ void SessionCrashedBubbleView::MaybeEnableUMA() {
   // Record user's choice for opt-in in to UMA.
   // There's no opt-out choice in the crash restore bubble.
   if (uma_option_ && uma_option_->checked()) {
-    ChangeMetricsReportingState(g_browser_process->local_state(),
-                                g_browser_process->GetMetricsServicesManager(),
-                                true);
+    ChangeMetricsReportingState(true);
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
   }
 }

@@ -65,13 +65,6 @@ class MetricsServiceAccessor {
       uint32_t trial_name_hash,
       uint32_t group_name_hash);
 
-  // IsMetricsReportingEnabled() in non-official builds unconditionally returns
-  // false. This results in different behavior for tests running in official vs
-  // non-official builds. To get consistent behavior call this with true, which
-  // forces non-official builds to look at the prefs value official builds look
-  // at.
-  static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceAccessor);
 };

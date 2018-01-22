@@ -25,15 +25,17 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 bool Store(const em::PolicyData& policy, PrefService* local_state) {
-  if (!local_state)
-    return false;
-
-  local_state->SetString(prefs::kDeviceSettingsCache,
-                         PolicyDataToString(policy));
-  return true;
+  if (local_state) {
+    std::string policy_string = policy.SerializeAsString();
+    std::string encoded;
+    base::Base64Encode(policy_string, &encoded);
+    local_state->SetString(prefs::kDeviceSettingsCache, encoded);
+    return true;
+  }
+  return false;
 }
 
-bool Retrieve(em::PolicyData* policy, PrefService* local_state) {
+bool Retrieve(em::PolicyData *policy, PrefService* local_state) {
   if (local_state) {
     std::string encoded =
         local_state->GetString(prefs::kDeviceSettingsCache);
@@ -46,13 +48,6 @@ bool Retrieve(em::PolicyData* policy, PrefService* local_state) {
     return policy->ParseFromString(policy_string);
   }
   return false;
-}
-
-std::string PolicyDataToString(const em::PolicyData& policy) {
-  const std::string policy_string = policy.SerializeAsString();
-  std::string encoded;
-  base::Base64Encode(policy_string, &encoded);
-  return encoded;
 }
 
 }  // namespace device_settings_cache

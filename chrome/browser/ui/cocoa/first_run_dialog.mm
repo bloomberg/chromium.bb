@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -72,9 +71,7 @@ void ShowFirstRunModal(Profile* profile) {
   // If the dialog asked the user to opt-in for stats and crash reporting,
   // record the decision and enable the crash reporter if appropriate.
   bool consent_given = [dialog.get() isStatsReportingEnabled];
-  ChangeMetricsReportingState(g_browser_process->local_state(),
-                              g_browser_process->GetMetricsServicesManager(),
-                              consent_given);
+  ChangeMetricsReportingState(consent_given);
 
   // If selected, set as default browser. Skip in automated tests so that an OS
   // dialog confirming the default browser choice isn't left on screen.

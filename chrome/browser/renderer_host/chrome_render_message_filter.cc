@@ -304,7 +304,6 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 void ChromeRenderMessageFilter::OnIsCrashReportingEnabled(bool* enabled) {
-  *enabled = ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
-      g_browser_process->local_state());
+  *enabled = ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 }
 #endif
