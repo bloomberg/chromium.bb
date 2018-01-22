@@ -143,36 +143,36 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
   }
 
  private:
-  // Helper method for the constructor that initializes |proxy_service_| and
-  // injects it into |context_getter_|'s context.
+  // Helper method for the constructor that initializes
+  // |proxy_resolution_service_| and injects it into |context_getter_|'s context.
   void CreateProxyServiceOnNetworkThread() {
     CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
 
-    // Setting a mandatory PAC URL makes |proxy_service_| query
+    // Setting a mandatory PAC URL makes |proxy_resolution_service_| query
     // |proxy_resolver_| and also lets us generate
     // net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED errors.
     net::ProxyConfig config;
     config.set_pac_url(GURL("http://www.example.com"));
     config.set_pac_mandatory(true);
-    proxy_service_ = std::make_unique<net::ProxyService>(
+    proxy_resolution_service_ = std::make_unique<net::ProxyResolutionService>(
         std::make_unique<net::ProxyConfigServiceFixed>(config),
         std::make_unique<TestProxyResolverFactory>(proxy_resolver_),
         nullptr /* net_log */);
-    context_getter_->GetURLRequestContext()->set_proxy_service(
-        proxy_service_.get());
+    context_getter_->GetURLRequestContext()->set_proxy_resolution_service(
+        proxy_resolution_service_.get());
   }
 
-  // Helper method for the destructor that resets |proxy_service_|.
+  // Helper method for the destructor that resets |proxy_resolution_service_|.
   void DeleteProxyServiceOnNetworkThread() {
     CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
-    proxy_service_.reset();
+    proxy_resolution_service_.reset();
   }
 
   net::ProxyResolver* proxy_resolver_;  // Not owned.
 
-  // Created, used, and destroyed on the network thread (since net::ProxyService
-  // is thread-affine (uses ThreadChecker)).
-  std::unique_ptr<net::ProxyService> proxy_service_;
+  // Created, used, and destroyed on the network thread (since
+  // net::ProxyResolutionService is thread-affine (uses ThreadChecker)).
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
 

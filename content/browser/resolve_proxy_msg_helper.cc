@@ -19,12 +19,11 @@ ResolveProxyMsgHelper::ResolveProxyMsgHelper(
     net::URLRequestContextGetter* getter)
     : BrowserMessageFilter(ViewMsgStart),
       context_getter_(getter),
-      proxy_service_(nullptr) {}
+      proxy_resolution_service_(nullptr) {}
 
-ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
-    : BrowserMessageFilter(ViewMsgStart),
-      proxy_service_(proxy_service) {
-}
+ResolveProxyMsgHelper::ResolveProxyMsgHelper(
+    net::ProxyResolutionService* proxy_resolution_service)
+    : BrowserMessageFilter(ViewMsgStart), proxy_resolution_service_(proxy_resolution_service) {}
 
 bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -46,11 +45,11 @@ void ResolveProxyMsgHelper::OnResolveProxy(const GURL& url,
 }
 
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
-  // Clear all pending requests if the ProxyService is still alive (if we have a
-  // default request context or override).
+  // Clear all pending requests if the ProxyResolutionService is still alive (if
+  // we have a default request context or override).
   if (!pending_requests_.empty()) {
     PendingRequest req = pending_requests_.front();
-    proxy_service_->CancelRequest(req.request);
+    proxy_resolution_service_->CancelRequest(req.request);
   }
 
   for (PendingRequestList::iterator it = pending_requests_.begin();
@@ -85,12 +84,12 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   DCHECK(nullptr == req.request);
 
   if (context_getter_.get()) {
-    proxy_service_ = context_getter_->GetURLRequestContext()->proxy_service();
+    proxy_resolution_service_ = context_getter_->GetURLRequestContext()->proxy_resolution_service();
     context_getter_ = nullptr;
   }
 
   // Start the request.
-  int result = proxy_service_->ResolveProxy(
+  int result = proxy_resolution_service_->ResolveProxy(
       req.url, std::string(), &proxy_info_,
       base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                  base::Unretained(this)),

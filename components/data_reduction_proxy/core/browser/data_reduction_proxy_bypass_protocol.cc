@@ -60,10 +60,11 @@ void MarkProxiesAsBadUntil(
   net::ProxyInfo proxy_info;
   proxy_info.UseProxyList(proxy_list);
   DCHECK(request->context());
-  net::ProxyService* proxy_service = request->context()->proxy_service();
-  DCHECK(proxy_service);
+  net::ProxyResolutionService* proxy_resolution_service =
+      request->context()->proxy_resolution_service();
+  DCHECK(proxy_resolution_service);
 
-  proxy_service->MarkProxiesAsBadUntil(
+  proxy_resolution_service->MarkProxiesAsBadUntil(
       proxy_info, bypass_duration, additional_bad_proxies, request->net_log());
 }
 
@@ -250,13 +251,13 @@ bool DataReductionProxyBypassProtocol::HandleValidResponseHeadersCase(
     return false;
 
   DCHECK(request.context());
-  DCHECK(request.context()->proxy_service());
+  DCHECK(request.context()->proxy_resolution_service());
   net::ProxyServer proxy_server =
       data_reduction_proxy_type_info->proxy_servers.front();
 
   // Only record UMA if the proxy isn't already on the retry list.
   if (!config_->IsProxyBypassed(
-          request.context()->proxy_service()->proxy_retry_info(), proxy_server,
+          request.context()->proxy_resolution_service()->proxy_retry_info(), proxy_server,
           nullptr)) {
     DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
         data_reduction_proxy_type_info->proxy_index == 0,

@@ -37,7 +37,7 @@ URLRequestContextOwner URLRequestContextBuilderMojo::Create(
                                                      quic_disabled, net_log);
 }
 
-std::unique_ptr<net::ProxyService>
+std::unique_ptr<net::ProxyResolutionService>
 URLRequestContextBuilderMojo::CreateProxyService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::URLRequestContext* url_request_context,

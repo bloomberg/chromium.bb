@@ -238,7 +238,7 @@ EVENT_TYPE(PROXY_SCRIPT_DECIDER_HAS_NO_FETCHER)
 EVENT_TYPE(PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE)
 
 // ------------------------------------------------------------------------
-// ProxyService
+// ProxyResolutionService
 // ------------------------------------------------------------------------
 
 // The start/end of a proxy resolve request.
@@ -246,7 +246,7 @@ EVENT_TYPE(PROXY_SERVICE)
 
 // The time while a request is waiting on InitProxyResolver to configure
 // against either WPAD or custom PAC URL. The specifics on this time
-// are found from ProxyService::init_proxy_resolver_log().
+// are found from ProxyResolutionService::init_proxy_resolver_log().
 EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
 
 // This event is emitted to show what the PAC script returned. It can contain
@@ -269,8 +269,8 @@ EVENT_TYPE(PROXY_SERVICE_RESOLVED_PROXY_LIST)
 //   }
 EVENT_TYPE(PROXY_SERVICE_DEPRIORITIZED_BAD_PROXIES)
 
-// This event is emitted whenever the proxy settings used by ProxyService
-// change.
+// This event is emitted whenever the proxy settings used by
+// ProxyResolutionService change.
 //
 // It contains these parameters:
 //  {

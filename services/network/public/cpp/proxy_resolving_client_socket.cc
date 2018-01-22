@@ -64,7 +64,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   // these classes is thread safe. Figure out if the comment's wrong, or if this
   // entire class is badly broken.
   session_context.channel_id_service = NULL;
-  session_context.proxy_service = request_context->proxy_service();
+  session_context.proxy_resolution_service =
+      request_context->proxy_resolution_service();
   session_context.ssl_config_service = request_context->ssl_config_service();
   session_context.http_auth_handler_factory =
       request_context->http_auth_handler_factory();
@@ -144,7 +145,7 @@ int ProxyResolvingClientSocket::Connect(
   // TODO(xunjieli): Having a null ProxyDelegate is bad. Figure out how to
   // interact with the new interface for proxy delegate.
   // https://crbug.com/793071.
-  int net_error = network_session_->proxy_service()->ResolveProxy(
+  int net_error = network_session_->proxy_resolution_service()->ResolveProxy(
       url_, "POST", &proxy_info_,
       base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
                           base::Unretained(this)),
@@ -164,7 +165,8 @@ int ProxyResolvingClientSocket::Connect(
 void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
   if (proxy_resolve_request_) {
-    network_session_->proxy_service()->CancelRequest(proxy_resolve_request_);
+    network_session_->proxy_resolution_service()
+                    ->CancelRequest(proxy_resolve_request_);
     proxy_resolve_request_ = NULL;
   }
   user_connect_callback_.Reset();
@@ -312,7 +314,8 @@ void ProxyResolvingClientSocket::ConnectToProxyDone(int net_error) {
     }
     CloseTransportSocket();
   } else {
-    network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
+    network_session_->proxy_resolution_service()->ReportSuccess(
+        proxy_info_, NULL);
   }
   base::ResetAndReturn(&user_connect_callback_).Run(net_error);
 }
@@ -384,11 +387,12 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
         proxy_info_.proxy_server().host_port_pair());
   }
 
-  int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      url_, std::string(), error, &proxy_info_,
-      base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
-                          base::Unretained(this)),
-      &proxy_resolve_request_, NULL, net_log_);
+  int rv =
+      network_session_->proxy_resolution_service()->ReconsiderProxyAfterError(
+          url_, std::string(), error, &proxy_info_,
+          base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
+                              base::Unretained(this)),
+          &proxy_resolve_request_, NULL, net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
   } else {

@@ -42,10 +42,11 @@ class DataReductionProxyBypassProtocol {
   ~DataReductionProxyBypassProtocol();
 
   // Decides whether to mark the data reduction proxy as temporarily bad and
-  // put it on the proxy retry map, which is maintained by the ProxyService of
-  // the URLRequestContext. Returns true if the request should be retried.
-  // Updates the load flags in |request| for some bypass types, e.g.,
-  // "block-once". Returns the DataReductionProxyBypassType (if not NULL).
+  // put it on the proxy retry map, which is maintained by the
+  // ProxyResolutionService of the URLRequestContext. Returns true if the
+  // request should be retried. Updates the load flags in |request| for some
+  // bypass types, e.g., "block-once". Returns the DataReductionProxyBypassType
+  // (if not NULL).
   bool MaybeBypassProxyAndPrepareToRetry(
       net::URLRequest* request,
       DataReductionProxyBypassType* proxy_bypass_type,

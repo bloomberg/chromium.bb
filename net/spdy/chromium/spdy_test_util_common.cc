@@ -301,17 +301,17 @@ MockECSignatureCreatorFactory::Create(crypto::ECPrivateKey* key) {
 }
 
 SpdySessionDependencies::SpdySessionDependencies()
-    : SpdySessionDependencies(ProxyService::CreateDirect()) {}
+    : SpdySessionDependencies(ProxyResolutionService::CreateDirect()) {}
 
 SpdySessionDependencies::SpdySessionDependencies(
-    std::unique_ptr<ProxyService> proxy_service)
+    std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
     : host_resolver(std::make_unique<MockCachingHostResolver>()),
       cert_verifier(std::make_unique<MockCertVerifier>()),
       channel_id_service(nullptr),
       transport_security_state(std::make_unique<TransportSecurityState>()),
       cert_transparency_verifier(std::make_unique<DoNothingCTVerifier>()),
       ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>()),
-      proxy_service(std::move(proxy_service)),
+      proxy_resolution_service(std::move(proxy_resolution_service)),
       ssl_config_service(base::MakeRefCounted<SSLConfigServiceDefaults>()),
       socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(
@@ -398,7 +398,7 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.cert_transparency_verifier =
       session_deps->cert_transparency_verifier.get();
   context.ct_policy_enforcer = session_deps->ct_policy_enforcer.get();
-  context.proxy_service = session_deps->proxy_service.get();
+  context.proxy_resolution_service = session_deps->proxy_resolution_service.get();
   context.ssl_config_service = session_deps->ssl_config_service.get();
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
@@ -426,7 +426,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
   storage_.set_transport_security_state(
       std::make_unique<TransportSecurityState>());
-  storage_.set_proxy_service(ProxyService::CreateDirect());
+  storage_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
   storage_.set_ct_policy_enforcer(
       std::make_unique<AllowAnyCertCTPolicyEnforcer>());
   storage_.set_cert_transparency_verifier(
@@ -445,7 +445,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   session_context.host_resolver = host_resolver();
   session_context.cert_verifier = cert_verifier();
   session_context.transport_security_state = transport_security_state();
-  session_context.proxy_service = proxy_service();
+  session_context.proxy_resolution_service = proxy_resolution_service();
   session_context.ct_policy_enforcer = ct_policy_enforcer();
   session_context.cert_transparency_verifier = cert_transparency_verifier();
   session_context.ssl_config_service = ssl_config_service();

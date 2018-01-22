@@ -27,7 +27,7 @@ TEST_F(HttpStreamFactoryImplRequestTest, SetPriority) {
   SequencedSocketData data(nullptr, 0, nullptr, 0);
   data.set_connect_data(MockConnect(ASYNC, OK));
   auto ssl_data = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  SpdySessionDependencies session_deps(ProxyService::CreateDirect());
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
   session_deps.socket_factory->AddSocketDataProvider(&data);
   session_deps.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
 

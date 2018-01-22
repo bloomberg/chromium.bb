@@ -52,7 +52,7 @@ class RequestContext : public URLRequestContext {
     storage_.set_cert_transparency_verifier(
         std::make_unique<MultiLogCTVerifier>());
     storage_.set_ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>());
-    storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
+    storage_.set_proxy_resolution_service(ProxyResolutionService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(
         std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
@@ -63,7 +63,7 @@ class RequestContext : public URLRequestContext {
     session_context.transport_security_state = transport_security_state();
     session_context.cert_transparency_verifier = cert_transparency_verifier();
     session_context.ct_policy_enforcer = ct_policy_enforcer();
-    session_context.proxy_service = proxy_service();
+    session_context.proxy_resolution_service = proxy_resolution_service();
     session_context.ssl_config_service = ssl_config_service();
     session_context.http_server_properties = http_server_properties();
     storage_.set_http_network_session(std::make_unique<HttpNetworkSession>(

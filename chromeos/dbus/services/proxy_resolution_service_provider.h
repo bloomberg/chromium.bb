@@ -105,8 +105,9 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
       scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
       NotifyCallback notify_callback);
 
-  // Callback on network thread for when net::ProxyService::ResolveProxy()
-  // completes, synchronously or asynchronously.
+  // Callback on network thread for when
+  // net::ProxyResolutionService::ResolveProxy() completes, synchronously or
+  // asynchronously.
   static void OnResolutionComplete(
       std::unique_ptr<Request> request,
       scoped_refptr<base::SingleThreadTaskRunner> notify_thread,

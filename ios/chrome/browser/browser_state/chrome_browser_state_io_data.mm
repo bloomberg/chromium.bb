@@ -356,7 +356,7 @@ void ChromeBrowserStateIOData::Init(
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.
-  proxy_service_ = ProxyServiceFactory::CreateProxyService(
+  proxy_resolution_service_ = ProxyServiceFactory::CreateProxyService(
       io_thread->net_log(), nullptr,
       io_thread_globals->system_network_delegate.get(),
       std::move(profile_params_->proxy_config_service),

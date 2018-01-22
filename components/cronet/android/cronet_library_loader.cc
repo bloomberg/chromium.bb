@@ -116,7 +116,7 @@ ScopedJavaLocalRef<jstring> JNI_CronetLibraryLoader_GetCronetVersion(
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   std::unique_ptr<net::ProxyConfigService> service =
-      net::ProxyService::CreateSystemProxyConfigService(io_task_runner);
+      net::ProxyResolutionService::CreateSystemProxyConfigService(io_task_runner);
   // If a PAC URL is present, ignore it and use the address and port of
   // Android system's local HTTP proxy server. See: crbug.com/432539.
   // TODO(csharrison) Architect the wrapper better so we don't need to cast for
@@ -128,13 +128,13 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
 }
 
 // Creates a proxy service appropriate for this platform.
-std::unique_ptr<net::ProxyService> CreateProxyService(
+std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
   // Android provides a local HTTP proxy server that handles proxying when a PAC
   // URL is present. Create a proxy service without a resolver and rely on this
   // local HTTP proxy. See: crbug.com/432539.
-  return net::ProxyService::CreateWithoutProxyResolver(
+  return net::ProxyResolutionService::CreateWithoutProxyResolver(
       std::move(proxy_config_service), net_log);
 }
 

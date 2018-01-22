@@ -221,7 +221,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
-  main_context->set_proxy_service(proxy_service());
+  main_context->set_proxy_resolution_service(proxy_resolution_service());
 
   net::ChannelIDService* channel_id_service = NULL;
 

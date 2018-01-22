@@ -99,8 +99,9 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
     : user_agent_(MakeUserAgentForServiceProcess()),
       network_task_runner_(g_service_process->io_task_runner()) {
   DCHECK(g_service_process);
-  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      g_service_process->io_task_runner());
+  proxy_config_service_ =
+      net::ProxyResolutionService::CreateSystemProxyConfigService(
+          g_service_process->io_task_runner());
 }
 
 net::URLRequestContext*

@@ -113,7 +113,7 @@ class URLRequestContextFactory {
   std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
   std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  std::unique_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<net::HttpServerProperties> http_server_properties_;
   std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;

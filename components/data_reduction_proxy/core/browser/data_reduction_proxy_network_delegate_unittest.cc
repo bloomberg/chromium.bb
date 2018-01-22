@@ -365,9 +365,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
     context_.reset(new net::TestURLRequestContext(true));
     context_storage_.reset(new net::URLRequestContextStorage(context_.get()));
-    proxy_service_ =
-        net::ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
-    context_->set_proxy_service(proxy_service_.get());
+    proxy_resolution_service_ = net::ProxyResolutionService::CreateFixedFromPacResult(
+        proxy_server.ToPacString());
+    context_->set_proxy_resolution_service(proxy_resolution_service_.get());
     context_->set_network_quality_estimator(&test_network_quality_estimator_);
 
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
@@ -868,7 +868,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
  private:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;
-  std::unique_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   std::unique_ptr<net::URLRequestContextStorage> context_storage_;
 

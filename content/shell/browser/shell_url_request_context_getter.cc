@@ -112,10 +112,11 @@ ShellURLRequestContextGetter::GetCertVerifier() {
 
 std::unique_ptr<net::ProxyConfigService>
 ShellURLRequestContextGetter::GetProxyConfigService() {
-  return net::ProxyService::CreateSystemProxyConfigService(io_task_runner_);
+  return net::ProxyResolutionService::CreateSystemProxyConfigService(
+      io_task_runner_);
 }
 
-std::unique_ptr<net::ProxyService>
+std::unique_ptr<net::ProxyResolutionService>
 ShellURLRequestContextGetter::GetProxyService() {
   // TODO(jam): use v8 if possible, look at chrome code.
   return nullptr;
@@ -150,9 +151,10 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     builder.set_ct_policy_enforcer(
         base::WrapUnique(new IgnoresCTPolicyEnforcer));
 
-    std::unique_ptr<net::ProxyService> proxy_service = GetProxyService();
-    if (proxy_service) {
-      builder.set_proxy_service(std::move(proxy_service));
+    std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service =
+        GetProxyService();
+    if (proxy_resolution_service) {
+      builder.set_proxy_resolution_service(std::move(proxy_resolution_service));
     } else {
       builder.set_proxy_config_service(std::move(proxy_config_service_));
     }

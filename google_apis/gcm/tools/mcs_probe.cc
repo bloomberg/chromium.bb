@@ -253,7 +253,7 @@ class MCSProbe {
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
   std::unique_ptr<net::HttpNetworkSession> network_session_;
-  std::unique_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
 
   FakeGCMStatsRecorder recorder_;
   std::unique_ptr<GCMStore> gcm_store_;
@@ -387,7 +387,8 @@ void MCSProbe::InitializeNetworkState() {
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, host_resolver_.get());
   http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
-  proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);
+  proxy_resolution_service_ =
+      net::ProxyResolutionService::CreateDirectWithNetLog(&net_log_);
 }
 
 void MCSProbe::BuildNetworkSession() {
@@ -408,7 +409,7 @@ void MCSProbe::BuildNetworkSession() {
   session_context.http_auth_handler_factory = http_auth_handler_factory_.get();
   session_context.http_server_properties = http_server_properties_.get();
   session_context.net_log = &net_log_;
-  session_context.proxy_service = proxy_service_.get();
+  session_context.proxy_resolution_service = proxy_resolution_service_.get();
 
   network_session_ = std::make_unique<net::HttpNetworkSession>(session_params,
                                                                session_context);

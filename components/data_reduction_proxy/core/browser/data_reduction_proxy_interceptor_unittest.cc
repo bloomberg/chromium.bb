@@ -103,8 +103,8 @@ class TestURLRequestContextWithDataReductionProxy
   TestURLRequestContextWithDataReductionProxy(const net::ProxyServer& origin,
                                               net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
-    context_storage_.set_proxy_service(
-        net::ProxyService::CreateFixed(origin.ToURI()));
+    context_storage_.set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateFixed(origin.ToURI()));
     set_network_delegate(delegate);
   }
 
@@ -231,10 +231,11 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         DataReductionProxyServer(origin, ProxyServer::UNSPECIFIED_TYPE));
     test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
-    proxy_service_ = net::ProxyService::CreateFixedFromPacResult(
-        "PROXY " + proxy_name + "; DIRECT");
+    proxy_resolution_service_ =
+        net::ProxyResolutionService::CreateFixedFromPacResult(
+            "PROXY " + proxy_name + "; DIRECT");
 
-    context_.set_proxy_service(proxy_service_.get());
+    context_.set_proxy_resolution_service(proxy_resolution_service_.get());
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
@@ -260,7 +261,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   net::TestURLRequestContext context_;
   net::EmbeddedTestServer proxy_;
   net::EmbeddedTestServer direct_;
-  std::unique_ptr<net::ProxyService> proxy_service_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<net::URLRequestJobFactory> job_factory_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };

@@ -36,8 +36,8 @@ class NetLogCaptureMode;
 class ProxyResolver;
 class ProxyScriptFetcher;
 
-// ProxyScriptDecider is a helper class used by ProxyService to determine which
-// PAC script to use given our proxy configuration.
+// ProxyScriptDecider is a helper class used by ProxyResolutionService to
+// determine which PAC script to use given our proxy configuration.
 //
 // This involves trying to use PAC scripts in this order:
 //

@@ -395,8 +395,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     return request;
   }
 
-  void set_proxy_service(net::ProxyService* proxy_service) {
-    context_.set_proxy_service(proxy_service);
+  void set_proxy_resolution_service(net::ProxyResolutionService* proxy_resolution_service) {
+    context_.set_proxy_resolution_service(proxy_resolution_service);
   }
 
   void set_host_resolver(net::HostResolver* host_resolver) {
@@ -416,7 +416,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   }
 
   void ClearBadProxies() {
-    context_.proxy_service()->ClearBadProxiesCache();
+    context_.proxy_resolution_service()->ClearBadProxiesCache();
   }
 
   void InitializeContext() {
@@ -597,9 +597,9 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest, URLRedirectCycle) {
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest,
        BypassedBytesProxyOverridden) {
-  std::unique_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateFixed("http://test.com:80"));
-  set_proxy_service(proxy_service.get());
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+      net::ProxyResolutionService::CreateFixed("http://test.com:80"));
+  set_proxy_resolution_service(proxy_resolution_service.get());
   InitializeContext();
 
   base::HistogramTester histogram_tester;

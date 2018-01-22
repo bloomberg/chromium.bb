@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 
   // Use the network loop as the file loop also.
   std::unique_ptr<net::ProxyConfigService> proxy_config_service(
-      net::ProxyService::CreateSystemProxyConfigService(
+      net::ProxyResolutionService::CreateSystemProxyConfigService(
           network_loop.task_runner()));
 
   // Uses |network_change_notifier|.

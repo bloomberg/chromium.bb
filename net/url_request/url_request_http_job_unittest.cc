@@ -189,18 +189,18 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
 class URLRequestHttpJobWithProxy {
  public:
   explicit URLRequestHttpJobWithProxy(
-      std::unique_ptr<ProxyService> proxy_service)
-      : proxy_service_(std::move(proxy_service)),
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
+      : proxy_resolution_service_(std::move(proxy_resolution_service)),
         context_(new TestURLRequestContext(true)) {
     context_->set_client_socket_factory(&socket_factory_);
     context_->set_network_delegate(&network_delegate_);
-    context_->set_proxy_service(proxy_service_.get());
+    context_->set_proxy_resolution_service(proxy_resolution_service_.get());
     context_->Init();
   }
 
   MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
-  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<TestURLRequestContext> context_;
 
  private:
@@ -258,8 +258,9 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   const ProxyServer proxy_server =
       ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
 
-  std::unique_ptr<ProxyService> proxy_service =
-      ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          proxy_server.ToPacString());
 
   MockWrite writes[] = {MockWrite(kSimpleProxyGetMockWrite)};
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET)};
@@ -267,7 +268,8 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
                                        arraysize(writes));
 
-  URLRequestHttpJobWithProxy http_job_with_proxy(std::move(proxy_service));
+  URLRequestHttpJobWithProxy http_job_with_proxy(
+      std::move(proxy_resolution_service));
   http_job_with_proxy.socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
@@ -304,8 +306,8 @@ TEST(URLRequestHttpJobWithProxy,
 
   // Connection to |proxy_server| would fail. Request should be fetched over
   // DIRECT.
-  std::unique_ptr<ProxyService> proxy_service =
-      ProxyService::CreateFixedFromPacResult(
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
           proxy_server.ToPacString() + "; " +
           ProxyServer::Direct().ToPacString());
 
@@ -321,7 +323,8 @@ TEST(URLRequestHttpJobWithProxy,
   StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
                                        arraysize(writes));
 
-  URLRequestHttpJobWithProxy http_job_with_proxy(std::move(proxy_service));
+  URLRequestHttpJobWithProxy http_job_with_proxy(
+      std::move(proxy_resolution_service));
   http_job_with_proxy.socket_factory_.AddSocketDataProvider(&connect_data_1);
   http_job_with_proxy.socket_factory_.AddSocketDataProvider(&socket_data);
 

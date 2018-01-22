@@ -47,7 +47,7 @@ class CookieStore;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class ProxyConfigService;
-class ProxyService;
+class ProxyResolutionService;
 class ReportSender;
 class SSLConfigService;
 class SystemCookieStore;
@@ -202,7 +202,9 @@ class ChromeBrowserStateIOData {
   // the channel_id_service_ member and transfers ownership to the base class.
   void set_channel_id_service(net::ChannelIDService* channel_id_service) const;
 
-  net::ProxyService* proxy_service() const { return proxy_service_.get(); }
+  net::ProxyResolutionService* proxy_resolution_service() const {
+    return proxy_resolution_service_.get();
+  }
 
   net::HttpServerProperties* http_server_properties() const;
 
@@ -285,7 +287,8 @@ class ChromeBrowserStateIOData {
   // Pointed to by URLRequestContext.
   mutable std::unique_ptr<net::ChannelIDService> channel_id_service_;
 
-  mutable std::unique_ptr<net::ProxyService> proxy_service_;
+  mutable std::unique_ptr<net::ProxyResolutionService>
+      proxy_resolution_service_;
   mutable std::unique_ptr<net::TransportSecurityState>
       transport_security_state_;
   mutable std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;

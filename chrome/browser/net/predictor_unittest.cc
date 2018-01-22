@@ -510,9 +510,9 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
 
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=socks://localhost:12345");
-  std::unique_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateFixed(config));
-  testing_master.proxy_service_ = proxy_service.get();
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+      net::ProxyResolutionService::CreateFixed(config));
+  testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -529,9 +529,9 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
 
   Predictor testing_master(true);
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
-  std::unique_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateFixed(config));
-  testing_master.proxy_service_ = proxy_service.get();
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+      net::ProxyResolutionService::CreateFixed(config));
+  testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);
@@ -549,9 +549,9 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   Predictor testing_master(true);
   net::ProxyConfig config = net::ProxyConfig::CreateFromCustomPacURL(GURL(
       "http://foopy/proxy.pac"));
-  std::unique_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateFixed(config));
-  testing_master.proxy_service_ = proxy_service.get();
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
+      net::ProxyResolutionService::CreateFixed(config));
+  testing_master.proxy_resolution_service_ = proxy_resolution_service.get();
 
   GURL goog("http://www.google.com:80");
   testing_master.Resolve(goog, UrlInfo::OMNIBOX_MOTIVATED);

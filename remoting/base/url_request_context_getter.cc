@@ -19,8 +19,9 @@ URLRequestContextGetter::URLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : network_task_runner_(network_task_runner),
       file_task_runner_(file_task_runner),
-      proxy_config_service_(net::ProxyService::CreateSystemProxyConfigService(
-          network_task_runner)) {}
+      proxy_config_service_(
+          net::ProxyResolutionService::CreateSystemProxyConfigService(
+              network_task_runner)) {}
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_.get()) {

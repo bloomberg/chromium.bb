@@ -28,7 +28,7 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      proxy_service_(nullptr),
+      proxy_resolution_service_(nullptr),
       is_allowed_(false),
       waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
@@ -48,11 +48,11 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
 
 PepperNetworkProxyHost::~PepperNetworkProxyHost() {
   while (!pending_requests_.empty()) {
-    // If the proxy_service_ is NULL, we shouldn't have any outstanding
+    // If the proxy_resolution_service_ is NULL, we shouldn't have any outstanding
     // requests.
-    DCHECK(proxy_service_);
-    net::ProxyService::Request* request = pending_requests_.front();
-    proxy_service_->CancelRequest(request);
+    DCHECK(proxy_resolution_service_);
+    net::ProxyResolutionService::Request* request = pending_requests_.front();
+    proxy_resolution_service_->CancelRequest(request);
     pending_requests_.pop();
   }
 }
@@ -91,13 +91,13 @@ void PepperNetworkProxyHost::DidGetUIThreadData(
   is_allowed_ = ui_thread_data.is_allowed;
   if (ui_thread_data.context_getter.get() &&
       ui_thread_data.context_getter->GetURLRequestContext()) {
-    proxy_service_ =
-        ui_thread_data.context_getter->GetURLRequestContext()->proxy_service();
+    proxy_resolution_service_ =
+        ui_thread_data.context_getter->GetURLRequestContext()->proxy_resolution_service();
   }
   waiting_for_ui_thread_data_ = false;
-  if (!proxy_service_) {
-    DLOG_IF(WARNING, proxy_service_)
-        << "Failed to find a ProxyService for Pepper plugin.";
+  if (!proxy_resolution_service_) {
+    DLOG_IF(WARNING, proxy_resolution_service_)
+        << "Failed to find a ProxyResolutionService for Pepper plugin.";
   }
   TryToSendUnsentRequests();
 }
@@ -132,25 +132,25 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
 
   while (!unsent_requests_.empty()) {
     const UnsentRequest& request = unsent_requests_.front();
-    if (!proxy_service_) {
+    if (!proxy_resolution_service_) {
       SendFailureReply(PP_ERROR_FAILED, request.reply_context);
     } else if (!is_allowed_) {
       SendFailureReply(PP_ERROR_NOACCESS, request.reply_context);
     } else {
       // Everything looks valid, so try to resolve the proxy.
       net::ProxyInfo* proxy_info = new net::ProxyInfo;
-      net::ProxyService::Request* pending_request = nullptr;
+      net::ProxyResolutionService::Request* pending_request = nullptr;
       base::Callback<void(int)> callback =
           base::Bind(&PepperNetworkProxyHost::OnResolveProxyCompleted,
                      weak_factory_.GetWeakPtr(),
                      request.reply_context,
                      base::Owned(proxy_info));
-      int result = proxy_service_->ResolveProxy(
+      int result = proxy_resolution_service_->ResolveProxy(
           request.url, std::string(), proxy_info, callback, &pending_request,
           nullptr, net::NetLogWithSource());
       pending_requests_.push(pending_request);
       // If it was handled synchronously, we must run the callback now;
-      // proxy_service_ won't run it for us in this case.
+      // proxy_resolution_service_ won't run it for us in this case.
       if (result != net::ERR_IO_PENDING)
         callback.Run(result);
     }
