@@ -1093,7 +1093,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
       target_state_y = display_height - kPeekingAppListHeight;
       break;
     case AppListViewState::HALF:
-      target_state_y = display_height - kHalfAppListHeight;
+      target_state_y = std::max(0, display_height - kHalfAppListHeight);
       break;
     case AppListViewState::CLOSED:
       // The close animation is handled by the delegate.
