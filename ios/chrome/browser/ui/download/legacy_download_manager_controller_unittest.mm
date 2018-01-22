@@ -87,7 +87,8 @@ TEST_F(LegacyDownloadManagerControllerTest, TestXibViewConnections) {
   EXPECT_TRUE([_controller googleDriveButton]);
 }
 
-TEST_F(LegacyDownloadManagerControllerTest, TestStart) {
+// TODO(crbug.com/804250): this test is flaky.
+TEST_F(LegacyDownloadManagerControllerTest, FLAKY_TestStart) {
   [_controller start];
   EXPECT_TRUE(
       [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);

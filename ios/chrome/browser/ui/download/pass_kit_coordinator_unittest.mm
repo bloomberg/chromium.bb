@@ -63,7 +63,8 @@ class PassKitCoordinatorTest : public PlatformTest {
 
 // Tests that PassKitCoordinator presents PKAddPassesViewController for the
 // valid PKPass object.
-TEST_F(PassKitCoordinatorTest, ValidPassKitObject) {
+// TODO(crbug.com/804250): this test is flaky.
+TEST_F(PassKitCoordinatorTest, FLAKY_ValidPassKitObject) {
   std::string data = testing::GetTestPass();
   NSData* nsdata = [NSData dataWithBytes:data.c_str() length:data.size()];
   PKPass* pass = [[PKPass alloc] initWithData:nsdata error:nil];
@@ -99,7 +100,8 @@ TEST_F(PassKitCoordinatorTest, ValidPassKitObject) {
 }
 
 // Tests presenting multiple valid PKPass objects.
-TEST_F(PassKitCoordinatorTest, MultiplePassKitObjects) {
+// TODO(crbug.com/804250): this test is flaky.
+TEST_F(PassKitCoordinatorTest, FLAKY_MultiplePassKitObjects) {
   if (IsIPadIdiom()) {
     // Wallet app is not supported on iPads.
     return;
