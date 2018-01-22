@@ -84,13 +84,10 @@ void EventAutoRepeatHandler::OnRepeatTimeout(unsigned int sequence) {
   if (repeat_sequence_ != sequence)
     return;
 
-  // Post a task behind any pending key releases in the message loop
-  // FIFO. This ensures there's no spurious repeats during periods of UI
-  // thread jank.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  base::OnceClosure commit =
       base::BindOnce(&EventAutoRepeatHandler::OnRepeatCommit,
-                     weak_ptr_factory_.GetWeakPtr(), repeat_sequence_));
+                     weak_ptr_factory_.GetWeakPtr(), repeat_sequence_);
+  delegate_->FlushInput(std::move(commit));
 }
 
 void EventAutoRepeatHandler::OnRepeatCommit(unsigned int sequence) {

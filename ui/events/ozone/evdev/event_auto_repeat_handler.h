@@ -18,6 +18,10 @@ class EVENTS_EXPORT EventAutoRepeatHandler {
  public:
   class Delegate {
    public:
+    // Gives the client a chance to flush the input queue
+    // cancelling possible spurios auto repeat keys.
+    // Useful under janky situations.
+    virtual void FlushInput(base::OnceClosure closure) = 0;
     virtual void DispatchKey(unsigned int key,
                              bool down,
                              bool repeat,
