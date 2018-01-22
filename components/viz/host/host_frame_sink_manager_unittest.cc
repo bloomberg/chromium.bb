@@ -502,13 +502,12 @@ TEST_F(HostFrameSinkManagerLocalTest, DisplayHitTestQueryMap) {
   EXPECT_TRUE(FrameSinkDataExists(kFrameSinkChild1));
 
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
-  auto params = mojom::RootCompositorFrameSinkParams::New();
-  params->frame_sink_id = kFrameSinkChild1;
-  params->widget = 0;
-  host().CreateRootCompositorFrameSink(std::move(params));
+  auto support =
+      CreateCompositorFrameSinkSupport(kFrameSinkChild1, true /* is_root */);
   EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
 
   host().InvalidateFrameSinkId(kFrameSinkChild1);
+  support.reset();
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
   EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
 }
