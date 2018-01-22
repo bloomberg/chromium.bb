@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -62,10 +63,11 @@ auto SaveKeyAndFilePathTo(base::Optional<PeerConnectionKey>* key_output,
 }  // namespace
 
 class WebRtcEventLogManagerTest : public ::testing::Test {
- protected:
+ public:
   WebRtcEventLogManagerTest()
       : run_loop_(std::make_unique<base::RunLoop>()),
-        manager_(new WebRtcEventLogManager) {
+        manager_(new WebRtcEventLogManager),
+        webrtc_state_change_run_loop_(std::make_unique<base::RunLoop>()) {
     EXPECT_TRUE(
         base::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &base_dir_));
     if (base_dir_.empty()) {
@@ -80,6 +82,8 @@ class WebRtcEventLogManagerTest : public ::testing::Test {
     if (!base_dir_.empty()) {
       EXPECT_TRUE(base::DeleteFile(base_dir_, true));
     }
+    // Guard against unexpected state changes.
+    EXPECT_TRUE(webrtc_state_change_instructions_.empty());
   }
 
   void DestroyUnitUnderTest() {
@@ -170,7 +174,38 @@ class WebRtcEventLogManagerTest : public ::testing::Test {
     ASSERT_TRUE(
         base::Time::FromLocalExploded(frozen_time_exploded, &frozen_time));
     frozen_clock_.SetNow(frozen_time);
-    manager_->InjectClockForTesting(&frozen_clock_);
+    manager_->SetClockForTesting(&frozen_clock_);
+  }
+
+  void StartEventLogOutput(PeerConnectionKey key) {
+    webrtc_state_change_instructions_.emplace(key, true);
+    webrtc_state_change_run_loop_->QuitWhenIdle();
+  }
+
+  void StopEventLogOutput(PeerConnectionKey key) {
+    webrtc_state_change_instructions_.emplace(key, false);
+    webrtc_state_change_run_loop_->QuitWhenIdle();
+  }
+
+  void ExpectWebRtcStateChangeInstruction(int render_process_id,
+                                          int lid,
+                                          bool enabled) {
+    webrtc_state_change_run_loop_->Run();
+    webrtc_state_change_run_loop_.reset(new base::RunLoop);
+
+    ASSERT_FALSE(webrtc_state_change_instructions_.empty());
+    auto& instruction = webrtc_state_change_instructions_.front();
+    const PeerConnectionKey key(render_process_id, lid);
+    EXPECT_EQ(instruction.key, key);
+    EXPECT_EQ(instruction.enabled, enabled);
+    webrtc_state_change_instructions_.pop();
+  }
+
+  void SetPeerConnectionTrackerProxyForTesting(
+      std::unique_ptr<WebRtcEventLogManager::PeerConnectionTrackerProxy>
+          pc_tracker_proxy) {
+    manager_->SetPeerConnectionTrackerProxyForTesting(
+        std::move(pc_tracker_proxy));
   }
 
   // Common default values.
@@ -187,7 +222,43 @@ class WebRtcEventLogManagerTest : public ::testing::Test {
 
   base::FilePath base_dir_;   // The directory where we'll save log files.
   base::FilePath base_path_;  // base_dir_ +  log files' name prefix.
+
+  // WebRtcEventLogManager instructs WebRTC, via PeerConnectionTracker, to
+  // only send WebRTC messages for certain peer connections. Some tests make
+  // sure that this is done correctly, by waiting for these notifications, then
+  // testing them.
+  struct WebRtcStateChangeInstruction {
+    WebRtcStateChangeInstruction(PeerConnectionKey key, bool enabled)
+        : key(key), enabled(enabled) {}
+    PeerConnectionKey key;
+    bool enabled;
+  };
+  std::queue<WebRtcStateChangeInstruction> webrtc_state_change_instructions_;
+  std::unique_ptr<base::RunLoop> webrtc_state_change_run_loop_;
 };
+
+namespace {
+
+class PeerConnectionTrackerProxyForTesting
+    : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
+ public:
+  explicit PeerConnectionTrackerProxyForTesting(WebRtcEventLogManagerTest* test)
+      : test_(test) {}
+  ~PeerConnectionTrackerProxyForTesting() override = default;
+
+  void StartEventLogOutput(WebRtcEventLogPeerConnectionKey key) override {
+    test_->StartEventLogOutput(key);
+  }
+
+  void StopEventLogOutput(WebRtcEventLogPeerConnectionKey key) override {
+    test_->StopEventLogOutput(key);
+  }
+
+ private:
+  WebRtcEventLogManagerTest* const test_;
+};
+
+}  // namespace
 
 TEST_F(WebRtcEventLogManagerTest, LocalLogPeerConnectionAddedReturnsTrue) {
   EXPECT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
@@ -938,6 +1009,70 @@ TEST_F(WebRtcEventLogManagerTest,
   // Focus of the test - starting the same log again produces a new file,
   // with an expected new filename.
   ASSERT_EQ(file_path_2, expected_path_2);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       NoStartWebRtcSendingEventLogsWhenLocalEnabledWithoutPeerConnection) {
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(EnableLocalLogging());
+  EXPECT_TRUE(webrtc_state_change_instructions_.empty());
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       NoStartWebRtcSendingEventLogsWhenPeerConnectionButNoLoggingEnabled) {
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
+  EXPECT_TRUE(webrtc_state_change_instructions_.empty());
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       StartWebRtcSendingEventLogsWhenLocalEnabledThenPeerConnectionAdded) {
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(EnableLocalLogging());
+  ASSERT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId, true);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       StartWebRtcSendingEventLogsWhenPeerConnectionAddedThenLocalEnabled) {
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
+  ASSERT_TRUE(EnableLocalLogging());
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId, true);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       InstructWebRtcToStopSendingEventLogsWhenLocalLoggingStopped) {
+  // Setup
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
+  ASSERT_TRUE(EnableLocalLogging());
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId, true);
+
+  // Test
+  ASSERT_TRUE(DisableLocalLogging());
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId,
+                                     false);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       InstructWebRtcToStopSendingEventLogsWhenPeerConnectionRemoved) {
+  // Setup
+  SetPeerConnectionTrackerProxyForTesting(
+      std::make_unique<PeerConnectionTrackerProxyForTesting>(this));
+  ASSERT_TRUE(PeerConnectionAdded(kRenderProcessId, kPeerConnectionId));
+  ASSERT_TRUE(EnableLocalLogging());
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId, true);
+
+  // Test
+  ASSERT_TRUE(PeerConnectionRemoved(kRenderProcessId, kPeerConnectionId));
+  ExpectWebRtcStateChangeInstruction(kRenderProcessId, kPeerConnectionId,
+                                     false);
 }
 
 }  // namespace content

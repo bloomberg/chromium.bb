@@ -43,9 +43,9 @@ struct WebRtcEventLogPeerConnectionKey {
 class WebRtcLocalEventLogsObserver {
  public:
   virtual ~WebRtcLocalEventLogsObserver() = default;
-  virtual void OnLocalLogStarted(WebRtcEventLogPeerConnectionKey pc_key,
+  virtual void OnLocalLogStarted(WebRtcEventLogPeerConnectionKey key,
                                  base::FilePath file_path) = 0;
-  virtual void OnLocalLogStopped(WebRtcEventLogPeerConnectionKey pc_key) = 0;
+  virtual void OnLocalLogStopped(WebRtcEventLogPeerConnectionKey key) = 0;
 };
 
 }  // namespace content

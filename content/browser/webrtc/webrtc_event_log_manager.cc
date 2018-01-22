@@ -11,6 +11,30 @@
 
 namespace content {
 
+namespace {
+class PeerConnectionTrackerProxyImpl
+    : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
+ public:
+  ~PeerConnectionTrackerProxyImpl() override = default;
+
+  void StartEventLogOutput(WebRtcEventLogPeerConnectionKey key) override {
+    RenderProcessHost* host = RenderProcessHost::FromID(key.render_process_id);
+    if (!host) {
+      return;  // The host has been asynchronously removed; not a problem.
+    }
+    host->Send(new PeerConnectionTracker_StartEventLogOutput(key.lid));
+  }
+
+  void StopEventLogOutput(WebRtcEventLogPeerConnectionKey key) override {
+    RenderProcessHost* host = RenderProcessHost::FromID(key.render_process_id);
+    if (!host) {
+      return;  // The host has been asynchronously removed; not a problem.
+    }
+    host->Send(new PeerConnectionTracker_StopEventLog(key.lid));
+  }
+};
+}  // namespace
+
 const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
 
 WebRtcEventLogManager* WebRtcEventLogManager::g_webrtc_event_log_manager =
@@ -29,6 +53,7 @@ WebRtcEventLogManager* WebRtcEventLogManager::GetInstance() {
 WebRtcEventLogManager::WebRtcEventLogManager()
     : local_logs_observer_(nullptr),
       local_logs_manager_(this),
+      pc_tracker_proxy_(new PeerConnectionTrackerProxyImpl),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
@@ -245,26 +270,25 @@ void WebRtcEventLogManager::SetLocalLogsObserverInternal(
 void WebRtcEventLogManager::UpdateWebRtcEventLoggingState(
     PeerConnectionKey peer_connection,
     bool enabled) {
-  // TODO(eladalon): Add unit tests that would make sure that we really
-  // instruct WebRTC to start/stop event logs. https://crbug.com/775415
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* host =
-      RenderProcessHost::FromID(peer_connection.render_process_id);
-  if (!host) {
-    return;  // The host has been asynchronously removed; not a problem.
-  }
   if (enabled) {
-    host->Send(
-        new PeerConnectionTracker_StartEventLogOutput(peer_connection.lid));
+    pc_tracker_proxy_->StartEventLogOutput(peer_connection);
   } else {
-    host->Send(new PeerConnectionTracker_StopEventLog(peer_connection.lid));
+    pc_tracker_proxy_->StopEventLogOutput(peer_connection);
   }
 }
 
-void WebRtcEventLogManager::InjectClockForTesting(base::Clock* clock) {
+void WebRtcEventLogManager::SetClockForTesting(base::Clock* clock) {
   // Testing only; no need for threading guarantees (called before anything
   // could be put on the TQ).
-  local_logs_manager_.InjectClockForTesting(clock);
+  local_logs_manager_.SetClockForTesting(clock);
+}
+
+void WebRtcEventLogManager::SetPeerConnectionTrackerProxyForTesting(
+    std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy) {
+  // Testing only; no need for threading guarantees (called before anything
+  // could be put on the TQ).
+  pc_tracker_proxy_ = std::move(pc_tracker_proxy);
 }
 
 }  // namespace content

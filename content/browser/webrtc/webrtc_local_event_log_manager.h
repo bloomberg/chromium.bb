@@ -31,8 +31,8 @@ class WebRtcLocalEventLogManager {
 
   // This function is public, but this entire class is a protected
   // implementation detail of WebRtcEventLogManager, which hides this
-  // function from everybody except its own unit-tests.
-  void InjectClockForTesting(base::Clock* clock);
+  // function from everybody except its own unit tests.
+  void SetClockForTesting(base::Clock* clock);
 
  private:
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;

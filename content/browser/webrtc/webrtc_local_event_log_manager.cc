@@ -157,7 +157,7 @@ bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
   return (static_cast<size_t>(written) == output.length());
 }
 
-void WebRtcLocalEventLogManager::InjectClockForTesting(base::Clock* clock) {
+void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
   clock_for_testing_ = clock;
 }
 

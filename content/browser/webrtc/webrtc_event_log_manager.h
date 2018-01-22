@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <type_traits>
 
 #include "base/callback.h"
@@ -30,6 +31,18 @@ namespace content {
 class CONTENT_EXPORT WebRtcEventLogManager
     : protected WebRtcLocalEventLogsObserver {
  public:
+  // To turn WebRTC on and off, we go through PeerConnectionTrackerProxy. In
+  // order to make this toggling easily testable, PeerConnectionTrackerProxyImpl
+  // will send real messages to PeerConnectionTracker, whereas
+  // PeerConnectionTrackerProxyForTesting will be a mock that just makes sure
+  // the correct messages were attempted to be sent.
+  class PeerConnectionTrackerProxy {
+   public:
+    virtual ~PeerConnectionTrackerProxy() = default;
+    virtual void StartEventLogOutput(WebRtcEventLogPeerConnectionKey key) = 0;
+    virtual void StopEventLogOutput(WebRtcEventLogPeerConnectionKey key) = 0;
+  };
+
   // Ensures that no previous instantiation of the class was performed, then
   // instantiates the class and returns the object. Subsequent calls to
   // GetInstance() will return this object.
@@ -169,7 +182,10 @@ class CONTENT_EXPORT WebRtcEventLogManager
   void UpdateWebRtcEventLoggingState(PeerConnectionKey peer_connection,
                                      bool enabled);
 
-  void InjectClockForTesting(base::Clock* clock);
+  void SetClockForTesting(base::Clock* clock);
+
+  void SetPeerConnectionTrackerProxyForTesting(
+      std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy);
 
   // Observer which will be informed whenever a local log file is started or
   // stopped. Its callbacks are called synchronously from |task_runner_|,
@@ -184,6 +200,11 @@ class CONTENT_EXPORT WebRtcEventLogManager
   // in WebRTC, and for which client(s).
   std::map<PeerConnectionKey, LoggingTargetBitmap>
       peer_connections_with_event_logging_enabled_;
+
+  // In production, this holds a small object that just tells WebRTC (via
+  // PeerConnectionTracker) to start/stop producing event logs for a specific
+  // peer connection. In (relevant) unit tests, a mock will be injected.
+  std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy_;
 
   // The main logic will run sequentially on this runner, on which blocking
   // tasks are allowed.
