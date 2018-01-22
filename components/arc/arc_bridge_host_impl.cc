@@ -233,6 +233,12 @@ void ArcBridgeHostImpl::OnRotationLockInstanceReady(
                   std::move(rotation_lock_ptr));
 }
 
+void ArcBridgeHostImpl::OnScreenCaptureInstanceReady(
+    mojom::ScreenCaptureInstancePtr screen_capture_ptr) {
+  OnInstanceReady(arc_bridge_service_->screen_capture(),
+                  std::move(screen_capture_ptr));
+}
+
 void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
     mojom::StorageManagerInstancePtr storage_manager_ptr) {
   OnInstanceReady(arc_bridge_service_->storage_manager(),
