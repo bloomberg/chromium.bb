@@ -16,12 +16,12 @@
 
   var requestFoo = new SDK.NetworkRequest('', '', '', '', '');
   requestFoo.setResourceType(types.Script);
-  requestFoo.setRequestId('foo');
+  requestFoo.setRequestIdForTest('foo');
   TestRunner.networkManager._dispatcher._startNetworkRequest(requestFoo);
 
   var requestBar = new SDK.NetworkRequest('', '', '', '', '');
   requestBar.setResourceType(types.Script);
-  requestBar.setRequestId('bar');
+  requestBar.setRequestIdForTest('bar');
   TestRunner.networkManager._dispatcher._startNetworkRequest(requestBar);
 
   async function isFilteredOut(request) {

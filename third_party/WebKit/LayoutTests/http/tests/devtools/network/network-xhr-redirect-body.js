@@ -26,13 +26,14 @@
   function step4() {
     NetworkTestRunner.networkRequests()[offset + 1].requestContent().then(step5);
   }
-  function step5() {
+  async function step5() {
     var requests = NetworkTestRunner.networkRequests();
     for (var i = 0; i < requests.length; ++i) {
       var request = requests[i];
       var requestMethod = request.requestMethod;
       var actualMethod = request.responseHeaderValue('request-method');
-      var body = '[' + (request.requestFormData || '') + ']';
+      var formData = await request.requestFormData();
+      var body = `[${formData || ''}]`;
       TestRunner.addResult(requestMethod + ' ' + request.url());
       TestRunner.addResult('  actual http method was: ' + actualMethod);
       TestRunner.addResult('  request body: ' + body);

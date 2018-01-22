@@ -12,11 +12,11 @@
   NetworkTestRunner.recordNetwork();
   NetworkTestRunner.makeSimpleXHRWithPayload('POST', 'resources/resource.php?foo', true, payload, step2);
 
-  function step2() {
+  async function step2() {
     var request = NetworkTestRunner.networkRequests().pop();
     TestRunner.addResult(request.url());
     TestRunner.assertEquals('foo', request.queryString(), 'Unexpected resource query.');
-    TestRunner.assertEquals(payload, request.requestFormData, 'Payload corrupted.');
+    TestRunner.assertEquals(payload, await request.requestFormData(), 'Payload corrupted.');
     TestRunner.completeTest();
   }
 })();
