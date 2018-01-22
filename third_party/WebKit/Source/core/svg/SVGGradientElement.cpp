@@ -79,7 +79,7 @@ void SVGGradientElement::CollectStyleForPresentationAttribute(
   if (name == SVGNames::gradientTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform,
-        gradient_transform_->CurrentValue()->CssValue());
+        *gradient_transform_->CurrentValue()->CssValue());
     return;
   }
   SVGElement::CollectStyleForPresentationAttribute(name, value, style);

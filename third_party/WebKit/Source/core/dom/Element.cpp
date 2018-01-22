@@ -4607,9 +4607,9 @@ void Element::AddPropertyToPresentationAttributeStyle(
 void Element::AddPropertyToPresentationAttributeStyle(
     MutableCSSPropertyValueSet* style,
     CSSPropertyID property_id,
-    const CSSValue* value) {
+    const CSSValue& value) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, *value);
+  style->SetProperty(property_id, value);
 }
 
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
