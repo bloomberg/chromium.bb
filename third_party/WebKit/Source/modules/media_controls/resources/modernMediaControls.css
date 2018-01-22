@@ -411,6 +411,23 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
   margin-right: 6px;
 }
 
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] div {
+  display: inline-grid;
+  margin: 16px 0 16px 0;
+}
+
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] div.with-subtitle {
+  margin: 8px 0 8px 0;
+}
+
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span {
+  line-height: normal;
+}
+
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span.subtitle {
+  color: rgba(0,0,0,0.54);
+}
+
 audio::-internal-media-controls-text-track-list-header:hover,
 video::-internal-media-controls-text-track-list-header:hover,
 audio::-internal-media-controls-overflow-menu-list-item:hover,

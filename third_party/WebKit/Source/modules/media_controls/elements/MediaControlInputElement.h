@@ -82,6 +82,17 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // the overflow menu.
   String GetOverflowMenuString() const;
 
+  // Returns a subtitle for the overflow menu text, or a null String if there
+  // should not be a subtitle.
+  virtual String GetOverflowMenuSubtitleString() const;
+
+  // Create/update subtitle text on the overflow element. If a null String is
+  // given, the subtitle element is removed.
+  void UpdateOverflowSubtitleElement(String text);
+
+  // Remove the subtitle text from the overflow element.
+  void RemoveOverflowSubtitleElement();
+
   // Used for histograms, do not reorder.
   enum class CTREvent {
     kDisplayed = 0,
@@ -96,8 +107,14 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Setting this pointer is optional so it may be null.
   Member<MediaControlInputElement> overflow_element_;
 
+  // Contains the overflow text and its subtitle (if exists).
+  Member<HTMLDivElement> overflow_menu_container_;
+
   // The text representation of the button within the overflow menu.
-  Member<Text> overflow_menu_text_;
+  Member<HTMLSpanElement> overflow_menu_text_;
+
+  // The subtitle of the text within the overflow menu.
+  Member<HTMLSpanElement> overflow_menu_subtitle_;
 
   // Keeps track if the button was created for the purpose of the overflow menu.
   bool is_overflow_element_ = false;
