@@ -48,17 +48,51 @@ class V8ScriptRunnerTest : public ::testing::Test {
   unsigned TagForCodeCache(CachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForCodeCache(cache_handler);
   }
+  unsigned TagForTimeStamp(CachedMetadataHandler* cache_handler) const {
+    return V8ScriptRunner::TagForTimeStamp(cache_handler);
+  }
   void SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
     V8ScriptRunner::SetCacheTimeStamp(cache_handler);
   }
 
-  bool CompileScript(ScriptState* script_state,
+  bool CompileScript(v8::Isolate* isolate,
+                     ScriptState* script_state,
                      const ScriptSourceCode& source_code,
                      V8CacheOptions cache_options) {
-    return !V8ScriptRunner::CompileScript(script_state, source_code,
-                                          kNotSharableCrossOrigin,
-                                          cache_options, ReferrerScriptInfo())
-                .IsEmpty();
+    v8::ScriptCompiler::CompileOptions compile_options;
+    V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+    v8::ScriptCompiler::NoCacheReason no_cache_reason;
+    std::tie(compile_options, produce_cache_options, no_cache_reason) =
+        V8ScriptRunner::GetCompileOptions(cache_options, source_code);
+    v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
+        script_state, source_code, kNotSharableCrossOrigin, compile_options,
+        no_cache_reason, ReferrerScriptInfo());
+    if (compiled_script.IsEmpty()) {
+      return false;
+    }
+    V8ScriptRunner::ProduceCache(isolate, compiled_script.ToLocalChecked(),
+                                 source_code, produce_cache_options,
+                                 compile_options);
+    return true;
+  }
+
+  bool CompileScript(
+      v8::Isolate* isolate,
+      ScriptState* script_state,
+      const ScriptSourceCode& source_code,
+      v8::ScriptCompiler::CompileOptions compile_options,
+      v8::ScriptCompiler::NoCacheReason no_cache_reason,
+      V8ScriptRunner::ProduceCacheOptions produce_cache_options) {
+    v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
+        script_state, source_code, kNotSharableCrossOrigin, compile_options,
+        no_cache_reason, ReferrerScriptInfo());
+    if (compiled_script.IsEmpty()) {
+      return false;
+    }
+    V8ScriptRunner::ProduceCache(isolate, compiled_script.ToLocalChecked(),
+                                 source_code, produce_cache_options,
+                                 compile_options);
+    return true;
   }
 
   ScriptResource* CreateEmptyResource() {
@@ -86,12 +120,12 @@ TEST_F(V8ScriptRunnerTest, resourcelessShouldPass) {
   V8TestingScope scope;
   ScriptSourceCode source_code(Code(), ScriptSourceLocationType::kInternal,
                                nullptr /* cache_handler */, Url());
-  EXPECT_TRUE(
-      CompileScript(scope.GetScriptState(), source_code, kV8CacheOptionsNone));
-  EXPECT_TRUE(
-      CompileScript(scope.GetScriptState(), source_code, kV8CacheOptionsParse));
-  EXPECT_TRUE(
-      CompileScript(scope.GetScriptState(), source_code, kV8CacheOptionsCode));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsNone));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsParse));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsCode));
 }
 
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
@@ -102,8 +136,8 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
 TEST_F(V8ScriptRunnerTest, parseOption) {
   V8TestingScope scope;
   ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
-  EXPECT_TRUE(
-      CompileScript(scope.GetScriptState(), source_code, kV8CacheOptionsParse));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsParse));
   CachedMetadataHandler* cache_handler = source_code.CacheHandler();
   EXPECT_TRUE(
       cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
@@ -122,8 +156,8 @@ TEST_F(V8ScriptRunnerTest, codeOption) {
   CachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
 
-  EXPECT_TRUE(
-      CompileScript(scope.GetScriptState(), source_code, kV8CacheOptionsCode));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsCode));
 
   EXPECT_FALSE(
       cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
@@ -133,6 +167,71 @@ TEST_F(V8ScriptRunnerTest, codeOption) {
       CreateResource(UTF16LittleEndianEncoding());
   EXPECT_FALSE(cache_handler->GetCachedMetadata(
       TagForCodeCache(another_resource->CacheHandler())));
+}
+
+TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
+  V8TestingScope scope;
+  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
+  // Set timestamp to simulate a warm run.
+  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
+  SetCacheTimeStamp(cache_handler);
+
+  // Warm run - should produce code cache.
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsCode));
+
+  // Check the produced cache is for code and not parser cache.
+  EXPECT_FALSE(
+      cache_handler->GetCachedMetadata(TagForParserCache(cache_handler)));
+  EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
+
+  // Hot run - should consume code cache.
+  v8::ScriptCompiler::CompileOptions compile_options;
+  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  v8::ScriptCompiler::NoCacheReason no_cache_reason;
+  std::tie(compile_options, produce_cache_options, no_cache_reason) =
+      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+  EXPECT_EQ(produce_cache_options,
+            V8ScriptRunner::ProduceCacheOptions::kNoProduceCache);
+  EXPECT_EQ(compile_options,
+            v8::ScriptCompiler::CompileOptions::kConsumeCodeCache);
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, compile_options, no_cache_reason,
+                            produce_cache_options));
+  EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
+}
+
+TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOption) {
+  V8TestingScope scope;
+  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
+  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
+
+  // Cold run - should set the timestamp
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsDefault));
+  EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForTimeStamp(cache_handler)));
+  EXPECT_FALSE(
+      cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
+
+  // Warm run - should produce code cache
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, kV8CacheOptionsDefault));
+  EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
+
+  // Hot run - should consume code cache
+  v8::ScriptCompiler::CompileOptions compile_options;
+  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  v8::ScriptCompiler::NoCacheReason no_cache_reason;
+  std::tie(compile_options, produce_cache_options, no_cache_reason) =
+      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+  EXPECT_EQ(produce_cache_options,
+            V8ScriptRunner::ProduceCacheOptions::kNoProduceCache);
+  EXPECT_EQ(compile_options,
+            v8::ScriptCompiler::CompileOptions::kConsumeCodeCache);
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
+                            source_code, compile_options, no_cache_reason,
+                            produce_cache_options));
+  EXPECT_TRUE(cache_handler->GetCachedMetadata(TagForCodeCache(cache_handler)));
 }
 
 }  // namespace

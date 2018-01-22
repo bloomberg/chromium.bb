@@ -271,12 +271,20 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   // - A work{er,let} script doesn't have a nonce, and
   // - a work{er,let} script is always "not parser inserted".
   ReferrerScriptInfo referrer_info;
+  v8::ScriptCompiler::CompileOptions compile_options;
+  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  v8::ScriptCompiler::NoCacheReason no_cache_reason;
+  std::tie(compile_options, produce_cache_options, no_cache_reason) =
+      V8ScriptRunner::GetCompileOptions(v8_cache_options, source_code);
   if (V8ScriptRunner::CompileScript(script_state_.get(), source_code,
-                                    kSharableCrossOrigin, v8_cache_options,
-                                    referrer_info)
-          .ToLocal(&compiled_script))
+                                    kSharableCrossOrigin, compile_options,
+                                    no_cache_reason, referrer_info)
+          .ToLocal(&compiled_script)) {
+    V8ScriptRunner::ProduceCache(isolate_, compiled_script, source_code,
+                                 produce_cache_options, compile_options);
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
+  }
 
   if (!block.CanContinue()) {
     ForbidExecution();

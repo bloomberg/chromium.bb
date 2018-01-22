@@ -61,14 +61,22 @@ class CORE_EXPORT V8ScriptRunner final {
     kNotOpaque,
   };
 
+  enum class ProduceCacheOptions {
+    kNoProduceCache,
+    kSetTimeStamp,
+    kProduceCodeCache,
+  };
+
   // For the following methods, the caller sites have to hold
   // a HandleScope and a ContextScope.
   // CachedMetadataHandler is set when metadata caching is supported.
-  static v8::MaybeLocal<v8::Script> CompileScript(ScriptState*,
-                                                  const ScriptSourceCode&,
-                                                  AccessControlStatus,
-                                                  V8CacheOptions,
-                                                  const ReferrerScriptInfo&);
+  static v8::MaybeLocal<v8::Script> CompileScript(
+      ScriptState*,
+      const ScriptSourceCode&,
+      AccessControlStatus,
+      v8::ScriptCompiler::CompileOptions,
+      v8::ScriptCompiler::NoCacheReason,
+      const ReferrerScriptInfo&);
   static v8::MaybeLocal<v8::Module> CompileModule(v8::Isolate*,
                                                   const String& source,
                                                   const String& file_name,
@@ -107,6 +115,17 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   v8::Local<v8::Module>,
                                                   v8::Local<v8::Context>);
 
+  static std::tuple<v8::ScriptCompiler::CompileOptions,
+                    ProduceCacheOptions,
+                    v8::ScriptCompiler::NoCacheReason>
+  GetCompileOptions(V8CacheOptions, const ScriptSourceCode&);
+
+  static void ProduceCache(v8::Isolate*,
+                           v8::Local<v8::Script>,
+                           const ScriptSourceCode&,
+                           ProduceCacheOptions,
+                           v8::ScriptCompiler::CompileOptions);
+
   // Only to be used from ScriptModule::ReportException().
   static void ReportExceptionForModule(v8::Isolate*,
                                        v8::Local<v8::Value> exception,
@@ -115,6 +134,7 @@ class CORE_EXPORT V8ScriptRunner final {
 
   static uint32_t TagForParserCache(CachedMetadataHandler*);
   static uint32_t TagForCodeCache(CachedMetadataHandler*);
+  static uint32_t TagForTimeStamp(CachedMetadataHandler*);
   static void SetCacheTimeStamp(CachedMetadataHandler*);
 
   // Utilities for calling functions added to the V8 extras binding object.
