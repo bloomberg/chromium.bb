@@ -3,6 +3,7 @@ include_rules = [
   "+components/autofill",
   "+components/content_settings/core",
   "+components/flags_ui",
+  "+components/image_fetcher/ios",
   "+components/infobars/core",
   "+components/keyed_service/core",
   "+components/keyed_service/ios",
