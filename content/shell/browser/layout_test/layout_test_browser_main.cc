@@ -88,9 +88,8 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   std::cout << "#READY\n";
   std::cout.flush();
 
-  base::CommandLine::StringVector args =
-      base::CommandLine::ForCurrentProcess()->GetArgs();
-  content::TestInfoExtractor test_extractor(args);
+  content::TestInfoExtractor test_extractor(
+      *base::CommandLine::ForCurrentProcess());
   bool ran_at_least_once = false;
   std::unique_ptr<content::TestInfo> test_info;
   while ((test_info = test_extractor.GetNextTest())) {
