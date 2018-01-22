@@ -1711,6 +1711,7 @@ test("content_unittests") {
     "//services/file:lib",
     "//services/file/public/interfaces",
     "//services/metrics/public/interfaces",
+    "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/interfaces:interfaces",
     "//services/proxy_resolver/:lib",

@@ -1,0 +1,145 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module network.mojom;
+
+import "mojo/common/read_only_buffer.mojom";
+import "net/interfaces/address_family.mojom";
+import "net/interfaces/ip_endpoint.mojom";
+
+// UDPSocket is an interface that exposes UDP socket functionalities.
+// UDPSocketReceiver is an interface that allows consumers to consume data
+// received by the UDPSocket. The typical flow of using the interfaces is:
+// - Acquire a UDPSocket interface pointer and optionally supply a non-null
+//   UDPSocketReceiverPtr. If consumers are not interested in received data, a
+//   null UDPSocketReceiverPtr is acceptable.
+// - Open().
+// - (optional) Set options.
+// - Use either Bind() or Connect() before datagrams can be sent or received.
+// - Send / request to receive datagrams. Received datagrams will be delivered
+//   to the bound receiver's OnReceived() call.
+// - Close the socket by destroying the interface pointer.
+interface UDPSocket {
+  // Opens the socket. This requests a socket of |address_family| from the OS.
+  // Returns net::OK on success and a negative net error code on failure.
+  Open(net.interfaces.AddressFamily address_family) => (int32 result);
+
+  // Binds the address/port for this socket to |local_addr|. Caller can use port
+  // 0 to let the OS pick an available port.
+  // Should only be called after Open(). Returns net::OK and the real
+  // local address used on success and a negative net error code on failure.
+  Bind(net.interfaces.IPEndPoint local_addr) =>
+      (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+
+  // Connects the socket to |remote_addr|. This automatically binds the socket
+  // to an available local port, so this cannot be used with Bind().
+  // Should only be called after Open(). The address family of the local socket
+  // will be of the same net.interfaces.AddressFamily supplied during Open().
+  // Returns net::OK and the local address of socket on success. Subsequent
+  // packets received will be from |remote_addr|. Returns a negative net error
+  // code on failure.
+  Connect(net.interfaces.IPEndPoint remote_addr) =>
+      (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+
+  // Sets the OS send buffer size (in bytes) for the socket. This is the
+  // SO_SNDBUF socket option. This socket option matters less for UDP socket (as
+  // compared to TCP), because in theory all UDP data written to the kernel
+  // should directly go out to the network. The kernel usually doesn't need to
+  // buffer send data.
+  // Should only be called after Open(). Returns net::OK upon success, and a
+  // net error code upon failure.
+  SetSendBufferSize(uint32 size) => (int32 result);
+
+  // Sets the OS receive buffer size (in bytes) for the socket. This is the
+  // SO_RCVBUF socket option. The kernel allocates this much to hold the data
+  // arriving into this socket between the time when data arrives over the
+  // network and when it is read by UDPSocketReceiver. If buffer is full,
+  // new packets will be discarded.
+  // Should only be called after Open(). Returns net::OK upon success, and a
+  // net error code upon failure.
+  SetReceiveBufferSize(uint32 size) => (int32 result);
+
+  // Notifies that the receiver is ready to accept |number| of datagrams.
+  // Correspondingly, OnReceived() of the UDPSocketReceiver interface will be
+  // called |number| times (errors also count), unless the connection is closed
+  // before that. The implementation may return net::ERR_INSUFFICIENT_RESOURCES
+  // in an OnReceived() callback if the service doesn't have enough resource to
+  // complete the operation. For example, if the implementation queues the
+  // requests internally, net::ERR_INSUFFICIENT_RESOURCES can be returned if the
+  // queue doesn't have any space to accept new ReceiveMore().
+  //
+  // It is allowed to call this method again before the previous request is
+  // completely satisfied. For example:
+  //   service->ReceiveMore(3);
+  //   ...
+  //   // OnReceived() is called.
+  //   // OnReceived() is called.
+  //   ...
+  //   service->ReceiveMore(3);
+  //   // The client expects 4 more calls to OnReceived().
+  //
+  // Please note that how ReceiveMore() is used will affect performance
+  // significantly. For example:
+  //   // Approach 1:
+  //   service->ReceiveMore(3);
+  //   // OnReceived() is called.
+  //   // OnReceived() is called.
+  //   // OnReceived() is called.
+  //
+  //   // Approach 2:
+  //   service->ReceiveMore(1);
+  //   // OnReceived() is called.
+  //   service->ReceiveMore(1);
+  //   // OnReceived() is called.
+  //   service->ReceiveMore(1);
+  //   // OnReceived() is called.
+  //
+  // It is very likely that approach 1 will perform better than approach 2,
+  // because in approach 2 getting every datagram takes at least the time of a
+  // round trip to the service side.
+  // TODO(xunjieli): Allow consumer to configure the underlying read buffer
+  // size. This is currently set to be 128KB, which is likely to be too big.
+  ReceiveMore(uint32 num_additional_datagrams);
+
+  // Sends data to a particular destination, |dest_addr|. Should only be used
+  // after Bind(). There is currently no limit on the size of |data|, other
+  // than the restrictions on datagram size specified in the IP layer (e.g.
+  // 65507 bytes for IPv4) . Consumers need to be aware that sending data in
+  // larger chunks will result in higher memory usage. Upon successfully handing
+  // the data to the OS, |result| is net::OK. On failure, it is a network error
+  // code, including (but not limited to):
+  // - net::ERR_INSUFFICIENT_RESOURCES: The service doesn't have
+  //   sufficient resource to complete the operation. When this happens, the
+  //   requests will be failed quickly (which might happen before the completion
+  //   of requests that were sent earlier).
+  SendTo(net.interfaces.IPEndPoint dest_addr,
+         mojo.common.mojom.ReadOnlyBuffer data) => (int32 result);
+
+  // Same as SendTo(), except this method sends data to the destination
+  // specified in an earlier Connect(). This method should only be called after
+  // a successful Connect().
+  Send(mojo.common.mojom.ReadOnlyBuffer data) => (int32 result);
+};
+
+// An interface the consumers of UDPSocket can implement to listen for incoming
+// packets. This interface is to be used together when requesting a UDPSocket.
+interface UDPSocketReceiver {
+  // Invoked when data is received.
+  // - When UDPSocket is used with Bind():
+  //   On success, |result| is net::OK. |src_addr| indicates the address of the
+  //   sender. |data| contains the received data.
+  //   On failure, |result| is a negative network error code. |data| is null.
+  //   |src_addr| might be null.
+  // - When UDPSocket is used with Connect():
+  //   |src_addr| is always null. Data are always received from the remote
+  //   address specified in Connect().
+  //   On success, |result| is net::OK. |data| contains the received data.
+  //   On failure, |result| is a negative network error code. |data| is null.
+  //
+  // Note that in both cases, |data| can be an empty buffer when |result| is
+  // net::OK, which indicates a zero-byte payload.
+  OnReceived(int32 result,
+             net.interfaces.IPEndPoint? src_addr,
+             mojo.common.mojom.ReadOnlyBuffer? data);
+};

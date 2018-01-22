@@ -10,6 +10,10 @@ static_library("network_service") {
     "cookie_manager.h",
     "proxy_config_service_mojo.cc",
     "proxy_config_service_mojo.h",
+    "udp_socket.cc",
+    "udp_socket.h",
+    "udp_socket_factory.cc",
+    "udp_socket_factory.h",
   ]
 
   deps = [
@@ -27,9 +31,12 @@ source_set("tests") {
   sources = [
     "cookie_manager_unittest.cc",
     "proxy_config_service_mojo_unittest.cc",
+    "udp_socket_factory_unittest.cc",
+    "udp_socket_unittest.cc",
   ]
 
   deps = [
+    ":test_support",
     "//base",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -40,16 +47,19 @@ source_set("tests") {
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
     "test/test_data_pipe_getter.cc",
+    "udp_socket_test_util.cc",
+    "udp_socket_test_util.h",
   ]
 
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
+    "//net",
     "//services/network:network_service",
     "//services/network/public/interfaces",
     "//testing/gtest",
