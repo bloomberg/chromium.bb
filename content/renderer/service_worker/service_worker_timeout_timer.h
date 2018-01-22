@@ -28,7 +28,9 @@ namespace content {
 // S13nServiceWorker:
 // 1) Event timeout: when an event starts, StartEvent() records the expiration
 // time of the event (kEventTimeout). If EndEvent() has not been called within
-// the timeout time, |abort_callback| passed to StartEvent() is called.
+// the timeout time, |abort_callback| passed to StartEvent() is called. Also,
+// |zero_idle_timer_delay_| is set to true to shut down the worker as soon as
+// possible since the worker may have gone into bad state.
 // 2) Idle timeout: when a certain time has passed (kIdleDelay) since all of
 // events have ended, ServiceWorkerTimeoutTimer calls the |idle_callback|.
 // |idle_callback| will be continuously called at a certain interval
