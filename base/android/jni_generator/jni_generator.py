@@ -1043,6 +1043,10 @@ $CLOSE_NAMESPACE
     profiling_entered_native = ''
     if self.options.enable_profiling:
       profiling_entered_native = 'JNI_LINK_SAVED_FRAME_POINTER;'
+    # Temporary annotations for crbug.com/801260. Will be removed once the
+    # memory usage is understood.
+    trace_native_execution_scoped = (
+        'TRACE_NATIVE_EXECUTION_SCOPED("' + native.name + '");')
     values = {
         'RETURN': return_type,
         'RETURN_DECLARATION': return_declaration,
@@ -1054,6 +1058,7 @@ $CLOSE_NAMESPACE
         'POST_CALL': post_call,
         'STUB_NAME': self.helper.GetStubName(native),
         'PROFILING_ENTERED_NATIVE': profiling_entered_native,
+        'TRACE_NATIVE_EXECUTION_SCOPED': trace_native_execution_scoped,
     }
 
     if is_method:
@@ -1068,6 +1073,7 @@ $CLOSE_NAMESPACE
       template = Template("""\
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
+  ${TRACE_NATIVE_EXECUTION_SCOPED}
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
@@ -1079,6 +1085,7 @@ static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env, ${PARAMS});
 
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
+  ${TRACE_NATIVE_EXECUTION_SCOPED}
   return ${IMPL_METHOD_NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)

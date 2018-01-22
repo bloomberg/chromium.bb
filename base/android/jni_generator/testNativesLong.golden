@@ -33,6 +33,7 @@ inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
 JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
     jobject jcaller,
     jlong nativeChromeBrowserProvider) {
+  TRACE_NATIVE_EXECUTION_SCOPED("Destroy");
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
