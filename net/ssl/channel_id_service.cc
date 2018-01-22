@@ -37,39 +37,6 @@ namespace {
 
 base::AtomicSequenceNumber g_next_id;
 
-// Used by the GetDomainBoundCertResult histogram to record the final
-// outcome of each GetChannelID or GetOrCreateChannelID call.
-// Do not re-use values.
-enum GetChannelIDResult {
-  // Synchronously found and returned an existing domain bound cert.
-  SYNC_SUCCESS = 0,
-  // Retrieved or generated and returned a domain bound cert asynchronously.
-  ASYNC_SUCCESS = 1,
-  // Retrieval/generation request was cancelled before the cert generation
-  // completed.
-  ASYNC_CANCELLED = 2,
-  // Cert generation failed.
-  ASYNC_FAILURE_KEYGEN = 3,
-  // Result code 4 was removed (ASYNC_FAILURE_CREATE_CERT)
-  ASYNC_FAILURE_EXPORT_KEY = 5,
-  ASYNC_FAILURE_UNKNOWN = 6,
-  // GetChannelID or GetOrCreateChannelID was called with
-  // invalid arguments.
-  INVALID_ARGUMENT = 7,
-  // We don't support any of the cert types the server requested.
-  UNSUPPORTED_TYPE = 8,
-  // Server asked for a different type of certs while we were generating one.
-  TYPE_MISMATCH = 9,
-  // Couldn't start a worker to generate a cert.
-  WORKER_FAILURE = 10,
-  GET_CHANNEL_ID_RESULT_MAX
-};
-
-void RecordGetChannelIDResult(GetChannelIDResult result) {
-  UMA_HISTOGRAM_ENUMERATION("DomainBoundCerts.GetDomainBoundCertResult", result,
-                            GET_CHANNEL_ID_RESULT_MAX);
-}
-
 // On success, returns a ChannelID object and sets |*error| to OK.
 // Otherwise, returns NULL, and |*error| will be set to a net error code.
 // |serial_number| is passed in because base::RandInt cannot be called from an
@@ -200,7 +167,6 @@ ChannelIDService::Request::~Request() {
 
 void ChannelIDService::Request::Cancel() {
   if (service_) {
-    RecordGetChannelIDResult(ASYNC_CANCELLED);
     callback_.Reset();
     job_->CancelRequest(this);
 
@@ -223,24 +189,6 @@ void ChannelIDService::Request::RequestStarted(
 void ChannelIDService::Request::Post(
     int error,
     std::unique_ptr<crypto::ECPrivateKey> key) {
-  switch (error) {
-    case OK: {
-      RecordGetChannelIDResult(ASYNC_SUCCESS);
-      break;
-    }
-    case ERR_KEY_GENERATION_FAILED:
-      RecordGetChannelIDResult(ASYNC_FAILURE_KEYGEN);
-      break;
-    case ERR_PRIVATE_KEY_EXPORT_FAILED:
-      RecordGetChannelIDResult(ASYNC_FAILURE_EXPORT_KEY);
-      break;
-    case ERR_INSUFFICIENT_RESOURCES:
-      RecordGetChannelIDResult(WORKER_FAILURE);
-      break;
-    default:
-      RecordGetChannelIDResult(ASYNC_FAILURE_UNKNOWN);
-      break;
-  }
   service_ = NULL;
   DCHECK(!callback_.is_null());
   if (key)
@@ -283,13 +231,11 @@ int ChannelIDService::GetOrCreateChannelID(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (callback.is_null() || !key || host.empty()) {
-    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
   std::string domain = GetDomainForHost(host);
   if (domain.empty()) {
-    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
@@ -332,13 +278,11 @@ int ChannelIDService::GetChannelID(const std::string& host,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (callback.is_null() || !key || host.empty()) {
-    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
   std::string domain = GetDomainForHost(host);
   if (domain.empty()) {
-    RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
@@ -461,7 +405,6 @@ int ChannelIDService::LookupChannelID(
     // Sync lookup found a valid channel ID.
     DVLOG(1) << "Channel ID store had valid key for " << domain;
     key_store_hits_++;
-    RecordGetChannelIDResult(SYNC_SUCCESS);
     return OK;
   }
 

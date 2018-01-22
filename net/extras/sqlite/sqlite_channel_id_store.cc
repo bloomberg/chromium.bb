@@ -203,8 +203,6 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
   // This method should be called only once per instance.
   DCHECK(!db_.get());
 
-  base::TimeTicks start = base::TimeTicks::Now();
-
   // Ensure the parent directory for storing certs is created before reading
   // from it.
   const base::FilePath dir = path_.DirName();
@@ -275,17 +273,6 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     channel_ids->push_back(std::move(channel_id));
   }
 
-  UMA_HISTOGRAM_COUNTS_10000(
-      "DomainBoundCerts.DBLoadedCount",
-      static_cast<base::HistogramBase::Sample>(channel_ids->size()));
-  base::TimeDelta load_time = base::TimeTicks::Now() - start;
-  UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.DBLoadTime",
-                             load_time,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1),
-                             50);
-  DVLOG(1) << "loaded " << channel_ids->size() << " in "
-           << load_time.InMilliseconds() << " ms";
   RecordDbLoadStatus(load_result);
 }
 

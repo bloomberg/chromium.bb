@@ -1187,7 +1187,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   }
 
   RecordNegotiatedProtocol();
-  RecordChannelIDSupport();
 
   const uint8_t* ocsp_response_raw;
   size_t ocsp_response_len;
@@ -1998,30 +1997,6 @@ void SSLClientSocketImpl::LogConnectEndEvent(int rv) {
 void SSLClientSocketImpl::RecordNegotiatedProtocol() const {
   UMA_HISTOGRAM_ENUMERATION("Net.SSLNegotiatedAlpnProtocol",
                             negotiated_protocol_, kProtoLast + 1);
-}
-
-void SSLClientSocketImpl::RecordChannelIDSupport() const {
-  // Since this enum is used for a histogram, do not change or re-use values.
-  enum {
-    DISABLED = 0,
-    CLIENT_ONLY = 1,
-    CLIENT_AND_SERVER = 2,
-    // CLIENT_NO_ECC is unused now.
-    // CLIENT_BAD_SYSTEM_TIME is unused now.
-    CLIENT_BAD_SYSTEM_TIME = 4,
-    CLIENT_NO_CHANNEL_ID_SERVICE = 5,
-    CHANNEL_ID_USAGE_MAX
-  } supported = DISABLED;
-  if (channel_id_sent_) {
-    supported = CLIENT_AND_SERVER;
-  } else if (ssl_config_.channel_id_enabled) {
-    if (!channel_id_service_)
-      supported = CLIENT_NO_CHANNEL_ID_SERVICE;
-    else
-      supported = CLIENT_ONLY;
-  }
-  UMA_HISTOGRAM_ENUMERATION("DomainBoundCerts.Support", supported,
-                            CHANNEL_ID_USAGE_MAX);
 }
 
 bool SSLClientSocketImpl::IsChannelIDEnabled() const {

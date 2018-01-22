@@ -16639,6 +16639,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainBoundCerts.DBLoadedCount">
+  <obsolete>
+    Removed January 2018.
+  </obsolete>
   <owner>mattm@chromium.org</owner>
   <summary>Number of certs loaded from domain bound cert database.</summary>
 </histogram>
@@ -16653,6 +16656,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainBoundCerts.DBLoadTime" units="ms">
+  <obsolete>
+    Removed January 2018.
+  </obsolete>
   <owner>mattm@chromium.org</owner>
   <summary>Time spent loading domain bound cert database.</summary>
 </histogram>
@@ -16715,6 +16721,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DomainBoundCerts.GetDomainBoundCertResult"
     enum="DomainBoundCerts.GetCertResult">
+  <obsolete>
+    Removed January 2018.
+  </obsolete>
   <owner>mattm@chromium.org</owner>
   <summary>Result of GetDomainBoundCert function.</summary>
 </histogram>
@@ -16728,6 +16737,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainBoundCerts.Support" enum="DomainBoundCerts.Support">
+  <obsolete>
+    Removed January 2018.
+  </obsolete>
   <owner>mattm@chromium.org</owner>
   <summary>
     Counts of SSL client sockets broken down by support for Domain Bound
