@@ -59,7 +59,8 @@ RootScrollerController* RootScrollerController::Create(Document& document) {
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document),
       effective_root_scroller_(&document),
-      document_has_document_element_(false) {}
+      document_has_document_element_(false),
+      needs_apply_properties_(false) {}
 
 void RootScrollerController::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
@@ -104,6 +105,18 @@ void RootScrollerController::DidResizeFrameView() {
   }
 }
 
+void RootScrollerController::DidUpdateIFrameFrameView(
+    HTMLFrameOwnerElement& element) {
+  if (&element != effective_root_scroller_.Get())
+    return;
+
+  // Make sure we do a layout so we try to recalculate the effective root
+  // scroller. Ensure properties are applied even if the effective root
+  // scroller doesn't change.
+  needs_apply_properties_ = true;
+  document_->GetFrame()->View()->SetNeedsLayout();
+}
+
 void RootScrollerController::RecomputeEffectiveRootScroller() {
   bool root_scroller_valid =
       root_scroller_ && IsValidRootScroller(*root_scroller_);
@@ -123,8 +136,12 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
   document_has_document_element_ = document_->documentElement();
 
   if (old_has_document_element || !document_has_document_element_) {
-    if (effective_root_scroller_ == new_effective_root_scroller)
+    if (effective_root_scroller_ == new_effective_root_scroller) {
+      if (needs_apply_properties_)
+        ApplyRootScrollerProperties(*effective_root_scroller_);
+
       return;
+    }
   }
 
   Node* old_effective_root_scroller = effective_root_scroller_;
@@ -148,15 +165,22 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
       !element.IsFrameOwnerElement())
     return false;
 
+  if (element.IsFrameOwnerElement() &&
+      !ToHTMLFrameOwnerElement(&element)->OwnedEmbeddedContentView())
+    return false;
+
   if (!FillsViewport(element))
     return false;
 
   return true;
 }
 
-void RootScrollerController::ApplyRootScrollerProperties(Node& node) const {
+void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
   DCHECK(document_->GetFrame());
   DCHECK(document_->GetFrame()->View());
+
+  if (&node == effective_root_scroller_)
+    needs_apply_properties_ = false;
 
   // If the node has been removed from the Document, we shouldn't be touching
   // anything related to the Frame- or Layout- hierarchies.
@@ -169,7 +193,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) const {
 
     if (frame_owner->ContentFrame()->IsLocalFrame()) {
       LocalFrameView* frame_view =
-          ToLocalFrame(frame_owner->ContentFrame())->View();
+          ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
 
       bool is_root_scroller = &EffectiveRootScroller() == &node;
 

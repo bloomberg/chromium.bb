@@ -114,6 +114,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
@@ -747,6 +748,13 @@ void Internals::setBrowserControlsState(float top_height,
 
 void Internals::setBrowserControlsShownRatio(float ratio) {
   document_->GetPage()->GetChromeClient().SetBrowserControlsShownRatio(ratio);
+}
+
+Node* Internals::effectiveRootScroller(Document* document) {
+  if (!document)
+    document = document_;
+
+  return &document->GetRootScrollerController().EffectiveRootScroller();
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host) {

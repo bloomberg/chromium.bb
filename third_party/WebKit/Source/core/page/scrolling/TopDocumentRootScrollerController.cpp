@@ -107,7 +107,13 @@ Element* TopDocumentRootScrollerController::FindGlobalRootScrollerElement() {
   return element;
 }
 
-void SetNeedsCompositingUpdateOnAncestors(ScrollableArea* area) {
+void SetNeedsCompositingUpdateOnAncestors(Element* element) {
+  if (!element || !element->GetDocument().IsActive())
+    return;
+
+  ScrollableArea* area =
+      RootScrollerUtil::ScrollableAreaForRootScroller(element);
+
   if (!area || !area->Layer())
     return;
 
@@ -117,7 +123,6 @@ void SetNeedsCompositingUpdateOnAncestors(ScrollableArea* area) {
       continue;
 
     LayoutView* layout_view = ToLocalFrame(frame)->View()->GetLayoutView();
-
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       PaintLayer* frame_root_layer = layout_view->Layer();
       DCHECK(frame_root_layer);
@@ -153,8 +158,7 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   // scrolling the element so it will apply scroll to the element itself.
   target->setApplyScroll(viewport_apply_scroll_, "disable-native-scroll");
 
-  ScrollableArea* old_root_scroller_area =
-      RootScrollerUtil::ScrollableAreaForRootScroller(global_root_scroller_);
+  Element* old_root_scroller = global_root_scroller_;
 
   global_root_scroller_ = target;
 
@@ -165,11 +169,14 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   // in RootFrameViewport.
   viewport_apply_scroll_->SetScroller(target_scroller);
 
-  SetNeedsCompositingUpdateOnAncestors(old_root_scroller_area);
-  SetNeedsCompositingUpdateOnAncestors(target_scroller);
+  SetNeedsCompositingUpdateOnAncestors(old_root_scroller);
+  SetNeedsCompositingUpdateOnAncestors(target);
 
-  if (old_root_scroller_area)
-    old_root_scroller_area->DidChangeGlobalRootScroller();
+  if (ScrollableArea* area =
+          RootScrollerUtil::ScrollableAreaForRootScroller(old_root_scroller)) {
+    if (old_root_scroller->GetDocument().IsActive())
+      area->DidChangeGlobalRootScroller();
+  }
 
   target_scroller->DidChangeGlobalRootScroller();
 }

@@ -74,6 +74,11 @@ class CORE_EXPORT RootScrollerController
   // rely on DidUpdateLayout.
   void DidResizeFrameView();
 
+  // Called when an iframe in this document has an updated FrameView (e.g.
+  // FrameView removed, swapped, etc.) so that we can recompute the effective
+  // root scroller and set the appropriate properties on the view.
+  void DidUpdateIFrameFrameView(HTMLFrameOwnerElement&);
+
   // Returns the PaintLayer associated with the currently effective root
   // scroller.
   PaintLayer* RootScrollerPaintLayer() const;
@@ -100,7 +105,7 @@ class CORE_EXPORT RootScrollerController
 
   // Set certain properties to the effective root scroller. Called when a Node
   // becomes or unbecomes the effective root scroller.
-  void ApplyRootScrollerProperties(Node&) const;
+  void ApplyRootScrollerProperties(Node&);
 
   void UpdateIFrameGeometryAndLayoutSize(HTMLFrameOwnerElement&) const;
 
@@ -120,6 +125,10 @@ class CORE_EXPORT RootScrollerController
   Member<Node> effective_root_scroller_;
 
   bool document_has_document_element_;
+
+  // This flag is used to force applicationn of rootScroller properties even if
+  // the effective rootScroller doesn't change.
+  bool needs_apply_properties_;
 };
 
 }  // namespace blink
