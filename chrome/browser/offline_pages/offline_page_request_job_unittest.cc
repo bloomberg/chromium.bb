@@ -312,14 +312,14 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
   base::FilePath test_data_dir_path;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
   base::FilePath private_archives_dir =
-      test_data_dir_path.AppendASCII("offline_pages");
-  base::FilePath public_archives_dir(FILE_PATH_LITERAL("/sdcard/Download"));
+      test_data_dir_path.AppendASCII(kPrivateOfflineFileDir);
+  base::FilePath public_archives_dir =
+      test_data_dir_path.AppendASCII(kPublicOfflineFileDir);
 
-  // We're not interested in saving any temporary file in this test.
-  base::FilePath temporary_archives_dir;
-
+  // Since we're not saving page into temporary dir, it's set the same as the
+  // private dir.
   std::unique_ptr<ArchiveManager> archive_manager(
-      new ArchiveManager(temporary_archives_dir, private_archives_dir,
+      new ArchiveManager(private_archives_dir, private_archives_dir,
                          public_archives_dir, task_runner));
   std::unique_ptr<base::Clock> clock(new base::DefaultClock);
 
@@ -485,7 +485,6 @@ void OfflinePageRequestJobTest::SetUp() {
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), BuildTestOfflinePageModel);
-  RunUntilIdle();
 
   OfflinePageModelTaskified* model = static_cast<OfflinePageModelTaskified*>(
       OfflinePageModelFactory::GetForBrowserContext(profile()));
@@ -500,6 +499,9 @@ void OfflinePageRequestJobTest::SetUp() {
   // omit the redirect under this circumstance, for compatibility with the
   // metadata already written to the store.
   model->SetSkipClearingOriginalUrlForTesting();
+
+  // Initialize OfflinePageModel.
+  RunUntilIdle();
 
   // All offline pages being created below will point to real archive files
   // residing in test data directory.
