@@ -2764,14 +2764,14 @@ domain Input
       integer x
       # Y coordinate of the mouse pointer in DIP.
       integer y
-      # Time at which the event occurred.
-      TimeSinceEpoch timestamp
       # Mouse button.
       enum button
         none
         left
         middle
         right
+      # Time at which the event occurred (default: current time).
+      optional TimeSinceEpoch timestamp
       # X delta in DIP for mouse wheel event (default: 0).
       optional number deltaX
       # Y delta in DIP for mouse wheel event (default: 0).
