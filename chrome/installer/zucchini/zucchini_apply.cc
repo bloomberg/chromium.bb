@@ -242,9 +242,8 @@ status::Code Apply(ConstBufferView old_image,
 
   for (const auto& element_patch : patch_reader.elements()) {
     ElementMatch match = element_patch.element_match();
-    if (!ApplyElement(match.old_element.exe_type,
-                      old_image[match.old_element.region()], element_patch,
-                      new_image[match.new_element.region()]))
+    if (!ApplyElement(match.exe_type(), old_image[match.old_element.region()],
+                      element_patch, new_image[match.new_element.region()]))
       return status::kStatusFatal;
   }
 
