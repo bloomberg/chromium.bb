@@ -110,8 +110,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       counts, r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2,
       ACCT_STR);
   // printf("txb_skip: %d %2d\n", txs_ctx, txb_ctx->txb_skip_ctx);
-  if (xd->counts)
-    ++xd->counts->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx][all_zero];
   *eob = 0;
   if (all_zero) {
     *max_scan_line = 0;
@@ -225,7 +223,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         counts, r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2,
         ACCT_STR);
     // printf("eob_extra_cdf: %d %d %2d\n", txs_ctx, plane_type, eob_pt);
-    if (counts) ++counts->eob_extra[txs_ctx][plane_type][eob_pt][bit];
     if (bit) {
       eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1));
     }
@@ -309,7 +306,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
       *sign = av1_read_record_bin(
           counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
-      if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][*sign];
     } else {
       *sign = av1_read_record_bit(counts, r, ACCT_STR);
     }
@@ -337,11 +333,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
             BR_CDF_SIZE, ACCT_STR);
         *level += k;
         if (counts) {
-          for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
-            ++counts->coeff_lps[AOMMIN(txs_ctx, TX_32X32)][plane_type][lps][ctx]
-                               [lps == k];
+          for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++)
             if (lps == k) break;
-          }
           ++counts->coeff_lps_multi[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx]
                                    [k];
         }

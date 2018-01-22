@@ -65,16 +65,6 @@ typedef struct TxbCache {
   int br_ctx_arr[MAX_TX_SQUARE];
 } TxbCache;
 
-typedef struct TxbProbs {
-  const aom_prob *dc_sign_prob;
-  const aom_prob *nz_map;
-  aom_prob (*coeff_base)[COEFF_BASE_CONTEXTS];
-  const aom_prob *coeff_lps;
-  const aom_prob *eob_flag;
-  const aom_prob *txb_skip;
-  const aom_prob *coeff_br;
-} TxbProbs;
-
 void av1_alloc_txb_buf(AV1_COMP *cpi);
 void av1_free_txb_buf(AV1_COMP *cpi);
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,

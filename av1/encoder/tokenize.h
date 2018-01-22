@@ -36,7 +36,6 @@ typedef struct {
   // TODO(yaowu: use packed enum type if appropriate)
   int8_t eob_val;
   int8_t first_val;
-  const aom_prob *context_tree;
   EXTRABIT extra;
   uint8_t token;
 } TOKENEXTRA;

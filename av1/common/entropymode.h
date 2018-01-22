@@ -79,12 +79,6 @@ typedef struct frame_contexts {
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
 
 #if CONFIG_LV_MAP
-  aom_prob txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS];
-  aom_prob eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
-  aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
-
-  aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS];
-
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                             [CDF_SIZE(2)];
@@ -140,7 +134,6 @@ typedef struct frame_contexts {
   aom_cdf_prob uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
                                [CDF_SIZE(2)];
 #endif  // CONFIG_EXT_COMP_REFS
-  aom_prob comp_ref_prob[REF_CONTEXTS][FWD_REFS - 1];
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[COMP_BWDREF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
@@ -244,11 +237,14 @@ typedef struct FRAME_COUNTS {
                                 [SWITCHABLE_FILTERS];
 
 #if CONFIG_LV_MAP
+#if CONFIG_ENTROPY_STATS
   unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
-  unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
-
+  unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS]
+                        [2];
+#endif  // CONFIG_ENTROPY_STATS
+  unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
   unsigned int eob_multi16[PLANE_TYPES][2][5];
   unsigned int eob_multi32[PLANE_TYPES][2][6];
   unsigned int eob_multi64[PLANE_TYPES][2][7];
@@ -256,9 +252,6 @@ typedef struct FRAME_COUNTS {
   unsigned int eob_multi256[PLANE_TYPES][2][9];
   unsigned int eob_multi512[PLANE_TYPES][2][10];
   unsigned int eob_multi1024[PLANE_TYPES][2][11];
-
-  unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS]
-                        [2];
   unsigned int coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                               [BR_CDF_SIZE];
   unsigned int coeff_base_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]

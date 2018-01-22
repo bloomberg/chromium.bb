@@ -633,8 +633,6 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
 #undef MAX_TX_SIZE_UNIT
 }
 
-void av1_init_txb_probs(FRAME_CONTEXT *fc);
-
 void av1_init_lv_map(AV1_COMMON *cm);
 
 void av1_get_base_level_counts(const uint8_t *const levels,

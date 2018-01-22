@@ -228,7 +228,9 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+#if CONFIG_ENTROPY_STATS
     counts->eob_extra[txs_ctx][plane][eob_pt][bit]++;
+#endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(ec_ctx->eob_extra_cdf[txs_ctx][plane][eob_pt], bit, 2);
   }
@@ -2206,8 +2208,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
 
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
-
+#if CONFIG_ENTROPY_STATS
   ++td->counts->txb_skip[txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
+#endif  // CONFIG_ENTROPY_STATS
   if (allow_update_cdf)
     update_bin(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
                2);
@@ -2267,8 +2270,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int sign = (tcoeff[0] < 0) ? 1 : 0;
   if (tcoeff[0] != 0) {
     int dc_sign_ctx = txb_ctx.dc_sign_ctx;
-
+#if CONFIG_ENTROPY_STATS
     ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
+#endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
@@ -2304,6 +2308,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
               k, BR_CDF_SIZE);
         }
         for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
+#if CONFIG_ENTROPY_STATS
 #if 0
           ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_16X16)][plane_type][lps]
                                  [ctx][lps == k];
@@ -2311,6 +2316,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
           ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
                                  [ctx][lps == k];
 #endif
+#endif  // CONFIG_ENTROPY_STATS
           if (lps == k) break;
         }
         ++td->counts->coeff_lps_multi[AOMMIN(txsize_ctx, TX_32X32)][plane_type]
