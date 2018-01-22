@@ -213,17 +213,21 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
 }
 
 std::unique_ptr<QuicReceivedPacket>
-QuicTestPacketMaker::MakeConnectionClosePacket(QuicPacketNumber num) {
+QuicTestPacketMaker::MakeConnectionClosePacket(
+    QuicPacketNumber num,
+    bool include_version,
+    QuicErrorCode quic_error,
+    const std::string& quic_error_details) {
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = false;
+  header.version_flag = include_version;
   header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header.packet_number = num;
 
   QuicConnectionCloseFrame close;
-  close.error_code = QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
-  close.error_details = "Time to panic!";
+  close.error_code = quic_error;
+  close.error_details = quic_error_details;
   return std::unique_ptr<QuicReceivedPacket>(
       MakePacket(header, QuicFrame(&close)));
 }

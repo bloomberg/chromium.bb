@@ -390,7 +390,8 @@ class QuicStreamFactoryTestBase {
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientConnectionClosePacket(
       QuicPacketNumber num) {
-    return client_maker_.MakeConnectionClosePacket(num);
+    return client_maker_.MakeConnectionClosePacket(
+        num, false, QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!");
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientRstPacket(

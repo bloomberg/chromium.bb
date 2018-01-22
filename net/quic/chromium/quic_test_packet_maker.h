@@ -86,7 +86,10 @@ class QuicTestPacketMaker {
       QuicErrorCode quic_error,
       const std::string& quic_error_details);
   std::unique_ptr<QuicReceivedPacket> MakeConnectionClosePacket(
-      QuicPacketNumber num);
+      QuicPacketNumber num,
+      bool include_version,
+      QuicErrorCode quic_error,
+      const std::string& quic_error_details);
   std::unique_ptr<QuicReceivedPacket> MakeGoAwayPacket(
       QuicPacketNumber num,
       QuicErrorCode error_code,
