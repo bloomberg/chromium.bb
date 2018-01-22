@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gl_helper.h"
@@ -235,29 +234,6 @@ void CopyFromCompositingSurfaceHasResult(
 }
 
 namespace surface_utils {
-
-void ConnectWithInProcessFrameSinkManager(
-    viz::HostFrameSinkManager* host,
-    viz::FrameSinkManagerImpl* manager,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // A mojo pointer to |host| which is the FrameSinkManagerImpl's client.
-  viz::mojom::FrameSinkManagerClientPtr host_mojo;
-  // A mojo pointer to |manager|.
-  viz::mojom::FrameSinkManagerPtr manager_mojo;
-
-  // A request to bind to each of the above interfaces.
-  viz::mojom::FrameSinkManagerClientRequest host_mojo_request =
-      mojo::MakeRequest(&host_mojo);
-  viz::mojom::FrameSinkManagerRequest manager_mojo_request =
-      mojo::MakeRequest(&manager_mojo);
-
-  // Sets |manager_mojo| which is given to the |host|.
-  manager->BindAndSetClient(std::move(manager_mojo_request), task_runner,
-                            std::move(host_mojo));
-  // Sets |host_mojo| which was given to the |manager|.
-  host->BindAndSetManager(std::move(host_mojo_request), task_runner,
-                          std::move(manager_mojo));
-}
 
 void ConnectWithLocalFrameSinkManager(
     viz::HostFrameSinkManager* host_frame_sink_manager,
