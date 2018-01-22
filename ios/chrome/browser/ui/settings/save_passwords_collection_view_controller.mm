@@ -25,6 +25,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -98,6 +100,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   if (!results.empty())
     [delegate_ onGetPasswordStoreResults:results];
 }
+
 }  // namespace password_manager
 
 // Use the type of the items to convey the Saved/Blacklisted status.
@@ -113,7 +116,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 @interface SavePasswordsCollectionViewController ()<
     BooleanObserver,
     PasswordDetailsCollectionViewControllerDelegate,
-    SuccessfulReauthTimeAccessor> {
+    SuccessfulReauthTimeAccessor,
+    PasswordExporterDelegate> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
@@ -157,9 +161,14 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 // Kick off async request to get logins from password store.
 - (void)getLoginsFromPasswordStore;
 
+// Object handling passwords export operations.
+@property(nonatomic, strong) PasswordExporter* passwordExporter;
+
 @end
 
 @implementation SavePasswordsCollectionViewController
+
+@synthesize passwordExporter = passwordExporter_;
 
 #pragma mark - Initialization
 
@@ -172,6 +181,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
+    passwordExporter_ = [[PasswordExporter alloc]
+        initWithReauthenticationModule:reauthenticationModule_
+                              delegate:self];
+
     self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
@@ -487,12 +500,17 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                              handler:nil];
   [exportConfirmation addAction:cancelAction];
 
-  // TODO(crbug.com/789122): Ask for password serialization
-  // and wire re-authentication.
+  __weak SavePasswordsCollectionViewController* weakSelf = self;
   UIAlertAction* exportAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS)
                 style:UIAlertActionStyleDefault
-              handler:nil];
+              handler:^(UIAlertAction* action) {
+                SavePasswordsCollectionViewController* strongSelf = weakSelf;
+                if (!strongSelf) {
+                  return;
+                }
+                [strongSelf.passwordExporter startExportFlow];
+              }];
   [exportConfirmation addAction:exportAction];
 
   [self presentViewController:exportConfirmation animated:YES completion:nil];
@@ -704,6 +722,35 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 - (NSDate*)lastSuccessfulReauthTime {
   return successfulReauthTime_;
+}
+
+#pragma mark PasswordExporterDelegate
+
+- (void)showSetPasscodeDialog {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)
+                       message:
+                           l10n_util::GetNSString(
+                               IDS_IOS_SETTINGS_EXPORT_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)
+                preferredStyle:UIAlertControllerStyleAlert];
+
+  ProceduralBlockWithURL blockOpenURL = BlockToOpenURL(self, self.dispatcher);
+  UIAlertAction* learnAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction*) {
+                blockOpenURL(GURL(kPasscodeArticleURL));
+              }];
+  [alertController addAction:learnAction];
+  UIAlertAction* okAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:nil];
+  [alertController addAction:okAction];
+  alertController.preferredAction = okAction;
+  [self presentViewController:alertController animated:YES completion:nil];
 }
 
 @end

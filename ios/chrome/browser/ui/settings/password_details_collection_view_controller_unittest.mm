@@ -38,6 +38,7 @@
 }
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
+                    canReusePreviousAuth:(BOOL)canReusePreviousAuth
                                  handler:(void (^)(BOOL success))
                                              showCopyPasswordsHandler {
   self.localizedReasonForAuthentication = localizedReason;

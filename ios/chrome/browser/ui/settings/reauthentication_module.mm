@@ -13,9 +13,12 @@
 #error "This file requires ARC support."
 #endif
 
+constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
+
 @implementation ReauthenticationModule {
-  // Authentication context on which the authentication policy is evaluated.
-  LAContext* _context;
+  // Block that creates a new |LAContext| object everytime one is required,
+  // meant to make testing with a mock object possible.
+  LAContext* (^_createLAContext)(void);
 
   // Accessor allowing the module to request the update of the time when the
   // successful re-authentication was performed and to get the time of the last
@@ -28,21 +31,25 @@
   DCHECK(successfulReauthTimeAccessor);
   self = [super init];
   if (self) {
-    _context = [[LAContext alloc] init];
+    _createLAContext = ^{
+      return [[LAContext alloc] init];
+    };
     _successfulReauthTimeAccessor = successfulReauthTimeAccessor;
   }
   return self;
 }
 
 - (BOOL)canAttemptReauth {
+  LAContext* context = _createLAContext();
   // The authentication method is Touch ID or passcode.
   return
-      [_context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:nil];
+      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:nil];
 }
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
+                    canReusePreviousAuth:(BOOL)canReusePreviousAuth
                                  handler:(void (^)(BOOL success))handler {
-  if ([self isPreviousAuthValid]) {
+  if (canReusePreviousAuth && [self isPreviousAuthValid]) {
     handler(YES);
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.ReauthToAccessPasswordInSettings",
@@ -51,10 +58,10 @@
     return;
   }
 
-  _context = [[LAContext alloc] init];
+  LAContext* context = _createLAContext();
 
   // No fallback option is provided.
-  _context.localizedFallbackTitle = @"";
+  context.localizedFallbackTitle = @"";
 
   __weak ReauthenticationModule* weakSelf = self;
   void (^replyBlock)(BOOL, NSError*) = ^(BOOL success, NSError* error) {
@@ -74,9 +81,9 @@
     });
   };
 
-  [_context evaluatePolicy:LAPolicyDeviceOwnerAuthentication
-           localizedReason:localizedReason
-                     reply:replyBlock];
+  [context evaluatePolicy:LAPolicyDeviceOwnerAuthentication
+          localizedReason:localizedReason
+                    reply:replyBlock];
 }
 
 - (BOOL)isPreviousAuthValid {
@@ -93,6 +100,12 @@
     }
   }
   return previousAuthValid;
+}
+
+#pragma mark - ForTesting
+
+- (void)setCreateLAContext:(LAContext* (^)(void))createLAContext {
+  _createLAContext = createLAContext;
 }
 
 @end
