@@ -573,7 +573,7 @@ void QuicStream::AddRandomPaddingAfterFin() {
   add_random_padding_after_fin_ = true;
 }
 
-void QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
+bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                     QuicByteCount data_length,
                                     bool fin_acked,
                                     QuicTime::Delta ack_delay_time) {
@@ -582,12 +582,12 @@ void QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                       &newly_acked_length)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent data.");
-    return;
+    return false;
   }
   if (!fin_sent_ && fin_acked) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent fin.");
-    return;
+    return false;
   }
   // Indicates whether ack listener's OnPacketAcked should be called.
   const bool new_data_acked = !session()->allow_multiple_acks_for_data() ||
@@ -603,6 +603,7 @@ void QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
   if (ack_listener_ != nullptr && new_data_acked) {
     ack_listener_->OnPacketAcked(newly_acked_length, ack_delay_time);
   }
+  return new_data_acked;
 }
 
 void QuicStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,

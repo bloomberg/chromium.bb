@@ -873,20 +873,26 @@ TEST_P(QuicHeadersStreamTest, AckSentData) {
   // Packets are acked in order: 2, 3, 1.
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(21, 7, false, QuicTime::Delta::Zero());
-  headers_stream_->OnStreamFrameAcked(28, 7, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(21, 7, false,
+                                                  QuicTime::Delta::Zero()));
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(28, 7, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(35, 7, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(35, 7, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(0, 7, false, QuicTime::Delta::Zero());
-  headers_stream_->OnStreamFrameAcked(7, 7, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(0, 7, false,
+                                                  QuicTime::Delta::Zero()));
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(7, 7, false,
+                                                  QuicTime::Delta::Zero()));
   // Unsent data is acked.
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
   if (GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
-    headers_stream_->OnStreamFrameAcked(14, 10, false, QuicTime::Delta::Zero());
+    EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(14, 10, false,
+                                                    QuicTime::Delta::Zero()));
   } else {
     EXPECT_QUIC_BUG(headers_stream_->OnStreamFrameAcked(
                         14, 10, false, QuicTime::Delta::Zero()),
@@ -923,15 +929,18 @@ TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   EXPECT_CALL(*ack_listener2, OnPacketAcked(4, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(2, _));
-  headers_stream_->OnStreamFrameAcked(17, 13, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(17, 13, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener2, OnPacketAcked(5, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(30, 12, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(30, 12, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(14, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(3, _));
-  headers_stream_->OnStreamFrameAcked(0, 17, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(0, 17, false,
+                                                  QuicTime::Delta::Zero()));
 }
 
 TEST_P(QuicHeadersStreamTest, HeadersGetAckedMultipleTimes) {
@@ -959,23 +968,29 @@ TEST_P(QuicHeadersStreamTest, HeadersGetAckedMultipleTimes) {
 
   // Ack [15, 20), [5, 25), [10, 17), [0, 12) and [22, 42).
   EXPECT_CALL(*ack_listener2, OnPacketAcked(5, _));
-  headers_stream_->OnStreamFrameAcked(15, 5, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(15, 5, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(9, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(1, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(1, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(4, _));
-  headers_stream_->OnStreamFrameAcked(5, 20, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(5, 20, false,
+                                                  QuicTime::Delta::Zero()));
 
-  headers_stream_->OnStreamFrameAcked(10, 7, false, QuicTime::Delta::Zero());
+  // Duplicate ack.
+  EXPECT_FALSE(headers_stream_->OnStreamFrameAcked(10, 7, false,
+                                                   QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(5, _));
-  headers_stream_->OnStreamFrameAcked(0, 12, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(0, 12, false,
+                                                  QuicTime::Delta::Zero()));
 
   EXPECT_CALL(*ack_listener3, OnPacketAcked(3, _));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
   EXPECT_CALL(*ack_listener3, OnPacketAcked(7, _));
-  headers_stream_->OnStreamFrameAcked(22, 20, false, QuicTime::Delta::Zero());
+  EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(22, 20, false,
+                                                  QuicTime::Delta::Zero()));
 }
 
 }  // namespace

@@ -93,16 +93,18 @@ TEST_F(QuicControlFrameManagerTest, OnControlFrameAcked) {
   EXPECT_FALSE(
       manager_->IsControlFrameOutstanding(QuicFrame(QuicPingFrame(5))));
 
-  manager_->OnControlFrameAcked(QuicFrame(&window_update_));
+  EXPECT_TRUE(manager_->OnControlFrameAcked(QuicFrame(&window_update_)));
   EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&window_update_)));
   EXPECT_EQ(4u, QuicControlFrameManagerPeer::QueueSize(manager_.get()));
 
-  manager_->OnControlFrameAcked(QuicFrame(&goaway_));
+  EXPECT_TRUE(manager_->OnControlFrameAcked(QuicFrame(&goaway_)));
   EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&goaway_)));
   EXPECT_EQ(4u, QuicControlFrameManagerPeer::QueueSize(manager_.get()));
-  manager_->OnControlFrameAcked(QuicFrame(&rst_stream_));
+  EXPECT_TRUE(manager_->OnControlFrameAcked(QuicFrame(&rst_stream_)));
   EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&rst_stream_)));
   EXPECT_EQ(1u, QuicControlFrameManagerPeer::QueueSize(manager_.get()));
+  // Duplicate ack.
+  EXPECT_FALSE(manager_->OnControlFrameAcked(QuicFrame(&goaway_)));
 
   EXPECT_FALSE(manager_->HasPendingRetransmission());
   EXPECT_TRUE(manager_->WillingToWrite());

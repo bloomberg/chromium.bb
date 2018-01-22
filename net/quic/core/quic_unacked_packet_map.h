@@ -42,8 +42,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet |packet_number| is unacked.
   bool IsUnacked(QuicPacketNumber packet_number) const;
 
-  // Notifies session_notifier that frames have been acked.
-  void NotifyFramesAcked(const QuicTransmissionInfo& info,
+  // Notifies session_notifier that frames have been acked. Returns true if any
+  // new data gets acked, returns false otherwise.
+  bool NotifyFramesAcked(const QuicTransmissionInfo& info,
                          QuicTime::Delta ack_delay);
 
   // Marks |info| as no longer in flight.

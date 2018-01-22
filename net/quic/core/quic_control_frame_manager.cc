@@ -114,22 +114,24 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
   ++least_unsent_;
 }
 
-void QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
+bool QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
   QuicControlFrameId id = GetControlFrameId(frame);
   if (id == kInvalidControlFrameId) {
     // Frame does not have a valid control frame ID, ignore it.
-    return;
-  }
-  if (id < least_unacked_) {
-    // This frame has already been acked.
-    return;
+    return false;
   }
   if (id >= least_unsent_) {
     QUIC_BUG << "Try to ack unsent control frame";
     session_->connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Try to ack unsent control frame",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    return;
+    return false;
+  }
+  if (id < least_unacked_ ||
+      GetControlFrameId(control_frames_.at(id - least_unacked_)) ==
+          kInvalidControlFrameId) {
+    // This frame has already been acked.
+    return false;
   }
 
   // Set control frame ID of acked frames to 0.
@@ -144,6 +146,7 @@ void QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
     control_frames_.pop_front();
     ++least_unacked_;
   }
+  return true;
 }
 
 void QuicControlFrameManager::OnControlFrameLost(const QuicFrame& frame) {
