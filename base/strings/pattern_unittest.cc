@@ -22,8 +22,10 @@ TEST(StringUtilTest, MatchPatternTest) {
   EXPECT_TRUE(MatchPattern("", ""));
   EXPECT_FALSE(MatchPattern("Hello", ""));
   EXPECT_TRUE(MatchPattern("Hello*", "Hello*"));
-  // Stop after a certain recursion depth.
-  EXPECT_FALSE(MatchPattern("123456789012345678", "?????????????????*"));
+  EXPECT_TRUE(MatchPattern("abcd", "*???"));
+  EXPECT_FALSE(MatchPattern("abcd", "???"));
+  EXPECT_TRUE(MatchPattern("abcb", "a*b"));
+  EXPECT_FALSE(MatchPattern("abcb", "a?b"));
 
   // Test UTF8 matching.
   EXPECT_TRUE(MatchPattern("heart: \xe2\x99\xa0", "*\xe2\x99\xa0"));
@@ -40,11 +42,11 @@ TEST(StringUtilTest, MatchPatternTest) {
   EXPECT_TRUE(MatchPattern(UTF8ToUTF16("Hello*1234"),
                            UTF8ToUTF16("He??o\\*1*")));
 
-  // This test verifies that consecutive wild cards are collapsed into 1
-  // wildcard (when this doesn't occur, MatchPattern reaches it's maximum
-  // recursion depth).
-  EXPECT_TRUE(MatchPattern(UTF8ToUTF16("Hello"),
-                           UTF8ToUTF16("He********************************o")));
+  // Some test cases that might cause naive implementations to exhibit
+  // exponential run time or fail.
+  EXPECT_TRUE(MatchPattern("Hello", "He********************************o"));
+  EXPECT_TRUE(MatchPattern("123456789012345678", "?????????????????*"));
+  EXPECT_TRUE(MatchPattern("aaaaaaaaaaab", "a*a*a*a*a*a*a*a*a*a*a*b"));
 }
 
 }  // namespace base

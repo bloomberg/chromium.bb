@@ -10,11 +10,10 @@
 
 namespace base {
 
-// Returns true if the string passed in matches the pattern. The pattern
-// string can contain wildcards like * and ?
+// Returns true if the |string| passed in matches the |pattern|. The pattern
+// string can contain wildcards like * and ?.
 //
-// The backslash character (\) is an escape character for * and ?
-// We limit the patterns to having a max of 16 * or ? characters.
+// The backslash character (\) is an escape character for * and ?.
 // ? matches 0 or 1 character, while * matches 0 or more characters.
 BASE_EXPORT bool MatchPattern(StringPiece string, StringPiece pattern);
 BASE_EXPORT bool MatchPattern(StringPiece16 string, StringPiece16 pattern);
