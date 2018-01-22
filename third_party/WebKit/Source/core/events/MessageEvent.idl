@@ -40,10 +40,9 @@
     [CachedAttribute=isPortsDirty] readonly attribute FrozenArray<MessagePort> ports;
     [RuntimeEnabled=Suborigins] readonly attribute DOMString suborigin;
 
-    // TODO(foolip): |typeArg| should not be optional, none of the arguments
-    // should have [Default=Undefined] (they have other default values in the
-    // spec) and |sourceArg|'s type is wrong.
-    [Custom, MeasureAs=InitMessageEvent] void initMessageEvent([Default=Undefined] optional DOMString typeArg,
+    // TODO(foolip): none of the arguments should have [Default=Undefined] (they
+    // have other default values in the spec) and |sourceArg|'s type is wrong.
+    [Custom, MeasureAs=InitMessageEvent] void initMessageEvent([Default=Undefined] DOMString typeArg,
                                    [Default=Undefined] optional boolean canBubbleArg,
                                    [Default=Undefined] optional boolean cancelableArg,
                                    [Default=Undefined] optional any dataArg,
