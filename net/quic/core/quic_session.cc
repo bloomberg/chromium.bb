@@ -1028,24 +1028,26 @@ QuicStream* QuicSession::GetStream(QuicStreamId id) const {
   return nullptr;
 }
 
-void QuicSession::OnFrameAcked(const QuicFrame& frame,
+bool QuicSession::OnFrameAcked(const QuicFrame& frame,
                                QuicTime::Delta ack_delay_time) {
   if (frame.type != STREAM_FRAME) {
     if (use_control_frame_manager()) {
-      control_frame_manager_.OnControlFrameAcked(frame);
+      return control_frame_manager_.OnControlFrameAcked(frame);
     }
-    return;
+    return false;
   }
+  bool new_stream_data_acked = false;
   QuicStream* stream = GetStream(frame.stream_frame->stream_id);
   // Stream can already be reset when sent frame gets acked.
   if (stream != nullptr) {
-    stream->OnStreamFrameAcked(frame.stream_frame->offset,
-                               frame.stream_frame->data_length,
-                               frame.stream_frame->fin, ack_delay_time);
+    new_stream_data_acked = stream->OnStreamFrameAcked(
+        frame.stream_frame->offset, frame.stream_frame->data_length,
+        frame.stream_frame->fin, ack_delay_time);
     if (!stream->HasPendingRetransmission()) {
       streams_with_pending_retransmission_.erase(stream->id());
     }
   }
+  return new_stream_data_acked;
 }
 
 void QuicSession::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {

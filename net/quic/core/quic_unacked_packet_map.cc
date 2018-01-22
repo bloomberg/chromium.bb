@@ -333,15 +333,18 @@ void QuicUnackedPacketMap::SetSessionNotifier(
   session_notifier_ = session_notifier;
 }
 
-void QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
+bool QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
                                              QuicTime::Delta ack_delay) {
   if (session_notifier_ == nullptr) {
-    return;
+    return false;
   }
-
+  bool new_data_acked = false;
   for (const QuicFrame& frame : info.retransmittable_frames) {
-    session_notifier_->OnFrameAcked(frame, ack_delay);
+    if (session_notifier_->OnFrameAcked(frame, ack_delay)) {
+      new_data_acked = true;
+    }
   }
+  return new_data_acked;
 }
 
 }  // namespace net

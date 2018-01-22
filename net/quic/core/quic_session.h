@@ -125,7 +125,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                        QuicDataWriter* writer) override;
 
   // SessionNotifierInterface methods:
-  void OnFrameAcked(const QuicFrame& frame,
+  bool OnFrameAcked(const QuicFrame& frame,
                     QuicTime::Delta ack_delay_time) override;
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
   void OnFrameLost(const QuicFrame& frame) override;

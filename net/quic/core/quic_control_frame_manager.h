@@ -54,8 +54,9 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Sends a PING_FRAME.
   void WritePing();
 
-  // Called when |frame| gets acked.
-  void OnControlFrameAcked(const QuicFrame& frame);
+  // Called when |frame| gets acked. Returns true if |frame| gets acked for the
+  // first time, return false otherwise.
+  bool OnControlFrameAcked(const QuicFrame& frame);
 
   // Called when |frame| is considered as lost.
   void OnControlFrameLost(const QuicFrame& frame);

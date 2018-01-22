@@ -203,8 +203,9 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                        QuicDataWriter* writer);
 
   // Called when data [offset, offset + data_length) is acked. |fin_acked|
-  // indicates whether the fin is acked.
-  virtual void OnStreamFrameAcked(QuicStreamOffset offset,
+  // indicates whether the fin is acked. Returns true if any new stream data
+  // (including fin) gets acked.
+  virtual bool OnStreamFrameAcked(QuicStreamOffset offset,
                                   QuicByteCount data_length,
                                   bool fin_acked,
                                   QuicTime::Delta ack_delay_time);
