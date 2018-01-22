@@ -382,6 +382,27 @@ TEST_F(ToolbarMediatorTest, TestDidFinishNavigation) {
 }
 
 // Test the Toolbar is updated when the Webstate observer method
+// didFinishNavigation is called.
+TEST_F(ToolbarMediatorTest, TestDidChangeVisibleSecurityState) {
+  SetUpBookmarks();
+  mediator_.webStateList = web_state_list_.get();
+  SetUpActiveWebState();
+  mediator_.consumer = consumer_;
+  mediator_.bookmarkModel = bookmark_model_;
+
+  navigation_manager_->set_can_go_forward(true);
+  navigation_manager_->set_can_go_back(true);
+
+  web_state_->SetCurrentURL(GURL(kTestUrl));
+  web_state_->OnVisibleSecurityStateChanged();
+
+  [[consumer_ verify] setCanGoForward:YES];
+  [[consumer_ verify] setCanGoBack:YES];
+  [[consumer_ verify] setPageBookmarked:YES];
+  [[consumer_ verify] setShareMenuEnabled:YES];
+}
+
+// Test the Toolbar is updated when the Webstate observer method
 // didChangeLoadingProgress is called.
 TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   mediator_.webStateList = web_state_list_.get();
