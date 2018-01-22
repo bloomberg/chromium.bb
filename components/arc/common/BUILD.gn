@@ -43,6 +43,7 @@ if (is_chromeos) {
       "process.mojom",
       "rotation_lock.mojom",
       "scale_factor.mojom",
+      "screen_capture.mojom",
       "storage_manager.mojom",
       "tracing.mojom",
       "tts.mojom",
