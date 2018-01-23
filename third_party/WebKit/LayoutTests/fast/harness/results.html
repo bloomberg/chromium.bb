@@ -672,12 +672,12 @@ const Report = {
     html.forEach(result => {
       let key = result.key || "null";
       if (!(key in renderMap)) {
-        const number_of_keyed = html.filter(result => result.key).length;
+        const number_of_items = html.filter(result => (result.key || "null") === key).length;
         let container =
             report.querySelector(`div[key="${key}"]`) ||
             Report.createContainerForGroup(report, key,
-                `${keyed_title} ${number_of_keyed}`,
-                `${null_title} ${html.length - number_of_keyed}`);
+                `${keyed_title} ${number_of_items}`,
+                `${null_title} ${number_of_items}`);
         renderMap[key] = {container: container, html: ""};
       }
       renderMap[key].html += result.html;
