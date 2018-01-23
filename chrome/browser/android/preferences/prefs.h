@@ -18,6 +18,7 @@ enum Pref {
   ALLOW_DELETING_BROWSER_HISTORY,
   INCOGNITO_MODE_AVAILABILITY,
   READER_FOR_ACCESSIBILITY_ENABLED,
+  PROMPT_FOR_DOWNLOAD_ANDROID,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -27,6 +28,7 @@ enum Pref {
 const char* const kPrefsExposedToJava[] = {
     prefs::kAllowDeletingBrowserHistory, prefs::kIncognitoModeAvailability,
     dom_distiller::prefs::kReaderForAccessibility,
+    prefs::kPromptForDownloadAndroid,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

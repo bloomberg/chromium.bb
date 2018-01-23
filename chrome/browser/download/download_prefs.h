@@ -114,6 +114,10 @@ class DownloadPrefs {
   Profile* profile_;
 
   BooleanPrefMember prompt_for_download_;
+#if defined(OS_ANDROID)
+  BooleanPrefMember prompt_for_download_android_;
+#endif
+
   FilePathPrefMember download_path_;
   FilePathPrefMember save_file_path_;
   IntegerPrefMember save_file_type_;

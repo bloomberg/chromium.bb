@@ -501,6 +501,9 @@ extern const char kDownloadDirUpgraded[];
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 extern const char kOpenPdfDownloadInSystemReader[];
 #endif
+#if defined(OS_ANDROID)
+extern const char kPromptForDownloadAndroid[];
+#endif
 
 extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];

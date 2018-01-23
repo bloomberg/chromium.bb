@@ -154,6 +154,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   }
 
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
+#if defined(OS_ANDROID)
+  prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
+#endif
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
   save_file_type_.Init(prefs::kSaveFileType, prefs);
@@ -221,6 +224,9 @@ void DownloadPrefs::RegisterProfilePrefs(
                                  default_download_path);
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   registry->RegisterBooleanPref(prefs::kOpenPdfDownloadInSystemReader, false);
+#endif
+#if defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kPromptForDownloadAndroid, false);
 #endif
 }
 
@@ -294,6 +300,12 @@ bool DownloadPrefs::PromptForDownload() const {
   // If the DownloadDirectory policy is set, then |prompt_for_download_| should
   // always be false.
   DCHECK(!download_path_.IsManaged() || !prompt_for_download_.GetValue());
+
+// Return the Android prompt for download only.
+#if defined(OS_ANDROID)
+  return *prompt_for_download_android_;
+#endif
+
   return *prompt_for_download_;
 }
 
