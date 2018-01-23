@@ -79,8 +79,7 @@
 }
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
-  // TODO(crbug.com/803376): Implement that.
-  return nil;
+  return self.viewController;
 }
 
 - (void)showPrerenderingAnimation {

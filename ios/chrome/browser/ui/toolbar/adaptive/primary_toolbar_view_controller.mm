@@ -62,4 +62,10 @@
   self.view.locationBarView = locationBarView;
 }
 
+#pragma mark - ActivityServicePositioner
+
+- (UIView*)shareButtonView {
+  return self.view.shareButton;
+}
+
 @end
