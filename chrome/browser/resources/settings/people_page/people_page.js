@@ -25,6 +25,22 @@ Polymer({
       notify: true,
     },
 
+    // <if expr="not chromeos">
+    /**
+     * This flag is used to conditionally show a set of new sign-in UIs to the
+     * profiles that have been migrated to be consistent with the web sign-ins.
+     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * this should be removed, and UIs hidden behind it should become default.
+     * @private
+     */
+    diceEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('diceEnabled');
+      },
+    },
+    // </if>
+
     /**
      * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
@@ -262,7 +278,7 @@ Polymer({
 
   // <if expr="not chromeos">
   /** @private */
-  onProfileNameTap_: function() {
+  onProfileTap_: function() {
     settings.navigateTo(settings.routes.MANAGE_PROFILE);
   },
   // </if>

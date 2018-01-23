@@ -98,6 +98,14 @@ cr.define('settings_people_page', function() {
 
       teardown(function() { peoplePage.remove(); });
 
+      // This makes sure UI meant for DICE-enabled profiles are not leaked to
+      // non-dice profiles.
+      // TODO(scottchen): This should be removed once all profiles are fully
+      // migrated.
+      test('NoManageProfileRow', function() {
+        assertFalse(!!peoplePage.$$('#edit-profile'));
+      });
+
       test('GetProfileInfo', function() {
         let disconnectButton = null;
         return browserProxy.whenCalled('getSyncStatus').then(function() {
@@ -325,6 +333,40 @@ cr.define('settings_people_page', function() {
           assertTrue(!!syncStatusContainer);
           assertTrue(syncStatusContainer.hasAttribute('actionable'));
         });
+      });
+    });
+
+    suite('DiceUITest', function() {
+      let peoplePage = null;
+      let browserProxy = null;
+      let profileInfoBrowserProxy = null;
+
+      suiteSetup(function() {
+        // Force UIs to think DICE is enabled for this profile.
+        loadTimeData.overrideValues({
+          diceEnabled: true,
+        });
+      });
+
+      setup(function() {
+        browserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        document.body.appendChild(peoplePage);
+
+        Polymer.dom.flush();
+      });
+
+      teardown(function() { peoplePage.remove(); });
+
+      test('ManageProfileRow', function() {
+        assertTrue(!!peoplePage.$$('#edit-profile'));
       });
     });
   }
