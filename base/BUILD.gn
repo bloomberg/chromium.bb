@@ -1223,6 +1223,7 @@ jumbo_component("base") {
     sources += [
       "memory/shared_memory_android.cc",
       "memory/shared_memory_handle_android.cc",
+      "time/time_android.cc",
     ]
 
     # Android uses some Linux sources, put those back.
