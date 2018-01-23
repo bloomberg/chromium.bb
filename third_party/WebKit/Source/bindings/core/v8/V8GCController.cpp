@@ -46,7 +46,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/allocator/Partitions.h"

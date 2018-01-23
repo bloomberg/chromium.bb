@@ -36,7 +36,7 @@
 #include "platform/bindings/DOMWrapperMap.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"

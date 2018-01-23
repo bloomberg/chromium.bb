@@ -5,7 +5,7 @@
 #ifndef TraceWrapperMember_h
 #define TraceWrapperMember_h
 
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/TraceWrapperBase.h"
 #include "platform/heap/HeapAllocator.h"
 

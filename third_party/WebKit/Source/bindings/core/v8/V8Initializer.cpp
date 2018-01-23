@@ -55,7 +55,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

@@ -35,7 +35,7 @@
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
