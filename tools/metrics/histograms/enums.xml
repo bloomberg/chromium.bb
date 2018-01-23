@@ -851,12 +851,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="196620" label="3.12"/>
   <int value="196621" label="3.13"/>
   <int value="196622" label="3.14"/>
+  <int value="196623" label="3.15"/>
   <int value="196625" label="3.17"/>
   <int value="196626" label="3.18"/>
   <int value="196627" label="3.19"/>
   <int value="262144" label="4.0"/>
   <int value="262145" label="4.1"/>
+  <int value="262148" label="4.4"/>
+  <int value="262153" label="4.9"/>
   <int value="262154" label="4.10"/>
+  <int value="262157" label="4.13"/>
+  <int value="262158" label="4.14"/>
 </enum>
 
 <enum name="AndroidManageSpaceButton">
