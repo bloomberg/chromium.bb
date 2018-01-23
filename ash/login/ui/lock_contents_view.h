@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
@@ -25,7 +26,6 @@
 
 namespace views {
 class BoxLayout;
-class ScrollView;
 class StyledLabel;
 }  // namespace views
 
@@ -33,8 +33,8 @@ namespace ash {
 
 class LoginAuthUserView;
 class LoginBubble;
-class LoginUserView;
 class NoteActionLaunchButton;
+class ScrollableUsersListView;
 
 namespace mojom {
 enum class TrayActionState;
@@ -60,7 +60,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
 
     LoginAuthUserView* primary_auth() const;
     LoginAuthUserView* opt_secondary_auth() const;
-    const std::vector<LoginUserView*>& user_views() const;
+    ScrollableUsersListView* users_list() const;
     views::View* note_action() const;
     LoginBubble* tooltip_bubble() const;
     views::View* dev_channel_info() const;
@@ -212,17 +212,18 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   LoginAuthUserView* TryToFindAuthUser(const AccountId& user,
                                        bool require_auth_active);
 
+  // Returns scrollable view with initialized size and rows for all |users|.
+  ScrollableUsersListView* BuildScrollableUsersListView(
+      const std::vector<mojom::LoginUserInfoPtr>& users,
+      LoginDisplayStyle display_style);
+
   std::vector<UserState> users_;
 
   LoginDataDispatcher* const data_dispatcher_;  // Unowned.
 
   LoginAuthUserView* primary_auth_ = nullptr;
   LoginAuthUserView* opt_secondary_auth_ = nullptr;
-
-  // All non-auth users; |primary_auth_| and |secondary_auth_| are not contained
-  // in this list.
-  std::vector<LoginUserView*> user_views_;
-  views::ScrollView* scroller_ = nullptr;
+  ScrollableUsersListView* users_list_ = nullptr;
 
   // View that contains the note action button and the dev channel info labels,
   // placed on the top right corner of the screen without affecting layout of

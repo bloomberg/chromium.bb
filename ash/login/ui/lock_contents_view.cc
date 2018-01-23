@@ -9,13 +9,14 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_bubble.h"
-#include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
+#include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -65,18 +66,6 @@ constexpr int kMediumDensityMarginLeftOfAuthUserPortraitDp = 0;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp = 220;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 
-// Vertical padding between each entry in the medium density user row
-constexpr int kMediumDensityVerticalDistanceBetweenUsersDp = 53;
-
-// Horizontal padding left and right of the high density user list.
-constexpr int kHighDensityHorizontalPaddingLeftOfUserListLandscapeDp = 72;
-constexpr int kHighDensityHorizontalPaddingRightOfUserListLandscapeDp = 72;
-constexpr int kHighDensityHorizontalPaddingLeftOfUserListPortraitDp = 46;
-constexpr int kHighDensityHorizontalPaddingRightOfUserListPortraitDp = 12;
-
-// The vertical padding between each entry in the extra-small user row
-constexpr int kHighDensityVerticalDistanceBetweenUsersDp = 32;
-
 constexpr const char kLockContentsViewName[] = "LockContentsView";
 
 // A view which stores two preferred sizes. The embedder can control which one
@@ -99,35 +88,6 @@ class MultiSizedView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(MultiSizedView);
 };
-
-// Returns true if landscape constants should be used for UI shown in |widget|.
-bool ShouldShowLandscape(views::Widget* widget) {
-  // |widget| is null when the view is being constructed. Default to landscape
-  // in that case. A new layout will happen when the view is attached to a
-  // widget (see LockContentsView::AddedToWidget), which will let us fetch the
-  // correct display orientation.
-  if (!widget)
-    return true;
-
-  // Get the orientation for |widget|.
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget->GetNativeWindow());
-  display::ManagedDisplayInfo info =
-      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-
-  // Return true if it is landscape.
-  switch (info.GetActiveRotation()) {
-    case display::Display::ROTATE_0:
-    case display::Display::ROTATE_180:
-      return true;
-    case display::Display::ROTATE_90:
-    case display::Display::ROTATE_270:
-      return false;
-  }
-  NOTREACHED();
-  return true;
-}
 
 // Returns the first or last focusable child of |root|. If |reverse| is false,
 // this returns the first focusable child. If |reverse| is true, this returns
@@ -209,9 +169,8 @@ LoginAuthUserView* LockContentsView::TestApi::opt_secondary_auth() const {
   return view_->opt_secondary_auth_;
 }
 
-const std::vector<LoginUserView*>& LockContentsView::TestApi::user_views()
-    const {
-  return view_->user_views_;
+ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
+  return view_->users_list_;
 }
 
 views::View* LockContentsView::TestApi::note_action() const {
@@ -300,8 +259,8 @@ void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
 
-  if (scroller_)
-    scroller_->ClipHeightTo(size().height(), size().height());
+  if (users_list_)
+    users_list_->Layout();
 }
 
 void LockContentsView::AddedToWidget() {
@@ -349,9 +308,8 @@ void LockContentsView::OnUsersChanged(
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   main_view_->RemoveAllChildViews(true /*delete_children*/);
-  user_views_.clear();
   opt_secondary_auth_ = nullptr;
-  scroller_ = nullptr;
+  users_list_ = nullptr;
   rotation_actions_.clear();
 
   // Build user state list.
@@ -573,21 +531,8 @@ void LockContentsView::CreateMediumDensityLayout(
       kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp,
       kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp));
 
-  // Add additional users.
-  auto* row = new NonAccessibleView();
-  main_view_->AddChildView(row);
-  row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      kMediumDensityVerticalDistanceBetweenUsersDp));
-  for (std::size_t i = 1u; i < users.size(); ++i) {
-    auto* view =
-        new LoginUserView(LoginDisplayStyle::kSmall, false /*show_dropdown*/,
-                          base::Bind(&LockContentsView::SwapToAuthUser,
-                                     base::Unretained(this), i - 1) /*on_tap*/);
-    user_views_.push_back(view);
-    view->UpdateForUser(users[i], false /*animate*/);
-    row->AddChildView(view);
-  }
+  users_list_ = BuildScrollableUsersListView(users, LoginDisplayStyle::kSmall);
+  main_view_->AddChildView(users_list_);
 
   // Insert dynamic spacing on left/right of the content which changes based on
   // screen rotation and display size.
@@ -611,8 +556,6 @@ void LockContentsView::CreateMediumDensityLayout(
 
 void LockContentsView::CreateHighDensityLayout(
     const std::vector<mojom::LoginUserInfoPtr>& users) {
-  // TODO: Finish 7+ user layout.
-
   // Insert spacing before and after the auth view.
   auto* fill = new NonAccessibleView();
   main_view_->AddChildViewAt(fill, 0);
@@ -622,41 +565,13 @@ void LockContentsView::CreateHighDensityLayout(
   main_view_->AddChildView(fill);
   main_layout_->SetFlexForView(fill, 1);
 
-  // Padding left of user list.
-  main_view_->AddChildView(MakeOrientationViewWithWidths(
-      kHighDensityHorizontalPaddingLeftOfUserListLandscapeDp,
-      kHighDensityHorizontalPaddingLeftOfUserListPortraitDp));
-
-  // Add user list.
-  auto* row = new NonAccessibleView();
-  auto row_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      kHighDensityVerticalDistanceBetweenUsersDp);
-  row_layout->set_minimum_cross_axis_size(
-      LoginUserView::WidthForLayoutStyle(LoginDisplayStyle::kExtraSmall));
-  row->SetLayoutManager(std::move(row_layout));
-  for (std::size_t i = 1u; i < users.size(); ++i) {
-    auto* view = new LoginUserView(
-        LoginDisplayStyle::kExtraSmall, false /*show_dropdown*/,
-        base::Bind(&LockContentsView::SwapToAuthUser, base::Unretained(this),
-                   i - 1) /*on_tap*/);
-    user_views_.push_back(view);
-    view->UpdateForUser(users[i], false /*animate*/);
-    row->AddChildView(view);
-  }
-  scroller_ = new views::ScrollView();
-  scroller_->SetContents(row);
-  scroller_->ClipHeightTo(size().height(), size().height());
-  main_view_->AddChildView(scroller_);
-
-  // Padding right of user list.
-  main_view_->AddChildView(MakeOrientationViewWithWidths(
-      kHighDensityHorizontalPaddingRightOfUserListLandscapeDp,
-      kHighDensityHorizontalPaddingRightOfUserListPortraitDp));
+  users_list_ =
+      BuildScrollableUsersListView(users, LoginDisplayStyle::kExtraSmall);
+  main_view_->AddChildView(users_list_);
 }
 
 void LockContentsView::DoLayout() {
-  bool landscape = ShouldShowLandscape(GetWidget());
+  bool landscape = login_layout_util::ShouldShowLandscape(GetWidget());
   for (auto& action : rotation_actions_)
     action.Run(landscape);
 
@@ -693,7 +608,7 @@ views::View* LockContentsView::MakeOrientationViewWithWidths(int landscape,
 }
 
 void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
-  on_rotate.Run(ShouldShowLandscape(GetWidget()));
+  on_rotate.Run(login_layout_util::ShouldShowLandscape(GetWidget()));
   rotation_actions_.push_back(on_rotate);
 }
 
@@ -763,7 +678,9 @@ void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
 }
 
 void LockContentsView::SwapToAuthUser(int user_index) {
-  auto* view = user_views_[user_index];
+  DCHECK(users_list_);
+  auto* view = users_list_->GetUserViewAtIndex(user_index);
+  DCHECK(view);
   mojom::LoginUserInfoPtr previous_auth_user =
       primary_auth_->current_user()->Clone();
   mojom::LoginUserInfoPtr new_auth_user = view->current_user()->Clone();
@@ -929,6 +846,18 @@ LoginAuthUserView* LockContentsView::TryToFindAuthUser(
   }
 
   return view;
-};
+}
+
+ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
+    const std::vector<mojom::LoginUserInfoPtr>& users,
+    LoginDisplayStyle display_style) {
+  auto* view = new ScrollableUsersListView(
+      users,
+      base::BindRepeating(&LockContentsView::SwapToAuthUser,
+                          base::Unretained(this)),
+      display_style);
+  view->ClipHeightTo(view->contents()->size().height(), size().height());
+  return view;
+}
 
 }  // namespace ash
