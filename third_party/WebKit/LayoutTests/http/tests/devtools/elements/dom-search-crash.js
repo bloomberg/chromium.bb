@@ -11,7 +11,7 @@
 
   TestRunner.runTestSuite([
     function testSetUp(next) {
-      TestRunner.domModel.requestDocument(next);
+      TestRunner.domModel.requestDocument().then(next);
     },
 
     function testNoCrash(next) {

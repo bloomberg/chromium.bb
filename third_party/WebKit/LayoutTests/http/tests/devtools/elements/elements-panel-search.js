@@ -72,7 +72,7 @@
   }
 
   function setUp(next) {
-    TestRunner.domModel.requestDocument(step2);
+    TestRunner.domModel.requestDocument().then(step2);
 
     function step2() {
       TestRunner.evaluateInPage('initializeShadowDOM()', next);
