@@ -1566,6 +1566,8 @@ enum WebFeature {
   kMediaSourceKeyframeTimeGreaterThanDependant = 2060,
   kMediaSourceMuxedSequenceMode = 2061,
   kPrepareModuleScript = 2062,
+  // The above items are available as of the M61 branch.
+
   kPresentationRequestStartSecureOrigin = 2063,
   kPresentationRequestStartInsecureOrigin = 2064,
   kPersistentClientHintHeader = 2065,
@@ -1647,6 +1649,8 @@ enum WebFeature {
   kWebkitBoxLineClampOneChildIsLayoutBlockFlowInline = 2142,
   kWebkitBoxLineClampManyChildren = 2143,
   kWebkitBoxLineClampDoesSomething = 2144,
+  // The above items are available as of the M62 branch.
+
   kFeaturePolicyAllowAttributeDeprecatedSyntax = 2145,
   kSuppressHistoryEntryWithoutUserGesture = 2146,
   kImageInputTypeFormDataWithNonEmptyValue = 2147,
@@ -1688,6 +1692,8 @@ enum WebFeature {
   kCrossOriginWorkerTextHtml = 2184,
   kCrossOriginWorkerTextPlain = 2185,
   kCrossOriginWorkerTextXml = 2186,
+  // The above items are available as of the M63 branch.
+
   kPerformanceObserverForWindow = 2188,
   kPerformanceObserverForWorker = 2189,
   kPaintTimingObserved = 2190,
@@ -1759,6 +1765,8 @@ enum WebFeature {
   kLocalCSSFile = 2256,
   kLocalCSSFileExtensionRejected = 2257,
   kUserMediaDisableHardwareNoiseSuppression = 2258,
+  // The above items are available as of the M64 branch.
+
   kCertificateTransparencyRequiredErrorOnResourceLoad = 2259,
   kCSSSelectorPseudoWebkitAnyLink = 2260,
   kAudioWorkletAddModule = 2261,
@@ -1847,6 +1855,8 @@ enum WebFeature {
   kScrollToFragmentFailWithMixed = 2344,
   kScrollToFragmentFailWithInvalidEncoding = 2345,
   kRTCPeerConnectionWithActiveCsp = 2346,
+  // The above items are available as of the M65 branch.
+
   kImageDecodingAttribute = 2347,
   kImageDecodeAPI = 2348,
   kV8HTMLElement_Autocapitalize_AttributeGetter = 2349,
