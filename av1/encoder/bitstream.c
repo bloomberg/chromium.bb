@@ -2839,6 +2839,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   int mtu_size = cpi->oxcf.mtu;
   int curr_tg_data_size = 0;
   int hdr_size;
+  const int num_planes = av1_num_planes(cm);
 
   *max_tile_size = 0;
   *max_tile_col_size = 0;
@@ -2879,7 +2880,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
 #if CONFIG_LOOP_RESTORATION
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, buf->data + data_offset);
@@ -3036,7 +3037,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, dst + total_size);
