@@ -3945,11 +3945,11 @@ class ChromeLauncherControllerOrientationTest
     EXPECT_EQ(display::Display::ROTATE_0,
               display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-    // Create a arc window with PORTRAIT orientation locks the screen to 90.
+    // Create a arc window with PORTRAIT orientation locks the screen to 270.
     window_portrait_ = CreateArcWindow(window_app_id_portrait_);
     NotifyOnTaskCreated(appinfo_portrait_, task_id_portrait_);
     EXPECT_TRUE(controller->rotation_locked());
-    EXPECT_EQ(display::Display::ROTATE_90,
+    EXPECT_EQ(display::Display::ROTATE_270,
               display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
     // Create a arc window with LANDSCAPE orientation locks the screen to 0.
@@ -4066,7 +4066,7 @@ TEST_P(ChromeLauncherControllerOrientationTest,
 
   EnableTabletMode(true);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   std::string app_id2("org.chromium.arc.2");
@@ -4078,7 +4078,7 @@ TEST_P(ChromeLauncherControllerOrientationTest,
   NotifyOnTaskCreated(appinfo2, task_id2);
   NotifyOnTaskOrientationLockRequested(task_id2, OrientationLock::LANDSCAPE);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // The screen will be locked when the window is created.
@@ -4107,10 +4107,10 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  // Activating a window with PORTRAIT orientation locks the screen to 90.
+  // Activating a window with PORTRAIT orientation locks the screen to 270.
   window_portrait_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // Disable Tablet mode, and make sure the screen is unlocked.
@@ -4119,15 +4119,15 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  // Re-enable Tablet mode, and make sure the screen is locked to 90.
+  // Re-enable Tablet mode, and make sure the screen is locked to 270.
   EnableTabletMode(true);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   window_portrait_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   window_landscape_->Activate();
@@ -4145,14 +4145,14 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   NotifyOnTaskOrientationLockRequested(task_id_landscape_,
                                        OrientationLock::PORTRAIT);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // Non active window won't change the lock.
   NotifyOnTaskOrientationLockRequested(task_id_none_,
                                        OrientationLock::LANDSCAPE);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // But activating it will change the locked orinetation.
@@ -4177,7 +4177,7 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   // enabled.
   EnableTabletMode(true);
   EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // Manually unlock first.

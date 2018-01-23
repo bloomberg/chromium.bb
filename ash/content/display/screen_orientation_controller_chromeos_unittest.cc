@@ -231,7 +231,7 @@ TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
@@ -306,7 +306,7 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
   ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_TRUE(RotationLocked());
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   activation_client->ActivateWindow(focus_window1.get());
   EXPECT_TRUE(RotationLocked());
@@ -554,18 +554,18 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   // Inverse of orientation is allowed
-  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Display rotations between are not allowed
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that for an orientation lock which does not allow rotation, that the
@@ -578,16 +578,16 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(),
                    blink::kWebScreenOrientationLockPortraitPrimary);
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   // Rotation does not change.
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that after a content::WebContents has applied an orientation lock which
@@ -659,7 +659,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
-  SetInternalDisplayRotation(display::Display::ROTATE_90);
+  SetInternalDisplayRotation(display::Display::ROTATE_270);
   orientation_controller->ToggleUserRotationLock();
   EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             UserLockedOrientation());
@@ -671,7 +671,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
-  SetInternalDisplayRotation(display::Display::ROTATE_270);
+  SetInternalDisplayRotation(display::Display::ROTATE_90);
   orientation_controller->ToggleUserRotationLock();
   EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             UserLockedOrientation());
@@ -727,7 +727,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
 
   delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockPortrait);
 
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
   // Activating any will switch to the natural orientation.
@@ -736,7 +736,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
 
   // Activating the portrait window will rotate to the portrait.
   activation_client->ActivateWindow(focus_window1.get());
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   // User locked to the 90 dig.
   orientation_controller->ToggleUserRotationLock();
@@ -744,7 +744,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
 
   // Switching to Any orientation will stay to the user locked orientation.
   activation_client->ActivateWindow(focus_window2.get());
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   // Application forced to be landscape.
   delegate()->Lock(content2.get(), blink::kWebScreenOrientationLockLandscape);
@@ -753,7 +753,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockAny);
   activation_client->ActivateWindow(focus_window1.get());
   // Switching back to any will rotate to user rotation.
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 }
 
 }  // namespace ash

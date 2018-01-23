@@ -807,8 +807,8 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   EXPECT_EQ(bounds_window1.height(), bounds_divider.height());
   EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
 
-  // Rotate the screen by 90 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
@@ -843,8 +843,8 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   EXPECT_EQ(bounds_window1.height(), bounds_divider.height());
   EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
 
-  // Rotate the screen by 270 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);
@@ -953,8 +953,8 @@ TEST_F(SplitViewControllerTest, SnapWindowBoundsWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().width());
   EndSplitView();
 
-  // Rotate the screen by 90 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
@@ -1006,8 +1006,8 @@ TEST_F(SplitViewControllerTest, SnapWindowBoundsWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().width());
   EndSplitView();
 
-  // Rotate the screen by 270 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);

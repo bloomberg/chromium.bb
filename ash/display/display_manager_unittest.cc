@@ -3614,10 +3614,10 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
   void SetUp() override {
     DisplayManagerTest::SetUp();
     const float kMeanGravity = 9.8066f;
-    portrait_primary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, kMeanGravity,
+    portrait_primary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity,
                           0.f, 0.f);
-    portrait_secondary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN,
-                            -kMeanGravity, 0.f, 0.f);
+    portrait_secondary->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, kMeanGravity,
+                            0.f, 0.f);
   }
 
  protected:
@@ -3692,9 +3692,9 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
 
   // Rotate to portrait in clamshell.
   configuration_controller->SetDisplayRotation(
-      screen->GetPrimaryDisplay().id(), display::Display::ROTATE_90,
+      screen->GetPrimaryDisplay().id(), display::Display::ROTATE_270,
       display::Display::ROTATION_SOURCE_USER);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
   EXPECT_FALSE(display_manager->registered_internal_display_rotation_lock());
 
@@ -3718,7 +3718,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
 
   // Application can overwwrite the locked orientation.
   wm::ActivateWindow(window_p);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
   EXPECT_EQ(display::Display::ROTATE_0,
             display_manager->registered_internal_display_rotation());
@@ -3744,7 +3744,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   // Exit tablet mode reset to clamshell's rotation, which is 90.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_EQ(1, test_observer.countAndReset());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
   // Activate Any.
   wm::ActivateWindow(window_a);
@@ -3754,7 +3754,7 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
 
   wm::ActivateWindow(window_p);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
   EXPECT_EQ(0, test_observer.countAndReset());
   orientation_controller->ToggleUserRotationLock();
@@ -3762,17 +3762,17 @@ TEST_F(DisplayManagerOrientationTest, SaveRestoreUserRotationLock) {
   EXPECT_EQ(2, test_observer.countAndReset());
 
   EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display_manager->registered_internal_display_rotation());
 
   wm::ActivateWindow(window_l);
   EXPECT_EQ(display::Display::ROTATE_0, screen->GetPrimaryDisplay().rotation());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display_manager->registered_internal_display_rotation());
 
   // ANY will rotate to locked ortation.
   wm::ActivateWindow(window_a);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
 
   orientation_controller->RemoveObserver(&test_observer);
@@ -3798,27 +3798,27 @@ TEST_F(DisplayManagerOrientationTest, UserRotationLockReverse) {
   orientation_controller->LockOrientationForWindow(
       window, blink::kWebScreenOrientationLockPortrait,
       ScreenOrientationController::LockCompletionBehavior::None);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
 
   orientation_controller->OnAccelerometerUpdated(portrait_secondary);
 
-  EXPECT_EQ(display::Display::ROTATE_270,
+  EXPECT_EQ(display::Display::ROTATE_90,
             screen->GetPrimaryDisplay().rotation());
 
   orientation_controller->OnAccelerometerUpdated(portrait_primary);
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
 
-  // Enable lock at 90.
+  // Enable lock at 270.
   orientation_controller->ToggleUserRotationLock();
   EXPECT_TRUE(display_manager->registered_internal_display_rotation_lock());
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             display_manager->registered_internal_display_rotation());
 
   orientation_controller->OnAccelerometerUpdated(portrait_secondary);
 
-  EXPECT_EQ(display::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_270,
             screen->GetPrimaryDisplay().rotation());
 }
 

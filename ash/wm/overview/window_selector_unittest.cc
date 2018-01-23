@@ -2535,8 +2535,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
   EndSplitView();
 
-  // Rotate the screen by 90 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitPrimary);
@@ -2585,8 +2585,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
   EndSplitView();
 
-  // Rotate the screen by 270 degree.
-  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             blink::kWebScreenOrientationLockPortraitSecondary);
