@@ -707,7 +707,8 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
     Profile* profile) {
   // Only annotate PasswordState onto the navigation entry if user is
   // opted into UMA and they're not syncing w/ a custom passphrase.
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state()))
     return false;
 
   browser_sync::ProfileSyncService* profile_sync_service =

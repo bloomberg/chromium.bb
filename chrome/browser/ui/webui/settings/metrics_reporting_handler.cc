@@ -63,15 +63,18 @@ std::unique_ptr<base::DictionaryValue>
     MetricsReportingHandler::CreateMetricsReportingDict() {
   std::unique_ptr<base::DictionaryValue> dict(
       std::make_unique<base::DictionaryValue>());
-  dict->SetBoolean("enabled",
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-  dict->SetBoolean("managed", IsMetricsReportingPolicyManaged());
+  dict->SetBoolean(
+      "enabled",
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state()));
+  dict->SetBoolean("managed", IsMetricsReportingPolicyManaged(
+                                  g_browser_process->local_state()));
   return dict;
 }
 
 void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
     const base::ListValue* args) {
-  if (IsMetricsReportingPolicyManaged()) {
+  if (IsMetricsReportingPolicyManaged(g_browser_process->local_state())) {
     NOTREACHED();
     // NOTE: ChangeMetricsReportingState() already checks whether metrics
     // reporting is managed by policy. Also, the UI really shouldn't be able to
@@ -83,7 +86,9 @@ void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
 
   bool enabled;
   CHECK(args->GetBoolean(0, &enabled));
-  ChangeMetricsReportingState(enabled);
+  ChangeMetricsReportingState(g_browser_process->local_state(),
+                              g_browser_process->GetMetricsServicesManager(),
+                              enabled);
 }
 
 void MetricsReportingHandler::OnPolicyChanged(const base::Value* previous,

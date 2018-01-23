@@ -18,6 +18,7 @@ class BrowserProcessImpl;
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
 class NavigationMetricsRecorder;
+class PrefService;
 class Profile;
 
 namespace {
@@ -42,6 +43,10 @@ class ChromeExtensionWebContentsObserver;
 class ChromeGuestViewManagerDelegate;
 class ChromeMetricsPrivateDelegate;
 class FileManagerPrivateIsUMAEnabledFunction;
+}
+
+namespace metrics_services_manager {
+class MetricsServicesManager;
 }
 
 namespace options {
@@ -109,6 +114,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class extensions::ChromeMetricsPrivateDelegate;
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend void ChangeMetricsReportingStateWithReply(
+      PrefService*,
+      metrics_services_manager::MetricsServicesManager*,
       bool,
       const OnMetricsReportingCallbackType&);
   friend class options::BrowserOptionsHandler;
@@ -130,13 +137,19 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromePasswordManagerClient;
   friend class NavigationMetricsRecorder;
 
+  // Testing related friends.
+  friend class MetricsReportingStateTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
 
-  // Returns true if metrics reporting is enabled.
+  // Returns true if metrics reporting is enabled. |local_state| is the
+  // PrefService for local state. Typically this comes from
+  // g_browser_process->local_state(), but during startup |g_browser_process|
+  // may not have been created, in which case it's the local state that will
+  // eventually be assigned to |g_browser_process|.
   // TODO(gayane): Consolidate metric prefs on all platforms.
   // http://crbug.com/362192,  http://crbug.com/532084
-  static bool IsMetricsAndCrashReportingEnabled();
+  static bool IsMetricsAndCrashReportingEnabled(PrefService* local_state);
 
   // Calls metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial() with
   // g_browser_process->metrics_service(). See that function's declaration for
@@ -158,6 +171,10 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static bool RegisterSyntheticFieldTrialWithNameHash(
       uint32_t trial_name_hash,
       base::StringPiece group_name);
+
+  // Cover for function of same name in MetricsServiceAccssor. See
+  // ChromeMetricsServiceAccessor for details.
+  static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };
