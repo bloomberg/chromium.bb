@@ -1568,6 +1568,10 @@
         'test_suites': {
           'gtest_tests': 'chromium_memory_linux_asan_gtests',
         },
+        'args': [
+          '--test-launcher-batch-limit=1',
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'Linux ASan Tests (sandboxed)': {
         'test_suites': {

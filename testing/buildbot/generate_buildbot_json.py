@@ -317,6 +317,12 @@ class BBJSONGenerator(object):
         a[key] = b[key]
     return a
 
+  def initialize_args_for_test(self, generated_test, tester_config):
+    if 'args' in tester_config:
+      if 'args' not in generated_test:
+        generated_test['args'] = []
+      generated_test['args'].extend(tester_config['args'])
+
   def initialize_swarming_dictionary_for_test(self, generated_test,
                                               tester_config):
     if 'swarming' not in generated_test:
@@ -381,6 +387,7 @@ class BBJSONGenerator(object):
     else:
       result['test'] = test_name
     self.initialize_swarming_dictionary_for_test(result, tester_config)
+    self.initialize_args_for_test(result, tester_config)
     if self.is_android(tester_config) and tester_config.get('use_swarming',
                                                             True):
       if 'args' not in result:
