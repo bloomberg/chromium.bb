@@ -1749,6 +1749,8 @@ crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worke
 crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
 
+# DCHECK failure.
+crbug.com/805061 external/wpt/custom-elements/upgrading/Node-cloneNode.html [ Crash ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/svg/path/closepath/segment-completing.svg [ Failure ]
