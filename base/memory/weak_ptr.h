@@ -109,7 +109,7 @@ class BASE_EXPORT WeakReference {
   };
 
   WeakReference();
-  explicit WeakReference(const Flag* flag);
+  explicit WeakReference(const scoped_refptr<Flag>& flag);
   ~WeakReference();
 
   WeakReference(WeakReference&& other);
@@ -130,9 +130,7 @@ class BASE_EXPORT WeakReferenceOwner {
 
   WeakReference GetRef() const;
 
-  bool HasRefs() const {
-    return flag_.get() && !flag_->HasOneRef();
-  }
+  bool HasRefs() const { return flag_ && !flag_->HasOneRef(); }
 
   void Invalidate();
 
@@ -153,6 +151,11 @@ class BASE_EXPORT WeakPtrBase {
   WeakPtrBase(WeakPtrBase&& other) = default;
   WeakPtrBase& operator=(const WeakPtrBase& other) = default;
   WeakPtrBase& operator=(WeakPtrBase&& other) = default;
+
+  void reset() {
+    ref_ = internal::WeakReference();
+    ptr_ = 0;
+  }
 
  protected:
   WeakPtrBase(const WeakReference& ref, uintptr_t ptr);
@@ -247,11 +250,6 @@ class WeakPtr : public internal::WeakPtrBase {
   T* operator->() const {
     DCHECK(get() != nullptr);
     return get();
-  }
-
-  void reset() {
-    ref_ = internal::WeakReference();
-    ptr_ = 0;
   }
 
   // Allow conditionals to test validity, e.g. if (weak_ptr) {...};
