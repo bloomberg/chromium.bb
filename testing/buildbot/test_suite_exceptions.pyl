@@ -1376,12 +1376,6 @@
   },
   'cronet_test_instrumentation_apk': {
     'modifications': {
-      'Android Cronet ARMv6 Builder chromium.android.fyi': {
-        'swarming': {
-          'hard_timeout': 1200,
-          'shards': 2,
-        },
-      },
       'Android Cronet Builder (dbg) chromium.android.fyi': {
         'swarming': {
           'hard_timeout': 1200,
@@ -3154,18 +3148,6 @@
         ],
       },
       # chromium.android.fyi
-      'Android Cronet ARMv6 Builder': {
-        'args': [
-          '--platform',
-          'android-cronet',
-          '--perf-id',
-          'android_cronet_armv6_builder',
-          'cronet-armv6/sizes',
-        ],
-        'override_compile_targets': [
-          'cronet',
-        ],
-      },
       'Android Cronet KitKat Builder': {
         'args': [
           '--platform',

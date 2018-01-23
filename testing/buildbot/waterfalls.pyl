@@ -91,21 +91,6 @@
           'cast_shell_apk',
         ],
       },
-      'Android Cronet ARMv6 Builder': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'skip_merge_script': True,
-      },
       'Android Cronet Builder (dbg)': {
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
@@ -327,21 +312,6 @@
   {
     'name': 'chromium.android.fyi',
     'machines': {
-      'Android Cronet ARMv6 Builder': {
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-          'scripts': 'cronet_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
       'Android Cronet Builder (dbg)': {
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
