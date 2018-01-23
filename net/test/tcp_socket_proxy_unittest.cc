@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
@@ -129,7 +130,13 @@ TEST_F(TcpSocketProxyTest, TwoConnections) {
 
 // Close socket on the server side and verify that it's closed on the client
 // side.
-TEST_F(TcpSocketProxyTest, DisconnectServer) {
+// TODO(crbug.com/804429): This test hangs occasionally on iOS.
+#if defined(OS_IOS)
+#define MAYBE_DisconnectServer DISABLED_DisconnectServer
+#else
+#define MAYBE_DisconnectServer DisconnectServer
+#endif
+TEST_F(TcpSocketProxyTest, MAYBE_DisconnectServer) {
   std::unique_ptr<StreamSocket> client_socket;
   std::unique_ptr<StreamSocket> server_socket;
   MakeConnection(&client_socket, &server_socket);
@@ -139,7 +146,13 @@ TEST_F(TcpSocketProxyTest, DisconnectServer) {
 
 // Close socket on the client side and verify that it's closed on the server
 // side.
-TEST_F(TcpSocketProxyTest, DisconnectClient) {
+// TODO(crbug.com/804429): This test hangs occasionally on iOS.
+#if defined(OS_IOS)
+#define MAYBE_DisconnectClient DISABLED_DisconnectClient
+#else
+#define MAYBE_DisconnectClient DisconnectClient
+#endif
+TEST_F(TcpSocketProxyTest, MAYBE_DisconnectClient) {
   std::unique_ptr<StreamSocket> client_socket;
   std::unique_ptr<StreamSocket> server_socket;
   MakeConnection(&client_socket, &server_socket);
