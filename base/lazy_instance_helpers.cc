@@ -29,9 +29,9 @@ bool NeedsLazyInstance(subtle::AtomicWord* state) {
   // the associated data (buf_). Pairing Release_Store is in
   // CompleteLazyInstance().
   if (subtle::Acquire_Load(state) == kLazyInstanceStateCreating) {
-    const base::Time start = base::Time::Now();
+    const base::TimeTicks start = base::TimeTicks::Now();
     do {
-      const base::TimeDelta elapsed = base::Time::Now() - start;
+      const base::TimeDelta elapsed = base::TimeTicks::Now() - start;
       // Spin with YieldCurrentThread for at most one ms - this ensures maximum
       // responsiveness. After that spin with Sleep(1ms) so that we don't burn
       // excessive CPU time - this also avoids infinite loops due to priority
