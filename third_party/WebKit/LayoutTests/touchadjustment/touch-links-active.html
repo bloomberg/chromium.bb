@@ -15,7 +15,7 @@
         }
         a:active {
             background-color: rgb(0,0,255);
-        }        
+        }
     </style>
 </head>
 
@@ -36,15 +36,16 @@
     ['sandbox', 'link1', 'link2', 'link3'].forEach(function(a) {
         e[a] = document.getElementById(a);
     });
-    
+
     var curElement;
-    
+    var uniqueId = 1234;
+
     function isLinkActive()
     {
         // These need to match the background-color used above, after round-tripping.
         var defaultColor = "rgb(255, 255, 255)";
         var activeColor = "rgb(0, 0, 255)";
-    
+
         color = window.getComputedStyle(curElement).backgroundColor;
         if (color == activeColor)
             return true;
@@ -52,14 +53,24 @@
             testFailed('Got unexpected backgroundColor: ' + color);
         return false;
     }
-    
+
     function testTapDown(touchpoint, element)
     {
         curElement = element;
         if (isLinkActive()) testFailed('Link unexpectedly active on entry');
-        eventSender.gestureShowPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+
+        eventSender.addTouchPoint(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+        eventSender.touchStart(uniqueId + 1);
+        eventSender.releaseTouchPoint(0);
+        eventSender.touchEnd(uniqueId + 2);
+        eventSender.gestureTapDown(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 1);
+        eventSender.gestureShowPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 2);
+
         shouldBeTrue("isLinkActive()");
-        eventSender.gestureTapCancel(touchpoint.x, touchpoint.y);
+
+        eventSender.gestureTapCancel(touchpoint.x, touchpoint.y, uniqueId + 2);
+
+        uniqueId += 2;
         if (isLinkActive()) testFailed('Link unexpectedly active on exit');
     }
 
@@ -82,7 +93,7 @@
         }
         return false;
     }
-    
+
     function testIndirectTouch(element)
     {
         // Touch just right of the element.
@@ -117,8 +128,8 @@
         if (!window.eventSender.gestureShowPress) {
             debug('GestureShowPress not supported by this platform');
             return;
-        } 
-          
+        }
+
         description('Tests that tapDown will trigger the active state.');
         testIndirectTouches();
         testDirectTouches();

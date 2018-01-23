@@ -11,6 +11,7 @@
 #include "core/events/PointerEventFactory.h"
 #include "core/input/BoundaryEventDispatcher.h"
 #include "core/input/TouchEventManager.h"
+#include "core/page/TouchAdjustment.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "public/platform/WebInputEventResult.h"
@@ -196,6 +197,11 @@ class CORE_EXPORT PointerEventManager
   bool GetPointerCaptureState(int pointer_id,
                               EventTarget** pointer_capture_target,
                               EventTarget** pending_pointer_capture_target);
+
+  // Only adjust touch type primary pointer down.
+  bool ShouldAdjustPointerEvent(const WebPointerEvent&) const;
+  // Adjust coordinates so it can be used to find the best clickable target.
+  void AdjustTouchPointerEvent(WebPointerEvent&);
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |PointerEventManager::clear()|.

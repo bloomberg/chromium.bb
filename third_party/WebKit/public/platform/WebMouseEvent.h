@@ -17,9 +17,6 @@ class WebGestureEvent;
 
 // WebMouseEvent --------------------------------------------------------------
 
-// TODO(mustaq): We are truncating |float|s to integers whenever setting
-//   coordinate values, to avoid regressions for now. Will be fixed later
-//   on. crbug.com/456625
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
  public:
   static constexpr PointerId kMousePointerId = std::numeric_limits<int>::max();
@@ -86,14 +83,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.
   BLINK_PLATFORM_EXPORT WebMouseEvent FlattenTransform() const;
 #endif
-
-  void SetPositionInWidget(float x, float y) {
-    position_in_widget_ = WebFloatPoint(x, y);
-  }
-
-  void SetPositionInScreen(float x, float y) {
-    position_in_screen_ = WebFloatPoint(x, y);
-  }
 
  protected:
   WebMouseEvent(unsigned size_param, PointerId id_param)

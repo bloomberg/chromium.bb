@@ -21902,6 +21902,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchAdjustment.AdjustDistance" units="pixels">
+  <owner>eirage@chromium.org</owner>
+  <summary>
+    Records the euclidean distance in dips from a gesture event's original tap
+    center to its adjusted touch point. 0 if not adjusted. This only records
+    GestureTap events and GestureLongPress events.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram name="Event.Touch.TouchDispositionsAfterPageLoad"
     enum="TouchEventDispatchResultType">
   <obsolete>
