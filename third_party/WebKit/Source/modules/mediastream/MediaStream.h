@@ -26,7 +26,7 @@
 #ifndef MediaStream_h
 #define MediaStream_h
 
-#include "core/html/URLRegistry.h"
+#include "core/fileapi/URLRegistry.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaStreamTrack.h"

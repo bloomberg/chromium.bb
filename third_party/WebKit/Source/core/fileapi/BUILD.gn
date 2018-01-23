@@ -21,7 +21,10 @@ blink_core_sources("fileapi") {
     "FileReaderLoaderClient.h",
     "FileReaderSync.cpp",
     "FileReaderSync.h",
+    "PublicURLManager.cpp",
+    "PublicURLManager.h",
     "URLFileAPI.cpp",
     "URLFileAPI.h",
+    "URLRegistry.h",
   ]
 }
