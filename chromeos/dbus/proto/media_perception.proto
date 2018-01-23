@@ -63,6 +63,10 @@ message State {
 
   // A list of video streams processed by the analytics process.
   repeated VideoStreamParam video_stream_param = 3;
+
+  // Media analytics configuration. It can only be used when setting state to
+  // RUNNING.
+  optional string configuration = 4;
 }
 
 // This is the output of the MediaPerceptionSinkCalculator.
