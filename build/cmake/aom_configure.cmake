@@ -179,12 +179,6 @@ fix_experiment_configs()
 # Test compiler support.
 aom_get_inline("INLINE")
 
-# TODO(tomfinegan): aom_ports_check is legacy; HAVE_AOM_PORTS is not used
-# anywhere in the aom sources. To be removed after parity with the legacy
-# build system stops being important.
-aom_check_source_compiles("aom_ports_check"
-                          "#include \"${AOM_ROOT}/aom/aom_integer.h\""
-                          HAVE_AOM_PORTS)
 aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
 aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 

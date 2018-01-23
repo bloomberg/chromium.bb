@@ -42,27 +42,10 @@ set(HAVE_SSE4_1 0 CACHE NUMBER "Enables SSE 4.1 optimizations.")
 set(HAVE_SSSE3 0 CACHE NUMBER "Enables SSSE3 optimizations.")
 
 # Flags describing the build environment.
-set(HAVE_AOM_PORTS 0 CACHE NUMBER "Internal flag, deprecated.")
 set(HAVE_FEXCEPT 0 CACHE NUMBER "Internal flag, GNU fenv.h present for target.")
 set(HAVE_PTHREAD_H 0 CACHE NUMBER "Internal flag, target pthread support.")
 set(HAVE_UNISTD_H 0 CACHE NUMBER "Internal flag, unistd.h present for target.")
 set(HAVE_WXWIDGETS 0 CACHE NUMBER "WxWidgets present.")
-
-# Deprecated flags preserved for compatibility with configure build.
-set(CONFIG_CODEC_SRCS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_DEBUG_LIBS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_DEPENDENCY_TRACKING 1 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_EXPERIMENTAL 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_EXTERNAL_BUILD 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_INSTALL_BINS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_INSTALL_DOCS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_INSTALL_LIBS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_INSTALL_SRCS 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_POSTPROC 1 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_POSTPROC_VISUALIZER 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_RVCT 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_SMALL 0 CACHE NUMBER "Deprecated flag.")
-set(CONFIG_STATIC_MSVCRT 0 CACHE NUMBER "Deprecated flag.")
 
 # Build configuration flags.
 set(CONFIG_AV1 1 CACHE NUMBER "Internal flag.")
