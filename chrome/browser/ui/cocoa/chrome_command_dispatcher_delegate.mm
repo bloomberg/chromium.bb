@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
+#import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace {
@@ -89,8 +90,8 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
   // let the extension system try to handle the event. In case this is a
   // redispatched event, [event window] gives the correct window.
   if ([event window]) {
-    BrowserWindowController* controller = [BrowserWindowController
-        browserWindowControllerForWindow:[event window]];
+    BrowserWindowController* controller =
+        BrowserWindowControllerForWindow([event window]);
     // |controller| is only set in Cocoa. In toolkit-views extension commands
     // are handled by BrowserView.
     if ([controller respondsToSelector:@selector(handledByExtensionCommand:
