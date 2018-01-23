@@ -139,7 +139,7 @@ Element* FrameSelection::RootEditableElementOrDocumentElement() const {
 }
 
 size_t FrameSelection::CharacterIndexForPoint(const IntPoint& point) const {
-  const EphemeralRange range = GetFrame()->RangeForPoint(point);
+  const EphemeralRange range = GetFrame()->GetEditor().RangeForPoint(point);
   if (range.IsNull())
     return kNotFound;
   Element* const editable = RootEditableElementOrDocumentElement();

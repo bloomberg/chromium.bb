@@ -37,6 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
@@ -167,7 +168,7 @@ NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     return nil;
   LocalFrame* frame = result.InnerNode()->GetDocument().GetFrame();
   EphemeralRange range =
-      frame->RangeForPoint(result.RoundedPointInInnerNodeFrame());
+      frame->GetEditor().RangeForPoint(result.RoundedPointInInnerNodeFrame());
   if (range.IsNull())
     return nil;
 

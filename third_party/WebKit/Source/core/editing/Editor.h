@@ -251,6 +251,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   // |firstRectForRange| requires up-to-date layout.
   IntRect FirstRectForRange(const EphemeralRange&) const;
+  EphemeralRange RangeForPoint(const IntPoint&) const;
 
   void RespondToChangedSelection();
 
