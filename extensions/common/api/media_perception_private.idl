@@ -118,6 +118,10 @@ namespace mediaPerceptionPrivate {
     // A list of video streams processed by the analytics process. To set this
     // parameter, status has to be <code>RUNNING</code>.
     VideoStreamParam[]? videoStreamParam;
+
+    // Media analytics configuration. It can only be used when setting state to
+    // RUNNING.
+    DOMString? configuration;
   };
 
   dictionary Point {

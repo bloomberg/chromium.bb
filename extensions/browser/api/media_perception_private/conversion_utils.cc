@@ -286,6 +286,10 @@ State StateProtoToIdl(const mri::State& state) {
     state_result.device_context =
         std::make_unique<std::string>(state.device_context());
   }
+  if (state.has_configuration()) {
+    state_result.configuration =
+        std::make_unique<std::string>(state.configuration());
+  }
   return state_result;
 }
 
@@ -294,6 +298,9 @@ mri::State StateIdlToProto(const State& state) {
   state_result.set_status(StateStatusIdlToProto(state));
   if (state.device_context)
     state_result.set_device_context(*state.device_context);
+
+  if (state.configuration)
+    state_result.set_configuration(*state.configuration);
 
   if (state.video_stream_param && state.video_stream_param.get() != nullptr) {
     for (size_t i = 0; i < state.video_stream_param.get()->size(); ++i) {
