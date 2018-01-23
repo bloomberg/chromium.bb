@@ -1189,14 +1189,6 @@
           'gtest_tests': 'chromium_win_clang_gtests',
         },
       },
-      'Ozone Linux': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-        'test_suites': {
-          'gtest_tests': 'ozone_linux_gtests',
-        },
-      },
       'Site Isolation Android': {
         'swarming': {
           'dimension_sets': [
@@ -1446,6 +1438,14 @@
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
           'isolated_scripts': 'chromium_linux_isolated_scripts',
+        },
+      },
+      'Ozone Linux': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'ozone_linux_gtests',
         },
       },
     },
