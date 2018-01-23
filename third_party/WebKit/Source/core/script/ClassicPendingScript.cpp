@@ -46,10 +46,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   // Step 2. Set request's client to settings object. [spec text]
   //
   // Note: |element_document| corresponds to the settings object.
-  ScriptResource* resource =
-      ScriptResource::Fetch(params, element_document.Fetcher(), pending_script);
-  if (!resource)
-    return nullptr;
+  ScriptResource::Fetch(params, element_document.Fetcher(), pending_script);
   pending_script->CheckState();
   return pending_script;
 }

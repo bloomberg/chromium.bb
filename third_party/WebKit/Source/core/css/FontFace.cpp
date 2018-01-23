@@ -734,8 +734,8 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue* src) {
         RemoteFontFaceSource* source =
             new RemoteFontFaceSource(css_font_face_, font_selector,
                                      CSSValueToFontDisplay(display_.Get()));
-        if (item.Fetch(context, source))
-          css_font_face_->AddSource(source);
+        item.Fetch(context, source);
+        css_font_face_->AddSource(source);
       }
     } else {
       css_font_face_->AddSource(new LocalFontFaceSource(item.GetResource()));

@@ -15,7 +15,7 @@ Content-Location: http://localhost/resource_not_in_archive-expected.html
 </head>
 <body>
 
-<h1>No image should be shown.</h1>
+<h1>Broken image should be shown.</h1>
 <img src="http://localhost/resources/red-square.png">
 
 </body></html>

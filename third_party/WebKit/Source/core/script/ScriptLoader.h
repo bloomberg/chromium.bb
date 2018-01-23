@@ -146,7 +146,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // and must NOT be called from outside of PendingScript().
   //
   // https://html.spec.whatwg.org/#fetch-a-classic-script
-  bool FetchClassicScript(const KURL&,
+  void FetchClassicScript(const KURL&,
                           Document&,
                           const ScriptFetchOptions&,
                           const WTF::TextEncoding&);

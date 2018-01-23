@@ -67,7 +67,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   bool HasFailedOrCanceledSubresources() const;
 
-  FontResource* Fetch(ExecutionContext*, FontResourceClient*) const;
+  FontResource& Fetch(ExecutionContext*, FontResourceClient*) const;
 
   bool Equals(const CSSFontFaceSrcValue&) const;
 

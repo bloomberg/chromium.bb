@@ -40,10 +40,8 @@ class CSSMockHTMLResourcePreloader : public HTMLResourcePreloader {
                const NetworkHintsInterface&) override {
     if (expected_referrer_) {
       Resource* resource = preload_request->Start(GetDocument(), nullptr);
-      if (resource) {
-        EXPECT_EQ(expected_referrer_,
-                  resource->GetResourceRequest().HttpReferrer());
-      }
+      EXPECT_EQ(expected_referrer_,
+                resource->GetResourceRequest().HttpReferrer());
     }
   }
 

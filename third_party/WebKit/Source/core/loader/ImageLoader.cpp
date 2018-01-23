@@ -57,11 +57,6 @@
 
 namespace blink {
 
-static inline bool PageIsBeingDismissed(Document* document) {
-  return document->PageDismissalEventBeingDispatched() !=
-         Document::kNoDismissal;
-}
-
 static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
   DCHECK(loader);
@@ -408,13 +403,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
-
-    if (!new_image_content && !PageIsBeingDismissed(&document)) {
-      CrossSiteOrCSPViolationOccurred(image_source_url);
-      DispatchErrorEvent();
-    } else {
-      ClearFailedLoadURL();
-    }
+    ClearFailedLoadURL();
   } else {
     if (!image_source_url.IsNull()) {
       // Fire an error event if the url string is not empty, but the KURL is.
@@ -640,9 +629,8 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     pending_load_event_.Cancel();
 
     Optional<ResourceError> error = resource->GetResourceError();
-    if (error && error->IsAccessCheck()) {
+    if (error && error->IsAccessCheck())
       CrossSiteOrCSPViolationOccurred(AtomicString(error->FailingURL()));
-    }
 
     // The error event should not fire if the image data update is a result of
     // environment change.

@@ -95,13 +95,10 @@ void InspectorResourceContentLoader::Start() {
       options.initiator_info.name = FetchInitiatorTypeNames::internal;
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client = new ResourceClient(this);
-      Resource* resource =
-          RawResource::Fetch(params, document->Fetcher(), resource_client);
-      if (resource) {
-        // Prevent garbage collection by holding a reference to this resource.
-        resources_.push_back(resource);
-        pending_resource_clients_.insert(resource_client);
-      }
+      // Prevent garbage collection by holding a reference to this resource.
+      resources_.push_back(
+          RawResource::Fetch(params, document->Fetcher(), resource_client));
+      pending_resource_clients_.insert(resource_client);
     }
 
     HeapVector<Member<CSSStyleSheet>> style_sheets;
@@ -120,12 +117,9 @@ void InspectorResourceContentLoader::Start() {
       options.initiator_info.name = FetchInitiatorTypeNames::internal;
       FetchParameters params(resource_request, options);
       ResourceClient* resource_client = new ResourceClient(this);
-      Resource* resource = CSSStyleSheetResource::Fetch(
-          params, document->Fetcher(), resource_client);
-      if (!resource)
-        continue;
       // Prevent garbage collection by holding a reference to this resource.
-      resources_.push_back(resource);
+      resources_.push_back(CSSStyleSheetResource::Fetch(
+          params, document->Fetcher(), resource_client));
       // A cache hit for a css stylesheet will complete synchronously. Don't
       // mark the client as pending if it already finished.
       if (resource_client->GetResource())

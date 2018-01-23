@@ -557,20 +557,20 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
   }
 }
 
-void FrameSerializer::AddFontToResources(FontResource* font) {
-  if (!font || !ShouldAddURL(font->Url()))
+void FrameSerializer::AddFontToResources(FontResource& font) {
+  if (!ShouldAddURL(font.Url()))
     return;
-  resource_urls_.insert(font->Url());
-  if (!font || !font->IsLoaded() || !font->ResourceBuffer())
+  resource_urls_.insert(font.Url());
+  if (!font.IsLoaded() || !font.ResourceBuffer())
     return;
 
-  scoped_refptr<const SharedBuffer> data(font->ResourceBuffer());
+  scoped_refptr<const SharedBuffer> data(font.ResourceBuffer());
 
-  AddToResources(font->GetResponse().MimeType(),
-                 font->HasCacheControlNoStoreHeader()
+  AddToResources(font.GetResponse().MimeType(),
+                 font.HasCacheControlNoStoreHeader()
                      ? kHasCacheControlNoStoreHeader
                      : kNoCacheControlNoStoreHeader,
-                 data, font->Url());
+                 data, font.Url());
 }
 
 void FrameSerializer::RetrieveResourcesForProperties(

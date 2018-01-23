@@ -111,7 +111,7 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       params.SetOriginRestriction(FetchParameters::kRestrictToSameOrigin);
       Resource* resource =
           RawResource::FetchSynchronously(params, g_global_resource_fetcher);
-      if (!resource || !g_global_processor)
+      if (!g_global_processor)
         return nullptr;
       scoped_refptr<const SharedBuffer> data = resource->ResourceBuffer();
       if (!data)

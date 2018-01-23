@@ -1203,26 +1203,7 @@ void DocumentThreadableLoader::LoadRequestAsync(
   } else {
     RawResource::Fetch(new_params, fetcher, this);
   }
-  if (GetResource())
-    checker_.WillAddClient();
-
-  if (!GetResource()) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(
-        GetExecutionContext(), client_);
-    ThreadableLoaderClient* client = client_;
-    Clear();
-    // setResource() might call notifyFinished() and thus clear()
-    // synchronously, and in such cases ThreadableLoaderClient is already
-    // notified and |client| is null.
-    if (!client)
-      return;
-    String message =
-        String("Failed to start loading ") + request.Url().GetString();
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
-    client->DidFail(ResourceError::CancelledError(request.Url()));
-    return;
-  }
+  checker_.WillAddClient();
 
   if (GetResource()->IsLoading()) {
     unsigned long identifier = GetResource()->Identifier();
@@ -1243,21 +1224,11 @@ void DocumentThreadableLoader::LoadRequestSync(
     fetch_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
   Resource* resource = RawResource::FetchSynchronously(
       fetch_params, loading_context_->GetResourceFetcher());
-  ResourceResponse response =
-      resource ? resource->GetResponse() : ResourceResponse();
-  unsigned long identifier = resource
-                                 ? resource->Identifier()
-                                 : std::numeric_limits<unsigned long>::max();
+  ResourceResponse response = resource->GetResponse();
+  unsigned long identifier = resource->Identifier();
   probe::documentThreadableLoaderStartedLoadingForClient(GetExecutionContext(),
                                                          identifier, client_);
   ThreadableLoaderClient* client = client_;
-
-  if (!resource) {
-    client_ = nullptr;
-    client->DidFail(ResourceError::Failure(request.Url()));
-    return;
-  }
-
   const KURL& request_url = request.Url();
 
   // No exception for file:/// resources, see <rdar://problem/4962298>. Also, if

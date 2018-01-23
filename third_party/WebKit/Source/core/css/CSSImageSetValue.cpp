@@ -131,8 +131,9 @@ StyleImage* CSSImageSetValue::CacheImage(
         placeholder_image_request_type == FetchParameters::kAllowPlaceholder)
       document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
-    if (ImageResourceContent* cached_image =
-            ImageResourceContent::Fetch(params, document.Fetcher())) {
+    ImageResourceContent* cached_image =
+        ImageResourceContent::Fetch(params, document.Fetcher());
+    if (!cached_image->ErrorOccurred()) {
       cached_image_ = StyleFetchedImageSet::Create(
           cached_image, image.scale_factor, this, params.Url());
     } else {
