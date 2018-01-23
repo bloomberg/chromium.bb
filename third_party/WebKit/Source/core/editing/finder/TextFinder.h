@@ -270,7 +270,7 @@ class CORE_EXPORT TextFinder final
 
   // Contents size when find-in-page match rects were last computed for this
   // frame's cache.
-  IntSize contents_size_for_current_find_match_rects_;
+  IntSize document_size_for_current_find_match_rects_;
 
   // This flag is used by the scoping effort to determine if we need to figure
   // out which rectangle is the active match. Once we find the active

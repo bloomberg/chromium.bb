@@ -1252,6 +1252,9 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollOffset pending_scroll_delta_;
   ScrollOffset scroll_offset_;
+
+  // TODO(bokan): This is unneeded when root-layer-scrolls is turned on.
+  // crbug.com/417782.
   IntSize layout_overflow_size_;
 
   bool scrollbars_suppressed_;

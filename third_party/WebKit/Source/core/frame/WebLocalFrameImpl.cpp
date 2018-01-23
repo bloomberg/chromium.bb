@@ -594,10 +594,11 @@ void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
   }
 }
 
-WebSize WebLocalFrameImpl::ContentsSize() const {
-  if (LocalFrameView* view = GetFrameView())
-    return view->ContentsSize();
-  return WebSize();
+WebSize WebLocalFrameImpl::DocumentSize() const {
+  if (!GetFrameView() || !GetFrameView()->GetLayoutView())
+    return WebSize();
+
+  return GetFrameView()->GetLayoutView()->DocumentRect().Size();
 }
 
 bool WebLocalFrameImpl::HasVisibleContent() const {
