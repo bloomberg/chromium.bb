@@ -416,9 +416,8 @@ void PermissionSelectorRow::InitializeComboboxView(
 void PermissionSelectorRow::PermissionChanged(
     const PageInfoUI::PermissionInfo& permission) {
   // Change the permission icon to reflect the selected setting.
-  icon_->SetImage(PageInfoUI::GetPermissionIcon(
-      permission,
-      color_utils::DeriveDefaultIconColor(label_->enabled_color())));
+  icon_->SetImage(
+      PageInfoUI::GetPermissionIcon(permission, label_->enabled_color()));
 
   // Update the menu button text to reflect the new setting.
   if (menu_button_) {
