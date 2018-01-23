@@ -43,7 +43,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "media/media_features.h"
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -580,7 +579,7 @@ ServiceManagerContext::ServiceManagerContext() {
       base::ASCIIToUTF16("Media Service");
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
   out_of_process_services[media::mojom::kCdmServiceName] =
       base::ASCIIToUTF16("Content Decryption Module Service");
 #endif
