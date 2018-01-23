@@ -40589,6 +40589,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SSLAuthRootConsistency">
+  <obsolete>
+    Deprecated as of 2018-01.
+  </obsolete>
   <summary>
     The results of comparing the built-in list of known Windows roots against
     programatically detecting the built-in status.
