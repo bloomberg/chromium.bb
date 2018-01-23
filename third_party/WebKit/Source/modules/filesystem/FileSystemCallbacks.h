@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class DOMFileSystem;
 class DOMFileSystemBase;
 class DirectoryReaderBase;
 class DirectoryReaderOnDidReadCallback;
@@ -49,13 +50,13 @@ class Entry;
 class ExecutionContext;
 class File;
 class FileMetadata;
-class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
 class V8EntryCallback;
 class V8ErrorCallback;
 class V8FileCallback;
+class V8FileSystemCallback;
 class VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
@@ -194,18 +195,45 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {
  public:
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(FileSystemCallback*,
-                                                          ErrorCallbackBase*,
-                                                          ExecutionContext*,
-                                                          FileSystemType);
+  class OnDidOpenFileSystemCallback
+      : public GarbageCollectedFinalized<OnDidOpenFileSystemCallback> {
+   public:
+    virtual ~OnDidOpenFileSystemCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess(DOMFileSystem*) = 0;
+
+   protected:
+    OnDidOpenFileSystemCallback() = default;
+  };
+
+  class OnDidOpenFileSystemV8Impl : public OnDidOpenFileSystemCallback {
+   public:
+    static OnDidOpenFileSystemV8Impl* Create(V8FileSystemCallback* callback) {
+      return callback ? new OnDidOpenFileSystemV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess(DOMFileSystem*) override;
+
+   private:
+    OnDidOpenFileSystemV8Impl(V8FileSystemCallback* callback)
+        : callback_(callback) {}
+
+    Member<V8FileSystemCallback> callback_;
+  };
+
+  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+      OnDidOpenFileSystemCallback*,
+      ErrorCallbackBase*,
+      ExecutionContext*,
+      FileSystemType);
   void DidOpenFileSystem(const String& name, const KURL& root_url) override;
 
  private:
-  FileSystemCallbacks(FileSystemCallback*,
+  FileSystemCallbacks(OnDidOpenFileSystemCallback*,
                       ErrorCallbackBase*,
                       ExecutionContext*,
                       FileSystemType);
-  Persistent<FileSystemCallback> success_callback_;
+  Persistent<OnDidOpenFileSystemCallback> success_callback_;
   FileSystemType type_;
 };
 

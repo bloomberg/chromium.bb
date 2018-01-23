@@ -34,9 +34,9 @@ namespace blink {
 
 class EntrySync;
 class ExceptionState;
-class FileSystemCallback;
 class V8EntryCallback;
 class V8ErrorCallback;
+class V8FileSystemCallback;
 class WorkerGlobalScope;
 
 class WorkerGlobalScopeFileSystem {
@@ -51,7 +51,7 @@ class WorkerGlobalScopeFileSystem {
   static void webkitRequestFileSystem(WorkerGlobalScope&,
                                       int type,
                                       long long size,
-                                      FileSystemCallback* success_callback,
+                                      V8FileSystemCallback* success_callback,
                                       V8ErrorCallback*);
   static DOMFileSystemSync* webkitRequestFileSystemSync(WorkerGlobalScope&,
                                                         int type,

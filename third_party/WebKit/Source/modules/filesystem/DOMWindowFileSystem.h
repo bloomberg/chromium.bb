@@ -32,10 +32,10 @@
 
 namespace blink {
 
-class FileSystemCallback;
 class LocalDOMWindow;
 class V8EntryCallback;
 class V8ErrorCallback;
+class V8FileSystemCallback;
 
 class DOMWindowFileSystem {
   STATIC_ONLY(DOMWindowFileSystem);
@@ -44,7 +44,7 @@ class DOMWindowFileSystem {
   static void webkitRequestFileSystem(LocalDOMWindow&,
                                       int type,
                                       long long size,
-                                      FileSystemCallback*,
+                                      V8FileSystemCallback*,
                                       V8ErrorCallback*);
   static void webkitResolveLocalFileSystemURL(LocalDOMWindow&,
                                               const String&,
