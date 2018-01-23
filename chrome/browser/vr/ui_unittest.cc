@@ -384,11 +384,12 @@ TEST_F(UiTest, WebVrAutopresented) {
 
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true, false);
-  ui_->OnWebVrFrameAvailable();
 
   // The splash screen should go away.
   RunFor(
       MsToDelta(1000 * (kSplashScreenMinDurationSeconds + kSmallDelaySeconds)));
+  ui_->OnWebVrFrameAvailable();
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
   VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
 
   // Make sure the transient URL bar times out.
@@ -409,10 +410,11 @@ TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
   VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
 
   ui_->SetWebVrMode(true, false);
-  ui_->OnWebVrTimeoutImminent();
-
   EXPECT_TRUE(RunFor(MsToDelta(
       1000 * (kSplashScreenMinDurationSeconds + kSmallDelaySeconds * 2))));
+
+  ui_->OnWebVrTimeoutImminent();
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
 
   VerifyOnlyElementsVisible("Timeout imminent",
                             {kWebVrTimeoutSpinner, kWebVrBackground});
@@ -1036,7 +1038,10 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true, false);
-  EXPECT_TRUE(RunFor(MsToDelta(2000)));
+  EXPECT_TRUE(RunFor(MsToDelta(1000 * kSplashScreenMinDurationSeconds)));
+  VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
+
+  EXPECT_FALSE(RunFor(MsToDelta(2000)));
   ui_->OnWebVrTimeoutImminent();
   EXPECT_TRUE(RunFor(MsToDelta(3000)));
   ui_->OnWebVrTimedOut();

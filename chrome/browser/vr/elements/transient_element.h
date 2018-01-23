@@ -27,6 +27,7 @@ class TransientElement : public UiElement {
 
  protected:
   explicit TransientElement(const base::TimeDelta& timeout);
+  virtual void Reset();
 
   base::TimeDelta timeout_;
   base::TimeTicks set_visible_time_;
@@ -65,14 +66,21 @@ enum class TransientElementHideReason : int {
 // is triggered when the element hides itself.
 class ShowUntilSignalTransientElement : public TransientElement {
  public:
-  ShowUntilSignalTransientElement(
-      const base::TimeDelta& min_duration,
-      const base::TimeDelta& timeout,
-      const base::Callback<void(TransientElementHideReason)>& callback);
+  typedef typename base::RepeatingCallback<void()> OnMinDurationCallback;
+  typedef typename base::RepeatingCallback<void(TransientElementHideReason)>
+      OnHideCallback;
+
+  ShowUntilSignalTransientElement(const base::TimeDelta& min_duration,
+                                  const base::TimeDelta& timeout,
+                                  OnMinDurationCallback min_duration_callback,
+                                  OnHideCallback hide_callback);
   ~ShowUntilSignalTransientElement() override;
 
   // This must be called before the set timeout to hide the element.
   void Signal(bool value);
+
+ protected:
+  void Reset() override;
 
  private:
   bool OnBeginFrame(const base::TimeTicks& time,
@@ -81,8 +89,10 @@ class ShowUntilSignalTransientElement : public TransientElement {
   typedef TransientElement super;
 
   base::TimeDelta min_duration_;
-  base::Callback<void(TransientElementHideReason)> callback_;
+  OnMinDurationCallback min_duration_callback_;
+  OnHideCallback hide_callback_;
   bool signaled_ = false;
+  bool min_duration_callback_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShowUntilSignalTransientElement);
 };

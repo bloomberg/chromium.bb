@@ -11,6 +11,10 @@ namespace vr {
 enum WebVrState {
   // We are not awaiting a WebVR frame.
   kWebVrNoTimeoutPending = 0,
+  // We are waiting for the minimum splash screen duration to be over. We're in
+  // this state only during WebVR auto-presentation. During this phase, sending
+  // VSync to the WebVR page is paused.
+  kWebVrAwaitingMinSplashScreenDuration,
   kWebVrAwaitingFirstFrame,
   // We are awaiting a WebVR frame, and we will soon exceed the amount of time
   // that we're willing to wait. In this state, it could be appropriate to show
@@ -32,6 +36,9 @@ struct WebVrModel {
   // modes.
   bool show_exit_toast = false;
   bool has_produced_frames() const { return state == kWebVrPresenting; }
+  bool awaiting_min_splash_screen_duration() const {
+    return state == kWebVrAwaitingMinSplashScreenDuration;
+  }
 };
 
 }  // namespace vr
