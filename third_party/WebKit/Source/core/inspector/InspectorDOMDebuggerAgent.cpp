@@ -678,13 +678,13 @@ void InspectorDOMDebuggerAgent::DidFireWebGLError(const String& error_name) {
     return;
   if (!error_name.IsEmpty())
     event_data->setString(kWebglErrorNameProperty, error_name);
-  PauseOnNativeEventIfNeeded(std::move(event_data), false);
+  PauseOnNativeEventIfNeeded(std::move(event_data), true);
 }
 
 void InspectorDOMDebuggerAgent::DidFireWebGLWarning() {
   PauseOnNativeEventIfNeeded(
       PreparePauseOnNativeEventData(kWebglWarningFiredEventName, nullptr),
-      false);
+      true);
 }
 
 void InspectorDOMDebuggerAgent::DidFireWebGLErrorOrWarning(
