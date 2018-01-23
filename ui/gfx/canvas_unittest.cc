@@ -72,12 +72,11 @@ TEST_F(CanvasTest, ClipRectWithScaling) {
 }
 
 // Line height is only supported on Skia.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_StringSizeWithLineHeight DISABLED_StringSizeWithLineHeight
 #else
 #define MAYBE_StringSizeWithLineHeight StringSizeWithLineHeight
 #endif
-
 TEST_F(CanvasTest, MAYBE_StringSizeWithLineHeight) {
   gfx::Size one_line_size = SizeStringInt("Q", 0, 0);
   gfx::Size four_line_size = SizeStringInt("Q\nQ\nQ\nQ", 1000000, 1000);
