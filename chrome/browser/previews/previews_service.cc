@@ -39,6 +39,9 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
       return previews::params::IsAMPRedirectionPreviewEnabled();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
+    case previews::PreviewsType::UNSPECIFIED:
+      // Not a real previews type so treat as false.
+      return false;
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::LAST:
       break;
@@ -62,6 +65,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::NONE:
+    case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
       break;
   }

@@ -590,6 +590,22 @@ TEST_F(
   EXPECT_EQ(expected_description, actual_description);
 }
 
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionCommitted) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::COMMITTED, true /* final_reason */);
+  std::string expected_description = "Committed";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest,
+       LogPreviewDecisionDescriptionCacheControlNoTransform) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::CACHE_CONTROL_NO_TRANSFORM,
+      true /* final_reason */);
+  std::string expected_description = "Cache-control no-transform received";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
 TEST_F(PreviewsLoggerTest, NotifyObserversOfNewBlacklistedHost) {
   TestPreviewsLoggerObserver observers[3];
 
