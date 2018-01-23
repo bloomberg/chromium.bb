@@ -123,8 +123,6 @@ class HardwareDisplayController {
   // doesn't change any state.
   bool TestPageFlip(const OverlayPlaneList& plane_list);
 
-  bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
-
   // Return the supported modifiers for |fourcc_format| for this
   // controller.
   std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);

@@ -109,13 +109,8 @@ class HardwareDisplayPlaneManager {
   virtual void RequestPlanesReadyCallback(const OverlayPlaneList& planes,
                                           base::OnceClosure callback) = 0;
 
-  // Returns all formats which can be scanned out by this PlaneManager. Use
-  // IsFormatSupported to find if a given format is supported on a particular
-  // plane for a given crtc.
+  // Returns all formats which can be scanned out by this PlaneManager.
   const std::vector<uint32_t>& GetSupportedFormats() const;
-  bool IsFormatSupported(uint32_t fourcc_format,
-                         uint32_t z_order,
-                         uint32_t crtc_id) const;
 
   std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id, uint32_t format);
 
