@@ -20,7 +20,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -198,8 +197,7 @@ class WhitelistLoadObserver {
 class SupervisedUserWhitelistInstallerTest : public testing::Test {
  public:
   SupervisedUserWhitelistInstallerTest()
-      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
-        user_data_dir_override_(chrome::DIR_USER_DATA) {}
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   ~SupervisedUserWhitelistInstallerTest() override {}
 
@@ -297,7 +295,6 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
-  base::ScopedPathOverride user_data_dir_override_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
   TestingPrefServiceSimple local_state_;
   content::TestServiceManagerContext service_manager_context_;

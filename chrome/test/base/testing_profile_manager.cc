@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +46,7 @@ TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
     : called_set_up_(false),
       browser_process_(process),
       local_state_(process),
-      profile_manager_(NULL) {
-}
+      profile_manager_(nullptr) {}
 
 TestingProfileManager::~TestingProfileManager() {
   // Destroying this class also destroys the LocalState, so make sure the
@@ -249,6 +249,8 @@ void TestingProfileManager::SetUpInternal() {
 
   // Set up the directory for profiles.
   ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
+  user_data_dir_override_ = std::make_unique<base::ScopedPathOverride>(
+      chrome::DIR_USER_DATA, profiles_dir_.GetPath());
 
   profile_manager_ = new testing::ProfileManager(profiles_dir_.GetPath());
   browser_process_->SetProfileManager(profile_manager_);  // Takes ownership.
