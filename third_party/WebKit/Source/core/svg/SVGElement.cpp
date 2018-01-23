@@ -356,20 +356,14 @@ AffineTransform SVGElement::CalculateTransform(
     // http://dev.w3.org/csswg/css3-transforms/
     float zoom = style->EffectiveZoom();
     TransformationMatrix transform;
-    if (zoom != 1) {
+    if (zoom != 1)
       reference_box.Scale(zoom);
-      transform.Scale(1 / zoom);
-      style->ApplyTransform(
-          transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
-          ComputedStyle::kIncludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-      transform.Scale(zoom);
-    } else {
-      style->ApplyTransform(
-          transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
-          ComputedStyle::kIncludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-    }
+    style->ApplyTransform(
+        transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
+        ComputedStyle::kIncludeMotionPath,
+        ComputedStyle::kIncludeIndependentTransformProperties);
+    if (zoom != 1)
+      transform.Zoom(1 / zoom);
     // Flatten any 3D transform.
     matrix = transform.ToAffineTransform();
   }
