@@ -255,8 +255,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   // This must be created for every new WebMediaPlayer, each instance generates
   // a new player id which is used to collate logs on the browser side.
-  std::unique_ptr<media::MediaLog> media_log(
-      new RenderMediaLog(url::Origin(security_origin).GetURL()));
+  std::unique_ptr<media::MediaLog> media_log(new RenderMediaLog(
+      url::Origin(security_origin).GetURL(),
+      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   base::WeakPtr<media::MediaObserver> media_observer;
 
@@ -345,7 +346,8 @@ blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {
         GetCdmFactory(), render_frame_->GetMediaPermission(),
         new RenderMediaLog(
             url::Origin(render_frame_->GetWebFrame()->GetSecurityOrigin())
-                .GetURL())));
+                .GetURL(),
+            render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia))));
   }
   return web_encrypted_media_client_.get();
 }
@@ -466,7 +468,9 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   return new WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(),
-      std::make_unique<RenderMediaLog>(url::Origin(security_origin).GetURL()),
+      std::make_unique<RenderMediaLog>(
+          url::Origin(security_origin).GetURL(),
+          render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)),
       CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
