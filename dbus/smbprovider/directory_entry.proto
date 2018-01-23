@@ -142,3 +142,15 @@ message TruncateOptionsProto {
   // New desired length of the file.
   optional int64 length = 3;
 }
+
+// Used for passing inputs into SmbProvider.WriteFile().
+message WriteFileOptionsProto {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
+  // ID of the file returned from OpenFile().
+  optional int32 file_id = 2;
+  // Offset of the file for the write.
+  optional int64 offset = 3;
+  // Length of data being written.
+  optional int32 length = 4;
+}
