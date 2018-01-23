@@ -89,10 +89,9 @@ class PrerenderLinkManager::PendingPrerenderManager
 
   void ObserveLauncher(PrerenderContents* launcher) {
     DCHECK_EQ(FINAL_STATUS_MAX, launcher->final_status());
-    if (observed_launchers_.find(launcher) != observed_launchers_.end())
-      return;
-    observed_launchers_.insert(launcher);
-    launcher->AddObserver(this);
+    bool inserted = observed_launchers_.insert(launcher).second;
+    if (inserted)
+      launcher->AddObserver(this);
   }
 
   void OnPrerenderStart(PrerenderContents* launcher) override {}
@@ -120,17 +119,17 @@ class PrerenderLinkManager::PendingPrerenderManager
 PrerenderLinkManager::PrerenderLinkManager(PrerenderManager* manager)
     : has_shutdown_(false),
       manager_(manager),
-      pending_prerender_manager_(new PendingPrerenderManager(this)) {}
+      pending_prerender_manager_(
+          std::make_unique<PendingPrerenderManager>(this)) {}
 
 PrerenderLinkManager::~PrerenderLinkManager() {
-  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
-    if (i->handle) {
-      DCHECK(!i->handle->IsPrerendering())
+  for (auto& prerender : prerenders_) {
+    if (prerender.handle) {
+      DCHECK(!prerender.handle->IsPrerendering())
           << "All running prerenders should stop at the same time as the "
           << "PrerenderManager.";
-      delete i->handle;
-      i->handle = 0;
+      delete prerender.handle;
+      prerender.handle = nullptr;
     }
   }
 }
@@ -142,15 +141,14 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
                                           const content::Referrer& referrer,
                                           const gfx::Size& size,
                                           int render_view_route_id) {
-  DCHECK_EQ(static_cast<LinkPrerender*>(NULL),
-            FindByLauncherChildIdAndPrerenderId(launcher_child_id,
-                                                prerender_id));
+  DCHECK_EQ(nullptr, FindByLauncherChildIdAndPrerenderId(launcher_child_id,
+                                                         prerender_id));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(launcher_child_id, render_view_route_id);
   content::WebContents* web_contents =
-      rvh ? content::WebContents::FromRenderViewHost(rvh) : NULL;
+      rvh ? content::WebContents::FromRenderViewHost(rvh) : nullptr;
   // Guests inside <webview> do not support cross-process navigation and so we
   // do not allow guests to prerender content.
   if (guest_view::GuestViewBase::IsGuest(web_contents))
@@ -247,14 +245,14 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
       render_view_route_id(render_view_route_id),
       creation_time(creation_time),
       deferred_launcher(deferred_launcher),
-      handle(NULL),
+      handle(nullptr),
       has_been_abandoned(false) {}
 
 PrerenderLinkManager::LinkPrerender::LinkPrerender(const LinkPrerender& other) =
     default;
 
 PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
-  DCHECK_EQ(static_cast<PrerenderHandle*>(NULL), handle)
+  DCHECK_EQ(nullptr, handle)
       << "The PrerenderHandle should be destroyed before its Prerender.";
 }
 
@@ -263,13 +261,11 @@ bool PrerenderLinkManager::IsEmpty() const {
 }
 
 size_t PrerenderLinkManager::CountRunningPrerenders() const {
-  size_t retval = 0;
-  for (std::list<LinkPrerender>::const_iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
-    if (i->handle && i->handle->IsPrerendering())
-      ++retval;
-  }
-  return retval;
+  return std::count_if(prerenders_.begin(), prerenders_.end(),
+                       [](const LinkPrerender& prerender) {
+                         return prerender.handle &&
+                                prerender.handle->IsPrerendering();
+                       });
 }
 
 void PrerenderLinkManager::StartPrerenders() {
@@ -287,20 +283,21 @@ void PrerenderLinkManager::StartPrerenders() {
   // also per launcher.
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
        i != prerenders_.end(); ++i) {
+    LinkPrerender& prerender = *i;
     // Skip prerenders launched by a prerender.
-    if (i->deferred_launcher)
+    if (prerender.deferred_launcher)
       continue;
-    if (!i->handle) {
+    if (!prerender.handle) {
       pending_prerenders.push_back(i);
     } else {
       ++total_started_prerender_count;
-      if (i->has_been_abandoned) {
-        abandoned_prerenders.push_back(&(*i));
+      if (prerender.has_been_abandoned) {
+        abandoned_prerenders.push_back(&prerender);
       } else {
         // We do not count abandoned prerenders towards their launcher, since it
         // has already navigated on to another page.
         std::pair<int, int> launcher_and_render_view_route(
-            i->launcher_child_id, i->render_view_route_id);
+            prerender.launcher_child_id, prerender.render_view_route_id);
         running_launcher_and_render_view_routes.insert(
             launcher_and_render_view_route);
         DCHECK_GE(manager_->config().max_link_concurrency_per_launcher,
@@ -309,8 +306,9 @@ void PrerenderLinkManager::StartPrerenders() {
       }
     }
 
-    DCHECK_EQ(&(*i), FindByLauncherChildIdAndPrerenderId(i->launcher_child_id,
-                                                         i->prerender_id));
+    DCHECK_EQ(&prerender,
+              FindByLauncherChildIdAndPrerenderId(prerender.launcher_child_id,
+                                                  prerender.prerender_id));
   }
   DCHECK_LE(abandoned_prerenders.size(), total_started_prerender_count);
   DCHECK_GE(manager_->config().max_link_concurrency,
@@ -323,15 +321,16 @@ void PrerenderLinkManager::StartPrerenders() {
   for (std::list<std::list<LinkPrerender>::iterator>::const_iterator
            i = pending_prerenders.begin(), end = pending_prerenders.end();
        i != end; ++i) {
-    TimeDelta prerender_age = now - (*i)->creation_time;
+    const std::list<LinkPrerender>::iterator& it = *i;
+    TimeDelta prerender_age = now - it->creation_time;
     if (prerender_age >= manager_->config().max_wait_to_launch) {
       // This prerender waited too long in the queue before launching.
-      prerenders_.erase(*i);
+      prerenders_.erase(it);
       continue;
     }
 
     std::pair<int, int> launcher_and_render_view_route(
-        (*i)->launcher_child_id, (*i)->render_view_route_id);
+        it->launcher_child_id, it->render_view_route_id);
     if (manager_->config().max_link_concurrency_per_launcher <=
         running_launcher_and_render_view_routes.count(
             launcher_and_render_view_route)) {
@@ -342,44 +341,43 @@ void PrerenderLinkManager::StartPrerenders() {
     if (total_started_prerender_count >=
             manager_->config().max_link_concurrency ||
         total_started_prerender_count >= prerenders_.size()) {
-      // The system is already at its prerender concurrency limit. Can we kill
-      // an abandoned prerender to make room?
-      if (!abandoned_prerenders.empty()) {
-        CancelPrerender(abandoned_prerenders.front());
-        --total_started_prerender_count;
-        abandoned_prerenders.pop_front();
-      } else {
+      // The system is already at its prerender concurrency limit. Try removing
+      // an abandoned prerender, if one exists, to make room.
+      if (abandoned_prerenders.empty())
         return;
-      }
+
+      CancelPrerender(abandoned_prerenders.front());
+      --total_started_prerender_count;
+      abandoned_prerenders.pop_front();
     }
 
-    if (!(PrerenderRelTypePrerender & (*i)->rel_types)) {
-      prerenders_.erase(*i);
+    if (!(PrerenderRelTypePrerender & it->rel_types)) {
+      prerenders_.erase(it);
       continue;
     }
 
     std::unique_ptr<PrerenderHandle> handle =
         manager_->AddPrerenderFromLinkRelPrerender(
-            (*i)->launcher_child_id, (*i)->render_view_route_id, (*i)->url,
-            (*i)->rel_types, (*i)->referrer, (*i)->size);
+            it->launcher_child_id, it->render_view_route_id, it->url,
+            it->rel_types, it->referrer, it->size);
     if (!handle) {
       // This prerender couldn't be launched, it's gone.
-      prerenders_.erase(*i);
+      prerenders_.erase(it);
       continue;
     }
 
     if (handle->IsPrerendering()) {
       // We have successfully started a new prerender.
-      (*i)->handle = handle.release();
+      it->handle = handle.release();
       ++total_started_prerender_count;
-      (*i)->handle->SetObserver(this);
-      OnPrerenderStart((*i)->handle);
-      RecordLinkManagerStarting((*i)->rel_types);
+      it->handle->SetObserver(this);
+      OnPrerenderStart(it->handle);
+      RecordLinkManagerStarting(it->rel_types);
       running_launcher_and_render_view_routes.insert(
           launcher_and_render_view_route);
     } else {
       content::RenderProcessHost* render_process_host =
-          content::RenderProcessHost::FromID((*i)->launcher_child_id);
+          content::RenderProcessHost::FromID(it->launcher_child_id);
       if (!render_process_host)
         return;
 
@@ -388,9 +386,9 @@ void PrerenderLinkManager::StartPrerenders() {
       if (channel) {
         chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
-        prerender_dispatcher->PrerenderStop((*i)->prerender_id);
+        prerender_dispatcher->PrerenderStop(it->prerender_id);
       }
-      prerenders_.erase(*i);
+      prerenders_.erase(it);
     }
   }
 }
@@ -398,33 +396,32 @@ void PrerenderLinkManager::StartPrerenders() {
 PrerenderLinkManager::LinkPrerender*
 PrerenderLinkManager::FindByLauncherChildIdAndPrerenderId(int launcher_child_id,
                                                           int prerender_id) {
-  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
-    if (launcher_child_id == i->launcher_child_id &&
-        prerender_id == i->prerender_id) {
-      return &(*i);
+  for (auto& prerender : prerenders_) {
+    if (prerender.launcher_child_id == launcher_child_id &&
+        prerender.prerender_id == prerender_id) {
+      return &prerender;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 PrerenderLinkManager::LinkPrerender*
 PrerenderLinkManager::FindByPrerenderHandle(PrerenderHandle* prerender_handle) {
   DCHECK(prerender_handle);
-  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
-    if (prerender_handle == i->handle)
-      return &(*i);
+  for (auto& prerender : prerenders_) {
+    if (prerender.handle == prerender_handle)
+      return &prerender;
   }
-  return NULL;
+  return nullptr;
 }
 
 void PrerenderLinkManager::RemovePrerender(LinkPrerender* prerender) {
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
        i != prerenders_.end(); ++i) {
-    if (&(*i) == prerender) {
-      std::unique_ptr<PrerenderHandle> own_handle(i->handle);
-      i->handle = NULL;
+    LinkPrerender& current_prerender = *i;
+    if (&current_prerender == prerender) {
+      std::unique_ptr<PrerenderHandle> own_handle(prerender->handle);
+      prerender->handle = nullptr;
       prerenders_.erase(i);
       return;
     }
@@ -435,9 +432,10 @@ void PrerenderLinkManager::RemovePrerender(LinkPrerender* prerender) {
 void PrerenderLinkManager::CancelPrerender(LinkPrerender* prerender) {
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
        i != prerenders_.end(); ++i) {
-    if (&(*i) == prerender) {
-      std::unique_ptr<PrerenderHandle> own_handle(i->handle);
-      i->handle = NULL;
+    LinkPrerender& current_prerender = *i;
+    if (&current_prerender == prerender) {
+      std::unique_ptr<PrerenderHandle> own_handle(prerender->handle);
+      prerender->handle = nullptr;
       prerenders_.erase(i);
       if (own_handle)
         own_handle->OnCancel();
@@ -449,10 +447,9 @@ void PrerenderLinkManager::CancelPrerender(LinkPrerender* prerender) {
 
 void PrerenderLinkManager::StartPendingPrerendersForLauncher(
     PrerenderContents* launcher) {
-  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
-    if (i->deferred_launcher == launcher)
-      i->deferred_launcher = NULL;
+  for (auto& prerender : prerenders_) {
+    if (prerender.deferred_launcher == launcher)
+      prerender.deferred_launcher = nullptr;
   }
   StartPrerenders();
 }
