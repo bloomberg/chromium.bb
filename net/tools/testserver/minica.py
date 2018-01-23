@@ -215,7 +215,6 @@ def MakeCertificate(
         ] + ([path_len] if path_len is not None else []) # Path len
         ))),
       ]))
-
   if ip_sans is not None or dns_sans is not None:
     sans = []
     if dns_sans is not None:
@@ -475,7 +474,11 @@ def GenerateCertKeyAndOCSP(subject = "127.0.0.1",
   return (cert_pem + LEAF_KEY_PEM, ocsp_der)
 
 
-def GenerateCertKeyAndIntermediate(subject, ca_issuers_url, serial=0):
+def GenerateCertKeyAndIntermediate(subject,
+                                   ca_issuers_url,
+                                   ip_sans=None,
+                                   dns_sans=None,
+                                   serial=0):
   '''Returns a (cert_and_key_pem, intermediate_cert_pem) where:
        * cert_and_key_pem contains a certificate and private key in PEM format
          with the given subject common name and caIssuers URL.
@@ -483,8 +486,10 @@ def GenerateCertKeyAndIntermediate(subject, ca_issuers_url, serial=0):
          cert_and_key_pem and was signed by ocsp-test-root.pem.'''
   if serial == 0:
     serial = RandomNumber(16)
+
   target_cert_der = MakeCertificate(INTERMEDIATE_CN, bytes(subject), serial,
                                     LEAF_KEY, INTERMEDIATE_KEY,
+                                    ip_sans=ip_sans, dns_sans=dns_sans,
                                     ca_issuers_url=bytes(ca_issuers_url))
   target_cert_pem = DERToPEM(target_cert_der)
 

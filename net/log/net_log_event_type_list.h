@@ -2540,10 +2540,6 @@ EVENT_TYPE(CERT_VERIFIER_REQUEST)
 //   {
 //     "cert_status": <Bitmask of CERT_STATUS_*
 //                     from net/base/cert_status_flags.h>
-//     "common_name_fallback_used": <True if a fallback to the common name
-//                                   was used when matching the host
-//                                   name, rather than using the
-//                                   subjectAltName.>
 //     "has_md2": <True if a certificate in the certificate chain is signed with
 //                 a MD2 signature.>
 //     "has_md4": <True if a certificate in the certificate chain is signed with

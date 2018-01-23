@@ -55,7 +55,7 @@ void MockCryptoClientStream::OnHandshakeMessage(
 bool MockCryptoClientStream::CryptoConnect() {
   if (proof_verify_details_) {
     if (!proof_verify_details_->cert_verify_result.verified_cert
-             ->VerifyNameMatch(server_id_.host(), false)) {
+             ->VerifyNameMatch(server_id_.host())) {
       handshake_confirmed_ = false;
       encryption_established_ = false;
       session()->connection()->CloseConnection(

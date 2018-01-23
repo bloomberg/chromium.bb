@@ -95,8 +95,6 @@ std::unique_ptr<base::Value> CertVerifyResultCallback(
                       verify_result.is_issued_by_known_root);
   results->SetBoolean("is_issued_by_additional_trust_anchor",
                       verify_result.is_issued_by_additional_trust_anchor);
-  results->SetBoolean("common_name_fallback_used",
-                      verify_result.common_name_fallback_used);
   results->SetInteger("cert_status", verify_result.cert_status);
   results->Set("verified_cert",
                NetLogX509CertificateCallback(verify_result.verified_cert.get(),

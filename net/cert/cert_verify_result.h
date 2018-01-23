@@ -78,10 +78,6 @@ class NET_EXPORT CertVerifyResult {
   // verification came from the list of additional trust anchors.
   bool is_issued_by_additional_trust_anchor;
 
-  // True if a fallback to the common name was used when matching the host
-  // name, rather than using the subjectAltName.
-  bool common_name_fallback_used;
-
   // Verification of stapled OCSP response, if present.
   OCSPVerifyResult ocsp_result;
 };
