@@ -32,10 +32,6 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
 
   static WallpaperControllerClient* Get();
 
-  // TODO(crbug.com/776464): Move this to anonymous namesapce.
-  // Returns true if wallpaper files id can be returned successfully.
-  bool CanGetWallpaperFilesId() const;
-
   // Returns files identifier for the |account_id|.
   wallpaper::WallpaperFilesId GetFilesId(const AccountId& account_id) const;
 
@@ -44,7 +40,6 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           const wallpaper::WallpaperFilesId& wallpaper_files_id,
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
-                          wallpaper::WallpaperType type,
                           const gfx::ImageSkia& image,
                           bool show_wallpaper);
   void SetOnlineWallpaper(const AccountId& account_id,
@@ -56,11 +51,14 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void SetCustomizedDefaultWallpaper(const GURL& wallpaper_url,
                                      const base::FilePath& file_path,
                                      const base::FilePath& resized_directory);
+  void SetPolicyWallpaper(const AccountId& account_id,
+                          std::unique_ptr<std::string> data);
   void UpdateCustomWallpaperLayout(const AccountId& account_id,
                                    wallpaper::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
+  void RemovePolicyWallpaper(const AccountId& account_id);
 
   // ash::mojom::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
@@ -83,6 +81,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
 
   // Binds to the client interface.
   mojo::Binding<ash::mojom::WallpaperControllerClient> binding_;
+
+  base::WeakPtrFactory<WallpaperControllerClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerClient);
 };

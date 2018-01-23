@@ -24,6 +24,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
@@ -182,6 +183,11 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
+  // System salt is needed to remove user wallpaper.
+  SystemSaltGetter::Initialize();
+  SystemSaltGetter::Get()->SetRawSaltForTesting(
+      SystemSaltGetter::RawSalt({1, 2, 3, 4, 5, 6, 7, 8}));
+
   user_manager::UserManager::Get()->UserLoggedIn(
       owner_account_id_at_invalid_domain_,
       owner_account_id_at_invalid_domain_.GetUserEmail(),

@@ -41,7 +41,6 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
-                          wallpaper::WallpaperType type,
                           const SkBitmap& image,
                           bool show_wallpaper) override;
   void SetOnlineWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
@@ -56,6 +55,9 @@ class TestWallpaperController : ash::mojom::WallpaperController {
       const GURL& wallpaper_url,
       const base::FilePath& file_path,
       const base::FilePath& resized_directory) override;
+  void SetPolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
+                          const std::string& wallpaper_files_id,
+                          const std::string& data) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
   void UpdateCustomWallpaperLayout(ash::mojom::WallpaperUserInfoPtr user_info,
                                    wallpaper::WallpaperLayout layout) override;
@@ -63,6 +65,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void ShowSigninWallpaper() override;
   void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
+  void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
+                             const std::string& wallpaper_files_id) override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(

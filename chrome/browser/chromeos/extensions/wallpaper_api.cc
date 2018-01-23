@@ -158,12 +158,12 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       extensions::api::wallpaper::ToString(params_->details.layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
-  bool update_wallpaper =
+  bool show_wallpaper =
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
-      wallpaper::CUSTOMIZED, image, update_wallpaper);
+      image, show_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   // Save current extension name. It will be displayed in the component

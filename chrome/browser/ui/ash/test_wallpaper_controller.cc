@@ -33,7 +33,6 @@ void TestWallpaperController::SetCustomWallpaper(
     const std::string& wallpaper_files_id,
     const std::string& file_name,
     wallpaper::WallpaperLayout layout,
-    wallpaper::WallpaperType type,
     const SkBitmap& image,
     bool show_wallpaper) {
   set_custom_wallpaper_count_++;
@@ -62,6 +61,13 @@ void TestWallpaperController::SetCustomizedDefaultWallpaper(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::SetPolicyWallpaper(
+    ash::mojom::WallpaperUserInfoPtr user_info,
+    const std::string& wallpaper_files_id,
+    const std::string& data) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
   NOTIMPLEMENTED();
 }
@@ -85,6 +91,12 @@ void TestWallpaperController::RemoveUserWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {
   remove_user_wallpaper_count_++;
+}
+
+void TestWallpaperController::RemovePolicyWallpaper(
+    ash::mojom::WallpaperUserInfoPtr user_info,
+    const std::string& wallpaper_files_id) {
+  NOTIMPLEMENTED();
 }
 
 void TestWallpaperController::SetWallpaper(

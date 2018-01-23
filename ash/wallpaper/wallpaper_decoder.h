@@ -20,7 +20,7 @@ using OnWallpaperDecoded =
 
 // Do an async wallpaper decode; |on_decoded| is run on the calling thread when
 // the decode has finished.
-ASH_EXPORT void DecodeWallpaper(std::unique_ptr<std::string> image_data,
+ASH_EXPORT void DecodeWallpaper(const std::string& image_data,
                                 OnWallpaperDecoded callback);
 
 }  // namespace ash
