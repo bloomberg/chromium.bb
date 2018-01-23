@@ -376,8 +376,7 @@ bool PaintLayer::FixedToViewport() const {
     return scroll == view_scroll;
   }
 
-  return GetLayoutObject().ContainerForFixedPosition() ==
-         GetLayoutObject().View();
+  return GetLayoutObject().Container() == GetLayoutObject().View();
 }
 
 bool PaintLayer::ScrollsWithRespectTo(const PaintLayer* other) const {

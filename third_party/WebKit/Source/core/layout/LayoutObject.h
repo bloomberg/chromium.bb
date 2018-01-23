@@ -1002,7 +1002,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // (point 3 above).
   LayoutObject* Container(AncestorSkipInfo* = nullptr) const;
   // Finds the container as if this object is fixed-position.
-  LayoutBlock* ContainerForFixedPosition(AncestorSkipInfo* = nullptr) const;
+  LayoutBlock* ContainingBlockForFixedPosition(
+      AncestorSkipInfo* = nullptr) const;
   // Finds the containing block as if this object is absolute-position.
   LayoutBlock* ContainingBlockForAbsolutePosition(
       AncestorSkipInfo* = nullptr) const;
@@ -2137,6 +2138,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline void InvalidateContainerPreferredLogicalWidths();
 
   LayoutObject* ContainerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
+  LayoutObject* ContainerForFixedPosition(AncestorSkipInfo* = nullptr) const;
 
   const LayoutBoxModelObject* EnclosingCompositedContainer() const;
 

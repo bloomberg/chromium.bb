@@ -111,31 +111,71 @@ TEST_F(LayoutObjectTest,
 TEST_F(
     LayoutObjectTest,
     ContainingBlockAbsoluteLayoutObjectShouldBeNonStaticallyPositionedBlockAncestor) {
-  SetBodyInnerHTML(
-      "<div style='position:relative'><bar "
-      "style='position:absolute'></bar></div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='position:relative'>
+      <bar style='position:absolute'></bar>
+    </div>
+  )HTML");
   LayoutObject* containing_blocklayout_object =
       GetDocument().body()->GetLayoutObject()->SlowFirstChild();
   LayoutObject* layout_object = containing_blocklayout_object->SlowFirstChild();
+  EXPECT_EQ(layout_object->Container(), containing_blocklayout_object);
   EXPECT_EQ(layout_object->ContainingBlock(), containing_blocklayout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
+            containing_blocklayout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
+}
+
+TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInTransformedDiv) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform:translateX(0px)'>
+      <bar style='position:fixed'></bar>
+    </div>
+  )HTML");
+  LayoutObject* containing_blocklayout_object =
+      GetDocument().body()->GetLayoutObject()->SlowFirstChild();
+  LayoutObject* layout_object = containing_blocklayout_object->SlowFirstChild();
+  EXPECT_EQ(layout_object->Container(), containing_blocklayout_object);
+  EXPECT_EQ(layout_object->ContainingBlock(), containing_blocklayout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
+            containing_blocklayout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(),
+            containing_blocklayout_object);
+}
+
+TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInBody) {
+  SetBodyInnerHTML("<div style='position:fixed'></div>");
+  LayoutObject* layout_object =
+      GetDocument().body()->GetLayoutObject()->SlowFirstChild();
+  EXPECT_EQ(layout_object->Container(), GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlock(), GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
+            GetLayoutView());
+  EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
 }
 
 TEST_F(
     LayoutObjectTest,
     ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor) {
+  // Test note: We can't use a raw string literal here, since extra whitespace
+  // causes failures.
   SetBodyInnerHTML(
       "<span style='position:relative'><bar "
       "style='position:absolute'></bar></span>");
   LayoutObject* body_layout_object = GetDocument().body()->GetLayoutObject();
-  LayoutObject* layout_object =
-      body_layout_object->SlowFirstChild()->SlowFirstChild();
+  LayoutObject* span_layout_object = body_layout_object->SlowFirstChild();
+  LayoutObject* layout_object = span_layout_object->SlowFirstChild();
 
   // Sanity check: Make sure we don't generate anonymous objects.
   EXPECT_EQ(nullptr, body_layout_object->SlowFirstChild()->NextSibling());
   EXPECT_EQ(nullptr, layout_object->SlowFirstChild());
   EXPECT_EQ(nullptr, layout_object->NextSibling());
 
+  EXPECT_EQ(layout_object->Container(), span_layout_object);
   EXPECT_EQ(layout_object->ContainingBlock(), body_layout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForAbsolutePosition(),
+            body_layout_object);
+  EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
 }
 
 TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
@@ -367,9 +407,16 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
 
 TEST_F(LayoutObjectTest,
        AssociatedLayoutObjectOfFirstLetterWithTrailingWhitespace) {
-  const char* body_content =
-      "<style>div:first-letter {color:red;}</style><div id=sample>a\n "
-      "<div></div></div>";
+  const char* body_content = R"HTML(
+    <style>
+      div:first-letter {
+        color:red;
+      }
+    </style>
+    <div id=sample>a
+      <div></div>
+    </div>
+  )HTML";
   SetBodyInnerHTML(body_content);
 
   Node* sample = GetDocument().getElementById("sample");

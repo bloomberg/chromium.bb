@@ -186,7 +186,7 @@ void LayoutBlock::StyleWillChange(StyleDifference diff,
       // Remove our fixed positioned descendants from their current containing
       // block.
       // They will be inserted into our positioned objects list during layout.
-      if (LayoutBlock* cb = ContainerForFixedPosition())
+      if (LayoutBlock* cb = ContainingBlockForFixedPosition())
         cb->RemovePositionedObjects(this, kNewContainingBlock);
     }
   }

@@ -727,16 +727,15 @@ void LayoutBox::ScrollRectToVisibleRecursive(
 
   // If we are fixed-position and stick to the viewport, it is useless to
   // scroll the parent.
-  if (Style()->GetPosition() == EPosition::kFixed &&
-      ContainerForFixedPosition() == View()) {
+  if (Style()->GetPosition() == EPosition::kFixed && Container() == View())
     return;
-  }
 
   if (GetFrame()
           ->GetPage()
           ->GetAutoscrollController()
-          .SelectionAutoscrollInProgress())
+          .SelectionAutoscrollInProgress()) {
     parent_box = EnclosingScrollableBox();
+  }
 
   if (parent_box) {
     parent_box->ScrollRectToVisibleRecursive(new_rect, params);
