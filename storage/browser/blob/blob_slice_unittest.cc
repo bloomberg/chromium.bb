@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_entry.h"
@@ -30,34 +29,26 @@ class BlobSliceTest : public testing::Test {
   ~BlobSliceTest() override = default;
 
   scoped_refptr<ShareableBlobDataItem> CreateDataItem(size_t size) {
-    std::unique_ptr<network::DataElement> element(new network::DataElement());
-    element->SetToAllocatedBytes(size);
-    for (size_t i = 0; i < size; i++) {
-      *(element->mutable_bytes() + i) = i;
-    }
-    return scoped_refptr<ShareableBlobDataItem>(
-        new ShareableBlobDataItem(new BlobDataItem(std::move(element)),
-                                  ShareableBlobDataItem::QUOTA_NEEDED));
+    std::vector<char> bytes(size);
+    for (size_t i = 0; i < size; ++i)
+      bytes[i] = i;
+    return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
+        BlobDataItem::CreateBytes(bytes), ShareableBlobDataItem::QUOTA_NEEDED));
   };
 
   scoped_refptr<ShareableBlobDataItem> CreateFileItem(size_t offset,
                                                       size_t size) {
-    std::unique_ptr<network::DataElement> element(new network::DataElement());
-    element->SetToFilePathRange(base::FilePath(FILE_PATH_LITERAL("kFakePath")),
-                                offset, size, base::Time::Max());
     return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
-        new BlobDataItem(std::move(element)),
+        BlobDataItem::CreateFile(base::FilePath(FILE_PATH_LITERAL("kFakePath")),
+                                 offset, size, base::Time::Max()),
         ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
   };
 
   scoped_refptr<ShareableBlobDataItem> CreateTempFileItem(size_t offset,
                                                           size_t size) {
-    std::unique_ptr<network::DataElement> element(new network::DataElement());
-    element->SetToFilePathRange(BlobDataBuilder::GetFutureFileItemPath(0),
-                                offset, size, base::Time());
-    return scoped_refptr<ShareableBlobDataItem>(
-        new ShareableBlobDataItem(new BlobDataItem(std::move(element)),
-                                  ShareableBlobDataItem::QUOTA_NEEDED));
+    return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
+        BlobDataItem::CreateFutureFile(offset, size, 0),
+        ShareableBlobDataItem::QUOTA_NEEDED));
   };
 
   void Slice(BlobDataBuilder& builder,
@@ -77,8 +68,7 @@ class BlobSliceTest : public testing::Test {
     EXPECT_EQ(dest_item, copy.dest_item);
     EXPECT_EQ(size, dest_item->item()->length());
     EXPECT_EQ(ShareableBlobDataItem::QUOTA_NEEDED, dest_item->state());
-    EXPECT_EQ(network::DataElement::TYPE_BYTES_DESCRIPTION,
-              dest_item->item()->data_element().type());
+    EXPECT_EQ(BlobDataItem::Type::kBytesDescription, dest_item->item()->type());
   }
 };
 
@@ -205,8 +195,7 @@ TEST_F(BlobSliceTest, SliceTempFileItem) {
   EXPECT_EQ(dest_item, builder.copies()[0].dest_item);
   EXPECT_EQ(5u, dest_item->item()->length());
   EXPECT_EQ(ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA, dest_item->state());
-  EXPECT_EQ(network::DataElement::TYPE_FILE,
-            dest_item->item()->data_element().type());
+  EXPECT_EQ(BlobDataItem::Type::kFile, dest_item->item()->type());
 }
 
 }  // namespace storage

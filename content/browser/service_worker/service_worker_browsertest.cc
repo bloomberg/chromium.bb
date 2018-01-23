@@ -175,7 +175,8 @@ void ReadResponseBody(std::string* body,
   std::unique_ptr<storage::BlobDataSnapshot> data =
       blob_data_handle->CreateSnapshot();
   ASSERT_EQ(1U, data->items().size());
-  *body = std::string(data->items()[0]->bytes(), data->items()[0]->length());
+  *body =
+      std::string(data->items()[0]->bytes().data(), data->items()[0]->length());
 }
 
 void ExpectResultAndRun(bool expected,

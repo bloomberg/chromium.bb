@@ -27,6 +27,10 @@ namespace disk_cache {
 class Entry;
 }
 
+namespace network {
+class DataElement;
+}
+
 namespace storage {
 class BlobSliceTest;
 class BlobStorageContext;
@@ -41,14 +45,6 @@ class STORAGE_EXPORT BlobDataBuilder {
  public:
   using DataHandle = BlobDataItem::DataHandle;
   using ItemCopyEntry = BlobEntry::ItemCopyEntry;
-
-  // Visible for testing.
-  static base::FilePath GetFutureFileItemPath(uint64_t file_id);
-
-  // Returns if the given item was created by AppendFutureFile.
-  static bool IsFutureFileItem(const network::DataElement& element);
-  // Returns |file_id| given to AppendFutureFile.
-  static uint64_t GetFutureFileID(const network::DataElement& element);
 
   explicit BlobDataBuilder(const std::string& uuid);
   ~BlobDataBuilder();
@@ -88,7 +84,7 @@ class STORAGE_EXPORT BlobDataBuilder {
     // Returns true if:
     // * The offset and length are valid, and
     // * data is a valid pointer.
-    bool Populate(base::span<const char> data, size_t offset) const;
+    bool Populate(base::span<const char> data, size_t offset = 0) const;
 
     // Same as Populate, but rather than passing in the data to be
     // copied, this method returns a pointer where the caller can copy |length|

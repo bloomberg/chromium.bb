@@ -23,7 +23,6 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -108,7 +107,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
 
   BlobEntry* entry =
       registry_.CreateEntry(uuid, content_type, content_disposition);
-  entry->set_size(network::DataElement::kUnknownSize);
+  entry->set_size(BlobDataItem::kUnknownSize);
   entry->set_status(BlobStatus::PENDING_CONSTRUCTION);
   entry->set_building_state(std::make_unique<BlobEntry::BuildingState>(
       false, TransportAllowedCallback(), 0));
@@ -146,8 +145,8 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
 #if DCHECK_IS_ON()
   bool contains_unpopulated_transport_items = false;
   for (const auto& item : content->pending_transport_items()) {
-    if (item->item()->type() == network::DataElement::TYPE_BYTES_DESCRIPTION ||
-        item->item()->type() == network::DataElement::TYPE_FILE)
+    if (item->item()->type() == BlobDataItem::Type::kBytesDescription ||
+        item->item()->type() == BlobDataItem::Type::kFile)
       contains_unpopulated_transport_items = true;
   }
 
@@ -446,41 +445,34 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
       // Our source item can be a file if it was a slice of an unpopulated file,
       // or a slice of data that was then paged to disk.
       size_t dest_size = static_cast<size_t>(copy.dest_item->item()->length());
-      network::DataElement::Type dest_type = copy.dest_item->item()->type();
+      BlobDataItem::Type dest_type = copy.dest_item->item()->type();
       switch (copy.source_item->item()->type()) {
-        case network::DataElement::TYPE_BYTES: {
-          DCHECK_EQ(dest_type, network::DataElement::TYPE_BYTES_DESCRIPTION);
-          const char* src_data =
-              copy.source_item->item()->bytes() + copy.source_item_offset;
-          copy.dest_item->item()->item_->SetToBytes(src_data, dest_size);
+        case BlobDataItem::Type::kBytes: {
+          DCHECK_EQ(dest_type, BlobDataItem::Type::kBytesDescription);
+          base::span<const char> src_data =
+              copy.source_item->item()->bytes().subspan(copy.source_item_offset,
+                                                        dest_size);
+          copy.dest_item->item()->PopulateBytes(src_data);
           break;
         }
-        case network::DataElement::TYPE_FILE: {
+        case BlobDataItem::Type::kFile: {
           // If we expected a memory item (and our source was paged to disk) we
           // free that memory.
-          if (dest_type == network::DataElement::TYPE_BYTES_DESCRIPTION)
+          if (dest_type == BlobDataItem::Type::kBytesDescription)
             copy.dest_item->set_memory_allocation(nullptr);
 
-          const network::DataElement& source_element =
-              copy.source_item->item()->data_element();
-          std::unique_ptr<network::DataElement> new_element(
-              new network::DataElement());
-          new_element->SetToFilePathRange(
-              source_element.path(),
-              source_element.offset() + copy.source_item_offset, dest_size,
-              source_element.expected_modification_time());
-          scoped_refptr<BlobDataItem> new_item(new BlobDataItem(
-              std::move(new_element), copy.source_item->item()->data_handle_));
+          const auto& source_item = copy.source_item->item();
+          scoped_refptr<BlobDataItem> new_item = BlobDataItem::CreateFile(
+              source_item->path(),
+              source_item->offset() + copy.source_item_offset, dest_size,
+              source_item->expected_modification_time(),
+              source_item->data_handle_);
           copy.dest_item->set_item(std::move(new_item));
           break;
         }
-        case network::DataElement::TYPE_RAW_FILE:
-        case network::DataElement::TYPE_UNKNOWN:
-        case network::DataElement::TYPE_BLOB:
-        case network::DataElement::TYPE_BYTES_DESCRIPTION:
-        case network::DataElement::TYPE_FILE_FILESYSTEM:
-        case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-        case network::DataElement::TYPE_DATA_PIPE:
+        case BlobDataItem::Type::kBytesDescription:
+        case BlobDataItem::Type::kFileFilesystem:
+        case BlobDataItem::Type::kDiskCacheEntry:
           NOTREACHED();
           break;
       }
@@ -504,7 +496,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
                      base::BindOnce(std::move(callback), entry->status()));
 
   for (const auto& shareable_item : entry->items()) {
-    DCHECK_NE(network::DataElement::TYPE_BYTES_DESCRIPTION,
+    DCHECK_NE(BlobDataItem::Type::kBytesDescription,
               shareable_item->item()->type());
     DCHECK(shareable_item->IsPopulated()) << shareable_item->state();
   }
