@@ -77,7 +77,7 @@ bool IsEmptyBlock(const NGLayoutInputNode child,
   // writing mode child will be caught by the CreatesNewFormattingContext check.
   NGFragment fragment(child.Style().GetWritingMode(),
                       *layout_result.PhysicalFragment());
-  DCHECK_EQ(LayoutUnit(), fragment.BlockSize());
+  DCHECK_EQ(LayoutUnit(), fragment.BlockSize()) << child.ToString();
 #endif
 
   return true;

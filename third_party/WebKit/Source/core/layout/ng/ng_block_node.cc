@@ -295,11 +295,16 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
   return NGBlockNode(ToLayoutBox(child));
 }
 
-bool NGBlockNode::CanUseNewLayout() const {
-  if (!box_->IsLayoutNGMixin())
-    return false;
+bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
 
-  return RuntimeEnabledFeatures::LayoutNGEnabled();
+  // When the style has |ForceLegacyLayout|, it's usually not LayoutNGMixin,
+  // but anonymous block can be.
+  return box.IsLayoutNGMixin() && !box.StyleRef().ForceLegacyLayout();
+}
+
+bool NGBlockNode::CanUseNewLayout() const {
+  return CanUseNewLayout(*box_);
 }
 
 String NGBlockNode::ToString() const {

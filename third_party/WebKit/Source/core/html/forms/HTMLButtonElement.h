@@ -62,6 +62,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
   bool IsEnumeratable() const override { return true; }
   bool SupportLabels() const override { return true; }
+  bool ShouldForceLegacyLayout() const final { return true; }
   bool IsInteractiveContent() const override;
   bool SupportsAutofocus() const override;
   bool MatchesDefaultPseudoClass() const override;

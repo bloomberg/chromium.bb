@@ -640,13 +640,20 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   }
 
-  // TODO(layout-dev): Once LayoutnG handles inline content editable, we should
-  // get rid of following code fragment.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() &&
-      style.UserModify() != EUserModify::kReadOnly &&
-      style.Display() == EDisplay::kInline &&
-      parent_style.UserModify() == EUserModify::kReadOnly) {
-    style.SetDisplay(EDisplay::kInlineBlock);
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // Form controls are not supported yet.
+    if (!style.ForceLegacyLayout() && element &&
+        element->ShouldForceLegacyLayout()) {
+      style.SetForceLegacyLayout(true);
+    }
+
+    // TODO(layout-dev): Once LayoutNG handles inline content editable, we
+    // should get rid of following code fragment.
+    else if (style.UserModify() != EUserModify::kReadOnly &&
+             style.Display() == EDisplay::kInline &&
+             parent_style.UserModify() == EUserModify::kReadOnly) {
+      style.SetDisplay(EDisplay::kInlineBlock);
+    }
   }
 }
 }  // namespace blink

@@ -756,6 +756,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // sent at all.
   virtual bool IsDisabledFormControl() const { return false; }
 
+  virtual bool ShouldForceLegacyLayout() const { return false; }
+
   bool HasPendingResources() const {
     return HasElementFlag(kHasPendingResources);
   }
