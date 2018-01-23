@@ -42,7 +42,7 @@
 
     // TODO(foolip): none of the arguments should have [Default=Undefined] (they
     // have other default values in the spec) and |sourceArg|'s type is wrong.
-    [Custom, MeasureAs=InitMessageEvent] void initMessageEvent([Default=Undefined] DOMString typeArg,
+    [Custom, MeasureAs=InitMessageEvent] void initMessageEvent(DOMString typeArg,
                                    [Default=Undefined] optional boolean canBubbleArg,
                                    [Default=Undefined] optional boolean cancelableArg,
                                    [Default=Undefined] optional any dataArg,

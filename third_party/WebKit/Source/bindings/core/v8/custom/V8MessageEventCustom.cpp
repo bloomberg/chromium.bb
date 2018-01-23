@@ -101,6 +101,12 @@ void V8MessageEvent::initMessageEventMethodCustom(
   ExceptionState exception_state(info.GetIsolate(),
                                  ExceptionState::kExecutionContext,
                                  "MessageEvent", "initMessageEvent");
+  if (UNLIKELY(info.Length() < 1)) {
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
   MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
   TOSTRING_VOID(V8StringResource<>, type_arg, info[0]);
   bool can_bubble_arg = false;
