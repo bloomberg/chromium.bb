@@ -53,8 +53,11 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
-  ScriptWrappableVisitorVerifier verifier(&verifier_deque_);
-  verifier.Verify();
+  ScriptWrappableVisitorVerifier verifier;
+  for (auto& marking_data : verifier_deque_) {
+    // Check that all children of this object are marked.
+    marking_data.TraceWrappers(&verifier);
+  }
 #endif
 
   should_cleanup_ = true;
@@ -259,10 +262,10 @@ void ScriptWrappableMarkingVisitor::Visit(
   MarkWrapperHeader(header);
   DCHECK(tracing_in_progress_);
   DCHECK(header->IsWrapperHeaderMarked());
-  marking_deque_.push_back(WrapperMarkingData(wrapper_descriptor));
+  marking_deque_.push_back(MarkingDequeItem(wrapper_descriptor));
 #if DCHECK_IS_ON()
   if (!advancing_tracing_) {
-    verifier_deque_.push_back(WrapperMarkingData(wrapper_descriptor));
+    verifier_deque_.push_back(MarkingDequeItem(wrapper_descriptor));
   }
 #endif
 }
@@ -313,6 +316,14 @@ void ScriptWrappableMarkingVisitor::PerformCleanup(v8::Isolate* isolate) {
 ScriptWrappableMarkingVisitor* ScriptWrappableMarkingVisitor::CurrentVisitor(
     v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->GetScriptWrappableMarkingVisitor();
+}
+
+bool ScriptWrappableMarkingVisitor::MarkingDequeContains(void* needle) {
+  for (auto item : marking_deque_) {
+    if (item.RawObjectPointer() == needle)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace blink

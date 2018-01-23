@@ -26,15 +26,6 @@ static void RunV8FullGc(v8::Isolate* isolate) {
   V8GCController::CollectGarbage(isolate, false);
 }
 
-static bool DequeContains(const WTF::Deque<WrapperMarkingData>& deque,
-                          void* needle) {
-  for (auto item : deque) {
-    if (item.RawObjectPointer() == needle)
-      return true;
-  }
-  return false;
-}
-
 TEST(ScriptWrappableMarkingVisitorTest,
      ScriptWrappableMarkingVisitorTracesWrappers) {
   V8TestingScope scope;
@@ -240,7 +231,7 @@ TEST(ScriptWrappableMarkingVisitorTest,
   target->AddWrappedHashMapDependency(dependencies[2], dependencies[3]);
 
   for (int i = 0; i < 4; i++) {
-    EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), dependencies[i]));
+    EXPECT_TRUE(visitor->MarkingDequeContains(dependencies[i]));
   }
 
   visitor->AbortTracing();
@@ -418,8 +409,8 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
   EXPECT_TRUE(visitor->MarkingDeque()->IsEmpty());
   swap(vector1, vector2);
 
-  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry1));
-  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry2));
+  EXPECT_TRUE(visitor->MarkingDequeContains(entry1));
+  EXPECT_TRUE(visitor->MarkingDequeContains(entry2));
 
   visitor->AbortTracing();
 }
@@ -444,7 +435,7 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
 
   // Only entry2 is held alive by TraceWrapperMember, so we only expect this
   // barrier to fire.
-  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), entry2));
+  EXPECT_TRUE(visitor->MarkingDequeContains(entry2));
 
   visitor->AbortTracing();
 }
@@ -525,7 +516,7 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   TraceWrapperMember<Mixin> mixin_handle = mixin;
   EXPECT_TRUE(base_header->IsWrapperHeaderMarked());
   EXPECT_FALSE(visitor->MarkingDeque()->IsEmpty());
-  EXPECT_TRUE(DequeContains(*visitor->MarkingDeque(), mixin));
+  EXPECT_TRUE(visitor->MarkingDequeContains(mixin));
 
   visitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(

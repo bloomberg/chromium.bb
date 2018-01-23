@@ -24,50 +24,6 @@ class ScriptWrappableVisitor;
 template <typename T>
 class TraceWrapperV8Reference;
 
-// TODO(ulan): rename it to MarkingDequeItem and make it a private
-// nested class of ScriptWrappableMarkingVisitor.
-class WrapperMarkingData {
- public:
-  WrapperMarkingData(const WrapperDescriptor& wrapper_descriptor)
-      : trace_wrappers_callback_(wrapper_descriptor.trace_wrappers_callback),
-        heap_object_header_callback_(
-            wrapper_descriptor.heap_object_header_callback),
-        raw_object_pointer_(wrapper_descriptor.traceable) {
-    DCHECK(trace_wrappers_callback_);
-    DCHECK(heap_object_header_callback_);
-    DCHECK(raw_object_pointer_);
-  }
-
-  // Traces wrappers if the underlying object has not yet been invalidated.
-  inline void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    if (raw_object_pointer_) {
-      trace_wrappers_callback_(visitor, raw_object_pointer_);
-    }
-  }
-
-  inline const void* RawObjectPointer() { return raw_object_pointer_; }
-
-  // Returns true if the object is currently marked in Oilpan and false
-  // otherwise.
-  inline bool ShouldBeInvalidated() {
-    return raw_object_pointer_ && !GetHeapObjectHeader()->IsMarked();
-  }
-
-  // Invalidates the current wrapper marking data, i.e., calling TraceWrappers
-  // will result in a noop.
-  inline void Invalidate() { raw_object_pointer_ = nullptr; }
-
- private:
-  inline const HeapObjectHeader* GetHeapObjectHeader() {
-    DCHECK(raw_object_pointer_);
-    return heap_object_header_callback_(raw_object_pointer_);
-  }
-
-  TraceWrappersCallback trace_wrappers_callback_;
-  HeapObjectHeaderCallback heap_object_header_callback_;
-  const void* raw_object_pointer_;
-};
-
 // ScriptWrappableVisitor is used to trace through Blink's heap to find all
 // reachable wrappers. V8 calls this visitor during its garbage collection,
 // see v8::EmbedderHeapTracer.
@@ -151,6 +107,48 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   v8::Isolate* isolate() const { return isolate_; }
 
  private:
+  class MarkingDequeItem {
+   public:
+    explicit MarkingDequeItem(const WrapperDescriptor& wrapper_descriptor)
+        : trace_wrappers_callback_(wrapper_descriptor.trace_wrappers_callback),
+          heap_object_header_callback_(
+              wrapper_descriptor.heap_object_header_callback),
+          raw_object_pointer_(wrapper_descriptor.traceable) {
+      DCHECK(trace_wrappers_callback_);
+      DCHECK(heap_object_header_callback_);
+      DCHECK(raw_object_pointer_);
+    }
+
+    // Traces wrappers if the underlying object has not yet been invalidated.
+    inline void TraceWrappers(ScriptWrappableVisitor* visitor) const {
+      if (raw_object_pointer_) {
+        trace_wrappers_callback_(visitor, raw_object_pointer_);
+      }
+    }
+
+    inline const void* RawObjectPointer() { return raw_object_pointer_; }
+
+    // Returns true if the object is currently marked in Oilpan and false
+    // otherwise.
+    inline bool ShouldBeInvalidated() {
+      return raw_object_pointer_ && !GetHeapObjectHeader()->IsMarked();
+    }
+
+    // Invalidates the current wrapper marking data, i.e., calling TraceWrappers
+    // will result in a noop.
+    inline void Invalidate() { raw_object_pointer_ = nullptr; }
+
+   private:
+    inline const HeapObjectHeader* GetHeapObjectHeader() {
+      DCHECK(raw_object_pointer_);
+      return heap_object_header_callback_(raw_object_pointer_);
+    }
+
+    TraceWrappersCallback trace_wrappers_callback_;
+    HeapObjectHeaderCallback heap_object_header_callback_;
+    const void* raw_object_pointer_;
+  };
+
   void MarkWrapperHeader(HeapObjectHeader*) const;
 
   // Schedule an idle task to perform a lazy (incremental) clean up of
@@ -163,12 +161,12 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // Immediately cleans up all wrappers if necessary.
   void PerformCleanup();
 
-  WTF::Deque<WrapperMarkingData>* MarkingDeque() const {
-    return &marking_deque_;
-  }
+  WTF::Deque<MarkingDequeItem>* MarkingDeque() const { return &marking_deque_; }
   WTF::Vector<HeapObjectHeader*>* HeadersToUnmark() const {
     return &headers_to_unmark_;
   }
+
+  bool MarkingDequeContains(void* needle);
 
   // Returns true if wrapper tracing is currently in progress, i.e.,
   // TracePrologue has been called, and TraceEpilogue has not yet been called.
@@ -193,7 +191,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // - oilpan object cannot move
   // - oilpan gc will call invalidateDeadObjectsInMarkingDeque to delete all
   //   obsolete objects
-  mutable WTF::Deque<WrapperMarkingData> marking_deque_;
+  mutable WTF::Deque<MarkingDequeItem> marking_deque_;
 
   // Collection of objects we started tracing from. We assume it is safe to
   // hold on to the raw pointers because:
@@ -204,7 +202,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // These objects are used when TraceWrappablesVerifier feature is enabled to
   // verify that all objects reachable in the atomic pause were marked
   // incrementally. If not, there is one or multiple write barriers missing.
-  mutable WTF::Deque<WrapperMarkingData> verifier_deque_;
+  mutable WTF::Deque<MarkingDequeItem> verifier_deque_;
 
   // Collection of headers we need to unmark after the tracing finished. We
   // assume it is safe to hold on to the headers because:
