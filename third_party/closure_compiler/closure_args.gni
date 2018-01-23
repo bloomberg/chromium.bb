@@ -12,8 +12,6 @@ common_closure_args = [
   "extra_annotation_name=homepage",
   "extra_annotation_name=status",
   "extra_annotation_name=submodule",
-
-  "source_map_format=V3",
 ]
 
 # Additional closure args for performing full checks.
