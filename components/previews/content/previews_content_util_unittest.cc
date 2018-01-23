@@ -44,6 +44,7 @@ class TestPreviewsDecider : public PreviewsDecider {
         return previews::params::IsNoScriptPreviewsEnabled();
       case previews::PreviewsType::LITE_PAGE:
       case previews::PreviewsType::NONE:
+      case previews::PreviewsType::UNSPECIFIED:
       case previews::PreviewsType::LAST:
         break;
     }

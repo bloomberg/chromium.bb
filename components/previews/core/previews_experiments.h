@@ -15,6 +15,7 @@
 namespace previews {
 
 enum class PreviewsType {
+  // Used to indicate that there is no preview type.
   NONE = 0,
 
   // The user is shown an offline page as a preview.
@@ -32,9 +33,13 @@ enum class PreviewsType {
   // Preview that disables JavaScript for the navigation.
   NOSCRIPT = 5,
 
+  // Special value that indicates that no specific type is identified. This
+  // might be used for checks or logging that applies to any type.
+  UNSPECIFIED = 6,
+
   // Insert new enum values here. Keep values sequential to allow looping from
   // NONE+1 to LAST-1. Also add the enum to Previews.Types histogram suffix.
-  LAST = 6,
+  LAST = 7,
 };
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;

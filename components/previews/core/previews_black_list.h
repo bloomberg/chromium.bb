@@ -61,7 +61,11 @@ enum class PreviewsEligibilityReason {
   // The preview is allowed but without an expected check of server optimization
   // hints because they are not enabled (features::kOptimizationHints).
   ALLOWED_WITHOUT_OPTIMIZATION_HINTS = 11,
-  LAST = 9,
+  // The preview type chosen as the committed preview.
+  COMMITTED = 12,
+  // Previews blocked by a Cache-Control:no-transform directive.
+  CACHE_CONTROL_NO_TRANSFORM = 13,
+  LAST,
 };
 
 // Manages the state of black listed domains for the previews experiment. Loads

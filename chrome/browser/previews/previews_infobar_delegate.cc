@@ -78,7 +78,9 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
       web_contents->ReloadLoFiImages();
       break;
     case previews::PreviewsType::NONE:
+    case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
+      NOTREACHED();
       break;
   }
 }
@@ -172,7 +174,10 @@ PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
       message_text_(l10n_util::GetStringUTF16(
           is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
                              : IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE)),
-      on_dismiss_callback_(std::move(on_dismiss_callback)) {}
+      on_dismiss_callback_(std::move(on_dismiss_callback)) {
+  DCHECK(previews_type_ != previews::PreviewsType::NONE &&
+         previews_type_ != previews::PreviewsType::UNSPECIFIED);
+}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 PreviewsInfoBarDelegate::GetIdentifier() const {

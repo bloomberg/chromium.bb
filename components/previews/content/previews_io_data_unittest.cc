@@ -69,6 +69,7 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
     case PreviewsType::NOSCRIPT:
       return params::IsNoScriptPreviewsEnabled();
     case PreviewsType::NONE:
+    case PreviewsType::UNSPECIFIED:
     case PreviewsType::LAST:
       break;
   }

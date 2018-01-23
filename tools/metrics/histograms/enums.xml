@@ -35316,6 +35316,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="10"
       label="Host not whitelisted by server rules provided to the client."/>
   <int value="11" label="Preview Allowed without server rule check."/>
+  <int value="12" label="Committed Preview."/>
+  <int value="13" label="Received no-transform directive.">
+    Response header had Cache-Control:no-transform directive (developer
+    opt-out).
+  </int>
 </enum>
 
 <enum name="PreviewsInfoBarAction">
@@ -35359,6 +35364,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="LitePage"/>
   <int value="4" label="AMP Redirection"/>
   <int value="5" label="NoScript"/>
+  <int value="6" label="Unspecified"/>
 </enum>
 
 <enum name="PreviewsUserOptedOut">
