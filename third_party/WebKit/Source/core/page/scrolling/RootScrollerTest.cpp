@@ -842,6 +842,61 @@ TEST_P(RootScrollerTest, RemoteMainFrame) {
   }
 }
 
+// Ensure a non-main local root doesn't interfere with the global root
+// scroller. This happens in this situation: Local <- Remote <- Local. This
+// tests the crash in https://crbug.com/800566.
+TEST_P(RootScrollerTest, NonMainLocalRootLifecycle) {
+  WebLocalFrameImpl* non_main_local_root = nullptr;
+
+  // Setup a Local <- Remote <- Local frame hierarchy.
+  {
+    Initialize();
+    WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                     R"HTML(
+                                              <!DOCTYPE html>
+                                              <iframe></iframe>
+                                          )HTML",
+                                     base_url);
+    MainFrameView()->UpdateAllLifecyclePhases();
+
+    WebRemoteFrameImpl* remote_frame = FrameTestHelpers::CreateRemote();
+    WebLocalFrameImpl* child =
+        ToWebLocalFrameImpl(helper_.LocalMainFrame()->FirstChild());
+    child->Swap(remote_frame);
+    remote_frame->SetReplicatedOrigin(
+        WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
+
+    non_main_local_root = FrameTestHelpers::CreateLocalChild(*remote_frame);
+    ASSERT_EQ(non_main_local_root->LocalRoot(), non_main_local_root);
+    ASSERT_TRUE(non_main_local_root->Parent());
+  }
+
+  const TopDocumentRootScrollerController& global_controller =
+      MainFrame()->GetDocument()->GetPage()->GlobalRootScrollerController();
+
+  ASSERT_EQ(MainFrame()->GetDocument()->documentElement(),
+            global_controller.GlobalRootScroller());
+
+  GraphicsLayer* scroll_layer = global_controller.RootScrollerLayer();
+  GraphicsLayer* container_layer = global_controller.RootContainerLayer();
+
+  ASSERT_TRUE(scroll_layer);
+  ASSERT_TRUE(container_layer);
+
+  // Put the local main frame into Layout clean and have the non-main local
+  // root do a complete lifecycle update.
+  helper_.LocalMainFrame()->GetFrameView()->SetNeedsLayout();
+  helper_.LocalMainFrame()->GetFrameView()->UpdateLifecycleToLayoutClean();
+  non_main_local_root->GetFrameView()->UpdateAllLifecyclePhases();
+  helper_.LocalMainFrame()->GetFrameView()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(MainFrame()->GetDocument()->documentElement(),
+            global_controller.GlobalRootScroller());
+  EXPECT_EQ(global_controller.RootScrollerLayer(), scroll_layer);
+  EXPECT_EQ(global_controller.RootContainerLayer(), container_layer);
+}
+
 // Tests that removing the root scroller element from the DOM resets the
 // effective root scroller without waiting for any lifecycle events.
 TEST_P(RootScrollerTest, RemoveRootScrollerFromDom) {

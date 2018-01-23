@@ -3176,9 +3176,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       if (target_state >= DocumentLifecycle::kCompositingClean) {
         ScrollContentsIfNeededRecursive();
 
-        frame_->GetPage()
-            ->GlobalRootScrollerController()
-            .DidUpdateCompositing();
+        frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
+            *this);
       }
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
