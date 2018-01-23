@@ -6,5 +6,5 @@ module viz.mojom;
 
 // This struct contains a serialized PaintFilter.
 struct PaintFilter {
-  array<uint8> data;
+  array<uint8>? data;
 };
