@@ -232,6 +232,13 @@ const struct QuicErrorMapping {
     // Network changed, but connection had one or more non-migratable streams.
     {net::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM,
      "quic.connection_migration_non_migratable_stream"},
+    // Network changed, but connection migration was disabled by config.
+    {net::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG,
+     "quic.connection_migration_disabled_by_config"},
+    // Network changed, but error was encountered on the alternative network.
+    {net::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR,
+     "quic.connection_migration_internal_error"},
+
     // Stream frame overlaps with buffered data.
     {net::QUIC_OVERLAPPING_STREAM_DATA, "quic.overlapping_stream_data"},
     // Stream frames arrived too discontiguously so that stream sequencer buffer

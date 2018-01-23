@@ -1832,7 +1832,8 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
   current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
   // Connection migration v2.
-  // If we are already on the new network.
+  // If we are already on the new network, simply cancel the timer to migrate
+  // back to the default network.
   if (GetDefaultSocket()->GetBoundNetwork() == new_network) {
     CancelMigrateBackToDefaultNetworkTimer();
     HistogramAndLogMigrationFailure(
@@ -1929,16 +1930,16 @@ void QuicChromiumClientSession::OnPathDegrading() {
         }
       } else {
         HistogramAndLogMigrationFailure(
-            migration_net_log, MIGRATION_STATUS_DISABLED, connection_id(),
-            "No alternative network on path degrading");
+            migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+            connection_id(), "No alternative network on path degrading");
       }
     } else if (migrate_session_early_) {
       MigrateToAlternateNetwork(/*close_session_on_error*/ true,
                                 migration_net_log);
     } else {
-      HistogramAndLogMigrationFailure(migration_net_log,
-                                      MIGRATION_STATUS_DISABLED,
-                                      connection_id(), "Migration disabled");
+      HistogramAndLogMigrationFailure(
+          migration_net_log, MIGRATION_STATUS_NOT_ENABLED, connection_id(),
+          "Migration on path degrading not enabled");
     }
     migration_net_log.EndEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
@@ -2092,9 +2093,9 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
   if (config()->DisableConnectionMigration()) {
     DVLOG(1) << "Client disables probing network with connection migration "
              << "disabled by config";
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_DISABLED, connection_id(),
-                                    "Migration disabled by config");
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
+        "Migration disabled by config");
     // TODO(zhongyi): do we want to close the session?
     return ProbingResult::DISABLED_BY_CONFIG;
   }
@@ -2238,11 +2239,12 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
 
   // Do not migrate sessions where connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_DISABLED, connection_id(),
-                                    "Migration disabled");
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
+        "Migration disabled by config");
     if (close_if_cannot_migrate) {
-      CloseSessionOnErrorLater(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
+      CloseSessionOnErrorLater(ERR_NETWORK_CHANGED,
+                               QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
     } else if (migrate_session_on_network_change_v2_) {
       // Session cannot migrate, mark it as going away for v2.
       stream_factory_->OnSessionGoingAway(this);
@@ -2449,12 +2451,25 @@ void QuicChromiumClientSession::MaybeMigrateOrCloseSession(
 MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
     bool close_session_on_error,
     const NetLogWithSource& migration_net_log) {
-  if ((!migrate_session_on_network_change_ &&
-       !migrate_session_on_network_change_v2_) ||
-      HasNonMigratableStreams() || config()->DisableConnectionMigration()) {
+  if (!migrate_session_on_network_change_ &&
+      !migrate_session_on_network_change_v2_) {
     HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_DISABLED, connection_id(),
-                                    "Migration disabled");
+                                    MIGRATION_STATUS_NOT_ENABLED,
+                                    connection_id(), "Migration not enabled");
+    return MigrationResult::FAILURE;
+  }
+
+  if (HasNonMigratableStreams()) {
+    HistogramAndLogMigrationFailure(migration_net_log,
+                                    MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
+                                    connection_id(), "Non-migratable stream");
+    return MigrationResult::FAILURE;
+  }
+
+  if (config()->DisableConnectionMigration()) {
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
+        "Migration disabled by config");
     return MigrationResult::FAILURE;
   }
 
@@ -2495,9 +2510,10 @@ MigrationResult QuicChromiumClientSession::Migrate(
     if (close_session_on_error) {
       if (migrate_session_on_network_change_v2_) {
         CloseSessionOnErrorLater(ERR_NETWORK_CHANGED,
-                                 QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+                                 QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR);
       } else {
-        CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
+        CloseSessionOnError(ERR_NETWORK_CHANGED,
+                            QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR);
       }
     }
     return MigrationResult::FAILURE;

@@ -261,6 +261,10 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK = 83,
   // Network changed, but connection had one or more non-migratable streams.
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
+  // Network changed, but connection migration was disabled by config.
+  QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG = 99,
+  // Network changed, but error was encountered on the alternative network.
+  QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR = 100,
 
   // Stream frames arrived too discontiguously so that stream sequencer buffer
   // maintains too many intervals.
@@ -277,7 +281,7 @@ enum QuicErrorCode {
   QUIC_STREAM_LENGTH_OVERFLOW = 98,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 99,
+  QUIC_LAST_ERROR = 101,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=
