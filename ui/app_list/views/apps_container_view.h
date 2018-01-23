@@ -27,7 +27,6 @@ class AppListFolderView;
 class AppListMainView;
 class AppListModel;
 class FolderBackgroundView;
-class PageSwitcher;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -66,14 +65,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   // Called to notify the AppsContainerView that a reparent drag has completed.
   void ReparentDragEnded();
 
-  // Updates the visibility of the items in this view according to
-  // |app_list_state| and |is_in_drag|.
-  void UpdateControlVisibility(AppListViewState app_list_state,
-                               bool is_in_drag);
-
-  // Updates the opacity of the items in this view during dragging.
-  void UpdateOpacity();
-
   // views::View overrides:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -99,10 +90,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
     return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
-
-  void set_folder_top_items_animation_enabled_for_test(bool enabled) {
-    is_folder_top_items_animation_enabled_ = enabled;
-  }
 
  private:
   enum ShowState {
@@ -136,7 +123,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   // The views below are owned by views hierarchy.
   AppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
-  PageSwitcher* page_switcher_ = nullptr;
   FolderBackgroundView* folder_background_view_ = nullptr;
 
   ShowState show_state_ = SHOW_NONE;
@@ -146,9 +132,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
   std::vector<views::View*> top_icon_views_;
 
   size_t top_icon_animation_pending_count_ = 0u;
-
-  // True if the animation for the folder top items is enabled.
-  bool is_folder_top_items_animation_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };

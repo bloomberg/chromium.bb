@@ -37,7 +37,6 @@ class AnimationMetricsReporter;
 }
 
 namespace app_list {
-class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
@@ -179,7 +178,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   }
 
   // Gets the PaginationModel owned by this view's apps grid.
-  PaginationModel* GetAppsPaginationModel();
+  PaginationModel* GetAppsPaginationModel() const;
 
   // Gets the content bounds of the app info dialog of the app list in the
   // screen coordinates.
@@ -272,14 +271,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
 
-  // Gets the apps container view owned by this view.
-  AppsContainerView* GetAppsContainerView();
-
-  // Gets the root apps grid view owned by this view.
-  AppsGridView* GetRootAppsGridView();
-
-  // Gets the apps grid view within the folder view owned by this view.
-  AppsGridView* GetFolderAppsGridView();
+  // Gets the apps grid view owned by this view.
+  AppsGridView* GetAppsGridView() const;
 
   // Gets the AppListStateTransitionSource for |app_list_state_| to
   // |target_state|. If we are not interested in recording a state transition

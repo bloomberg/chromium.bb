@@ -19,6 +19,10 @@ class AppListItemView;
 // A delegate which allows an AppsGridView to communicate with its host folder.
 class APP_LIST_EXPORT AppsGridViewFolderDelegate {
  public:
+  // Updates the folder view background to show or hide folder container ink
+  // bubble.
+  virtual void UpdateFolderViewBackground(bool show_bubble) = 0;
+
   // Called when a folder item is dragged out of the folder to be re-parented.
   // |original_drag_view| is the |drag_view_| inside the folder's grid view.
   // |drag_point_in_folder_grid| is the last drag point in coordinate of the
