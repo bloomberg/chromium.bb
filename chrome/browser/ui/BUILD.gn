@@ -1231,6 +1231,8 @@ split_static_library("ui") {
       "ash/ime_controller_client.h",
       "ash/keyboard_ui_service.cc",
       "ash/keyboard_ui_service.h",
+      "ash/ksv/keyboard_shortcut_viewer_util.cc",
+      "ash/ksv/keyboard_shortcut_viewer_util.h",
       "ash/launcher/app_shortcut_launcher_item_controller.cc",
       "ash/launcher/app_shortcut_launcher_item_controller.h",
       "ash/launcher/app_window_launcher_controller.cc",
@@ -1562,6 +1564,7 @@ split_static_library("ui") {
       "//ui/base/ime",
       "//ui/chromeos",
       "//ui/chromeos/events",
+      "//ui/chromeos/ksv",
       "//ui/keyboard:mojom",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

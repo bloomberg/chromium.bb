@@ -14,7 +14,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -213,12 +213,17 @@ void ChromeNewWindowClient::RestoreTab() {
   }
 }
 
+// TODO(crbug.com/755448): Remove this when the new shortcut viewer is enabled.
 void ChromeNewWindowClient::ShowKeyboardOverlay() {
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string url(chrome::kChromeUIKeyboardOverlayURL);
   ash::KeyboardOverlayView::ShowDialog(profile, new ChromeWebContentsHandler,
                                        GURL(url));
+}
+
+void ChromeNewWindowClient::ShowKeyboardShortcutViewer() {
+  keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
 }
 
 void ChromeNewWindowClient::ShowTaskManager() {

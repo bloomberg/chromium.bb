@@ -8,6 +8,8 @@ module ash.mojom;
 interface NewWindowController {
   SetClient(associated NewWindowClient client);
 
+  // TODO(crbug.com/755448): Remove this when the new shortcut viewer is
+  // enabled.
   // Shows the keyboard shortcut overlay. TODO(mash): this calls the client
   // function of the same name below, but it should be implemented inside ash.
   ShowKeyboardOverlay();
@@ -34,8 +36,13 @@ interface NewWindowClient {
   // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
   RestoreTab();
 
+  // TODO(crbug.com/755448): Remove this when the new shortcut viewer is
+  // enabled.
   // Shows the keyboard shortcut overlay.
   ShowKeyboardOverlay();
+
+  // Show the keyboard shortcut viewer.
+  ShowKeyboardShortcutViewer();
 
   // Shows the task manager window.
   ShowTaskManager();

@@ -22,6 +22,7 @@ void NewWindowController::SetClient(
   client_.Bind(std::move(client));
 }
 
+// TODO(crbug.com/755448): Remove this when the new shortcut viewer is enabled.
 void NewWindowController::ShowKeyboardOverlay() {
   // TODO(estade): implement this here rather than passing off to |client_|.
   if (client_)
@@ -56,6 +57,11 @@ void NewWindowController::OpenGetHelp() {
 void NewWindowController::RestoreTab() {
   if (client_)
     client_->RestoreTab();
+}
+
+void NewWindowController::ShowKeyboardShortcutViewer() {
+  if (client_)
+    client_->ShowKeyboardShortcutViewer();
 }
 
 void NewWindowController::ShowTaskManager() {

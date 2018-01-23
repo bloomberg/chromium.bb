@@ -120,6 +120,8 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <part file="ksv/keyboard_shortcut_viewer_strings.grdp" />
+
       <!-- Default user profile images. -->
       <!-- User Image default image accessible descriptions -->
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_19" desc="Description of the default user icon with a picture of a bicycle">
