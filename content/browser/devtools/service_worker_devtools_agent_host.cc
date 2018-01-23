@@ -122,10 +122,7 @@ void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
                               base::BindOnce(&SetDevToolsAttachedOnIO,
                                              context_weak_, version_id_, true));
     }
-    // RenderProcessHost should not be null here, but even if it _is_ null,
-    // session does not depend on the process to do messaging.
-    session->SetRenderer(RenderProcessHost::FromID(worker_process_id_),
-                         nullptr);
+    session->SetRenderer(worker_process_id_, nullptr);
     session->AttachToAgent(agent_ptr_);
   }
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
@@ -159,11 +156,8 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
                                            context_weak_, version_id_, true));
   }
 
-  // RenderProcessHost should not be null here, but even if it _is_ null,
-  // session does not depend on the process to do messaging.
-  RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_);
   for (DevToolsSession* session : sessions()) {
-    session->SetRenderer(host, nullptr);
+    session->SetRenderer(worker_process_id_, nullptr);
     session->AttachToAgent(agent_ptr_);
   }
 }
@@ -174,9 +168,8 @@ void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
   state_ = WORKER_NOT_READY;
   worker_process_id_ = worker_process_id;
   worker_route_id_ = worker_route_id;
-  RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_);
   for (DevToolsSession* session : sessions())
-    session->SetRenderer(host, nullptr);
+    session->SetRenderer(worker_process_id_, nullptr);
 }
 
 void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
@@ -186,7 +179,7 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   for (DevToolsSession* session : sessions())
-    session->SetRenderer(nullptr, nullptr);
+    session->SetRenderer(-1, nullptr);
 }
 
 }  // namespace content

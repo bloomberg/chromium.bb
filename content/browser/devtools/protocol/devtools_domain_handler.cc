@@ -17,7 +17,7 @@ DevToolsDomainHandler::DevToolsDomainHandler(const std::string& name)
 DevToolsDomainHandler::~DevToolsDomainHandler() {
 }
 
-void DevToolsDomainHandler::SetRenderer(RenderProcessHost* process_host,
+void DevToolsDomainHandler::SetRenderer(int process_host_id,
                                         RenderFrameHostImpl* frame_host) {}
 
 void DevToolsDomainHandler::Wire(UberDispatcher* dispatcher) {

@@ -267,7 +267,7 @@ std::vector<InputHandler*> InputHandler::ForAgentHost(
       host, Input::Metainfo::domainName);
 }
 
-void InputHandler::SetRenderer(RenderProcessHost* process_host,
+void InputHandler::SetRenderer(int process_host_id,
                                RenderFrameHostImpl* frame_host) {
   if (frame_host == host_)
     return;

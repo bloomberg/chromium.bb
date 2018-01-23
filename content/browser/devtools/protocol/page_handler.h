@@ -61,7 +61,7 @@ class PageHandler : public DevToolsDomainHandler,
   static std::vector<PageHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderer(RenderProcessHost* process_host,
+  void SetRenderer(int process_host_id,
                    RenderFrameHostImpl* frame_host) override;
   void OnSwapCompositorFrame(viz::CompositorFrameMetadata frame_metadata);
   void OnSynchronousSwapCompositorFrame(
