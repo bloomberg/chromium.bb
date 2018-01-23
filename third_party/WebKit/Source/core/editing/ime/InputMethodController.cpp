@@ -854,7 +854,8 @@ void InputMethodController::SetComposition(
   }
 
   // Find out what node has the composition now.
-  const Position base = MostForwardCaretPosition(selection.Base());
+  const Position base =
+      MostForwardCaretPosition(selection.Base(), kCanSkipOverEditingBoundary);
   Node* base_node = base.AnchorNode();
   if (!base_node || !base_node->IsTextNode())
     return;
