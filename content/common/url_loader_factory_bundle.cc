@@ -4,45 +4,41 @@
 
 #include "content/common/url_loader_factory_bundle.h"
 
-#include <map>
-#include <string>
-
-#include "base/macros.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "base/logging.h"
 #include "url/gurl.h"
-
-class GURL;
 
 namespace content {
 
-URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
-    URLLoaderFactoryBundleInfo&&) = default;
+URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo() = default;
 
 URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
     std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
         factories_info)
-    : default_factory_info(std::move(default_factory_info)),
-      factories_info(std::move(factories_info)) {}
+    : default_factory_info_(std::move(default_factory_info)),
+      factories_info_(std::move(factories_info)) {}
 
 URLLoaderFactoryBundleInfo::~URLLoaderFactoryBundleInfo() = default;
 
+scoped_refptr<SharedURLLoaderFactory>
+URLLoaderFactoryBundleInfo::CreateFactory() {
+  auto other = std::make_unique<URLLoaderFactoryBundleInfo>();
+  other->default_factory_info_ = std::move(default_factory_info_);
+  other->factories_info_ = std::move(factories_info_);
+
+  return base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(other));
+}
+
 URLLoaderFactoryBundle::URLLoaderFactoryBundle() = default;
 
-URLLoaderFactoryBundle::URLLoaderFactoryBundle(URLLoaderFactoryBundle&&) =
-    default;
-
 URLLoaderFactoryBundle::URLLoaderFactoryBundle(
-    URLLoaderFactoryBundleInfo info) {
-  default_factory_.Bind(std::move(info.default_factory_info));
-  for (auto& factory_info : info.factories_info)
+    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
+  default_factory_.Bind(std::move(info->default_factory_info()));
+  for (auto& factory_info : info->factories_info())
     factories_[factory_info.first].Bind(std::move(factory_info.second));
 }
 
 URLLoaderFactoryBundle::~URLLoaderFactoryBundle() = default;
-
-URLLoaderFactoryBundle& URLLoaderFactoryBundle::operator=(
-    URLLoaderFactoryBundle&&) = default;
 
 void URLLoaderFactoryBundle::SetDefaultFactory(
     network::mojom::URLLoaderFactoryPtr factory) {
@@ -67,29 +63,38 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactoryForRequest(
   return it->second.get();
 }
 
-URLLoaderFactoryBundleInfo URLLoaderFactoryBundle::PassInfo() {
-  std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo> factories_info;
-  for (auto& factory : factories_)
-    factories_info.emplace(factory.first, factory.second.PassInterface());
-  DCHECK(default_factory_.is_bound());
-  return URLLoaderFactoryBundleInfo(default_factory_.PassInterface(),
-                                    std::move(factories_info));
+void URLLoaderFactoryBundle::CreateLoaderAndStart(
+    network::mojom::URLLoaderRequest loader,
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
+    const network::ResourceRequest& request,
+    network::mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    const Constraints& constaints) {
+  network::mojom::URLLoaderFactory* factory_ptr =
+      GetFactoryForRequest(request.url);
+
+  factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
+                                    options, request, std::move(client),
+                                    traffic_annotation);
 }
 
-URLLoaderFactoryBundle URLLoaderFactoryBundle::Clone() {
-  DCHECK(default_factory_.is_bound());
-  network::mojom::URLLoaderFactoryPtr cloned_default_factory;
-  default_factory_->Clone(mojo::MakeRequest(&cloned_default_factory));
+std::unique_ptr<SharedURLLoaderFactoryInfo> URLLoaderFactoryBundle::Clone() {
+  DCHECK(default_factory_);
 
-  URLLoaderFactoryBundle new_bundle;
-  new_bundle.SetDefaultFactory(std::move(cloned_default_factory));
+  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  default_factory_->Clone(mojo::MakeRequest(&default_factory_info));
+
+  std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo> factories_info;
   for (auto& factory : factories_) {
-    network::mojom::URLLoaderFactoryPtr cloned_factory;
-    factory.second->Clone(mojo::MakeRequest(&cloned_factory));
-    new_bundle.RegisterFactory(factory.first, std::move(cloned_factory));
+    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    factory.second->Clone(mojo::MakeRequest(&factory_info));
+    factories_info.emplace(factory.first, std::move(factory_info));
   }
 
-  return new_bundle;
+  return std::make_unique<URLLoaderFactoryBundleInfo>(
+      std::move(default_factory_info), std::move(factories_info));
 }
 
 }  // namespace content

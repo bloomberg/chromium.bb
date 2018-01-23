@@ -140,11 +140,12 @@ void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
-  CommitNavigation(
-      network::ResourceResponseHead(), GURL(), common_params, request_params,
-      network::mojom::URLLoaderClientEndpointsPtr(), URLLoaderFactoryBundle(),
-      mojom::ControllerServiceWorkerInfoPtr(),
-      base::UnguessableToken::Create());
+  CommitNavigation(network::ResourceResponseHead(), GURL(), common_params,
+                   request_params,
+                   network::mojom::URLLoaderClientEndpointsPtr(),
+                   std::make_unique<URLLoaderFactoryBundleInfo>(),
+                   mojom::ControllerServiceWorkerInfoPtr(),
+                   base::UnguessableToken::Create());
 }
 
 void TestRenderFrame::SwapOut(

@@ -10,4 +10,4 @@ sources = [
   "//content/common/url_loader_factory_bundle_struct_traits.cc",
 ]
 
-type_mappings = [ "content.mojom.URLLoaderFactoryBundle=content::URLLoaderFactoryBundle[move_only]" ]
+type_mappings = [ "content.mojom.URLLoaderFactoryBundle=std::unique_ptr<content::URLLoaderFactoryBundleInfo>[move_only,nullable_is_same_type]" ]
