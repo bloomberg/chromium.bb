@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -29,7 +31,7 @@ class SourceUrlRecorderWebContentsObserverBrowserTest
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     ukm::InitializeSourceUrlRecorderForWebContents(shell()->web_contents());
   }
 

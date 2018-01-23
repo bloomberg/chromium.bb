@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/translate/core/common/language_detection_details.h"
 
@@ -16,7 +15,7 @@ namespace translate {
 std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
     const int64_t navigation_id,
     const LanguageDetectionDetails& details) {
-  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
   specifics->set_event_time_usec(base::Time::Now().ToInternalValue());
 
   specifics->set_navigation_id(navigation_id);

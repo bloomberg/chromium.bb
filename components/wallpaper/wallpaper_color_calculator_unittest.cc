@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/null_task_runner.h"
@@ -126,7 +125,7 @@ void WallPaperColorCalculatorTest::InstallTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_handle_.reset();
   task_runner_handle_ =
-      base::MakeUnique<base::ThreadTaskRunnerHandle>(task_runner);
+      std::make_unique<base::ThreadTaskRunnerHandle>(task_runner);
   if (calculator_)
     calculator_->SetTaskRunnerForTest(task_runner);
 }
@@ -136,7 +135,7 @@ void WallPaperColorCalculatorTest::CreateCalculator(
   std::vector<color_utils::ColorProfile> color_profiles;
   color_profiles.emplace_back(color_utils::LumaRange::NORMAL,
                               color_utils::SaturationRange::VIBRANT);
-  calculator_ = base::MakeUnique<WallpaperColorCalculator>(
+  calculator_ = std::make_unique<WallpaperColorCalculator>(
       image, color_profiles, task_runner_);
   calculator_->AddObserver(&observer_);
 }

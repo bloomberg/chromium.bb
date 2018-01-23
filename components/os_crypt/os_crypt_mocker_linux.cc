@@ -8,7 +8,6 @@
 
 #include "base/base64.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "components/os_crypt/key_storage_config_linux.h"
 #include "components/os_crypt/os_crypt.h"
@@ -16,7 +15,7 @@
 namespace {
 
 std::unique_ptr<KeyStorageLinux> CreateNewMock() {
-  return base::MakeUnique<OSCryptMockerLinux>();
+  return std::make_unique<OSCryptMockerLinux>();
 }
 
 }
@@ -33,7 +32,7 @@ std::string* OSCryptMockerLinux::GetKeyPtr() {
 void OSCryptMockerLinux::SetUp() {
   UseMockKeyStorageForTesting(
       &CreateNewMock, nullptr /* get the key from the provider above */);
-  OSCrypt::SetConfig(base::MakeUnique<os_crypt::Config>());
+  OSCrypt::SetConfig(std::make_unique<os_crypt::Config>());
 }
 
 // static

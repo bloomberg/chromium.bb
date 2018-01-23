@@ -5,12 +5,12 @@
 #include "components/proximity_auth/webui/proximity_auth_webui_handler.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -450,7 +450,7 @@ ProximityAuthWebUIHandler::GetTruncatedLocalDeviceId() {
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &device_id);
 
-  return base::MakeUnique<base::Value>(
+  return std::make_unique<base::Value>(
       cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id));
 }
 
@@ -459,7 +459,7 @@ ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
   cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
       proximity_auth_client_->GetCryptAuthEnrollmentManager();
   if (!enrollment_manager)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   return CreateSyncStateDictionary(
       enrollment_manager->GetLastEnrollmentTime().ToJsTime(),
@@ -473,7 +473,7 @@ ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
   cryptauth::CryptAuthDeviceManager* device_manager =
       proximity_auth_client_->GetCryptAuthDeviceManager();
   if (!device_manager)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   return CreateSyncStateDictionary(
       device_manager->GetLastSyncTime().ToJsTime(),

@@ -4,7 +4,8 @@
 
 #include "components/offline_pages/core/model/add_page_to_download_manager_task.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
@@ -102,7 +103,7 @@ TEST_F(AddPageToDownloadManagerTaskTest, AddSimpleId) {
   OfflinePageItem page = generator()->CreateItem();
   store_test_util()->InsertItem(page);
 
-  auto task = base::MakeUnique<AddPageToDownloadManagerTask>(
+  auto task = std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
       kTestLength, kUri, kReferer);
   SetTaskCompletionCallbackForTesting(task.get());
@@ -133,7 +134,7 @@ TEST_F(AddPageToDownloadManagerTaskTest, NoADM) {
   OfflinePageItem page = generator()->CreateItem();
   store_test_util()->InsertItem(page);
 
-  auto task = base::MakeUnique<AddPageToDownloadManagerTask>(
+  auto task = std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
       kTestLength, kUri, kReferer);
   SetTaskCompletionCallbackForTesting(task.get());
@@ -157,7 +158,7 @@ TEST_F(AddPageToDownloadManagerTaskTest, AddDownloadFailed) {
   page.system_download_id = kDefaultDownloadId;
   store_test_util()->InsertItem(page);
 
-  auto task = base::MakeUnique<AddPageToDownloadManagerTask>(
+  auto task = std::make_unique<AddPageToDownloadManagerTask>(
       store(), download_manager(), page.offline_id, kTitle, kDescription, kPath,
       kTestLength, kUri, kReferer);
   SetTaskCompletionCallbackForTesting(task.get());

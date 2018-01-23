@@ -4,6 +4,8 @@
 
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 
+#include <memory>
+
 namespace security_state {
 
 SSLStatusInputEventData::SSLStatusInputEventData() {}
@@ -20,7 +22,7 @@ SSLStatusInputEventData::input_events() {
 }
 
 std::unique_ptr<web::SSLStatus::UserData> SSLStatusInputEventData::Clone() {
-  return base::MakeUnique<SSLStatusInputEventData>(data_);
+  return std::make_unique<SSLStatusInputEventData>(data_);
 }
 
 }  // namespace security_state

@@ -145,7 +145,7 @@ class WifiCredentialSyncableServiceTest : public testing::Test {
     change_processor_ = change_processor.get();
     syncable_service_->MergeDataAndStartSyncing(
         syncer::WIFI_CREDENTIALS, syncer::SyncDataList(),
-        std::move(change_processor), base::MakeUnique<SyncErrorFactoryMock>());
+        std::move(change_processor), std::make_unique<SyncErrorFactoryMock>());
   }
 
  private:

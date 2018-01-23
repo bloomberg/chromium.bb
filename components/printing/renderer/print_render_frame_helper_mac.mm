@@ -6,6 +6,8 @@
 
 #import <AppKit/AppKit.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
@@ -30,7 +32,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
 
   if (render_to_draft) {
     draft_metafile =
-        base::MakeUnique<PdfMetafileSkia>(print_params.printed_doc_type);
+        std::make_unique<PdfMetafileSkia>(print_params.printed_doc_type);
     CHECK(draft_metafile->Init());
     initial_render_metafile = draft_metafile.get();
   }

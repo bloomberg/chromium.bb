@@ -119,7 +119,7 @@ class ShaImplementation : public AlgorithmImplementation {
 }  // namespace
 
 std::unique_ptr<AlgorithmImplementation> CreateShaImplementation() {
-  return base::MakeUnique<ShaImplementation>();
+  return std::make_unique<ShaImplementation>();
 }
 
 std::unique_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(

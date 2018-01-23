@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -615,7 +615,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
-  auto options = base::MakeUnique<base::DictionaryValue>();
+  auto options = std::make_unique<base::DictionaryValue>();
   options->SetDouble(kSettingHeaderFooterDate, base::Time::Now().ToJsTime());
   options->SetDouble("width", page_size.width);
   options->SetDouble("height", page_size.height);
@@ -1195,7 +1195,7 @@ void PrintRenderFrameHelper::PrepareFrameForPreviewDocument() {
   }
 
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
-  prep_frame_view_ = base::MakeUnique<PrepareFrameAndViewForPrint>(
+  prep_frame_view_ = std::make_unique<PrepareFrameAndViewForPrint>(
       print_params, print_preview_context_.source_frame(),
       print_preview_context_.source_node(), ignore_css_margins_);
   prep_frame_view_->CopySelectionIfNeeded(
@@ -1330,7 +1330,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
     draft_metafile =
-        base::MakeUnique<PdfMetafileSkia>(print_params.printed_doc_type);
+        std::make_unique<PdfMetafileSkia>(print_params.printed_doc_type);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -1841,7 +1841,7 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
 
   print_pages_params_.reset();
 
-  auto msg = base::MakeUnique<PrintHostMsg_ScriptedPrint>(routing_id(), params,
+  auto msg = std::make_unique<PrintHostMsg_ScriptedPrint>(routing_id(), params,
                                                           print_settings);
   msg->EnableMessagePumping();
   Send(msg.release());
@@ -1856,7 +1856,7 @@ bool PrintRenderFrameHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
-  prep_frame_view_ = base::MakeUnique<PrepareFrameAndViewForPrint>(
+  prep_frame_view_ = std::make_unique<PrepareFrameAndViewForPrint>(
       print_params, frame, node, ignore_css_margins_);
   DCHECK(!print_pages_params_->params.selection_only ||
          print_pages_params_->pages.empty());
@@ -2013,7 +2013,7 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
             base::Bind(&PrintRenderFrameHelper::ShowScriptedPrintPreview,
                        weak_ptr_factory_.GetWeakPtr()));
       }
-      auto msg = base::MakeUnique<PrintHostMsg_SetupScriptedPrintPreview>(
+      auto msg = std::make_unique<PrintHostMsg_SetupScriptedPrintPreview>(
           routing_id());
       msg->EnableMessagePumping();
       auto self = weak_ptr_factory_.GetWeakPtr();
@@ -2165,7 +2165,7 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_ = base::MakeUnique<PdfMetafileSkia>(doc_type);
+  metafile_ = std::make_unique<PdfMetafileSkia>(doc_type);
   CHECK(metafile_->Init());
 
   current_page_index_ = 0;
@@ -2353,7 +2353,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::CalculateIsModifiable() {
 
 void PrintRenderFrameHelper::SetPrintPagesParams(
     const PrintMsg_PrintPages_Params& settings) {
-  print_pages_params_ = base::MakeUnique<PrintMsg_PrintPages_Params>(settings);
+  print_pages_params_ = std::make_unique<PrintMsg_PrintPages_Params>(settings);
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
 }

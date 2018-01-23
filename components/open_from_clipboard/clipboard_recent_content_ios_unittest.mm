@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,7 +118,7 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
                        uptime:time_delta.InSecondsF()];
 
     clipboard_content_ =
-        base::MakeUnique<ClipboardRecentContentIOSWithFakeUptime>(
+        std::make_unique<ClipboardRecentContentIOSWithFakeUptime>(
             clipboard_content_implementation_);
   }
 

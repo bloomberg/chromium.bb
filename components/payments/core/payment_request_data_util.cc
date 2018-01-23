@@ -4,6 +4,8 @@
 
 #include "components/payments/core/payment_request_data_util.h"
 
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -74,7 +76,7 @@ std::unique_ptr<BasicCardResponse> GetBasicCardResponseFromAutofillCreditCard(
     const autofill::AutofillProfile& billing_profile,
     const std::string& app_locale) {
   std::unique_ptr<BasicCardResponse> response =
-      base::MakeUnique<BasicCardResponse>();
+      std::make_unique<BasicCardResponse>();
   response->cardholder_name = card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
   response->card_number = card.GetRawInfo(autofill::CREDIT_CARD_NUMBER);
   response->expiry_month = card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);

@@ -4,7 +4,8 @@
 
 #include "components/search_provider_logos/fixed_logo_api.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/ref_counted_memory.h"
 #include "components/search_provider_logos/logo_common.h"
 #include "url/gurl.h"
@@ -15,7 +16,7 @@ std::unique_ptr<EncodedLogo> ParseFixedLogoResponse(
     std::unique_ptr<std::string> response,
     base::Time response_time,
     bool* parsing_failed) {
-  auto logo = base::MakeUnique<EncodedLogo>();
+  auto logo = std::make_unique<EncodedLogo>();
   logo->encoded_image = base::RefCountedString::TakeString(response.get());
 
   // If |can_show_after_expiration| is true, the |expiration_time| has little

@@ -4,10 +4,10 @@
 
 #include "components/web_restrictions/browser/web_restrictions_mojo_implementation.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -33,7 +33,7 @@ void WebRestrictionsMojoImplementation::Create(
     WebRestrictionsClient* client,
     mojom::WebRestrictionsRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<WebRestrictionsMojoImplementation>(client),
+      std::make_unique<WebRestrictionsMojoImplementation>(client),
       std::move(request));
 }
 

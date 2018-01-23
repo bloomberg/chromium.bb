@@ -12,7 +12,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -164,7 +163,7 @@ class PrefServiceSyncableTest : public testing::Test {
     test_processor_ = new TestSyncProcessorStub(output);
     syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
         syncer::PREFERENCES, initial_data, base::WrapUnique(test_processor_),
-        base::MakeUnique<syncer::SyncErrorFactoryMock>());
+        std::make_unique<syncer::SyncErrorFactoryMock>());
     EXPECT_FALSE(r.error().IsSet());
   }
 
@@ -304,7 +303,7 @@ TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   stub->FailNextProcessSyncChanges();
   syncer::SyncMergeResult r = pref_sync_service_->MergeDataAndStartSyncing(
       syncer::PREFERENCES, syncer::SyncDataList(), base::WrapUnique(stub),
-      base::MakeUnique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::SyncErrorFactoryMock>());
   EXPECT_TRUE(r.error().IsSet());
 }
 
@@ -539,7 +538,7 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
 
   InitWithNoSyncData();
 
-  auto null_value = base::MakeUnique<base::Value>();
+  auto null_value = std::make_unique<base::Value>();
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(1, kStringPrefName, *null_value,
                                   SyncChange::ACTION_DELETE));

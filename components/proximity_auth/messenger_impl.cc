@@ -6,12 +6,13 @@
 
 #include <utility>
 
+#include <memory>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/cryptauth/connection.h"
@@ -167,7 +168,7 @@ void MessengerImpl::ProcessMessageQueue() {
 }
 
 void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_->SendMessage(std::make_unique<cryptauth::WireMessage>(
       encoded_message, std::string(kEasyUnlockFeatureName)));
 }
 

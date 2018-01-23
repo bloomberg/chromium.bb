@@ -4,7 +4,8 @@
 
 #include "components/ui_devtools/views/dom_agent.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/views/overlay_agent.h"
@@ -800,7 +801,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildInitialTree() {
   // TODO(thanhph): Root of UIElement tree shoudn't be WindowElement
   // but maybe a new different element type.
   window_element_root_ =
-      base::MakeUnique<WindowElement>(nullptr, this, nullptr);
+      std::make_unique<WindowElement>(nullptr, this, nullptr);
 
   for (aura::Window* window : root_windows()) {
     UIElement* window_element =

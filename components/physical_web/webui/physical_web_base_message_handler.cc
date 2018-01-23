@@ -4,10 +4,10 @@
 
 #include "components/physical_web/webui/physical_web_base_message_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
@@ -70,11 +70,11 @@ void PhysicalWebBaseMessageHandler::PushNearbyURLs() {
     }
   }
 
-  auto metadata = base::MakeUnique<base::ListValue>();
+  auto metadata = std::make_unique<base::ListValue>();
   int index = 0;
   for (const auto& group_id : ordered_group_ids_) {
     auto metadata_list_item = metadata_map_[group_id];
-    auto metadata_item = base::MakeUnique<base::DictionaryValue>();
+    auto metadata_item = std::make_unique<base::DictionaryValue>();
     metadata_item->SetString(physical_web_ui::kResolvedUrl,
                              metadata_list_item.resolved_url.spec());
     metadata_item->SetString(physical_web_ui::kPageInfoIcon,

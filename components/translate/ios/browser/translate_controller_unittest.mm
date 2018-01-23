@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -33,7 +32,7 @@ class TranslateControllerTest : public PlatformTest,
         on_translate_complete_called_(false) {
     mock_js_translate_manager_ =
         [OCMockObject niceMockForClass:[JsTranslateManager class]];
-    translate_controller_ = base::MakeUnique<TranslateController>(
+    translate_controller_ = std::make_unique<TranslateController>(
         test_web_state_.get(), mock_js_translate_manager_);
     translate_controller_->set_observer(this);
   }

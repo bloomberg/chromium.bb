@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "third_party/re2/src/re2/filtered_re2.h"
@@ -102,7 +103,7 @@ void RegexSetMatcher::RebuildMatcher() {
   // SubstringSetMatcher doesn't own its strings.
   for (size_t i = 0; i < strings_to_match.size(); ++i) {
     substring_patterns_.push_back(
-        base::MakeUnique<StringPattern>(strings_to_match[i], i));
+        std::make_unique<StringPattern>(strings_to_match[i], i));
   }
   std::vector<const StringPattern*> patterns;
   for (const auto& pattern : substring_patterns_)

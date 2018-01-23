@@ -13,12 +13,12 @@
 
 #include <limits>
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -176,7 +176,7 @@ std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   results_recorder.set_result(true);
 
-  storage_info = base::MakeUnique<StorageInfo>(
+  storage_info = std::make_unique<StorageInfo>(
       StorageInfo::MakeDeviceId(type, unique_id), mount_point.value(),
       volume_label, vendor_name, model_name,
       GetDeviceStorageSize(device_path, device.get()));

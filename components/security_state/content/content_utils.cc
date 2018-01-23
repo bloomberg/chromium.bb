@@ -4,10 +4,10 @@
 
 #include "components/security_state/content/content_utils.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -394,7 +394,7 @@ void ExplainContentSecurity(
 
 std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
     content::WebContents* web_contents) {
-  auto state = base::MakeUnique<security_state::VisibleSecurityState>();
+  auto state = std::make_unique<security_state::VisibleSecurityState>();
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();

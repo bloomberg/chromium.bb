@@ -4,6 +4,8 @@
 
 #include "components/physical_web/data_source/fake_physical_web_data_source.h"
 
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
 #include "url/gurl.h"
@@ -18,7 +20,7 @@ std::unique_ptr<Metadata> CreatePhysicalWebPage(
     const std::string& title,
     const std::string& description,
     const std::string& scanned_url) {
-  auto page = base::MakeUnique<Metadata>();
+  auto page = std::make_unique<Metadata>();
   page->resolved_url = GURL(resolved_url);
   page->distance_estimate = distance_estimate;
   page->group_id = group_id;
@@ -43,7 +45,7 @@ std::unique_ptr<MetadataList> CreateDummyPhysicalWebPages(
     const std::vector<int>& ids) {
   int distance = 1;
   int timestamp = static_cast<int>(ids.size());
-  auto list = base::MakeUnique<MetadataList>();
+  auto list = std::make_unique<MetadataList>();
   for (int id : ids) {
     std::unique_ptr<Metadata> page =
         CreateDummyPhysicalWebPage(id, distance, timestamp);
@@ -67,7 +69,7 @@ void FakePhysicalWebDataSource::StopDiscovery() {
 }
 
 std::unique_ptr<MetadataList> FakePhysicalWebDataSource::GetMetadataList() {
-  return base::MakeUnique<MetadataList>(*metadata_list_.get());
+  return std::make_unique<MetadataList>(*metadata_list_.get());
 }
 
 bool FakePhysicalWebDataSource::HasUnresolvedDiscoveries() {
