@@ -64,7 +64,6 @@ static_library("browser") {
     "clipboard_url_provider.h",
     "contextual_suggestions_service.cc",
     "contextual_suggestions_service.h",
-    "features.h",
     "history_match.cc",
     "history_match.h",
     "history_provider.cc",

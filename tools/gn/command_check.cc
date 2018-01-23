@@ -95,10 +95,8 @@ What gets checked
     - Only includes using "quotes" are checked. <brackets> are assumed to be
       system includes.
 
-    - Include paths are assumed to be relative to either the source root or the
-      "root_gen_dir" and must include all the path components. (It might be
-      nice in the future to incorporate GN's knowledge of the include path to
-      handle other include styles.)
+    - Include paths are assumed to be relative to any of the "include_dirs" for
+      the target (including the implicit current dir).
 
     - GN does not run the preprocessor so will not understand conditional
       includes.
@@ -130,9 +128,9 @@ What gets checked
 
 Advice on fixing problems
 
-  If you have a third party project that uses relative includes, it's generally
-  best to exclude that target from checking altogether via
-  "check_includes = false".
+  If you have a third party project that is difficult to fix or doesn't care
+  about include checks it's generally best to exclude that target from checking
+  altogether via "check_includes = false".
 
   If you have conditional includes, make sure the build conditions and the
   preprocessor conditions match, and annotate the line with "nogncheck" (see

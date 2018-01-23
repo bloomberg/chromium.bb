@@ -15,6 +15,7 @@
 #include "tools/gn/builder.h"
 #include "tools/gn/c_include_iterator.h"
 #include "tools/gn/config.h"
+#include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
@@ -29,19 +30,6 @@ struct PublicGeneratedPair {
   bool is_public;
   bool is_generated;
 };
-
-// If the given file is in the "gen" folder, trims this so it treats the gen
-// directory as the source root:
-//   //out/Debug/gen/foo/bar.h -> //foo/bar.h
-// If the file isn't in the generated root, returns the input unchanged.
-SourceFile RemoveRootGenDirFromFile(const Target* target,
-                                    const SourceFile& file) {
-  const SourceDir& gen = target->settings()->toolchain_gen_dir();
-  if (!gen.is_null() && base::StartsWith(file.value(), gen.value(),
-                                         base::CompareCase::SENSITIVE))
-    return SourceFile("//" + file.value().substr(gen.value().size()));
-  return file;
-}
 
 // This class makes InputFiles on the stack as it reads files to check. When
 // we throw an error, the Err indicates a locatin which has a pointer to
@@ -201,14 +189,11 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
 
   std::map<SourceFile, PublicGeneratedPair> files_to_public;
 
-  // First collect the normal files, they get the default visibility. Always
-  // trim the root gen dir if it exists. This will only exist on outputs of an
-  // action, but those are often then wired into the sources of a compiled
-  // target to actually compile generated code. If you depend on the compiled
-  // target, it should be enough to be able to include the header.
+  // First collect the normal files, they get the default visibility. If you
+  // depend on the compiled target, it should be enough to be able to include
+  // the header.
   for (const auto& source : target->sources()) {
-    SourceFile file = RemoveRootGenDirFromFile(target, source);
-    files_to_public[file].is_public = default_public;
+    files_to_public[source].is_public = default_public;
   }
 
   // Add in the public files, forcing them to public. This may overwrite some
@@ -216,8 +201,7 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   if (default_public)  // List only used when default is not public.
     DCHECK(target->public_headers().empty());
   for (const auto& source : target->public_headers()) {
-    SourceFile file = RemoveRootGenDirFromFile(target, source);
-    files_to_public[file].is_public = true;
+    files_to_public[source].is_public = true;
   }
 
   // Add in outputs from actions. These are treated as public (since if other
@@ -225,12 +209,7 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   std::vector<SourceFile> outputs;
   target->action_values().GetOutputsAsSourceFiles(target, &outputs);
   for (const auto& output : outputs) {
-    // For generated files in the "gen" directory, add the filename to the
-    // map assuming "gen" is the source root. This means that when files include
-    // the generated header relative to there (the recommended practice), we'll
-    // find the file.
-    SourceFile output_file = RemoveRootGenDirFromFile(target, output);
-    PublicGeneratedPair* pair = &files_to_public[output_file];
+    PublicGeneratedPair* pair = &files_to_public[output];
     pair->is_public = true;
     pair->is_generated = true;
   }
@@ -247,17 +226,27 @@ bool HeaderChecker::IsFileInOuputDir(const SourceFile& file) const {
   return file.value().compare(0, build_dir.size(), build_dir) == 0;
 }
 
-// This current assumes all include paths are relative to the source root
-// which is generally the case for Chromium.
-//
-// A future enhancement would be to search the include path for the target
-// containing the source file containing this include and find the file to
-// handle the cases where people do weird things with the paths.
 SourceFile HeaderChecker::SourceFileForInclude(
-    const base::StringPiece& input) const {
-  std::string str("//");
-  input.AppendToString(&str);
-  return SourceFile(str);
+    const base::StringPiece& relative_file_path,
+    const std::vector<SourceDir>& include_dirs,
+    const InputFile& source_file,
+    const LocationRange& range,
+    Err* err) const {
+  using base::FilePath;
+
+  Value relative_file_value(nullptr, relative_file_path.as_string());
+  auto it = std::find_if(
+      include_dirs.begin(), include_dirs.end(),
+      [relative_file_value, err, this](const SourceDir& dir) -> bool {
+        SourceFile include_file =
+            dir.ResolveRelativeFile(relative_file_value, err);
+        return file_map_.find(include_file) != file_map_.end();
+      });
+
+  if (it != include_dirs.end())
+    return it->ResolveRelativeFile(relative_file_value, err);
+
+  return SourceFile();
 }
 
 bool HeaderChecker::CheckFile(const Target* from_target,
@@ -285,13 +274,25 @@ bool HeaderChecker::CheckFile(const Target* from_target,
   InputFile input_file(file);
   input_file.SetContents(contents);
 
+  std::vector<SourceDir> include_dirs;
+  include_dirs.push_back(file.GetDir());
+  for (ConfigValuesIterator iter(from_target); !iter.done(); iter.Next()) {
+    const std::vector<SourceDir>& target_include_dirs =
+        iter.cur().include_dirs();
+    include_dirs.insert(include_dirs.end(), target_include_dirs.begin(),
+                        target_include_dirs.end());
+  }
+
   CIncludeIterator iter(&input_file);
   base::StringPiece current_include;
   LocationRange range;
   while (iter.GetNextIncludeString(&current_include, &range)) {
-    SourceFile include = SourceFileForInclude(current_include);
-    if (!CheckInclude(from_target, input_file, include, range, err))
-      return false;
+    SourceFile include = SourceFileForInclude(current_include, include_dirs,
+                                              input_file, range, err);
+    if (!include.is_null()) {
+      if (!CheckInclude(from_target, input_file, include, range, err))
+        return false;
+    }
   }
 
   return true;

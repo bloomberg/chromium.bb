@@ -18,6 +18,8 @@ mojom("url_mojom_origin") {
   public_deps = [
     ":url_mojom_gurl",
   ]
+
+  check_includes_blink = false
 }
 
 mojom("test_url_mojom_gurl") {

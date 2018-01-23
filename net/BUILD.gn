@@ -888,7 +888,6 @@ component("net") {
       "http/proxy_connect_redirect_http_stream.h",
       "http/transport_security_persister.cc",
       "http/transport_security_persister.h",
-      "http/transport_security_state_static.h",
       "http/url_security_manager.cc",
       "http/url_security_manager.h",
       "http/url_security_manager_posix.cc",

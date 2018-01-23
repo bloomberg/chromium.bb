@@ -272,6 +272,18 @@ config("blink_platform_pch") {
   }
 }
 
+source_set("platform_export") {
+  sources = [
+    "PlatformExport.h",
+  ]
+
+  visibility = []  # Allow re-assignment of list.
+  visibility = [
+    ":platform",
+    "//mojo/public/cpp/bindings:wtf_support",
+  ]
+}
+
 jumbo_component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
@@ -357,7 +369,6 @@ jumbo_component("platform") {
     "PartitionAllocMemoryDumpProvider.h",
     "PasteMode.h",
     "PlatformChromeClient.h",
-    "PlatformExport.h",
     "PlatformFrameView.h",
     "Prerender.cpp",
     "Prerender.h",
@@ -1533,6 +1544,7 @@ jumbo_component("platform") {
     "//third_party/WebKit/Source/platform/scheduler",
   ]
   deps = [
+    ":platform_export",
     "//base/allocator:features",
     "//components/viz/service",
     "//device/base/synchronization",
