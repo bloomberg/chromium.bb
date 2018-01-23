@@ -20,11 +20,11 @@ PASS namedItem method with undefined
 PASS namedItem method with null
 PASS namedItem method with no argument
 PASS legacy caller
-FAIL legacy caller with invalid name assert_equals: expected (object) null but got (undefined) undefined
+PASS legacy caller with invalid name
 PASS legacy caller returning collection
 PASS legacy caller with "array index property name"
 PASS legacy caller with "array index property name" as number
-FAIL legacy caller with invalid "array index property name" assert_equals: expected (object) null but got (undefined) undefined
+PASS legacy caller with invalid "array index property name"
 FAIL legacy caller with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
 PASS legacy caller with null
 FAIL legacy caller with no argument assert_equals: expected (object) null but got (undefined) undefined
@@ -33,14 +33,14 @@ FAIL legacy caller is not a constructor assert_throws: New should not work on do
   }" did not throw
 PASS legacy caller with arbitrary this value
 PASS item method
-FAIL item method with invalid name assert_equals: expected (object) null but got (undefined) undefined
+PASS item method with invalid name
 PASS item method returning collection
 PASS item method with "array index property name"
 PASS item method with "array index property name" as number
-FAIL item method with invalid "array index property name" assert_equals: expected (object) null but got (undefined) undefined
+PASS item method with invalid "array index property name"
 FAIL item method with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
 PASS item method with null
-FAIL item method with no argument assert_equals: expected (object) null but got (undefined) undefined
+PASS item method with no argument
 FAIL collections are new live HTMLCollection instances assert_not_equals: got disallowed value object "[object HTMLCollection]"
 Harness: the test ran to completion.
 

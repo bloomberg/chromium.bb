@@ -32,9 +32,7 @@
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Element (unsigned long index);
-    // FIXME: The custom item() implementation may return a NodeList, but the
-    // spec has a (HTMLCollection or Element)? item(DOMString name) method.
-    [Custom] Element? item([Default=Undefined] optional unsigned long index);
+    [Custom] (HTMLCollection or Element)? item(optional DOMString nameOrIndex);
     // FIXME: namedItem() should be a legacycaller.
     [ImplementedAs=namedGetter] getter (HTMLCollection or Element)? namedItem(DOMString name);
 };
