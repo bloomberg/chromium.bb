@@ -31,7 +31,6 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-frame-resource.https
 Bug(none) external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/import-scripts-resource-map.https.html [ Failure Crash ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/register-link-header.https.html [ Timeout ]
@@ -53,8 +52,6 @@ Bug(none) http/tests/appcache/offline-access.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/foreign-fallback.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/main-resource-redirect.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/reload.html [ Pass Timeout ]
-
-# NetworkService won't support Foreign Fetch.
 
 # Passes on NetworkService and fails on non-NetworkService because
 # NetworkService isn't affected by https://crbug.com/595993.
@@ -160,10 +157,8 @@ Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failu
 Bug(none) http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure Timeout ]
 Bug(none) http/tests/security/offscreen-canvas-worker-read-blocked-by-setting.html [ Crash Pass Timeout ]
 Bug(none) http/tests/security/suborigins/suborigin-unsafe-cookies.php [ Timeout ]
-Bug(none) http/tests/serviceworker/chromium.fetch-event-headers.html [ Failure ]
 Bug(none) http/tests/serviceworker/chromium.update-served-from-cache.html [ Failure ]
 Bug(none) http/tests/serviceworker/chromium/register-error-messages.html [ Failure ]
-Bug(none) http/tests/serviceworker/chromium/request-body-blob-crash.html [ Crash Failure ]
 Bug(none) http/tests/websocket/cookie-document-to-ws.html [ Failure ]
 Bug(none) http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
 Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
