@@ -71,7 +71,7 @@ const base::Feature kAssetDownloadSuggestionsFeature{
 // Enables the built-in DNS resolver.
 const base::Feature kAsyncDns {
   "AsyncDns",
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
