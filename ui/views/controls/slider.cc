@@ -87,10 +87,6 @@ void Slider::SetValue(float value) {
   SetValueInternal(value, VALUE_CHANGED_BY_API);
 }
 
-void Slider::SetAccessibleName(const base::string16& name) {
-  accessible_name_ = name;
-}
-
 void Slider::UpdateState(bool control_on) {
   is_active_ = control_on;
   SchedulePaint();
@@ -259,7 +255,6 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
 
 void Slider::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_SLIDER;
-  node_data->SetName(accessible_name_);
   node_data->SetValue(base::UTF8ToUTF16(
       base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5))));
 }

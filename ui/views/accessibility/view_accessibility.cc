@@ -95,6 +95,10 @@ void ViewAccessibility::OverrideName(const std::string& name) {
   custom_data_.SetName(name);
 }
 
+void ViewAccessibility::OverrideName(const base::string16& name) {
+  custom_data_.SetName(base::UTF16ToUTF8(name));
+}
+
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
 }
