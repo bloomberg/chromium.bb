@@ -10,7 +10,7 @@ namespace base {
 
 namespace {
 
-bool IsWildcard(base_icu::UChar32 character) {
+constexpr bool IsWildcard(base_icu::UChar32 character) {
   return character == '*' || character == '?';
 }
 
@@ -19,12 +19,12 @@ bool IsWildcard(base_icu::UChar32 character) {
 // the first wildcard character (or the end of the string). If the value of
 // |maximum_distance| is negative, the maximum distance is considered infinite.
 template <typename CHAR, typename NEXT>
-bool SearchForChars(const CHAR** pattern,
-                    const CHAR* pattern_end,
-                    const CHAR** string,
-                    const CHAR* string_end,
-                    int maximum_distance,
-                    NEXT next) {
+constexpr bool SearchForChars(const CHAR** pattern,
+                              const CHAR* pattern_end,
+                              const CHAR** string,
+                              const CHAR* string_end,
+                              int maximum_distance,
+                              NEXT next) {
   const CHAR* pattern_start = *pattern;
   const CHAR* string_start = *string;
   bool escape = false;
@@ -87,7 +87,7 @@ bool SearchForChars(const CHAR** pattern,
 // match an arbitrary number of characters (which is the case if it contains at
 // least one *).
 template <typename CHAR, typename NEXT>
-int EatWildcards(const CHAR** pattern, const CHAR* end, NEXT next) {
+constexpr int EatWildcards(const CHAR** pattern, const CHAR* end, NEXT next) {
   int num_question_marks = 0;
   bool has_asterisk = false;
   while (*pattern != end) {
@@ -105,11 +105,11 @@ int EatWildcards(const CHAR** pattern, const CHAR* end, NEXT next) {
 }
 
 template <typename CHAR, typename NEXT>
-bool MatchPatternT(const CHAR* eval,
-                   const CHAR* eval_end,
-                   const CHAR* pattern,
-                   const CHAR* pattern_end,
-                   NEXT next) {
+constexpr bool MatchPatternT(const CHAR* eval,
+                             const CHAR* eval_end,
+                             const CHAR* pattern,
+                             const CHAR* pattern_end,
+                             NEXT next) {
   do {
     int maximum_wildcard_length = EatWildcards(&pattern, pattern_end, next);
     if (!SearchForChars(&pattern, pattern_end, &eval, eval_end,
