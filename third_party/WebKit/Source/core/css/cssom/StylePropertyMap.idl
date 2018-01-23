@@ -12,6 +12,7 @@ callback UpdateFunction = CSSStyleValue (CSSStyleValue oldValue);
 ] interface StylePropertyMap : StylePropertyMapReadOnly {
     [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or DOMString)... values);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
-    [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or DOMString)... values);
+    // Putting Exposed=Window in the next line makes |set| not exposed to PaintWorklet.
+    [RaisesException, CallWith=ExecutionContext, Exposed=Window] void set(DOMString property, (CSSStyleValue or DOMString)... values);
     [RaisesException] void update(DOMString property, UpdateFunction updateFunction);
 };
