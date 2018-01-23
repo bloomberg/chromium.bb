@@ -71429,6 +71429,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskCPUDurationPerTaskType.DedicatedWorker"
+    enum="RendererSchedulerTaskType" units="ms">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Total duration of dedicated worker tasks (thread time) split by per thread
+    type.  Reported each time when task is completed and current accumulated
+    duration is longer than 1ms.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskCPUDurationPerThreadType"
     enum="RendererSchedulerThreadType" units="ms">
   <owner>altimin@chromium.org</owner>
@@ -71520,6 +71533,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     This metric is susceptible to problematic outliers and should be analyzed
     with custom scripts accounting for that rather than from a dashboard.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.TaskDurationPerTaskType.DedicatedWorker"
+    enum="RendererSchedulerTaskType" units="ms">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Total duration of dedicated worker tasks (wall time) split by per thread
+    type.  Reported each time when task is completed and current accumulated
+    duration is longer than 1ms.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
   </summary>
 </histogram>
 
