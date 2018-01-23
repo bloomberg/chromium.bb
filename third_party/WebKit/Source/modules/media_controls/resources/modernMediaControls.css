@@ -314,12 +314,12 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highl
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before {
-  background: rgba(0, 0, 0, .54);
+  background: rgba(0, 0, 0, .87);
   border-radius: 100px;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
-  background: rgba(0, 0, 0, .87);
+  background: rgba(0, 0, 0, .54);
   border-radius: 2px;
 }
 
