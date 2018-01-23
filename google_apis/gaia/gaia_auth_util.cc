@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -53,7 +52,7 @@ std::string CanonicalizeEmailImpl(const std::string& email_address,
 class GaiaURLRequestUserData : public base::SupportsUserData::Data {
  public:
   static std::unique_ptr<base::SupportsUserData::Data> Create() {
-    return base::MakeUnique<GaiaURLRequestUserData>();
+    return std::make_unique<GaiaURLRequestUserData>();
   }
 };
 

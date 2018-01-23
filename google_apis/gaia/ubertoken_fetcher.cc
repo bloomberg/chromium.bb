@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -21,7 +20,7 @@ std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* request_context) {
-  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, request_context);
+  return std::make_unique<GaiaAuthFetcher>(consumer, source, request_context);
 }
 }
 

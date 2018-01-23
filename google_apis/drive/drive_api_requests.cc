@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -93,9 +92,9 @@ void AttachProperties(const Properties& properties,
   if (properties.empty())
     return;
 
-  auto properties_value = base::MakeUnique<base::ListValue>();
+  auto properties_value = std::make_unique<base::ListValue>();
   for (const auto& property : properties) {
-    auto property_value = base::MakeUnique<base::DictionaryValue>();
+    auto property_value = std::make_unique<base::DictionaryValue>();
     std::string visibility_as_string;
     switch (property.visibility()) {
       case Property::VISIBILITY_PRIVATE:
@@ -128,7 +127,7 @@ std::string CreateMultipartUploadMetadataJson(
 
   // Fill parent link.
   if (!parent_resource_id.empty()) {
-    auto parents = base::MakeUnique<base::ListValue>();
+    auto parents = std::make_unique<base::ListValue>();
     parents->Append(google_apis::util::CreateParentValue(parent_resource_id));
     root.Set("parents", std::move(parents));
   }
@@ -388,9 +387,9 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
     root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
 
   if (!parents_.empty()) {
-    auto parents_value = base::MakeUnique<base::ListValue>();
+    auto parents_value = std::make_unique<base::ListValue>();
     for (size_t i = 0; i < parents_.size(); ++i) {
-      auto parent = base::MakeUnique<base::DictionaryValue>();
+      auto parent = std::make_unique<base::DictionaryValue>();
       parent->SetString("id", parents_[i]);
       parents_value->Append(std::move(parent));
     }
@@ -466,9 +465,9 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
   }
 
   if (!parents_.empty()) {
-    auto parents_value = base::MakeUnique<base::ListValue>();
+    auto parents_value = std::make_unique<base::ListValue>();
     for (size_t i = 0; i < parents_.size(); ++i) {
-      auto parent = base::MakeUnique<base::DictionaryValue>();
+      auto parent = std::make_unique<base::DictionaryValue>();
       parent->SetString("id", parents_[i]);
       parents_value->Append(std::move(parent));
     }
@@ -520,9 +519,9 @@ bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
     root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
 
   if (!parents_.empty()) {
-    auto parents_value = base::MakeUnique<base::ListValue>();
+    auto parents_value = std::make_unique<base::ListValue>();
     for (size_t i = 0; i < parents_.size(); ++i) {
-      auto parent = base::MakeUnique<base::DictionaryValue>();
+      auto parent = std::make_unique<base::DictionaryValue>();
       parent->SetString("id", parents_[i]);
       parents_value->Append(std::move(parent));
     }
@@ -824,7 +823,7 @@ bool InitiateUploadNewFileRequest::GetContentData(
   root.SetString("title", title_);
 
   // Fill parent link.
-  auto parents = base::MakeUnique<base::ListValue>();
+  auto parents = std::make_unique<base::ListValue>();
   parents->Append(util::CreateParentValue(parent_resource_id_));
   root.Set("parents", std::move(parents));
 
@@ -884,7 +883,7 @@ bool InitiateUploadExistingFileRequest::GetContentData(
     std::string* upload_content) {
   base::DictionaryValue root;
   if (!parent_resource_id_.empty()) {
-    auto parents = base::MakeUnique<base::ListValue>();
+    auto parents = std::make_unique<base::ListValue>();
     parents->Append(util::CreateParentValue(parent_resource_id_));
     root.Set("parents", std::move(parents));
   }
@@ -1148,7 +1147,7 @@ bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
     case PERMISSION_ROLE_COMMENTER:
       root.SetString("role", "reader");
       {
-        auto list = base::MakeUnique<base::ListValue>();
+        auto list = std::make_unique<base::ListValue>();
         list->AppendString("commenter");
         root.Set("additionalRoles", std::move(list));
       }
@@ -1248,7 +1247,7 @@ void BatchUploadRequest::AddRequest(BatchableDelegate* request) {
   DCHECK(request);
   DCHECK(GetChildEntry(request) == child_requests_.end());
   DCHECK(!committed_);
-  child_requests_.push_back(base::MakeUnique<BatchUploadChildEntry>(request));
+  child_requests_.push_back(std::make_unique<BatchUploadChildEntry>(request));
   request->Prepare(base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
                               weak_ptr_factory_.GetWeakPtr(), request));
 }

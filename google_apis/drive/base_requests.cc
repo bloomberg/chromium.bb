@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -13,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -290,7 +290,7 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
                           const net::CompletionCallback& callback) {
   if (!get_content_callback_.is_null()) {
     get_content_callback_.Run(
-        HTTP_SUCCESS, base::MakeUnique<std::string>(buffer->data(), num_bytes));
+        HTTP_SUCCESS, std::make_unique<std::string>(buffer->data(), num_bytes));
   }
 
   if (file_writer_) {
