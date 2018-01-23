@@ -172,16 +172,6 @@ class ASH_EXPORT ScreenOrientationController
   void LockRotationToOrientation(
       blink::WebScreenOrientationLockType lock_orientation);
 
-  // Locks rotation to the angle matching the primary orientation for
-  // |lock_orientation|.
-  void LockRotationToPrimaryOrientation(
-      blink::WebScreenOrientationLockType lock_orientation);
-
-  // Locks rotation to the angle matching the secondary orientation for
-  // |lock_orientation|.
-  void LockRotationToSecondaryOrientation(
-      blink::WebScreenOrientationLockType lock_orientation);
-
   // For orientations that do not specify primary or secondary, locks to the
   // current rotation if it matches |lock_orientation|. Otherwise locks to a
   // matching rotation.

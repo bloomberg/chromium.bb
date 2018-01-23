@@ -42,11 +42,6 @@ blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
     arc::mojom::OrientationLock orientation_lock) {
   DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
 
-  // In Android, "portrait" means 90 degrees counterclockwise rotation
-  // on naturally landscape devices.
-  bool reverse_portrait_orientation =
-      natural_orientation == blink::kWebScreenOrientationLockLandscape;
-
   switch (orientation_lock) {
     case arc::mojom::OrientationLock::PORTRAIT:
       return blink::kWebScreenOrientationLockPortrait;
@@ -56,16 +51,10 @@ blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
       return blink::kWebScreenOrientationLockLandscapePrimary;
     case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
       return blink::kWebScreenOrientationLockLandscapeSecondary;
-
     case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
-      return reverse_portrait_orientation
-                 ? blink::kWebScreenOrientationLockPortraitSecondary
-                 : blink::kWebScreenOrientationLockPortraitPrimary;
-
+      return blink::kWebScreenOrientationLockPortraitPrimary;
     case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
-      return reverse_portrait_orientation
-                 ? blink::kWebScreenOrientationLockPortraitPrimary
-                 : blink::kWebScreenOrientationLockPortraitSecondary;
+      return blink::kWebScreenOrientationLockPortraitSecondary;
     default:
       return blink::kWebScreenOrientationLockAny;
   }
