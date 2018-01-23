@@ -2529,6 +2529,10 @@ WebInputMethodController* WebLocalFrameImpl::GetInputMethodController() {
   return &input_method_controller_;
 }
 
+// TODO(editing-dev): We should move |CreateMarkupInRect()| to
+// "core/editing/serializers/Serialization.cpp".
+static String CreateMarkupInRect(LocalFrame*, const IntPoint&, const IntPoint&);
+
 void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
                                              WebString& clip_text,
                                              WebString& clip_html) {
@@ -2538,27 +2542,36 @@ void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
   WebPoint start_point(rect_in_viewport.x, rect_in_viewport.y);
   WebPoint end_point(rect_in_viewport.x + rect_in_viewport.width,
                      rect_in_viewport.y + rect_in_viewport.height);
+  clip_html = CreateMarkupInRect(
+      GetFrame(), GetFrame()->View()->ViewportToContents(start_point),
+      GetFrame()->View()->ViewportToContents(end_point));
+}
+
+// TODO(editing-dev): We should move |CreateMarkupInRect()| to
+// "core/editing/serializers/Serialization.cpp".
+static String CreateMarkupInRect(LocalFrame* frame,
+                                 const IntPoint& start_point,
+                                 const IntPoint& end_point) {
   VisiblePosition start_visible_position =
-      VisiblePositionForViewportPoint(start_point);
+      VisiblePositionForContentsPoint(start_point, frame);
   VisiblePosition end_visible_position =
-      VisiblePositionForViewportPoint(end_point);
+      VisiblePositionForContentsPoint(end_point, frame);
 
   Position start_position = start_visible_position.DeepEquivalent();
   Position end_position = end_visible_position.DeepEquivalent();
 
   // document() will return null if -webkit-user-select is set to none.
   if (!start_position.GetDocument() || !end_position.GetDocument())
-    return;
+    return String();
 
   if (start_position.CompareTo(end_position) <= 0) {
-    clip_html =
-        CreateMarkup(start_position, end_position, kAnnotateForInterchange,
-                     ConvertBlocksToInlines::kNotConvert, kResolveNonLocalURLs);
-  } else {
-    clip_html =
-        CreateMarkup(end_position, start_position, kAnnotateForInterchange,
-                     ConvertBlocksToInlines::kNotConvert, kResolveNonLocalURLs);
+    return CreateMarkup(start_position, end_position, kAnnotateForInterchange,
+                        ConvertBlocksToInlines::kNotConvert,
+                        kResolveNonLocalURLs);
   }
+  return CreateMarkup(end_position, start_position, kAnnotateForInterchange,
+                      ConvertBlocksToInlines::kNotConvert,
+                      kResolveNonLocalURLs);
 }
 
 void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
