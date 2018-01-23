@@ -1064,6 +1064,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         const MV_REFERENCE_FRAME ref0 = mbmi->ref_frame[0];
         const MV_REFERENCE_FRAME ref1 = mbmi->ref_frame[1];
 
+        av1_collect_neighbors_ref_counts(xd);
+
         if (cm->reference_mode == REFERENCE_MODE_SELECT) {
           if (has_second_ref(mbmi))
             // This flag is also updated for 4x4 blocks

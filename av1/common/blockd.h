@@ -617,6 +617,10 @@ typedef struct macroblockd {
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint8_t is_sec_rect;
 
+  // Counts of each reference frame in the above and left neighboring blocks.
+  // NOTE: Take into account both single and comp references.
+  uint8_t neighbors_ref_counts[TOTAL_REFS_PER_FRAME];
+
   FRAME_CONTEXT *tile_ctx;
   /* Bit depth: 8, 10, 12 */
   int bd;

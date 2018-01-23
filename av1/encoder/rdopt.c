@@ -9299,6 +9299,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_zero(best_mbmode);
   av1_zero(pmi_uv);
 
+  av1_collect_neighbors_ref_counts(xd);
+
   estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
                            ref_costs_comp);
 
@@ -10827,6 +10829,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   const int64_t distortion2 = 0;
   (void)mi_row;
   (void)mi_col;
+
+  av1_collect_neighbors_ref_counts(xd);
 
   estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
                            ref_costs_comp);

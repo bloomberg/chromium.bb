@@ -1340,6 +1340,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
+
+    av1_collect_neighbors_ref_counts(xd);
+
     write_ref_frames(cm, xd, w);
 
     if (is_compound)
