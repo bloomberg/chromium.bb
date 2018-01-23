@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "zlib.h"
 
@@ -61,10 +60,10 @@ Data read_file_data_or_exit(const char* name) {
   Data data(file.tellg());
   file.seekg(0, std::ios::beg);
 
-  if (data.data)
+  if (file && data.data)
     file.read(data.data.get(), data.size);
 
-  if (file.bad() || !data.data) {
+  if (!file || !data.data) {
     perror((std::string("error reading ") + name).c_str());
     exit(1);
   } else if (!data.size) {
