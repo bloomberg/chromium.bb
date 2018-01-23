@@ -5,8 +5,8 @@
 #include "content/browser/loader/resource_scheduler_filter.h"
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_scheduler.h"
 #include "content/common/frame_messages.h"
+#include "content/network/resource_scheduler.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {

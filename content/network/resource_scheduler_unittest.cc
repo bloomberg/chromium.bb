@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/resource_scheduler.h"
+#include "content/network/resource_scheduler.h"
 
 #include <map>
 #include <memory>
@@ -13,24 +13,19 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
-#include "content/public/browser/resource_context.h"
-#include "content/public/browser/resource_throttle.h"
-#include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/test_render_view_host_factory.h"
-#include "content/test/test_web_contents.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties_impl.h"
@@ -92,28 +87,30 @@ void ConfigureYieldFieldTrial(
   scoped_feature_list->InitWithFeatureList(std::move(feature_list));
 }
 
-class TestRequest : public ResourceThrottle::Delegate {
+class TestRequest {
  public:
   TestRequest(std::unique_ptr<net::URLRequest> url_request,
-              std::unique_ptr<ResourceThrottle> throttle,
+              std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
+                  scheduled_request,
               ResourceScheduler* scheduler)
       : started_(false),
         url_request_(std::move(url_request)),
-        throttle_(std::move(throttle)),
+        scheduled_request_(std::move(scheduled_request)),
         scheduler_(scheduler) {
-    throttle_->set_delegate_for_testing(this);
+    scheduled_request_->set_resume_callback(
+        base::BindRepeating(&TestRequest::Resume, base::Unretained(this)));
   }
-  ~TestRequest() override {
+  virtual ~TestRequest() {
     // The URLRequest must still be valid when the ScheduledResourceRequest is
     // destroyed, so that it can unregister itself.
-    throttle_.reset();
+    scheduled_request_.reset();
   }
 
   bool started() const { return started_; }
 
   void Start() {
     bool deferred = false;
-    throttle_->WillStartRequest(&deferred);
+    scheduled_request_->WillStartRequest(&deferred);
     started_ = !deferred;
   }
 
@@ -122,31 +119,28 @@ class TestRequest : public ResourceThrottle::Delegate {
                                     intra_priority);
   }
 
-  void Cancel() override {
-    // Alert the scheduler that the request can be deleted.
-    throttle_.reset();
-  }
-
   const net::URLRequest* url_request() const { return url_request_.get(); }
 
- protected:
-  // ResourceThrottle::Delegate interface:
-  void CancelWithError(int error_code) override {}
-  void Resume() override { started_ = true; }
+  virtual void Resume() { started_ = true; }
 
  private:
   bool started_;
   std::unique_ptr<net::URLRequest> url_request_;
-  std::unique_ptr<ResourceThrottle> throttle_;
+  std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
+      scheduled_request_;
   ResourceScheduler* scheduler_;
 };
 
 class CancelingTestRequest : public TestRequest {
  public:
-  CancelingTestRequest(std::unique_ptr<net::URLRequest> url_request,
-                       std::unique_ptr<ResourceThrottle> throttle,
-                       ResourceScheduler* scheduler)
-      : TestRequest(std::move(url_request), std::move(throttle), scheduler) {}
+  CancelingTestRequest(
+      std::unique_ptr<net::URLRequest> url_request,
+      std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
+          scheduled_request,
+      ResourceScheduler* scheduler)
+      : TestRequest(std::move(url_request),
+                    std::move(scheduled_request),
+                    scheduler) {}
 
   void set_request_to_cancel(std::unique_ptr<TestRequest> request_to_cancel) {
     request_to_cancel_ = std::move(request_to_cancel);
@@ -161,12 +155,6 @@ class CancelingTestRequest : public TestRequest {
   std::unique_ptr<TestRequest> request_to_cancel_;
 };
 
-class FakeResourceContext : public ResourceContext {
- private:
-  net::HostResolver* GetHostResolver() override { return nullptr; }
-  net::URLRequestContext* GetRequestContext() override { return nullptr; }
-};
-
 class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest() : field_trial_list_(nullptr) {
@@ -175,9 +163,7 @@ class ResourceSchedulerTest : public testing::Test {
     context_.set_network_quality_estimator(&network_quality_estimator_);
   }
 
-  ~ResourceSchedulerTest() override {
-    CleanupScheduler();
-  }
+  ~ResourceSchedulerTest() override { CleanupScheduler(); }
 
   // Done separately from construction to allow for modification of command
   // line flags in tests.
@@ -240,8 +226,8 @@ class ResourceSchedulerTest : public testing::Test {
   std::unique_ptr<TestRequest> NewBackgroundRequest(
       const char* url,
       net::RequestPriority priority) {
-    return NewRequestWithChildAndRoute(
-        url, priority, kBackgroundChildId, kBackgroundRouteId);
+    return NewRequestWithChildAndRoute(url, priority, kBackgroundChildId,
+                                       kBackgroundRouteId);
   }
 
   std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
@@ -252,8 +238,8 @@ class ResourceSchedulerTest : public testing::Test {
   std::unique_ptr<TestRequest> NewBackgroundSyncRequest(
       const char* url,
       net::RequestPriority priority) {
-    return NewSyncRequestWithChildAndRoute(
-        url, priority, kBackgroundChildId, kBackgroundRouteId);
+    return NewSyncRequestWithChildAndRoute(url, priority, kBackgroundChildId,
+                                           kBackgroundRouteId);
   }
 
   std::unique_ptr<TestRequest> NewSyncRequestWithChildAndRoute(
@@ -271,10 +257,10 @@ class ResourceSchedulerTest : public testing::Test {
                                                  bool is_async) {
     std::unique_ptr<net::URLRequest> url_request(
         NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
-    std::unique_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
-        child_id, route_id, is_async, url_request.get()));
+    auto scheduled_request = scheduler_->ScheduleRequest(
+        child_id, route_id, is_async, url_request.get());
     auto request = std::make_unique<TestRequest>(
-        std::move(url_request), std::move(throttle), scheduler());
+        std::move(url_request), std::move(scheduled_request), scheduler());
     request->Start();
     return request;
   }
@@ -510,11 +496,9 @@ class ResourceSchedulerTest : public testing::Test {
     EXPECT_FALSE(last_low->started());
   }
 
-  ResourceScheduler* scheduler() {
-    return scheduler_.get();
-  }
+  ResourceScheduler* scheduler() { return scheduler_.get(); }
 
-  TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   std::unique_ptr<ResourceScheduler> scheduler_;
   base::MockTimer* mock_timer_;
   net::HttpServerPropertiesImpl http_server_properties_;
@@ -1121,10 +1105,10 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
 
   std::unique_ptr<net::URLRequest> url_request(
       NewURLRequest("http://host/low2", net::LOWEST));
-  std::unique_ptr<ResourceThrottle> throttle(scheduler()->ScheduleRequest(
-      kChildId, kRouteId, true, url_request.get()));
+  auto scheduled_request =
+      scheduler()->ScheduleRequest(kChildId, kRouteId, true, url_request.get());
   std::unique_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
-      std::move(url_request), std::move(throttle), scheduler()));
+      std::move(url_request), std::move(scheduled_request), scheduler()));
   low2->Start();
 
   std::unique_ptr<TestRequest> low3(

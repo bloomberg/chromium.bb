@@ -56,7 +56,6 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
-#include "content/browser/loader/resource_scheduler.h"
 #include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
@@ -71,6 +70,7 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/view_messages.h"
+#include "content/network/resource_scheduler.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -275,6 +275,27 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
 }
 
 }  // namespace
+
+class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
+    : public ResourceThrottle {
+ public:
+  explicit ScheduledResourceRequestAdapter(
+      std::unique_ptr<ResourceScheduler::ScheduledResourceRequest> request)
+      : request_(std::move(request)) {
+    request_->set_resume_callback(base::BindOnce(
+        &ScheduledResourceRequestAdapter::Resume, base::Unretained(this)));
+  }
+  ~ScheduledResourceRequestAdapter() override {}
+
+  // ResourceThrottle implementation
+  void WillStartRequest(bool* defer) override {
+    request_->WillStartRequest(defer);
+  }
+  const char* GetNameForLogging() const override { return "ResourceScheduler"; }
+
+ private:
+  std::unique_ptr<ResourceScheduler::ScheduledResourceRequest> request_;
+};
 
 ResourceDispatcherHostImpl::LoadInfo::LoadInfo() {}
 ResourceDispatcherHostImpl::LoadInfo::LoadInfo(const LoadInfo& other) = default;
@@ -1358,8 +1379,9 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   // TODO(ricea): Stop looking this up so much.
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
-  throttles.push_back(scheduler_->ScheduleRequest(child_id, route_id,
-                                                  info->IsAsync(), request));
+  throttles.push_back(std::make_unique<ScheduledResourceRequestAdapter>(
+      scheduler_->ScheduleRequest(child_id, route_id, info->IsAsync(),
+                                  request)));
 
   // Split the handler in two groups: the ones that need to execute
   // WillProcessResponse before mime sniffing and the others.

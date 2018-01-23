@@ -23,7 +23,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/resource_scheduler.h"
+#include "content/network/resource_scheduler.h"
 #include "content/public/browser/appcache_service.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
@@ -1035,7 +1035,7 @@ TEST_F(MojoAsyncResourceHandlerUploadTest, UploadProgressHandling) {
 TEST_F(MojoAsyncResourceHandlerTest, SetPriority) {
   constexpr int kIntraPriority = 5;
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  std::unique_ptr<ResourceThrottle> throttle =
+  auto throttle =
       ResourceDispatcherHostImpl::Get()->scheduler()->ScheduleRequest(
           kChildId, kRouteId, false, request_.get());
 
