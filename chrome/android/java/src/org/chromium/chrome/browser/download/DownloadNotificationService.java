@@ -1138,7 +1138,8 @@ public class DownloadNotificationService extends Service {
         if (entry == null
                 && !(id != null && LegacyHelpers.isLegacyOfflinePage(id)
                            && TextUtils.equals(intent.getAction(), ACTION_DOWNLOAD_OPEN))
-                && !(TextUtils.equals(intent.getAction(), ACTION_NOTIFICATION_CLICKED))) {
+                && !(TextUtils.equals(intent.getAction(), ACTION_NOTIFICATION_CLICKED))
+                && !(TextUtils.equals(intent.getAction(), ACTION_DOWNLOAD_RESUME_ALL))) {
             handleDownloadOperationForMissingNotification(intent);
             hideSummaryNotificationIfNecessary(-1);
             return;
