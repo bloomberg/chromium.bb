@@ -65,9 +65,9 @@ var root3 = blockHost.createShadowRoot();
 root3.appendChild(document.createTextNode('text1'));
 var root4 = inlineBlockHost.createShadowRoot();
 root4.appendChild(document.createTextNode('text2'));
-shouldBe('root3.elementFromPoint(centerX(blockHost), centerY(blockHost))', 'blockHost');
+shouldBeNull('root3.elementFromPoint(centerX(blockHost), centerY(blockHost))');
 shouldBe('document.elementFromPoint(centerX(blockHost), centerY(blockHost))', 'blockHost');
-shouldBe('root4.elementFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))', 'inlineBlockHost');
+shouldBeNull('root4.elementFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))');
 shouldBe('document.elementFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))', 'inlineBlockHost');
 shouldBe('document.elementFromPoint(centerX(submit), centerY(submit))', 'submit');
 </script>

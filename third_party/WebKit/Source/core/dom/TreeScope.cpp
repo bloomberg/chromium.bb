@@ -251,20 +251,16 @@ Element* TreeScope::HitTestPoint(double x,
                                  const HitTestRequest& request) const {
   HitTestResult result =
       HitTestInDocument(&RootNode().GetDocument(), x, y, request);
-  return HitTestPointInternal(result.InnerNode());
-}
-
-Element* TreeScope::HitTestPointInternal(Node* node) const {
+  Node* node = result.InnerNode();
   if (!node || node->IsDocumentNode())
     return nullptr;
-  Element* element;
   if (node->IsPseudoElement() || node->IsTextNode())
-    element = node->ParentOrShadowHostElement();
-  else
-    element = ToElement(node);
-  if (!element)
+    node = node->ParentOrShadowHostNode();
+  DCHECK(!node || node->IsElementNode() || node->IsShadowRoot());
+  node = AncestorInThisScope(node);
+  if (!node || !node->IsElementNode())
     return nullptr;
-  return Retarget(*element);
+  return ToElement(node);
 }
 
 HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
@@ -274,11 +270,13 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
   Node* last_node = nullptr;
   for (const auto rect_based_node : result.ListBasedTestResult()) {
     Node* node = rect_based_node.Get();
-    // In some cases the hit test doesn't return slot elements, so we can only
-    // get it through its child and can't skip it.
-    if (!node->IsElementNode() && !IsHTMLSlotElement(node->parentNode()))
+    if (!node || !node->IsElementNode() || node->IsDocumentNode())
       continue;
-    node = HitTestPointInternal(node);
+
+    if (node->IsPseudoElement() || node->IsTextNode())
+      node = node->ParentOrShadowHostNode();
+    node = AncestorInThisScope(node);
+
     // Prune duplicate entries. A pseduo ::before content above its parent
     // node should only result in a single entry.
     if (node == last_node)
@@ -368,42 +366,7 @@ void TreeScope::AdoptIfNeeded(Node& node) {
     adopter.Execute();
 }
 
-// This method corresponds to the Retarget algorithm specified in
-// https://dom.spec.whatwg.org/#retarget
-// This retargets |target| against the root of |this|.
-// The steps are different with the spec for performance reasons,
-// but the results should be the same.
 Element* TreeScope::Retarget(const Element& target) const {
-  const TreeScope& target_scope = target.GetTreeScope();
-  if (!target_scope.RootNode().IsShadowRoot())
-    return const_cast<Element*>(&target);
-
-  HeapVector<Member<const TreeScope>> target_ancestor_scopes;
-  HeapVector<Member<const TreeScope>> context_ancestor_scopes;
-  for (const TreeScope* tree_scope = &target_scope; tree_scope;
-       tree_scope = tree_scope->ParentTreeScope())
-    target_ancestor_scopes.push_back(tree_scope);
-  for (const TreeScope* tree_scope = this; tree_scope;
-       tree_scope = tree_scope->ParentTreeScope())
-    context_ancestor_scopes.push_back(tree_scope);
-
-  auto target_ancestor_riterator = target_ancestor_scopes.rbegin();
-  auto context_ancestor_riterator = context_ancestor_scopes.rbegin();
-  while (context_ancestor_riterator != context_ancestor_scopes.rend() &&
-         *context_ancestor_riterator == *target_ancestor_riterator) {
-    ++context_ancestor_riterator;
-    ++target_ancestor_riterator;
-  }
-
-  if (target_ancestor_riterator == target_ancestor_scopes.rend())
-    return const_cast<Element*>(&target);
-  Node& first_different_scope_root =
-      (*target_ancestor_riterator).Get()->RootNode();
-  return &ToShadowRoot(first_different_scope_root).host();
-}
-
-Element* TreeScope::AdjustedFocusedElementInternal(
-    const Element& target) const {
   for (const Element* ancestor = &target; ancestor;
        ancestor = ancestor->OwnerShadowHost()) {
     if (this == ancestor->GetTreeScope())
@@ -422,7 +385,7 @@ Element* TreeScope::AdjustedFocusedElement() const {
     return nullptr;
 
   if (RootNode().IsInV1ShadowTree()) {
-    if (Element* retargeted = AdjustedFocusedElementInternal(*element)) {
+    if (Element* retargeted = Retarget(*element)) {
       return (this == &retargeted->GetTreeScope()) ? retargeted : nullptr;
     }
     return nullptr;
