@@ -275,7 +275,7 @@ class SnackbarView {
             mProfileImageView.setVisibility(View.GONE);
         }
 
-        if (FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
             mActionButtonView.setTextColor(ApiCompatibilityUtils.getColor(
                     mContainerView.getResources(), R.color.blue_when_enabled));
             mShadowView.setVisibility(View.VISIBLE);

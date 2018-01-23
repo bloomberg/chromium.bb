@@ -178,6 +178,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME_SURVEY = "ChromeHomeSurvey";
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
+    public static final String CHROME_MODERN_DESIGN = "ChromeModernDesign";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER =

@@ -26115,6 +26115,7 @@ from previous Chrome versions.
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
+  <int value="266322815" label="ChromeModernDesign:disabled"/>
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
@@ -26344,6 +26345,7 @@ from previous Chrome versions.
   <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
+  <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>

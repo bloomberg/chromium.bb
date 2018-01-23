@@ -111,7 +111,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
         if (mIconView != null) {
             mIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
             mIconView.setTint(getDefaultIconTint());
-            if (!FeatureUtilities.isChromeHomeEnabled()) {
+            if (!FeatureUtilities.isChromeModernDesignEnabled()) {
                 mIconView.getBackground().setAlpha(0);
             }
         }
@@ -222,7 +222,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
             mIconView.setTint(getDefaultIconTint());
         }
 
-        if (!FeatureUtilities.isChromeHomeEnabled()) {
+        if (!FeatureUtilities.isChromeModernDesignEnabled()) {
             mIconView.getBackground().setAlpha(isChecked() ? 255 : 0);
         }
     }
