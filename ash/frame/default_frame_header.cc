@@ -160,7 +160,6 @@ void DefaultFrameHeader::LayoutHeader() {
 
   caption_button_container_->SetUseLightImages(ShouldUseLightImages());
   UpdateSizeButtonImages();
-  caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
