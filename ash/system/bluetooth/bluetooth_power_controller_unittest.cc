@@ -89,6 +89,20 @@ class BluetoothPowerControllerTest : public NoSessionAshTestBase {
     GetController()->ApplyBluetoothPrimaryUserPref();
   }
 
+  const base::queue<BluetoothPowerController::BluetoothTask>&
+  GetPendingBluetoothTasks() {
+    return GetController()->pending_bluetooth_tasks_;
+  }
+
+  // Pretends that the controller is busy doing bluetooth work. This is needed
+  // to test the behavior when multiple power change requests are queued when
+  // the controller is busy.
+  void SimulateControllerBusy(bool is_busy) {
+    GetController()->pending_tasks_busy_ = is_busy;
+    if (!is_busy)
+      GetController()->TriggerRunPendingBluetoothTasks();
+  }
+
   TestingPrefServiceSimple active_user_prefs_;
   TestingPrefServiceSimple local_state_prefs_;
 
@@ -158,6 +172,34 @@ TEST_F(BluetoothPowerControllerTest, ListensPrefChangesActiveUser) {
   // Power should be turned off when pref changes to disabled.
   active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, false);
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
+}
+
+// Tests that BluetoothPowerController listens to multiple active user pref
+// changes and applies the changes to bluetooth device. The queued multiple
+// power change tasks shouldn't be executed all but rather only the last request
+// is executed.
+TEST_F(BluetoothPowerControllerTest, ListensPrefChangesLongQueue) {
+  AddUserSessionAndStartWatchingPrefsChanges(kUser1Email);
+
+  // Makes sure we start with bluetooth power off.
+  EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
+  EXPECT_FALSE(
+      active_user_prefs_.GetBoolean(prefs::kUserBluetoothAdapterEnabled));
+
+  // Multiple power change requests come in when the controller is busy.
+  SimulateControllerBusy(true);
+  active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, true);
+  active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, false);
+  active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, true);
+  active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, false);
+  active_user_prefs_.SetBoolean(prefs::kUserBluetoothAdapterEnabled, true);
+
+  // The controller should execute only the last request.
+  EXPECT_EQ(1u, GetPendingBluetoothTasks().size());
+  // Flush the queue to be executed.
+  SimulateControllerBusy(false);
+  // The power state should represent the last request in the queue.
+  EXPECT_TRUE(GetBluetoothAdapter()->IsPowered());
 }
 
 // Tests how BluetoothPowerController applies the local state pref when
