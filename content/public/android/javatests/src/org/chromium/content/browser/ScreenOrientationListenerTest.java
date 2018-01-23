@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -175,6 +176,7 @@ public class ScreenOrientationListenerTest {
     @Test
     @MediumTest
     @Feature({"ScreenOrientation"})
+    @DisabledTest
     public void testOrientationChanges() throws Exception {
         int rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         Assert.assertEquals(
