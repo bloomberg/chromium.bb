@@ -690,6 +690,18 @@ void WebContentsAndroid::SetSize(
   web_contents_->GetNativeView()->OnSizeChanged(width, height);
 }
 
+int WebContentsAndroid::GetWidth(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->GetNativeView()->GetSize().width();
+}
+
+int WebContentsAndroid::GetHeight(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->GetNativeView()->GetSize().height();
+}
+
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetOrCreateEventForwarder(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

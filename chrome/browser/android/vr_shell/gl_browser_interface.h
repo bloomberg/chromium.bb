@@ -22,7 +22,8 @@ class GlBrowserInterface {
  public:
   virtual ~GlBrowserInterface() = default;
 
-  virtual void ContentSurfaceChanged(jobject surface) = 0;
+  virtual void ContentSurfaceCreated(jobject surface) = 0;
+  virtual void ContentOverlaySurfaceCreated(jobject surface) = 0;
   virtual void GvrDelegateReady(
       gvr::ViewerType viewer_type,
       device::mojom::VRDisplayFrameTransportOptionsPtr) = 0;

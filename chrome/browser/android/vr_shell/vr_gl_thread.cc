@@ -87,11 +87,17 @@ void VrGLThread::CleanUp() {
   vr_shell_gl_.reset();
 }
 
-void VrGLThread::ContentSurfaceChanged(jobject surface) {
+void VrGLThread::ContentSurfaceCreated(jobject surface) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_, surface));
+      base::BindOnce(&VrShell::ContentSurfaceCreated, weak_vr_shell_, surface));
+}
+
+void VrGLThread::ContentOverlaySurfaceCreated(jobject surface) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::ContentOverlaySurfaceCreated,
+                                weak_vr_shell_, surface));
 }
 
 void VrGLThread::GvrDelegateReady(

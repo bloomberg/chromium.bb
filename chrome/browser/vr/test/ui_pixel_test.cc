@@ -35,6 +35,8 @@ void UiPixelTest::SetUp() {
 
   // Make content texture.
   content_texture_ = gl::GLTestHelper::CreateTexture(GL_TEXTURE_2D);
+  content_overlay_texture_ = gl::GLTestHelper::CreateTexture(GL_TEXTURE_2D);
+
   // TODO(tiborg): Make GL_TEXTURE_EXTERNAL_OES texture for content and fill it
   // with fake content.
   ASSERT_EQ(glGetError(), (GLenum)GL_NO_ERROR);
@@ -58,6 +60,8 @@ void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
   ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr,
                              ui_initial_state);
   ui_->OnGlInitialized(content_texture_,
+                       vr::UiElementRenderer::kTextureLocationLocal,
+                       content_overlay_texture_,
                        vr::UiElementRenderer::kTextureLocationLocal, true);
   ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);
 }

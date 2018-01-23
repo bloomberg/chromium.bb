@@ -346,8 +346,9 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info) {
 void VrTestContext::OnGlInitialized() {
   unsigned int content_texture_id = CreateFakeContentTexture();
 
-  ui_->OnGlInitialized(content_texture_id,
-                       UiElementRenderer::kTextureLocationLocal, false);
+  ui_->OnGlInitialized(
+      content_texture_id, UiElementRenderer::kTextureLocationLocal,
+      content_texture_id, UiElementRenderer::kTextureLocationLocal, false);
 
   keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
                                  ui_->ui_element_renderer());
