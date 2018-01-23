@@ -162,8 +162,7 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       in_touchscreen_gesture_pinch_(false),
       gesture_pinch_did_send_scroll_begin_(false),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      use_viz_hit_test_(features::IsVizHitTestingEnabled()),
       weak_ptr_factory_(this) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
@@ -285,7 +284,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   viz::FrameSinkId frame_sink_id;
 
   bool query_renderer = false;
-  if (enable_viz_) {
+  if (use_viz_hit_test_) {
     const auto& display_hit_test_query_map =
         GetHostFrameSinkManager()->display_hit_test_query();
     const auto iter =

@@ -30,4 +30,11 @@ bool IsSurfaceSynchronizationEnabled() {
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
+bool IsVizHitTestingEnabled() {
+  // TODO(riajiang): Check feature flag as well. https://crbug.com/804888
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kUseVizHitTest) ||
+         base::FeatureList::IsEnabled(kVizDisplayCompositor);
+}
+
 }  // namespace features
