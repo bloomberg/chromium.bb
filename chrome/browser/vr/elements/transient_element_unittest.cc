@@ -143,47 +143,69 @@ class ShowUntilSignalElementTest : public testing::Test {
   ShowUntilSignalElementTest() {}
 
   void SetUp() override {
-    callback_triggered_ = false;
+    ResetCallbackTriggered();
     element_ = std::make_unique<ShowUntilSignalTransientElement>(
         base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(5),
-        base::Bind(&ShowUntilSignalElementTest::OnTimeout,
-                   base::Unretained(this)));
+        base::BindRepeating(&ShowUntilSignalElementTest::OnMinDuration,
+                            base::Unretained(this)),
+        base::BindRepeating(&ShowUntilSignalElementTest::OnTimeout,
+                            base::Unretained(this)));
   }
 
   ShowUntilSignalTransientElement& element() { return *element_; }
   TransientElementHideReason hide_reason() { return hide_reason_; }
-  bool callback_triggered() { return callback_triggered_; }
+  bool min_duration_callback_triggered() {
+    return min_duration_callback_triggered_;
+  }
+  bool hide_callback_triggered() { return hide_callback_triggered_; }
+
+  void OnMinDuration() { min_duration_callback_triggered_ = true; }
 
   void OnTimeout(TransientElementHideReason reason) {
-    callback_triggered_ = true;
+    hide_callback_triggered_ = true;
     hide_reason_ = reason;
   }
 
+  void ResetCallbackTriggered() {
+    min_duration_callback_triggered_ = false;
+    hide_callback_triggered_ = false;
+  }
+
+  void VerifyElementHidesAfterSignal() {
+    EXPECT_FALSE(element().IsVisible());
+
+    // Make element visible.
+    element().SetVisible(true);
+    EXPECT_FALSE(element().DoBeginFrame(MsToTicks(10), kStartHeadPose));
+    EXPECT_EQ(element().opacity_when_visible(), element().opacity());
+
+    // Signal, element should still be visible since time < min duration.
+    element().Signal(true);
+    EXPECT_FALSE(element().DoBeginFrame(MsToTicks(200), kStartHeadPose));
+    EXPECT_EQ(element().opacity_when_visible(), element().opacity());
+
+    // Element hides and callback triggered.
+    EXPECT_TRUE(element().DoBeginFrame(MsToTicks(2010), kStartHeadPose));
+    EXPECT_EQ(0.0f, element().opacity());
+    EXPECT_TRUE(min_duration_callback_triggered());
+    EXPECT_TRUE(hide_callback_triggered());
+    ResetCallbackTriggered();
+    EXPECT_EQ(TransientElementHideReason::kSignal, hide_reason());
+  }
+
  private:
-  bool callback_triggered_ = false;
+  bool min_duration_callback_triggered_ = false;
+  bool hide_callback_triggered_ = false;
   TransientElementHideReason hide_reason_;
   std::unique_ptr<ShowUntilSignalTransientElement> element_;
 };
 
 // Test that the element disappears when signalled.
 TEST_F(ShowUntilSignalElementTest, ElementHidesAfterSignal) {
-  EXPECT_FALSE(element().IsVisible());
-
-  // Make element visible.
-  element().SetVisible(true);
-  EXPECT_FALSE(element().DoBeginFrame(MsToTicks(10), kStartHeadPose));
-  EXPECT_EQ(element().opacity_when_visible(), element().opacity());
-
-  // Signal, element should still be visible since time < min duration.
-  element().Signal(true);
-  EXPECT_FALSE(element().DoBeginFrame(MsToTicks(200), kStartHeadPose));
-  EXPECT_EQ(element().opacity_when_visible(), element().opacity());
-
-  // Element hides and callback triggered.
-  EXPECT_TRUE(element().DoBeginFrame(MsToTicks(2010), kStartHeadPose));
-  EXPECT_EQ(0.0f, element().opacity());
-  EXPECT_TRUE(callback_triggered());
-  EXPECT_EQ(TransientElementHideReason::kSignal, hide_reason());
+  // We run this twice to verify that an element can be shown again after being
+  // hidden.
+  VerifyElementHidesAfterSignal();
+  VerifyElementHidesAfterSignal();
 }
 
 // Test that the transient element times out.
@@ -197,12 +219,16 @@ TEST_F(ShowUntilSignalElementTest, TimedOut) {
 
   // Element should be visible since we haven't signalled.
   EXPECT_FALSE(element().DoBeginFrame(MsToTicks(2010), kStartHeadPose));
+  EXPECT_TRUE(min_duration_callback_triggered());
+  EXPECT_FALSE(hide_callback_triggered());
+  ResetCallbackTriggered();
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Element hides and callback triggered.
   EXPECT_TRUE(element().DoBeginFrame(MsToTicks(6010), kStartHeadPose));
   EXPECT_EQ(0.0f, element().opacity());
-  EXPECT_TRUE(callback_triggered());
+  EXPECT_FALSE(min_duration_callback_triggered());
+  EXPECT_TRUE(hide_callback_triggered());
   EXPECT_EQ(TransientElementHideReason::kTimeout, hide_reason());
 }
 

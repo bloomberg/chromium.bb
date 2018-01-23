@@ -794,6 +794,16 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
       base::TimeDelta::FromSeconds(kSplashScreenMinDurationSeconds),
       base::TimeDelta::Max(),
       base::BindRepeating(
+          [](Model* model) {
+            DCHECK(model->web_vr.awaiting_min_splash_screen_duration());
+            // TODO(ymalik): The assumption here is that the WebVR VSync will be
+            // paused until the min splash screen duration passes. This state
+            // change should be driven by the scheduler in the future and the UI
+            // should act on it.
+            model->web_vr.state = kWebVrAwaitingFirstFrame;
+          },
+          base::Unretained(model_)),
+      base::BindRepeating(
           [](Model* model, UiBrowserInterface* browser,
              TransientElementHideReason reason) {
             if (reason == TransientElementHideReason::kTimeout) {

@@ -65,7 +65,11 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
 void Ui::SetWebVrMode(bool enabled, bool show_toast) {
   model_->web_vr.show_exit_toast = show_toast;
   if (enabled) {
-    model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    if (!model_->web_vr_autopresentation_enabled()) {
+      // When auto-presenting, we transition into this state when the minimum
+      // splash-screen duration has passed.
+      model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    }
     // We have this check here so that we don't set the mode to kModeWebVr when
     // it should be kModeWebVrAutopresented. The latter is set when the UI is
     // initialized.
@@ -195,6 +199,11 @@ void Ui::SetOmniboxSuggestions(
 
 void Ui::OnAssetsComponentReady() {
   model_->can_apply_new_background = true;
+}
+
+bool Ui::CanSendWebVrVSync() {
+  return model_->web_vr_enabled() &&
+         !model_->web_vr.awaiting_min_splash_screen_duration();
 }
 
 bool Ui::ShouldRenderWebVr() {
@@ -365,10 +374,13 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->ui_modes.clear();
   model_->push_mode(kModeBrowsing);
   if (ui_initial_state.in_web_vr) {
-    model_->web_vr.state = kWebVrAwaitingFirstFrame;
-    auto mode = ui_initial_state.web_vr_autopresentation_expected
-                    ? kModeWebVrAutopresented
-                    : kModeWebVr;
+    auto mode = kModeWebVr;
+    if (ui_initial_state.web_vr_autopresentation_expected) {
+      mode = kModeWebVrAutopresented;
+      model_->web_vr.state = kWebVrAwaitingMinSplashScreenDuration;
+    } else {
+      model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    }
     model_->push_mode(mode);
   }
 
