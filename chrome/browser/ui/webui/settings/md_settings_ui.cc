@@ -88,6 +88,7 @@
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
 #include "chrome/browser/ui/webui/settings/system_handler.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
@@ -222,7 +223,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   // should never change while Chrome is open.
   html_source->AddBoolean("userInitiatedCleanupsEnabled",
                           userInitiatedCleanupsEnabled);
-
 #endif  // defined(OS_WIN)
 
   bool password_protection_available = false;
@@ -281,7 +281,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(std::make_unique<chromeos::settings::PowerHandler>(
         profile->GetPrefs()));
   }
-#endif
+#else   // !defined(OS_CHROMEOS)
+  html_source->AddBoolean("diceEnabled",
+                          signin::IsDiceEnabledForProfile(profile->GetPrefs()));
+#endif  // defined(OS_CHROMEOS)
 
   html_source->AddBoolean("showExportPasswords",
                           base::FeatureList::IsEnabled(

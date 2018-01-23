@@ -109,7 +109,7 @@
             </div>
 <if expr="not chromeos">
             <div class="middle two-line no-min-width"
-                on-tap="onProfileNameTap_" actionable>
+                on-tap="onProfileTap_" actionable>
 </if>
 <if expr="chromeos">
             <div class="middle two-line no-min-width" on-tap="onPictureTap_"
@@ -168,6 +168,14 @@
         </template>
 
 <if expr="not chromeos">
+        <template is="dom-if" if="[[diceEnabled_]]">
+          <div class="settings-box" id="edit-profile" on-tap="onProfileTap_"
+              actionable>
+            <div class="start">$i18n{profileNameAndPicture}</div>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                aria-label="$i18n{editPerson}"></button>
+          </div>
+        </template>
         <template is="dom-if" if="[[syncStatus.domain]]">
           <div class="settings-box">
             <div class="icon-container">
