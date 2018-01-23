@@ -21,6 +21,7 @@ enum ManifestFetchResultType {
   MANIFEST_FETCH_SUCCESS = 0,
   MANIFEST_FETCH_ERROR_EMPTY_URL = 1,
   MANIFEST_FETCH_ERROR_UNSPECIFIED = 2,
+  MANIFEST_FETCH_ERROR_FROM_UNIQUE_ORIGIN = 3,
 
   // Must stay at the end.
   MANIFEST_FETCH_RESULT_TYPE_COUNT
@@ -66,6 +67,9 @@ void ManifestUmaUtil::FetchFailed(FetchFailureReason reason) {
   switch (reason) {
     case FETCH_EMPTY_URL:
       fetch_result_type = MANIFEST_FETCH_ERROR_EMPTY_URL;
+      break;
+    case FETCH_FROM_UNIQUE_ORIGIN:
+      fetch_result_type = MANIFEST_FETCH_ERROR_FROM_UNIQUE_ORIGIN;
       break;
     case FETCH_UNSPECIFIED_REASON:
       fetch_result_type = MANIFEST_FETCH_ERROR_UNSPECIFIED;

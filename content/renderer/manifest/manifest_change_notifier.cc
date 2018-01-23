@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/manifest/manifest_manager.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -20,6 +21,10 @@ ManifestChangeNotifier::ManifestChangeNotifier(RenderFrame* render_frame)
 ManifestChangeNotifier::~ManifestChangeNotifier() = default;
 
 void ManifestChangeNotifier::DidChangeManifest() {
+  // Manifests are not considered when the current page has a unique origin.
+  if (!ManifestManager::CanFetchManifest(render_frame()))
+    return;
+
   if (weak_factory_.HasWeakPtrs())
     return;
 
