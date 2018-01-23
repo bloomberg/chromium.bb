@@ -74,7 +74,7 @@ using extensions::UnloadedExtensionReason;
 
 namespace {
 
-const char kNotificationPrefix[] = "app.background.crashed.";
+const char kCrashedNotificationPrefix[] = "app.background.crashed.";
 const char kNotifierId[] = "app.background.crashed";
 bool g_disable_close_balloon_for_testing = false;
 
@@ -83,7 +83,8 @@ void CloseBalloon(const std::string& extension_id, Profile* profile) {
     return;
 
   NotificationDisplayService::GetForProfile(profile)->Close(
-      NotificationHandler::Type::TRANSIENT, kNotificationPrefix + extension_id);
+      NotificationHandler::Type::TRANSIENT,
+      kCrashedNotificationPrefix + extension_id);
 }
 
 // Delegate for the app/extension crash notification balloon. Restarts the
@@ -155,7 +156,7 @@ void NotificationImageReady(const std::string extension_name,
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
   // the same origin when OnExtensionUnloaded() is called.
-  std::string id = kNotificationPrefix + extension_id;
+  std::string id = kCrashedNotificationPrefix + extension_id;
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(), message,
       notification_icon, base::string16(), GURL("chrome://extension-crash"),
@@ -278,7 +279,7 @@ void BackgroundContentsService::
 std::string
 BackgroundContentsService::GetNotificationDelegateIdForExtensionForTesting(
     const std::string& extension_id) {
-  return kNotificationPrefix + extension_id;
+  return kCrashedNotificationPrefix + extension_id;
 }
 
 // static

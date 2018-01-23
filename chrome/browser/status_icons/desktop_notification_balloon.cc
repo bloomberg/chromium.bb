@@ -19,7 +19,7 @@
 namespace {
 
 // Prefix added to the notification ids.
-const char kNotificationPrefix[] = "desktop_notification_balloon.";
+const char kDesktopNotificationPrefix[] = "desktop_notification_balloon.";
 
 }  // anonymous namespace
 
@@ -44,7 +44,7 @@ void DesktopNotificationBalloon::DisplayBalloon(
   }
 
   const std::string notification_id =
-      kNotificationPrefix + base::IntToString(id_count_++);
+      kDesktopNotificationPrefix + base::IntToString(id_count_++);
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       contents, gfx::Image(icon), base::string16(), GURL(), notifier_id, {},
