@@ -581,11 +581,9 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
       user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
-  else if (policy == policy::key::kWallpaperImage)
-    WallpaperManager::Get()->OnPolicySet(policy, account_id);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
     GetExternalPrinters(account_id)->ClearData();
-  else
+  else if (policy != policy::key::kWallpaperImage)
     NOTREACHED();
 }
 
@@ -595,10 +593,10 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
       user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
-  else if (policy == policy::key::kWallpaperImage)
-    WallpaperManager::Get()->OnPolicyCleared(policy, account_id);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
     GetExternalPrinters(account_id)->ClearData();
+  else if (policy == policy::key::kWallpaperImage)
+    WallpaperControllerClient::Get()->RemovePolicyWallpaper(account_id);
   else
     NOTREACHED();
 }
@@ -609,16 +607,17 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
     std::unique_ptr<std::string> data) {
   const AccountId account_id = user_manager::known_user::GetAccountId(
       user_id, std::string() /* id */, AccountType::UNKNOWN);
-  if (policy == policy::key::kUserAvatarImage)
+  if (policy == policy::key::kUserAvatarImage) {
     GetUserImageManager(account_id)
         ->OnExternalDataFetched(policy, std::move(data));
-  else if (policy == policy::key::kWallpaperImage)
-    WallpaperManager::Get()->OnPolicyFetched(policy, account_id,
-                                             std::move(data));
-  else if (policy == policy::key::kNativePrintersBulkConfiguration)
+  } else if (policy == policy::key::kNativePrintersBulkConfiguration) {
     GetExternalPrinters(account_id)->SetData(std::move(data));
-  else
+  } else if (policy == policy::key::kWallpaperImage) {
+    WallpaperControllerClient::Get()->SetPolicyWallpaper(account_id,
+                                                         std::move(data));
+  } else {
     NOTREACHED();
+  }
 }
 
 void ChromeUserManagerImpl::OnPolicyUpdated(const std::string& user_id) {

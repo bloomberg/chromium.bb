@@ -81,13 +81,12 @@ interface WallpaperController {
        mojo.common.mojom.FilePath chromeos_custom_wallpapers_path,
        bool is_device_wallpaper_policy_enforced);
 
-  // Sets wallpaper from policy or from a local file. Saves the custom wallpaper
-  // to file, posts task to generate thumbnail and updates local state.
+  // Sets wallpaper from a local file. Saves the custom wallpaper to file, posts
+  // task to generate thumbnail and updates local state.
   // |user_info|: The user's information related to wallpaper.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   // |file_name|: The name of the wallpaper file.
   // |layout|: The layout of the wallpaper, used for wallpaper resizing.
-  // |type|: The type of the wallpaper, e.g., default, policy etc.
   // |image|: The wallpaper image.
   // |show_wallpaper|: If false, don't show the new wallpaper now but only
   //                   update cache.
@@ -95,7 +94,6 @@ interface WallpaperController {
                      string wallpaper_files_id,
                      string file_name,
                      WallpaperLayout layout,
-                     WallpaperType type,
                      skia.mojom.Bitmap image,
                      bool show_wallpaper);
 
@@ -134,6 +132,17 @@ interface WallpaperController {
                                 mojo.common.mojom.FilePath file_path,
                                 mojo.common.mojom.FilePath resized_directory);
 
+  // Sets wallpaper from policy. If the user has logged in, show the policy
+  // wallpaper immediately, otherwise, the policy wallpaper will be shown the
+  // next time |ShowUserWallpaper| is called. Note: it is different from device
+  // policy.
+  // |user_info|: The user's information related to wallpaper.
+  // |wallpaper_files_id|: The file id for user_info.account_id.
+  // |data|: The data used to decode the image.
+  SetPolicyWallpaper(WallpaperUserInfo user_info,
+                     string wallpaper_files_id,
+                     string data);
+
   // Sets whether device wallpaper policy is enforced on this device. Updates/
   // clears the device policy controlled wallpaper if applicable.
   SetDeviceWallpaperPolicyEnforced(bool enforced);
@@ -160,6 +169,15 @@ interface WallpaperController {
   // Removes all of the user's saved wallpapers and related info.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemoveUserWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
+
+  // Removes all of the user's saved wallpapers and related info if the
+  // wallpaper was set by |SetPolicyWallpaper|. In addition, sets the user's
+  // wallpaper to be the default. If the user has logged in, show the default
+  // wallpaper immediately, otherwise, the default wallpaper will be shown the
+  // next time |ShowUserWallpaper| is called.
+  // |user_info|: The user's information related to wallpaper.
+  // |wallpaper_files_id|: The file id for user_info.account_id.
+  RemovePolicyWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
 
   // TODO(crbug.com/776464): This is only used by WallpaperManager. Remove this
   // after WallpaperManager is removed.

@@ -182,16 +182,6 @@ class ASH_EXPORT WallpaperController
       const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
       base::WeakPtr<WallpaperController> weak_ptr);
 
-  // If |data_is_ready| is true, start decoding the image, which will run
-  // |callback| upon completion; if it's false, run |callback| immediately with
-  // an empty image.
-  // TODO(crbug.com/776464): Mash and some unit tests can't use this decoder
-  // because it depends on the Shell instance. Make it work after all the
-  // decoding code is moved to //ash.
-  static void DecodeWallpaperIfApplicable(LoadedCallback callback,
-                                          std::unique_ptr<std::string> data,
-                                          bool data_is_ready);
-
   // Creates a 1x1 solid color image to be used as the backup default wallpaper.
   static gfx::ImageSkia CreateSolidColorWallpaper();
 
@@ -306,8 +296,8 @@ class ASH_EXPORT WallpaperController
                                 bool compare_layouts,
                                 wallpaper::WallpaperLayout layout) const;
 
-  // Reads image from |file_path| on disk, and calls
-  // |DecodeWallpaperIfApplicable| with the result of |ReadFileToString|.
+  // Reads image from |file_path| on disk, and calls |OnWallpaperDataRead|
+  // with the result of |ReadFileToString|.
   void ReadAndDecodeWallpaper(
       LoadedCallback callback,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -380,7 +370,6 @@ class ASH_EXPORT WallpaperController
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
-                          wallpaper::WallpaperType type,
                           const SkBitmap& image,
                           bool show_wallpaper) override;
   void SetOnlineWallpaper(mojom::WallpaperUserInfoPtr user_info,
@@ -395,6 +384,9 @@ class ASH_EXPORT WallpaperController
       const GURL& wallpaper_url,
       const base::FilePath& file_path,
       const base::FilePath& resized_directory) override;
+  void SetPolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                          const std::string& wallpaper_files_id,
+                          const std::string& data) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
   void UpdateCustomWallpaperLayout(mojom::WallpaperUserInfoPtr user_info,
                                    wallpaper::WallpaperLayout layout) override;
@@ -406,6 +398,8 @@ class ASH_EXPORT WallpaperController
   void ShowSigninWallpaper() override;
   void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
+  void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                             const std::string& wallpaper_files_id) override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
@@ -486,10 +480,10 @@ class ASH_EXPORT WallpaperController
   void SaveAndSetWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            const std::string& file_name,
-                           const gfx::ImageSkia& image,
                            wallpaper::WallpaperType type,
                            wallpaper::WallpaperLayout layout,
-                           bool show_wallpaper);
+                           bool show_wallpaper,
+                           const gfx::ImageSkia& image);
 
   // A wrapper of |ReadAndDecodeWallpaper| used in |SetWallpaperFromPath|.
   void StartDecodeFromPath(const AccountId& account_id,
@@ -621,6 +615,9 @@ class ASH_EXPORT WallpaperController
   ScopedSessionObserver scoped_session_observer_;
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
+  // If true, use a solid color wallpaper as if it is the decoded image.
+  bool bypass_decode_for_testing_ = false;
 
   // Tracks how many wallpapers have been set.
   int wallpaper_count_for_testing_ = 0;

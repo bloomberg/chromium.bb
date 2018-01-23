@@ -39,10 +39,6 @@ class CommandLine;
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace user_manager {
-class UserImage;
-}  // namespace user_manager
-
 namespace chromeos {
 
 // Asserts that the current task is sequenced with any other task that calls
@@ -96,21 +92,8 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // Adds |this| as an observer to various settings.
   void AddObservers();
 
-  // Called when the policy-set wallpaper has been fetched.  Initiates decoding
-  // of the JPEG |data| with a callback to SetPolicyControlledWallpaper().
-  void OnPolicyFetched(const std::string& policy,
-                       const AccountId& account_id,
-                       std::unique_ptr<std::string> data);
-
   // A wrapper of |WallpaperController::IsPolicyControlled|.
   bool IsPolicyControlled(const AccountId& account_id) const;
-
-  // Called when a wallpaper policy has been set for |account_id|.  Blocks user
-  // from changing the wallpaper.
-  void OnPolicySet(const std::string& policy, const AccountId& account_id);
-
-  // Called when the wallpaper policy has been cleared for |account_id|.
-  void OnPolicyCleared(const std::string& policy, const AccountId& account_id);
 
   // Opens the wallpaper picker window.
   void OpenWallpaperPicker();
@@ -153,12 +136,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // A wrapper of |WallpaperController::SetDefaultWallpaperImpl|.
   void SetDefaultWallpaperImpl(const AccountId& account_id,
                                bool show_wallpaper);
-
-  // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
-  // because that's the callback interface provided by UserImageLoader.)
-  void SetPolicyControlledWallpaper(
-      const AccountId& account_id,
-      std::unique_ptr<user_manager::UserImage> user_image);
 
   // Returns the cached logged-in user wallpaper info, or a dummy value under
   // mash.
