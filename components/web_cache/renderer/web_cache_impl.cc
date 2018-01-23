@@ -5,6 +5,7 @@
 #include "components/web_cache/renderer/web_cache_impl.h"
 
 #include <limits>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
@@ -18,14 +19,14 @@
 namespace web_cache {
 
 WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
       base::Bind(&WebCacheImpl::BindRequest, base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   if (content::ChildThread::Get()) {
     content::ChildThread::Get()
         ->GetServiceManagerConnection()
-        ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+        ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
             std::move(registry)));
   }
 }

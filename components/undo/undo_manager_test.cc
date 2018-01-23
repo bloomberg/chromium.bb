@@ -4,9 +4,10 @@
 
 #include "components/undo/undo_manager.h"
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/undo/undo_manager_observer.h"
 #include "components/undo/undo_operation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,7 +139,7 @@ void TestUndoService::Redo() {
 }
 
 void TestUndoService::TriggerOperation() {
-  undo_manager_.AddUndoOperation(base::MakeUnique<TestUndoOperation>(this));
+  undo_manager_.AddUndoOperation(std::make_unique<TestUndoOperation>(this));
 }
 
 void TestUndoService::RecordUndoCall() {

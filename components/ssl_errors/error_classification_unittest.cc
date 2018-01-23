@@ -4,8 +4,9 @@
 
 #include "components/ssl_errors/error_classification.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/histogram_tester.h"
@@ -249,8 +250,8 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
   base::MessageLoop loop;
   network_time::NetworkTimeTracker network_time_tracker(
-      base::MakeUnique<base::DefaultClock>(),
-      base::MakeUnique<base::DefaultTickClock>(), &pref_service,
+      std::make_unique<base::DefaultClock>(),
+      std::make_unique<base::DefaultTickClock>(), &pref_service,
       new net::TestURLRequestContextGetter(
           base::ThreadTaskRunnerHandle::Get()));
 

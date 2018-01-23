@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/views/css_agent.h"
@@ -212,7 +213,7 @@ class UIDevToolsTest : public views::ViewsTestBase {
       aura::Window* parent,
       aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL) {
     std::unique_ptr<aura::Window> window =
-        base::MakeUnique<aura::Window>(nullptr, type);
+        std::make_unique<aura::Window>(nullptr, type);
     window->Init(ui::LAYER_NOT_DRAWN);
     window->SetBounds(gfx::Rect());
     parent->AddChild(window.get());
@@ -221,15 +222,15 @@ class UIDevToolsTest : public views::ViewsTestBase {
   }
 
   void SetUp() override {
-    fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
+    fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ =
-        base::MakeUnique<UberDispatcher>(fake_frontend_channel_.get());
-    dom_agent_ = base::MakeUnique<DOMAgent>();
+        std::make_unique<UberDispatcher>(fake_frontend_channel_.get());
+    dom_agent_ = std::make_unique<DOMAgent>();
     dom_agent_->Init(uber_dispatcher_.get());
-    css_agent_ = base::MakeUnique<CSSAgent>(dom_agent_.get());
+    css_agent_ = std::make_unique<CSSAgent>(dom_agent_.get());
     css_agent_->Init(uber_dispatcher_.get());
     css_agent_->enable();
-    overlay_agent_ = base::MakeUnique<OverlayAgent>(dom_agent_.get());
+    overlay_agent_ = std::make_unique<OverlayAgent>(dom_agent_.get());
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
 
@@ -965,7 +966,7 @@ TEST_F(UIDevToolsTest, ViewRemoved) {
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
   // Need to store |view| in unique_ptr because it is removed from the widget
   // and needs to be destroyed independently
-  std::unique_ptr<views::View> child_view = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> child_view = std::make_unique<views::View>();
   aura::Window* window = widget->GetNativeWindow();
   widget->Show();
   views::View* root_view = widget->GetRootView();

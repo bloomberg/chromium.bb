@@ -4,6 +4,8 @@
 
 #include "components/spellcheck/renderer/spellcheck_provider_test.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -48,7 +50,7 @@ void TestingSpellCheckProvider::RequestTextChecking(
     blink::WebTextCheckingCompletion* completion) {
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (!loop_ && !base::MessageLoop::current())
-    loop_ = base::MakeUnique<base::MessageLoop>();
+    loop_ = std::make_unique<base::MessageLoop>();
   if (!binding_.is_bound()) {
     spellcheck::mojom::SpellCheckHostPtr host_proxy;
     binding_.Bind(mojo::MakeRequest(&host_proxy));

@@ -5,10 +5,10 @@
 #include "components/translate/core/browser/translate_manager.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -80,7 +80,7 @@ TranslateManager::TranslateManager(TranslateClient* translate_client,
       translate_ranker_(translate_ranker),
       language_model_(language_model),
       language_state_(translate_driver_),
-      translate_event_(base::MakeUnique<metrics::TranslateEventProto>()),
+      translate_event_(std::make_unique<metrics::TranslateEventProto>()),
       weak_method_factory_(this) {}
 
 base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {

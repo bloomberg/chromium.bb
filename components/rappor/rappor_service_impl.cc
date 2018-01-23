@@ -4,9 +4,9 @@
 
 #include "components/rappor/rappor_service_impl.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/time/time.h"
 #include "components/rappor/log_uploader.h"
@@ -64,7 +64,7 @@ void RapporServiceImpl::Initialize(
   }
   DVLOG(1) << "RapporServiceImpl reporting to " << server_url.spec();
   InitializeInternal(
-      base::MakeUnique<LogUploader>(server_url, kMimeType, request_context),
+      std::make_unique<LogUploader>(server_url, kMimeType, request_context),
       internal::LoadCohort(pref_service_), internal::LoadSecret(pref_service_));
 }
 

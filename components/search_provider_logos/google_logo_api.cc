@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
@@ -172,7 +172,7 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     return nullptr;
   }
 
-  auto logo = base::MakeUnique<EncodedLogo>();
+  auto logo = std::make_unique<EncodedLogo>();
 
   std::string doodle_type;
   logo->metadata.type = LogoType::SIMPLE;

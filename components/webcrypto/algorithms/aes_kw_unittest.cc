@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
@@ -60,7 +61,7 @@ TEST_F(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops =
-      dict.SetList("key_ops", base::MakeUnique<base::ListValue>());
+      dict.SetList("key_ops", std::make_unique<base::ListValue>());
 
   key_ops->AppendString("wrapKey");
 

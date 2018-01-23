@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,14 +63,14 @@ base::RefCountedString* CreateExampleImage(size_t num_bytes) {
 }
 
 std::unique_ptr<EncodedLogo> GetExampleLogo() {
-  auto logo = base::MakeUnique<EncodedLogo>();
+  auto logo = std::make_unique<EncodedLogo>();
   logo->encoded_image = CreateExampleImage(837);
   logo->metadata = GetExampleMetadata();
   return logo;
 }
 
 std::unique_ptr<EncodedLogo> GetExampleLogo2() {
-  auto logo = base::MakeUnique<EncodedLogo>();
+  auto logo = std::make_unique<EncodedLogo>();
   logo->encoded_image = CreateExampleImage(345);
   logo->metadata = GetExampleMetadata2();
   return logo;
@@ -117,7 +117,7 @@ class LogoCacheTest : public ::testing::Test {
   }
 
   void InitCache() {
-    cache_ = base::MakeUnique<LogoCache>(
+    cache_ = std::make_unique<LogoCache>(
         cache_parent_dir_.GetPath().Append(FILE_PATH_LITERAL("cache")));
   }
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -258,7 +259,7 @@ void SpellCheck::CustomDictionaryChanged(
 void SpellCheck::AddSpellcheckLanguage(base::File file,
                                        const std::string& language) {
   languages_.push_back(
-      base::MakeUnique<SpellcheckLanguage>(embedder_provider_));
+      std::make_unique<SpellcheckLanguage>(embedder_provider_));
   languages_.back()->Init(std::move(file), language);
 }
 

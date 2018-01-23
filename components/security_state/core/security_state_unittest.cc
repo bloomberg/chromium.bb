@@ -5,11 +5,11 @@
 #include "components/security_state/core/security_state.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/security_state/core/features.h"
@@ -113,7 +113,7 @@ class TestSecurityStateHelper {
   void SetUrl(const GURL& url) { url_ = url; }
 
   std::unique_ptr<VisibleSecurityState> GetVisibleSecurityState() const {
-    auto state = base::MakeUnique<VisibleSecurityState>();
+    auto state = std::make_unique<VisibleSecurityState>();
     state->connection_info_initialized = true;
     state->url = url_;
     state->certificate = cert_;

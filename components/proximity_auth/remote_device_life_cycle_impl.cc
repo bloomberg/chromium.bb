@@ -5,11 +5,11 @@
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 
 #include <utility>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "components/cryptauth/connection_finder.h"
@@ -87,9 +87,9 @@ std::unique_ptr<cryptauth::ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(remote_device_);
+    return std::make_unique<BluetoothLowEnergyConnectionFinder>(remote_device_);
   } else {
-    return base::MakeUnique<BluetoothConnectionFinder>(
+    return std::make_unique<BluetoothConnectionFinder>(
         remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),
         base::TimeDelta::FromSeconds(3));
   }
@@ -97,7 +97,7 @@ RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
 
 std::unique_ptr<cryptauth::Authenticator>
 RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
-  return base::MakeUnique<cryptauth::DeviceToDeviceAuthenticator>(
+  return std::make_unique<cryptauth::DeviceToDeviceAuthenticator>(
       connection_.get(), remote_device_.user_id,
       proximity_auth_client_->CreateSecureMessageDelegate());
 }

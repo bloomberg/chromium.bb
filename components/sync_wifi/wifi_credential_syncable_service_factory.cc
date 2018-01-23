@@ -4,10 +4,10 @@
 
 #include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync_wifi/wifi_config_delegate.h"
@@ -94,7 +94,7 @@ WifiCredentialSyncableServiceFactory::BuildWifiConfigDelegateChromeOs(
   // ChromeBrowserMainPartsChromeos, and destroyed after all
   // KeyedService instances are destroyed.
   chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  return base::MakeUnique<WifiConfigDelegateChromeOs>(
+  return std::make_unique<WifiConfigDelegateChromeOs>(
       GetUserHash(context, !ignore_login_state_for_test_),
       network_handler->managed_network_configuration_handler());
 }

@@ -4,6 +4,8 @@
 
 #include "components/web_resource/web_resource_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -84,7 +86,7 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
     if (data.empty() || data == "{}") {
-      OnUnpackFinished(base::MakeUnique<base::DictionaryValue>());
+      OnUnpackFinished(std::make_unique<base::DictionaryValue>());
     } else {
       parse_json_callback_.Run(data,
                                base::Bind(&WebResourceService::OnUnpackFinished,

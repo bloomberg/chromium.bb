@@ -6,6 +6,8 @@
 
 #include "components/ukm/ukm_reporting_service.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -59,7 +61,7 @@ void UkmReportingService::RegisterPrefs(PrefRegistrySimple* registry) {
 UkmReportingService::UkmReportingService(metrics::MetricsServiceClient* client,
                                          PrefService* local_state)
     : ReportingService(client, local_state, kMaxLogRetransmitSize),
-      persisted_logs_(base::MakeUnique<ukm::PersistedLogsMetricsImpl>(),
+      persisted_logs_(std::make_unique<ukm::PersistedLogsMetricsImpl>(),
                       local_state,
                       prefs::kUkmPersistedLogs,
                       kMinPersistedLogs,

@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
   events.password_field_shown = true;
   events.credit_card_field_edited = true;
   ssl_status.user_data =
-      base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+      std::make_unique<security_state::SSLStatusInputEventData>(events);
 
   std::unique_ptr<security_state::VisibleSecurityState>
       visible_security_state_sensitive_inputs =
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
   // Simulate a field edit and update the SSLStatus' |user_data|.
   events.insecure_field_edited = true;
   ssl_status.user_data =
-      base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+      std::make_unique<security_state::SSLStatusInputEventData>(events);
 
   // Verify the field edit was recorded properly in the |user_data|.
   ssl_status_input_events =

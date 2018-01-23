@@ -4,12 +4,12 @@
 
 #include "components/translate/core/browser/translate_prefs.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -130,7 +130,7 @@ base::ListValue* DenialTimeUpdate::GetDenialTimes() {
   bool has_list = has_value && denial_value->GetAsList(&time_list_);
 
   if (!has_list) {
-    auto time_list = base::MakeUnique<base::ListValue>();
+    auto time_list = std::make_unique<base::ListValue>();
     double oldest_denial_time = 0;
     bool has_old_style =
         has_value && denial_value->GetAsDouble(&oldest_denial_time);

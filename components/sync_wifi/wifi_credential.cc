@@ -4,6 +4,8 @@
 
 #include "components/sync_wifi/wifi_credential.h"
 
+#include <memory>
+
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -49,10 +51,10 @@ std::unique_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
   if (!WifiSecurityClassToOncSecurityString(security_class(), &onc_security)) {
     NOTREACHED() << "Failed to convert SecurityClass with value "
                  << security_class();
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
   }
 
-  auto onc_properties = base::MakeUnique<base::DictionaryValue>();
+  auto onc_properties = std::make_unique<base::DictionaryValue>();
   onc_properties->SetString(onc::toplevel_config::kType,
                             onc::network_type::kWiFi);
   // TODO(quiche): Switch to the HexSSID property, once ONC fully supports it.

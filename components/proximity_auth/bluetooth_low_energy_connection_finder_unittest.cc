@@ -76,7 +76,7 @@ class MockBluetoothLowEnergyConnectionFinder
       : BluetoothLowEnergyConnectionFinder(
             cryptauth::CreateLERemoteDeviceForTest(),
             kBLEGattServiceUUID,
-            base::MakeUnique<FakeEidGenerator>(this)) {}
+            std::make_unique<FakeEidGenerator>(this)) {}
 
   ~MockBluetoothLowEnergyConnectionFinder() override {}
 

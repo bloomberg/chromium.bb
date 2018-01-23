@@ -5,13 +5,13 @@
 #include "components/translate/core/browser/translate_ranker_impl.h"
 
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_util.h"
@@ -160,7 +160,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
               translate::kTranslateRankerPreviousLanguageMatchesOverride)),
       weak_ptr_factory_(this) {
   if (is_query_enabled_ || is_enforcement_enabled_) {
-    model_loader_ = base::MakeUnique<assist_ranker::RankerModelLoaderImpl>(
+    model_loader_ = std::make_unique<assist_ranker::RankerModelLoaderImpl>(
         base::Bind(&ValidateModel),
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
                    weak_ptr_factory_.GetWeakPtr()),

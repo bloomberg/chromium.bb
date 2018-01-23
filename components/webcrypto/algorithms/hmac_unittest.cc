@@ -6,10 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -232,7 +232,7 @@ TEST_F(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue* key_ops =
-      dict.SetList("key_ops", base::MakeUnique<base::ListValue>());
+      dict.SetList("key_ops", std::make_unique<base::ListValue>());
 
   key_ops->AppendString("sign");
 
@@ -264,7 +264,7 @@ TEST_F(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
   dict.SetString("alg", "HS256");
   dict.SetString("use", "sig");
 
-  auto key_ops = base::MakeUnique<base::ListValue>();
+  auto key_ops = std::make_unique<base::ListValue>();
   key_ops->AppendString("sign");
   key_ops->AppendString("verify");
   key_ops->AppendString("encrypt");

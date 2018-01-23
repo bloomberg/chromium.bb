@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -89,7 +88,7 @@ class WallpaperResizerTest : public testing::Test,
   }
 
   void WaitForResize() {
-    active_runloop_ = base::MakeUnique<base::RunLoop>();
+    active_runloop_ = std::make_unique<base::RunLoop>();
     active_runloop_->Run();
   }
 

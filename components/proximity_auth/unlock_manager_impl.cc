@@ -4,10 +4,11 @@
 
 #include "components/proximity_auth/unlock_manager_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -333,7 +334,7 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
     cryptauth::Connection* connection,
     ProximityAuthPrefManager* pref_manager) {
-  return base::MakeUnique<ProximityMonitorImpl>(connection, pref_manager);
+  return std::make_unique<ProximityMonitorImpl>(connection, pref_manager);
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {

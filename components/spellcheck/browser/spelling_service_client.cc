@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
@@ -147,7 +148,7 @@ bool SpellingServiceClient::RequestTextCheck(
   fetcher->SetUploadData("application/json", request);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  spellcheck_fetchers_[fetcher] = base::MakeUnique<TextCheckCallbackData>(
+  spellcheck_fetchers_[fetcher] = std::make_unique<TextCheckCallbackData>(
       base::WrapUnique(fetcher), std::move(callback), text);
   fetcher->Start();
   return true;

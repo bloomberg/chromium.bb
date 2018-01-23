@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -21,7 +23,7 @@ PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
     const GURL& main_frame_url)
     : main_frame_url_(main_frame_url),
       ukm_entry_builder_(
-          base::MakeUnique<ukm::builders::PageWithPassword>(source_id)) {}
+          std::make_unique<ukm::builders::PageWithPassword>(source_id)) {}
 
 PasswordManagerMetricsRecorder::PasswordManagerMetricsRecorder(
     PasswordManagerMetricsRecorder&& that) noexcept = default;

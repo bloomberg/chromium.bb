@@ -4,8 +4,9 @@
 
 #include "components/pdf/renderer/pepper_pdf_host.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -264,7 +265,7 @@ int32_t PepperPDFHost::OnHostMsgDidScroll(
 void PepperPDFHost::CreatePdfAccessibilityTreeIfNeeded() {
   if (!pdf_accessibility_tree_) {
     pdf_accessibility_tree_ =
-        base::MakeUnique<PdfAccessibilityTree>(host_, pp_instance());
+        std::make_unique<PdfAccessibilityTree>(host_, pp_instance());
   }
 }
 
