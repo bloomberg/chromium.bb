@@ -37,6 +37,10 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "base/base_paths_fuchsia.h"
+#endif
+
 namespace base {
 namespace i18n {
 
@@ -107,6 +111,8 @@ void LazyInitIcuDataFile() {
   CHECK(path_ok);  // TODO(scottmg): http://crbug.com/445616
 #elif defined(OS_ANDROID)
   bool path_ok = PathService::Get(DIR_ANDROID_APP_DATA, &data_path);
+#elif defined(OS_FUCHSIA)
+  bool path_ok = PathService::Get(DIR_FUCHSIA_RESOURCES, &data_path);
 #else
   // For now, expect the data file to be alongside the executable.
   // This is sufficient while we work on unit tests, but will eventually

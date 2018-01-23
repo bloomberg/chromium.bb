@@ -14,6 +14,7 @@ if (is_android) {
 
 if (is_fuchsia) {
   import("//build/config/fuchsia/rules.gni")
+  import("//build/config/fuchsia/package.gni")
 }
 
 # Define a test as an executable (or apk on Android) with the "testonly" flag
@@ -226,28 +227,42 @@ template("test") {
     }
   } else if (is_fuchsia) {
     _output_name = invoker.target_name
-    _test_runner_target = "${_output_name}__test_runner_script"
+    _pkg_target = "${_output_name}_pkg"
+    _gen_runner_target = "${_output_name}_runner"
+    _exec_target = "${_output_name}__exec"
 
-    test_runner_script(_test_runner_target) {
-      forward_variables_from(invoker,
-                             [
-                               "data",
-                               "data_deps",
-                               "deps",
-                               "public_deps",
-                               "use_test_server",
-                             ])
-      test_name = _output_name
+    group(target_name) {
+      testonly = true
+      data_deps = [
+        ":$_gen_runner_target",
+      ]
     }
 
-    executable(target_name) {
+    # Makes the script which invokes the executable.
+    test_runner_script(_gen_runner_target) {
+      forward_variables_from(invoker, [ "use_test_server" ])
+      data_deps = [
+        ":$_exec_target",
+        ":$_pkg_target",
+      ]
+      test_name = _output_name
+      exe_path = "$root_out_dir/" + get_label_info(_exec_target, "name")
+    }
+
+    executable(_exec_target) {
       testonly = true
       forward_variables_from(invoker, "*")
-      if (!defined(data_deps)) {
-        data_deps = []
-      }
-      data_deps += [ ":$_test_runner_target" ]
+      output_name = _exec_target
       deps += [ "//build/config:exe_and_shlib_deps" ]
+    }
+
+    package(_pkg_target) {
+      testonly = true
+      package_name = _output_name
+      binary = get_label_info(_exec_target, "name")
+      data_deps = [
+        ":$_exec_target",
+      ]
     }
   } else if (is_ios) {
     import("//build/config/ios/ios_sdk.gni")
