@@ -30,10 +30,7 @@ gfx::Transform GetPrimaryDisplayRotationTransform() {
     case display::Display::ROTATE_0:
       break;
     case display::Display::ROTATE_90:
-      // TODO(dnicoara): Figure out why this is not correct.
-      // rotation.Translate(display.height(), 0);
-      rotation.Translate(
-          (display.bounds().height() + display.bounds().width()) / 2, 0);
+      rotation.Translate(display.bounds().height(), 0);
       rotation.Rotate(90);
       break;
     case display::Display::ROTATE_180:
@@ -41,10 +38,7 @@ gfx::Transform GetPrimaryDisplayRotationTransform() {
       rotation.Rotate(180);
       break;
     case display::Display::ROTATE_270:
-      // TODO(dnicoara): Figure out why this is not correct.
-      // rotation.Translate(0, display.width());
-      rotation.Translate(
-          0, (display.bounds().height() + display.bounds().width()) / 2);
+      rotation.Translate(0, display.bounds().width());
       rotation.Rotate(270);
       break;
   }
@@ -233,7 +227,8 @@ void CastWindowManagerAura::Setup() {
       new CastWindowTreeHost(enable_input_, gfx::Rect(display_size)));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
-  window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
+  window_tree_host_->window()->SetTransform(
+      GetPrimaryDisplayRotationTransform());
 
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
