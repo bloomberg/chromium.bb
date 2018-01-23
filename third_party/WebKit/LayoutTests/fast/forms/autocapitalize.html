@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+<link rel="help" href="https://html.spec.whatwg.org/multipage/interaction.html#autocapitalization">
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -7,15 +8,20 @@
 
 test(function() {
     assert_true('autocapitalize' in document.createElement('input'));
-}, "Test that the autocapitalize is avaible on HTMLInputElement.")
+}, "Test that the autocapitalize is available on HTMLInputElement.")
 
 test(function() {
     assert_true('autocapitalize' in document.createElement('textarea'));
-}, "Test that the autocapitalize is avaible on HTMLTextAreaElement.")
+}, "Test that the autocapitalize is available on HTMLTextAreaElement.")
+
+test(function() {
+    assert_true('autocapitalize' in document.createElement('div'));
+}, "Test that the autocapitalize is available on div.")
 
 test(function() {
   var elements = [ document.createElement('input'),
-                   document.createElement('textarea') ];
+                   document.createElement('textarea'),
+                   document.createElement('div') ];
 
   elements.forEach(function(e) {
     e.autocapitalize = 'on';
@@ -28,25 +34,34 @@ test(function() {
 
 test(function() {
   var elements = [ document.createElement('input'),
-                   document.createElement('textarea') ];
+                   document.createElement('textarea'),
+                   document.createElement('div') ];
   var knownValues = [ 'none', 'characters', 'words', 'sentences' ];
 
-  var defaultValue = 'sentences';
   elements.forEach(function(e) {
     // Default value.
-    assert_equals(e.autocapitalize, defaultValue);
+    assert_equals(e.autocapitalize, '');
+
+    // Empty value.
+    e.autocapitalize = '';
+    assert_equals(e.autocapitalize, '');
+    assert_equals(e.getAttribute('autocapitalize'), '');
+    e.setAttribute('autocapitalize', '');
+    assert_equals(e.autocapitalize, '');
+    assert_equals(e.getAttribute('autocapitalize'), '');
+    assert_equals(e.autocapitalize, '');
 
     // Invalid value.
     e.autocapitalize = 'foo';
-    assert_equals(e.autocapitalize, defaultValue);
+    assert_equals(e.autocapitalize, 'sentences');
     assert_equals(e.getAttribute('autocapitalize'), 'foo');
     e.setAttribute('autocapitalize', 'bar');
-    assert_equals(e.autocapitalize, defaultValue);
+    assert_equals(e.autocapitalize, 'sentences');
     assert_equals(e.getAttribute('autocapitalize'), 'bar');
 
     // Default value.
     e.removeAttribute('autocapitalize');
-    assert_equals(defaultValue, e.autocapitalize);
+    assert_equals(e.autocapitalize, '');
     assert_equals(e.getAttribute('autocapitalize'), null);
 
     // Case insensitive.
@@ -74,26 +89,50 @@ test(function() {
 }, "Test reflection of autocapitalize.");
 
 test(function() {
-  var testData = [
-    // Types with sentences as default value.
-    { type: 'text', value: 'sentences' },
-    { type: 'search', value: 'sentences' },
-    // Types supporting the features with none as default value.
-    { type: 'email', value: 'none' },
-    { type: 'url', value: 'none' },
-    { type: 'tel', value: 'none' },
-    // Other types that do not support the value.
-    { type: 'number', value: 'none' },
-    { type: 'date', value: 'none' },
-    { type: 'color', value: 'none' }
-  ];
+var testData = [ 'text',
+                 'search',
+                 'email',
+                 'url',
+                 'tel',
+                 'number',
+                 'date',
+                 'color',
+                 'password' ];
 
   testData.forEach(function(data) {
-    var input = document.createElement('input');
-    input.type = data.type;
-    assert_equals(input.autocapitalize, data.value);
+    const input = document.createElement('input');
+    input.type = data;
+    assert_equals(input.autocapitalize, '');
+
+    // Verify that wrapping the input element in a form doesn't change the
+    // defaults.
+    const form = document.createElement('form');
+    form.appendChild(input);
+    assert_equals(input.autocapitalize, '');
   });
-}, "Test the default value depending on <input> type.")
+}, "Test that the IDL attribute returns the empty string if the content "
++ "attribute is not set.")
+
+test(function() {
+  const testData = [ 'text',
+                     'search',
+                     'email',
+                     'url',
+                     'tel',
+                     'number',
+                     'date',
+                     'color',
+                     'password' ];
+
+  testData.forEach(function(data) {
+    const input = document.createElement('input');
+    input.setAttribute('type', data);
+    input.setAttribute('autocapitalize', 'sentences');
+
+    assert_equals(input.autocapitalize, 'sentences');
+  });
+}, "Verify that even input types that are never autocapitalized support the "
++ "IDL interface.")
 
 </script>
 </body>
