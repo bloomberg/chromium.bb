@@ -158,6 +158,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewSwitchItem alloc] initWithType:ItemTypeAutofillSwitch];
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   switchItem.on = [self isAutofillEnabled];
+  switchItem.accessibilityIdentifier = @"autofillItem_switch";
   return switchItem;
 }
 
@@ -166,6 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewSwitchItem alloc] initWithType:ItemTypeWalletSwitch];
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_USE_WALLET_DATA);
   switchItem.on = [self isWalletEnabled];
+  switchItem.accessibilityIdentifier = @"walletItem_switch";
   return switchItem;
 }
 
@@ -323,7 +325,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.on = on;
 }
 
-// Sets switchItem's enaled status to |enabled| and reconfigures the
+// Sets switchItem's enabled status to |enabled| and reconfigures the
 // corresponding cell. It is important that there is no more than one item of
 // |switchItemType| in SectionIdentifierSwitches.
 - (void)setSwitchItemEnabled:(BOOL)enabled itemType:(ItemType)switchItemType {
