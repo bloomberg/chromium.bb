@@ -137,6 +137,12 @@ macro (fix_experiment_configs)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
     endif ()
   endif ()
+
+  if (CONFIG_AOM_QM_EXT)
+    if (NOT CONFIG_AOM_QM)
+      change_config_and_warn(CONFIG_AOM_QM 1 CONFIG_AOM_QM_EXT)
+    endif ()
+  endif ()
 endmacro ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_

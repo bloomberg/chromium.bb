@@ -107,6 +107,7 @@ set(CONFIG_SYMBOLRATE 0 CACHE NUMBER "Enables symbol rate accounting.")
 # AV1 experiment flags.
 set(CONFIG_AMVR 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_AOM_QM 1 CACHE NUMBER "AV1 experiment flag.")
+set(CONFIG_AOM_QM_EXT 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_BGSPRITE 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_CFL 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_CICP 0 CACHE NUMBER "AV1 experiment flag.")
