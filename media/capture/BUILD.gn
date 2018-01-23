@@ -9,12 +9,13 @@ import("//testing/test.gni")
 group("capture") {
   public_deps = [
     ":capture_lib",
-    "//media/capture/mojo:capture_types",
+    "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:video_capture",
     "//services/service_manager/public/cpp",
   ]
 }
 
-# Things needed by //media/capture/mojo:capture_types.
+# Things needed by //media/capture/mojo/video_capture_types.mojom.
 component("capture_base") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
@@ -160,8 +161,8 @@ component("capture_lib") {
     "//base",
     "//base:i18n",
     "//media",
-    "//media/capture/mojo:capture_types",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:video_capture",
     "//media/mojo/interfaces:interfaces",
     "//services/service_manager/public/cpp",
     "//third_party/libyuv",

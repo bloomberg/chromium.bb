@@ -16,8 +16,8 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//media/capture/mojo:capture_types",
     "//media/capture/mojo:image_capture",
+    "//media/capture/mojo:video_capture",
     "//media/mojo/interfaces",
     "//ui/gfx/geometry/mojo",
   ]

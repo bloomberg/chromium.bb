@@ -15,8 +15,8 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "content/common/video_capture.mojom.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojo/video_capture.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,7 +27,8 @@ namespace content {
 // communicates back to these clients e.g. the capture state or incoming
 // captured VideoFrames. VideoCaptureImpl is created in the main Renderer thread
 // but otherwise operates on |io_task_runner_|, which is usually the IO thread.
-class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
+class CONTENT_EXPORT VideoCaptureImpl
+    : public media::mojom::VideoCaptureObserver {
  public:
   explicit VideoCaptureImpl(media::VideoCaptureSessionId session_id);
   ~VideoCaptureImpl() override;
@@ -62,12 +63,12 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
-  void SetVideoCaptureHostForTesting(mojom::VideoCaptureHost* service) {
+  void SetVideoCaptureHostForTesting(media::mojom::VideoCaptureHost* service) {
     video_capture_host_for_testing_ = service;
   }
 
-  // mojom::VideoCaptureObserver implementation.
-  void OnStateChanged(mojom::VideoCaptureState state) override;
+  // media::mojom::VideoCaptureObserver implementation.
+  void OnStateChanged(media::mojom::VideoCaptureState state) override;
   void OnBufferCreated(int32_t buffer_id,
                        mojo::ScopedSharedBufferHandle handle) override;
   void OnBufferReady(int32_t buffer_id,
@@ -110,7 +111,7 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
   // Tries to remove |client_id| from |clients|, returning false if not found.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
 
-  mojom::VideoCaptureHost* GetVideoCaptureHost();
+  media::mojom::VideoCaptureHost* GetVideoCaptureHost();
 
   // Called (by an unknown thread) when all consumers are done with a VideoFrame
   // and its ref-count has gone to zero.  This helper function grabs the
@@ -128,11 +129,11 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
   // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
   // implementation and is created by binding |video_capture_host_info_|,
   // unless a |video_capture_host_for_testing_| has been injected.
-  mojom::VideoCaptureHostPtrInfo video_capture_host_info_;
-  mojom::VideoCaptureHostPtr video_capture_host_;
-  mojom::VideoCaptureHost* video_capture_host_for_testing_;
+  media::mojom::VideoCaptureHostPtrInfo video_capture_host_info_;
+  media::mojom::VideoCaptureHostPtr video_capture_host_;
+  media::mojom::VideoCaptureHost* video_capture_host_for_testing_;
 
-  mojo::Binding<mojom::VideoCaptureObserver> observer_binding_;
+  mojo::Binding<media::mojom::VideoCaptureObserver> observer_binding_;
 
   // Buffers available for sending to the client.
   using ClientBufferMap = std::map<int32_t, scoped_refptr<ClientBuffer>>;

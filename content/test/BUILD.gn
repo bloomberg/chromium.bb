@@ -1693,7 +1693,6 @@ test("content_unittests") {
     "//media:test_support",
     "//media/blink",
     "//media/capture",
-    "//media/capture/mojo:capture_types",
     "//media/midi:midi",
     "//media/midi:mojo",
     "//mojo/edk/system",

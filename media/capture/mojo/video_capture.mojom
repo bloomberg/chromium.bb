@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "media/capture/mojo/video_capture_types.mojom";
@@ -69,7 +69,7 @@ interface VideoCaptureObserver {
 
   // |buffer_id| has video capture data with |info| containing the associated
   // VideoFrame constituent parts.
-  OnBufferReady(int32 buffer_id, media.mojom.VideoFrameInfo info);
+  OnBufferReady(int32 buffer_id, VideoFrameInfo info);
 
   // |buffer_id| has been released by VideoCaptureHost and must not be used.
   OnBufferDestroyed(int32 buffer_id);
@@ -79,7 +79,7 @@ interface VideoCaptureHost {
   // Start the |session_id| session with |params|. The video capture will be
   // identified as |device_id|, a new id picked by the renderer process.
   // |observer| will be used for notifications.
-  Start(int32 device_id, int32 session_id, media.mojom.VideoCaptureParams params,
+  Start(int32 device_id, int32 session_id, VideoCaptureParams params,
         VideoCaptureObserver observer);
 
   // Closes the video capture specified by |device_id|.
@@ -89,7 +89,7 @@ interface VideoCaptureHost {
   Pause(int32 device_id);
 
   // Resume |device_id| video capture, in |session_id| and with |params|.
-  Resume(int32 device_id, int32 session_id, media.mojom.VideoCaptureParams params);
+  Resume(int32 device_id, int32 session_id, VideoCaptureParams params);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
@@ -101,9 +101,9 @@ interface VideoCaptureHost {
 
   // Get the formats supported by a device referenced by |session_id|.
   GetDeviceSupportedFormats(int32 device_id, int32 session_id)
-    => (array<media.mojom.VideoCaptureFormat> formats_supported);
+    => (array<VideoCaptureFormat> formats_supported);
 
   // Get the format(s) in use by a device referenced by |session_id|.
   GetDeviceFormatsInUse(int32 device_id, int32 session_id)
-    => (array<media.mojom.VideoCaptureFormat> formats_in_use);
+    => (array<VideoCaptureFormat> formats_in_use);
 };
