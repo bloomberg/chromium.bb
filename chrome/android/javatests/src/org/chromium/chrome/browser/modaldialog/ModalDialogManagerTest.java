@@ -257,6 +257,7 @@ public class ModalDialogManagerTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "crbug.com/804858")
     public void testSuspend_ToggleOverview() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
         checkPendingSize(0);
@@ -304,6 +305,7 @@ public class ModalDialogManagerTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "crbug.com/804858")
     public void testSuspend_ShowNext() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
         checkPendingSize(0);
