@@ -41,7 +41,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubbleDelegateViewBase,
   // dialogs need to access their parent, as the dialogs become truly separate
   // this should go away on its own.
   friend class ManagePasswordPendingView;
-  friend class ManagePasswordSignInPromoView;
   friend class ManagePasswordUpdatePendingView;
 
   // TODO(pbos): Define column sets within subdialogs or move to a common

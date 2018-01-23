@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
@@ -101,10 +102,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   EXPECT_FALSE(IsBubbleShowing());
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
-  const ManagePasswordsBubbleView* bubble =
-      static_cast<const ManagePasswordsBubbleView*>(
+  const ManagePasswordPendingView* bubble =
+      static_cast<const ManagePasswordPendingView*>(
           ManagePasswordsBubbleView::manage_password_bubble());
-  EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
@@ -118,10 +118,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
       browser()->tab_strip_model()->GetActiveWebContents())
       ->ShowManagePasswordsBubble(true /* user_action */);
   EXPECT_TRUE(IsBubbleShowing());
-  bubble = static_cast<const ManagePasswordsBubbleView*>(
+  bubble = static_cast<const ManagePasswordPendingView*>(
       ManagePasswordsBubbleView::manage_password_bubble());
-  EXPECT_TRUE(bubble->initially_focused_view());
-  EXPECT_EQ(bubble->initially_focused_view(),
+  // A pending password with empty username should initially focus on the
+  // username field.
+  EXPECT_EQ(bubble->username_field(),
             bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());

@@ -298,10 +298,7 @@ void ManagePasswordsBubbleView::StyledLabelLinkClicked(
 }
 
 void ManagePasswordsBubbleView::CreateChild() {
-  if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
-    AddChildView(new ManagePasswordPendingView(this));
-  } else {
-    // This model state should be handled by separate dialogs.
-    NOTREACHED();
-  }
+  // TODO(pbos): This file is being removed (and static code moved). It was only
+  // kept to make the diff easier for the last CL. This should now be unused.
+  NOTREACHED();
 }

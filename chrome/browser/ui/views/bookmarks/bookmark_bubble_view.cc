@@ -110,15 +110,12 @@ BookmarkBubbleView::~BookmarkBubbleView() {
 
 // ui::DialogModel -------------------------------------------------------------
 
-int BookmarkBubbleView::GetDialogButtons() const {
-  // TODO(tapted): DialogClientView should manage the ios promo buttons too.
-  return is_showing_ios_promotion_
-             ? ui::DIALOG_BUTTON_NONE
-             : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-}
-
 base::string16 BookmarkBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
+#if defined(OS_WIN)
+  if (is_showing_ios_promotion_)
+    return ios_promo_view_->GetDialogButtonLabel(button);
+#endif
   return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK)
                                        ? IDS_DONE
                                        : IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
@@ -148,11 +145,8 @@ bool BookmarkBubbleView::ShouldShowCloseButton() const {
 
 gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
 #if defined(OS_WIN)
-  if (is_showing_ios_promotion_) {
-    return desktop_ios_promotion::GetPromoImage(
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_TextfieldDefaultColor));
-  }
+  if (is_showing_ios_promotion_)
+    return ios_promo_view_->GetWindowIcon();
 #endif
   return gfx::ImageSkia();
 }
@@ -221,6 +215,10 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
 }
 
 bool BookmarkBubbleView::Cancel() {
+#if defined(OS_WIN)
+  if (is_showing_ios_promotion_)
+    return ios_promo_view_->Cancel();
+#endif
   base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   // Set this so we remove the bookmark after the window closes.
   remove_bookmark_ = true;
@@ -230,6 +228,8 @@ bool BookmarkBubbleView::Cancel() {
 
 bool BookmarkBubbleView::Accept() {
 #if defined(OS_WIN)
+  if (is_showing_ios_promotion_)
+    return ios_promo_view_->Accept();
   using desktop_ios_promotion::PromotionEntryPoint;
   if (desktop_ios_promotion::IsEligibleForIOSPromotion(
           profile_, PromotionEntryPoint::BOOKMARKS_BUBBLE)) {

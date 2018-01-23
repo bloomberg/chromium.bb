@@ -8,22 +8,20 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-class ManagePasswordsBubbleView;
+class ManagePasswordsBubbleModel;
 
-// A view that offers user to sign in to Chrome.
-class ManagePasswordSignInPromoView : public views::View,
-                                      public views::ButtonListener {
+// A view that can show up after saving a password without being signed in to
+// offer signing users in so they can access their credentials across devices.
+class ManagePasswordSignInPromoView : public views::View {
  public:
-  explicit ManagePasswordSignInPromoView(ManagePasswordsBubbleView* parent);
+  explicit ManagePasswordSignInPromoView(ManagePasswordsBubbleModel* model);
+
+  bool Accept();
+  bool Cancel();
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
 
  private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  ManagePasswordsBubbleView* parent_;
-
-  views::Button* signin_button_;
-  views::Button* no_button_;
+  ManagePasswordsBubbleModel* const model_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordSignInPromoView);
 };
