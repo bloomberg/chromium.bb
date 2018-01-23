@@ -1139,6 +1139,8 @@ void ServiceWorkerVersion::OnGetClientsFinished(
   // running status can be STARTING here.
   if (running_status() != EmbeddedWorkerStatus::STARTING &&
       running_status() != EmbeddedWorkerStatus::RUNNING) {
+    std::move(callback).Run(
+        std::vector<blink::mojom::ServiceWorkerClientInfoPtr>());
     return;
   }
 
