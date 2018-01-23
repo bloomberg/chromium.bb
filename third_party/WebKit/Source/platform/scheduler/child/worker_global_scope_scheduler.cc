@@ -59,6 +59,7 @@ scoped_refptr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIndexedDB:
+    case TaskType::kInternalMedia:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in

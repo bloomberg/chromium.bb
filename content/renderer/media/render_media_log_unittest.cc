@@ -12,13 +12,15 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/render_media_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
 class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
-      : log_(GURL("http://foo.com")),
+      : log_(GURL("http://foo.com"),
+             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
     log_.SetTickClockForTesting(&tick_clock_);
     log_.SetTaskRunnerForTesting(task_runner_);

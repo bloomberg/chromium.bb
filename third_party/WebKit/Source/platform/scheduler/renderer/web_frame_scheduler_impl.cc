@@ -268,6 +268,7 @@ scoped_refptr<blink::WebTaskRunner> WebFrameSchedulerImpl::GetTaskRunner(
     // smooth.
     case TaskType::kMediaElementEvent:
     case TaskType::kInternalIndexedDB:
+    case TaskType::kInternalMedia:
       return WebTaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:

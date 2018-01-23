@@ -39,9 +39,11 @@ void Log(media::MediaLogEvent* event) {
 
 namespace content {
 
-RenderMediaLog::RenderMediaLog(const GURL& security_origin)
+RenderMediaLog::RenderMediaLog(
+    const GURL& security_origin,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : security_origin_(security_origin),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(std::move(task_runner)),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
       ipc_send_pending_(false),
