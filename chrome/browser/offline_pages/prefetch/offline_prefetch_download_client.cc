@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
-#include "components/download/public/download_metadata.h"
+#include "components/download/public/background_service/download_metadata.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 

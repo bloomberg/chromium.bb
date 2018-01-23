@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/download/public/client.h"
+#include "components/download/public/background_service/client.h"
 
 class BackgroundFetchDelegateImpl;
 

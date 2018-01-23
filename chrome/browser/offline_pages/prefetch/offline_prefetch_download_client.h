@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_OFFLINE_PREFETCH_DOWNLOAD_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/download/public/client.h"
+#include "components/download/public/background_service/client.h"
 
 namespace content {
 class BrowserContext;

@@ -20,7 +20,7 @@ source_set("public") {
   ]
 
   deps = [
-    "//components/download/public",
+    "//components/download/public/background_service:public",
     "//content/public/browser",
   ]
 }

@@ -10,7 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/download/public/task_scheduler.h"
+#include "components/download/public/background_service/task_scheduler.h"
 
 namespace content {
 class BrowserContext;

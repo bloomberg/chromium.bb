@@ -10,7 +10,7 @@ group("unit_tests") {
       "//components/download/content/internal:unit_tests",
       "//components/download/content/public:unit_tests",
       "//components/download/downloader/in_progress:unit_tests",
-      "//components/download/internal:unit_tests",
+      "//components/download/internal/background_service:unit_tests",
     ]
   }
 

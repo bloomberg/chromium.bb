@@ -1635,7 +1635,7 @@ split_static_library("browser") {
     "//components/domain_reliability",
     "//components/download/content/factory",
     "//components/download/downloader/in_progress",
-    "//components/download/public",
+    "//components/download/public/background_service:public",
     "//components/error_page/common",
     "//components/favicon/content",
     "//components/favicon/core",

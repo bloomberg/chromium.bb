@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/download/public/download_service.h"
+#include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/web_ui.h"
 
 namespace download_internals {

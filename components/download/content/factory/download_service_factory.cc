@@ -6,20 +6,20 @@
 #include "build/build_config.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/internal/download_driver_impl.h"
-#include "components/download/internal/client_set.h"
-#include "components/download/internal/config.h"
-#include "components/download/internal/controller_impl.h"
-#include "components/download/internal/download_service_impl.h"
-#include "components/download/internal/download_store.h"
-#include "components/download/internal/file_monitor_impl.h"
-#include "components/download/internal/logger_impl.h"
-#include "components/download/internal/model_impl.h"
-#include "components/download/internal/proto/entry.pb.h"
-#include "components/download/internal/scheduler/scheduler_impl.h"
+#include "components/download/internal/background_service/client_set.h"
+#include "components/download/internal/background_service/config.h"
+#include "components/download/internal/background_service/controller_impl.h"
+#include "components/download/internal/background_service/download_service_impl.h"
+#include "components/download/internal/background_service/download_store.h"
+#include "components/download/internal/background_service/file_monitor_impl.h"
+#include "components/download/internal/background_service/logger_impl.h"
+#include "components/download/internal/background_service/model_impl.h"
+#include "components/download/internal/background_service/proto/entry.pb.h"
+#include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 
 #if defined(OS_ANDROID)
-#include "components/download/internal/android/battery_status_listener_android.h"
+#include "components/download/internal/background_service/android/battery_status_listener_android.h"
 #endif
 
 namespace download {

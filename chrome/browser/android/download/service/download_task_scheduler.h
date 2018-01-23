@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/download/public/download_task_types.h"
-#include "components/download/public/task_scheduler.h"
+#include "components/download/public/background_service/download_task_types.h"
+#include "components/download/public/background_service/task_scheduler.h"
 
 namespace download {
 namespace android {
