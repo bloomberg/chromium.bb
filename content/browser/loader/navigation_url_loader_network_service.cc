@@ -790,7 +790,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
         /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
         request_info->begin_params->initiator_origin,
-        request_info->begin_params->suggested_filename,
+        request_info->common_params.suggested_filename,
         weak_factory_.GetWeakPtr());
 
     BrowserThread::PostTask(
@@ -874,7 +874,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       std::move(initial_handlers), std::move(new_request), resource_context,
       partition->url_loader_factory_getter(), request_info->common_params.url,
       request_info->begin_params->initiator_origin,
-      request_info->begin_params->suggested_filename,
+      request_info->common_params.suggested_filename,
       weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
