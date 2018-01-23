@@ -27,8 +27,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'SynchronizeOnNonFinalField',
   # TODO(crbug.com/801253): Follow steps in bug.
   'JavaLangClash',
-  # TODO(crbug.com/801256): Follow steps in bug.
-  'ParameterName',
   # TODO(crbug.com/801261): Follow steps in bug
   'ArgumentSelectionDefectChecker',
   # TODO(crbug.com/801268): Follow steps in bug.
