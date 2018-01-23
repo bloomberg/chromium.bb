@@ -32,7 +32,7 @@
 #define MediaSourceRegistry_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/URLRegistry.h"
+#include "core/fileapi/URLRegistry.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/StringHash.h"

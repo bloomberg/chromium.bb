@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/html/PublicURLManager.h"
+#include "core/fileapi/PublicURLManager.h"
 #include "core/url/URLSearchParams.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/wtf/AutoReset.h"

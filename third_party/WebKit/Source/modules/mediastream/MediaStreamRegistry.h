@@ -25,7 +25,7 @@
 #ifndef MediaStreamRegistry_h
 #define MediaStreamRegistry_h
 
-#include "core/html/URLRegistry.h"
+#include "core/fileapi/URLRegistry.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"

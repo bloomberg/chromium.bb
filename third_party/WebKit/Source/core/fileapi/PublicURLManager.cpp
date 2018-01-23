@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/PublicURLManager.h"
+#include "core/fileapi/PublicURLManager.h"
 
-#include "core/html/URLRegistry.h"
+#include "core/fileapi/URLRegistry.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/runtime_enabled_features.h"
