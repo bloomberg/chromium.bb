@@ -6,7 +6,7 @@
 
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8PerIsolateData.h"
 
@@ -21,7 +21,7 @@ ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
 
 void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     v8::Isolate* isolate,
-    ScriptWrappableMarkingVisitor* visitor) {
+    ScriptWrappableVisitor* visitor) {
   V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
   const auto* active_script_wrappables = isolate_data->ActiveScriptWrappables();
   if (!active_script_wrappables)
@@ -46,12 +46,14 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     // TODO(haraken): Implement correct lifetime using traceWrapper.
     if (active_wrappable->IsContextDestroyed())
       continue;
-
     ScriptWrappable* script_wrappable = active_wrappable->ToScriptWrappable();
-    auto* wrapper_type_info =
-        const_cast<WrapperTypeInfo*>(script_wrappable->GetWrapperTypeInfo());
-    visitor->RegisterV8Reference(
-        std::make_pair(wrapper_type_info, script_wrappable));
+    // Notify the visitor about this script_wrappable by dispatching to the
+    // corresponding visitor->Visit(script_wrappable) method.
+    // Ideally, we would call visitor->TraceWrappers(script_wrappable) here,
+    // but that method requires TraceWrapperMember<T>. Since we are getting
+    // the script wrappable from ActiveScriptWrappables, we do not have
+    // TraceWrapperMember<T> and have to use TraceWrappersFromGeneratedCode.
+    visitor->TraceWrappersFromGeneratedCode(script_wrappable);
   }
 }
 

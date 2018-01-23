@@ -16,7 +16,7 @@ class Isolate;
 namespace blink {
 
 class ScriptWrappable;
-class ScriptWrappableMarkingVisitor;
+class ScriptWrappableVisitor;
 
 /**
  * Classes deriving from ActiveScriptWrappable will be registered in a
@@ -30,7 +30,7 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
   ActiveScriptWrappableBase();
 
   static void TraceActiveScriptWrappables(v8::Isolate*,
-                                          ScriptWrappableMarkingVisitor*);
+                                          ScriptWrappableVisitor*);
 
  protected:
   virtual bool IsContextDestroyed() const = 0;
