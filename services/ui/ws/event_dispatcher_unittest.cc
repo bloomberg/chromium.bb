@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/switches.h"
@@ -523,7 +524,7 @@ class EventDispatcherVizTargeterTest
 
 void EventDispatcherVizTargeterTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseVizHitTest);
+      ::switches::kUseVizHitTest);
   if (is_event_processing_async()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseAsyncEventTargeting);

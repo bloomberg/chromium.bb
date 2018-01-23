@@ -13,7 +13,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kUseAsyncEventTargeting[];
 extern const char kUseTestConfig[];
-extern const char kUseVizHitTest[];
 
 }  // namespace switches
 }  // namespace ui

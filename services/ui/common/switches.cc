@@ -17,9 +17,5 @@ const char kUseAsyncEventTargeting[] = "enable-async-event-targeting";
 // "//services/ui/ime/test_ime_driver".
 const char kUseTestConfig[] = "use-test-config";
 
-// WindowServer uses the viz hit-test logic (HitTestAggregator and
-// HitTestQuery).
-const char kUseVizHitTest[] = "use-viz-hit-test";
-
 }  // namespace switches
 }  // namespace ui

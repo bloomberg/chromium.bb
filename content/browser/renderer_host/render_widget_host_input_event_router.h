@@ -261,7 +261,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       hittest_data_;
 
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
-  bool enable_viz_ = false;
+  bool use_viz_hit_test_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
 

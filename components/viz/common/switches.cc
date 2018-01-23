@@ -24,6 +24,9 @@ const char kDeadlineToSynchronizeSurfaces[] =
 // by the parent compositor.
 const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 
+// Enables the viz hit-test logic (HitTestAggregator and HitTestQuery).
+const char kUseVizHitTest[] = "use-viz-hit-test";
+
 uint32_t GetDeadlineToSynchronizeSurfaces() {
   std::string deadline_to_synchronize_surfaces_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
