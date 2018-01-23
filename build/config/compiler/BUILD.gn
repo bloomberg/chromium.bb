@@ -588,7 +588,7 @@ config("compiler") {
 
     # Disable optimization for now because they increase binary size by too
     # much.
-    if (use_lld && (is_android || is_linux)) {
+    if (use_lld && (is_android || (is_linux && !is_chromeos))) {
       ldflags += [ "-Wl,--lto-O0" ]
     }
 
