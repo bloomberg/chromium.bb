@@ -1,0 +1,95 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Creates a Fuchsia .far package file.
+#
+# Parameters are:
+# target_name: The name of the package to build.
+# binary: the executable target which should be launched by the package.
+#         Will be renamed as "bin/app" in the package contents.
+template("package") {
+  pkg = {
+    package_name = target_name
+    forward_variables_from(invoker, "*")
+  }
+  assert(defined(pkg.binary))
+
+  _runtime_deps_file = "$root_out_dir/gen.runtime/${pkg.package_name}/" +
+                       "${pkg.package_name}.runtime_deps"
+  _manifest_file = "$root_out_dir/gen.runtime/${pkg.package_name}/" +
+                   "${pkg.package_name}.archive_manifest"
+  _write_manifest_target = "${pkg.package_name}__write_manifest"
+  _write_archive_target = "${pkg.package_name}__write_archive"
+  _pkg_out_dir = "$root_build_dir/package"
+
+  # Generates a manifest file based on the GN runtime deps
+  # suitable for "far" tool consumption.
+  action(_write_manifest_target) {
+    forward_variables_from(invoker,
+                           [
+                             "data",
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                           ])
+
+    script = "//build/config/fuchsia/build_manifest.py"
+    inputs = [
+      _runtime_deps_file,
+    ]
+    outputs = [
+      _manifest_file,
+    ]
+
+    args = [
+      rebase_path("//"),
+      rebase_path(root_out_dir),
+      pkg.binary,
+      rebase_path(_runtime_deps_file),
+      rebase_path(_manifest_file),
+    ]
+
+    write_runtime_deps = _runtime_deps_file
+  }
+
+  # Packages an executable target and its dependencies into a Fuchsia archive
+  # file (.far).
+  action(_write_archive_target) {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "data_deps",
+                           ])
+
+    far_tool_path = "//third_party/fuchsia-sdk/tools/far"
+    archive_path = "$_pkg_out_dir/${pkg.package_name}.far"
+    script = "//build/gn_run_binary.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    deps = [
+      ":$_write_manifest_target",
+    ]
+
+    outputs = [
+      archive_path,
+    ]
+
+    args = [
+      rebase_path(far_tool_path, root_build_dir),
+      "create",
+      "--archive=" + rebase_path(archive_path),
+      "--manifest=" + rebase_path(_manifest_file),
+    ]
+  }
+
+  group(target_name) {
+    deps = []
+    forward_variables_from(invoker, "*")
+    deps += [
+      ":$_write_archive_target",
+      ":$_write_manifest_target",
+    ]
+  }
+}

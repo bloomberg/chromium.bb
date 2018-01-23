@@ -6,41 +6,54 @@
 
 #include <stdlib.h>
 
+#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/process/process.h"
 
 namespace base {
+namespace {
+
+constexpr char kPackageRoot[] = "/pkg";
+
+}  // namespace
+
+base::FilePath GetPackageRoot() {
+  base::FilePath path_obj(kPackageRoot);
+  if (PathExists(path_obj)) {
+    return path_obj;
+  } else {
+    return base::FilePath();
+  }
+}
 
 bool PathProviderFuchsia(int key, FilePath* result) {
   switch (key) {
     case FILE_MODULE:
-    // Not supported in debug or component builds. Fall back on using the EXE
-    // path for now.
-    // TODO(fuchsia): Get this value from an API. See crbug.com/726124
+      NOTIMPLEMENTED();
+      return false;
     case FILE_EXE: {
-      // Use the binary name as specified on the command line.
-      // TODO(fuchsia): It would be nice to get the canonical executable path
-      // from a kernel API. See https://crbug.com/726124
-      char bin_dir[PATH_MAX + 1];
-      if (realpath(base::CommandLine::ForCurrentProcess()
-                       ->GetProgram()
-                       .AsUTF8Unsafe()
-                       .c_str(),
-                   bin_dir) == NULL) {
-        return false;
-      }
-      *result = FilePath(bin_dir);
+      *result = base::MakeAbsoluteFilePath(base::FilePath(
+          base::CommandLine::ForCurrentProcess()->GetProgram().AsUTF8Unsafe()));
       return true;
     }
     case DIR_SOURCE_ROOT:
-      // This is only used for tests, so we return the binary location for now.
-      *result = FilePath("/system");
+      *result = GetPackageRoot();
+      if (result->empty()) {
+        *result = FilePath("/system");
+      }
       return true;
     case DIR_CACHE:
       *result = FilePath("/data");
       return true;
+    case DIR_FUCHSIA_RESOURCES:
+      *result = GetPackageRoot();
+      if (result->empty()) {
+        PathService::Get(DIR_EXE, result);
+      }
+      return true;
   }
-
   return false;
 }
 
