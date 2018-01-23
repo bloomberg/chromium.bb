@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -28,6 +29,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/features/features.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_location_dialog_bridge.h"
+#endif
 
 class DownloadPrefs;
 class Profile;
@@ -191,6 +196,10 @@ class ChromeDownloadManagerDelegate
   Profile* profile_;
 
   std::unique_ptr<download::InProgressCache> download_metadata_cache_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<DownloadLocationDialogBridge> location_dialog_bridge_;
+#endif
 
   // Incremented by one for each download, the first available download id is
   // assigned from history database or 1 when history database fails to

@@ -403,6 +403,10 @@ void DownloadTargetDeterminerTest::SetManagedDownloadPath(
 void DownloadTargetDeterminerTest::SetPromptForDownload(bool prompt) {
   profile()->GetTestingPrefService()->
       SetBoolean(prefs::kPromptForDownload, prompt);
+#if defined(OS_ANDROID)
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPromptForDownloadAndroid, prompt);
+#endif
 }
 
 base::FilePath DownloadTargetDeterminerTest::GetPathInDownloadDir(
