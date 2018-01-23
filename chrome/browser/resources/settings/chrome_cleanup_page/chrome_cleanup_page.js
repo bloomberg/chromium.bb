@@ -767,14 +767,14 @@ Polymer({
       },
 
       DISMISS_CLEANUP_SUCCESS: {
-        label: this.i18n('chromeCleanupDoneButtonLabel'),
+        label: this.i18n('done'),
         doAction: this.dismiss_.bind(
             this,
             settings.ChromeCleanupDismissSource.CLEANUP_SUCCESS_DONE_BUTTON),
       },
 
       DISMISS_CLEANUP_FAILURE: {
-        label: this.i18n('chromeCleanupDoneButtonLabel'),
+        label: this.i18n('done'),
         doAction: this.dismiss_.bind(
             this,
             settings.ChromeCleanupDismissSource.CLEANUP_FAILURE_DONE_BUTTON),
