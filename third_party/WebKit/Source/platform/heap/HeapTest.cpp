@@ -220,8 +220,7 @@ struct PairWithWeakHandling : public StrongWeakPair {
   template <typename VisitorDispatcher>
   bool TraceInCollection(VisitorDispatcher visitor,
                          WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
-    HashTraits<WeakMember<IntWrapper>>::TraceInCollection(visitor, second,
-                                                          strongify);
+    visitor->TraceInCollection(second, strongify);
     if (!ThreadHeap::IsHeapObjectAlive(second))
       return true;
     // FIXME: traceInCollection is also called from WeakProcessing to check if
