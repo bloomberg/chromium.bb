@@ -35,7 +35,6 @@
       'Android ASAN (dbg)': 'android_clang_asan_debug_bot_minimal_symbols',
       'Android Cronet ARM64 Builder': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet ARM64 Builder (dbg)': 'android_cronet_debug_static_bot_arm64',
-      'Android Cronet ARMv6 Builder': 'android_cronet_release_bot_minimal_symbols_armv6',
       'Android Cronet Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Builder (dbg)': 'android_cronet_debug_static_bot_arm_no_neon',
       'Android Cronet Builder Asan': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan',
@@ -44,7 +43,6 @@
       'Android Cronet Lollipop Builder': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'Android Cronet Marshmallow 64bit Builder': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet Marshmallow 64bit Perf': 'android_cronet_release_bot_minimal_symbols_arm64',
-      'Android Cronet MIPS Builder': 'android_cronet_release_bot_minimal_symbols_mipsel',
       'Android Cronet x86 Builder': 'android_cronet_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)': 'android_cronet_debug_static_bot_x86',
       'Android MIPS Builder (dbg)': 'android_debug_static_bot_mipsel',
@@ -59,7 +57,6 @@
     },
 
     'chromium.android.fyi': {
-      'Android Cronet ARMv6 Builder': 'android_cronet_release_bot_minimal_symbols_armv6',
       'Android Cronet Builder (dbg)': 'android_cronet_debug_static_bot_arm_no_neon',
       'Android Cronet Builder Asan': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan',
       'Android Cronet Data Reduction Proxy Builder': 'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon',
@@ -862,11 +859,6 @@
       'strip_debug_info',
     ],
 
-    'android_cronet_release_bot_minimal_symbols_armv6': [
-      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'armv6',
-      'strip_debug_info',
-    ],
-
     'android_cronet_release_bot_minimal_symbols_arm_no_neon': [
       'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'arm_no_neon',
       'strip_debug_info',
@@ -874,11 +866,6 @@
 
     'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan': [
       'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon', 'clang', 'asan',
-      'strip_debug_info',
-    ],
-
-    'android_cronet_release_bot_minimal_symbols_mipsel': [
-      'android', 'cronet', 'official_optimize', 'release_bot', 'minimal_symbols', 'mipsel',
       'strip_debug_info',
     ],
 
@@ -1760,10 +1747,6 @@
 
     'arm64': {
       'gn_args': 'target_cpu="arm64"',
-    },
-
-    'armv6': {
-      'gn_args': 'arm_version=6',
     },
 
     'arm_no_neon': {
