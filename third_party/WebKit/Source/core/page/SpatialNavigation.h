@@ -128,7 +128,7 @@ struct FocusCandidate {
   bool is_offscreen_after_scrolling;
 };
 
-bool HasOffscreenRect(Node*, WebFocusType = kWebFocusTypeNone);
+bool HasOffscreenRect(const Node*, WebFocusType = kWebFocusTypeNone);
 bool ScrollInDirection(LocalFrame*, WebFocusType);
 bool ScrollInDirection(Node* container, WebFocusType);
 bool IsNavigableContainer(const Node*, WebFocusType);
@@ -142,14 +142,15 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
 void DistanceDataForNode(WebFocusType,
                          const FocusCandidate& current,
                          FocusCandidate&);
-LayoutRect NodeRectInAbsoluteCoordinates(Node*, bool ignore_border = false);
-LayoutRect FrameRectInAbsoluteCoordinates(LocalFrame*);
+LayoutRect NodeRectInAbsoluteCoordinates(const Node*, bool ignore_border = false);
+LayoutRect FrameRectInAbsoluteCoordinates(const LocalFrame*);
 LayoutRect VirtualRectForDirection(WebFocusType,
                                    const LayoutRect& starting_rect,
                                    LayoutUnit width = LayoutUnit());
-LayoutRect VirtualRectForAreaElementAndDirection(HTMLAreaElement&,
+LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement&,
                                                  WebFocusType);
 HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate&);
+LayoutRect FindSearchStartPoint(const LocalFrame*, WebFocusType);
 
 }  // namespace blink
 
