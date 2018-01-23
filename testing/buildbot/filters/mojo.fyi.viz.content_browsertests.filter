@@ -37,6 +37,7 @@
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
+-SitePerProcessBrowserTest.AsynchronousHitTestChildTimeout
 -SitePerProcessBrowserTest.CancelWheelScrollBubblingOnWheelTargetDeletion
 -SitePerProcessBrowserTest.CreateContextMenuTest
 -SitePerProcessBrowserTest.CrossProcessMouseCapture
@@ -46,6 +47,7 @@
 -SitePerProcessBrowserTest.InputEventRouterGesturePreventDefaultTargetMapTest
 -SitePerProcessBrowserTest.InputEventRouterGestureTargetMapTest
 -SitePerProcessBrowserTest.InputEventRouterTouchpadGestureTargetTest
+-SitePerProcessBrowserTest.InputEventRouterWheelCoalesceTest
 -SitePerProcessBrowserTest.HitTestLayerSquashing
 -SitePerProcessBrowserTest.HitTestNestedFrames
 -SitePerProcessBrowserTest.HitTestWatermark

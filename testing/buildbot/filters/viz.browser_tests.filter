@@ -5,6 +5,8 @@
 -AppWindowApiTest.OnBoundsChangedEvent
 -ForceMaximizeOnFirstRunTest.*TwoRuns
 -ForceMaximizePolicyFalseTest.GeneralFirstRun
+-SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_AllowCreatingNewWindows
+-SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus1
 
@@ -18,12 +20,18 @@
 # Tab Capture is still in development: crbug.com/754864
 -CastStreamingApiTestWithPixelOutput.EndToEnd
 -ChromeScreenshotGrabberBrowserTest.TakeScreenshot
+-PluginPowerSaverBrowserTest.PosterTests
+-PluginPowerSaverBrowserTest.SmallCrossOrigin
+-PluginPowerSaverBrowserTest.SmallerThanPlayIcon
 -TabCaptureApiPixelTest.EndToEndThroughWebRTC
 -TabCaptureApiPixelTest.EndToEndWithoutRemoting
 -TabCaptureApiPixelTest.OffscreenTabEndToEnd
 -TabCaptureApiPixelTest.OffscreenTabEvilTests
+-ThumbnailTest.ShouldCaptureOnNavigatingAwayExplicitWait
+-ThumbnailTest.ShouldCaptureOnNavigatingAwaySlowPageLoad
 
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
+-PDFExtensionTest.ContextMenuCoordinates
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
 
