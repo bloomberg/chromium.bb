@@ -26,6 +26,7 @@ _CIPD_PACKAGE_PREFIX = 'chromiumos/infra/'
 _GO_PACKAGES = [
     'lucifer',
     'tast-cmd',
+    'tast-remote-tests-cros',
 ]
 
 _CRED_FILE = ('/creds/service_accounts/'
