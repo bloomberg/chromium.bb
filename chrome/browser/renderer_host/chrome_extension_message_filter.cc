@@ -37,7 +37,7 @@ using content::BrowserThread;
 
 namespace {
 
-const uint32_t kFilteredMessageClasses[] = {
+const uint32_t kExtensionFilteredMessageClasses[] = {
     ChromeExtensionMsgStart, ExtensionMsgStart,
 };
 
@@ -59,8 +59,8 @@ void AddActionToExtensionActivityLog(Profile* profile,
 ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
     int render_process_id,
     Profile* profile)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kExtensionFilteredMessageClasses,
+                           arraysize(kExtensionFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
       activity_log_(extensions::ActivityLog::GetInstance(profile)),
