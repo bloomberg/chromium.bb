@@ -17,6 +17,7 @@ source_set("fullscreen") {
 
 source_set("new_fullscreen") {
   sources = [
+    "animated_scoped_fullscreen_disabler.h",
     "fullscreen_controller.h",
     "fullscreen_controller_factory.h",
     "fullscreen_controller_observer.h",
