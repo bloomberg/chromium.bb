@@ -39,6 +39,7 @@
 #include "weston-screenshooter-client-protocol.h"
 #include "shared/os-compatibility.h"
 #include "shared/xalloc.h"
+#include "shared/file-util.h"
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client
@@ -188,6 +189,8 @@ write_png(int width, int height)
 	cairo_surface_t *surface;
 	void *data, *d, *s;
 	struct screenshooter_output *output, *next;
+	FILE *fp;
+	char filepath[PATH_MAX];
 
 	buffer_stride = width * 4;
 
@@ -213,7 +216,12 @@ write_png(int width, int height)
 	surface = cairo_image_surface_create_for_data(data,
 						      CAIRO_FORMAT_ARGB32,
 						      width, height, buffer_stride);
-	cairo_surface_write_to_png(surface, "wayland-screenshot.png");
+
+	fp = file_create_dated("wayland-screenshot-", ".png", filepath, sizeof(filepath));
+	if (fp) {
+		fclose (fp);
+		cairo_surface_write_to_png(surface, filepath);
+	}
 	cairo_surface_destroy(surface);
 	free(data);
 }
