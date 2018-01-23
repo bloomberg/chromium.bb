@@ -27,18 +27,11 @@
 #include "aom_ports/mem.h"
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-// r1, eps1, r2, eps2
-#if MAX_RADIUS == 2
+  // r1, eps1, r2, eps2
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 6 },
   { 2, 50, 1, 12 }, { 2, 60, 1, 13 }, { 2, 70, 1, 14 }, { 2, 80, 1, 15 },
-#else
-  { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
-  { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
-  { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
-  { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
-#endif  // MAX_RADIUS == 2
 };
 
 // Count horizontal or vertical units per tile (use a width or height for
@@ -736,202 +729,15 @@ static void boxsum2(int32_t *src, int width, int height, int src_stride,
   }
 }
 
-#if MAX_RADIUS > 2
-static void boxsum3(int32_t *src, int width, int height, int src_stride,
-                    int sqr, int32_t *dst, int dst_stride) {
-  int i, j, a, b, c, d, e, f, g;
-
-  // Vertical sum over 7-pixel regions, from src into dst.
-  if (!sqr) {
-    for (j = 0; j < width; ++j) {
-      a = src[j];
-      b = src[1 * src_stride + j];
-      c = src[2 * src_stride + j];
-      d = src[3 * src_stride + j];
-      e = src[4 * src_stride + j];
-      f = src[5 * src_stride + j];
-      g = src[6 * src_stride + j];
-
-      dst[j] = a + b + c + d;
-      dst[dst_stride + j] = a + b + c + d + e;
-      dst[2 * dst_stride + j] = a + b + c + d + e + f;
-      for (i = 3; i < height - 4; ++i) {
-        dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-        a = b;
-        b = c;
-        c = d;
-        d = e;
-        e = f;
-        f = g;
-        g = src[(i + 4) * src_stride + j];
-      }
-      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-      dst[(i + 1) * dst_stride + j] = b + c + d + e + f + g;
-      dst[(i + 2) * dst_stride + j] = c + d + e + f + g;
-      dst[(i + 3) * dst_stride + j] = d + e + f + g;
-    }
-  } else {
-    for (j = 0; j < width; ++j) {
-      a = src[j] * src[j];
-      b = src[1 * src_stride + j] * src[1 * src_stride + j];
-      c = src[2 * src_stride + j] * src[2 * src_stride + j];
-      d = src[3 * src_stride + j] * src[3 * src_stride + j];
-      e = src[4 * src_stride + j] * src[4 * src_stride + j];
-      f = src[5 * src_stride + j] * src[5 * src_stride + j];
-      g = src[6 * src_stride + j] * src[6 * src_stride + j];
-
-      dst[j] = a + b + c + d;
-      dst[dst_stride + j] = a + b + c + d + e;
-      dst[2 * dst_stride + j] = a + b + c + d + e + f;
-      for (i = 3; i < height - 4; ++i) {
-        dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-        a = b;
-        b = c;
-        c = d;
-        d = e;
-        e = f;
-        f = g;
-        g = src[(i + 4) * src_stride + j] * src[(i + 4) * src_stride + j];
-      }
-      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-      dst[(i + 1) * dst_stride + j] = b + c + d + e + f + g;
-      dst[(i + 2) * dst_stride + j] = c + d + e + f + g;
-      dst[(i + 3) * dst_stride + j] = d + e + f + g;
-    }
-  }
-
-  // Horizontal sum over 7-pixel regions of dst
-  for (i = 0; i < height; ++i) {
-    a = dst[i * dst_stride];
-    b = dst[i * dst_stride + 1];
-    c = dst[i * dst_stride + 2];
-    d = dst[i * dst_stride + 3];
-    e = dst[i * dst_stride + 4];
-    f = dst[i * dst_stride + 5];
-    g = dst[i * dst_stride + 6];
-
-    dst[i * dst_stride] = a + b + c + d;
-    dst[i * dst_stride + 1] = a + b + c + d + e;
-    dst[i * dst_stride + 2] = a + b + c + d + e + f;
-    for (j = 3; j < width - 4; ++j) {
-      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-      a = b;
-      b = c;
-      c = d;
-      d = e;
-      e = f;
-      f = g;
-      g = dst[i * dst_stride + (j + 4)];
-    }
-    dst[i * dst_stride + j] = a + b + c + d + e + f + g;
-    dst[i * dst_stride + (j + 1)] = b + c + d + e + f + g;
-    dst[i * dst_stride + (j + 2)] = c + d + e + f + g;
-    dst[i * dst_stride + (j + 3)] = d + e + f + g;
-  }
-}
-
-// Generic version for any r. To be removed after experiments are done.
-static void boxsumr(int32_t *src, int width, int height, int src_stride, int r,
-                    int sqr, int32_t *dst, int dst_stride) {
-  int32_t *tmp = aom_malloc(width * height * sizeof(*tmp));
-  int tmp_stride = width;
-  int i, j;
-  if (sqr) {
-    for (j = 0; j < width; ++j) tmp[j] = src[j] * src[j];
-    for (j = 0; j < width; ++j)
-      for (i = 1; i < height; ++i)
-        tmp[i * tmp_stride + j] =
-            tmp[(i - 1) * tmp_stride + j] +
-            src[i * src_stride + j] * src[i * src_stride + j];
-  } else {
-    memcpy(tmp, src, sizeof(*tmp) * width);
-    for (j = 0; j < width; ++j)
-      for (i = 1; i < height; ++i)
-        tmp[i * tmp_stride + j] =
-            tmp[(i - 1) * tmp_stride + j] + src[i * src_stride + j];
-  }
-  for (i = 0; i <= r; ++i)
-    memcpy(&dst[i * dst_stride], &tmp[(i + r) * tmp_stride],
-           sizeof(*tmp) * width);
-  for (i = r + 1; i < height - r; ++i)
-    for (j = 0; j < width; ++j)
-      dst[i * dst_stride + j] =
-          tmp[(i + r) * tmp_stride + j] - tmp[(i - r - 1) * tmp_stride + j];
-  for (i = height - r; i < height; ++i)
-    for (j = 0; j < width; ++j)
-      dst[i * dst_stride + j] = tmp[(height - 1) * tmp_stride + j] -
-                                tmp[(i - r - 1) * tmp_stride + j];
-
-  for (i = 0; i < height; ++i) tmp[i * tmp_stride] = dst[i * dst_stride];
-  for (i = 0; i < height; ++i)
-    for (j = 1; j < width; ++j)
-      tmp[i * tmp_stride + j] =
-          tmp[i * tmp_stride + j - 1] + dst[i * src_stride + j];
-
-  for (j = 0; j <= r; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] = tmp[i * tmp_stride + j + r];
-  for (j = r + 1; j < width - r; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] =
-          tmp[i * tmp_stride + j + r] - tmp[i * tmp_stride + j - r - 1];
-  for (j = width - r; j < width; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] =
-          tmp[i * tmp_stride + width - 1] - tmp[i * tmp_stride + j - r - 1];
-  aom_free(tmp);
-}
-#endif  // MAX_RADIUS > 2
-
 static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
                    int sqr, int32_t *dst, int dst_stride) {
   if (r == 1)
     boxsum1(src, width, height, src_stride, sqr, dst, dst_stride);
   else if (r == 2)
     boxsum2(src, width, height, src_stride, sqr, dst, dst_stride);
-#if MAX_RADIUS > 2
-  else if (r == 3)
-    boxsum3(src, width, height, src_stride, sqr, dst, dst_stride);
-  else if (r > 3)
-    boxsumr(src, width, height, src_stride, r, sqr, dst, dst_stride);
-#endif  // MAX_RADIUS > 2
   else
     assert(0 && "Invalid value of r in self-guided filter");
 }
-
-#if MAX_RADIUS > 2
-static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
-  int i, j;
-  for (i = 0; i <= r; ++i) {
-    for (j = 0; j <= r; ++j) {
-      num[i * num_stride + j] = (r + 1 + i) * (r + 1 + j);
-      num[i * num_stride + (width - 1 - j)] = num[i * num_stride + j];
-      num[(height - 1 - i) * num_stride + j] = num[i * num_stride + j];
-      num[(height - 1 - i) * num_stride + (width - 1 - j)] =
-          num[i * num_stride + j];
-    }
-  }
-  for (j = 0; j <= r; ++j) {
-    const int val = (2 * r + 1) * (r + 1 + j);
-    for (i = r + 1; i < height - r; ++i) {
-      num[i * num_stride + j] = val;
-      num[i * num_stride + (width - 1 - j)] = val;
-    }
-  }
-  for (i = 0; i <= r; ++i) {
-    const int val = (2 * r + 1) * (r + 1 + i);
-    for (j = r + 1; j < width - r; ++j) {
-      num[i * num_stride + j] = val;
-      num[(height - 1 - i) * num_stride + j] = val;
-    }
-  }
-  for (i = r + 1; i < height - r; ++i) {
-    for (j = r + 1; j < width - r; ++j) {
-      num[i * num_stride + j] = (2 * r + 1) * (2 * r + 1);
-    }
-  }
-}
-#endif  // MAX_RADIUS > 2
 
 void decode_xq(const int *xqd, int *xq) {
   xq[0] = xqd[0];
@@ -962,58 +768,168 @@ const int32_t x_by_xplus1[256] = {
 };
 
 const int32_t one_by_x[MAX_NELEM] = {
-  4096,
-  2048,
-  1365,
-  1024,
-  819,
-  683,
-  585,
-  512,
-  455,
-  410,
-  372,
-  341,
-  315,
-  293,
-  273,
-  256,
-  241,
-  228,
-  216,
-  205,
-  195,
-  186,
-  178,
-  171,
-  164,
-#if MAX_RADIUS > 2
-  158,
-  152,
-  146,
-  141,
-  137,
-  132,
-  128,
-  124,
-  120,
-  117,
-  114,
-  111,
-  108,
-  105,
-  102,
-  100,
-  98,
-  95,
-  93,
-  91,
-  89,
-  87,
-  85,
-  84
-#endif  // MAX_RADIUS > 2
+  4096, 2048, 1365, 1024, 819, 683, 585, 512, 455, 410, 372, 341, 315,
+  293,  273,  256,  241,  228, 216, 205, 195, 186, 178, 171, 164,
 };
+
+#if CONFIG_FAST_SGR
+static void av1_selfguided_restoration_fast_internal(
+    int32_t *dgd, int width, int height, int dgd_stride, int32_t *dst,
+    int dst_stride, int bit_depth, int r, int eps) {
+  const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
+  const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
+  // Adjusting the stride of A and B here appears to avoid bad cache effects,
+  // leading to a significant speed improvement.
+  // We also align the stride to a multiple of 16 bytes, for consistency
+  // with the SIMD version of this function.
+  int buf_stride = ((width_ext + 3) & ~3) + 16;
+  int32_t A_[RESTORATION_PROC_UNIT_PELS];
+  int32_t B_[RESTORATION_PROC_UNIT_PELS];
+  int32_t *A = A_;
+  int32_t *B = B_;
+  int i, j;
+
+  assert(r <= MAX_RADIUS && "Need MAX_RADIUS >= r");
+  assert(r <= SGRPROJ_BORDER_VERT - 1 && r <= SGRPROJ_BORDER_HORZ - 1 &&
+         "Need SGRPROJ_BORDER_* >= r+1");
+
+  boxsum(dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ,
+         width_ext, height_ext, dgd_stride, r, 0, B, buf_stride);
+  boxsum(dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ,
+         width_ext, height_ext, dgd_stride, r, 1, A, buf_stride);
+  A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
+  B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
+  // Calculate the eventual A[] and B[] arrays. Include a 1-pixel border - ie,
+  // for a 64x64 processing unit, we calculate 66x66 pixels of A[] and B[].
+  for (i = -1; i < height + 1; i += 2) {
+    for (j = -1; j < width + 1; ++j) {
+      const int k = i * buf_stride + j;
+      const int n = (2 * r + 1) * (2 * r + 1);
+
+      // a < 2^16 * n < 2^22 regardless of bit depth
+      uint32_t a = ROUND_POWER_OF_TWO(A[k], 2 * (bit_depth - 8));
+      // b < 2^8 * n < 2^14 regardless of bit depth
+      uint32_t b = ROUND_POWER_OF_TWO(B[k], bit_depth - 8);
+
+      // Each term in calculating p = a * n - b * b is < 2^16 * n^2 < 2^28,
+      // and p itself satisfies p < 2^14 * n^2 < 2^26.
+      // This bound on p is due to:
+      // https://en.wikipedia.org/wiki/Popoviciu's_inequality_on_variances
+      //
+      // Note: Sometimes, in high bit depth, we can end up with a*n < b*b.
+      // This is an artefact of rounding, and can only happen if all pixels
+      // are (almost) identical, so in this case we saturate to p=0.
+      uint32_t p = (a * n < b * b) ? 0 : a * n - b * b;
+
+      // Note: If MAX_RADIUS <= 2, then this 's' is a function only of
+      // r and eps. Further, this is the only place we use 'eps', so we could
+      // pre-calculate 's' for each parameter set and store that in place of
+      // 'eps'.
+      uint32_t s = sgrproj_mtable[eps - 1][n - 1];
+
+      // p * s < (2^14 * n^2) * round(2^20 / n^2 eps) < 2^34 / eps < 2^32
+      // as long as eps >= 4. So p * s fits into a uint32_t, and z < 2^12
+      // (this holds even after accounting for the rounding in s)
+      const uint32_t z = ROUND_POWER_OF_TWO(p * s, SGRPROJ_MTABLE_BITS);
+
+      // Note: We have to be quite careful about the value of A[k].
+      // This is used as a blend factor between individual pixel values and the
+      // local mean. So it logically has a range of [0, 256], including both
+      // endpoints.
+      //
+      // This is a pain for hardware, as we'd like something which can be stored
+      // in exactly 8 bits.
+      // Further, in the calculation of B[k] below, if z == 0 and r == 2,
+      // then A[k] "should be" 0. But then we can end up setting B[k] to a value
+      // slightly above 2^(8 + bit depth), due to rounding in the value of
+      // one_by_x[25-1].
+      //
+      // Thus we saturate so that, when z == 0, A[k] is set to 1 instead of 0.
+      // This fixes the above issues (256 - A[k] fits in a uint8, and we can't
+      // overflow), without significantly affecting the final result: z == 0
+      // implies that the image is essentially "flat", so the local mean and
+      // individual pixel values are very similar.
+      //
+      // Note that saturating on the other side, ie. requring A[k] <= 255,
+      // would be a bad idea, as that corresponds to the case where the image
+      // is very variable, when we want to preserve the local pixel value as
+      // much as possible.
+      A[k] = x_by_xplus1[AOMMIN(z, 255)];  // in range [1, 256]
+
+      // SGRPROJ_SGR - A[k] < 2^8 (from above), B[k] < 2^(bit_depth) * n,
+      // one_by_x[n - 1] = round(2^12 / n)
+      // => the product here is < 2^(20 + bit_depth) <= 2^32,
+      // and B[k] is set to a value < 2^(8 + bit depth)
+      // This holds even with the rounding in one_by_x and in the overall
+      // result, as long as SGRPROJ_SGR - A[k] is strictly less than 2^8.
+      B[k] = (int32_t)ROUND_POWER_OF_TWO((uint32_t)(SGRPROJ_SGR - A[k]) *
+                                             (uint32_t)B[k] *
+                                             (uint32_t)one_by_x[n - 1],
+                                         SGRPROJ_RECIP_BITS);
+    }
+  }
+  // Use the A[] and B[] arrays to calculate the filtered image
+  for (i = 0; i < height; ++i) {
+    if (!(i & 1)) {  // even row
+      for (j = 0; j < width; ++j) {
+        const int k = i * buf_stride + j;
+        const int l = i * dgd_stride + j;
+        const int m = i * dst_stride + j;
+        const int nb = 5;
+        const int32_t a = (A[k - buf_stride] + A[k + buf_stride]) * 6 +
+                          (A[k - 1 - buf_stride] + A[k - 1 + buf_stride] +
+                           A[k + 1 - buf_stride] + A[k + 1 + buf_stride]) *
+                              5;
+        const int32_t b = (B[k - buf_stride] + B[k + buf_stride]) * 6 +
+                          (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
+                           B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
+                              5;
+        const int32_t v = a * dgd[l] + b;
+        dst[m] =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+      }
+    } else if (i != height - 1) {  // odd row and not last
+      for (j = 0; j < width; ++j) {
+        const int k = i * buf_stride + j;
+        const int l = i * dgd_stride + j;
+        const int m = i * dst_stride + j;
+        const int nb = 6;
+        const int buf_stride2 = 2 * buf_stride;
+        const int32_t a = A[k] * 16 + (A[k - 1] + A[k + 1]) * 14 +
+                          (A[k - buf_stride2] + A[k + buf_stride2]) * 4 +
+                          (A[k - 1 - buf_stride2] + A[k - 1 + buf_stride2] +
+                           A[k + 1 - buf_stride2] + A[k + 1 + buf_stride2]) *
+                              3;
+        const int32_t b = B[k] * 16 + (B[k - 1] + B[k + 1]) * 14 +
+                          (B[k - buf_stride2] + B[k + buf_stride2]) * 4 +
+                          (B[k - 1 - buf_stride2] + B[k - 1 + buf_stride2] +
+                           B[k + 1 - buf_stride2] + B[k + 1 + buf_stride2]) *
+                              3;
+        const int32_t v = a * dgd[l] + b;
+        dst[m] =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+      }
+    } else {  // odd row and last
+      for (j = 0; j < width; ++j) {
+        const int k = i * buf_stride + j;
+        const int l = i * dgd_stride + j;
+        const int m = i * dst_stride + j;
+        const int nb = 6;
+        const int buf_stride2 = 2 * buf_stride;
+        const int32_t a = A[k] * 16 + (A[k - 1] + A[k + 1]) * 14 +
+                          A[k - buf_stride2] * 8 +
+                          (A[k - 1 - buf_stride2] + A[k + 1 - buf_stride2]) * 6;
+        const int32_t b = B[k] * 16 + (B[k - 1] + B[k + 1]) * 14 +
+                          B[k - buf_stride2] * 8 +
+                          (B[k - 1 - buf_stride2] + B[k + 1 - buf_stride2]) * 6;
+        const int32_t v = a * dgd[l] + b;
+        dst[m] =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+      }
+    }
+  }
+}
+#endif  // CONFIG_FAST_SGR
 
 static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
                                                 int height, int dgd_stride,
@@ -1030,11 +946,6 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
   int32_t B_[RESTORATION_PROC_UNIT_PELS];
   int32_t *A = A_;
   int32_t *B = B_;
-#if MAX_RADIUS > 2
-  const int num_stride = width_ext;
-  int8_t num_[RESTORATION_PROC_UNIT_PELS];
-  int8_t *num = num_ + SGRPROJ_BORDER_VERT * num_stride + SGRPROJ_BORDER_HORZ;
-#endif
   int i, j;
 
   assert(r <= MAX_RADIUS && "Need MAX_RADIUS >= r");
@@ -1045,9 +956,6 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
          width_ext, height_ext, dgd_stride, r, 0, B, buf_stride);
   boxsum(dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ,
          width_ext, height_ext, dgd_stride, r, 1, A, buf_stride);
-#if MAX_RADIUS > 2
-  boxnum(width_ext, height_ext, r, num_, num_stride);
-#endif
   A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
   B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
   // Calculate the eventual A[] and B[] arrays. Include a 1-pixel border - ie,
@@ -1055,11 +963,7 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
   for (i = -1; i < height + 1; ++i) {
     for (j = -1; j < width + 1; ++j) {
       const int k = i * buf_stride + j;
-#if MAX_RADIUS > 2
-      const int n = num[i * num_stride + j];
-#else
       const int n = (2 * r + 1) * (2 * r + 1);
-#endif
 
       // a < 2^16 * n < 2^22 regardless of bit depth
       uint32_t a = ROUND_POWER_OF_TWO(A[k], 2 * (bit_depth - 8));
@@ -1172,12 +1076,21 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
     }
   }
 
+#if CONFIG_FAST_SGR
+  av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
+                                           flt1, flt_stride, bit_depth,
+                                           params->r1, params->e1);
+  av1_selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
+                                           flt2, flt_stride, bit_depth,
+                                           params->r2, params->e2);
+#else
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
                                       flt_stride, bit_depth, params->r1,
                                       params->e1);
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt2,
                                       flt_stride, bit_depth, params->r2,
                                       params->e2);
+#endif  // CONFIG_FAST_SGR
 }
 
 void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
@@ -1225,9 +1138,15 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
 
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, stripe_width - j);
+#if CONFIG_FAST_SGR
+    apply_selfguided_restoration_c(src + j, w, stripe_height, src_stride,
+                                   rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
+                                   dst + j, dst_stride, tmpbuf, bit_depth, 0);
+#else
     apply_selfguided_restoration(src + j, w, stripe_height, src_stride,
                                  rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                  dst + j, dst_stride, tmpbuf, bit_depth, 0);
+#endif  // CONFIG_FAST_SGR
   }
 }
 
@@ -1263,9 +1182,15 @@ static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                          int32_t *tmpbuf, int bit_depth) {
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, stripe_width - j);
+#if CONFIG_FAST_SGR
+    apply_selfguided_restoration_c(src8 + j, w, stripe_height, src_stride,
+                                   rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
+                                   dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
+#else
     apply_selfguided_restoration(src8 + j, w, stripe_height, src_stride,
                                  rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
                                  dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
+#endif  // CONFIG_FAST_SGR
   }
 }
 
