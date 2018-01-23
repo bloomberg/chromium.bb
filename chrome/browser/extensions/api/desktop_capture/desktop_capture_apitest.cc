@@ -187,7 +187,8 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
 // Flaky on Windows: http://crbug.com/301887
 // Fails on Chrome OS: http://crbug.com/718512
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Flaky on macOS: http://crbug.com/804897
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_ChooseDesktopMedia DISABLED_ChooseDesktopMedia
 #else
 #define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
