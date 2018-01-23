@@ -92,7 +92,7 @@ static_library("prefetch") {
 
   deps = [
     "//base",
-    "//components/download/public",
+    "//components/download/public/background_service:public",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/keyed_service/core",
@@ -139,7 +139,7 @@ static_library("test_support") {
   deps = [
     ":prefetch",
     "//base",
-    "//components/download/public",
+    "//components/download/public/background_service:public",
     "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
@@ -203,8 +203,8 @@ source_set("unit_tests") {
     ":prefetch",
     ":test_support",
     "//base",
-    "//components/download/public",
-    "//components/download/public/test:test_support",
+    "//components/download/public/background_service:public",
+    "//components/download/public/background_service/test:test_support",
     "//components/gcm_driver/instance_id",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",

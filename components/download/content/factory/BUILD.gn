@@ -11,14 +11,14 @@ source_set("factory") {
   ]
 
   public_deps = [
-    "//components/download/public",
+    "//components/download/public/background_service:public",
   ]
 
   deps = [
     "//base",
     "//components/download/content/internal",
-    "//components/download/internal",
-    "//components/download/internal/proto",
+    "//components/download/internal/background_service:internal",
+    "//components/download/internal/background_service/proto",
     "//components/keyed_service/content",
     "//components/leveldb_proto",
     "//content/public/browser",

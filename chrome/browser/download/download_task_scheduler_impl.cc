@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "components/download/public/download_service.h"
+#include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/browser_context.h"
 
 DownloadTaskSchedulerImpl::DownloadTaskSchedulerImpl(

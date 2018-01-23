@@ -4,7 +4,7 @@
 
 #include "components/download/content/factory/navigation_monitor_factory.h"
 
-#include "components/download/internal/navigation_monitor_impl.h"
+#include "components/download/internal/background_service/navigation_monitor_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace download {

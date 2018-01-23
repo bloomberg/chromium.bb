@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/download/public/logger.h"
+#include "components/download/public/background_service/logger.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace download {
