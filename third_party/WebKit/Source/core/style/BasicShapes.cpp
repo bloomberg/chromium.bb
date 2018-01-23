@@ -140,13 +140,6 @@ bool BasicShapePolygon::operator==(const BasicShape& o) const {
   return wind_rule_ == other.wind_rule_ && values_ == other.values_;
 }
 
-static FloatSize FloatSizeForLengthSize(const LengthSize& length_size,
-                                        const FloatRect& bounding_box) {
-  return FloatSize(
-      FloatValueForLength(length_size.Width(), bounding_box.Width()),
-      FloatValueForLength(length_size.Height(), bounding_box.Height()));
-}
-
 void BasicShapeInset::GetPath(Path& path, const FloatRect& bounding_box) {
   DCHECK(path.IsEmpty());
   float left = FloatValueForLength(left_, bounding_box.Width());
@@ -159,11 +152,12 @@ void BasicShapeInset::GetPath(Path& path, const FloatRect& bounding_box) {
       std::max<float>(bounding_box.Height() - top -
                           FloatValueForLength(bottom_, bounding_box.Height()),
                       0));
+  const FloatSize& box_size = bounding_box.Size();
   auto radii = FloatRoundedRect::Radii(
-      FloatSizeForLengthSize(top_left_radius_, bounding_box),
-      FloatSizeForLengthSize(top_right_radius_, bounding_box),
-      FloatSizeForLengthSize(bottom_left_radius_, bounding_box),
-      FloatSizeForLengthSize(bottom_right_radius_, bounding_box));
+      FloatSizeForLengthSize(top_left_radius_, box_size),
+      FloatSizeForLengthSize(top_right_radius_, box_size),
+      FloatSizeForLengthSize(bottom_left_radius_, box_size),
+      FloatSizeForLengthSize(bottom_right_radius_, box_size));
 
   FloatRoundedRect final_rect(rect, radii);
   final_rect.ConstrainRadii();

@@ -1145,10 +1145,7 @@ static FloatPoint PerspectiveOrigin(const LayoutBox& box) {
   // Perspective origin has no effect without perspective.
   DCHECK(style.HasPerspective());
   FloatSize border_box_size(box.Size());
-  return FloatPoint(
-      FloatValueForLength(style.PerspectiveOriginX(), border_box_size.Width()),
-      FloatValueForLength(style.PerspectiveOriginY(),
-                          border_box_size.Height()));
+  return FloatPointForLengthPoint(style.PerspectiveOrigin(), border_box_size);
 }
 
 static bool NeedsPerspective(const LayoutObject& object) {

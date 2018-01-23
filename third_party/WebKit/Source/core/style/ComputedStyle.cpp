@@ -1053,26 +1053,6 @@ bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
   return DataEquivalent(TextShadow(), other.TextShadow());
 }
 
-static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
-                                            const LengthSize& top_right,
-                                            const LengthSize& bottom_left,
-                                            const LengthSize& bottom_right,
-                                            LayoutSize size) {
-  return FloatRoundedRect::Radii(
-      FloatSize(
-          FloatValueForLength(top_left.Width(), size.Width().ToFloat()),
-          FloatValueForLength(top_left.Height(), size.Height().ToFloat())),
-      FloatSize(
-          FloatValueForLength(top_right.Width(), size.Width().ToFloat()),
-          FloatValueForLength(top_right.Height(), size.Height().ToFloat())),
-      FloatSize(
-          FloatValueForLength(bottom_left.Width(), size.Width().ToFloat()),
-          FloatValueForLength(bottom_left.Height(), size.Height().ToFloat())),
-      FloatSize(
-          FloatValueForLength(bottom_right.Width(), size.Width().ToFloat()),
-          FloatValueForLength(bottom_right.Height(), size.Height().ToFloat())));
-}
-
 StyleImage* ComputedStyle::ListStyleImage() const {
   return ListStyleImageInternal();
 }
@@ -1087,6 +1067,17 @@ void ComputedStyle::SetColor(const Color& v) {
   SetColorInternal(v);
 }
 
+static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
+                                            const LengthSize& top_right,
+                                            const LengthSize& bottom_left,
+                                            const LengthSize& bottom_right,
+                                            FloatSize size) {
+  return FloatRoundedRect::Radii(FloatSizeForLengthSize(top_left, size),
+                                 FloatSizeForLengthSize(top_right, size),
+                                 FloatSizeForLengthSize(bottom_left, size),
+                                 FloatSizeForLengthSize(bottom_right, size));
+}
+
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     const LayoutRect& border_rect,
     bool include_logical_left_edge,
@@ -1095,7 +1086,7 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
   if (HasBorderRadius()) {
     FloatRoundedRect::Radii radii = CalcRadiiFor(
         BorderTopLeftRadius(), BorderTopRightRadius(), BorderBottomLeftRadius(),
-        BorderBottomRightRadius(), border_rect.Size());
+        BorderBottomRightRadius(), FloatSize(border_rect.Size()));
     rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(),
                                      include_logical_left_edge,
                                      include_logical_right_edge);
