@@ -1951,7 +1951,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // If in the future this changes this should be updated to somehow get a
       // meaningful value.
       false,                                   // initiated_in_secure_context
-      info.begin_params->suggested_filename);  // suggested_filename
+      info.common_params.suggested_filename);  // suggested_filename
   extra_info->SetBlobHandles(std::move(blob_handles));
   extra_info->set_navigation_ui_data(std::move(navigation_ui_data));
 

@@ -532,7 +532,11 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
       should_check_main_world_csp, false /* started_from_context_menu */,
-      info.url_request.HasUserGesture());
+      info.url_request.HasUserGesture(),
+      info.url_request.GetSuggestedFilename().has_value()
+          ? base::Optional<std::string>(
+                info.url_request.GetSuggestedFilename()->Utf8())
+          : base::nullopt);
 }
 
 WebFrameLoadType ReloadFrameLoadTypeFor(
@@ -6737,11 +6741,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           GetRequestContextTypeForWebURLRequest(info.url_request),
           GetMixedContentContextTypeForWebURLRequest(info.url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,
-          initiator_origin, client_side_redirect_url,
-          info.url_request.GetSuggestedFilename().has_value()
-              ? base::Optional<std::string>(
-                    info.url_request.GetSuggestedFilename()->Utf8())
-              : base::nullopt);
+          initiator_origin, client_side_redirect_url);
 
   GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
                                   std::move(begin_navigation_params));

@@ -261,9 +261,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetEntryCount());
   request_params.post_content_type = post_content_type;
 
-  // TODO(jochen): Move suggested_filename from BeginNavigationParams to
-  // CommonNavigationParams, now that it's also used here for browser initiated
-  // requests.
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
       mojom::BeginNavigationParams::New(
@@ -272,7 +269,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           blink::WebMixedContentContextType::kBlockable, is_form_submission,
           GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, initiator,
-          GURL() /* client_side_redirect_url */, entry.suggested_filename()),
+          GURL() /* client_side_redirect_url */),
       request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry));
   return navigation_request;
@@ -549,7 +546,7 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
           common_params_.should_check_main_world_csp,
-          begin_params_->is_form_submission, begin_params_->suggested_filename,
+          begin_params_->is_form_submission, common_params_.suggested_filename,
           common_params_.method, common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
@@ -1175,7 +1172,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
           std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          begin_params_->suggested_filename, response_,
+          common_params_.suggested_filename, response_,
           std::move(url_loader_client_endpoints_), ssl_info_.cert_status,
           frame_tree_node_->frame_tree_node_id());
 
