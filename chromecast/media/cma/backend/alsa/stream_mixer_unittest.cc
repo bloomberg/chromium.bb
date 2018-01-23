@@ -472,7 +472,22 @@ class StreamMixerTest : public testing::Test {
     StreamMixer::Get()->SetMixerOutputStreamForTest(std::move(output));
   }
 
-  ~StreamMixerTest() override { StreamMixer::Get()->ClearInputsForTest(); }
+  ~StreamMixerTest() override {
+    // The remaining MockPostProcessor objects are still indirectly owned by a
+    // leaky static.  Manually verify and clear them here and mark them as
+    // leaked so Gmock doesn't complain.
+    for (auto& itr : *MockPostProcessor::instances()) {
+      testing::Mock::VerifyAndClear(itr.second);
+      testing::Mock::AllowLeak(itr.second);
+    }
+    MockPostProcessor::instances()->clear();
+
+    // Similarly, mock_alsa_ is also indirectly owned by a leaky static.
+    testing::Mock::VerifyAndClear(mock_alsa_);
+    testing::Mock::AllowLeak(mock_alsa_);
+
+    StreamMixer::Get()->ClearInputsForTest();
+  }
 
   MockAlsaWrapper* mock_alsa() { return mock_alsa_; }
 

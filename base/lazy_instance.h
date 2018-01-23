@@ -81,25 +81,6 @@ struct LazyInstanceTraitsBase {
 // can implement the more complicated pieces out of line in the .cc file.
 namespace internal {
 
-// This traits class causes destruction the contained Type at process exit via
-// AtExitManager. This is probably generally not what you want. Instead, prefer
-// Leaky below.
-template <typename Type>
-struct DestructorAtExitLazyInstanceTraits {
-  static const bool kRegisterOnExit = true;
-#if DCHECK_IS_ON()
-  static const bool kAllowedToAccessOnNonjoinableThread = false;
-#endif
-
-  static Type* New(void* instance) {
-    return LazyInstanceTraitsBase<Type>::New(instance);
-  }
-
-  static void Delete(Type* instance) {
-    LazyInstanceTraitsBase<Type>::CallDestructor(instance);
-  }
-};
-
 // Use LazyInstance<T>::Leaky for a less-verbose call-site typedef; e.g.:
 // base::LazyInstance<T>::Leaky my_leaky_lazy_instance;
 // instead of:
@@ -122,6 +103,11 @@ struct LeakyLazyInstanceTraits {
   static void Delete(Type* instance) {
   }
 };
+
+// TODO(dcheng): DestructorAtExit will be completely removed in followups if
+// there are no issues discovered.
+template <typename Type>
+using DestructorAtExitLazyInstanceTraits = LeakyLazyInstanceTraits<Type>;
 
 template <typename Type>
 struct ErrorMustSelectLazyOrDestructorAtExitForLazyInstance {};
@@ -147,9 +133,10 @@ class LazyInstance {
 
   // Convenience typedef to avoid having to repeat Type for leaky lazy
   // instances.
-  typedef LazyInstance<Type, internal::LeakyLazyInstanceTraits<Type>> Leaky;
-  typedef LazyInstance<Type, internal::DestructorAtExitLazyInstanceTraits<Type>>
-      DestructorAtExit;
+  using Leaky = LazyInstance<Type, internal::LeakyLazyInstanceTraits<Type>>;
+  // TODO(dcheng): DestructorAtExit will be completely removed in followups if
+  // there are no issues discovered.
+  using DestructorAtExit = Leaky;
 
   Type& Get() {
     return *Pointer();
