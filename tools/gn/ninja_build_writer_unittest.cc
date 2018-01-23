@@ -9,10 +9,12 @@
 #include "tools/gn/pool.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
-TEST(NinjaBuildWriter, TwoTargets) {
-  Scheduler scheduler;
+using NinjaBuildWriterTest = TestWithScheduler;
+
+TEST_F(NinjaBuildWriterTest, TwoTargets) {
   TestWithScope setup;
   Err err;
 
@@ -95,8 +97,7 @@ TEST(NinjaBuildWriter, TwoTargets) {
 #undef EXPECT_SNIPPET
 }
 
-TEST(NinjaBuildWriter, DuplicateOutputs) {
-  Scheduler scheduler;
+TEST_F(NinjaBuildWriterTest, DuplicateOutputs) {
   TestWithScope setup;
   Err err;
 

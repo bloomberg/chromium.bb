@@ -309,7 +309,7 @@ class Target : public Item {
                                std::vector<OutputFile>* outputs) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(Target, ResolvePrecompiledHeaders);
+  FRIEND_TEST_ALL_PREFIXES(TargetTest, ResolvePrecompiledHeaders);
 
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.

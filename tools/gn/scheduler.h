@@ -13,8 +13,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/label.h"
 #include "tools/gn/source_file.h"
@@ -31,7 +31,7 @@ class Scheduler {
   bool Run();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return main_loop_.task_runner();
+    return main_thread_task_runner_;
   }
 
   InputFileManager* input_file_manager() { return input_file_manager_.get(); }
@@ -45,7 +45,7 @@ class Scheduler {
   void Log(const std::string& verb, const std::string& msg);
   void FailWithError(const Err& err);
 
-  void ScheduleWork(const base::Closure& work);
+  void ScheduleWork(base::OnceClosure work);
 
   void Shutdown();
 
@@ -97,12 +97,15 @@ class Scheduler {
 
   void DoTargetFileWrite(const Target* target);
 
-  void DoWork(const base::Closure& closure);
+  void DoWork(base::OnceClosure closure);
 
   void OnComplete();
 
-  base::MessageLoop main_loop_;
-  scoped_refptr<base::SequencedWorkerPool> pool_;
+  // Waits for tasks scheduled via ScheduleWork() to complete their execution.
+  void WaitForPoolTasks();
+
+  // TaskRunner for the thread on which the Scheduler is initialized.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   scoped_refptr<InputFileManager> input_file_manager_;
 
@@ -111,6 +114,16 @@ class Scheduler {
   bool verbose_logging_;
 
   base::AtomicRefCount work_count_;
+
+  // Number of tasks scheduled by ScheduleWork() that haven't completed their
+  // execution.
+  base::AtomicRefCount pool_work_count_;
+
+  // Lock for |pool_work_count_cv_|.
+  base::Lock pool_work_count_lock_;
+
+  // Condition variable signaled when |pool_work_count_| reaches zero.
+  base::ConditionVariable pool_work_count_cv_;
 
   mutable base::Lock lock_;
   bool is_failed_;

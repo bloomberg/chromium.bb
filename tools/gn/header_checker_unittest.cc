@@ -9,11 +9,12 @@
 #include "tools/gn/header_checker.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
 namespace {
 
-class HeaderCheckerTest : public testing::Test {
+class HeaderCheckerTest : public TestWithScheduler {
  public:
   HeaderCheckerTest()
       : a_(setup_.settings(), Label(SourceDir("//a/"), "a")),
@@ -52,8 +53,6 @@ class HeaderCheckerTest : public testing::Test {
   }
 
  protected:
-  Scheduler scheduler_;
-
   TestWithScope setup_;
 
   // Some headers that are automatically set up with a public dependency chain.

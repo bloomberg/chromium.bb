@@ -5,12 +5,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
+using FunctionsTarget = TestWithScheduler;
 
 // Checks that we find unused identifiers in targets.
-TEST(FunctionsTarget, CheckUnused) {
-  Scheduler scheduler;
+TEST_F(FunctionsTarget, CheckUnused) {
   TestWithScope setup;
 
   // The target generator needs a place to put the targets or it will fail.
@@ -38,8 +39,7 @@ TEST(FunctionsTarget, CheckUnused) {
 }
 
 // Checks that we find uses of identifiers marked as not needed.
-TEST(FunctionsTarget, CheckNotNeeded) {
-  Scheduler scheduler;
+TEST_F(FunctionsTarget, CheckNotNeeded) {
   TestWithScope setup;
 
   // The target generator needs a place to put the targets or it will fail.
@@ -93,8 +93,7 @@ TEST(FunctionsTarget, CheckNotNeeded) {
 // Checks that the defaults applied to a template invoked by target() use
 // the name of the template, rather than the string "target" (which is the
 // name of the actual function being called).
-TEST(FunctionsTarget, TemplateDefaults) {
-  Scheduler scheduler;
+TEST_F(FunctionsTarget, TemplateDefaults) {
   TestWithScope setup;
 
   // The target generator needs a place to put the targets or it will fail.

@@ -5,10 +5,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
-TEST(FunctionToolchain, RuntimeOutputs) {
-  Scheduler scheduler;
+using FunctionToolchain = TestWithScheduler;
+
+TEST_F(FunctionToolchain, RuntimeOutputs) {
   TestWithScope setup;
 
   // These runtime outputs are a subset of the outputs so are OK.
