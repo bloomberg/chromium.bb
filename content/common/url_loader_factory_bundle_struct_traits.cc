@@ -6,28 +6,32 @@
 
 namespace mojo {
 
-using Traits = StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
-                            content::URLLoaderFactoryBundle>;
+using Traits =
+    StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
+                 std::unique_ptr<content::URLLoaderFactoryBundleInfo>>;
 
 // static
-network::mojom::URLLoaderFactoryPtr Traits::default_factory(
-    content::URLLoaderFactoryBundle& bundle) {
-  return std::move(bundle.default_factory_);
+network::mojom::URLLoaderFactoryPtrInfo Traits::default_factory(
+    BundleInfoType& bundle) {
+  return std::move(bundle->default_factory_info());
 }
 
 // static
-std::map<std::string, network::mojom::URLLoaderFactoryPtr> Traits::factories(
-    content::URLLoaderFactoryBundle& bundle) {
-  return std::move(bundle.factories_);
+std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>
+Traits::factories(BundleInfoType& bundle) {
+  return std::move(bundle->factories_info());
 }
 
 // static
 bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
-                  content::URLLoaderFactoryBundle* out_bundle) {
-  out_bundle->SetDefaultFactory(
-      data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtr>());
-  if (!data.ReadFactories(&out_bundle->factories_))
+                  BundleInfoType* out_bundle) {
+  *out_bundle = std::make_unique<content::URLLoaderFactoryBundleInfo>();
+
+  (*out_bundle)->default_factory_info() =
+      data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtrInfo>();
+  if (!data.ReadFactories(&(*out_bundle)->factories_info()))
     return false;
+
   return true;
 }
 
