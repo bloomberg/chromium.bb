@@ -199,4 +199,32 @@ NSString* GetTextFieldForID(int categoryId) {
   [self exitSettingsMenu];
 }
 
+// Checks that if the autofill profiles and credit cards list view is in edit
+// mode, the "autofill" and "wallet" switch items are disabled.
+- (void)testListViewEditMode {
+  [self loadAndSubmitTheForm];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(IDS_IOS_AUTOFILL))]
+      performAction:grey_tap()];
+
+  // Switch on edit mode.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      performAction:grey_tap()];
+
+  // Check the "autofill" and "wallet" switches are disabled. Disabled switches
+  // are toggled off.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
+                                   @"autofillItem_switch", NO, NO)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
+                                   @"walletItem_switch", NO, NO)]
+      assertWithMatcher:grey_notNil()];
+}
+
 @end

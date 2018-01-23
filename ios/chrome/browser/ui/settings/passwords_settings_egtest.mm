@@ -942,8 +942,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 }
 
-// Checks that if the list view is in edit mode, then the details password view
-// is not accessible on tapping the entries.
+// Checks that if the list view is in edit mode, the "Save Passwords" switch is
+// disabled and the details password view is not accessible on tapping the
+// entries.
 - (void)testEditMode {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -955,6 +956,13 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   OpenPasswordSettings();
 
   TapEdit();
+
+  // Check that the "Save Passwords" switch is disabled. Disabled switches are
+  // toggled off.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
+                                   @"savePasswordsItem_switch", NO, NO)]
+      assertWithMatcher:grey_notNil()];
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];

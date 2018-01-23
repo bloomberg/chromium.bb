@@ -585,6 +585,18 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
          [item isKindOfClass:[BlacklistedFormContentItem class]];
 }
 
+- (void)collectionViewWillBeginEditing:(UICollectionView*)collectionView {
+  [super collectionViewWillBeginEditing:collectionView];
+
+  [self setSavePasswordsSwitchItemEnabled:NO];
+}
+
+- (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
+  [super collectionViewWillEndEditing:collectionView];
+
+  [self setSavePasswordsSwitchItemEnabled:YES];
+}
+
 - (void)collectionView:(UICollectionView*)collectionView
     willDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
   // Ensure indexPaths are sorted to maintain delete logic, and keep track of
@@ -751,6 +763,27 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [alertController addAction:okAction];
   alertController.preferredAction = okAction;
   [self presentViewController:alertController animated:YES completion:nil];
+}
+
+#pragma mark Helper methods
+
+// Sets the save passwords switch item's enabled status to |enabled| and
+// reconfigures the corresponding cell.
+- (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  if (![model hasItemForItemType:ItemTypeSavePasswordsSwitch
+               sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+    return;
+  }
+  NSIndexPath* switchPath =
+      [model indexPathForItemType:ItemTypeSavePasswordsSwitch
+                sectionIdentifier:SectionIdentifierSavePasswordsSwitch];
+  CollectionViewSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+          [model itemAtIndexPath:switchPath]);
+  [switchItem setEnabled:enabled];
+  [self reconfigureCellsForItems:@[ switchItem ]];
 }
 
 @end
