@@ -5,7 +5,6 @@ include_rules = [
   "+gpu/command_buffer/client/gl_in_process_context.h",
   "+gpu/command_buffer/client/gles2_implementation.h",
   "+gpu/command_buffer/client/gles2_interface_stub.h",
-  "+gpu/command_buffer/client/gles2_lib.h",
   "+gpu/command_buffer/client/raster_implementation_gles.h",
   "+gpu/command_buffer/client/shared_memory_limits.h",
   "+gpu/command_buffer/common/context_creation_attribs.h",
