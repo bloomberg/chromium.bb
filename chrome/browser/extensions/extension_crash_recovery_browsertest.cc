@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -30,21 +30,21 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/background_page_watcher.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/notification_list.h"
 
 using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 
-class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
+class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
  protected:
-  void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
-    display_service_ =
-        std::make_unique<NotificationDisplayServiceTester>(profile());
-  }
+  virtual void AcceptNotification(size_t index) = 0;
+  virtual void CancelNotification(size_t index) = 0;
+  virtual size_t CountBalloons() = 0;
 
   ExtensionService* GetExtensionService() {
     return extensions::ExtensionSystem::Get(browser()->profile())->
@@ -122,25 +122,44 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     CheckExtensionConsistency(second_extension_id_);
   }
 
-  void AcceptNotification(const std::string& extension_id) {
+  std::string first_extension_id_;
+  std::string second_extension_id_;
+};
+
+class ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
+ protected:
+  void AcceptNotification(size_t index) override {
+    message_center::MessageCenter* message_center =
+        message_center::MessageCenter::Get();
+    ASSERT_GT(message_center->NotificationCount(), index);
+    message_center::NotificationList::Notifications::reverse_iterator it =
+        message_center->GetVisibleNotifications().rbegin();
+    for (size_t i = 0; i < index; ++i)
+      ++it;
+    std::string id = (*it)->id();
     extensions::TestExtensionRegistryObserver observer(GetExtensionRegistry());
-    display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
-                                    "app.background.crashed." + extension_id,
-                                    base::nullopt, base::nullopt);
+    message_center->ClickOnNotification(id);
     auto* extension = observer.WaitForExtensionLoaded();
     extensions::BackgroundPageWatcher(GetProcessManager(), extension)
         .WaitForOpen();
   }
 
-  size_t CountNotifications() {
-    return display_service_
-        ->GetDisplayedNotificationsForType(NotificationHandler::Type::TRANSIENT)
-        .size();
+  void CancelNotification(size_t index) override {
+    message_center::MessageCenter* message_center =
+        message_center::MessageCenter::Get();
+    ASSERT_GT(message_center->NotificationCount(), index);
+    message_center::NotificationList::Notifications::reverse_iterator it =
+        message_center->GetVisibleNotifications().rbegin();
+    for (size_t i = 0; i < index; ++i)
+      ++it;
+    ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(
+        (*it)->id(),
+        NotificationUIManager::GetProfileID(browser()->profile())));
   }
 
-  std::string first_extension_id_;
-  std::string second_extension_id_;
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+  size_t CountBalloons() override {
+    return message_center::MessageCenter::Get()->NotificationCount();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
@@ -150,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   CrashExtension(first_extension_id_);
   ASSERT_EQ(count_before, GetEnabledExtensionCount());
   ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
-  ASSERT_NO_FATAL_FAILURE(AcceptNotification(first_extension_id_));
+  ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(first_extension_id_);
@@ -167,9 +186,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, DISABLED_CloseAndReload) {
   ASSERT_EQ(count_before, GetEnabledExtensionCount());
   ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
-  // In 2013, when this test became flaky, this line was part of the test.
-  // CancelNotification() no longer exists.
-  // ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
+  ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
@@ -194,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
 
   // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, CountNotifications());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -207,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   WebContents* original_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(original_tab);
-  ASSERT_EQ(1U, CountNotifications());
+  ASSERT_EQ(1U, CountBalloons());
 
   // Open a new tab, but the balloon will still be there.
   chrome::NewTab(browser());
@@ -215,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(new_current_tab);
   ASSERT_NE(new_current_tab, original_tab);
-  ASSERT_EQ(1U, CountNotifications());
+  ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);
 
@@ -224,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, CountNotifications());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
@@ -237,14 +254,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   WebContents* current_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(current_tab);
-  ASSERT_EQ(1U, CountNotifications());
+  ASSERT_EQ(1U, CountBalloons());
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(
       browser(), ui_test_utils::GetTestUrl(
                      base::FilePath(base::FilePath::kCurrentDirectory),
                      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
-  ASSERT_EQ(1U, CountNotifications());
+  ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);
 
@@ -253,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   // The balloon should automatically hide after the extension is successfully
   // reloaded.
-  ASSERT_EQ(0U, CountNotifications());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ShutdownWhileCrashed) {
@@ -269,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashFirst) {
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
-  ASSERT_NO_FATAL_FAILURE(AcceptNotification(first_extension_id_));
+  ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(first_extension_id_);
@@ -282,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
   LoadSecondExtension();
   CrashExtension(second_extension_id_);
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
-  ASSERT_NO_FATAL_FAILURE(AcceptNotification(second_extension_id_));
+  ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(first_extension_id_);
@@ -304,13 +321,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   {
     SCOPED_TRACE("first balloon");
-    ASSERT_NO_FATAL_FAILURE(AcceptNotification(first_extension_id_));
+    ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
     CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second balloon");
-    ASSERT_NO_FATAL_FAILURE(AcceptNotification(second_extension_id_));
+    ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
     CheckExtensionConsistency(first_extension_id_);
     CheckExtensionConsistency(second_extension_id_);
   }
@@ -327,13 +344,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
 
   {
     SCOPED_TRACE("first balloon");
-    ASSERT_NO_FATAL_FAILURE(AcceptNotification(first_extension_id_));
+    ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
     CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second balloon");
-    ASSERT_NO_FATAL_FAILURE(AcceptNotification(second_extension_id_));
+    ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
     CheckExtensionConsistency(first_extension_id_);
     CheckExtensionConsistency(second_extension_id_);
   }
@@ -367,10 +384,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   // Accept notification 1 before canceling notification 0.
   // Otherwise, on Linux and Windows, there is a race here, in which
   // canceled notifications do not immediately go away.
-  ASSERT_NO_FATAL_FAILURE(AcceptNotification(first_extension_id_));
-  // In 2013, when this test became flaky, these lines were part of the test.
-  // CancelNotification() no longer exists.
-  // ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
+  ASSERT_NO_FATAL_FAILURE(AcceptNotification(1));
+  ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
 
   SCOPED_TRACE("balloons done");
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
@@ -393,16 +408,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(current_tab);
     // At the beginning we should have one balloon displayed for each extension.
-    ASSERT_EQ(2U, CountNotifications());
+    ASSERT_EQ(2U, CountBalloons());
     ReloadExtension(first_extension_id_);
     // One of the balloons should hide after the extension is reloaded.
-    ASSERT_EQ(1U, CountNotifications());
+    ASSERT_EQ(1U, CountBalloons());
     CheckExtensionConsistency(first_extension_id_);
   }
 
   {
     SCOPED_TRACE("second: balloon");
-    ASSERT_NO_FATAL_FAILURE(AcceptNotification(second_extension_id_));
+    ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
     CheckExtensionConsistency(first_extension_id_);
     CheckExtensionConsistency(second_extension_id_);
   }
@@ -417,14 +432,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
-  ASSERT_EQ(1U, CountNotifications());
+  ASSERT_EQ(1U, CountBalloons());
   UninstallExtension(first_extension_id_);
   base::RunLoop().RunUntilIdle();
 
   SCOPED_TRACE("after uninstalling");
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
-  ASSERT_EQ(0U, CountNotifications());
+  ASSERT_EQ(0U, CountBalloons());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
@@ -465,23 +480,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   EXPECT_EQ(count_before, GetEnabledExtensionCount());
   EXPECT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
-  extensions::TestExtensionRegistryObserver observer(GetExtensionRegistry());
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&browser()
-                                                   ->tab_strip_model()
-                                                   ->GetActiveWebContents()
-                                                   ->GetController()));
+        content::Source<NavigationController>(
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController()));
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     observer.Wait();
   }
-  auto* extension = observer.WaitForExtensionLoaded();
-  EXPECT_EQ(first_extension_id_, extension->id());
-
   // Extension should now be loaded.
   SCOPED_TRACE("after reloading the tab");
   CheckExtensionConsistency(first_extension_id_);
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
-  ASSERT_EQ(0U, CountNotifications());
+  ASSERT_EQ(0U, CountBalloons());
 }
