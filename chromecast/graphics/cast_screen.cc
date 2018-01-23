@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/aura/env.h"
@@ -21,20 +22,32 @@ namespace chromecast {
 namespace {
 
 const int64_t kDisplayId = 1;
+constexpr char kCastGraphicsHeight[] = "cast-graphics-height";
+constexpr char kCastGraphicsWidth[] = "cast-graphics-width";
 constexpr char kDisplayRotation[] = "display-rotation";
 
 // Helper to return the screen resolution (device pixels)
 // to use.
 gfx::Size GetScreenResolution() {
-  if (base::FeatureList::IsEnabled(kTripleBuffer720)) {
-    return gfx::Size(1280, 720);
-  } else if (GraphicsPropertiesShlib::IsSupported(
-                 GraphicsPropertiesShlib::k1080p,
-                 base::CommandLine::ForCurrentProcess()->argv())) {
-    return gfx::Size(1920, 1080);
-  } else {
-    return gfx::Size(1280, 720);
+  gfx::Size res(1280, 720);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!base::FeatureList::IsEnabled(kTripleBuffer720) &&
+      GraphicsPropertiesShlib::IsSupported(GraphicsPropertiesShlib::k1080p,
+                                           cmd_line->argv())) {
+    res = gfx::Size(1920, 1080);
   }
+
+  int cast_gfx_width = 0;
+  int cast_gfx_height = 0;
+  if (base::StringToInt(cmd_line->GetSwitchValueASCII(kCastGraphicsWidth),
+                        &cast_gfx_width) &&
+      base::StringToInt(cmd_line->GetSwitchValueASCII(kCastGraphicsHeight),
+                        &cast_gfx_height) &&
+      cast_gfx_width > 0 && cast_gfx_height > 0) {
+    res.set_width(cast_gfx_width);
+    res.set_height(cast_gfx_height);
+  }
+  return res;
 }
 
 display::Display::Rotation GetRotationFromCommandLine() {
