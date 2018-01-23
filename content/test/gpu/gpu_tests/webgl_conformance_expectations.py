@@ -104,7 +104,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
-        bug=1619) # angle bug ID
+        ['no_passthrough'], bug=1619) # angle bug ID
 
     # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
@@ -130,10 +130,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
-
-    # Passthrough command decoder
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough'], bug=1523) # angle bug ID
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/buffers/buffer-uninitialized.html',
@@ -201,10 +197,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
-
-    # Passthrough command decoder / D3D11
-    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
-        ['passthrough', 'd3d11'], bug=1639) # angle bug ID
 
     # Win / AMD / Passthrough command decoder / D3D11
     self.Flaky('conformance/textures/misc/copytexsubimage2d-subrects.html',
@@ -409,16 +401,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-
-    # Win 10 / Intel / Passthrough command decoder
-    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
-        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
-        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
-    self.Fail('conformance/textures/image_bitmap_from_video/*',
-        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
-    self.Fail('conformance/textures/video/*',
-        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
 
     # D3D9 / Passthrough command decoder
     self.Fail('conformance/textures/canvas/' +
