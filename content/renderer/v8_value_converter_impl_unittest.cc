@@ -415,14 +415,14 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   TestWeirdType(converter, v8::Undefined(isolate_),
                 base::Value::Type::NONE,  // Arbitrary type, result is NULL.
                 std::unique_ptr<base::Value>());
-  TestWeirdType(converter, v8::Date::New(isolate_, 1000),
+  TestWeirdType(converter, v8::Date::New(context, 1000).ToLocalChecked(),
                 base::Value::Type::DICTIONARY,
                 std::unique_ptr<base::Value>(new base::DictionaryValue()));
   TestWeirdType(converter, regex, base::Value::Type::DICTIONARY,
                 std::unique_ptr<base::Value>(new base::DictionaryValue()));
 
   converter.SetDateAllowed(true);
-  TestWeirdType(converter, v8::Date::New(isolate_, 1000),
+  TestWeirdType(converter, v8::Date::New(context, 1000).ToLocalChecked(),
                 base::Value::Type::DOUBLE,
                 std::unique_ptr<base::Value>(new base::Value(1.0)));
 
