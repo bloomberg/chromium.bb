@@ -30,7 +30,9 @@ const CSSValue* JustifyItems::ParseSingleValue(
     return CSSValuePair::Create(legacy, position_keyword,
                                 CSSValuePair::kDropIdenticalValues);
   }
-  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(range);
+
+  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(
+      range, CSSParsingUtils::IsSelfPositionOrLeftOrRightKeyword);
 }
 
 const CSSValue* JustifyItems::CSSValueFromComputedStyleInternal(
