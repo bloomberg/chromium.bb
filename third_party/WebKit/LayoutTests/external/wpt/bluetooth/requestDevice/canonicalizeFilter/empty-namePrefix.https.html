@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/testdriver.js"></script>
-<script src="../../../resources/testdriver-vendor.js"></script>
-<script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script src="/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
-
-let test_specs = [{
+'use strict';
+const test_desc = 'requestDevice with empty namePrefix. ' +
+    'Should reject with TypeError.';
+const expected = new TypeError();
+const test_specs = [{
   filters: [{ namePrefix: ''}]
 }, {
   filters: [{ namePrefix: '', name: 'Name'}]
@@ -28,13 +31,14 @@ let test_specs = [{
   optionalServices: ['heart_rate']
 }];
 
-bluetooth_test(t => {
+bluetooth_test(() => {
     let test_promises = Promise.resolve();
     test_specs.forEach(args => {
-        test_promises = test_promises
-            .then(() => promise_rejects(
-                t, new TypeError(), requestDeviceWithTrustedClick(args)));
+      test_promises = test_promises
+          .then(() => assert_promise_rejects_with_message(
+              requestDeviceWithTrustedClick(args),
+              expected));
     });
     return test_promises;
-}, 'requestDevice with empty namePrefix. Should reject with TypeError.');
+  }, test_desc);
 </script>
