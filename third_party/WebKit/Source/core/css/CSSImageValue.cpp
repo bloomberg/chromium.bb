@@ -80,7 +80,7 @@ StyleImage* CSSImageValue::CacheImage(
 
     ImageResourceContent* cached_image =
         ImageResourceContent::Fetch(params, document.Fetcher());
-    if (!cached_image->ErrorOccurred()) {
+    if (cached_image && !cached_image->ErrorOccurred()) {
       cached_image_ =
           StyleFetchedImage::Create(cached_image, document, params.Url());
     } else {

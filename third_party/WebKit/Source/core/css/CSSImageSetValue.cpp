@@ -133,7 +133,7 @@ StyleImage* CSSImageSetValue::CacheImage(
 
     ImageResourceContent* cached_image =
         ImageResourceContent::Fetch(params, document.Fetcher());
-    if (!cached_image->ErrorOccurred()) {
+    if (cached_image && !cached_image->ErrorOccurred()) {
       cached_image_ = StyleFetchedImageSet::Create(
           cached_image, image.scale_factor, this, params.Url());
     } else {
