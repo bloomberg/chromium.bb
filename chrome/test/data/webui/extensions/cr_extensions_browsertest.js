@@ -738,4 +738,24 @@ TEST_F('CrExtensionsKioskModeTest', 'AddButton', function() {
   this.runMochaTest(extension_kiosk_mode_tests.TestNames.AddButton);
 });
 
+TEST_F('CrExtensionsKioskModeTest', 'Layout', function() {
+  this.runMochaTest(extension_kiosk_mode_tests.TestNames.Layout);
+});
+
+TEST_F('CrExtensionsKioskModeTest', 'AutoLaunch', function() {
+  this.runMochaTest(extension_kiosk_mode_tests.TestNames.AutoLaunch);
+});
+
+TEST_F('CrExtensionsKioskModeTest', 'Bailout', function() {
+  this.runMochaTest(extension_kiosk_mode_tests.TestNames.Bailout);
+});
+
+TEST_F('CrExtensionsKioskModeTest', 'Updated', function() {
+  this.runMochaTest(extension_kiosk_mode_tests.TestNames.Updated);
+});
+
+TEST_F('CrExtensionsKioskModeTest', 'AddError', function() {
+  this.runMochaTest(extension_kiosk_mode_tests.TestNames.AddError);
+});
+
 GEN('#endif');
