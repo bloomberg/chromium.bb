@@ -8,7 +8,6 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace {
@@ -30,7 +29,7 @@ void RunTestCase(std::string& ipc_filter_message, SkBitmap& bitmap,
                  SkCanvas* canvas) {
   // This call shouldn't crash or cause ASAN to flag any memory issues
   // If nothing bad happens within this call, everything is fine
-  sk_sp<SkImageFilter> flattenable = SkValidatingDeserializeImageFilter(
+  sk_sp<SkImageFilter> flattenable = SkImageFilter::Deserialize(
       ipc_filter_message.c_str(), ipc_filter_message.size());
 
   // Adding some info, but the test passed if we got here without any trouble

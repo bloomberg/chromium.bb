@@ -8,7 +8,6 @@
 #include "skia/ext/skia_utils_base.h"
 #include "skia/public/interfaces/image_filter.mojom-shared.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace mojo {
