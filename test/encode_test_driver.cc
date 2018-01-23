@@ -82,15 +82,14 @@ void Encoder::EncodeFrameInternal(const VideoSource &video,
   }
 
   // Encode the frame
-  API_REGISTER_STATE_CHECK(res = aom_codec_encode(&encoder_, img, video.pts(),
-                                                  video.duration(), frame_flags,
-                                                  deadline_));
+  API_REGISTER_STATE_CHECK(res =
+                               aom_codec_encode(&encoder_, img, video.pts(),
+                                                video.duration(), frame_flags));
   ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
 }
 
 void Encoder::Flush() {
-  const aom_codec_err_t res =
-      aom_codec_encode(&encoder_, NULL, 0, 0, 0, deadline_);
+  const aom_codec_err_t res = aom_codec_encode(&encoder_, NULL, 0, 0, 0);
   if (!encoder_.priv)
     ASSERT_EQ(AOM_CODEC_ERROR, res) << EncoderError();
   else
@@ -105,11 +104,8 @@ void EncoderTest::InitializeConfig() {
 void EncoderTest::SetMode(TestMode mode) {
   switch (mode) {
     case kOnePassGood:
-    case kTwoPassGood: deadline_ = AOM_DL_GOOD_QUALITY; break;
-    case kRealTime:
-      deadline_ = AOM_DL_GOOD_QUALITY;
-      cfg_.g_lag_in_frames = 0;
-      break;
+    case kTwoPassGood: break;
+    case kRealTime: cfg_.g_lag_in_frames = 0; break;
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;
   }
   mode_ = mode;
@@ -217,7 +213,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
 
     BeginPassHook(pass);
     testing::internal::scoped_ptr<Encoder> encoder(
-        codec_->CreateEncoder(cfg_, deadline_, init_flags_, &stats_));
+        codec_->CreateEncoder(cfg_, init_flags_, &stats_));
     ASSERT_TRUE(encoder.get() != NULL);
 
     ASSERT_NO_FATAL_FAILURE(video->Begin());

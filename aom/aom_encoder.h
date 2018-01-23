@@ -789,22 +789,10 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
  */
 aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 
-/*!\brief deadline parameter analogous to  AVx GOOD QUALITY mode. */
-#define AOM_DL_GOOD_QUALITY (1000000)
 /*!\brief Encode a frame
  *
  * Encodes a video frame at the given "presentation time." The presentation
  * time stamp (PTS) \ref MUST be strictly increasing.
- *
- * The encoder supports the notion of a soft real-time deadline. Given a
- * non-zero value to the deadline parameter, the encoder will make a "best
- * effort" guarantee to  return before the given time slice expires. It is
- * implicit that limiting the available time to encode will degrade the
- * output quality. The encoder can be given an unlimited time to produce the
- * best possible frame by specifying a deadline of '0'. This deadline
- * supercedes the AVx notion of "best quality, good quality, realtime".
- * Applications that wish to map these former settings to the new deadline
- * based system can use the symbol #AOM_DL_GOOD_QUALITY.
  *
  * When the last frame has been passed to the encoder, this function should
  * continue to be called, with the img parameter set to NULL. This will
@@ -817,7 +805,6 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * \param[in]    pts       Presentation time stamp, in timebase units.
  * \param[in]    duration  Duration to show frame, in timebase units.
  * \param[in]    flags     Flags to use for encoding this frame.
- * \param[in]    deadline  Time to spend encoding, in microseconds. (0=infinite)
  *
  * \retval #AOM_CODEC_OK
  *     The configuration was populated.
@@ -828,8 +815,7 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  */
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,
-                                 aom_enc_frame_flags_t flags,
-                                 unsigned long deadline);
+                                 aom_enc_frame_flags_t flags);
 
 /*!\brief Set compressed data output buffer
  *

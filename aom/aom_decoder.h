@@ -203,8 +203,6 @@ aom_codec_err_t aom_codec_get_stream_info(aom_codec_ctx_t *ctx,
  * \param[in] data_sz      Size of the coded data, in bytes.
  * \param[in] user_priv    Application specific data to associate with
  *                         this frame.
- * \param[in] deadline     Soft deadline the decoder should attempt to meet,
- *                         in us. Set to zero for unlimited.
  *
  * \return Returns #AOM_CODEC_OK if the coded data was processed completely
  *         and future pictures can be decoded without error. Otherwise,
@@ -212,8 +210,7 @@ aom_codec_err_t aom_codec_get_stream_info(aom_codec_ctx_t *ctx,
  *         for recoverability capabilities.
  */
 aom_codec_err_t aom_codec_decode(aom_codec_ctx_t *ctx, const uint8_t *data,
-                                 unsigned int data_sz, void *user_priv,
-                                 long deadline);
+                                 unsigned int data_sz, void *user_priv);
 
 /*!\brief Decoded frames iterator
  *

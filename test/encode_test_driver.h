@@ -78,9 +78,9 @@ class TwopassStatsStore {
 // level of abstraction will be fleshed out as more tests are written.
 class Encoder {
  public:
-  Encoder(aom_codec_enc_cfg_t cfg, unsigned long deadline,
-          const unsigned long init_flags, TwopassStatsStore *stats)
-      : cfg_(cfg), deadline_(deadline), init_flags_(init_flags), stats_(stats) {
+  Encoder(aom_codec_enc_cfg_t cfg, const uint32_t init_flags,
+          TwopassStatsStore *stats)
+      : cfg_(cfg), init_flags_(init_flags), stats_(stats) {
     memset(&encoder_, 0, sizeof(encoder_));
   }
 
@@ -128,8 +128,6 @@ class Encoder {
     cfg_ = *cfg;
   }
 
-  void set_deadline(unsigned long deadline) { deadline_ = deadline; }
-
  protected:
   virtual aom_codec_iface_t *CodecInterface() const = 0;
 
@@ -147,7 +145,6 @@ class Encoder {
 
   aom_codec_ctx_t encoder_;
   aom_codec_enc_cfg_t cfg_;
-  unsigned long deadline_;
   unsigned long init_flags_;
   TwopassStatsStore *stats_;
 };
@@ -173,7 +170,7 @@ class EncoderTest {
   // Initialize the cfg_ member with the default configuration.
   void InitializeConfig();
 
-  // Map the TestMode enum to the deadline_ and passes_ variables.
+  // Map the TestMode enum to the passes_ variables.
   void SetMode(TestMode mode);
 
   // Set encoder flag.
@@ -233,7 +230,6 @@ class EncoderTest {
   bool abort_;
   aom_codec_enc_cfg_t cfg_;
   unsigned int passes_;
-  unsigned long deadline_;
   TwopassStatsStore stats_;
   unsigned long init_flags_;
   unsigned long frame_flags_;

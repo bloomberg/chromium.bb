@@ -30,12 +30,12 @@ TEST(DecodeAPI, InvalidParams) {
 
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_dec_init(NULL, NULL, NULL, 0));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_dec_init(&dec, NULL, NULL, 0));
-  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, NULL, 0, NULL, 0));
-  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, buf, 0, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, NULL, 0, NULL));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, buf, 0, NULL));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-            aom_codec_decode(NULL, buf, NELEMENTS(buf), NULL, 0));
+            aom_codec_decode(NULL, buf, NELEMENTS(buf), NULL));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-            aom_codec_decode(NULL, NULL, NELEMENTS(buf), NULL, 0));
+            aom_codec_decode(NULL, NULL, NELEMENTS(buf), NULL));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
@@ -47,11 +47,11 @@ TEST(DecodeAPI, InvalidParams) {
 #if !CONFIG_OBU
     // Needs to be fixed
     EXPECT_EQ(AOM_CODEC_UNSUP_BITSTREAM,
-              aom_codec_decode(&dec, buf, NELEMENTS(buf), NULL, 0));
+              aom_codec_decode(&dec, buf, NELEMENTS(buf), NULL));
 #endif
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_decode(&dec, NULL, NELEMENTS(buf), NULL, 0));
-    EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(&dec, buf, 0, NULL, 0));
+              aom_codec_decode(&dec, NULL, NELEMENTS(buf), NULL));
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(&dec, buf, 0, NULL));
 
     EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&dec));
   }

@@ -43,7 +43,6 @@
 #include "../video_writer.h"
 
 static const char *exec_name;
-static const unsigned int deadline = AOM_DL_GOOD_QUALITY;
 
 void usage_exit(void) {
   fprintf(stderr,
@@ -92,13 +91,12 @@ static int aom_img_size_bytes(aom_image_t *img) {
 
 static int get_frame_stats(aom_codec_ctx_t *ctx, const aom_image_t *img,
                            aom_codec_pts_t pts, unsigned int duration,
-                           aom_enc_frame_flags_t flags, unsigned int dl,
+                           aom_enc_frame_flags_t flags,
                            aom_fixed_buf_t *stats) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
-  const aom_codec_err_t res =
-      aom_codec_encode(ctx, img, pts, duration, flags, dl);
+  const aom_codec_err_t res = aom_codec_encode(ctx, img, pts, duration, flags);
   if (res != AOM_CODEC_OK) die_codec(ctx, "Failed to get frame stats.");
 
   while ((pkt = aom_codec_get_cx_data(ctx, &iter)) != NULL) {
@@ -118,13 +116,11 @@ static int get_frame_stats(aom_codec_ctx_t *ctx, const aom_image_t *img,
 
 static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
                         aom_codec_pts_t pts, unsigned int duration,
-                        aom_enc_frame_flags_t flags, unsigned int dl,
-                        AvxVideoWriter *writer) {
+                        aom_enc_frame_flags_t flags AvxVideoWriter *writer) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
-  const aom_codec_err_t res =
-      aom_codec_encode(ctx, img, pts, duration, flags, dl);
+  const aom_codec_err_t res = aom_codec_encode(ctx, img, pts, duration, flags);
   if (res != AOM_CODEC_OK) die_codec(ctx, "Failed to encode frame.");
 
   while ((pkt = aom_codec_get_cx_data(ctx, &iter)) != NULL) {
@@ -197,7 +193,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
                           AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                           AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                           AOM_EFLAG_NO_UPD_ARF,
-                      deadline, &stats);
+                      &stats);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
@@ -234,14 +230,14 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
                               AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                               AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                               AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
-                          deadline, &stats);
+                          &stats);
         }
       }
     }
   }
   // Flush encoder.
   // No ARF, this should not be needed.
-  while (get_frame_stats(&codec, NULL, frame_count, 1, 0, deadline, &stats)) {
+  while (get_frame_stats(&codec, NULL, frame_count, 1, 0, &stats)) {
   }
 
   printf("Pass 0 complete. Processed %d frames.\n", frame_count);
@@ -310,7 +306,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
                        AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                        AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                        AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
-                   deadline, writer);
+                   writer);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
@@ -366,7 +362,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
                            AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
                            AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                            AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
-                       deadline, writer);
+                       writer);
         }
       }
     }
@@ -374,7 +370,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
 
   // Flush encoder.
   // No ARF, this should not be needed.
-  while (encode_frame(&codec, NULL, -1, 1, 0, deadline, writer)) {
+  while (encode_frame(&codec, NULL, -1, 1, 0, writer)) {
   }
 
   if (aom_codec_destroy(&codec)) die_codec(&codec, "Failed to destroy codec.");

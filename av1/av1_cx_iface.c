@@ -1110,26 +1110,6 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
-                                    unsigned long deadline) {
-  MODE new_mode = GOOD;
-
-  switch (ctx->cfg.g_pass) {
-    case AOM_RC_ONE_PASS:
-      switch (deadline) {
-        default: new_mode = GOOD; break;
-      }
-      break;
-    case AOM_RC_FIRST_PASS: break;
-    case AOM_RC_LAST_PASS: new_mode = GOOD;
-  }
-
-  if (ctx->oxcf.mode != new_mode) {
-    ctx->oxcf.mode = new_mode;
-    av1_change_config(ctx->cpi, &ctx->oxcf);
-  }
-}
-
 // Turn on to test if supplemental superframe data breaks decoding
 #define TEST_SUPPLEMENTAL_SUPERFRAME_DATA 0
 
@@ -1233,8 +1213,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                       const aom_image_t *img,
                                       aom_codec_pts_t pts,
                                       unsigned long duration,
-                                      aom_enc_frame_flags_t enc_flags,
-                                      unsigned long deadline) {
+                                      aom_enc_frame_flags_t enc_flags) {
   const size_t kMinCompressedSize = 8192;
   volatile aom_codec_err_t res = AOM_CODEC_OK;
   AV1_COMP *const cpi = ctx->cpi;
@@ -1261,7 +1240,11 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     }
   }
 
-  pick_quickcompress_mode(ctx, deadline);
+  if (ctx->oxcf.mode != GOOD) {
+    ctx->oxcf.mode = GOOD;
+    av1_change_config(ctx->cpi, &ctx->oxcf);
+  }
+
   aom_codec_pkt_list_init(&ctx->pkt_list);
 
   volatile aom_enc_frame_flags_t flags = enc_flags;

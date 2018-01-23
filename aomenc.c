@@ -157,10 +157,6 @@ static const arg_def_t limit =
     ARG_DEF(NULL, "limit", 1, "Stop encoding after n input frames");
 static const arg_def_t skip =
     ARG_DEF(NULL, "skip", 1, "Skip the first n input frames");
-static const arg_def_t deadline =
-    ARG_DEF("d", "deadline", 1, "Deadline per frame (usec)");
-static const arg_def_t good_dl =
-    ARG_DEF(NULL, "good", 0, "Use Good Quality Deadline");
 static const arg_def_t quietarg =
     ARG_DEF("q", "quiet", 0, "Do not print encode progress");
 static const arg_def_t verbosearg =
@@ -216,8 +212,6 @@ static const arg_def_t *main_args[] = { &help,
                                         &fpf_name,
                                         &limit,
                                         &skip,
-                                        &deadline,
-                                        &good_dl,
                                         &quietarg,
                                         &verbosearg,
                                         &psnrarg,
@@ -902,8 +896,6 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
   global->codec = get_aom_encoder_by_index(num_encoder - 1);
   global->passes = 0;
   global->color_type = I420;
-  /* Assign default deadline to good quality */
-  global->deadline = AOM_DL_GOOD_QUALITY;
 
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
@@ -927,10 +919,6 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
         die("Error: Invalid pass selected (%d)\n", global->pass);
     } else if (arg_match(&arg, &usage, argi))
       global->usage = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &deadline, argi))
-      global->deadline = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &good_dl, argi))
-      global->deadline = AOM_DL_GOOD_QUALITY;
     else if (arg_match(&arg, &use_yv12, argi))
       global->color_type = YV12;
     else if (arg_match(&arg, &use_i420, argi))
@@ -1694,8 +1682,7 @@ static void encode_frame(struct stream_state *stream,
 
   aom_usec_timer_start(&timer);
   aom_codec_encode(&stream->encoder, img, frame_start,
-                   (unsigned long)(next_frame_start - frame_start), 0,
-                   global->deadline);
+                   (uint32_t)(next_frame_start - frame_start), 0);
   aom_usec_timer_mark(&timer);
   stream->cx_time += aom_usec_timer_elapsed(&timer);
   ctx_exit_on_error(&stream->encoder, "Stream %d: Failed to encode frame",
@@ -1769,7 +1756,7 @@ static void get_cx_data(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
         if (global->test_decode != TEST_DECODE_OFF && !stream->mismatch_seen) {
           aom_codec_decode(&stream->decoder, pkt->data.frame.buf,
-                           (unsigned int)pkt->data.frame.sz, NULL, 0);
+                           (unsigned int)pkt->data.frame.sz, NULL);
           if (stream->decoder.err) {
             warn_or_exit_on_error(&stream->decoder,
                                   global->test_decode == TEST_DECODE_FATAL,

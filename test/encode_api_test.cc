@@ -33,8 +33,8 @@ TEST(EncodeAPI, InvalidParams) {
 
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(NULL, NULL, NULL, 0));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, NULL, NULL, 0));
-  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, NULL, 0, 0, 0, 0));
-  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, &img, 0, 0, 0, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, NULL, 0, 0, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, &img, 0, 0, 0));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_enc_config_default(NULL, NULL, 0));
@@ -53,7 +53,7 @@ TEST(EncodeAPI, InvalidParams) {
 
     EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(kCodecs[i], &cfg, 0));
     EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, kCodecs[i], &cfg, 0));
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0));
 
     EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
   }

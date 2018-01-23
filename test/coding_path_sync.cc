@@ -89,7 +89,7 @@ class CompressedSource {
 
     aom_image_t img;
     aom_img_wrap(&img, format_, width_, height_, 0, buf);
-    aom_codec_encode(&enc_, &img, frame_count_++, 1, 0, 0);
+    aom_codec_encode(&enc_, &img, frame_count_++, 1, 0);
 
     aom_codec_iter_t iter = NULL;
 
@@ -150,7 +150,7 @@ class Decoder {
 
   std::vector<int16_t> decode(const aom_codec_cx_pkt_t *pkt) {
     aom_codec_decode(&dec_, static_cast<uint8_t *>(pkt->data.frame.buf),
-                     static_cast<unsigned int>(pkt->data.frame.sz), NULL, 0);
+                     static_cast<unsigned int>(pkt->data.frame.sz), NULL);
 
     aom_codec_iter_t iter = NULL;
     return Serialize(aom_codec_get_frame(&dec_, &iter));

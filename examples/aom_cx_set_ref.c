@@ -111,8 +111,7 @@ static int encode_frame(aom_codec_ctx_t *ecodec, aom_image_t *img,
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
   int got_data;
-  const aom_codec_err_t res =
-      aom_codec_encode(ecodec, img, frame_in, 1, 0, AOM_DL_GOOD_QUALITY);
+  const aom_codec_err_t res = aom_codec_encode(ecodec, img, frame_in, 1, 0);
   if (res != AOM_CODEC_OK) die_codec(ecodec, "Failed to encode frame");
 
   got_data = 0;
@@ -139,7 +138,7 @@ static int encode_frame(aom_codec_ctx_t *ecodec, aom_image_t *img,
       // Decode 1 frame.
       if (test_decode) {
         if (aom_codec_decode(dcodec, pkt->data.frame.buf,
-                             (unsigned int)pkt->data.frame.sz, NULL, 0))
+                             (unsigned int)pkt->data.frame.sz, NULL))
           die_codec(dcodec, "Failed to decode frame.");
       }
     }

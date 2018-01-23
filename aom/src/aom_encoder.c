@@ -213,8 +213,7 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
 
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,
-                                 aom_enc_frame_flags_t flags,
-                                 unsigned long deadline) {
+                                 aom_enc_frame_flags_t flags) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
   if (!ctx || (img && !duration))
@@ -232,8 +231,8 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
     FLOATING_POINT_INIT
 
     if (num_enc == 1)
-      res = ctx->iface->enc.encode(get_alg_priv(ctx), img, pts, duration, flags,
-                                   deadline);
+      res =
+          ctx->iface->enc.encode(get_alg_priv(ctx), img, pts, duration, flags);
     else {
       /* Multi-resolution encoding:
        * Encode multi-levels in reverse order. For example,
@@ -247,7 +246,7 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
 
       for (i = num_enc - 1; i >= 0; i--) {
         if ((res = ctx->iface->enc.encode(get_alg_priv(ctx), img, pts, duration,
-                                          flags, deadline)))
+                                          flags)))
           break;
 
         ctx--;

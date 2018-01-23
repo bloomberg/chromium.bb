@@ -108,7 +108,7 @@ bool AV1Decoder::step() {
     size_t frame_size;
     const unsigned char *frame_data;
     frame_data = aom_video_reader_get_frame(reader, &frame_size);
-    if (aom_codec_decode(&codec, frame_data, frame_size, NULL, 0)) {
+    if (aom_codec_decode(&codec, frame_data, frame_size, NULL)) {
       fprintf(stderr, "Failed to decode frame.");
       return false;
     } else {

@@ -39,7 +39,6 @@ struct AvxEncoderConfig {
   int passes;
   int pass;
   int usage;
-  int deadline;
   ColorInputType color_type;
   int quiet;
   int verbose;

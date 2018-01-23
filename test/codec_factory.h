@@ -39,7 +39,6 @@ class CodecFactory {
                                  const aom_codec_flags_t flags) const = 0;
 
   virtual Encoder *CreateEncoder(aom_codec_enc_cfg_t cfg,
-                                 unsigned long deadline,
                                  const unsigned long init_flags,
                                  TwopassStatsStore *stats) const = 0;
 
@@ -89,9 +88,9 @@ class AV1Decoder : public Decoder {
 
 class AV1Encoder : public Encoder {
  public:
-  AV1Encoder(aom_codec_enc_cfg_t cfg, unsigned long deadline,
-             const unsigned long init_flags, TwopassStatsStore *stats)
-      : Encoder(cfg, deadline, init_flags, stats) {}
+  AV1Encoder(aom_codec_enc_cfg_t cfg, const uint32_t init_flags,
+             TwopassStatsStore *stats)
+      : Encoder(cfg, init_flags, stats) {}
 
  protected:
   virtual aom_codec_iface_t *CodecInterface() const {
@@ -123,14 +122,12 @@ class AV1CodecFactory : public CodecFactory {
   }
 
   virtual Encoder *CreateEncoder(aom_codec_enc_cfg_t cfg,
-                                 unsigned long deadline,
                                  const unsigned long init_flags,
                                  TwopassStatsStore *stats) const {
 #if CONFIG_AV1_ENCODER
-    return new AV1Encoder(cfg, deadline, init_flags, stats);
+    return new AV1Encoder(cfg, init_flags, stats);
 #else
     (void)cfg;
-    (void)deadline;
     (void)init_flags;
     (void)stats;
     return NULL;

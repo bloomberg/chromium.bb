@@ -95,8 +95,7 @@ static int encode_frame(aom_codec_ctx_t *codec, aom_image_t *img,
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
-  const aom_codec_err_t res =
-      aom_codec_encode(codec, img, frame_index, 1, 0, AOM_DL_GOOD_QUALITY);
+  const aom_codec_err_t res = aom_codec_encode(codec, img, frame_index, 1, 0);
   if (res != AOM_CODEC_OK) die_codec(codec, "Failed to encode frame");
 
   while ((pkt = aom_codec_get_cx_data(codec, &iter)) != NULL) {
