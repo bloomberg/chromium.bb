@@ -133,7 +133,7 @@ class DraggedNodeImageBuilder {
         DocumentLifecycle::kPaintClean);
 
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       border_box_properties =
           *layer->GetLayoutObject().FirstFragment().LocalBorderBoxProperties();
     }
