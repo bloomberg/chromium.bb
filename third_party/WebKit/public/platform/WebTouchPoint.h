@@ -50,14 +50,6 @@ class WebTouchPoint : public WebPointerProperties {
         radius_y(0),
         rotation_angle(0) {}
 
-  void SetPositionInWidget(float x, float y) {
-    position_in_widget_ = WebFloatPoint(x, y);
-  }
-
-  void SetPositionInScreen(float x, float y) {
-    position_in_screen_ = WebFloatPoint(x, y);
-  }
-
   enum State {
     kStateUndefined,
     kStateReleased,

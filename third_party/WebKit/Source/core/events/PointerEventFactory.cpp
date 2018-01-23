@@ -544,6 +544,22 @@ bool PointerEventFactory::IsActive(const int pointer_id) const {
   return pointer_id_mapping_.Contains(pointer_id);
 }
 
+bool PointerEventFactory::IsPrimary(
+    const WebPointerProperties& properties) const {
+  // Mouse event is always primary.
+  if (properties.pointer_type == WebPointerProperties::PointerType::kMouse)
+    return true;
+
+  // If !id_count, no pointer active, current WebPointerEvent will
+  // be primary pointer when added to map.
+  if (!id_count_[static_cast<int>(properties.pointer_type)])
+    return true;
+
+  int pointer_id = GetPointerEventId(properties);
+  return (pointer_id != PointerEventFactory::kInvalidId &&
+          IsPrimary(pointer_id));
+}
+
 bool PointerEventFactory::IsActiveButtonsState(const int pointer_id) const {
   return pointer_id_mapping_.Contains(pointer_id) &&
          pointer_id_mapping_.at(pointer_id).is_active_buttons;

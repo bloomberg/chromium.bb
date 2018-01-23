@@ -31,7 +31,9 @@
         e[a] = document.getElementById(a);
     });
 
-    document.ondragstart = function(e) { debug("PASS"); e.preventDefault();}
+    document.ondragstart = function(event) { debug("PASS"); event.preventDefault();}
+
+    var uniqueId = 1234;
 
     function testLongPress(touchpoint)
     {
@@ -40,9 +42,22 @@
             // instead.
             // The first long press selects the text. The second long press will
             // initiate drag and drop.
-            eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            eventSender.addTouchPoint(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            eventSender.touchStart(uniqueId + 1);
+            eventSender.releaseTouchPoint(0);
+            eventSender.touchEnd(uniqueId + 2);
+            eventSender.gestureTapDown(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 1);
+            eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 2);
+
             eventSender.leapForward(100);
-            eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+
+            eventSender.addTouchPoint(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            eventSender.touchStart(uniqueId + 3);
+            eventSender.releaseTouchPoint(0);
+            eventSender.touchEnd(uniqueId + 4);
+            eventSender.gestureTapDown(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 3);
+            eventSender.gestureLongPress(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 4);
+            uniqueId += 4;
         }
         else
             debug("gestureLongPress not implemented by this platform.");

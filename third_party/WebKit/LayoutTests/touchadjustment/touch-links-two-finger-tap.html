@@ -25,6 +25,7 @@
 <script>
     var element;
     var adjustedNode;
+    var uniqueId = 1234;
     // Set up shortcut access to elements
     var e = {};
     ['sandbox', 'link1', 'link2', 'link3'].forEach(function(a) {
@@ -35,8 +36,20 @@
 
     function testTwoFingerTap(touchpoint)
     {
-        if (eventSender.gestureTwoFingerTap)
+        if (eventSender.gestureTwoFingerTap) {
+
+            eventSender.addTouchPoint(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            eventSender.touchStart(uniqueId + 1);
+            eventSender.addTouchPoint(touchpoint.x + 20, touchpoint.y  + 20, touchpoint.width, touchpoint.height);
+            eventSender.touchStart(uniqueId + 2);
+            eventSender.releaseTouchPoint(1);
+            eventSender.touchEnd(uniqueId + 3);
+            eventSender.releaseTouchPoint(0);
+            eventSender.touchEnd(uniqueId + 4);
+            eventSender.gestureTapDown(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height, uniqueId + 1);
             eventSender.gestureTwoFingerTap(touchpoint.x, touchpoint.y, touchpoint.width, touchpoint.height);
+            uniqueId += 4;
+        }
         else
             debug("gestureTwoFingerTap not implemented by this platform.");
     }
