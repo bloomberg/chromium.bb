@@ -25,9 +25,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/api/LineLayoutItem.h"
@@ -215,30 +212,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
     nchars = number_of_chars - charnum;
 
   DCHECK(GetDocument().GetFrame());
-
-  // Find selection start
-  VisiblePosition start = VisiblePosition::FirstPositionInNode(
-      *const_cast<SVGTextContentElement*>(this));
-  for (unsigned i = 0; i < charnum; ++i)
-    start = NextPositionOf(start);
-  if (start.IsNull())
-    return;
-
-  // Find selection end
-  VisiblePosition end(start);
-  for (unsigned i = 0; i < nchars; ++i)
-    end = NextPositionOf(end);
-  if (end.IsNull())
-    return;
-
-  // TODO(editing-dev): We assume |start| and |end| are not null and we don't
-  // known when |start| and |end| are null. Once we get a such case, we check
-  // null for |start| and |end|.
-  GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
-      SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(start.DeepEquivalent(), end.DeepEquivalent())
-          .SetAffinity(start.Affinity())
-          .Build());
+  GetDocument().GetFrame()->Selection().SelectSubString(*this, charnum, nchars);
 }
 
 bool SVGTextContentElement::IsPresentationAttribute(

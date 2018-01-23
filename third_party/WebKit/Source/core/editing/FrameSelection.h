@@ -97,6 +97,7 @@ class CORE_EXPORT FrameSelection final
   void SetSelectionAndEndTyping(const SelectionInDOMTree&);
   void SelectAll(SetSelectionBy);
   void SelectAll();
+  void SelectSubString(const Element&, int offset, int count);
   void Clear();
   bool IsHidden() const;
 
