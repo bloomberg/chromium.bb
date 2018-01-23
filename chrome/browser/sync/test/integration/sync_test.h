@@ -395,6 +395,11 @@ class SyncTest : public InProcessBrowserTest {
   // server types).
   ServerType server_type_;
 
+  // The default profile, created before our actual testing |profiles_|. This is
+  // needed in a workaround for https://crbug.com/801569, see comments in the
+  // .cc file.
+  Profile* previous_profile_;
+
   // Number of sync clients that will be created by a test.
   int num_clients_;
 
