@@ -6628,6 +6628,41 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
+// Makes sure the CONNECT request packet for a QUIC proxy contains the correct
+// HTTP/2 stream dependency and weights given the request priority.
+TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
+  session_params_.enable_quic = true;
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "QUIC proxy.example.org:70");
+
+  const RequestPriority request_priority = MEDIUM;
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, false, request_priority,
+      ConnectRequestHeaders("mail.example.org:443"), 0, &header_stream_offset));
+  // Return an error, so the transaction stops here (this test isn't interested
+  // in the rest).
+  mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_FAILED);
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  request_.url = GURL("https://mail.example.org/");
+  HttpNetworkTransaction trans(request_priority, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
+
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+}
+
 // Test the request-challenge-retry sequence for basic auth, over a QUIC
 // connection when setting up a QUIC proxy tunnel.
 TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {

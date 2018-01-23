@@ -17,6 +17,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/chromium/quic_proxy_client_socket.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
@@ -658,6 +659,9 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateStreamComplete(int result) {
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
   std::unique_ptr<QuicChromiumClientStream::Handle> quic_stream =
       quic_session_->ReleaseStream();
+
+  SpdyPriority spdy_priority = ConvertRequestPriorityToQuicPriority(priority_);
+  quic_stream->SetPriority(spdy_priority);
 
   transport_socket_.reset(new QuicProxyClientSocket(
       std::move(quic_stream), std::move(quic_session_), user_agent_, endpoint_,
