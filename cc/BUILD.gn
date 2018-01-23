@@ -548,7 +548,6 @@ cc_static_library("test_support") {
     "//components/viz/common",
     "//components/viz/service",
     "//components/viz/test:test_support",
-    "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/common",

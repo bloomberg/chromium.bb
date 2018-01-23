@@ -729,7 +729,6 @@ source_set("common") {
     "//content/public/common:service_names",
     "//crypto",
     "//gin",
-    "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/service",
     "//gpu/ipc:gl_in_process_context",
