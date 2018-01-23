@@ -7,6 +7,8 @@
 
 #include "platform/scheduler/child/metrics_helper.h"
 #include "platform/scheduler/child/worker_task_queue.h"
+#include "platform/scheduler/util/thread_load_tracker.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 namespace scheduler {
@@ -25,6 +27,11 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
   using MetricsHelper::SetThreadType;
 
  private:
+  TaskDurationMetricReporter<TaskType>
+      dedicated_worker_per_task_type_duration_reporter_;
+  TaskDurationMetricReporter<TaskType>
+      dedicated_worker_per_task_type_cpu_duration_reporter_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkerMetricsHelper);
 };
 
