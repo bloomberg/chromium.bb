@@ -428,21 +428,6 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
   return one_sided_refs;
 }
 
-#if CONFIG_EXT_SKIP
-static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
-                                             int ref_offset[2]) {
-  ref_offset[0] = ref_offset[1] = 0;
-  if (!cm->is_skip_mode_allowed) return;
-
-  const int buf_idx_0 = cm->frame_refs[cm->ref_frame_idx_0].idx;
-  const int buf_idx_1 = cm->frame_refs[cm->ref_frame_idx_1].idx;
-  assert(buf_idx_0 != INVALID_IDX && buf_idx_1 != INVALID_IDX);
-
-  ref_offset[0] = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
-  ref_offset[1] = cm->buffer_pool->frame_bufs[buf_idx_1].cur_frame_offset;
-}
-#endif  // CONFIG_EXT_SKIP
-
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
 #if CONFIG_FRAME_SIGN_BIAS
 void av1_setup_frame_sign_bias(AV1_COMMON *cm);
