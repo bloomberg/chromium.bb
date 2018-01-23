@@ -222,11 +222,6 @@ void ScriptedIdleTaskController::RunCallback(
   double allotted_time_millis =
       std::max((deadline_seconds - CurrentTimeTicksInSeconds()) * 1000, 0.0);
 
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, idle_callback_deadline_histogram,
-      ("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", 0, 50, 50));
-  idle_callback_deadline_histogram.Count(allotted_time_millis);
-
   probe::AsyncTask async_task(GetExecutionContext(), idle_task);
   probe::UserCallback probe(GetExecutionContext(), "requestIdleCallback",
                             AtomicString(), true);
