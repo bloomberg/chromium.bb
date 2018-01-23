@@ -358,6 +358,17 @@ void RestartChrome(const base::CommandLine& command_line) {
   restart_requested = true;
 
   if (!base::SysInfo::IsRunningOnChromeOS()) {
+    // Do nothing when running as test on bots or a dev box.
+    const base::CommandLine* current_command_line =
+        base::CommandLine::ForCurrentProcess();
+    const bool is_running_test =
+        current_command_line->HasSwitch(::switches::kTestName) ||
+        current_command_line->HasSwitch(::switches::kTestType);
+    if (is_running_test) {
+      DLOG(WARNING) << "Ignoring chrome restart for test.";
+      return;
+    }
+
     // Relaunch chrome without session manager on dev box.
     ReLaunch(command_line);
     return;
