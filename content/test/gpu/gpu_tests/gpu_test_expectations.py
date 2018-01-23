@@ -79,6 +79,8 @@ class GpuTestExpectations(test_expectations.TestExpectations):
   def __init__(self, url_prefixes=None, is_asan=False):
     super(GpuTestExpectations, self).__init__(
       url_prefixes=url_prefixes, is_asan=is_asan)
+    self._cached_browser = None
+    self._cached_system_info = None
 
   def CreateExpectation(self, expectation, pattern, conditions=None,
                         bug=None):
@@ -105,8 +107,18 @@ class GpuTestExpectations(test_expectations.TestExpectations):
     gpu_matches = True
     angle_renderer = ''
 
-    if browser.supports_system_info:
-      gpu_info = browser.GetSystemInfo().gpu
+    # Fetching the browser's system info is somewhat expensive. Avoid
+    # doing it a lot.
+    if browser != self._cached_browser:
+      self._cached_browser = browser
+      self._cached_system_info = None
+
+    if self._cached_system_info is None:
+      if browser.supports_system_info:
+        self._cached_system_info = browser.GetSystemInfo()
+
+    if self._cached_system_info is not None:
+      gpu_info = self._cached_system_info.gpu
       gpu_vendor = self._GetGpuVendorString(gpu_info)
       gpu_device_id = self._GetGpuDeviceId(gpu_info)
       gpu_matches = ((not expectation.gpu_conditions and
