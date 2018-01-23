@@ -68,7 +68,8 @@ vs-chromium-project.txt
 /c
 /cdm
 /ceee/internal/
-/chrome/android/profiles/chrome-profile-*.prof
+/chrome/android/profiles/afdo.prof
+/chrome/android/profiles/local.txt
 /chrome/angle_unittests_run.xml
 /chrome/build/chrome.x64.orderfile
 /chrome/build/chrome.x86.orderfile
