@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/net/udp_transport.h"
+#include "media/cast/net/udp_transport_impl.h"
 
 #include <algorithm>
 #include <string>
@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "media/cast/net/udp_packet_pipe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
@@ -60,7 +61,7 @@ int32_t GetTransportSendBufferSize(const base::DictionaryValue& options) {
 
 }  // namespace
 
-UdpTransport::UdpTransport(
+UdpTransportImpl::UdpTransportImpl(
     net::NetLog* net_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
@@ -85,9 +86,9 @@ UdpTransport::UdpTransport(
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
 }
 
-UdpTransport::~UdpTransport() = default;
+UdpTransportImpl::~UdpTransportImpl() = default;
 
-void UdpTransport::StartReceiving(
+void UdpTransportImpl::StartReceiving(
     const PacketReceiverCallbackWithStatus& packet_receiver) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
 
@@ -129,19 +130,33 @@ void UdpTransport::StartReceiving(
   ScheduleReceiveNextPacket();
 }
 
-void UdpTransport::StopReceiving() {
-  DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
-  packet_receiver_ = PacketReceiverCallbackWithStatus();
+void UdpTransportImpl::StartReceiving(UdpTransportReceiver* receiver) {
+  DCHECK(packet_receiver_.is_null());
+
+  mojo_packet_receiver_ = receiver;
+  StartReceiving(base::BindRepeating(&UdpTransportImpl::OnPacketReceived,
+                                     base::Unretained(this)));
 }
 
+bool UdpTransportImpl::OnPacketReceived(std::unique_ptr<Packet> packet) {
+  if (mojo_packet_receiver_)
+    mojo_packet_receiver_->OnPacketReceived(*packet);
+  return true;
+}
 
-void UdpTransport::SetDscp(net::DiffServCodePoint dscp) {
+void UdpTransportImpl::StopReceiving() {
+  DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
+  packet_receiver_ = PacketReceiverCallbackWithStatus();
+  mojo_packet_receiver_ = nullptr;
+}
+
+void UdpTransportImpl::SetDscp(net::DiffServCodePoint dscp) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
   next_dscp_value_ = dscp;
 }
 
 #if defined(OS_WIN)
-void UdpTransport::UseNonBlockingIO() {
+void UdpTransportImpl::UseNonBlockingIO() {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
   if (!udp_socket_)
     return;
@@ -149,18 +164,18 @@ void UdpTransport::UseNonBlockingIO() {
 }
 #endif
 
-void UdpTransport::ScheduleReceiveNextPacket() {
+void UdpTransportImpl::ScheduleReceiveNextPacket() {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
   if (!packet_receiver_.is_null() && !receive_pending_) {
     receive_pending_ = true;
-    io_thread_proxy_->PostTask(FROM_HERE,
-                               base::Bind(&UdpTransport::ReceiveNextPacket,
-                                          weak_factory_.GetWeakPtr(),
-                                          net::ERR_IO_PENDING));
+    io_thread_proxy_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&UdpTransportImpl::ReceiveNextPacket,
+                       weak_factory_.GetWeakPtr(), net::ERR_IO_PENDING));
   }
 }
 
-void UdpTransport::ReceiveNextPacket(int length_or_status) {
+void UdpTransportImpl::ReceiveNextPacket(int length_or_status) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
 
   if (packet_receiver_.is_null())
@@ -178,8 +193,8 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
           reinterpret_cast<char*>(&next_packet_->front()));
       length_or_status = udp_socket_->RecvFrom(
           recv_buf_.get(), media::cast::kMaxIpPacketSize, &recv_addr_,
-          base::Bind(&UdpTransport::ReceiveNextPacket,
-                     weak_factory_.GetWeakPtr()));
+          base::BindRepeating(&UdpTransportImpl::ReceiveNextPacket,
+                              weak_factory_.GetWeakPtr()));
       if (length_or_status == net::ERR_IO_PENDING) {
         receive_pending_ = true;
         return;
@@ -219,7 +234,8 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
   }
 }
 
-bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
+bool UdpTransportImpl::SendPacket(PacketRef packet,
+                                  const base::RepeatingClosure& cb) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
   if (!udp_socket_)
     return true;
@@ -250,11 +266,8 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
       new net::WrappedIOBuffer(reinterpret_cast<char*>(&packet->data.front()));
 
   int result;
-  base::Callback<void(int)> callback = base::Bind(&UdpTransport::OnSent,
-                                                  weak_factory_.GetWeakPtr(),
-                                                  buf,
-                                                  packet,
-                                                  cb);
+  base::RepeatingCallback<void(int)> callback = base::BindRepeating(
+      &UdpTransportImpl::OnSent, weak_factory_.GetWeakPtr(), buf, packet, cb);
   if (client_connected_) {
     // If we called Connect() before we must call Write() instead of
     // SendTo(). Otherwise on some platforms we might get
@@ -304,18 +317,18 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
     send_pending_ = true;
     return false;
   }
-  OnSent(buf, packet, base::Closure(), result);
+  OnSent(buf, packet, base::RepeatingClosure(), result);
   return true;
 }
 
-int64_t UdpTransport::GetBytesSent() {
+int64_t UdpTransportImpl::GetBytesSent() {
   return bytes_sent_;
 }
 
-void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
-                          PacketRef packet,
-                          const base::Closure& cb,
-                          int result) {
+void UdpTransportImpl::OnSent(const scoped_refptr<net::IOBuffer>& buf,
+                              PacketRef packet,
+                              const base::RepeatingClosure& cb,
+                              int result) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
 
   send_pending_ = false;
@@ -329,7 +342,7 @@ void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
   }
 }
 
-void UdpTransport::SetUdpOptions(const base::DictionaryValue& options) {
+void UdpTransportImpl::SetUdpOptions(const base::DictionaryValue& options) {
   SetSendBufferSize(GetTransportSendBufferSize(options));
   if (options.HasKey(kOptionDscp)) {
     // The default DSCP value for cast is AF41. Which gives it a higher
@@ -343,8 +356,37 @@ void UdpTransport::SetUdpOptions(const base::DictionaryValue& options) {
 #endif
 }
 
-void UdpTransport::SetSendBufferSize(int32_t send_buffer_size) {
+void UdpTransportImpl::SetSendBufferSize(int32_t send_buffer_size) {
   send_buffer_size_ = send_buffer_size;
+}
+
+void UdpTransportImpl::StartSending(
+    mojo::ScopedDataPipeConsumerHandle packet_pipe) {
+  DCHECK(packet_pipe.is_valid());
+
+  reader_.reset(new UdpPacketPipeReader(std::move(packet_pipe)));
+  ReadNextPacketToSend();
+}
+
+void UdpTransportImpl::ReadNextPacketToSend() {
+  reader_->Read(base::BindOnce(&UdpTransportImpl::OnPacketReadFromDataPipe,
+                               base::Unretained(this)));
+}
+
+void UdpTransportImpl::OnPacketReadFromDataPipe(
+    std::unique_ptr<Packet> packet) {
+  DVLOG(3) << __func__;
+  // TODO(https://crbug.com/530834): Avoid making copy of the |packet|.
+  if (!SendPacket(
+          base::WrapRefCounted(new base::RefCountedData<Packet>(*packet)),
+          base::BindRepeating(&UdpTransportImpl::ReadNextPacketToSend,
+                              base::Unretained(this)))) {
+    return;  // Waiting for the packet to be sent out.
+  }
+  // Force a post task to prevent the stack from growing too deep.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&UdpTransportImpl::ReadNextPacketToSend,
+                                base::Unretained(this)));
 }
 
 }  // namespace cast

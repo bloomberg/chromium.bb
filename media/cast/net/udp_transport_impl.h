@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_NET_UDP_TRANSPORT_H_
-#define MEDIA_CAST_NET_UDP_TRANSPORT_H_
+#ifndef MEDIA_CAST_NET_UDP_TRANSPORT_IMPL_H_
+#define MEDIA_CAST_NET_UDP_TRANSPORT_IMPL_H_
 
 #include <stdint.h>
 
@@ -18,6 +18,7 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/net/udp_transport_interface.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/diff_serv_code_point.h"
@@ -30,8 +31,10 @@ class NetLog;
 namespace media {
 namespace cast {
 
+class UdpPacketPipeReader;
+
 // This class implements UDP transport mechanism for Cast.
-class UdpTransport : public PacketTransport {
+class UdpTransportImpl final : public PacketTransport, public UdpTransport {
  public:
   // Construct a UDP transport.
   // All methods must be called on |io_thread_proxy|.
@@ -42,18 +45,25 @@ class UdpTransport : public PacketTransport {
   // to. If the value is 0.0.0.0:0 the the end point is set to the source
   // address of the first packet received.
   // |send_buffer_size| specifies the size of the socket send buffer.
-  UdpTransport(
+  UdpTransportImpl(
       net::NetLog* net_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
       const CastTransportStatusCallback& status_callback);
-  ~UdpTransport() final;
+  ~UdpTransportImpl() final;
 
+  // PacketTransport implementations.
+  bool SendPacket(PacketRef packet, const base::RepeatingClosure& cb) final;
+  int64_t GetBytesSent() final;
   // Start receiving packets. Packets are submitted to |packet_receiver|.
   void StartReceiving(
       const PacketReceiverCallbackWithStatus& packet_receiver) final;
   void StopReceiving() final;
+
+  // UdpTransport implementations.
+  void StartReceiving(UdpTransportReceiver* receiver) final;
+  void StartSending(mojo::ScopedDataPipeConsumerHandle packet_pipe) final;
 
   // Set a new DSCP value to the socket. The value will be set right before
   // the next send.
@@ -81,10 +91,6 @@ class UdpTransport : public PacketTransport {
   void UseNonBlockingIO();
 #endif
 
-  // PacketTransport implementations.
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final;
-  int64_t GetBytesSent() final;
-
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called
   // once with |length_or_status| set to net::ERR_IO_PENDING to start receiving
@@ -97,8 +103,19 @@ class UdpTransport : public PacketTransport {
 
   void OnSent(const scoped_refptr<net::IOBuffer>& buf,
               PacketRef packet,
-              const base::Closure& cb,
+              const base::RepeatingClosure& cb,
               int result);
+
+  // Called by |reader_| when it completes reading a packet from the data pipe.
+  void OnPacketReadFromDataPipe(std::unique_ptr<Packet> packet);
+
+  // Called when receiving packets from |udp_socket_|. Will pass the packet to
+  // |mojo_packet_receiver_| if provided.
+  bool OnPacketReceived(std::unique_ptr<Packet> packet);
+
+  // Reads the next packet from the data pipe. The reading is sync if the packet
+  // is already avilable in the pipe, and async otherwise.
+  void ReadNextPacketToSend();
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   const net::IPEndPoint local_addr_;
@@ -116,13 +133,20 @@ class UdpTransport : public PacketTransport {
   const CastTransportStatusCallback status_callback_;
   int bytes_sent_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<UdpTransport> weak_factory_;
+  // TODO(xjz): Replace this with a mojo ptr.
+  UdpTransportReceiver* mojo_packet_receiver_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(UdpTransport);
+  // Used to read packets from the data pipe. Created when StartSending() is
+  // called.
+  std::unique_ptr<UdpPacketPipeReader> reader_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<UdpTransportImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UdpTransportImpl);
 };
 
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_UDP_TRANSPORT_H_
+#endif  // MEDIA_CAST_NET_UDP_TRANSPORT_IMPL_H_

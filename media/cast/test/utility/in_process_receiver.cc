@@ -17,10 +17,10 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/udp_transport.h"
+#include "media/cast/net/udp_transport_impl.h"
 
 using media::cast::CastTransportStatus;
-using media::cast::UdpTransport;
+using media::cast::UdpTransportImpl;
 
 namespace media {
 namespace cast {
@@ -99,7 +99,7 @@ void InProcessReceiver::StartOnMainThread() {
   transport_ = CastTransport::Create(
       cast_environment_->Clock(), base::TimeDelta(),
       base::WrapUnique(new InProcessReceiver::TransportClient(this)),
-      std::make_unique<UdpTransport>(
+      std::make_unique<UdpTransportImpl>(
           nullptr, cast_environment_->GetTaskRunner(CastEnvironment::MAIN),
           local_end_point_, remote_end_point_,
           base::Bind(&InProcessReceiver::UpdateCastTransportStatus,

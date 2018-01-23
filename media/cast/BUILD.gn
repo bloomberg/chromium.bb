@@ -104,14 +104,16 @@ source_set("net") {
     "net/rtp/rtp_sender.h",
     "net/udp_packet_pipe.cc",
     "net/udp_packet_pipe.h",
-    "net/udp_transport.cc",
-    "net/udp_transport.h",
+    "net/udp_transport_impl.cc",
+    "net/udp_transport_impl.h",
+    "net/udp_transport_interface.h",
   ]
 
   deps = [
     ":common",
     "//base",
     "//media/mojo/common",
+    "//mojo/public/cpp/system",
     "//net",
   ]
 

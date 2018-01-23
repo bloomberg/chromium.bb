@@ -37,7 +37,7 @@
 #include "media/cast/logging/stats_event_subscriber.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/udp_transport.h"
+#include "media/cast/net/udp_transport_impl.h"
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/input_builder.h"
@@ -265,7 +265,7 @@ int main(int argc, char** argv) {
       media::cast::CastTransport::Create(
           cast_environment->Clock(), base::TimeDelta::FromSeconds(1),
           std::make_unique<TransportClient>(cast_environment->logger()),
-          std::make_unique<media::cast::UdpTransport>(
+          std::make_unique<media::cast::UdpTransportImpl>(
               nullptr, io_message_loop.task_runner(), net::IPEndPoint(),
               remote_endpoint, base::Bind(&UpdateCastTransportStatus)),
           io_message_loop.task_runner());
