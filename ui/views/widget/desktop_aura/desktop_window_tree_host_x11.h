@@ -242,11 +242,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Dispatches a key event.
   void DispatchKeyEvent(ui::KeyEvent* event);
 
-  // Updates the location of |located_event| to be in |host|'s coordinate system
-  // so that it can be dispatched to |host|.
-  void ConvertEventToDifferentHost(ui::LocatedEvent* located_event,
-                                   DesktopWindowTreeHostX11* host);
-
   // Resets the window region for the current widget bounds if necessary.
   void ResetWindowRegion();
 
