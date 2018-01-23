@@ -109,6 +109,7 @@ class PluginObserver::ComponentObserver
         plugin_renderer_interface_->UpdateDownloading();
         break;
       case Events::COMPONENT_NOT_UPDATED:
+      case Events::COMPONENT_UPDATE_ERROR:
         plugin_renderer_interface_->UpdateFailure();
         observer_->RemoveComponentObserver(this);
         break;

@@ -4631,8 +4631,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COMPONENTS_SVC_STATUS_UPTODATE" desc="Service Status">
         Up-to-date
       </message>
-      <message name="IDS_COMPONENTS_SVC_STATUS_NOUPDATE" desc="Service Status">
-        No update
+      <message name="IDS_COMPONENTS_SVC_STATUS_UPDATE_ERROR" desc="Service Status">
+        Update error
       </message>
       <message name="IDS_COMPONENTS_UNKNOWN" desc="Service Status">
         Unknown
@@ -4654,6 +4654,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_COMPONENTS_EVT_STATUS_NOTUPDATED" desc="Service Status">
         Component not updated
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_UPDATE_ERROR" desc="Service Status">
+        Update error
       </message>
       <message name="IDS_COMPONENTS_EVT_STATUS_DOWNLOADING" desc="Service Status">
         Component downloading

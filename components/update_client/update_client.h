@@ -299,9 +299,14 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
       // Sent when a CRX has been successfully updated.
       COMPONENT_UPDATED,
 
-      // Sent when a CRX has not been updated following an update check:
-      // either there was no update available, or the update failed.
+      // Sent when a CRX has not been updated because there was no update
+      // available for this component.
       COMPONENT_NOT_UPDATED,
+
+      // Sent when an error ocurred during an update for any reason, including
+      // the update check itself failed, or the download of the update payload
+      // failed, or applying the update failed.
+      COMPONENT_UPDATE_ERROR,
 
       // Sent when CRX bytes are being downloaded.
       COMPONENT_UPDATE_DOWNLOADING,
