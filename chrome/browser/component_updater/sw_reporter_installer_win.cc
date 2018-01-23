@@ -449,7 +449,8 @@ void SwReporterOnDemandFetcher::OnEvent(Events event, const std::string& id) {
   if (id != kSwReporterComponentId)
     return;
 
-  if (event == Events::COMPONENT_NOT_UPDATED) {
+  if (event == Events::COMPONENT_NOT_UPDATED ||
+      event == Events::COMPONENT_UPDATE_ERROR) {
     ReportOnDemandUpdateSucceededHistogram(false);
     std::move(on_error_callback_).Run();
     cus_->RemoveObserver(this);

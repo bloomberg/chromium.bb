@@ -393,7 +393,7 @@ void Component::StateUpdateError::DoHandle() {
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
   TransitionState(nullptr);
-  component.NotifyObservers(Events::COMPONENT_NOT_UPDATED);
+  component.NotifyObservers(Events::COMPONENT_UPDATE_ERROR);
 }
 
 Component::StateCanUpdate::StateCanUpdate(Component* component)
