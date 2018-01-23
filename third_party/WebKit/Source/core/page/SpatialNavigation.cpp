@@ -47,7 +47,7 @@ namespace blink {
 using namespace HTMLNames;
 
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
-static LayoutRect RectToAbsoluteCoordinates(LocalFrame* initial_frame,
+static LayoutRect RectToAbsoluteCoordinates(const LocalFrame* initial_frame,
                                             const LayoutRect&);
 static bool IsScrollableNode(const Node*);
 
@@ -144,7 +144,7 @@ static bool IsRectInDirection(WebFocusType type,
 // Checks if |node| is offscreen the visible area (viewport) of its container
 // document. In case it is, one can scroll in direction or take any different
 // desired action later on.
-bool HasOffscreenRect(Node* node, WebFocusType type) {
+bool HasOffscreenRect(const Node* node, WebFocusType type) {
   // Get the LocalFrameView in which |node| is (which means the current viewport
   // if |node| is not in an inner document), so we can check if its content rect
   // is visible before we actually move the focus to it.
@@ -412,14 +412,14 @@ bool CanScrollInDirection(const LocalFrame* frame, WebFocusType type) {
   }
 }
 
-static LayoutRect RectToAbsoluteCoordinates(LocalFrame* initial_frame,
+static LayoutRect RectToAbsoluteCoordinates(const LocalFrame* initial_frame,
                                             const LayoutRect& initial_rect) {
   return LayoutRect(
       initial_frame->View()->ContentsToRootFrame(initial_rect.Location()),
       initial_rect.Size());
 }
 
-LayoutRect NodeRectInAbsoluteCoordinates(Node* node, bool ignore_border) {
+LayoutRect NodeRectInAbsoluteCoordinates(const Node* node, bool ignore_border) {
   DCHECK(node);
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
@@ -444,7 +444,7 @@ LayoutRect NodeRectInAbsoluteCoordinates(Node* node, bool ignore_border) {
   return rect;
 }
 
-LayoutRect FrameRectInAbsoluteCoordinates(LocalFrame* frame) {
+LayoutRect FrameRectInAbsoluteCoordinates(const LocalFrame* frame) {
   return RectToAbsoluteCoordinates(
       frame,
       LayoutRect(
@@ -697,7 +697,7 @@ LayoutRect VirtualRectForDirection(WebFocusType type,
   return virtual_starting_rect;
 }
 
-LayoutRect VirtualRectForAreaElementAndDirection(HTMLAreaElement& area,
+LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement& area,
                                                  WebFocusType type) {
   DCHECK(area.ImageElement());
   // Area elements tend to overlap more than other focusable elements. We
@@ -717,5 +717,26 @@ HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate& candidate) {
              ? ToHTMLFrameOwnerElement(candidate.visible_node)
              : nullptr;
 };
+
+LayoutRect FindSearchStartPoint(const LocalFrame* frame,
+                                WebFocusType direction) {
+  LayoutRect starting_rect =
+      VirtualRectForDirection(direction, FrameRectInAbsoluteCoordinates(frame));
+
+  const Element* focused_element = frame->GetDocument()->FocusedElement();
+  if (focused_element) {
+    auto* area_element = ToHTMLAreaElementOrNull(focused_element);
+    if (area_element)
+      focused_element = area_element->ImageElement();
+    if (!HasOffscreenRect(focused_element)) {
+      starting_rect =
+          area_element
+              ? VirtualRectForAreaElementAndDirection(*area_element, direction)
+              : NodeRectInAbsoluteCoordinates(focused_element, true);
+    }
+  }
+
+  return starting_rect;
+}
 
 }  // namespace blink

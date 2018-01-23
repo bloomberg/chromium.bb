@@ -44,8 +44,6 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -1403,14 +1401,8 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
   while (!stack.IsEmpty()) {
     Node* container = stack.back();
 
-    LayoutRect heuristic_rect =
-        starting_rect.IsEmpty()
-            ? VirtualRectForDirection(type,
-                                      NodeRectInAbsoluteCoordinates(container))
-            : starting_rect;
-
     FocusCandidate candidate;
-    FindFocusCandidateInContainer(*container, heuristic_rect, type, candidate,
+    FindFocusCandidateInContainer(*container, starting_rect, type, candidate,
                                   already_checked);
 
     if (candidate.IsNull()) {
@@ -1462,42 +1454,31 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
   // FIXME: Directional focus changes don't yet work with RemoteFrames.
   if (!FocusedOrMainFrame()->IsLocalFrame())
     return false;
-  LocalFrame* cur_frame = ToLocalFrame(FocusedOrMainFrame());
-  DCHECK(cur_frame);
+  const LocalFrame* current_frame = ToLocalFrame(FocusedOrMainFrame());
+  DCHECK(current_frame);
 
-  Document* focused_document = cur_frame->GetDocument();
+  Document* focused_document = current_frame->GetDocument();
   if (!focused_document)
     return false;
 
   Element* focused_element = focused_document->FocusedElement();
   Node* container = focused_document;
-
   if (container->IsDocumentNode())
     ToDocument(container)->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  // Figure out the starting rect.
-  LayoutRect starting_rect;
-  if (focused_element) {
-    if (!HasOffscreenRect(focused_element)) {
-      starting_rect = NodeRectInAbsoluteCoordinates(focused_element,
-                                                    true /* ignore border */);
-    } else if (auto* area = ToHTMLAreaElementOrNull(*focused_element)) {
-      if (area->ImageElement()) {
-        focused_element = area->ImageElement();
-        starting_rect = VirtualRectForAreaElementAndDirection(*area, type);
-      }
-    }
+  if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
-  }
 
+  const LayoutRect starting_rect = FindSearchStartPoint(current_frame, type);
   Node* pruned_sub_tree_root = nullptr;
   bool consumed = false;
+
   while (!consumed && container) {
     consumed = AdvanceFocusDirectionallyInContainer(container, starting_rect,
                                                     type, pruned_sub_tree_root);
     if (consumed)
       break;
 
+    // Nothing found in |container| so search the parent container.
     pruned_sub_tree_root = container;
     container = ScrollableAreaOrDocumentOf(container);
     if (container && container->IsDocumentNode())
