@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
@@ -43,7 +44,7 @@ class Listener;
 // Channels are implemented using mojo message pipes on all platforms other
 // than NaCl.
 
-class IPC_EXPORT Channel : public Sender {
+class COMPONENT_EXPORT(IPC) Channel : public Sender {
   // Security tests need access to the pipe handle.
   friend class ChannelTest;
 
@@ -84,7 +85,7 @@ class IPC_EXPORT Channel : public Sender {
 
   // Helper interface a Channel may implement to expose support for associated
   // Mojo interfaces.
-  class IPC_EXPORT AssociatedInterfaceSupport {
+  class COMPONENT_EXPORT(IPC) AssociatedInterfaceSupport {
    public:
     using GenericAssociatedInterfaceFactory =
         base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;

@@ -9,10 +9,10 @@
 
 #include <set>
 
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_export.h"
 
 namespace IPC {
 namespace internal {
@@ -29,7 +29,7 @@ namespace internal {
 // functionality that would benefit from being factored out. If we add
 // something like that in the future, it would be more appropriate to add it
 // here (and rename appropriately) rather than writing a different class.
-class IPC_EXPORT ChannelReader {
+class COMPONENT_EXPORT(IPC) ChannelReader {
  public:
   explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();

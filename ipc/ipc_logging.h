@@ -12,11 +12,11 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message.h"
 
 // Logging function. |name| is a string in ASCII and |params| is a string in
@@ -35,7 +35,7 @@ class Sender;
 // One instance per process.  Needs to be created on the main thread (the UI
 // thread in the browser) but OnPreDispatchMessage/OnPostDispatchMessage
 // can be called on other threads.
-class IPC_EXPORT Logging {
+class COMPONENT_EXPORT(IPC) Logging {
  public:
   // Implemented by consumers of log messages.
   class Consumer {

@@ -9,8 +9,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "ipc/ipc_export.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace IPC {
@@ -18,7 +18,7 @@ namespace IPC {
 class Message;
 
 // Implemented by consumers of a Channel to receive messages.
-class IPC_EXPORT Listener {
+class COMPONENT_EXPORT(IPC) Listener {
  public:
   // Called when a message is received.  Returns true iff the message was
   // handled.
