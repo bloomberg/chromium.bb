@@ -91,27 +91,28 @@ class ExistingUserController
 
   // LoginDisplay::Delegate: implementation
   void CancelPasswordChangedFlow() override;
-  void CompleteLogin(const UserContext& user_context) override;
   base::string16 GetConnectedNetworkName() override;
   bool IsSigninInProgress() const override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   void MigrateUserData(const std::string& old_password) override;
   void OnSigninScreenReady() override;
-  void OnGaiaScreenReady() override;
   void OnStartEnterpriseEnrollment() override;
   void OnStartEnableDebuggingScreen() override;
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
   void ResyncUserData() override;
-  void SetDisplayEmail(const std::string& email) override;
-  void SetDisplayAndGivenName(const std::string& display_name,
-                              const std::string& given_name) override;
   void ShowWrongHWIDScreen() override;
   void ShowUpdateRequiredScreen() override;
   void Signout() override;
-  bool IsUserWhitelisted(const AccountId& account_id) override;
+
+  void CompleteLogin(const UserContext& user_context);
+  void OnGaiaScreenReady();
+  void SetDisplayEmail(const std::string& email);
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name);
+  bool IsUserWhitelisted(const AccountId& account_id);
 
   // content::NotificationObserver implementation.
   void Observe(int type,

@@ -1441,7 +1441,7 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
     // On slow devices, the wallpaper animation is not shown initially, so we
     // must explicitly load the wallpaper. This is also the case for the
     // account-picker and gaia-signin UI states.
-    delegate_->LoadSigninWallpaper();
+    LoginDisplayHost::default_host()->LoadSigninWallpaper();
     HandleToggleKioskAutolaunchScreen();
     return;
   }
@@ -1486,7 +1486,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
                                           ime_state_.get());
     lock_screen_utils::SetKeyboardSettings(account_id);
     if (delegate_ && load_wallpaper)
-      delegate_->LoadWallpaper(account_id);
+      LoginDisplayHost::default_host()->LoadWallpaper(account_id);
 
     bool use_24hour_clock = false;
     if (user_manager::known_user::GetBooleanPref(

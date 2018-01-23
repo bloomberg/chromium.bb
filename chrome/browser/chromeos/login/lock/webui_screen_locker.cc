@@ -291,10 +291,6 @@ void WebUIScreenLocker::CancelPasswordChangedFlow() {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::CompleteLogin(const UserContext& user_context) {
-  NOTREACHED();
-}
-
 base::string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return network_state_helper_->GetCurrentNetworkName();
 }
@@ -317,10 +313,6 @@ void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {
 
 void WebUIScreenLocker::OnSigninScreenReady() {
   VLOG(2) << "Lock screen signin screen is ready";
-}
-
-void WebUIScreenLocker::OnGaiaScreenReady() {
-  VLOG(2) << "Lock screen gaia screen is ready";
 }
 
 void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
@@ -353,22 +345,8 @@ void WebUIScreenLocker::ResyncUserData() {
   NOTREACHED();
 }
 
-void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
-  NOTREACHED();
-}
-
-void WebUIScreenLocker::SetDisplayAndGivenName(const std::string& display_name,
-                                               const std::string& given_name) {
-  NOTREACHED();
-}
-
 void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
-}
-
-bool WebUIScreenLocker::IsUserWhitelisted(const AccountId& account_id) {
-  NOTREACHED();
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
