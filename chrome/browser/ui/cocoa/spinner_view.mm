@@ -15,33 +15,40 @@
 #include "ui/native_theme/native_theme.h"
 
 namespace {
-const CGFloat kDegrees90 = gfx::DegToRad(90.0f);
-const CGFloat kDegrees180 = gfx::DegToRad(180.0f);
-const CGFloat kDegrees270 = gfx::DegToRad(270.0f);
-const CGFloat kDegrees360 = gfx::DegToRad(360.0f);
-const CGFloat kDesignWidth             = 28.0;
-const CGFloat kArcRadius               = 12.5;
-const CGFloat kArcDiameter             = kArcRadius * 2.0;
-const CGFloat kArcLength               = 58.9;
-const CGFloat kArcStrokeWidth          = 3.0;
-const CGFloat kArcAnimationTime        = 1.333;
-const CGFloat kArcStartAngle           = kDegrees180;
-const CGFloat kArcEndAngle             = (kArcStartAngle + kDegrees270);
-const CGFloat kRotationTime            = 1.56863;
+constexpr CGFloat kDegrees90 = gfx::DegToRad(90.0f);
+constexpr CGFloat kDegrees135 = gfx::DegToRad(135.0f);
+constexpr CGFloat kDegrees180 = gfx::DegToRad(180.0f);
+constexpr CGFloat kDegrees270 = gfx::DegToRad(270.0f);
+constexpr CGFloat kDegrees360 = gfx::DegToRad(360.0f);
+constexpr CGFloat kSpinnerViewUnitWidth = 28.0;
+constexpr CGFloat kSpinnerUnitInset = 2.0;
+constexpr CGFloat kArcDiameter =
+    (kSpinnerViewUnitWidth - kSpinnerUnitInset * 2.0);
+constexpr CGFloat kArcRadius = kArcDiameter / 2.0;
+constexpr CGFloat kArcLength =
+    kDegrees135 * kArcDiameter;  // 135 degrees of circumference.
+constexpr CGFloat kArcStrokeWidth = 3.0;
+constexpr CGFloat kArcAnimationTime = 1.333;
+constexpr CGFloat kRotationTime = 1.56863;
 NSString* const kSpinnerAnimationName  = @"SpinnerAnimationName";
 NSString* const kRotationAnimationName = @"RotationAnimationName";
 }
 
-@interface SpinnerView () <CALayerDelegate> {
-  base::scoped_nsobject<CAAnimationGroup> spinnerAnimation_;
-  base::scoped_nsobject<CABasicAnimation> rotationAnimation_;
+@implementation SpinnerView {
   CAShapeLayer* shapeLayer_;  // Weak.
-  CALayer* rotationLayer_;  // Weak.
+  CALayer* rotationLayer_;    // Weak.
 }
-@end
 
+@synthesize spinnerAnimation = spinnerAnimation_;
+@synthesize rotationAnimation = rotationAnimation_;
 
-@implementation SpinnerView
++ (CGFloat)arcRotationTime {
+  return kRotationTime;
+}
+
++ (CGFloat)arcUnitRadius {
+  return kArcRadius;
+}
 
 - (instancetype)initWithFrame:(NSRect)frame {
   if (self = [super initWithFrame:frame]) {
@@ -52,7 +59,13 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  self.spinnerAnimation = nil;
+  self.rotationAnimation = nil;
   [super dealloc];
+}
+
+- (CGFloat)scaleFactor {
+  return [self bounds].size.width / kSpinnerViewUnitWidth;
 }
 
 // Register/unregister for window miniaturization event notifications so that
@@ -91,22 +104,64 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
 }
 
 - (BOOL)isAnimating {
-  return [shapeLayer_ animationForKey:kSpinnerAnimationName] != nil;
+  return [shapeLayer_ animationForKey:kSpinnerAnimationName] != nil ||
+         [rotationLayer_ animationForKey:kRotationAnimationName] != nil;
 }
 
-// Overridden to return a custom CALayer for the view (called from
-// setWantsLayer:).
-- (CALayer*)makeBackingLayer {
-  CGRect bounds = [self bounds];
-  // The spinner was designed to be |kDesignWidth| points wide. Compute the
-  // scale factor needed to scale design parameters like |RADIUS| so that the
-  // spinner scales to fit the view's bounds.
-  CGFloat scaleFactor = bounds.size.width / kDesignWidth;
+- (NSColor*)spinnerColor {
+  SkColor skSpinnerColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
+  return skia::SkColorToSRGBNSColor(skSpinnerColor);
+}
 
+- (CGFloat)arcStartAngle {
+  return kDegrees180;
+}
+
+- (CGFloat)arcEndAngleDelta {
+  return -kDegrees270;
+}
+
+- (CGFloat)arcLength {
+  return kArcLength;
+}
+
+- (void)updateSpinnerColor {
+  [shapeLayer_ setStrokeColor:[[self spinnerColor] CGColor]];
+}
+
+- (void)updateSpinnerPath {
+  CGRect bounds = [self bounds];
+  CGFloat scaleFactor = [self scaleFactor];
+
+  // Create the arc that, when stroked, creates the spinner.
+  base::ScopedCFTypeRef<CGMutablePathRef> shapePath(CGPathCreateMutable());
+  CGFloat startAngle = [self arcStartAngle];
+  CGFloat endAngleDelta = [self arcEndAngleDelta];
+  bool counterClockwise = endAngleDelta < 0;
+  endAngleDelta = ABS(endAngleDelta);
+
+  CGPathAddArc(shapePath, NULL, bounds.size.width / 2.0,
+               bounds.size.height / 2.0, kArcRadius * scaleFactor, startAngle,
+               startAngle + endAngleDelta, !counterClockwise);
+  [shapeLayer_ setPath:shapePath];
+
+  // Set the line dash pattern. Animating the pattern causes the arc to
+  // grow from start angle to end angle.
+  [shapeLayer_ setLineDashPattern:@[ @([self arcLength] * scaleFactor) ]];
+
+  [self updateSpinnerColor];
+}
+
+- (CALayer*)makeBackingLayer {
   shapeLayer_ = [CAShapeLayer layer];
-  [shapeLayer_ setDelegate:self];
+
+  CGRect bounds = [self bounds];
   [shapeLayer_ setBounds:bounds];
+
   // Per the design, the line width does not scale linearly.
+  CGFloat scaleFactor = [self scaleFactor];
   CGFloat scaledDiameter = kArcDiameter * scaleFactor;
   CGFloat lineWidth;
   if (scaledDiameter < kArcDiameter) {
@@ -116,21 +171,9 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   }
   [shapeLayer_ setLineWidth:lineWidth];
   [shapeLayer_ setLineCap:kCALineCapRound];
-  [shapeLayer_ setLineDashPattern:@[ @(kArcLength * scaleFactor) ]];
   [shapeLayer_ setFillColor:NULL];
-  SkColor throbberBlueColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_ThrobberSpinningColor);
-  CGColorRef blueColor = skia::CGColorCreateFromSkColor(throbberBlueColor);
-  [shapeLayer_ setStrokeColor:blueColor];
-  CGColorRelease(blueColor);
 
-  // Create the arc that, when stroked, creates the spinner.
-  base::ScopedCFTypeRef<CGMutablePathRef> shapePath(CGPathCreateMutable());
-  CGPathAddArc(shapePath, NULL, bounds.size.width / 2.0,
-               bounds.size.height / 2.0, kArcRadius * scaleFactor,
-               kArcStartAngle, kArcEndAngle, 0);
-  [shapeLayer_ setPath:shapePath];
+  [self updateSpinnerPath];
 
   // Place |shapeLayer_| in a layer so that it's easy to rotate the entire
   // spinner animation.
@@ -149,19 +192,15 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   return parentLayer;
 }
 
-// Overridden to start or stop the animation whenever the view is unhidden or
-// hidden.
+// Starts or stops the animation whenever the view's visibility changes.
 - (void)setHidden:(BOOL)flag {
-  [super setHidden:flag];
-  [self updateAnimation:nil];
-}
+  BOOL wasHidden = [self isHidden];
 
-// Make sure the layer's backing store matches the window as the window moves
-// between screens.
-- (BOOL)layer:(CALayer*)layer
-    shouldInheritContentsScale:(CGFloat)newScale
-                    fromWindow:(NSWindow*)window {
-  return YES;
+  [super setHidden:flag];
+
+  if (wasHidden != flag) {
+    [self updateAnimation:nil];
+  }
 }
 
 // The spinner animation consists of four cycles that it continuously repeats.
@@ -172,9 +211,6 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
 // the arc using a (solid) dashed line pattern and animating the "lineDashPhase"
 // property.
 - (void)initializeAnimation {
-  CGRect bounds = [self bounds];
-  CGFloat scaleFactor = bounds.size.width / kDesignWidth;
-
   // Make sure |shapeLayer_|'s content scale factor matches the window's
   // backing depth (e.g. it's 2.0 on Retina Macs). Don't worry about adjusting
   // any other layers because |shapeLayer_| is the only one displaying content.
@@ -191,6 +227,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   [firstHalfAnimation setKeyPath:@"lineDashPhase"];
   // Begin the lineDashPhase animation just short of the full arc length,
   // otherwise the arc will be zero length at start.
+  CGFloat scaleFactor = [self scaleFactor];
   NSArray* animationValues = @[ @(-(kArcLength - 0.4) * scaleFactor), @(0.0) ];
   [firstHalfAnimation setValues:animationValues];
   NSArray* keyTimes = @[ @(0.0), @(1.0) ];
@@ -264,7 +301,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   [group setRemovedOnCompletion:NO];
   [group setAnimations:animations];
 
-  spinnerAnimation_.reset([group retain]);
+  self.spinnerAnimation = group;
 
   // Finally, create an animation that rotates the entire spinner layer.
   CABasicAnimation* rotationAnimation = [CABasicAnimation animation];
@@ -276,7 +313,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   [rotationAnimation setFillMode:kCAFillModeForwards];
   [rotationAnimation setRepeatCount:HUGE_VALF];
 
-  rotationAnimation_.reset([rotationAnimation retain]);
+  self.rotationAnimation = rotationAnimation;
 }
 
 - (void)updateAnimation:(NSNotification*)notification {
@@ -285,19 +322,28 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   if ([self window] && ![[self window] isMiniaturized] && ![self isHidden] &&
       ![[notification name] isEqualToString:
            NSWindowWillMiniaturizeNotification]) {
-    if (spinnerAnimation_.get() == nil) {
+    [self updateSpinnerPath];
+    if (!spinnerAnimation_) {
       [self initializeAnimation];
     }
     if (![self isAnimating]) {
-      [shapeLayer_ addAnimation:spinnerAnimation_.get()
-                         forKey:kSpinnerAnimationName];
-      [rotationLayer_ addAnimation:rotationAnimation_.get()
+      [shapeLayer_ addAnimation:spinnerAnimation_ forKey:kSpinnerAnimationName];
+      [rotationLayer_ addAnimation:rotationAnimation_
                             forKey:kRotationAnimationName];
     }
   } else {
     [shapeLayer_ removeAllAnimations];
     [rotationLayer_ removeAllAnimations];
   }
+}
+
+- (void)restartAnimation {
+  self.spinnerAnimation = nil;
+  self.rotationAnimation = nil;
+  [shapeLayer_ removeAllAnimations];
+  [rotationLayer_ removeAllAnimations];
+
+  [self updateAnimation:nil];
 }
 
 @end
