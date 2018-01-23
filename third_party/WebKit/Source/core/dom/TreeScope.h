@@ -92,6 +92,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   Element* Retarget(const Element& target) const;
 
+  Element* AdjustedFocusedElementInternal(const Element& target) const;
+
   // Find first anchor with the given name.
   // First searches for an element with the given ID, but if that fails, then
   // looks for an anchor with the given name. ID matching is always case
@@ -141,6 +143,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   void SetNeedsStyleRecalcForViewportUnits();
 
  private:
+  Element* HitTestPointInternal(Node*) const;
+
   Member<ContainerNode> root_node_;
   Member<Document> document_;
   Member<TreeScope> parent_tree_scope_;
