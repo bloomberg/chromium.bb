@@ -1222,8 +1222,13 @@ hooks = [
     'action': ['src/build/cipd/cipd_wrapper.py',
                '--chromium-root', 'src',
                '--ensure-file', 'src/build/cipd/android/android.ensure',
-               '--ensure-file', 'src/chrome/android/android.ensure',
     ],
+  },
+  {
+    'name': 'Fetch Android AFDO profile',
+    'pattern': '.',
+    'condition': 'checkout_android',
+    'action': ['vpython', 'src/chrome/android/profiles/update_afdo_profile.py'],
   },
   {
     # This downloads SDK extras and puts them in the
