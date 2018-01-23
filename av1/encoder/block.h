@@ -301,10 +301,10 @@ struct macroblock {
 #endif  // CONFIG_EXT_COMP_REFS
   // Cost for signaling ref_frame[0] (LAST_FRAME, LAST2_FRAME, LAST3_FRAME or
   // GOLDEN_FRAME) in bidir-comp mode.
-  int comp_ref_cost[REF_CONTEXTS][FWD_REFS - 1][2];
+  int comp_ref_cost[COMP_REF_CONTEXTS][FWD_REFS - 1][2];
   // Cost for signaling ref_frame[1] (ALTREF_FRAME, ALTREF2_FRAME, or
   // BWDREF_FRAME) in bidir-comp mode.
-  int comp_bwdref_cost[COMP_BWDREF_CONTEXTS][BWD_REFS - 1][2];
+  int comp_bwdref_cost[COMP_REF_CONTEXTS][BWD_REFS - 1][2];
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
 #if CONFIG_JNT_COMP
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];

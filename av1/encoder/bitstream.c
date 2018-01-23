@@ -648,8 +648,6 @@ static void write_segment_id(aom_writer *w, const struct segmentation *seg,
 #endif
 
 #define WRITE_REF_BIT(bname, pname) \
-  aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(cm, xd), 2)
-#define WRITE_REF_BIT2(bname, pname) \
   aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(xd), 2)
 
 // This function encodes the reference frame
@@ -695,16 +693,16 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int bit = mbmi->ref_frame[0] == BWDREF_FRAME;
-        WRITE_REF_BIT2(bit, uni_comp_ref_p);
+        WRITE_REF_BIT(bit, uni_comp_ref_p);
 
         if (!bit) {
           assert(mbmi->ref_frame[0] == LAST_FRAME);
           const int bit1 = mbmi->ref_frame[1] == LAST3_FRAME ||
                            mbmi->ref_frame[1] == GOLDEN_FRAME;
-          WRITE_REF_BIT2(bit1, uni_comp_ref_p1);
+          WRITE_REF_BIT(bit1, uni_comp_ref_p1);
           if (bit1) {
             const int bit2 = mbmi->ref_frame[1] == GOLDEN_FRAME;
-            WRITE_REF_BIT2(bit2, uni_comp_ref_p2);
+            WRITE_REF_BIT(bit2, uni_comp_ref_p2);
           }
         } else {
           assert(mbmi->ref_frame[1] == ALTREF_FRAME);
@@ -729,35 +727,35 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
 
       const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
-      WRITE_REF_BIT2(bit_bwd, comp_bwdref_p);
+      WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
 
       if (!bit_bwd) {
-        WRITE_REF_BIT2(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
+        WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
       }
 
     } else {
       const int bit0 = (mbmi->ref_frame[0] <= ALTREF_FRAME &&
                         mbmi->ref_frame[0] >= BWDREF_FRAME);
-      WRITE_REF_BIT2(bit0, single_ref_p1);
+      WRITE_REF_BIT(bit0, single_ref_p1);
 
       if (bit0) {
         const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
-        WRITE_REF_BIT2(bit1, single_ref_p2);
+        WRITE_REF_BIT(bit1, single_ref_p2);
 
         if (!bit1) {
-          WRITE_REF_BIT2(mbmi->ref_frame[0] == ALTREF2_FRAME, single_ref_p6);
+          WRITE_REF_BIT(mbmi->ref_frame[0] == ALTREF2_FRAME, single_ref_p6);
         }
       } else {
         const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
                           mbmi->ref_frame[0] == GOLDEN_FRAME);
-        WRITE_REF_BIT2(bit2, single_ref_p3);
+        WRITE_REF_BIT(bit2, single_ref_p3);
 
         if (!bit2) {
           const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
-          WRITE_REF_BIT2(bit3, single_ref_p4);
+          WRITE_REF_BIT(bit3, single_ref_p4);
         } else {
           const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
-          WRITE_REF_BIT2(bit4, single_ref_p5);
+          WRITE_REF_BIT(bit4, single_ref_p5);
         }
       }
     }

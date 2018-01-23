@@ -270,14 +270,14 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     }
 #endif  // CONFIG_EXT_COMP_REFS
 
-    for (i = 0; i < REF_CONTEXTS; ++i) {
+    for (i = 0; i < COMP_REF_CONTEXTS; ++i) {
       for (j = 0; j < FWD_REFS - 1; ++j) {
         av1_cost_tokens_from_cdf(x->comp_ref_cost[i][j], fc->comp_ref_cdf[i][j],
                                  NULL);
       }
     }
 
-    for (i = 0; i < COMP_BWDREF_CONTEXTS; ++i) {
+    for (i = 0; i < COMP_REF_CONTEXTS; ++i) {
       for (j = 0; j < BWD_REFS - 1; ++j) {
         av1_cost_tokens_from_cdf(x->comp_bwdref_cost[i][j],
                                  fc->comp_bwdref_cdf[i][j], NULL);

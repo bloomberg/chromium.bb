@@ -470,21 +470,21 @@ int main(int argc, const char **argv) {
       "default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)]");
 
   /* ext_refs experiment */
-  cts_each_dim[0] = REF_CONTEXTS;
+  cts_each_dim[0] = COMP_REF_CONTEXTS;
   cts_each_dim[1] = FWD_REFS - 1;
   cts_each_dim[2] = 2;
   optimize_cdf_table(
       &fc.comp_ref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
-      "default_comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)]");
+      "default_comp_ref_cdf[COMP_REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)]");
 
-  cts_each_dim[0] = REF_CONTEXTS;
+  cts_each_dim[0] = COMP_REF_CONTEXTS;
   cts_each_dim[1] = BWD_REFS - 1;
   cts_each_dim[2] = 2;
   optimize_cdf_table(
       &fc.comp_bwdref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
-      "default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)]");
+      "default_comp_bwdref_cdf[COMP_REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)]");
 
   /* Transform size */
   cts_each_dim[0] = TXFM_PARTITION_CONTEXTS;

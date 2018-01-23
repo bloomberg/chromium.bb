@@ -132,8 +132,8 @@ typedef struct frame_contexts {
   aom_cdf_prob uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
                                [CDF_SIZE(2)];
 #endif  // CONFIG_EXT_COMP_REFS
-  aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
-  aom_cdf_prob comp_bwdref_cdf[COMP_BWDREF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
+  aom_cdf_prob comp_ref_cdf[COMP_REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
+  aom_cdf_prob comp_bwdref_cdf[COMP_REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #if CONFIG_JNT_COMP
   aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
@@ -274,8 +274,8 @@ typedef struct FRAME_COUNTS {
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_COMP_REFS
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
-  unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
-  unsigned int comp_bwdref[COMP_BWDREF_CONTEXTS][BWD_REFS - 1][2];
+  unsigned int comp_ref[COMP_REF_CONTEXTS][FWD_REFS - 1][2];
+  unsigned int comp_bwdref[COMP_REF_CONTEXTS][BWD_REFS - 1][2];
 #if CONFIG_INTRABC
   unsigned int intrabc[2];
 #endif  // CONFIG_INTRABC

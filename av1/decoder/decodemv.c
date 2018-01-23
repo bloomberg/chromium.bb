@@ -1210,8 +1210,6 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
 }
 
 #define READ_REF_BIT(pname) \
-  aom_read_symbol(r, av1_get_pred_cdf_##pname(cm, xd), 2, ACCT_STR)
-#define READ_REF_BIT2(pname) \
   aom_read_symbol(r, av1_get_pred_cdf_##pname(xd), 2, ACCT_STR)
 
 #if CONFIG_EXT_COMP_REFS
@@ -1266,14 +1264,14 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const COMP_REFERENCE_TYPE comp_ref_type = read_comp_reference_type(xd, r);
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
-        const int bit = READ_REF_BIT2(uni_comp_ref_p);
+        const int bit = READ_REF_BIT(uni_comp_ref_p);
         if (bit) {
           ref_frame[0] = BWDREF_FRAME;
           ref_frame[1] = ALTREF_FRAME;
         } else {
-          const int bit1 = READ_REF_BIT2(uni_comp_ref_p1);
+          const int bit1 = READ_REF_BIT(uni_comp_ref_p1);
           if (bit1) {
-            const int bit2 = READ_REF_BIT2(uni_comp_ref_p2);
+            const int bit2 = READ_REF_BIT(uni_comp_ref_p2);
             if (bit2) {
               ref_frame[0] = LAST_FRAME;
               ref_frame[1] = GOLDEN_FRAME;
@@ -1305,30 +1303,30 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
 
       // Decode backward references.
-      const int bit_bwd = READ_REF_BIT2(comp_bwdref_p);
+      const int bit_bwd = READ_REF_BIT(comp_bwdref_p);
       if (!bit_bwd) {
-        const int bit1_bwd = READ_REF_BIT2(comp_bwdref_p1);
+        const int bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
         ref_frame[idx] = cm->comp_bwd_ref[bit1_bwd];
       } else {
         ref_frame[idx] = cm->comp_bwd_ref[2];
       }
     } else if (mode == SINGLE_REFERENCE) {
-      const int bit0 = READ_REF_BIT2(single_ref_p1);
+      const int bit0 = READ_REF_BIT(single_ref_p1);
       if (bit0) {
-        const int bit1 = READ_REF_BIT2(single_ref_p2);
+        const int bit1 = READ_REF_BIT(single_ref_p2);
         if (!bit1) {
-          const int bit5 = READ_REF_BIT2(single_ref_p6);
+          const int bit5 = READ_REF_BIT(single_ref_p6);
           ref_frame[0] = bit5 ? ALTREF2_FRAME : BWDREF_FRAME;
         } else {
           ref_frame[0] = ALTREF_FRAME;
         }
       } else {
-        const int bit2 = READ_REF_BIT2(single_ref_p3);
+        const int bit2 = READ_REF_BIT(single_ref_p3);
         if (bit2) {
-          const int bit4 = READ_REF_BIT2(single_ref_p5);
+          const int bit4 = READ_REF_BIT(single_ref_p5);
           ref_frame[0] = bit4 ? GOLDEN_FRAME : LAST3_FRAME;
         } else {
-          const int bit3 = READ_REF_BIT2(single_ref_p4);
+          const int bit3 = READ_REF_BIT(single_ref_p4);
           ref_frame[0] = bit3 ? LAST2_FRAME : LAST_FRAME;
         }
       }
