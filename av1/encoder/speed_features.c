@@ -444,7 +444,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 #elif DISABLE_TRELLISQ_SEARCH == 1
   sf->optimize_coefficients = NO_TRELLIS_OPT;
 #else
-  sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf);
+  if (is_lossless_requested(&cpi->oxcf))
+    sf->optimize_coefficients = NO_TRELLIS_OPT;
+  else
+    sf->optimize_coefficients = FULL_TRELLIS_OPT;
 #endif  // DISABLE_TRELLISQ_SEARCH
   sf->mv.reduce_first_step_size = 0;
   sf->coeff_prob_appx_step = 1;
