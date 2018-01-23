@@ -911,10 +911,8 @@ FloatPoint PaintLayer::PerspectiveOrigin() const {
   const LayoutRect border_box = ToLayoutBox(GetLayoutObject()).BorderBoxRect();
   const ComputedStyle& style = GetLayoutObject().StyleRef();
 
-  return FloatPoint(FloatValueForLength(style.PerspectiveOriginX(),
-                                        border_box.Width().ToFloat()),
-                    FloatValueForLength(style.PerspectiveOriginY(),
-                                        border_box.Height().ToFloat()));
+  return FloatPointForLengthPoint(style.PerspectiveOrigin(),
+                                  FloatSize(border_box.Size()));
 }
 
 PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
