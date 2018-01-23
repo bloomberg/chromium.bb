@@ -804,16 +804,10 @@ const AtomicString& HTMLElement::autocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, kWords, ("words"));
   DEFINE_STATIC_LOCAL(const AtomicString, kSentences, ("sentences"));
 
-  if (auto* input = ToHTMLInputElementOrNull(*this)) {
-    const AtomicString& input_type = input->type();
-    if (input_type != InputTypeNames::text &&
-        input_type != InputTypeNames::search) {
-      // Autocapitalize is only supported for these two input types.
-      return kNone;
-    }
-  }
-
   const AtomicString& value = FastGetAttribute(autocapitalizeAttr);
+  if (value.IsEmpty())
+    return g_empty_atom;
+
   if (EqualIgnoringASCIICase(value, kNone) ||
       EqualIgnoringASCIICase(value, kOff))
     return kNone;
@@ -821,7 +815,7 @@ const AtomicString& HTMLElement::autocapitalize() const {
     return kCharacters;
   if (EqualIgnoringASCIICase(value, kWords))
     return kWords;
-  // "sentences", "on", empty string, or an invalid value
+  // "sentences", "on", or an invalid value
   return kSentences;
 }
 
