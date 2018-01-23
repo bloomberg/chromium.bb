@@ -55,7 +55,6 @@ from webkitpy.tool.commands.queries import PrintExpectations
 from webkitpy.tool.commands.rebaseline import Rebaseline
 from webkitpy.tool.commands.rebaseline import RebaselineExpectations
 from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
-from webkitpy.tool.commands.rebaseline_server import RebaselineServer
 from webkitpy.tool.commands.rebaseline_test import RebaselineTest
 
 
@@ -91,7 +90,6 @@ class WebKitPatch(Host):
             Rebaseline(),
             RebaselineCL(),
             RebaselineExpectations(),
-            RebaselineServer(),
             RebaselineTest(),
         ]
         self.help_command = HelpCommand(tool=self)
