@@ -60,8 +60,13 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
       break;
     }
 
-    // otherwise, read the OBU payload into memory
+// otherwise, read the OBU payload into memory
+#if CONFIG_OBU_SIZING
+    aom_uleb_decode(data, PRE_OBU_SIZE_BYTES, &obu_size);
+#else
     obu_size = mem_get_le32(data);
+#endif  // CONFIG_OBU_SIZING
+
     // fprintf(stderr, "Found OBU of type %d and size %d\n",
     //        ((data[PRE_OBU_SIZE_BYTES] >> 3) & 0xF), obu_size);
     obu_size--;  // removing the byte of the header already read
@@ -82,7 +87,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
 int file_is_obu(struct AvxInputContext *input_ctx) {
   uint8_t obutd[PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES];
-  int size;
+  uint32_t size;
 
 #if !CONFIG_OBU
   warn("obudec.c requires CONFIG_OBU");
@@ -91,7 +96,13 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
 
   // Reading the first OBU TD to enable TU end detection at TD start.
   fread(obutd, 1, PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES, input_ctx->file);
+
+#if CONFIG_OBU_SIZING
+  aom_uleb_decode(obutd, PRE_OBU_SIZE_BYTES, &size);
+#else
   size = mem_get_le32(obutd);
+#endif  // CONFIG_OBU_SIZING
+
   if (size != 1) {
     warn("Expected first OBU size to be 1, got %d", size);
     return 0;

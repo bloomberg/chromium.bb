@@ -1400,7 +1400,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
 #if CONFIG_OBU
       // move data PRE_OBU_SIZE_BYTES + 1 bytes and insert OBU_TD preceded by
-      // optional 4 byte size
+      // 4 byte size
       uint32_t obu_size = 1;
       if (ctx->pending_cx_data) {
         const size_t index_sz = PRE_OBU_SIZE_BYTES + 1;
@@ -1411,9 +1411,17 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           OBU_TEMPORAL_DELIMITER, 0,
           (uint8_t *)(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES));
       obu_size += write_temporal_delimiter_obu();
+#if CONFIG_OBU_SIZING
+      // OBUs are preceded by an unsigned leb128 coded unsigned integer padded
+      // to PRE_OBU_SIZE_BYTES bytes.
+      if (write_uleb_obu_size(obu_size, ctx->pending_cx_data) != AOM_CODEC_OK)
+        return AOM_CODEC_ERROR;
+#else
       mem_put_le32(ctx->pending_cx_data, obu_size);
+#endif  // CONFIG_OBU_SIZING
+
       pkt.data.frame.sz += (obu_size + PRE_OBU_SIZE_BYTES);
-#endif
+#endif  // CONFIG_OBU
 
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
       pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);

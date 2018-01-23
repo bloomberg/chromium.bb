@@ -175,10 +175,20 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     struct aom_read_bit_buffer rb;
     size_t obu_header_size, obu_payload_size = 0;
     av1_init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end);
+
+#if CONFIG_OBU_SIZING
+    // OBUs are preceded by an unsigned leb128 coded unsigned integer padded to
+    // PRE_OBU_SIZE_BYTES bytes.
+    uint32_t u_obu_size = 0;
+    aom_uleb_decode(data, PRE_OBU_SIZE_BYTES, &u_obu_size);
+    const size_t obu_size = (size_t)u_obu_size;
+#else
     // every obu is preceded by PRE_OBU_SIZE_BYTES-byte size of obu (obu header
     // + payload size)
     // The obu size is only needed for tile group OBUs
     const size_t obu_size = mem_get_le32(data);
+#endif  // CONFIG_OBU_SIZING
+
     const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size);
     data += (PRE_OBU_SIZE_BYTES + obu_header_size);
     if (data_end < data) {

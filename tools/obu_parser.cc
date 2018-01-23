@@ -21,6 +21,7 @@
 #error "obu_parser.cc requires CONFIG_OBU"
 #endif
 
+#include "aom/aom_integer.h"
 #include "aom_ports/mem_ops.h"
 #include "tools/obu_parser.h"
 
@@ -170,7 +171,14 @@ bool DumpObu(const uint8_t *data, int length) {
       return false;
     }
 
+#if CONFIG_OBU_SIZING
+    uint32_t obu_size = 0;
+    aom_uleb_decode(data + consumed, kObuLengthFieldSizeBytes, &obu_size);
+    const int current_obu_length = static_cast<int>(obu_size);
+#else
     const int current_obu_length = mem_get_le32(data + consumed);
+#endif  // CONFIG_OBU_SIZING
+
     if (current_obu_length > remaining) {
       fprintf(stderr,
               "OBU parsing failed at offset %d with bad length of %d "
