@@ -9,42 +9,24 @@
   await TestRunner.evaluateInPagePromise(`
       function populateConsoleWithMessages(count)
       {
-          for (var i = 0; i < count - 1; ++i)
+          for (var i = 0; i < count; ++i)
               console.log("Multiline\\nMessage #" + i);
-          console.log("hello %cworld", "color: blue");
       }
 
-      //# sourceURL=console-viewport-selection.js
+      //# sourceURL=console-viewport-stick-to-bottom.js
     `);
 
   var viewportHeight = 200;
   ConsoleTestRunner.fixConsoleViewportDimensions(600, viewportHeight);
   var consoleView = Console.ConsoleView.instance();
   var viewport = consoleView._viewport;
-  const minimumViewportMessagesCount = 10;
   const messagesCount = 150;
-  const middleMessage = messagesCount / 2;
-  var viewportMessagesCount;
 
   logMessagesToConsole(messagesCount, () => TestRunner.runTestSuite(testSuite));
 
   var testSuite = [
-    function verifyViewportIsTallEnough(next) {
-      viewport.invalidate();
-      viewport.forceScrollItemToBeFirst(0);
-      viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
-      if (viewportMessagesCount < minimumViewportMessagesCount) {
-        TestRunner.addResult(String.sprintf(
-            'Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit',
-            minimumViewportMessagesCount, viewportMessagesCount));
-        TestRunner.completeTest();
-        return;
-      }
-      TestRunner.addResult(String.sprintf('Viewport contains %d messages', viewportMessagesCount));
-      next();
-    },
-
     function testScrollViewportToBottom(next) {
+      viewport.invalidate();
       consoleView._immediatelyScrollToBottom();
       dumpAndContinue(next);
     },
@@ -93,8 +75,8 @@
       ConsoleTestRunner.evaluateInConsole('1 + 1');
 
       /**
-             * @param {boolean} muted
-             */
+       * @param {boolean} muted
+       */
       function onMessageAdded(muted) {
         TestRunner.addResult('New messages were muted: ' + muted);
         TestRunner.addSniffer(
@@ -104,8 +86,8 @@
       }
 
       /**
-             * @param {boolean} muted
-             */
+       * @param {boolean} muted
+       */
       function onMouseUpScheduledRefresh(muted) {
         TestRunner.addResult('Refresh was scheduled after dirty state');
       }
