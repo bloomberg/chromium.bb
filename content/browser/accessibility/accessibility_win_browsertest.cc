@@ -2205,7 +2205,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
   NativeWinEventWaiter win_event_waiter(
-      manager, "EVENT_OBJECT_FOCUS on role=ROLE_SYSTEM_TEXT*");
+      manager, "EVENT_OBJECT_FOCUS on <input> role=ROLE_SYSTEM_TEXT*");
 
   // Get the root accessible element and its children.
   Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
