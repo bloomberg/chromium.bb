@@ -82623,6 +82623,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram base="true" name="SimpleCache.LastClusterLossPercent" units="%">
+  <obsolete>
+    Deprecated 2018-01; not viewed as actionable.
+  </obsolete>
   <owner>morlovich@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the percentage of disk space used by the
@@ -82632,6 +82635,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram base="true" name="SimpleCache.LastClusterSize" units="bytes">
+  <obsolete>
+    Deprecated 2018-01; not viewed as actionable.
+  </obsolete>
   <owner>morlovich@chromium.org</owner>
   <summary>
     For each file in the Simple Cache, the number of bytes in the last 4096 byte
