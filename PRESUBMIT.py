@@ -521,6 +521,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 
 _GENERIC_PYDEPS_FILES = [
+    'chrome/test/chromedriver/test/run_py_tests.pydeps',
 ]
 
 
@@ -2081,9 +2082,9 @@ class PydepsChecker(object):
 
 def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   """Checks if a .pydeps file needs to be regenerated."""
-  # This check is mainly for Android, and involves paths not only in the
-  # PRESUBMIT.py, but also in the .pydeps files. It doesn't work on Windows and
-  # Mac, so skip it on other platforms.
+  # This check is for Python dependency lists (.pydeps files), and involves
+  # paths not only in the PRESUBMIT.py, but also in the .pydeps files. It
+  # doesn't work on Windows and Mac, so skip it on other platforms.
   if input_api.platform != 'linux2':
     return []
   # TODO(agrieve): Update when there's a better way to detect

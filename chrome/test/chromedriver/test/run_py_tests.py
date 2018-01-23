@@ -2701,6 +2701,14 @@ if __name__ == '__main__':
       '', '--android-package',
       help=('Android package key. Possible values: ' +
             str(_ANDROID_NEGATIVE_FILTER.keys())))
+
+  parser.add_option(
+      '', '--isolated-script-test-output',
+      help='JSON output file used by swarming')
+  parser.add_option(
+      '', '--isolated-script-test-perf-output',
+      help='JSON perf output file used by swarming, ignored')
+
   options, args = parser.parse_args()
 
   options.chromedriver = util.GetAbsolutePathOfUserPath(options.chromedriver)
@@ -2752,4 +2760,32 @@ if __name__ == '__main__':
   ChromeDriverTest.GlobalTearDown()
   HeadlessInvalidCertificateTest.GlobalTearDown()
   MobileEmulationCapabilityTest.GlobalTearDown()
+
+  if options.isolated_script_test_output:
+    output = {
+        'interrupted': False,
+        'num_failures_by_type': { },
+        'path_delimiter': '.',
+        'seconds_since_epoch': time.time(),
+        'tests': { },
+        'version': 3,
+    }
+
+    for test in tests:
+      output['tests'][test.id()] = {
+          'expected': 'PASS',
+          'actual': 'PASS'
+      }
+
+    for failure in result.failures + result.errors:
+      output['tests'][failure[0].id()]['actual'] = 'FAIL'
+
+    num_fails = len(result.failures) + len(result.errors)
+    output['num_failures_by_type']['FAIL'] = num_fails
+    output['num_failures_by_type']['PASS'] = len(output['tests']) - num_fails
+
+    with open(options.isolated_script_test_output, 'w') as fp:
+      json.dump(output, fp)
+      fp.write('\n')
+
   sys.exit(len(result.failures) + len(result.errors))
