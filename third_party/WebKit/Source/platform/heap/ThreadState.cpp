@@ -1196,23 +1196,23 @@ void ThreadState::InvokePreFinalizers() {
   ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
 
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
-  if (!ordered_pre_finalizers_.IsEmpty()) {
-    // Call the prefinalizers in the opposite order to their registration.
-    //
-    // The prefinalizer callback wrapper returns |true| when its associated
-    // object is unreachable garbage and the prefinalizer callback has run.
-    // The registered prefinalizer entry must then be removed and deleted.
-    //
-    auto it = --ordered_pre_finalizers_.end();
-    bool done;
-    do {
-      auto entry = it;
-      done = it == ordered_pre_finalizers_.begin();
-      if (!done)
-        --it;
-      if ((entry->second)(entry->first))
-        ordered_pre_finalizers_.erase(entry);
-    } while (!done);
+
+  // Call the prefinalizers in the opposite order to their registration.
+  //
+  // LinkedHashSet does not support modification during iteration, so
+  // copy items first.
+  //
+  // The prefinalizer callback wrapper returns |true| when its associated
+  // object is unreachable garbage and the prefinalizer callback has run.
+  // The registered prefinalizer entry must then be removed and deleted.
+  Vector<PreFinalizer> reversed;
+  for (auto rit = ordered_pre_finalizers_.rbegin();
+       rit != ordered_pre_finalizers_.rend(); ++rit) {
+    reversed.push_back(*rit);
+  }
+  for (PreFinalizer pre_finalizer : reversed) {
+    if ((pre_finalizer.second)(pre_finalizer.first))
+      ordered_pre_finalizers_.erase(pre_finalizer);
   }
   if (IsMainThread()) {
     double time_for_invoking_pre_finalizers =

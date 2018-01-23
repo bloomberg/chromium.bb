@@ -11,8 +11,6 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/HashTable.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/TypeTraits.h"
 #include "platform/wtf/Vector.h"
 
