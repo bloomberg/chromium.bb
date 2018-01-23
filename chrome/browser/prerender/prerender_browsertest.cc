@@ -156,9 +156,6 @@ using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
-// crbug.com/708158
-#if !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
-
 // Prerender tests work as follows:
 //
 // A page with a prefetch link to the test page is loaded.  Once prerendered,
@@ -1391,15 +1388,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
   NavigateToDestURL();
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderNoCommitNoSwap DISABLED_PrerenderNoCommitNoSwap
-#else
-#define MAYBE_PrerenderNoCommitNoSwap PrerenderNoCommitNoSwap
-#endif
 // Checks that the prerendering of a page is canceled correctly if we try to
 // swap it in before it commits.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderNoCommitNoSwap) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   // Navigate to a page that triggers a prerender for a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
   base::FilePath file(GetTestPath("prerender_page.html"));
@@ -1418,14 +1409,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderNoCommitNoSwap) {
   NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 
-// crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderNoCommitNoSwap2 DISABLED_PrerenderNoCommitNoSwap2
-#else
-#define MAYBE_PrerenderNoCommitNoSwap2 PrerenderNoCommitNoSwap2
-#endif
 // Checks that client redirects don't add alias URLs until after they commit.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderNoCommitNoSwap2) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
   // Navigate to a page that then navigates to a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
   base::FilePath file(GetTestPath("prerender_page.html"));
@@ -3874,5 +3859,3 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 #endif  // BUILDFLAG(ENABLE_NACL)
 
 }  // namespace prerender
-
-#endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
