@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -29,7 +30,7 @@ namespace IPC {
 //
 // This lives on IO thread other than Create(), which can be called from
 // UI thread as Channel::Create() can be.
-class IPC_EXPORT MojoBootstrap {
+class COMPONENT_EXPORT(IPC) MojoBootstrap {
  public:
   virtual ~MojoBootstrap() {}
 

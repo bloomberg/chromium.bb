@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ipc/ipc_export.h"
+#include "base/component_export.h"
 #include "ipc/ipc_param_traits.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -20,7 +20,7 @@ class PickleIterator;
 namespace IPC {
 
 template <>
-struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
+struct COMPONENT_EXPORT(IPC) ParamTraits<mojo::MessagePipeHandle> {
   typedef mojo::MessagePipeHandle param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m, base::PickleIterator* iter,
@@ -29,7 +29,7 @@ struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<mojo::DataPipeConsumerHandle> {
+struct COMPONENT_EXPORT(IPC) ParamTraits<mojo::DataPipeConsumerHandle> {
   typedef mojo::DataPipeConsumerHandle param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

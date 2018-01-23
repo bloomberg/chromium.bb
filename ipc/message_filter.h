@@ -9,9 +9,9 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_export.h"
 
 namespace IPC {
 
@@ -19,7 +19,7 @@ class Message;
 
 // A class that receives messages on the thread where the IPC channel is
 // running.  It can choose to prevent the default action for an IPC message.
-class IPC_EXPORT MessageFilter
+class COMPONENT_EXPORT(IPC) MessageFilter
     : public base::RefCountedThreadSafe<MessageFilter> {
  public:
   MessageFilter();
