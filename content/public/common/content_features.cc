@@ -378,7 +378,7 @@ const base::Feature kUseFeaturePolicyForPermissions{
 // Use MojoAudioInputIPC and RenderFrameAudioInputStreamFactory rather than
 // AudioInputMessageFilter and AudioInputRendererHost.
 const base::Feature kUseMojoAudioInputStreamFactory{
-    "UseMojoAudioInputStreamFactory", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseMojoAudioInputStreamFactory", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
 // AudioMessageFilter and AudioRendererHost.
