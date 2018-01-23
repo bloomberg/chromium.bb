@@ -6,6 +6,7 @@
 
 #include "ui/gfx/font.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 
 namespace vr {
@@ -51,6 +52,50 @@ TextFormatting ConvertClassification(
     }
   }
   return formatting;
+}
+
+url_formatter::FormatUrlTypes GetVrFormatUrlTypes() {
+  return url_formatter::kFormatUrlOmitDefaults |
+         url_formatter::kFormatUrlOmitHTTPS |
+         url_formatter::kFormatUrlOmitTrivialSubdomains;
+}
+
+ElisionParameters GetElisionParameters(const GURL& gurl,
+                                       const url::Parsed& parsed,
+                                       gfx::RenderText* render_text,
+                                       int min_path_pixels) {
+  // In situations where there is no host, do not attempt to position the TLD.
+  bool allow_offset =
+      gurl.IsStandard() && !gurl.SchemeIsFile() && parsed.host.is_nonempty();
+  int total_width = render_text->GetContentWidth();
+
+  ElisionParameters result;
+
+  // Find the rightmost extent of the host portion. To safely handle RTL,
+  // compute the union of all rendered host segments.
+  gfx::Range range(0, parsed.CountCharactersBefore(url::Parsed::PATH, false));
+  std::vector<gfx::Rect> rects = render_text->GetSubstringBounds(range);
+  gfx::Rect host_bounds;
+  for (const auto& rect : rects)
+    host_bounds.Union(rect);
+
+  // Choose a right-edge cutoff point.  If there is nothing after the host, then
+  // it's the end of the host.  If there is a path, then include a limited
+  // portion of the path.
+  int path_width = total_width - host_bounds.width();
+  int field_width = render_text->display_rect().width();
+  int anchor_point =
+      host_bounds.width() + std::min(min_path_pixels, path_width);
+
+  if (allow_offset && anchor_point > field_width) {
+    result.offset = field_width - anchor_point;
+    result.fade_left = true;
+  }
+  if (total_width + result.offset > field_width) {
+    result.fade_right = true;
+  }
+
+  return result;
 }
 
 }  // namespace vr

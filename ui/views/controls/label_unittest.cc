@@ -227,7 +227,7 @@ class LabelSelectionTest : public LabelTest {
         label()->GetRenderTextForSelectionController();
     const gfx::Range range(index, index + 1);
     const std::vector<gfx::Rect> bounds =
-        render_text->GetSubstringBoundsForTesting(range);
+        render_text->GetSubstringBounds(range);
     DCHECK_EQ(1u, bounds.size());
     const int mid_y = bounds[0].y() + bounds[0].height() / 2;
 

@@ -66,11 +66,13 @@ static constexpr float kUrlBarBackButtonWidthDMM = 0.087f;
 static constexpr float kUrlBarBackButtonIconOffsetDMM = 0.0045f;
 static constexpr float kUrlBarSeparatorWidthDMM = 0.002f;
 static constexpr float kUrlBarOriginRegionWidthDMM = 0.583f;
-static constexpr float kUrlBarOriginContentWidthDMM = 0.556f;
+static constexpr float kUrlBarOriginContentWidthDMM = 0.536f;
 static constexpr float kUrlBarOriginContentOffsetDMM = 0.007f;
 static constexpr float kUrlBarFieldSpacingDMM = 0.008f;
 static constexpr float kUrlBarOfflineIconTextSpacingDMM = 0.004f;
 static constexpr float kUrlBarSecuritySeparatorHeightDMM = 0.026f;
+static constexpr float kUrlBarOriginFadeWidth = 0.044f;
+static constexpr float kUrlBarOriginMinimumPathWidth = 0.044f;
 
 static constexpr float kOverlayPlaneDistance = 2.3f;
 

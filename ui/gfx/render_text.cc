@@ -913,11 +913,6 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
-std::vector<Rect> RenderText::GetSubstringBoundsForTesting(
-    const gfx::Range& range) {
-  return GetSubstringBounds(range);
-}
-
 const Vector2d& RenderText::GetUpdatedDisplayOffset() {
   UpdateCachedBoundsAndOffset();
   return display_offset_;

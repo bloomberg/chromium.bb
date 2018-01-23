@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/webvr_url_toast_texture.h"
 
 #include "cc/paint/skia_paint_canvas.h"
+#include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/canvas.h"
@@ -98,12 +99,9 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
 
   url::Parsed parsed;
-  url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitDefaults;
-  format_types |= url_formatter::kFormatUrlOmitHTTPS;
   const base::string16 formatted_url = url_formatter::FormatUrl(
-      state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
-      nullptr);
+      state_.gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed,
+      nullptr, nullptr);
 
   base::string16 url;
   if (parsed.host.is_valid())
@@ -125,7 +123,7 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   render_text->SetColor(foreground_color());
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetElideBehavior(gfx::ELIDE_HEAD);
-  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
+  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
   render_text->SetText(url);
 
   url_render_text_ = std::move(render_text);

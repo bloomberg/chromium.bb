@@ -15,6 +15,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -67,6 +68,41 @@ void SetEmphasis(RenderTextWrapper* render_text,
 
 gfx::PointF PercentToMeters(const gfx::PointF& percent) {
   return gfx::PointF(percent.x() * kWidth, percent.y() * kHeight);
+}
+
+void ApplyUrlFading(SkCanvas* canvas,
+                    const gfx::Rect& text_bounds,
+                    float fade_width,
+                    bool fade_left,
+                    bool fade_right) {
+  if (!fade_left && !fade_right)
+    return;
+
+  SkPoint fade_points[2] = {SkPoint::Make(0.0f, 0.0f),
+                            SkPoint::Make(fade_width, 0.0f)};
+  SkColor fade_colors[2] = {SK_ColorTRANSPARENT, SK_ColorBLACK};
+
+  SkPaint overlay;
+  overlay.setShader(
+      SkGradientShader::MakeLinear(fade_points, fade_colors, nullptr, 2,
+                                   SkShader::kClamp_TileMode, 0, nullptr));
+  if (fade_left) {
+    canvas->save();
+    canvas->translate(text_bounds.x(), 0);
+    canvas->clipRect(SkRect::MakeWH(fade_width, text_bounds.height()));
+    overlay.setBlendMode(SkBlendMode::kDstIn);
+    canvas->drawPaint(overlay);
+    canvas->restore();
+  }
+
+  if (fade_right) {
+    canvas->save();
+    canvas->translate(text_bounds.right() - fade_width, 0);
+    canvas->clipRect(SkRect::MakeWH(fade_width, text_bounds.height()));
+    overlay.setBlendMode(SkBlendMode::kDstOut);
+    canvas->drawPaint(overlay);
+    canvas->restore();
+  }
 }
 
 }  // namespace
@@ -181,15 +217,24 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   if (state_.should_display_url) {
     left_edge += kUrlBarFieldSpacingDMM;
-    float url_x = left_edge;
+
     if (!url_render_text_ || url_dirty_) {
-      float url_width = kWidth - url_x;
-      gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
+      float url_width = kWidth - left_edge;
+      gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(url_width),
                             ToPixels(kHeight));
       RenderUrl(texture_size, text_bounds);
       url_dirty_ = false;
     }
+
+    // TODO(cjgrant): Now that this element is only origin information, and not
+    // the entire URL bar, eliminate this unnecessary caching and simply draw
+    // everything when generating the texture.
     url_render_text_->Draw(&gfx_canvas);
+    float fade_width = ToPixels(kUrlBarOriginFadeWidth);
+    ApplyUrlFading(canvas, url_render_text_->display_rect(), fade_width,
+                   elision_parameters_.fade_left,
+                   elision_parameters_.fade_right);
+
     rendered_url_text_ = url_render_text_->text();
     rendered_url_text_rect_ = url_render_text_->display_rect();
   }
@@ -197,30 +242,21 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
 void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& text_bounds) {
-  url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitDefaults |
-      url_formatter::kFormatUrlOmitHTTPS |
-      url_formatter::kFormatUrlOmitTrivialSubdomains;
-
   url::Parsed parsed;
-  const base::string16 unelided_url = url_formatter::FormatUrl(
-      state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
-      nullptr);
+  const base::string16 text = url_formatter::FormatUrl(
+      state_.gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed,
+      nullptr, nullptr);
 
   int pixel_font_height =
       texture_size.height() * kUrlBarFontHeightDMM / kHeight;
   gfx::FontList font_list;
-  if (!GetDefaultFontList(pixel_font_height, unelided_url, &font_list))
+  if (!GetDefaultFontList(pixel_font_height, text, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
-
-  const base::string16 text = url_formatter::ElideUrlSimple(
-      state_.gurl, unelided_url, font_list, text_bounds.width(), &parsed);
 
   std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  render_text->SetElideBehavior(gfx::TRUNCATE);
-  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
+  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
   render_text->SetText(text);
   render_text->SetDisplayRect(text_bounds);
 
@@ -228,7 +264,13 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
   ApplyUrlStyling(text, parsed, state_.security_level, &vr_render_text,
                   colors_);
 
+  ElisionParameters elision_parameters =
+      GetElisionParameters(state_.gurl, parsed, render_text.get(),
+                           ToPixels(kUrlBarOriginMinimumPathWidth));
+  render_text->SetDisplayOffset(elision_parameters.offset);
+
   url_render_text_ = std::move(render_text);
+  elision_parameters_ = elision_parameters;
 }
 
 // static
