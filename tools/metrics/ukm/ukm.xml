@@ -2080,10 +2080,22 @@ be describing additional metrics about the same event.
     Collects information about a browser or app window to associate with the
     TabManager.TabMetrics entries for tabs in that window.
   </summary>
+  <metric name="IsActive">
+    <summary>
+      Whether the window is the active (frontmost) window.
+    </summary>
+  </metric>
   <metric name="ShowState">
     <summary>
       Enumeration of the window show state, such as fullscreen or minimized.
       Values are enumerated in metrics::WindowMetricsEvent::ShowState.
+    </summary>
+  </metric>
+  <metric name="TabCount">
+    <summary>
+      Number of tabs in the tab strip. Rounded down to the nearest exponential
+      bucket (with a bucket spacing factor of 1.5). Will be 1 for windows with
+      only one top-level WebContents, such as app windows.
     </summary>
   </metric>
   <metric name="Type">

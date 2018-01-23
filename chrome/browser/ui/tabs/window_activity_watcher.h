@@ -5,15 +5,11 @@
 #ifndef CHROME_BROWSER_UI_TABS_WINDOW_ACTIVITY_WATCHER_H_
 #define CHROME_BROWSER_UI_TABS_WINDOW_ACTIVITY_WATCHER_H_
 
-#include <stddef.h>
+#include <memory>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "components/sessions/core/session_id.h"
-
-class BrowserList;
 
 // Observes browser window activity in order to log WindowMetrics UKMs for
 // browser events relative to tab activation and discarding.
@@ -22,20 +18,16 @@ class BrowserList;
 // TODO(michaelpg): Observe app and ARC++ windows as well.
 class WindowActivityWatcher : public BrowserListObserver {
  public:
-  // Represents a UKM entry for window metrics.
-  struct WindowMetrics;
+  class BrowserWatcher;
 
   // Returns the single instance, creating it if necessary.
   static WindowActivityWatcher* GetInstance();
 
-  // Ensures the window's current stats are logged.
-  // A new UKM entry will only be logged if an existing entry for the same
-  // window doesn't exist yet or has stale properties.
-  void CreateOrUpdateWindowMetrics(const Browser* browser);
-
  private:
   WindowActivityWatcher();
   ~WindowActivityWatcher() override;
+
+  bool ShouldTrackBrowser(Browser* browser);
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -43,11 +35,9 @@ class WindowActivityWatcher : public BrowserListObserver {
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
 
-  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
-
-  // Cache of WindowMetrics logged for each window. Used to avoid logging
-  // duplicate identical UKM events.
-  base::flat_map<SessionID::id_type, WindowMetrics> window_metrics_;
+  // Per-browser observers responsible for tracking the tab strip and logging
+  // new UKM entries on changes.
+  base::flat_map<Browser*, std::unique_ptr<BrowserWatcher>> browser_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowActivityWatcher);
 };
