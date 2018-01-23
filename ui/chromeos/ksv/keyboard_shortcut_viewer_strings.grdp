@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <!-- Generic shortcut strings -->
+  <message name="IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY" desc="Human readable version of the keyboard shortcut. This is for all single modifier shortcuts.">
+    <ph name="modifier">$1<ex>CTRL</ex></ph> + <ph name="key">$2<ex>V</ex></ph>
+  </message>
+
+  <message name="IDS_KSV_DESCRIPTION_LOCK_SCREEN" desc="Description of the command in keyboard shortcut viewer.">
+    Lock your screen
+  </message>
+
+  <message name="IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION" desc="Description of the command in keyboard shortcut viewer.">
+    Change screen resolution
+  </message>
+  <message name="IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION" desc="Human readable version of the keyboard shortcut.">
+    <ph name="ctrl">$1</ph> + <ph name="shift">$2</ph> and + or -
+  </message>
+</grit-part>

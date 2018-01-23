@@ -1,0 +1,22 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# ksv: Keyboard Shortcut Viewer
+source_set("ksv") {
+  output_name = "ui_chromeos_ksv"
+  sources = [
+    "keyboard_shortcut_item.cc",
+    "keyboard_shortcut_item.h",
+    "keyboard_shortcut_viewer_metadata.cc",
+    "keyboard_shortcut_viewer_metadata.h",
+    "ksv_export.h",
+  ]
+
+  defines = [ "KSV_IMPLEMENTATION" ]
+
+  deps = [
+    "//ui/chromeos/strings",
+    "//ui/events:events_base",
+  ]
+}
