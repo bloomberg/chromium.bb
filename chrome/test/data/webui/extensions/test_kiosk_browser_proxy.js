@@ -14,25 +14,41 @@ class TestKioskBrowserProxy extends TestBrowserProxy {
       'removeKioskApp',
       'setDisableBailoutShortcut',
     ]);
+
+    /** @private {!KioskSettings} */
+    this.initialSettings_ = {
+      kioskEnabled: true,
+      autoLaunchEnabled: false,
+    };
+
+    /** @private {!KioskAppSettings} */
+    this.appSettings_ = {
+      apps: [],
+      disableBailout: false,
+      hasAutoLaunchApp: false,
+    };
+  }
+
+  /** @param {!KioskAppSettings} */
+  setAppSettings(settings) {
+    this.appSettings_ = settings;
+  }
+
+  /** @param {!KioskSettings} */
+  setInitialSettings(settings) {
+    this.initialSettings_ = settings;
   }
 
   /** @override */
   initializeKioskAppSettings() {
     this.methodCalled('initializeKioskAppSettings');
-    return Promise.resolve({
-      kioskEnabled: true,
-      autoLaunchEnabled: false
-    });
+    return Promise.resolve(this.initialSettings_);
   }
 
   /** @override */
   getKioskAppSettings() {
     this.methodCalled('getKioskAppSettings');
-    return Promise.resolve({
-      apps: [],
-      disableBailout: false,
-      hasAutoLaunchApp: false
-    });
+    return Promise.resolve(this.appSettings_);
   }
 
   /** @override */
