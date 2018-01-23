@@ -16,10 +16,12 @@
 #include "chrome/common/url_constants.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/value_builder.h"
 #include "net/base/mime_sniffer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "skia/ext/image_operations.h"
@@ -84,6 +86,68 @@ TEST(ExtensionTest, LocationPriorityTest) {
             Manifest::GetHigherPriorityLocation(
                 Manifest::INTERNAL,
                 Manifest::EXTERNAL_PREF));
+}
+
+TEST(ExtensionTest, EnsureNewLinesInExtensionNameAreCollapsed) {
+  DictionaryBuilder manifest;
+  std::string unsanitized_name = "Test\n\n\n\n\n\n\n\n\n\n\n\nNew lines\u0085";
+  manifest.Set("name", unsanitized_name)
+      .Set("manifest_version", 2)
+      .Set("description", "some description");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest.Build())
+          .MergeManifest(DictionaryBuilder().Set("version", "0.1").Build())
+          .Build();
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("TestNew lines", extension->name());
+  // Ensure that non-localized name is not sanitized.
+  EXPECT_EQ(unsanitized_name, extension->non_localized_name());
+}
+
+TEST(ExtensionTest, EnsureWhitespacesInExtensionNameAreCollapsed) {
+  DictionaryBuilder manifest;
+  std::string unsanitized_name = "Test                        Whitespace";
+  manifest.Set("name", unsanitized_name)
+      .Set("manifest_version", 2)
+      .Set("description", "some description");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest.Build())
+          .MergeManifest(DictionaryBuilder().Set("version", "0.1").Build())
+          .Build();
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("Test Whitespace", extension->name());
+  // Ensure that non-localized name is not sanitized.
+  EXPECT_EQ(unsanitized_name, extension->non_localized_name());
+}
+
+// TODO(crbug.com/794252): Disallow empty extension names from being locally
+// loaded.
+TEST(ExtensionTest, EmptyName) {
+  DictionaryBuilder manifest1;
+  manifest1.Set("name", "")
+      .Set("manifest_version", 2)
+      .Set("description", "some description");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest1.Build())
+          .MergeManifest(DictionaryBuilder().Set("version", "0.1").Build())
+          .Build();
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("", extension->name());
+
+  DictionaryBuilder manifest2;
+  manifest2.Set("name", " ")
+      .Set("manifest_version", 2)
+      .Set("description", "some description");
+  extension =
+      ExtensionBuilder()
+          .SetManifest(manifest2.Build())
+          .MergeManifest(DictionaryBuilder().Set("version", "0.1").Build())
+          .Build();
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("", extension->name());
 }
 
 TEST(ExtensionTest, GetResourceURLAndPath) {

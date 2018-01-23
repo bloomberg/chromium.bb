@@ -251,7 +251,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::string& version_name() const { return version_name_; }
   const std::string VersionString() const;
   const std::string GetVersionForDisplay() const;
-  const std::string& name() const { return name_; }
+  const std::string& name() const { return display_name_; }
   const std::string& short_name() const { return short_name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }
   // Base64-encoded version of the key used to sign this extension.
@@ -366,7 +366,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // might be wrapped with unicode bidi control characters so that it is
   // displayed correctly in RTL context.
   // NOTE: Name is UTF-8 and may contain non-ascii characters.
-  std::string name_;
+  std::string display_name_;
 
   // A non-localized version of the extension's name. This is useful for
   // debug output.
