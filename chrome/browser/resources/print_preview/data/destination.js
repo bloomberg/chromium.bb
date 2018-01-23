@@ -781,7 +781,6 @@ cr.define('print_preview', function() {
     LOCAL_2X: 'images/2x/printer.png',
     MOBILE: 'images/mobile.png',
     MOBILE_SHARED: 'images/mobile_shared.png',
-    THIRD_PARTY: 'images/third_party.png',
     PDF: 'images/pdf.png',
     DOCS: 'images/google_doc.png',
     ENTERPRISE: 'images/business.svg'

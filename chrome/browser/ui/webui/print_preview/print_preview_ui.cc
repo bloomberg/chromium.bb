@@ -381,8 +381,6 @@ void AddPrintPreviewImages(content::WebUIDataSource* source) {
                           IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER_SHARED);
   source->AddResourcePath("images/business.svg",
                           IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER);
-  source->AddResourcePath("images/third_party.png",
-                          IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
   source->AddResourcePath("images/google_doc.png",
                           IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
   source->AddResourcePath("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);
