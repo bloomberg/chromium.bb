@@ -1799,8 +1799,6 @@ jumbo_source_set("unit_tests") {
     "fetch/ReadableStreamBytesConsumerTest.cpp",
     "fetch/RequestTest.cpp",
     "fetch/ResponseTest.cpp",
-    "fileapi/FileListTest.cpp",
-    "fileapi/FileTest.cpp",
     "frame/BrowserControlsTest.cpp",
     "frame/DOMTimerTest.cpp",
     "frame/DeferredLoadingTest.cpp",
@@ -2113,6 +2111,7 @@ jumbo_source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/core/editing:unit_tests",
+    "//third_party/WebKit/Source/core/fileapi:unit_tests",
   ]
 
   # FIXME: Enable mojo unittests on Android after fixing data dependency.

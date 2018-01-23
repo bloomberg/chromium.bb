@@ -407,6 +407,6 @@ jumbo_source_set("unit_tests") {
   deps = [
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/core:core",
+    "//third_party/WebKit/Source/core",
   ]
 }
