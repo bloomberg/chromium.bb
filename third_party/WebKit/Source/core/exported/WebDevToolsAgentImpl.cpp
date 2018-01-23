@@ -319,8 +319,6 @@ WebDevToolsAgentImpl::Session::Session(
     : agent_(agent),
       frame_(agent->web_local_frame_impl_),
       binding_(this, std::move(request)) {
-  InitializeInspectorSession(reattach_state);
-
   io_session_ =
       new IOSession(Platform::Current()->GetIOTaskRunner(),
                     frame_->GetFrame()->GetTaskRunner(TaskType::kUnthrottled),
@@ -329,6 +327,8 @@ WebDevToolsAgentImpl::Session::Session(
   host_ptr_.Bind(std::move(host_ptr_info));
   host_ptr_.set_connection_error_handler(WTF::Bind(
       &WebDevToolsAgentImpl::Session::Detach, WrapWeakPersistent(this)));
+
+  InitializeInspectorSession(reattach_state);
 }
 
 void WebDevToolsAgentImpl::Session::Trace(blink::Visitor* visitor) {
