@@ -355,11 +355,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PasswordManagerInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
-  if (url.host() == chrome::kChromeUIQuotaInternalsHost)
+  if (url.host_piece() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
-  if (url.host() == safe_browsing::kChromeUISafeBrowsingHost)
+  if (url.host_piece() == safe_browsing::kChromeUISafeBrowsingHost)
     return &NewWebUI<safe_browsing::SafeBrowsingUI>;
-  if (url.host() == chrome::kChromeUISignInInternalsHost)
+  if (url.host_piece() == chrome::kChromeUISignInInternalsHost)
     return &NewWebUI<SignInInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISuggestionsHost)
     return &NewWebUI<suggestions::SuggestionsUI>;
@@ -664,7 +664,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   // All extensions but the bookmark manager get their favicon from the icons
   // part of the manifest.
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      url.host() != extension_misc::kBookmarkManagerId) {
+      url.host_piece() != extension_misc::kBookmarkManagerId) {
     ExtensionWebUI::GetFaviconForURL(profile, url, callback);
     return;
   }
