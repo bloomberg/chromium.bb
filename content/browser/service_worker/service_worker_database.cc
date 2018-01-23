@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_database.h"
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -17,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -273,6 +275,7 @@ const char* ServiceWorkerDatabase::StatusToString(
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
     : registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
+      update_via_cache(blink::mojom::ServiceWorkerUpdateViaCache::kImports),
       version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       is_active(false),
       has_fetch_handler(false),
@@ -1409,6 +1412,17 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   for (uint32_t feature : data.used_features())
     out->used_features.insert(feature);
 
+  if (data.has_update_via_cache()) {
+    auto value = data.update_via_cache();
+    if (!ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType_IsValid(
+            value)) {
+      DLOG(ERROR) << "Update via cache mode '" << value << "' is not valid.";
+      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+    }
+    out->update_via_cache =
+        static_cast<blink::mojom::ServiceWorkerUpdateViaCache>(value);
+  }
+
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
@@ -1448,6 +1462,16 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
 
   for (uint32_t feature : registration.used_features)
     data.add_used_features(feature);
+
+  // TODO(https://crbug.com/675540): Remove the the command line check and
+  // always set to data when shipping the updateViaCache flag to stable.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    data.set_update_via_cache(
+        static_cast<
+            ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
+            registration.update_via_cache));
+  }
 
   std::string value;
   bool success = data.SerializeToString(&value);

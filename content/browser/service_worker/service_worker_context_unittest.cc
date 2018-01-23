@@ -83,6 +83,9 @@ void ExpectRegisteredWorkers(
   } else {
     EXPECT_FALSE(registration->active_version());
   }
+
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            registration->update_via_cache());
 }
 
 class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {

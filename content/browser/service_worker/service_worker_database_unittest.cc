@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -77,6 +79,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
   EXPECT_EQ(expected.used_features, actual.used_features);
+  EXPECT_EQ(expected.update_via_cache, actual.update_via_cache);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -545,6 +548,11 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
+  // TODO(https://crbug.com/618076): Remove the following command line switch
+  // when update_via_cache is shipped to stable.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::vector<RegistrationData> registrations;
@@ -575,6 +583,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data2.script = URL(origin2, "/script2.js");
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
+  data2.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -759,6 +768,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
+  // TODO(https://crbug.com/618076): Remove the following command line switch
+  // when update_via_cache is shipped to stable.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   GURL origin("http://example.com");
@@ -800,6 +814,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   updated_data.version_id = data.version_id + 1;
   updated_data.resources_total_size_bytes = 12 + 13;
   updated_data.used_features = {109, 421, 9101};
+  updated_data.update_via_cache =
+      blink::mojom::ServiceWorkerUpdateViaCache::kAll;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));
   resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 13));
@@ -1395,6 +1411,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   data2.script = URL(kOrigin, "/script2.js");
   data2.version_id = 201;
   data2.resources_total_size_bytes = 200;
+  data2.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kImports;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
 
