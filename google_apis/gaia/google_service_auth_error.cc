@@ -4,12 +4,12 @@
 
 #include "google_apis/gaia/google_service_auth_error.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -199,7 +199,7 @@ base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
     value->SetString("errorMessage", error_message_);
   }
   if (state_ == CAPTCHA_REQUIRED) {
-    auto captcha_value = base::MakeUnique<base::DictionaryValue>();
+    auto captcha_value = std::make_unique<base::DictionaryValue>();
     captcha_value->SetString("token", captcha_.token);
     captcha_value->SetString("audioUrl", captcha_.audio_url.spec());
     captcha_value->SetString("imageUrl", captcha_.image_url.spec());
@@ -210,7 +210,7 @@ base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
   } else if (state_ == CONNECTION_FAILED) {
     value->SetString("networkError", net::ErrorToString(network_error_));
   } else if (state_ == TWO_FACTOR) {
-    auto two_factor_value = base::MakeUnique<base::DictionaryValue>();
+    auto two_factor_value = std::make_unique<base::DictionaryValue>();
     two_factor_value->SetString("token", second_factor_.token);
     two_factor_value->SetString("promptText", second_factor_.prompt_text);
     two_factor_value->SetString("alternateText", second_factor_.alternate_text);
