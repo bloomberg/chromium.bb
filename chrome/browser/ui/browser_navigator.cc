@@ -145,10 +145,14 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
              browser_it != BrowserList::GetInstance()->end_last_active();
              ++browser_it) {
           Browser* browser = *browser_it;
-          // Only look at same profile (and anonymity level).
+          // When tab switching, only look at same profile and anonymity
+          // level. Allow SINGLETON to transition from incognito mode.
           if (browser->profile()->IsSameProfile(profile) &&
-              browser->profile()->GetProfileType() ==
-                  profile->GetProfileType()) {
+              (browser->profile()->GetProfileType() ==
+                   profile->GetProfileType() ||
+               (params.disposition == WindowOpenDisposition::SINGLETON_TAB &&
+                profile->GetProfileType() ==
+                    Profile::ProfileType::INCOGNITO_PROFILE))) {
             int index = GetIndexOfExistingTab(browser, params);
             if (index >= 0)
               return {browser, index};

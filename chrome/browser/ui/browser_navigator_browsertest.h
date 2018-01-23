@@ -48,6 +48,10 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
                                                 bool is_browser_initiated,
                                                 base::string16* title);
 
+  Browser* NavigateHelper(const GURL& url,
+                          Browser* browser,
+                          WindowOpenDisposition disposition);
+
   size_t created_tab_contents_count_;
 };
 
