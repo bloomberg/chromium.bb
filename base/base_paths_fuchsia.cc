@@ -21,7 +21,7 @@ constexpr char kPackageRoot[] = "/pkg";
 
 base::FilePath GetPackageRoot() {
   base::FilePath path_obj(kPackageRoot);
-  if (PathExists(path_obj)) {
+  if (path_obj.IsParent(base::CommandLine::ForCurrentProcess()->GetProgram())) {
     return path_obj;
   } else {
     return base::FilePath();
