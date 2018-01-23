@@ -1,9 +1,6 @@
 Tests that console viewport handles selection properly.
 
 
-Running: verifyViewportIsTallEnough
-Viewport contains 13 messages
-
 Running: testSelectionSingleLineText
 Selected text:<<<EOL
 nsole
@@ -34,7 +31,7 @@ first visible message index: 75
 
 Running: testHalfScrollSelectionDown
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
-first visible message index: 63
+first visible message index: 65
 
 Running: testScrollSelectionAwayUp
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}

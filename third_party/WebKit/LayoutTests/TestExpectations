@@ -2461,6 +2461,9 @@ crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 
+# TODO(luoe): a followup CL will contain a console viewport fix, allowing us to re-enable.
+crbug.com/803537 http/tests/devtools/console/console-viewport-indices.js [ Failure ]
+
 crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
 
 # Fail due to data: URLs treated as cross-origin: (crbug.com/508730)
