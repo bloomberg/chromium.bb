@@ -571,7 +571,8 @@ bool Extension::LoadName(base::string16* error) {
   }
   non_localized_name_ = base::UTF16ToUTF8(localized_name);
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  name_ = base::UTF16ToUTF8(localized_name);
+  display_name_ =
+      base::UTF16ToUTF8(base::CollapseWhitespace(localized_name, true));
   return true;
 }
 
@@ -744,7 +745,7 @@ bool Extension::LoadShortName(base::string16* error) {
     base::i18n::AdjustStringForLocaleDirection(&localized_short_name);
     short_name_ = base::UTF16ToUTF8(localized_short_name);
   } else {
-    short_name_ = name_;
+    short_name_ = display_name_;
   }
   return true;
 }
