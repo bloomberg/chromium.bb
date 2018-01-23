@@ -9,6 +9,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//chrome/test/mini_installer/mini_installer_test.gni")
 import("//components/nacl/features.gni")
 import("//third_party/icu/config.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
 
@@ -180,7 +181,6 @@ template("generate_mini_installer") {
       "//chrome/browser/extensions/default_extensions",
       "//chrome/installer/setup",
       "//third_party/icu:icudata",
-      "//tools/v8_context_snapshot",
       chrome_dll_target,
     ]
 
@@ -212,11 +212,14 @@ template("generate_mini_installer") {
     }
 
     if (v8_use_external_startup_data) {
-      inputs += [
-        "$root_out_dir/natives_blob.bin",
-        "$root_out_dir/snapshot_blob.bin",
-      ]
+      inputs += [ "$root_out_dir/natives_blob.bin" ]
       deps += [ "//v8" ]
+      if (use_v8_context_snapshot) {
+        inputs += [ "$root_out_dir/v8_context_snapshot.bin" ]
+        deps += [ "//tools/v8_context_snapshot" ]
+      } else {
+        inputs += [ "$root_out_dir/snapshot_blob.bin" ]
+      }
     }
 
     depfile = "$target_gen_dir/archive.d"

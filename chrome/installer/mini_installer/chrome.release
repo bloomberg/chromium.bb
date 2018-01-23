@@ -34,7 +34,6 @@ nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
 natives_blob.bin: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
-snapshot_blob.bin: %(VersionDir)s\
 syzyasan_rtl.dll: %(VersionDir)s\
 v8_context_snapshot.bin: %(VersionDir)s\
 #
