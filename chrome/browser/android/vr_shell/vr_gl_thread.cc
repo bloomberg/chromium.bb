@@ -46,7 +46,8 @@ base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
 
 void VrGLThread::Init() {
   bool keyboard_enabled =
-      base::FeatureList::IsEnabled(features::kVrBrowserKeyboard);
+      base::FeatureList::IsEnabled(features::kVrBrowserKeyboard) &&
+      !ui_initial_state_.web_vr_autopresentation_expected;
   if (keyboard_enabled) {
     keyboard_delegate_ = GvrKeyboardDelegate::Create();
     text_input_delegate_ = std::make_unique<vr::TextInputDelegate>();
