@@ -745,15 +745,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Fixed-size cache of reusable resource providers for video texImage2D calls.
   class LRUCanvasResourceProviderCache {
    public:
-    LRUCanvasResourceProviderCache(int capacity);
+    explicit LRUCanvasResourceProviderCache(size_t capacity);
     // The pointer returned is owned by the image buffer map.
     CanvasResourceProvider* GetCanvasResourceProvider(const IntSize&);
 
    private:
-    void BubbleToFront(int idx);
-    std::unique_ptr<std::unique_ptr<CanvasResourceProvider>[]>
-        resource_providers_;
-    int capacity_;
+    void BubbleToFront(size_t idx);
+    Vector<std::unique_ptr<CanvasResourceProvider>> resource_providers_;
   };
   LRUCanvasResourceProviderCache generated_image_cache_;
 
