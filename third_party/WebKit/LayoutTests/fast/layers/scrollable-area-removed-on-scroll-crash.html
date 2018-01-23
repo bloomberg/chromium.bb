@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script src=../../resources/js-test.js></script>
+<style>
+#container {
+  overflow: scroll
+}
+.inner {
+  width: 2000px
+}
+</style>
+<p>This tests that an accessibility controller scroll update notification which
+removes the scroller from the DOM does not crash the browser.</p>
+<div id="container">
+  <div class="inner"></div>
+</div>
+<script>
+description("Scrollable area removed on scroll");
+
+window.jsTestIsAsync = true;
+var removedContainer = false;
+
+accessibilityController.addNotificationListener(function () {
+  if (!window.container)
+    return;
+  removedContainer = true;
+  container.parentNode.removeChild(container);
+});
+
+setTimeout(function() {
+  container.scrollLeft = 500;
+  setTimeout(function(){
+    shouldBeTrue("removedContainer");
+    finishJSTest();
+  }, 0);
+}, 0);
+</script>
