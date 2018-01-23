@@ -1582,7 +1582,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // a regression test for crbug.com/796135.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostManagerTest,
-    DeleteSpeculativeRFHPedningCommitOfPendingEntryOnInterrupted) {
+    DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted1) {
   const std::string kOriginalPath = "/original.html";
   const std::string kFirstRedirectPath = "/redirect1.html";
   const std::string kSecondRedirectPath = "/reidrect2.html";
@@ -1691,6 +1691,117 @@ IN_PROC_BROWSER_TEST_F(
                         ->render_manager()
                         ->speculative_frame_host();
   EXPECT_FALSE(speculative_rfh);
+}
+
+// Ensures that deleting a speculative RenderFrameHost trying to commit a
+// navigation to the pending NavigationEntry will not crash if it happens
+// because a new navigation to the same pending NavigationEntry started.  This
+// is a variant of the previous test, where we destroy the speculative
+// RenderFrameHost to create another speculative RenderFrameHost.This is a
+// regression test for crbug.com/796135.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2) {
+  const std::string kOriginalPath = "/original.html";
+  const std::string kRedirectPath = "/redirect.html";
+  ControllableHttpResponse original_response1(embedded_test_server(),
+                                              kOriginalPath);
+  ControllableHttpResponse original_response2(embedded_test_server(),
+                                              kOriginalPath);
+  ControllableHttpResponse redirect_response(embedded_test_server(),
+                                             kRedirectPath);
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  const GURL kOriginalURL =
+      embedded_test_server()->GetURL("a.com", kOriginalPath);
+  const GURL kRedirectURL =
+      embedded_test_server()->GetURL("b.com", kRedirectPath);
+  const GURL kCrossSiteURL =
+      embedded_test_server()->GetURL("c.com", "/title1.html");
+
+  // First navigate to the initial URL.
+  shell()->LoadURL(kOriginalURL);
+  original_response1.WaitForRequest();
+  original_response1.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Cache-Control: no-cache, no-store, must-revalidate\r\n"
+      "Pragma: no-cache\r\n"
+      "\r\n");
+  original_response1.Send(
+      "<html>"
+      "<body></body>"
+      "</html>");
+  original_response1.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(kOriginalURL, shell()->web_contents()->GetVisibleURL());
+
+  // Navigate cross-site.
+  NavigateToURL(shell(), kCrossSiteURL);
+
+  // Now go back to the original request, which will do a cross-site redirect.
+  TestNavigationManager first_back(shell()->web_contents(), kOriginalURL);
+  shell()->GoBackOrForward(-1);
+  EXPECT_TRUE(first_back.WaitForRequestStart());
+  first_back.ResumeNavigation();
+
+  original_response2.WaitForRequest();
+  original_response2.Send(
+      "HTTP/1.1 302 FOUND\r\n"
+      "Location: " +
+      kRedirectURL.spec() +
+      "\r\n"
+      "\r\n");
+  original_response2.Done();
+  redirect_response.WaitForRequest();
+  redirect_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  EXPECT_TRUE(first_back.WaitForResponse());
+  first_back.ResumeNavigation();
+
+  // The navigation is ready to commit: it has been handed to the speculative
+  // RenderFrameHost for commit.
+  RenderFrameHostImpl* speculative_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->render_manager()
+          ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+  int site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
+
+  // The user starts a navigation towards the redirected URL, for which we have
+  // a speculative RenderFrameHost. This shouldn't delete the speculative
+  // RenderFrameHost.
+  TestNavigationManager navigation_to_redirect(shell()->web_contents(),
+                                               kRedirectURL);
+  shell()->LoadURL(kRedirectURL);
+  EXPECT_TRUE(navigation_to_redirect.WaitForRequestStart());
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+
+  // The user requests to go back again while the previous back hasn't committed
+  // yet. This should delete the speculative RenderFrameHost trying to commit
+  // the back, and re-create a new speculative RenderFrameHost. This shouldn't
+  // crash.
+  TestNavigationManager second_back(shell()->web_contents(), kOriginalURL);
+  shell()->GoBackOrForward(-1);
+  EXPECT_TRUE(second_back.WaitForRequestStart());
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  EXPECT_NE(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
 }
 
 // Test for crbug.com/9682.  We should not show the URL for a pending renderer-
