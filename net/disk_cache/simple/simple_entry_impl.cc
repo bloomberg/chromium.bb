@@ -200,7 +200,7 @@ SimpleEntryImpl::SimpleEntryImpl(
       last_modified_(last_used_),
       sparse_data_size_(0),
       open_count_(0),
-      doomed_(false),
+      doom_state_(DOOM_NONE),
       optimistic_create_pending_doom_state_(CREATE_NORMAL),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
@@ -309,12 +309,12 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
 }
 
 int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
-  if (doomed_)
+  if (doom_state_ != DOOM_NONE)
     return net::OK;
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_DOOM_CALL);
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_DOOM_BEGIN);
 
-  MarkAsDoomed();
+  MarkAsDoomed(DOOM_QUEUED);
   if (backend_.get()) {
     if (optimistic_create_pending_doom_state_ == CREATE_NORMAL) {
       backend_->OnDoomStart(entry_hash_);
@@ -631,7 +631,8 @@ void SimpleEntryImpl::PostClientCallback(const CompletionCallback& callback,
 void SimpleEntryImpl::ResetEntry() {
   // If we're doomed, we can't really do anything else with the entry, since
   // we no longer own the name and are disconnected from the active entry table.
-  state_ = doomed_ ? STATE_FAILURE : STATE_UNINITIALIZED;
+  // We preserve doom_state_ accross this entry for this same reason.
+  state_ = doom_state_ == DOOM_COMPLETED ? STATE_FAILURE : STATE_UNINITIALIZED;
   std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
@@ -657,8 +658,9 @@ void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
   *out_entry = this;
 }
 
-void SimpleEntryImpl::MarkAsDoomed() {
-  doomed_ = true;
+void SimpleEntryImpl::MarkAsDoomed(DoomState new_state) {
+  DCHECK_NE(DOOM_NONE, new_state);
+  doom_state_ = new_state;
   if (!backend_.get())
     return;
   backend_->index()->Remove(entry_hash_);
@@ -924,7 +926,7 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
   }
 
   state_ = STATE_IO_PENDING;
-  if (!doomed_ && backend_.get())
+  if (doom_state_ == DOOM_NONE && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
   // Figure out if we should be computing the checksum for this read,
@@ -1012,7 +1014,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
     }
   }
   state_ = STATE_IO_PENDING;
-  if (!doomed_ && backend_.get())
+  if (doom_state_ == DOOM_NONE && backend_.get())
     backend_->index()->UseIfExists(entry_hash_);
 
   // Any stream 1 write invalidates the prefetched data.
@@ -1046,10 +1048,13 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   // Retain a reference to |buf| in |reply| instead of |task|, so that we can
   // reduce cross thread malloc/free pairs. The cross thread malloc/free pair
   // increases the apparent memory usage due to the thread cached free list.
+  // TODO(morlovich): Remove the doom_state_ argument to WriteData once the
+  // follow up implementation of doom as renaming rather than delete is in, as
+  // with it creating a new stream 2 of doomed entry will just work.
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len,
-                                                 truncate, doomed_),
+      SimpleSynchronousEntry::EntryOperationData(
+          stream_index, offset, buf_len, truncate, doom_state_ != DOOM_NONE),
       base::Unretained(buf), entry_stat.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
                              stream_index, callback, base::Passed(&entry_stat),
@@ -1196,6 +1201,13 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
 }
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
+  if (doom_state_ == DOOM_COMPLETED) {
+    // During the time we were sitting on a queue, some operation failed
+    // and cleaned our files up, so we don't have to do anything.
+    DoomOperationComplete(callback, state_, net::OK);
+    return;
+  }
+
   if (!backend_) {
     // If there's no backend, we want to truncate the files rather than delete
     // them. Removing files will update the entry directory's mtime, which will
@@ -1257,7 +1269,7 @@ void SimpleEntryImpl::CreationOperationComplete(
   // Make sure to keep the index up-to-date. We likely already did this when
   // CreateEntry was called, but it's possible we were sitting on a queue
   // after an op that removed us.
-  if (backend_ && !doomed_)
+  if (backend_ && doom_state_ == DOOM_NONE)
     backend_->index()->Insert(entry_hash_);
 
   // If out_entry is NULL, it means we already called ReturnEntryToCaller from
@@ -1315,7 +1327,7 @@ void SimpleEntryImpl::EntryOperationComplete(
   DCHECK(result);
   if (*result < 0) {
     state_ = STATE_FAILURE;
-    MarkAsDoomed();
+    MarkAsDoomed(DOOM_COMPLETED);
   } else {
     state_ = STATE_READY;
     UpdateDataFromEntryStat(entry_stat);
@@ -1446,6 +1458,7 @@ void SimpleEntryImpl::DoomOperationComplete(
     State state_to_restore,
     int result) {
   state_ = state_to_restore;
+  doom_state_ = DOOM_COMPLETED;
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_DOOM_END);
   PostClientCallback(callback, result);
   RunNextOperationIfNeeded();
@@ -1493,7 +1506,7 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
     data_size_[i] = entry_stat.data_size(i);
   }
   sparse_data_size_ = entry_stat.sparse_data_size();
-  if (!doomed_ && backend_.get()) {
+  if (doom_state_ == DOOM_NONE && backend_.get()) {
     backend_->index()->UpdateEntrySize(
         entry_hash_, base::checked_cast<uint32_t>(GetDiskUsage()));
   }
