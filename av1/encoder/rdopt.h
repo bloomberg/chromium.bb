@@ -290,19 +290,16 @@ int av1_active_h_edge(const struct AV1_COMP *cpi, int mi_row, int mi_step);
 int av1_active_v_edge(const struct AV1_COMP *cpi, int mi_col, int mi_step);
 int av1_active_edge_sb(const struct AV1_COMP *cpi, int mi_row, int mi_col);
 
-#ifdef __cplusplus
-}  // extern "C"
-#endif
-
 int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
                      const MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                      TX_SIZE tx_size, TX_TYPE tx_type);
 
-int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
-                               int mi_row, int mi_col, int *skip_blk,
-                               MB_MODE_INFO *backup_mbmi);
-
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int blk_row, int blk_col, int eob,
                                         int reduced_tx_set);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif  // AV1_ENCODER_RDOPT_H_

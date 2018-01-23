@@ -2171,6 +2171,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
   }
   return 0;
 }
+
 static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                         RD_STATS *rd_stats, int64_t ref_best_rd, BLOCK_SIZE bs,
                         TX_TYPE tx_type, TX_SIZE tx_size) {
