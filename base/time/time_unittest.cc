@@ -17,7 +17,9 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_IOS)
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#elif defined(OS_IOS)
 #include "base/ios/ios_util.h"
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -899,6 +901,28 @@ TEST(TimeTicks, SnappedToNextTickOverflow) {
             big_timestamp.SnappedToNextTick(big_timestamp, interval)
                 .ToInternalValue());
 }
+
+#if defined(OS_ANDROID)
+TEST(TimeTicks, Android_FromUptimeMillis_ClocksMatch) {
+  JNIEnv* const env = android::AttachCurrentThread();
+  android::ScopedJavaLocalRef<jclass> clazz(
+      android::GetClass(env, "android/os/SystemClock"));
+  ASSERT_TRUE(clazz.obj());
+  const jmethodID method_id =
+      android::MethodID::Get<android::MethodID::TYPE_STATIC>(
+          env, clazz.obj(), "uptimeMillis", "()J");
+  ASSERT_FALSE(!method_id);
+  // Subtract 1ms from the expected lower bound to allow millisecon-level
+  // truncation performed in uptimeMillis().
+  const TimeTicks lower_bound_ticks =
+      TimeTicks::Now() - TimeDelta::FromMilliseconds(1);
+  const TimeTicks converted_ticks = TimeTicks::FromUptimeMillis(
+      env->CallStaticLongMethod(clazz.obj(), method_id));
+  const TimeTicks upper_bound_ticks = TimeTicks::Now();
+  EXPECT_LE(lower_bound_ticks, converted_ticks);
+  EXPECT_GE(upper_bound_ticks, converted_ticks);
+}
+#endif  // OS_ANDROID
 
 TEST(TimeDelta, FromAndIn) {
   // static_assert also checks that the contained expression is a constant
