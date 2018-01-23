@@ -30,13 +30,9 @@ available (or available but not considered stable enough). That is, the
 JobScheduler API is used on Android M+; and the GcmNetworkManager is used
 otherwise.
 
-> **WARNING: The GcmNetworkManager fallback is not yet implemented.** Please
-> treat the above as a target state, and do not yet add any dependencies on the
-> BackgroundTaskScheduler API that require pre-M compatibility.
-
-> NOTE: Even with the GcmNetworkManager fallback, there are devices that would
-> remain unsupported, as not all devices have Google Play services
-> available. Ultimately, this component hopes to provide a full compatibility
+> NOTE: Some of the pre-M devices do not include Google Play services and
+> therefore remain unsupported by `background_task_scheduler`.
+> Ultimately, this component hopes to provide a full compatibility
 > layer on top of `JobScheduler`. However, until that is implemented, please be
 > thoughtful about whether this component provides the coverage that your
 > background task needs.
@@ -179,3 +175,27 @@ if the task needs to be rescheduled since it was canceled, or false otherwise.
 **The system will hold a wakelock from the time `onStartTask(...)` is invoked
 until either the task itself invokes the `TaskFinishedCallback`, or
 `onStopTask(...)` is invoked.**
+
+## Loading Native parts
+
+Some of the tasks running in the background require native parts of the browser
+to be initialized. In order to simplify implementation of such tasks, we provide
+an base `NativeBackgroundTask`
+[implementation](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTask.java)
+in the browser layer. It requires extending classes to implement 4 methods:
+
+ * `onStartTaskBeforeNativeLoaded(...)` where the background task can decide
+   whether conditions are correct to proceed with native initialization;
+ * `onStartTaskWithNative(...)` where the background task can be sure that
+   native initialization was completed, therefore it can depend on that part of
+   the browser;
+ * `onStopTaskBeforeNativeLoaded(...)` which is delivered to the background task
+   just like `onStopTask(...)` and the native parts of the browser are not
+   loaded;
+ * `onStopTaskWithNative(...)` which is delivered to the background task just
+   like `onStopTask(...)` and the native parts of the browser are loaded.
+
+While in a normal execution, both `onStart...` methods are called, only one of
+the stopping methods will be triggered, depending on whether the native parts of
+the browser are loaded at the time the underlying scheduler decides to stop the
+task.
