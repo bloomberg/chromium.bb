@@ -19,6 +19,10 @@ config("gpu_util_implementation") {
   defines = [ "GPU_UTIL_IMPLEMENTATION" ]
 }
 
+config("raster_implementation") {
+  defines = [ "RASTER_IMPLEMENTATION" ]
+}
+
 component("gpu") {
   public_deps = [
     "//gpu/command_buffer/client:client_sources",
@@ -35,6 +39,12 @@ component("gles2") {
     "//gpu/command_buffer/client:gles2_cmd_helper_sources",
     "//gpu/command_buffer/common:gles2_sources",
     "//gpu/command_buffer/service:gles2_sources",
+  ]
+}
+
+component("raster") {
+  public_deps = [
+    "//gpu/command_buffer/client:raster_sources",
   ]
 }
 
@@ -408,6 +418,7 @@ test("gpu_unittests") {
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common:gpu_preferences_util",
