@@ -164,6 +164,8 @@ struct macroblock {
   // Save the transform RD search info.
   TX_RD_RECORD tx_rd_record;
 
+  int rd_model;
+
   // Also save RD info on the TX size search level for square TX sizes.
   TX_SIZE_RD_RECORD
   tx_size_rd_record_8X8[(MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)];
