@@ -1884,6 +1884,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_txb_ctx = x->plane[plane].txb_entropy_ctx[block];
       best_eob = x->plane[plane].eobs[block];
     }
+
+    // Skip transform type search when we found the block has been quantized to
+    // all zero and at the same time, it has better rdcost than doing transform.
+    if (cpi->sf.tx_type_search.skip_tx_search && !best_eob) break;
   }
 
   av1_merge_rd_stats(rd_stats, &best_rd_stats);
@@ -2575,6 +2579,13 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       const int is_inter = is_inter_block(mbmi);
       if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
 #endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+
+#if !CONFIG_TXK_SEL
+      // stop searching other tx types if skip has better rdcost than transform
+      // all tx blocks.
+      if (cpi->sf.tx_type_search.skip_tx_search && !is_inter && rd_stats->skip)
+        break;
+#endif
     }
     if (n == TX_4X4) break;
   }
@@ -4812,7 +4823,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   int64_t best_rd = INT64_MAX;
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
   const int is_inter = is_inter_block(mbmi);
-  TX_SIZE best_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
+  TX_SIZE best_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
   TX_SIZE best_tx = max_txsize_rect_lookup[1][bsize];
   TX_SIZE best_min_tx_size = TX_SIZES_ALL;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
@@ -4941,6 +4952,13 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
         for (idx = 0; idx < xd->n8_w; ++idx)
           best_tx_size[idy][idx] = mbmi->inter_tx_size[idy][idx];
     }
+
+#if !CONFIG_TXK_SEL
+    // stop searching other tx types if skip has better rdcost than DCT for
+    // all tx blocks.
+    if (cpi->sf.tx_type_search.skip_tx_search && is_inter && this_rd_stats.skip)
+      break;
+#endif
   }
 
   // We should always find at least one candidate unless ref_best_rd is less

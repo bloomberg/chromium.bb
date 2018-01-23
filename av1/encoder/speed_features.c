@@ -157,6 +157,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     // TODO(mfo): Activate feature once it gives positive results.
     sf->use_hash_based_trellis = 1;
 #endif  // CONFIG_HASH_ME && CONFIG_LV_MAP
+    sf->tx_type_search.skip_tx_search = 1;
   }
 
   if (speed >= 2) {
@@ -471,6 +472,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->tx_type_search.use_skip_flag_prediction = 1;
   sf->tx_type_search.fast_intra_tx_type_search = 0;
   sf->tx_type_search.fast_inter_tx_type_search = 0;
+  sf->tx_type_search.skip_tx_search = 0;
   sf->selective_ref_frame = 0;
   sf->less_rectangular_check = 0;
   sf->use_square_partition_only = 0;

@@ -213,6 +213,10 @@ typedef struct {
   // RD search (currently works only when prune_mode equals to PRUNE_2D_ACCURATE
   // or PRUNE_2D_FAST).
   int use_tx_size_pruning;
+
+  // skip remaining transform type search when we found the rdcost of skip is
+  // better than applying transform
+  int skip_tx_search;
 } TX_TYPE_SEARCH;
 
 typedef enum {
