@@ -24,12 +24,6 @@ extern const uint16_t av1_prob_cost[256];
 // The factor to scale from cost in bits to cost in av1_prob_cost units.
 #define AV1_PROB_COST_SHIFT 9
 
-#define av1_cost_zero(prob) (av1_prob_cost[prob])
-
-#define av1_cost_one(prob) av1_cost_zero(256 - (prob))
-
-#define av1_cost_bit(prob, bit) av1_cost_zero((bit) ? 256 - (prob) : (prob))
-
 // Cost of coding an n bit literal, using 128 (i.e. 50%) probability
 // for each bit.
 #define av1_cost_literal(n) ((n) * (1 << AV1_PROB_COST_SHIFT))
@@ -38,7 +32,7 @@ extern const uint16_t av1_prob_cost[256];
 static INLINE int av1_cost_symbol(aom_cdf_prob p15) {
   assert(0 < p15 && p15 < CDF_PROB_TOP);
   const int shift = CDF_PROB_BITS - 1 - get_msb(p15);
-  return av1_cost_zero(get_prob(p15 << shift, CDF_PROB_TOP)) +
+  return av1_prob_cost[get_prob(p15 << shift, CDF_PROB_TOP)] +
          av1_cost_literal(shift);
 }
 

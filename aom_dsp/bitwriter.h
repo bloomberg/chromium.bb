@@ -60,28 +60,8 @@ static INLINE void aom_write(aom_writer *br, int bit, int probability) {
   aom_daala_write(br, bit, probability);
 }
 
-static INLINE void aom_write_record(aom_writer *br, int bit, int probability,
-                                    TOKEN_STATS *token_stats) {
-  aom_write(br, bit, probability);
-#if CONFIG_RD_DEBUG
-  token_stats->cost += av1_cost_bit(probability, bit);
-#else
-  (void)token_stats;
-#endif
-}
-
 static INLINE void aom_write_bit(aom_writer *w, int bit) {
   aom_write(w, bit, 128);  // aom_prob_half
-}
-
-static INLINE void aom_write_bit_record(aom_writer *w, int bit,
-                                        TOKEN_STATS *token_stats) {
-  aom_write_bit(w, bit);
-#if CONFIG_RD_DEBUG
-  token_stats->cost += av1_cost_bit(128, bit);  // aom_prob_half
-#else
-  (void)token_stats;
-#endif
 }
 
 static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {

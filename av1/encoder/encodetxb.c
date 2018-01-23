@@ -253,14 +253,11 @@ static int get_eob_cost(int eob, int seg_eob,
   eob_cost = txb_eob_costs->eob_cost[eob_multi_ctx][eob_pt - 1];
 
   if (k_eob_offset_bits[eob_pt] > 0) {
-    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
-    int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+    const int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    const int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
     eob_cost += txb_costs->eob_extra_cost[eob_pt][bit];
-    for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
-      eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
-      bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
-      eob_cost += av1_cost_bit(128, bit);
-    }
+    const int offset_bits = k_eob_offset_bits[eob_pt];
+    if (offset_bits > 1) eob_cost += av1_cost_literal(offset_bits - 1);
   }
   return eob_cost;
 }
@@ -747,14 +744,14 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
     }
 
     if (is_nz) {
-      int sign = (v < 0) ? 1 : 0;
+      const int sign = (v < 0) ? 1 : 0;
 
       // sign bit cost
       if (c == 0) {
         int dc_sign_ctx = txb_ctx->dc_sign_ctx;
         cost += coeff_costs->dc_sign_cost[dc_sign_ctx][sign];
       } else {
-        cost += av1_cost_bit(128, sign);
+        cost += av1_cost_literal(1);
       }
       if (level > NUM_BASE_LEVELS) {
         int ctx;
@@ -772,19 +769,9 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 
         if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
           // residual cost
-          int r = level - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
-          int ri = r;
-          int length = 0;
-
-          while (ri) {
-            ri >>= 1;
-            ++length;
-          }
-
-          for (ri = 0; ri < length - 1; ++ri) cost += av1_cost_bit(128, 0);
-
-          for (ri = length - 1; ri >= 0; --ri)
-            cost += av1_cost_bit(128, (r >> ri) & 0x01);
+          const int ri = level - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
+          const int length = get_msb(ri) + 1;
+          cost += av1_cost_literal(2 * length);
         }
       }
     }
@@ -809,7 +796,7 @@ static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
   if (coeff_idx == 0) {
     return dc_sign_cost[dc_sign_ctx][sign];
   } else {
-    return av1_cost_bit(128, sign);
+    return av1_cost_literal(1);
   }
 }
 static INLINE int get_golomb_cost(int abs_qc) {

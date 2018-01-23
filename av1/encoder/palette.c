@@ -125,7 +125,7 @@ int av1_palette_color_cost_y(const PALETTE_MODE_INFO *const pmi,
                             cache_color_found, out_cache_colors);
   const int total_bits =
       n_cache + delta_encode_cost(out_cache_colors, n_out_cache, bit_depth, 1);
-  return total_bits * av1_cost_bit(128, 0);
+  return av1_cost_literal(total_bits);
 }
 
 int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
@@ -150,5 +150,5 @@ int av1_palette_color_cost_uv(const PALETTE_MODE_INFO *const pmi,
       2 + bit_depth + (bits_v + 1) * (n - 1) - zero_count;
   const int bits_using_raw = bit_depth * n;
   total_bits += 1 + AOMMIN(bits_using_delta, bits_using_raw);
-  return total_bits * av1_cost_bit(128, 0);
+  return av1_cost_literal(total_bits);
 }

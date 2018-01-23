@@ -363,9 +363,9 @@ static INLINE int write_uniform_cost(int n, int v) {
   const int m = (1 << l) - n;
   if (l == 0) return 0;
   if (v < m)
-    return (l - 1) * av1_cost_bit(128, 0);
+    return av1_cost_literal(l - 1);
   else
-    return l * av1_cost_bit(128, 0);
+    return av1_cost_literal(l);
 }
 
 // constants for prune 1 and prune 2 decision boundaries
