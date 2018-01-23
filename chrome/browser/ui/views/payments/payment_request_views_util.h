@@ -68,10 +68,10 @@ int GetActualDialogWidth();
 // +---------------------------+
 // | <- | Title                |
 // +---------------------------+
-std::unique_ptr<views::View> CreateSheetHeaderView(
-    bool show_back_arrow,
-    const base::string16& title,
-    views::ButtonListener* delegate);
+void PopulateSheetHeaderView(bool show_back_arrow,
+                             std::unique_ptr<views::View> header_content_view,
+                             views::ButtonListener* delegate,
+                             views::View* container);
 
 // Returns an instrument image view for the given |img| or |icon_resource_id|
 // and wanted |opacity|. Includes a rounded rect border. Callers need to set the
