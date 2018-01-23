@@ -108,12 +108,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
                 std::move(handle)));
         break;
       }
-      case network::DataElement::TYPE_FILE_FILESYSTEM:
-        CHECK(false) << "Should never be reached";
-        break;
       case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
       case network::DataElement::TYPE_DATA_PIPE:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();

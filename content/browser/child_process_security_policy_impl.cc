@@ -807,20 +807,7 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
           return false;
         break;
 
-      case network::DataElement::TYPE_FILE_FILESYSTEM:
-        if (!CanReadFileSystemFile(child_id, file_system_context->CrackURL(
-                                                 element.filesystem_url())))
-          return false;
-        break;
-
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-        // TYPE_DISK_CACHE_ENTRY can't be sent via IPC according to
-        // content/common/resource_messages.cc
-        NOTREACHED();
-        return false;
-
       case network::DataElement::TYPE_BYTES:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
         // Data is self-contained within |body| - no need to check access.
         break;
 

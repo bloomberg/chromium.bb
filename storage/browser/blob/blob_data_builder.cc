@@ -115,11 +115,6 @@ void BlobDataBuilder::AppendIPCDataElement(
       AppendFile(ipc_data.path(), ipc_data.offset(), length,
                  ipc_data.expected_modification_time());
       break;
-    case network::DataElement::TYPE_FILE_FILESYSTEM:
-      AppendFileSystemFile(ipc_data.filesystem_url(), ipc_data.offset(), length,
-                           ipc_data.expected_modification_time(),
-                           file_system_context);
-      break;
     case network::DataElement::TYPE_BLOB:
       // This will be deconstructed immediately into the items the blob is made
       // up of.
@@ -127,10 +122,8 @@ void BlobDataBuilder::AppendIPCDataElement(
                  blob_registry);
       break;
     case network::DataElement::TYPE_RAW_FILE:
-    case network::DataElement::TYPE_BYTES_DESCRIPTION:
     case network::DataElement::TYPE_UNKNOWN:
     // This type can't be sent by IPC.
-    case network::DataElement::TYPE_DISK_CACHE_ENTRY:
     case network::DataElement::TYPE_DATA_PIPE:
       NOTREACHED();
       break;

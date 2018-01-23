@@ -51,16 +51,6 @@ void ResourceRequestBody::AppendBlob(const std::string& uuid) {
   elements_.back().SetToBlob(uuid);
 }
 
-void ResourceRequestBody::AppendFileSystemFileRange(
-    const GURL& url,
-    uint64_t offset,
-    uint64_t length,
-    const base::Time& expected_modification_time) {
-  elements_.push_back(DataElement());
-  elements_.back().SetToFileSystemUrlRange(url, offset, length,
-                                           expected_modification_time);
-}
-
 void ResourceRequestBody::AppendDataPipe(
     mojom::DataPipeGetterPtr data_pipe_getter) {
   elements_.push_back(DataElement());

@@ -60,24 +60,6 @@ void DataElement::SetToBlobRange(const std::string& blob_uuid,
   length_ = length;
 }
 
-void DataElement::SetToFileSystemUrlRange(
-    const GURL& filesystem_url,
-    uint64_t offset,
-    uint64_t length,
-    const base::Time& expected_modification_time) {
-  type_ = TYPE_FILE_FILESYSTEM;
-  filesystem_url_ = filesystem_url;
-  offset_ = offset;
-  length_ = length;
-  expected_modification_time_ = expected_modification_time;
-}
-
-void DataElement::SetToDiskCacheEntryRange(uint64_t offset, uint64_t length) {
-  type_ = TYPE_DISK_CACHE_ENTRY;
-  offset_ = offset;
-  length_ = length;
-}
-
 void DataElement::SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter) {
   type_ = TYPE_DATA_PIPE;
   data_pipe_getter_ = std::move(data_pipe_getter);
@@ -116,15 +98,6 @@ void PrintTo(const DataElement& x, std::ostream* os) {
     case DataElement::TYPE_BLOB:
       *os << "TYPE_BLOB, uuid: " << x.blob_uuid();
       break;
-    case DataElement::TYPE_FILE_FILESYSTEM:
-      *os << "TYPE_FILE_FILESYSTEM, filesystem_url: " << x.filesystem_url();
-      break;
-    case DataElement::TYPE_DISK_CACHE_ENTRY:
-      *os << "TYPE_DISK_CACHE_ENTRY";
-      break;
-    case DataElement::TYPE_BYTES_DESCRIPTION:
-      *os << "TYPE_BYTES_DESCRIPTION";
-      break;
     case DataElement::TYPE_DATA_PIPE:
       *os << "TYPE_DATA_PIPE";
       break;
@@ -150,14 +123,6 @@ bool operator==(const DataElement& a, const DataElement& b) {
              a.expected_modification_time() == b.expected_modification_time();
     case DataElement::TYPE_BLOB:
       return a.blob_uuid() == b.blob_uuid();
-    case DataElement::TYPE_FILE_FILESYSTEM:
-      return a.filesystem_url() == b.filesystem_url();
-    case DataElement::TYPE_DISK_CACHE_ENTRY:
-      // We compare only length and offset; we trust the entry itself was
-      // compared at some higher level such as in BlobDataItem.
-      return true;
-    case DataElement::TYPE_BYTES_DESCRIPTION:
-      return true;
     case DataElement::TYPE_DATA_PIPE:
       return false;
     case DataElement::TYPE_UNKNOWN:

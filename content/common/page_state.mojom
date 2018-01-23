@@ -32,7 +32,8 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // Next MinVersion: 2
 
 // Next Ordinal: 4
-struct FileSystemFile {
+// FileSystemFile is no longer supported.
+struct DEPRECATED_FileSystemFile {
   url.mojom.Url filesystem_url@0;
   uint64 offset@1;
   uint64 length@2;
@@ -52,7 +53,8 @@ union Element {
   string blob_uuid@0;
   array<uint8> bytes@1;
   File file@2;
-  FileSystemFile file_system_file@3;
+  // FileSystemFile is no longer supported.
+  DEPRECATED_FileSystemFile DEPRECATED_file_system_file@3;
 };
 
 // Next Ordinal: 3
