@@ -53,7 +53,7 @@ TEST_F(FontResourceTest,
   ResourceRequest request1(url);
   FetchParameters fetch_params1(request1);
   Resource* resource1 = FontResource::Fetch(fetch_params1, fetcher, nullptr);
-  ASSERT_TRUE(resource1);
+  ASSERT_FALSE(resource1->ErrorOccurred());
   fetcher->StartLoad(resource1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(resource1->IsLoaded());
@@ -67,7 +67,7 @@ TEST_F(FontResourceTest,
   request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
   FetchParameters fetch_params2(request2);
   Resource* resource2 = FontResource::Fetch(fetch_params2, fetcher, nullptr);
-  ASSERT_TRUE(resource2);
+  ASSERT_FALSE(resource2->ErrorOccurred());
   EXPECT_EQ(resource1, resource2);
   EXPECT_TRUE(resource2->IsCacheValidator());
   EXPECT_TRUE(resource2->StillNeedsLoad());
@@ -77,7 +77,7 @@ TEST_F(FontResourceTest,
   request3.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
   FetchParameters fetch_params3(request3);
   Resource* resource3 = FontResource::Fetch(fetch_params3, fetcher, nullptr);
-  ASSERT_TRUE(resource3);
+  ASSERT_FALSE(resource3->ErrorOccurred());
   EXPECT_EQ(resource2, resource3);
   EXPECT_TRUE(resource3->IsCacheValidator());
   EXPECT_TRUE(resource3->StillNeedsLoad());
@@ -121,46 +121,45 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   // correct behavior in the case where we reuse a FontResource without it being
   // a "cache hit" in ResourceFetcher's view.
   Persistent<MockFontResourceClient> client = new MockFontResourceClient;
-  FontResource* resource = src_value->Fetch(&document, client);
-  ASSERT_TRUE(resource);
+  FontResource& resource = src_value->Fetch(&document, client);
 
-  fetcher->StartLoad(resource);
-  EXPECT_TRUE(resource->Loader()->IsCacheAwareLoadingActivated());
-  resource->load_limit_state_ = FontResource::kUnderLimit;
+  fetcher->StartLoad(&resource);
+  EXPECT_TRUE(resource.Loader()->IsCacheAwareLoadingActivated());
+  resource.load_limit_state_ = FontResource::kUnderLimit;
 
   // FontResource callbacks should be blocked during cache-aware loading.
-  resource->FontLoadShortLimitCallback();
+  resource.FontLoadShortLimitCallback();
   EXPECT_FALSE(client->FontLoadShortLimitExceededCalled());
 
   // Fail first request as disk cache miss.
-  resource->Loader()->HandleError(ResourceError::CacheMissError(url));
+  resource.Loader()->HandleError(ResourceError::CacheMissError(url));
 
   // Once cache miss error returns, previously blocked callbacks should be
   // called immediately.
-  EXPECT_FALSE(resource->Loader()->IsCacheAwareLoadingActivated());
+  EXPECT_FALSE(resource.Loader()->IsCacheAwareLoadingActivated());
   EXPECT_TRUE(client->FontLoadShortLimitExceededCalled());
   EXPECT_FALSE(client->FontLoadLongLimitExceededCalled());
 
   // Add client now, FontLoadShortLimitExceeded() should be called.
   Persistent<MockFontResourceClient> client2 = new MockFontResourceClient;
-  FontResource* resource2 = src_value->Fetch(&document, client2);
-  EXPECT_EQ(resource, resource2);
+  FontResource& resource2 = src_value->Fetch(&document, client2);
+  EXPECT_EQ(&resource, &resource2);
   EXPECT_TRUE(client2->FontLoadShortLimitExceededCalled());
   EXPECT_FALSE(client2->FontLoadLongLimitExceededCalled());
 
   // FontResource callbacks are not blocked now.
-  resource->FontLoadLongLimitCallback();
+  resource.FontLoadLongLimitCallback();
   EXPECT_TRUE(client->FontLoadLongLimitExceededCalled());
 
   // Add client now, both callbacks should be called.
   Persistent<MockFontResourceClient> client3 = new MockFontResourceClient;
-  FontResource* resource3 = src_value->Fetch(&document, client3);
-  EXPECT_EQ(resource, resource3);
+  FontResource& resource3 = src_value->Fetch(&document, client3);
+  EXPECT_EQ(&resource, &resource3);
   EXPECT_TRUE(client3->FontLoadShortLimitExceededCalled());
   EXPECT_TRUE(client3->FontLoadLongLimitExceededCalled());
 
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  GetMemoryCache()->Remove(resource);
+  GetMemoryCache()->Remove(&resource);
 
   features_backup.Restore();
 }

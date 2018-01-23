@@ -867,18 +867,6 @@ void DocumentLoader::StartLoading() {
   FetchParameters fetch_params(request_, options);
   RawResource::FetchMainResource(fetch_params, Fetcher(), this,
                                  substitute_data_);
-
-  // PlzNavigate:
-  // The final access checks are still performed here, potentially rejecting
-  // the "provisional" load, but the browser side already expects the renderer
-  // to be able to unconditionally commit.
-  if (!GetResource() ||
-      (frame_->GetSettings()->GetBrowserSideNavigationEnabled() &&
-       GetResource()->ErrorOccurred())) {
-    request_ = ResourceRequest(BlankURL());
-    MaybeLoadEmpty();
-    return;
-  }
   // A bunch of headers are set when the underlying resource load begins, and
   // request_ needs to include those. Even when using a cached resource, we may
   // make some modification to the request, e.g. adding the referer header.

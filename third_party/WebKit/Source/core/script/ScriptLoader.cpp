@@ -432,12 +432,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       // "Fetch a classic script given url, settings object, options, CORS
       // setting, and encoding." [spec text]
-      if (!FetchClassicScript(url, element_document, options, encoding)) {
-        // TODO(hiroshige): Make this asynchronous. Currently we fire the error
-        // event synchronously to keep the existing behavior.
-        DispatchErrorEvent();
-        return false;
-      }
+      FetchClassicScript(url, element_document, options, encoding);
     } else {
       // - "module":
 
@@ -685,7 +680,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
-bool ScriptLoader::FetchClassicScript(const KURL& url,
+void ScriptLoader::FetchClassicScript(const KURL& url,
                                       Document& element_document,
                                       const ScriptFetchOptions& options,
                                       const WTF::TextEncoding& encoding) {
@@ -696,14 +691,8 @@ bool ScriptLoader::FetchClassicScript(const KURL& url,
 
   ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
       url, element_document, options, encoding, element_, defer);
-
-  if (!pending_script)
-    return false;
-
   prepared_pending_script_ = pending_script;
   resource_keep_alive_ = pending_script->GetResource();
-
-  return true;
 }
 
 void ScriptLoader::FetchModuleScriptTree(const KURL& url,

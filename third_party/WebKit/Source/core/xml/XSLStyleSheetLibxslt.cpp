@@ -230,7 +230,7 @@ void XSLStyleSheet::LoadChildSheet(const String& href) {
   params.SetOriginRestriction(FetchParameters::kRestrictToSameOrigin);
   XSLStyleSheetResource* resource = XSLStyleSheetResource::FetchSynchronously(
       params, OwnerDocument()->Fetcher());
-  if (!resource || !resource->Sheet())
+  if (!resource->Sheet())
     return;
 
   XSLStyleSheet* style_sheet =

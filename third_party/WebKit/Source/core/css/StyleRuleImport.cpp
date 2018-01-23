@@ -138,9 +138,8 @@ void StyleRuleImport::RequestStyleSheet() {
   params.SetCharset(parent_style_sheet_->Charset());
   loading_ = true;
   DCHECK(!style_sheet_client_->GetResource());
-  if (!CSSStyleSheetResource::Fetch(params, fetcher, style_sheet_client_)) {
-    loading_ = false;
-  } else if (loading_) {
+  CSSStyleSheetResource::Fetch(params, fetcher, style_sheet_client_);
+  if (loading_) {
     // if the import rule is issued dynamically, the sheet may be
     // removed from the pending sheet count, so let the doc know
     // the sheet being imported is pending.
