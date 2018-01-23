@@ -90,7 +90,8 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
       profile ? GetExtendedReportingLevel(*profile->GetPrefs())
               : SBER_LEVEL_OFF;
   hit_report.is_metrics_reporting_active =
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+          g_browser_process->local_state());
 
   MaybeReportSafeBrowsingHit(hit_report, web_contents);
 

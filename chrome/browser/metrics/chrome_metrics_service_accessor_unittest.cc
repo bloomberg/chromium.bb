@@ -38,27 +38,27 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   GetLocalState()->SetDefaultPrefValue(pref, base::Value(false));
 
   GetLocalState()->SetBoolean(pref, false);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
   GetLocalState()->SetBoolean(pref, true);
-  EXPECT_TRUE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_TRUE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
   GetLocalState()->ClearPref(pref);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
 
   // If field trials are forced, metrics should always be disabled, regardless
   // of the value of the pref.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kForceFieldTrials);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
   GetLocalState()->SetBoolean(pref, true);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
 #else
   // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      GetLocalState()));
 #endif
 }

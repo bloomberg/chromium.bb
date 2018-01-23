@@ -529,9 +529,11 @@ BrowserProcessImpl::GetMetricsServicesManager() {
   if (!metrics_services_manager_) {
     auto client =
         base::MakeUnique<ChromeMetricsServicesManagerClient>(local_state());
+    ChromeMetricsServicesManagerClient* client_ptr = client.get();
     metrics_services_manager_ =
         base::MakeUnique<metrics_services_manager::MetricsServicesManager>(
             std::move(client));
+    client_ptr->OnMetricsServiceManagerCreated(metrics_services_manager_.get());
   }
   return metrics_services_manager_.get();
 }
@@ -1343,7 +1345,8 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
       FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
-          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+              local_state())));
 }
 #endif
 

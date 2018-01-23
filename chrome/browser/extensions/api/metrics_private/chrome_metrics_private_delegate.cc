@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/api/metrics_private/chrome_metrics_private_delegate.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 
 namespace extensions {
 
 bool ChromeMetricsPrivateDelegate::IsCrashReportingEnabled() {
-  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+      g_browser_process->local_state());
 }
 
 }  // namespace extensions

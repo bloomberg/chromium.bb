@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -54,16 +53,20 @@ bool SetGoogleUpdateSettings(bool enabled) {
 //  |updated_pref| is the result of attempted update.
 // Update considers to be successful if |to_update_pref| and |updated_pref| are
 // the same.
-void SetMetricsReporting(bool to_update_pref,
-                         const OnMetricsReportingCallbackType& callback_fn,
-                         bool updated_pref) {
-  g_browser_process->local_state()->SetBoolean(
-      metrics::prefs::kMetricsReportingEnabled, updated_pref);
+void SetMetricsReporting(
+    PrefService* local_state,
+    metrics_services_manager::MetricsServicesManager* metrics_services_manager,
+    bool to_update_pref,
+    const OnMetricsReportingCallbackType& callback_fn,
+    bool updated_pref) {
+  local_state->SetBoolean(metrics::prefs::kMetricsReportingEnabled,
+                          updated_pref);
 
-  UpdateMetricsPrefsOnPermissionChange(updated_pref);
+  UpdateMetricsPrefsOnPermissionChange(
+      local_state, metrics_services_manager->GetMetricsService(), updated_pref);
 
   // Uses the current state of whether reporting is enabled to enable services.
-  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+  metrics_services_manager->UpdateUploadPermissions(true);
 
   if (to_update_pref == updated_pref) {
     RecordMetricsReportingHistogramValue(updated_pref ?
@@ -77,21 +80,28 @@ void SetMetricsReporting(bool to_update_pref,
 
 }  // namespace
 
-void ChangeMetricsReportingState(bool enabled) {
-  ChangeMetricsReportingStateWithReply(enabled,
+void ChangeMetricsReportingState(
+    PrefService* local_state,
+    metrics_services_manager::MetricsServicesManager* metrics_services_manager,
+    bool enabled) {
+  ChangeMetricsReportingStateWithReply(local_state, metrics_services_manager,
+                                       enabled,
                                        OnMetricsReportingCallbackType());
 }
 
 // TODO(gayane): Instead of checking policy before setting the metrics pref set
 // the pref and register for notifications for the rest of the changes.
 void ChangeMetricsReportingStateWithReply(
+    PrefService* local_state,
+    metrics_services_manager::MetricsServicesManager* metrics_services_manager,
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn) {
 #if !defined(OS_ANDROID)
-  if (IsMetricsReportingPolicyManaged()) {
+  if (IsMetricsReportingPolicyManaged(local_state)) {
     if (!callback_fn.is_null()) {
       callback_fn.Run(
-          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+              local_state));
     }
     return;
   }
@@ -99,30 +109,31 @@ void ChangeMetricsReportingStateWithReply(
   base::PostTaskAndReplyWithResult(
       GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
       base::Bind(&SetGoogleUpdateSettings, enabled),
-      base::Bind(&SetMetricsReporting, enabled, callback_fn));
+      base::Bind(&SetMetricsReporting, local_state, metrics_services_manager,
+                 enabled, callback_fn));
 }
 
-void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled) {
+void UpdateMetricsPrefsOnPermissionChange(
+    PrefService* local_state,
+    metrics::MetricsService* metrics_service,
+    bool metrics_enabled) {
   if (metrics_enabled) {
     // When a user opts in to the metrics reporting service, the previously
     // collected data should be cleared to ensure that nothing is reported
     // before a user opts in and all reported data is accurate.
-    g_browser_process->metrics_service()->ClearSavedStabilityMetrics();
+    metrics_service->ClearSavedStabilityMetrics();
   } else {
     // Clear the client id pref when opting out.
     // Note: Clearing client id will not affect the running state (e.g. field
     // trial randomization), as the pref is only read on startup.
-    g_browser_process->local_state()->ClearPref(
-        metrics::prefs::kMetricsClientID);
-    g_browser_process->local_state()->ClearPref(
-        metrics::prefs::kMetricsReportingEnabledTimestamp);
+    local_state->ClearPref(metrics::prefs::kMetricsClientID);
+    local_state->ClearPref(metrics::prefs::kMetricsReportingEnabledTimestamp);
     crash_keys::ClearMetricsClientId();
   }
 }
 
-bool IsMetricsReportingPolicyManaged() {
-  const PrefService* pref_service = g_browser_process->local_state();
+bool IsMetricsReportingPolicyManaged(PrefService* local_state) {
   const PrefService::Preference* pref =
-      pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
+      local_state->FindPreference(metrics::prefs::kMetricsReportingEnabled);
   return pref && pref->IsManaged();
 }

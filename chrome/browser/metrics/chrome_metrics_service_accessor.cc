@@ -31,7 +31,8 @@ void ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
 }
 
 // static
-bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
+bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+    PrefService* local_state) {
   if (g_metrics_consent_for_testing)
     return *g_metrics_consent_for_testing;
 
@@ -44,12 +45,12 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
   // This is only possible during unit tests. If the unit test didn't set the
   // local_state then it doesn't care about pref value and therefore we return
   // false.
-  if (!g_browser_process->local_state()) {
+  if (!local_state) {
     DLOG(WARNING) << "Local state has not been set and pref cannot be read";
     return false;
   }
 
-  return IsMetricsReportingEnabled(g_browser_process->local_state());
+  return IsMetricsReportingEnabled(local_state);
 }
 
 // static
@@ -75,4 +76,11 @@ bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
   return metrics::MetricsServiceAccessor::
       RegisterSyntheticFieldTrialWithNameHash(
           g_browser_process->metrics_service(), trial_name_hash, group_name);
+}
+
+// static
+void ChromeMetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
+    bool value) {
+  metrics::MetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(
+      value);
 }
