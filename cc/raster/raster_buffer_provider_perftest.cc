@@ -221,8 +221,13 @@ class PerfRasterTaskImpl : public PerfTileTask {
 
   // Overridden from TileTask:
   void OnTaskCompleted() override {
-    raster_buffer_ = nullptr;
-    pool_->ReleaseResource(std::move(resource_));
+    // Note: Perf tests will Reset() the PerfTileTask, causing it to be
+    // completed multiple times. We can only do the work of completion once
+    // though.
+    if (raster_buffer_) {
+      raster_buffer_ = nullptr;
+      pool_->ReleaseResource(std::move(resource_));
+    }
   }
 
  protected:
@@ -398,6 +403,7 @@ class RasterBufferProviderPerfTest
     tile_task_manager_->CheckForCompletedTasks();
 
     raster_buffer_provider_->Shutdown();
+    resource_pool_.reset();
   }
 
   // Overridden from PerfRasterBufferProviderHelper:
@@ -559,14 +565,7 @@ TEST_P(RasterBufferProviderPerfTest, ScheduleTasks) {
   RunScheduleTasksTest("32_4", 32, 4);
 }
 
-// Crashes on Android only.  http://crbug.com/803874
-#if defined(OS_ANDROID)
-#define MAYBE_ScheduleAlternateTasks DISABLED_ScheduleAlternateTasks
-#else
-#define MAYBE_ScheduleAlternateTasks ScheduleAlternateTasks
-#endif
-
-TEST_P(RasterBufferProviderPerfTest, MAYBE_ScheduleAlternateTasks) {
+TEST_P(RasterBufferProviderPerfTest, ScheduleAlternateTasks) {
   RunScheduleAlternateTasksTest("1_0", 1, 0);
   RunScheduleAlternateTasksTest("32_0", 32, 0);
   RunScheduleAlternateTasksTest("1_1", 1, 1);
@@ -599,6 +598,10 @@ class RasterBufferProviderCommonPerfTest
   void SetUp() override {
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         compositor_context_provider_.get(), nullptr);
+    resource_pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), task_runner_,
+        viz::ResourceTextureHint::kFramebuffer,
+        ResourcePool::kDefaultExpirationDelay, false);
   }
 
   void RunBuildTileTaskGraphTest(const std::string& test_name,
@@ -622,19 +625,15 @@ class RasterBufferProviderCommonPerfTest
 
     CancelRasterTasks(raster_tasks);
 
+    for (auto& task : raster_tasks)
+      task->OnTaskCompleted();
+
     perf_test::PrintResult("build_raster_task_graph", "", test_name,
                            timer_.LapsPerSecond(), "runs/s", true);
   }
 };
 
-// Crashes on Android only.  http://crbug.com/803874
-#if defined(OS_ANDROID)
-#define MAYBE_BuildTileTaskGraph DISABLED_BuildTileTaskGraph
-#else
-#define MAYBE_BuildTileTaskGraph BuildTileTaskGraph
-#endif
-
-TEST_F(RasterBufferProviderCommonPerfTest, MAYBE_BuildTileTaskGraph) {
+TEST_F(RasterBufferProviderCommonPerfTest, BuildTileTaskGraph) {
   RunBuildTileTaskGraphTest("1_0", 1, 0);
   RunBuildTileTaskGraphTest("32_0", 32, 0);
   RunBuildTileTaskGraphTest("1_1", 1, 1);
