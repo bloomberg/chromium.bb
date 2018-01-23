@@ -623,6 +623,23 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
 
+  def testGetUpdatedActionHistoryAndStatusMaps(self):
+    """Test _GetUpdatedActionHistoryAndStatusMaps."""
+    change = self._patch_factory.MockPatch()
+    self.fake_db.InsertCLActions(
+        self.build_id,
+        [clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_PRE_CQ_FAILED)])
+    action_history, status_and_timestamp_map, status_map = (
+        self.sync_stage._GetUpdatedActionHistoryAndStatusMaps(
+            self.fake_db, [change]))
+    self.assertEqual(len(action_history), 1)
+    self.assertEqual(len(status_and_timestamp_map), 1)
+    self.assertEqual(len(status_map), 1)
+    self.assertEqual(action_history[0].action,
+                     constants.CL_ACTION_PRE_CQ_FAILED)
+    self.assertEqual(status_map[change], constants.CL_STATUS_FAILED)
+
   def testGetFailedPreCQConfigs(self):
     """Test _GetFailedPreCQConfigs."""
     change = self._patch_factory.MockPatch()
@@ -874,7 +891,7 @@ pre-cq-configs: link-pre-cq
     self.PatchObject(cq_config.CQConfigParser,
                      'CanSubmitChangeInPreCQ',
                      return_value=True)
-    change[0].approval_timestamp = 0
+    change.approval_timestamp = 0
     self.PerformSync(pre_cq_status=None, changes=[change],
                      runs=2)
 
@@ -908,8 +925,9 @@ pre-cq-configs: link-pre-cq
     self.PatchObject(patch_series.PatchSeries, 'CreateTransaction',
                      side_effect=e)
     self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
-    # Change should be marked as pre-cq passed, rather than being submitted.
-    self.assertEqual(constants.CL_STATUS_PASSED, self._GetPreCQStatus(change))
+    # Change should be marked as pre-cq failed as the approval time as exceeded
+    # the grace period.
+    self.assertEqual(constants.CL_STATUS_FAILED, self._GetPreCQStatus(change))
 
 
   def mockLaunchTrybots(self, configs=None):
@@ -967,14 +985,14 @@ pre-cq-configs: link-pre-cq
 
     # After one cycle of the launcher, exactly MAX_LAUNCHES_PER_CYCLE_DERIVATIVE
     # should have launched.
-    self.PerformSync(pre_cq_status=None, changes=changes, runs=1)
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=0)
     self.assertEqual(
         count_launches(),
         sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
 
     # After the next cycle, exactly 3 * MAX_LAUNCHES_PER_CYCLE_DERIVATIVE should
     # have launched in total.
-    self.PerformSync(pre_cq_status=None, changes=changes, runs=1,
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=0,
                      patch_objects=False)
     self.assertEqual(
         count_launches(),
@@ -1094,6 +1112,11 @@ pre-cq-configs: link-pre-cq
           [clactions.CLAction.FromGerritPatchAndAction(
               change, constants.CL_ACTION_VERIFIED)])
 
+    # Failed CLs that are marked ready should be tried again, and changes that
+    # aren't ready shouldn't be launched.
+    changes[4].flags = {'CRVW': '2'}
+    changes[4].HasReadyFlag = lambda: False
+
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
     self.assertEqual(self._GetPreCQStatus(changes[0]),
@@ -1106,10 +1129,6 @@ pre-cq-configs: link-pre-cq
       self.assertEqual(self._GetPreCQStatus(change),
                        constants.CL_STATUS_FAILED)
 
-    # Failed CLs that are marked ready should be tried again, and changes that
-    # aren't ready shouldn't be launched.
-    changes[4].flags = {'CRVW': '2'}
-    changes[4].HasReadyFlag = lambda: False
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False,
                      runs=3)
     action_history = self.fake_db.GetActionsForChanges(changes)
@@ -1162,13 +1181,8 @@ pre-cq-configs: link-pre-cq
 
     self.mockLaunchTrybots()
 
-    # This should cause the changes to be pending.
+    # This should cause the changes to be launched.
     self.PerformSync(pre_cq_status=None, changes=changes)
-
-    self.assertAllStatuses(changes, constants.CL_PRECQ_CONFIG_STATUS_PENDING)
-
-    # This should move the change from pending -> launched.
-    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
     self.assertAllStatuses(changes, constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
 
@@ -1205,7 +1219,6 @@ pre-cq-configs: link-pre-cq
           build_ids[config],
           [clactions.CLAction.FromGerritPatchAndAction(
               changes[1], constants.CL_ACTION_PRE_CQ_FAILED)])
-
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 

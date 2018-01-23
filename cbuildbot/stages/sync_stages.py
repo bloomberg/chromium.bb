@@ -13,6 +13,7 @@ import copy
 import datetime
 import itertools
 import os
+import pprint
 import re
 import sys
 import time
@@ -1881,6 +1882,86 @@ class PreCQLauncherStage(SyncStage):
                  for c in changes]
       db.InsertCLActions(build_id, actions)
 
+  def _LaunchPreCQsIfNeeded(self, pool, changes):
+    """Find ready changes and launch Pre-CQs.
+
+    Args:
+      pool: An instance of ValidationPool.validation_pool.
+      changes: GerritPatch instances.
+    """
+    build_id, db = self._run.GetCIDBHandle()
+
+    action_history, _, status_map = (
+        self._GetUpdatedActionHistoryAndStatusMaps(db, changes))
+
+    # Filter out failed speculative changes.
+    changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
+               or c.HasReadyFlag()]
+
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+
+    # Filter out changes that have already failed, and aren't marked trybot
+    # ready or commit ready, before launching.
+    launchable_progress_map = {
+        k: v for k, v in progress_map.iteritems()
+        if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
+
+    is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
+    launch_count = 0
+    cl_launch_count = 0
+    launch_count_limit = (self.last_cycle_launch_count +
+                          self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
+
+    launches = {}
+    for plan, config in self.GetDisjointTransactionsToTest(
+        pool, launchable_progress_map):
+      launches.setdefault(frozenset(plan), []).append(config)
+
+    for plan, configs in launches.iteritems():
+      if not is_tree_open:
+        logging.info('Tree is closed, not launching configs %r for plan %s.',
+                     configs, cros_patch.GetChangesAsString(plan))
+      elif launch_count >= launch_count_limit:
+        logging.info('Hit or exceeded maximum launch count of %s this cycle, '
+                     'not launching configs %r for plan %s.',
+                     launch_count_limit, configs,
+                     cros_patch.GetChangesAsString(plan))
+      else:
+        self.LaunchPreCQs(build_id, db, pool, configs, plan)
+        launch_count += len(configs)
+        cl_launch_count += len(configs) * len(plan)
+
+    metrics.Counter(constants.MON_PRECQ_LAUNCH_COUNT).increment_by(
+        launch_count)
+    metrics.Counter(constants.MON_PRECQ_CL_LAUNCH_COUNT).increment_by(
+        cl_launch_count)
+    metrics.Counter(constants.MON_PRECQ_TICK_COUNT).increment()
+
+    self.last_cycle_launch_count = launch_count
+
+  def _GetUpdatedActionHistoryAndStatusMaps(self, db, changes):
+    """Get updated action_history and Pre-CQ status for changes.
+
+    Args:
+      db: cidb.CIDBConnection instance.
+      changes: GerritPatch instances to process.
+
+    Returns:
+      (The current CLAction list of the changes, the current map from changes to
+       (status, timestamp) tuple, the current map from changes to status).
+    """
+    action_history = db.GetActionsForChanges(changes)
+
+    status_and_timestamp_map = {
+        c: clactions.GetCLPreCQStatusAndTime(c, action_history)
+        for c in changes}
+    status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
+
+    status_str_map = {c.PatchLink(): s for c, s in status_map.iteritems()}
+    logging.info('Processing status_map: %s', pprint.pformat(status_str_map))
+
+    return action_history, status_and_timestamp_map, status_map
+
   def ProcessChanges(self, pool, changes, _non_manifest_changes):
     """Process a list of changes that were marked as Ready.
 
@@ -1904,15 +1985,8 @@ class PreCQLauncherStage(SyncStage):
     for change in changes:
       self._ProcessRequeuedAndSpeculative(change, action_history)
 
-    status_and_timestamp_map = {
-        c: clactions.GetCLPreCQStatusAndTime(c, action_history)
-        for c in changes}
-    status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
-
-    status_map_str = ''
-    for change, status in status_map.iteritems():
-      status_map_str += '%s: %s, ' % (change.PatchLink(), status)
-    logging.info('Processing status_map: %s', status_map_str)
+    action_history, status_and_timestamp_map, status_map = (
+        self._GetUpdatedActionHistoryAndStatusMaps(db, changes))
 
     # Filter out failed speculative changes.
     changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
@@ -1983,44 +2057,6 @@ class PreCQLauncherStage(SyncStage):
 
       self._ProcessTimeouts(change, progress_map, pool, current_db_time)
 
-    # Filter out changes that have already failed, and aren't marked trybot
-    # ready or commit ready, before launching.
-    launchable_progress_map = {
-        k: v for k, v in progress_map.iteritems()
-        if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
-
-    is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
-    launch_count = 0
-    cl_launch_count = 0
-    launch_count_limit = (self.last_cycle_launch_count +
-                          self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
-    launches = {}
-    for plan, config in self.GetDisjointTransactionsToTest(
-        pool, launchable_progress_map):
-      launches.setdefault(frozenset(plan), []).append(config)
-
-    for plan, configs in launches.iteritems():
-      if not is_tree_open:
-        logging.info('Tree is closed, not launching configs %r for plan %s.',
-                     configs, cros_patch.GetChangesAsString(plan))
-      elif launch_count >= launch_count_limit:
-        logging.info('Hit or exceeded maximum launch count of %s this cycle, '
-                     'not launching configs %r for plan %s.',
-                     launch_count_limit, configs,
-                     cros_patch.GetChangesAsString(plan))
-      else:
-        self.LaunchPreCQs(build_id, db, pool, configs, plan)
-        launch_count += len(configs)
-        cl_launch_count += len(configs) * len(plan)
-
-    metrics.Counter(constants.MON_PRECQ_LAUNCH_COUNT).increment_by(
-        launch_count)
-    metrics.Counter(constants.MON_PRECQ_CL_LAUNCH_COUNT).increment_by(
-        cl_launch_count)
-    metrics.Counter(constants.MON_PRECQ_TICK_COUNT).increment()
-
-    self.last_cycle_launch_count = launch_count
-
     # Mark passed changes as passed
     self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
 
@@ -2042,6 +2078,8 @@ class PreCQLauncherStage(SyncStage):
         strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
         clactions.RecordSubmissionMetrics(
             clactions.CLActionHistory(submitted_change_actions), strategies)
+
+    self._LaunchPreCQsIfNeeded(pool, changes)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.
