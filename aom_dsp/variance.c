@@ -1050,18 +1050,17 @@ void aom_comp_mask_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask) {
   int i, j;
-
+  const uint8_t *src0 = invert_mask ? pred : comp_pred;
+  const uint8_t *src1 = invert_mask ? comp_pred : pred;
   aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
                      ref_stride);
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
-      if (!invert_mask)
-        comp_pred[j] = AOM_BLEND_A64(mask[j], comp_pred[j], pred[j]);
-      else
-        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], comp_pred[j]);
+      comp_pred[j] = AOM_BLEND_A64(mask[j], src0[j], src1[j]);
     }
     comp_pred += width;
-    pred += width;
+    src0 += width;
+    src1 += width;
     mask += mask_stride;
   }
 }
