@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_shared_css.html">
@@ -43,6 +44,8 @@
     <template is="dom-if" if="[[configRequiresPassphrase_(type, security_)]]">
       <network-config-input label="[[i18n('OncWiFi-Passphrase')]]"
           value="{{configProperties_.WiFi.Passphrase}}" password>
+        <iron-a11y-keys keys="enter" on-keys-pressed="connectIfConfigured_">
+        </iron-a11y-keys>
       </network-config-input>
     </template>
 
