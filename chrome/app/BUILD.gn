@@ -428,6 +428,10 @@ service_manifest("chrome_manifest") {
   source = "chrome_manifest.json"
 }
 
+service_manifest("chrome_renderer_manifest") {
+  source = "chrome_renderer_manifest.json"
+}
+
 service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
@@ -542,6 +546,7 @@ if (use_aura) {
     ":chrome_content_plugin_manifest",
     ":chrome_content_renderer_manifest",
     ":chrome_content_utility_manifest",
+    ":chrome_renderer_manifest",
   ]
 
   catalog("catalog") {

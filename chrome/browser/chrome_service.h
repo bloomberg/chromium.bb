@@ -5,40 +5,46 @@
 #ifndef CHROME_BROWSER_CHROME_SERVICE_H_
 #define CHROME_BROWSER_CHROME_SERVICE_H_
 
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/embedder/embedded_service_info.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/launchable.h"
-#if defined(USE_OZONE)
-#include "services/ui/public/cpp/input_devices/input_device_controller.h"
-#endif
-#endif
+namespace service_manager {
+class Connector;
+class Service;
+}  // namespace service_manager
 
-class ChromeService : public service_manager::Service {
+class ChromeBrowserMainExtraParts;
+
+// Provides access to a service for the "chrome" content embedder. Actual
+// service_manager::Service implementation lives on IO thread (IOThreadContext).
+class ChromeService {
  public:
-  ChromeService();
-  ~ChromeService() override;
+  static ChromeService* GetInstance();
 
-  static std::unique_ptr<service_manager::Service> Create();
+  // ChromeBrowserMain takes ownership of the returned parts.
+  ChromeBrowserMainExtraParts* CreateExtraParts();
+
+  service_manager::EmbeddedServiceInfo::ServiceFactory
+  CreateChromeServiceFactory();
+
+  // This is available after the content::ServiceManagerConnection is
+  // initialized.
+  service_manager::Connector* connector() { return connector_.get(); }
 
  private:
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& name,
-                       mojo::ScopedMessagePipeHandle handle) override;
+  class ExtraParts;
+  class IOThreadContext;
 
-  service_manager::BinderRegistry registry_;
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_with_source_info_;
+  ChromeService();
+  ~ChromeService();
 
-#if defined(OS_CHROMEOS)
-  chromeos::Launchable launchable_;
-#if defined(USE_OZONE)
-  ui::InputDeviceController input_device_controller_;
-#endif
-#endif
+  void InitConnector();
+
+  std::unique_ptr<service_manager::Service> CreateChromeServiceWrapper();
+
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  std::unique_ptr<IOThreadContext> io_thread_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeService);
 };

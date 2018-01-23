@@ -21,12 +21,14 @@ InputDeviceController::InputDeviceController() = default;
 InputDeviceController::~InputDeviceController() = default;
 
 void InputDeviceController::AddInterface(
-    service_manager::BinderRegistry* registry) {
+    service_manager::BinderRegistry* registry,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   // base::Unretained() is safe here as this class is tied to the life of
   // Service, so that no requests should come in after this class is deleted.
   registry->AddInterface<mojom::InputDeviceController>(
       base::Bind(&InputDeviceController::BindInputDeviceControllerRequest,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      task_runner);
 }
 
 void InputDeviceController::AddKeyboardDeviceObserver(

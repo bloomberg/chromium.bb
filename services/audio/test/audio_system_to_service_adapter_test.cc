@@ -39,7 +39,8 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
     auto connector = service_manager::Connector::Create(&ignored_request);
     service_manager::Connector::TestApi connector_test_api(connector.get());
     connector_test_api.OverrideBinderForTesting(
-        mojom::kServiceName, mojom::SystemInfo::Name_,
+        service_manager::Identity(mojom::kServiceName),
+        mojom::SystemInfo::Name_,
         base::BindRepeating(
             &AudioSystemToServiceAdapterTestBase::BindSystemInfoRequest,
             base::Unretained(this)));

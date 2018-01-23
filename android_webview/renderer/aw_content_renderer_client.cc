@@ -94,10 +94,8 @@ void AwContentRendererClient::RenderThreadStarted() {
           std::move(registry)));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  if (!spellcheck_) {
-    spellcheck_ = std::make_unique<SpellCheck>(this);
-    thread->AddObserver(spellcheck_.get());
-  }
+  if (!spellcheck_)
+    spellcheck_ = std::make_unique<SpellCheck>(nullptr, this);
 #endif
 }
 

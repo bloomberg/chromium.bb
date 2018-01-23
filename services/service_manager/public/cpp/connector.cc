@@ -69,7 +69,7 @@ void Connector::QueryService(const Identity& identity,
 void Connector::BindInterface(const Identity& target,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {
-  auto service_overrides_iter = local_binder_overrides_.find(target.name());
+  auto service_overrides_iter = local_binder_overrides_.find(target);
   if (service_overrides_iter != local_binder_overrides_.end()) {
     auto override_iter = service_overrides_iter->second.find(interface_name);
     if (override_iter != service_overrides_iter->second.end()) {
@@ -126,24 +126,25 @@ void Connector::OnConnectionError() {
   connector_.reset();
 }
 
-void Connector::OverrideBinderForTesting(const std::string& service_name,
-                                         const std::string& interface_name,
-                                         const TestApi::Binder& binder) {
-  local_binder_overrides_[service_name][interface_name] = binder;
+void Connector::OverrideBinderForTesting(
+    const service_manager::Identity& identity,
+    const std::string& interface_name,
+    const TestApi::Binder& binder) {
+  local_binder_overrides_[identity][interface_name] = binder;
 }
 
-bool Connector::HasBinderOverride(const std::string& service_name,
+bool Connector::HasBinderOverride(const service_manager::Identity& identity,
                                   const std::string& interface_name) {
-  auto service_overrides = local_binder_overrides_.find(service_name);
+  auto service_overrides = local_binder_overrides_.find(identity);
   if (service_overrides == local_binder_overrides_.end())
     return false;
 
   return base::ContainsKey(service_overrides->second, interface_name);
 }
 
-void Connector::ClearBinderOverride(const std::string& service_name,
+void Connector::ClearBinderOverride(const service_manager::Identity& identity,
                                     const std::string& interface_name) {
-  auto service_overrides = local_binder_overrides_.find(service_name);
+  auto service_overrides = local_binder_overrides_.find(identity);
   if (service_overrides == local_binder_overrides_.end())
     return;
 

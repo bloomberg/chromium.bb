@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/test/spellcheck_content_browser_client.h"
 
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace spellcheck {
@@ -50,8 +51,11 @@ void SpellCheckContentBrowserClient::RunUntilBind() {
 void SpellCheckContentBrowserClient::BindSpellCheckPanelHostRequest(
     spellcheck::mojom::SpellCheckPanelHostRequest request,
     const service_manager::BindSourceInfo& source_info) {
+  service_manager::Identity renderer_identity(
+      content::mojom::kRendererServiceName, source_info.identity.user_id(),
+      source_info.identity.instance());
   content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromRendererIdentity(source_info.identity);
+      content::RenderProcessHost::FromRendererIdentity(renderer_identity);
   auto spell_check_panel_host =
       std::make_unique<SpellCheckMockPanelHost>(render_process_host);
   spell_check_panel_host->SpellCheckPanelHostRequest(std::move(request));
