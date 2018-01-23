@@ -560,9 +560,6 @@
   <message name="IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION" desc="The alt text for a button that deletes a site for which passwords would not be saved.">
     Delete this item
   </message>
-  <message name="IDS_SETTINGS_PASSWORD_DONE" desc="Label for a button that dismisses the password details dialog.">
-    Done
-  </message>
   <message name="IDS_SETTINGS_PASSWORD_REMOVE" desc="Label for a context menu item that removes the selected password." meaning="Remove selected password.">
     Remove
   </message>
@@ -792,9 +789,6 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE" desc="Label for delete button in certificate manager.">
       Delete
-    </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DONE" desc="Label for done button in certificate manager.">
-      Done
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS" desc="Label for the others tab in certificate manager.">
       Others
@@ -2984,9 +2978,6 @@
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_FINGER_IMMOBILE" desc="Warning text in the add fingerprint dialog to tell users they should move their finger slightly to capture different parts of the fingerprint.">
       Move slightly to capture a different part of the fingerprint
     </message>
-    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_DONE_BUTTON" desc="Text on the button in the fingerprint setup dialog which allows users to exit once a fingerprint has been setup.">
-      Done
-    </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE" desc="Title of the password prompt dialog popup.">
       Confirm your password
     </message>
@@ -3765,9 +3756,6 @@
       {NUM_DOWNLOAD, plural,
         =1 {1 more}
         other {# more}}
-    </message>
-    <message name="IDS_SETTINGS_RESET_CLEANUP_DONE_BUTTON_LABEL" desc="A button on the web page for Chrome Cleanup. Clicking this button causes the card on the settings page to be dismissed.">
-      Done
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_ERROR" desc="Body of a generic error message that could appear during the cleanup of harmful software. Multiple causes for the error are possible.">
       An error occurred while Chrome was removing harmful software.
