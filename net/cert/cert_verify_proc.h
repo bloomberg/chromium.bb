@@ -132,10 +132,11 @@ class NET_EXPORT CertVerifyProc
       const std::vector<std::string>& ip_addrs);
 
   // The CA/Browser Forum's Baseline Requirements specify maximum validity
-  // periods (https://cabforum.org/Baseline_Requirements_V1.pdf):
+  // periods (https://cabforum.org/baseline-requirements-documents/).
   //
   // For certificates issued after 1 July 2012: 60 months.
   // For certificates issued after 1 April 2015: 39 months.
+  // For certificates issued after 1 March 2018: 825 days.
   //
   // For certificates issued before the BRs took effect, there were no
   // guidelines, but clamp them at a maximum of 10 year validity, with the

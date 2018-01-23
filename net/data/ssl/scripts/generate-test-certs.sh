@@ -388,6 +388,42 @@ CA_NAME="req_ca_dn" \
     -in out/pre_br_validity_bad_2020.req \
     -out ../certificates/pre_br_validity_bad_2020.pem \
     -config ca.cnf
+# Issued after 2018-03-01, lifetime == 826 days (bad)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/826_days_after_2018_03_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 180302000000Z \
+    -enddate   200605000000Z \
+    -in out/826_days_after_2018_03_01.req \
+    -out ../certificates/826_days_after_2018_03_01.pem \
+    -config ca.cnf
+# Issued after 2018-03-01, lifetime == 825 days (good)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/825_days_after_2018_03_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 180302000000Z \
+    -enddate   200604000000Z \
+    -in out/825_days_after_2018_03_01.req \
+    -out ../certificates/825_days_after_2018_03_01.pem \
+    -config ca.cnf
+# Issued after 2018-03-01, lifetime == 825 days and one second (bad)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/825_days_1_second_after_2018_03_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 180302000000Z \
+    -enddate   200604000001Z \
+    -in out/825_days_1_second_after_2018_03_01.req \
+    -out ../certificates/825_days_1_second_after_2018_03_01.pem \
+    -config ca.cnf
 
 # Issued prior to 1 June 2016 (Symantec CT Enforcement Date)
 openssl req -config ../scripts/ee.cnf \
