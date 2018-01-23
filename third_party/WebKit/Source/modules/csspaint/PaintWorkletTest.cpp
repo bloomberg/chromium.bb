@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutView.h"
 #include "core/testing/PageTestBase.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
@@ -55,6 +56,10 @@ class PaintWorkletTest : public PageTestBase {
 
   PaintWorkletGlobalScopeProxy* GetProxy() {
     return PaintWorkletGlobalScopeProxy::From(proxy_.Get());
+  }
+
+  ImageResourceObserver* GetImageResourceObserver() {
+    return GetDocument().domWindow()->GetFrame()->ContentLayoutObject();
   }
 
   // Helper function used in GlobalScopeSelection test.
@@ -131,6 +136,28 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
   ThreadState::Current()->CollectAllGarbage();
   V8GCController::CollectAllGarbageForTesting(isolate);
   DCHECK(handle.IsEmpty());
+}
+
+// This is a crash test for crbug.com/803026. At some point, we shipped the
+// CSSPaintAPI without shipping the CSSPaintAPIArguments, the result of it is
+// that the |paint_arguments| in the CSSPaintDefinition::Paint() becomes
+// nullptr and we need to null check that. This is a regression test to ensure
+// that we don't crash.
+TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
+  PaintWorkletGlobalScope* global_scope = GetProxy()->global_scope();
+  global_scope->ScriptController()->Evaluate(
+      ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
+
+  CSSPaintDefinition* definition = global_scope->FindDefinition("foo");
+  ASSERT_TRUE(definition);
+
+  ImageResourceObserver* observer = GetImageResourceObserver();
+  ASSERT_TRUE(observer);
+
+  const IntSize container_size(100, 100);
+  scoped_refptr<Image> image =
+      definition->Paint(*observer, container_size, nullptr);
+  EXPECT_EQ(image, nullptr);
 }
 
 // In this test, we set a list of "paints_to_switch" numbers, and in each frame,

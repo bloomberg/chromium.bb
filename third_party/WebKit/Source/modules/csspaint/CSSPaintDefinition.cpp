@@ -69,7 +69,8 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
     const ImageResourceObserver& client,
     const IntSize& container_size,
     const CSSStyleValueVector* paint_arguments) {
-  DCHECK(paint_arguments);
+  if (!paint_arguments)
+    return nullptr;
 
   // TODO: Break dependency on LayoutObject. Passing the Node should work.
   const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
