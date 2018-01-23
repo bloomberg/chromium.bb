@@ -18,7 +18,6 @@
 namespace media {
 
 class CdmFactory;
-class DelayedReleaseServiceContextRef;
 class MediaLog;
 class MojoMediaClient;
 class RendererFactory;
@@ -80,7 +79,7 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   mojo::StrongBindingSet<mojom::CdmProxy> cdm_proxy_bindings_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  std::unique_ptr<DelayedReleaseServiceContextRef> connection_ref_;
+  std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceFactoryImpl);

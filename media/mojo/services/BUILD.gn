@@ -12,8 +12,6 @@ import("//testing/test.gni")
 component("services") {
   output_name = "media_mojo_services"
   sources = [
-    "cdm_service.cc",
-    "cdm_service.h",
     "gpu_mojo_media_client.cc",
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
@@ -117,6 +115,8 @@ component("services") {
 
   if (enable_library_cdms) {
     sources += [
+      "cdm_service.cc",
+      "cdm_service.h",
       "mojo_cdm_allocator.cc",
       "mojo_cdm_allocator.h",
       "mojo_cdm_file_io.cc",

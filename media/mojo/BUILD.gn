@@ -46,14 +46,9 @@ buildflag_header("features") {
       enable_mojo_media_in_gpu_process = true
     } else if (mojo_media_host == "utility") {
       enable_mojo_media_in_utility_process = true
-    } else if (!enable_standalone_cdm_service) {
+    } else {
       assert(false, "Invalid mojo media host: $mojo_media_host")
     }
-  }
-
-  if (enable_standalone_cdm_service) {
-    assert(enable_mojo_cdm,
-           "Mojo CDM must be enabled to run in standalone CDM service.")
   }
 
   flags = [
@@ -66,7 +61,6 @@ buildflag_header("features") {
     "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS=$enable_mojo_media_in_browser_process",
     "ENABLE_MOJO_MEDIA_IN_GPU_PROCESS=$enable_mojo_media_in_gpu_process",
     "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS=$enable_mojo_media_in_utility_process",
-    "ENABLE_STANDALONE_CDM_SERVICE=$enable_standalone_cdm_service",
   ]
 }
 
