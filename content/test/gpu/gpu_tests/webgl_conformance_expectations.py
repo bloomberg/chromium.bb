@@ -222,6 +222,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=794339)
 
+    # Passthrough command decoder / OpenGL / Intel
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['passthrough', 'opengl', 'intel'], bug=1523)
+
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
     self.Skip('conformance/glsl/bugs/sampler-struct-function-arg.html',
