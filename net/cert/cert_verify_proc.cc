@@ -519,10 +519,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
-  bool allow_common_name_fallback =
-      !verify_result->is_issued_by_known_root &&
-      (flags & CertVerifier::VERIFY_ENABLE_COMMON_NAME_FALLBACK_LOCAL_ANCHORS);
-  if (!cert->VerifyNameMatch(hostname, allow_common_name_fallback)) {
+  if (!cert->VerifyNameMatch(hostname)) {
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
     rv = MapCertStatusToNetError(verify_result->cert_status);
   }

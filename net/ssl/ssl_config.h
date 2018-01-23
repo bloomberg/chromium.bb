@@ -87,12 +87,6 @@ struct NET_EXPORT SSLConfig {
   // local (non-public) trust anchor should be allowed.
   bool sha1_local_anchors_enabled;
 
-  // common_name_fallback_local_anchors_enabled is true if certificates which
-  // only have a commonName in the Subject (i.e. lacking a subjectAltName)
-  // should be checked if the name matches. Only those issued by a local
-  // (non-public) trust anchor will be allowed to match.
-  bool common_name_fallback_local_anchors_enabled;
-
   // symantec_enforcement_disabled is true if the policies outlined in
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
   // should not be enforced.

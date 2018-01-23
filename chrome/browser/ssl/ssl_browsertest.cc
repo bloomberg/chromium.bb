@@ -1904,22 +1904,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
 
-IN_PROC_BROWSER_TEST_P(SSLUITest, CommonNameIsDefaultDisabled) {
-  bool net::SSLConfig::*member =
-      &net::SSLConfig::common_name_fallback_local_anchors_enabled;
-
-  ASSERT_NO_FATAL_FAILURE(
-      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
-
-  ASSERT_TRUE(https_server_common_name_only_.Start());
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_common_name_only_.GetURL("/ssl/google.html"));
-
-  CheckAuthenticationBrokenState(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      net::CERT_STATUS_COMMON_NAME_INVALID, AuthState::SHOWING_INTERSTITIAL);
-}
-
 IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
   bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
   ASSERT_NO_FATAL_FAILURE(

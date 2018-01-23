@@ -171,7 +171,6 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember rev_checking_required_local_anchors_;
   BooleanPrefMember sha1_local_anchors_enabled_;
-  BooleanPrefMember common_name_fallback_local_anchors_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringPrefMember tls13_variant_;
@@ -231,9 +230,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   sha1_local_anchors_enabled_.Init(
       ssl_config::prefs::kCertEnableSha1LocalAnchors, local_state,
       local_state_callback);
-  common_name_fallback_local_anchors_enabled_.Init(
-      ssl_config::prefs::kCertEnableCommonNameFallbackLocalAnchors, local_state,
-      local_state_callback);
   ssl_version_min_.Init(ssl_config::prefs::kSSLVersionMin, local_state,
                         local_state_callback);
   ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
@@ -263,8 +259,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
       default_config.rev_checking_required_local_anchors);
   registry->RegisterBooleanPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
                                 false);
-  registry->RegisterBooleanPref(
-      ssl_config::prefs::kCertEnableCommonNameFallbackLocalAnchors, false);
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
                                std::string());
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
@@ -305,8 +299,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->rev_checking_required_local_anchors =
       rev_checking_required_local_anchors_.GetValue();
   config->sha1_local_anchors_enabled = sha1_local_anchors_enabled_.GetValue();
-  config->common_name_fallback_local_anchors_enabled =
-      common_name_fallback_local_anchors_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
   std::string tls13_variant_str = tls13_variant_.GetValue();

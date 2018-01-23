@@ -24,7 +24,6 @@ void ParamTraits<net::CertVerifyResult>::Write(base::Pickle* m,
   WriteParam(m, p.public_key_hashes);
   WriteParam(m, p.is_issued_by_known_root);
   WriteParam(m, p.is_issued_by_additional_trust_anchor);
-  WriteParam(m, p.common_name_fallback_used);
   WriteParam(m, p.ocsp_result);
 }
 
@@ -39,7 +38,6 @@ bool ParamTraits<net::CertVerifyResult>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->public_key_hashes) &&
          ReadParam(m, iter, &r->is_issued_by_known_root) &&
          ReadParam(m, iter, &r->is_issued_by_additional_trust_anchor) &&
-         ReadParam(m, iter, &r->common_name_fallback_used) &&
          ReadParam(m, iter, &r->ocsp_result);
 }
 

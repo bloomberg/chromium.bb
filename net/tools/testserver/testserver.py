@@ -1896,6 +1896,20 @@ class ServerRunner(testserver_base.TestServerRunner):
        port == 0:
       host = "127.0.0.1"
 
+    # Construct the subjectAltNames for any ad-hoc generated certificates.
+    # As host can be either a DNS name or IP address, attempt to determine
+    # which it is, so it can be placed in the appropriate SAN.
+    dns_sans = None
+    ip_sans = None
+    ip = None
+    try:
+      ip = socket.inet_aton(host)
+      ip_sans = [ip]
+    except socket.error:
+      pass
+    if ip is None:
+      dns_sans = [host]
+
     if self.options.server_type == SERVER_HTTP:
       if self.options.https:
         pem_cert_and_key = None
@@ -1919,6 +1933,7 @@ class ServerRunner(testserver_base.TestServerRunner):
           (pem_cert_and_key, intermediate_cert_der) = \
               minica.GenerateCertKeyAndIntermediate(
                   subject = self.options.cert_common_name,
+                  ip_sans=ip_sans, dns_sans=dns_sans,
                   ca_issuers_url =
                       ("http://%s:%d/ca_issuers" % (host, ocsp_server_port)),
                   serial = self.options.cert_serial)
@@ -1996,6 +2011,8 @@ class ServerRunner(testserver_base.TestServerRunner):
 
           (pem_cert_and_key, ocsp_der) = minica.GenerateCertKeyAndOCSP(
               subject = self.options.cert_common_name,
+              ip_sans = ip_sans,
+              dns_sans = dns_sans,
               ocsp_url = ("http://%s:%d/ocsp" % (host, ocsp_server_port)),
               ocsp_states = ocsp_states,
               ocsp_dates = ocsp_dates,

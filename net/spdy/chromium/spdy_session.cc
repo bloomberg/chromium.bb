@@ -691,7 +691,7 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
     return false;
   }
 
-  if (!ssl_info.cert->VerifyNameMatch(new_hostname, false))
+  if (!ssl_info.cert->VerifyNameMatch(new_hostname))
     return false;
 
   SpdyString pinning_failure_log;

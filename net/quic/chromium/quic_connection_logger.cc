@@ -245,7 +245,7 @@ std::unique_ptr<base::Value> NetLogQuicCertificateVerifiedCallback(
   // Only the subjects are logged so that we can investigate connection pooling.
   // More fields could be logged in the future.
   std::vector<std::string> dns_names;
-  cert->GetDNSNames(&dns_names);
+  cert->GetSubjectAltName(&dns_names, nullptr);
   auto dict = std::make_unique<base::DictionaryValue>();
   auto subjects = std::make_unique<base::ListValue>();
   for (auto& dns_name : dns_names) {

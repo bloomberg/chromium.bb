@@ -42,7 +42,7 @@ message CertVerificationResult {
   repeated string public_key_hashes = 8;
   optional bool is_issued_by_known_root = 9;
   optional bool is_issued_by_additional_trust_anchor = 10;
-  optional bool common_name_fallback_used = 11;
+  optional bool common_name_fallback_used = 11 [deprecated = true];
 };
 
 // Protobuf for CertVerificationResult and the error.
