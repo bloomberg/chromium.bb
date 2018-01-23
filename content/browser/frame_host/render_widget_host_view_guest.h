@@ -52,6 +52,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       RenderWidgetHost* widget,
       BrowserPluginGuest* guest,
       base::WeakPtr<RenderWidgetHostViewBase> platform_view);
+  static RenderWidgetHostViewBase* GetRootView(RenderWidgetHostViewBase* rwhv);
+
   ~RenderWidgetHostViewGuest() override;
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
