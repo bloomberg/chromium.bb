@@ -5361,8 +5361,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   aom_clear_system_state();
 }
 
-static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
-                                    uint8_t *dest) {
+static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   int bottom_index, top_index;
@@ -5456,7 +5455,9 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
     // to recode.
     if (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF) {
       restore_coding_context(cpi);
-      av1_pack_bitstream(cpi, dest, size);
+
+      if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
+        return AOM_CODEC_ERROR;
 
       rc->projected_frame_size = (int)(*size) << 3;
       restore_coding_context(cpi);
@@ -5609,6 +5610,8 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 #endif
     }
   } while (loop);
+
+  return AOM_CODEC_OK;
 }
 
 static int get_ref_frame_flags(const AV1_COMP *cpi) {
@@ -5888,9 +5891,9 @@ static void make_update_tile_list_enc(AV1_COMP *cpi, const int start_tile,
     ec_ctxs[i - start_tile] = &cpi->tile_data[i].tctx;
 }
 
-static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
-                                      uint8_t *dest, int skip_adapt,
-                                      unsigned int *frame_flags) {
+static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
+                                     int skip_adapt,
+                                     unsigned int *frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
@@ -5954,7 +5957,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     restore_coding_context(cpi);
 
     // Build the bitstream
-    av1_pack_bitstream(cpi, dest, size);
+    if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
+      return AOM_CODEC_ERROR;
 
     // Set up frame to show to get ready for stats collection.
     cm->frame_to_show = get_frame_new_buffer(cm);
@@ -6003,7 +6007,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-    return;
+    return AOM_CODEC_OK;
   }
 
   // Set default state for segment based loop filter update flags.
@@ -6072,7 +6076,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       ++cm->current_video_frame;
       aom_free(tile_ctxs);
       aom_free(cdf_ptrs);
-      return;
+      return AOM_CODEC_OK;
     }
   }
 
@@ -6110,7 +6114,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     encode_without_recode_loop(cpi);
   } else {
-    encode_with_recode_loop(cpi, size, dest);
+    if (encode_with_recode_loop(cpi, size, dest) != AOM_CODEC_OK)
+      return AOM_CODEC_ERROR;
   }
 
   cm->last_tile_cols = cm->tile_cols;
@@ -6171,12 +6176,13 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif
 
   // Build the bitstream
-  av1_pack_bitstream(cpi, dest, size);
+  if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
+    return AOM_CODEC_ERROR;
 
   if (skip_adapt) {
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-    return;
+    return AOM_CODEC_OK;
   }
 
 #if CONFIG_REFERENCE_BUFFER
@@ -6298,20 +6304,21 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   aom_free(tile_ctxs);
   aom_free(cdf_ptrs);
+  return AOM_CODEC_OK;
 }
 
-static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                        int skip_adapt, unsigned int *frame_flags) {
+static int Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
+                       int skip_adapt, unsigned int *frame_flags) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     av1_rc_get_one_pass_cbr_params(cpi);
   } else {
     av1_rc_get_one_pass_vbr_params(cpi);
   }
-  encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags);
+  return encode_frame_to_data_rate(cpi, size, dest, skip_adapt, frame_flags);
 }
 
-static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
-                        unsigned int *frame_flags) {
+static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
+                       unsigned int *frame_flags) {
 #if CONFIG_MISMATCH_DEBUG
   mismatch_move_frame_idx_w();
 #endif
@@ -6320,7 +6327,11 @@ static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->txcoeff_cost_timer = 0;
   cm->txcoeff_cost_count = 0;
 #endif
-  encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags);
+
+  if (encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags) !=
+      AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
+  }
 
 #if TXCOEFF_COST_TIMER
   cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
@@ -6338,6 +6349,7 @@ static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     av1_twopass_postencode_update(cpi);
   }
   check_show_existing_frame(cpi);
+  return AOM_CODEC_OK;
 }
 
 int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
@@ -6848,7 +6860,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // We need to update the gf_group for show_existing overlay frame
     if (cpi->rc.is_src_frame_alt_ref) av1_rc_get_second_pass_params(cpi);
 
-    Pass2Encode(cpi, size, dest, frame_flags);
+    if (Pass2Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
+      return AOM_CODEC_ERROR;
 
     if (cpi->b_calculate_psnr) generate_psnr_packet(cpi);
 
@@ -7091,10 +7104,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
     av1_first_pass(cpi, source);
   } else if (oxcf->pass == 2) {
-    Pass2Encode(cpi, size, dest, frame_flags);
+    if (Pass2Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
+      return AOM_CODEC_ERROR;
   } else {
     // One pass encode
-    Pass0Encode(cpi, size, dest, 0, frame_flags);
+    if (Pass0Encode(cpi, size, dest, 0, frame_flags) != AOM_CODEC_OK)
+      return AOM_CODEC_ERROR;
   }
 #if CONFIG_HASH_ME
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
