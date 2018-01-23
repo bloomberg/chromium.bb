@@ -20,6 +20,15 @@
 
 namespace content {
 
+// static
+bool ManifestManager::CanFetchManifest(RenderFrame* render_frame) {
+  // Do not fetch the manifest if we are on a unique origin.
+  return !render_frame->GetWebFrame()
+              ->GetDocument()
+              .GetSecurityOrigin()
+              .IsUnique();
+}
+
 ManifestManager::ManifestManager(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       may_have_manifest_(false),
@@ -98,6 +107,12 @@ void ManifestManager::DidCommitProvisionalLoad(
 }
 
 void ManifestManager::FetchManifest() {
+  if (!CanFetchManifest(render_frame())) {
+    ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_FROM_UNIQUE_ORIGIN);
+    ResolveCallbacks(ResolveStateFailure);
+    return;
+  }
+
   manifest_url_ = render_frame()->GetWebFrame()->GetDocument().ManifestURL();
 
   if (manifest_url_.is_empty()) {
