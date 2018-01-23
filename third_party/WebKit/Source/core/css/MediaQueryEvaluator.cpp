@@ -170,7 +170,7 @@ bool CompareValue(T a, T b, MediaFeaturePrefix op) {
 }
 
 bool CompareDoubleValue(double a, double b, MediaFeaturePrefix op) {
-  const double precision = std::numeric_limits<double>::epsilon();
+  const double precision = LayoutUnit::Epsilon();
   switch (op) {
     case kMinPrefix:
       return a >= (b - precision);
