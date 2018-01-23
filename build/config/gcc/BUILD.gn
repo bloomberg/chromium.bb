@@ -128,7 +128,7 @@ config("executable_ldconfig") {
       _rpath_link += "/$shlib_subdir"
     }
     if (is_android) {
-      _rebased_sysroot = rebase_path(sysroot, root_build_dir)
+      _rebased_sysroot = rebase_path(link_sysroot, root_build_dir)
       _rpath_link += ":$_rebased_sysroot/usr/lib"
     }
 
