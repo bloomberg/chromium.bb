@@ -11,6 +11,6 @@ FAIL getStats() with no argument should return stats report containing peer-conn
 FAIL getStats() with no argument should return stats for no-stream tracks assert_true: Expect stats report to have stats object with id RTCMediaStreamTrack_sender_5 expected true got false
 FAIL getStats() on track associated with RtpSender should return stats report containing outbound-rtp stats promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getStats' on 'RTCPeerConnection': The callback provided as parameter 1 is not a function."
 FAIL getStats() on track associated with RtpReceiver should return stats report containing inbound-rtp stats pc.addTransceiver is not a function
-FAIL getStats() with connected peer connections having tracks and data channel should return all mandatory to implement stats assert_unreached: test failed with error: Error: assert_equals: Expect dictionary.issuerCertificateId to be string expected "string" but got "undefined" Reached unreachable code
+FAIL getStats() with connected peer connections having tracks and data channel should return all mandatory to implement stats assert_unreached: test failed with error: Error: assert_true: Expect dictionary.dataChannelIdentifier to be integer expected true got false Reached unreachable code
 Harness: the test ran to completion.
 
