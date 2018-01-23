@@ -92,6 +92,7 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
         UIEdgeInsetsMake(linkHeightExpansion, linkWidthExpansion,
                          linkHeightExpansion, linkWidthExpansion);
     self.backgroundColor = [UIColor clearColor];
+    self.exclusiveTouch = YES;
     _linkFrame = linkFrame;
     _URL = URL;
     // These buttons are positioned absolutely based on the the position of
