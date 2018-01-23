@@ -21,28 +21,8 @@
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
 
-#if CONFIG_SCALABILITY
-typedef enum {
-  SCALABILITY_L1T2 = 0,
-  SCALABILITY_L1T3 = 1,
-  SCALABILITY_L2T1 = 2,
-  SCALABILITY_L2T2 = 3,
-  SCALABILITY_L2T3 = 4,
-  SCALABILITY_S2T1 = 5,
-  SCALABILITY_S2T2 = 6,
-  SCALABILITY_S2T3 = 7,
-  SCALABILITY_L2T2h = 8,
-  SCALABILITY_L2T3h = 9,
-  SCALABILITY_S2T1h = 10,
-  SCALABILITY_S2T2h = 11,
-  SCALABILITY_S2T3h = 12,
-  SCALABILITY_SS = 13
-} SCALABILITY_STRUCTURES;
-#endif
-
 static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
-                                size_t *header_size,
-                                uint8_t *obu_extension_header) {
+                                size_t *header_size) {
   *header_size = 1;
 
   // first bit is obu_forbidden_bit (0) according to R19
@@ -51,17 +31,12 @@ static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
   const OBU_TYPE obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
   aom_rb_read_literal(rb, 2);  // reserved
   const int obu_extension_flag = aom_rb_read_bit(rb);
-  if (obu_extension_header) *obu_extension_header = 0;
   if (obu_extension_flag) {
     *header_size += 1;
-#if !CONFIG_SCALABILITY
     aom_rb_read_literal(rb, 3);  // temporal_id
     aom_rb_read_literal(rb, 2);
     aom_rb_read_literal(rb, 2);
     aom_rb_read_literal(rb, 1);  // reserved
-#else
-    *obu_extension_header = (uint8_t)aom_rb_read_literal(rb, 8);
-#endif
   }
 
   return obu_type;
@@ -73,19 +48,9 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
-#if CONFIG_SCALABILITY
-  int i;
-#endif
 
   cm->profile = av1_read_profile(rb);
   aom_rb_read_literal(rb, 4);  // level
-
-#if CONFIG_SCALABILITY
-  pbi->common.enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
-  for (i = 1; i <= pbi->common.enhancement_layers_cnt; i++) {
-    aom_rb_read_literal(rb, 4);  // level for each enhancement layer
-  }
-#endif
 
   read_sequence_header(&cm->seq_params, rb);
 
@@ -172,51 +137,6 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
   mem_get_le16(data);
 }
 
-#if CONFIG_SCALABILITY
-static void scalability_structure(struct aom_read_bit_buffer *rb) {
-  int enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
-  int enhancement_layer_dimensions_present_flag = aom_rb_read_literal(rb, 1);
-  int enhancement_layer_description_pressent_flag = aom_rb_read_literal(rb, 1);
-  int temporal_group_description_flag = aom_rb_read_literal(rb, 1);
-  aom_rb_read_literal(rb, 3);  // reserved
-
-  if (enhancement_layer_dimensions_present_flag) {
-    int i;
-    for (i = 0; i < enhancement_layers_cnt + 1; i++) {
-      aom_rb_read_literal(rb, 16);
-      aom_rb_read_literal(rb, 16);
-    }
-  }
-  if (enhancement_layer_description_pressent_flag) {
-    int i;
-    for (i = 0; i < enhancement_layers_cnt + 1; i++) {
-      aom_rb_read_literal(rb, 8);
-    }
-  }
-  if (temporal_group_description_flag) {
-    int i, j, temporal_group_size;
-    temporal_group_size = aom_rb_read_literal(rb, 8);
-    for (i = 0; i < temporal_group_size; i++) {
-      aom_rb_read_literal(rb, 3);
-      aom_rb_read_literal(rb, 1);
-      int temporal_group_ref_cnt = aom_rb_read_literal(rb, 2);
-      aom_rb_read_literal(rb, 2);
-      for (j = 0; j < temporal_group_ref_cnt; j++) {
-        aom_rb_read_literal(rb, 8);
-      }
-    }
-  }
-}
-
-static void read_metadata_scalability(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  int scalability_mode_idc = aom_rb_read_literal(&rb, 8);
-  if (scalability_mode_idc == SCALABILITY_SS) {
-    scalability_structure(&rb);
-  }
-}
-#endif
-
 static size_t read_metadata(const uint8_t *data, size_t sz) {
   assert(sz >= 2);
   const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
@@ -227,10 +147,6 @@ static size_t read_metadata(const uint8_t *data, size_t sz) {
     read_metadata_hdr_cll(data + 2);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
     read_metadata_hdr_mdcv(data + 2);
-#if CONFIG_SCALABILITY
-  } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
-    read_metadata_scalability(data + 2, sz - 2);
-#endif
   }
 
   return sz;
@@ -244,9 +160,6 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   int is_first_tg_obu_received = 1;
   int frame_header_received = 0;
   int frame_header_size = 0;
-#if CONFIG_SCALABILITY
-  uint8_t obu_extension_header = 0;
-#endif
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -262,25 +175,12 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     // + payload size)
     // The obu size is only needed for tile group OBUs
     const size_t obu_size = mem_get_le32(data);
-
-#if !CONFIG_SCALABILITY
-    const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size, NULL);
-#else
-    const OBU_TYPE obu_type =
-        read_obu_header(&rb, &obu_header_size, &obu_extension_header);
-#endif
-
+    const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size);
     data += (PRE_OBU_SIZE_BYTES + obu_header_size);
     if (data_end < data) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
     }
-
-#if CONFIG_SCALABILITY
-    cm->temporal_layer_id = (obu_extension_header & 0xE0) >> 5;
-    cm->enhancement_layer_id = (obu_extension_header & 0x18) >> 3;
-#endif
-
     switch (obu_type) {
       case OBU_TEMPORAL_DELIMITER:
         obu_payload_size = read_temporal_delimiter_obu();

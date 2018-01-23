@@ -591,12 +591,6 @@ typedef struct AV1Common {
   DqType dq_type;
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_SCALABILITY
-  int temporal_layer_id;
-  int enhancement_layer_id;
-  int enhancement_layers_cnt;
-#endif
-
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;
   int64_t txcoeff_timer;
