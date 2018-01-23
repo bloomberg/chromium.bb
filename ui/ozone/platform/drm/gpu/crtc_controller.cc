@@ -120,12 +120,6 @@ bool CrtcController::SchedulePageFlip(
   return true;
 }
 
-bool CrtcController::IsFormatSupported(uint32_t fourcc_format,
-                                       uint32_t z_order) const {
-  return drm_->plane_manager()->IsFormatSupported(fourcc_format, z_order,
-                                                  crtc_);
-}
-
 std::vector<uint64_t> CrtcController::GetFormatModifiers(uint32_t format) {
   return drm_->plane_manager()->GetFormatModifiers(crtc_, format);
 }

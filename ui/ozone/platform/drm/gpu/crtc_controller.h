@@ -59,10 +59,6 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
                         bool test_only,
                         scoped_refptr<PageFlipRequest> page_flip_request);
 
-  // Returns true if hardware plane with z_order equal to |z_order| can support
-  // |fourcc_format| format.
-  bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
-
   // Returns a vector of format modifiers for the given fourcc format
   // on this CRTCs primary plane. A format modifier describes the
   // actual layout of the buffer, such as whether it's linear, tiled
