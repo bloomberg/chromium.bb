@@ -82,8 +82,8 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
   assert(cfg->row_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
   av1_gen_fwd_stage_range(stage_range_col, stage_range_row, cfg, bd);
 
-  const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
-  const int8_t *cos_bit_row = cfg->row_cfg->cos_bit;
+  const int8_t cos_bit_col = cfg->cos_bit_col;
+  const int8_t cos_bit_row = cfg->cos_bit_row;
   const TxfmFunc txfm_func_col = fwd_txfm_type_to_func(cfg->col_cfg->txfm_type);
   const TxfmFunc txfm_func_row = fwd_txfm_type_to_func(cfg->row_cfg->txfm_type);
 
@@ -658,6 +658,18 @@ const int8_t *fwd_txfm_shift_ls[TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
 };
 
+const int8_t fwd_cos_bit_col[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
+                                                       { 13, 13, 13, 12, 0 },
+                                                       { 13, 13, 13, 12, 13 },
+                                                       { 0, 13, 13, 12, 13 },
+                                                       { 0, 0, 13, 12, 13 } };
+
+const int8_t fwd_cos_bit_row[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
+                                                       { 13, 13, 13, 12, 0 },
+                                                       { 13, 13, 12, 13, 12 },
+                                                       { 0, 12, 13, 12, 11 },
+                                                       { 0, 0, 12, 11, 10 } };
+
 void av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg) {
   assert(cfg != NULL);
@@ -667,4 +679,8 @@ void av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
   cfg->col_cfg = fwd_txfm_col_cfg_ls[tx_type_col][tx_size];
   cfg->row_cfg = fwd_txfm_row_cfg_ls[tx_type_row][tx_size];
   cfg->shift = fwd_txfm_shift_ls[tx_size];
+  int txw_idx = tx_size_wide_log2[tx_size] - tx_size_wide_log2[0];
+  int txh_idx = tx_size_high_log2[tx_size] - tx_size_high_log2[0];
+  cfg->cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  cfg->cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
 }

@@ -363,19 +363,14 @@ int8_t low_range_arr[BD_NUM] = { 16, 32, 32 };
 int8_t high_range_arr[BD_NUM] = { 32, 32, 32 };
 
 void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
-                            const int8_t *cos_bit, int low_range,
-                            int high_range) {
+                            int8_t cos_bit, int low_range, int high_range) {
   for (int i = 0; i < stage_num; ++i) {
     EXPECT_LE(stage_range[i], low_range);
-    if (cos_bit != NULL) {
-      ASSERT_LE(stage_range[i] + cos_bit[i], high_range) << "stage = " << i;
-    }
+    ASSERT_LE(stage_range[i] + cos_bit, high_range) << "stage = " << i;
   }
   for (int i = 0; i < stage_num - 1; ++i) {
     // make sure there is no overflow while doing half_btf()
-    if (cos_bit != NULL) {
-      ASSERT_LE(stage_range[i + 1] + cos_bit[i], high_range) << "stage = " << i;
-    }
+    ASSERT_LE(stage_range[i + 1] + cos_bit, high_range) << "stage = " << i;
   }
 }
 }  // namespace libaom_test

@@ -25,7 +25,7 @@ static INLINE void int16_array_with_stride_to_int32_array_without_stride(
 }
 
 typedef void (*TxfmFuncSSE2)(const __m128i *input, __m128i *output,
-                             const int8_t *cos_bit, const int8_t *stage_range);
+                             const int8_t cos_bit, const int8_t *stage_range);
 
 static INLINE TxfmFuncSSE2 fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
@@ -50,8 +50,8 @@ static INLINE void fwd_txfm2d_sse4_1(const int16_t *input, int32_t *output,
   const int8_t *shift = cfg->shift;
   const int8_t *stage_range_col = cfg->col_cfg->stage_range;
   const int8_t *stage_range_row = cfg->row_cfg->stage_range;
-  const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
-  const int8_t *cos_bit_row = cfg->row_cfg->cos_bit;
+  const int8_t cos_bit_col = cfg->cos_bit_col;
+  const int8_t cos_bit_row = cfg->cos_bit_row;
   const TxfmFuncSSE2 txfm_func_col =
       fwd_txfm_type_to_func(cfg->col_cfg->txfm_type);
   const TxfmFuncSSE2 txfm_func_row =

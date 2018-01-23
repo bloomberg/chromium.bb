@@ -71,7 +71,7 @@ void flipud(Type *dest, int width, int height, int stride);
 template <typename Type>
 void fliplrud(Type *dest, int width, int height, int stride);
 
-typedef void (*TxfmFunc)(const int32_t *in, int32_t *out, const int8_t *cos_bit,
+typedef void (*TxfmFunc)(const int32_t *in, int32_t *out, const int8_t cos_bit,
                          const int8_t *range_bit);
 
 typedef void (*Fwd_Txfm2d_Func)(const int16_t *, int32_t *, int, TX_TYPE, int);
@@ -127,7 +127,7 @@ extern int8_t low_range_arr[];
 extern int8_t high_range_arr[];
 
 void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
-                            const int8_t *cos_bit, int low_range,
+                            const int8_t cos_bit, int low_range,
                             int high_range);
 }  // namespace libaom_test
 #endif  // AV1_TXFM_TEST_H_

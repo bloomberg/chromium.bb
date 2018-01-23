@@ -287,6 +287,18 @@ const int8_t *inv_txfm_shift_ls[TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
 };
 
+const int8_t inv_cos_bit_col[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
+                                                       { 13, 13, 13, 13, 0 },
+                                                       { 13, 13, 13, 13, 13 },
+                                                       { 0, 13, 13, 13, 13 },
+                                                       { 0, 0, 13, 13, 13 } };
+
+const int8_t inv_cos_bit_row[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
+                                                       { 13, 13, 12, 12, 0 },
+                                                       { 12, 12, 12, 12, 12 },
+                                                       { 0, 12, 12, 12, 12 },
+                                                       { 0, 0, 12, 12, 12 } };
+
 void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg) {
   assert(cfg != NULL);
@@ -296,6 +308,10 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
   cfg->col_cfg = inv_txfm_col_cfg_ls[tx_type_col][tx_size];
   cfg->row_cfg = inv_txfm_row_cfg_ls[tx_type_row][tx_size];
   cfg->shift = inv_txfm_shift_ls[tx_size];
+  const int txw_idx = tx_size_wide_log2[tx_size] - tx_size_wide_log2[0];
+  const int txh_idx = tx_size_high_log2[tx_size] - tx_size_high_log2[0];
+  cfg->cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  cfg->cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
 }
 
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
@@ -335,8 +351,8 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   assert(cfg->col_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
   av1_gen_inv_stage_range(stage_range_col, stage_range_row, cfg, tx_size, bd);
 
-  const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
-  const int8_t *cos_bit_row = cfg->row_cfg->cos_bit;
+  const int8_t cos_bit_col = cfg->cos_bit_col;
+  const int8_t cos_bit_row = cfg->cos_bit_row;
   const TxfmFunc txfm_func_col = inv_txfm_type_to_func(cfg->col_cfg->txfm_type);
   const TxfmFunc txfm_func_row = inv_txfm_type_to_func(cfg->row_cfg->txfm_type);
 

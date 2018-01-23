@@ -601,20 +601,18 @@ static void idct32_avx2(__m256i *in, __m256i *out, int bit) {
 void av1_inv_txfm2d_add_32x32_avx2(const int32_t *coeff, uint16_t *output,
                                    int stride, TX_TYPE tx_type, int bd) {
   __m256i in[128], out[128];
-  const TXFM_1D_CFG *row_cfg = NULL;
-  const TXFM_1D_CFG *col_cfg = NULL;
   const int8_t *shift = inv_txfm_shift_ls[TX_32X32];
+  const int txw_idx = tx_size_wide_log2[TX_32X32] - tx_size_wide_log2[0];
+  const int txh_idx = tx_size_high_log2[TX_32X32] - tx_size_high_log2[0];
 
   switch (tx_type) {
     case DCT_DCT:
-      row_cfg = &inv_txfm_1d_row_cfg_dct_32;
-      col_cfg = &inv_txfm_1d_col_cfg_dct_32;
       load_buffer_32x32(coeff, in);
       transpose_32x32(in, out);
-      idct32_avx2(out, in, row_cfg->cos_bit[2]);
+      idct32_avx2(out, in, inv_cos_bit_row[txw_idx][txh_idx]);
       round_shift_32x32(in, -shift[0]);
       transpose_32x32(in, out);
-      idct32_avx2(out, in, col_cfg->cos_bit[2]);
+      idct32_avx2(out, in, inv_cos_bit_col[txw_idx][txh_idx]);
       write_buffer_32x32(in, output, stride, 0, 0, -shift[1], bd);
       break;
     default: assert(0);

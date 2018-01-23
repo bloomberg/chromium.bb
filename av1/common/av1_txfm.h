@@ -104,8 +104,8 @@ static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
   return round_shift(result_32, bit);
 }
 
-typedef void (*TxfmFunc)(const int32_t *input, int32_t *output,
-                         const int8_t *cos_bit, const int8_t *stage_range);
+typedef void (*TxfmFunc)(const int32_t *input, int32_t *output, int8_t cos_bit,
+                         const int8_t *stage_range);
 
 typedef enum TXFM_TYPE {
   TXFM_TYPE_DCT4,
@@ -129,7 +129,6 @@ typedef struct TXFM_1D_CFG {
   const int stage_num;
 
   const int8_t *stage_range;
-  const int8_t *cos_bit;
   const TXFM_TYPE txfm_type;
 } TXFM_1D_CFG;
 
@@ -137,6 +136,8 @@ typedef struct TXFM_2D_FLIP_CFG {
   int ud_flip;  // flip upside down
   int lr_flip;  // flip left to right
   const int8_t *shift;
+  int8_t cos_bit_col;
+  int8_t cos_bit_row;
   const TXFM_1D_CFG *col_cfg;
   const TXFM_1D_CFG *row_cfg;
 } TXFM_2D_FLIP_CFG;

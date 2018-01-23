@@ -199,10 +199,10 @@ TEST(AV1FwdTxfm2d, CfgTest) {
         const TXFM_1D_CFG *col_cfg = cfg.col_cfg;
         const TXFM_1D_CFG *row_cfg = cfg.row_cfg;
         libaom_test::txfm_stage_range_check(stage_range_col, col_cfg->stage_num,
-                                            col_cfg->cos_bit, low_range,
+                                            cfg.cos_bit_col, low_range,
                                             high_range);
         libaom_test::txfm_stage_range_check(stage_range_row, row_cfg->stage_num,
-                                            row_cfg->cos_bit, low_range,
+                                            cfg.cos_bit_row, low_range,
                                             high_range);
       }
     }
