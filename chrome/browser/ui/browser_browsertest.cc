@@ -1928,7 +1928,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose3) {
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Times out on windows (dbg). https://crbug.com/753691.
+#define MAYBE_WindowOpenClose3 DISABLED_WindowOpenClose3
+#else
+#define MAYBE_WindowOpenClose3 WindowOpenClose3
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose3) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
