@@ -426,12 +426,16 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   Optional<CompositingRecorder> compositing_recorder;
   // FIXME: this should be unified further into
   // PaintLayer::paintsWithTransparency().
+  bool compositing_already_applied =
+      painting_info.root_layer == &paint_layer_ &&
+      is_painting_overflow_contents;
   bool should_composite_for_blend_mode =
       paint_layer_.StackingNode()->IsStackingContext() &&
       paint_layer_.HasNonIsolatedDescendantWithBlendMode();
-  if (should_composite_for_blend_mode ||
-      paint_layer_.PaintsWithTransparency(
-          painting_info.GetGlobalPaintFlags())) {
+  if (!compositing_already_applied &&
+      (should_composite_for_blend_mode ||
+       paint_layer_.PaintsWithTransparency(
+           painting_info.GetGlobalPaintFlags()))) {
     FloatRect compositing_bounds = FloatRect(paint_layer_.PaintingExtent(
         painting_info.root_layer, painting_info.sub_pixel_accumulation,
         painting_info.GetGlobalPaintFlags()));
