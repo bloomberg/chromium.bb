@@ -238,12 +238,6 @@ Tree: v1.0.6
 Revision: 6aef0896fcbc25f9f5bd1dd55f7679e6ab7f92ad
 Tree link: https://github.com/PolymerElements/paper-material/tree/v1.0.6
 
-Name: paper-menu
-Repository: https://github.com/PolymerElements/paper-menu.git
-Tree: v1.3.0
-Revision: 7ca8ebfbdcca22fc98e5115c0ed72bf9d05848fe
-Tree link: https://github.com/PolymerElements/paper-menu/tree/v1.3.0
-
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
 Tree: v1.0.10
