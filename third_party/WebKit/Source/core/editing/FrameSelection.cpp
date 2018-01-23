@@ -750,6 +750,34 @@ void FrameSelection::SelectAll() {
   SelectAll(SetSelectionBy::kSystem);
 }
 
+// Implementation of |SVGTextControlElement::selectSubString()|
+void FrameSelection::SelectSubString(const Element& element,
+                                     int offset,
+                                     int length) {
+  // Find selection start
+  VisiblePosition start = VisiblePosition::FirstPositionInNode(element);
+  for (int i = 0; i < offset; ++i)
+    start = NextPositionOf(start);
+  if (start.IsNull())
+    return;
+
+  // Find selection end
+  VisiblePosition end(start);
+  for (int i = 0; i < length; ++i)
+    end = NextPositionOf(end);
+  if (end.IsNull())
+    return;
+
+  // TODO(editing-dev): We assume |start| and |end| are not null and we don't
+  // known when |start| and |end| are null. Once we get a such case, we check
+  // null for |start| and |end|.
+  SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(start.DeepEquivalent(), end.DeepEquivalent())
+          .SetAffinity(start.Affinity())
+          .Build());
+}
+
 void FrameSelection::NotifyAccessibilityForSelectionChange() {
   if (GetSelectionInDOMTree().IsNone())
     return;
