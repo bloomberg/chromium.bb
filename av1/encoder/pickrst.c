@@ -1157,6 +1157,13 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   RestUnitSearchInfo *rusi =
       (RestUnitSearchInfo *)aom_memalign(16, sizeof(*rusi) * ntiles[0]);
 
+  // If the restoration unit dimensions are not multiples of
+  // rsi->restoration_unit_size then some elements of the rusi array may be
+  // left uninitialised when we reach copy_unit_info(...). This is not a
+  // problem, as these elements are ignored later, but in order to quiet
+  // Valgrind's warnings we initialise the array below.
+  memset(rusi, 0, sizeof(*rusi) * ntiles[0]);
+
   RestSearchCtxt rsc;
   for (int plane = AOM_PLANE_Y; plane <= AOM_PLANE_V; ++plane) {
     init_rsc(src, &cpi->common, &cpi->td.mb, plane, rusi, &cpi->trial_frame_rst,
