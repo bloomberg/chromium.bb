@@ -106,9 +106,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int8_t signs[MAX_TX_SQUARE] = { 0 };
   uint16_t update_pos[MAX_TX_SQUARE];
 
-  const int all_zero = av1_read_record_bin(
-      counts, r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2,
-      ACCT_STR);
+  const int all_zero = aom_read_symbol(
+      r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
   // printf("txb_skip: %d %2d\n", txs_ctx, txb_ctx->txb_skip_ctx);
   *eob = 0;
   if (all_zero) {
@@ -219,9 +218,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   // printf("Dec: ");
   if (k_eob_offset_bits[eob_pt] > 0) {
-    int bit = av1_read_record_bin(
-        counts, r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2,
-        ACCT_STR);
+    int bit = aom_read_symbol(
+        r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2, ACCT_STR);
     // printf("eob_extra_cdf: %d %d %2d\n", txs_ctx, plane_type, eob_pt);
     if (bit) {
       eob_extra += (1 << (k_eob_offset_bits[eob_pt] - 1));
@@ -304,8 +302,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (levels[get_padded_idx(pos, bwl)] == 0) continue;
     if (c == 0) {
       const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-      *sign = av1_read_record_bin(
-          counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
+      *sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx],
+                              2, ACCT_STR);
     } else {
       *sign = av1_read_record_bit(counts, r, ACCT_STR);
     }

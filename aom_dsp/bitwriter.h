@@ -101,15 +101,6 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
   if (w->allow_update_cdf) update_cdf(cdf, symb, nsymbs);
 }
 
-#if CONFIG_LV_MAP
-static INLINE void aom_write_bin(aom_writer *w, int symb, aom_cdf_prob *cdf,
-                                 int nsymbs) {
-  aom_write_cdf(w, symb, cdf, nsymbs);
-  if (w->allow_update_cdf) update_bin(cdf, symb, nsymbs);
-  // printf("bin: %d\n", this_cdf[0]);
-}
-#endif
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

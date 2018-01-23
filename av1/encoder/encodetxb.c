@@ -471,8 +471,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
 
-  aom_write_bin(w, eob == 0,
-                ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
+  aom_write_symbol(w, eob == 0,
+                   ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
 #if CONFIG_TXK_SEL
   if (plane == 0 && eob == 0) {
     assert(tx_type == DCT_DCT);
@@ -527,8 +527,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
-    aom_write_bin(w, bit, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt],
-                  2);
+    aom_write_symbol(w, bit, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt],
+                     2);
     for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
       eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
       bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
@@ -564,8 +564,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (level == 0) continue;
 
     if (c == 0) {
-      aom_write_bin(w, sign,
-                    ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
+      aom_write_symbol(
+          w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
     } else {
       aom_write_bit(w, sign);
     }
@@ -2216,9 +2216,10 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #if CONFIG_ENTROPY_STATS
   ++td->counts->txb_skip[txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
 #endif  // CONFIG_ENTROPY_STATS
-  if (allow_update_cdf)
-    update_bin(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
+  if (allow_update_cdf) {
+    update_cdf(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
                2);
+  }
   x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
 
   x->mbmi_ext->eobs[plane][block] = eob;
@@ -2279,7 +2280,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
-      update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
+      update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
   }
 
