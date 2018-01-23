@@ -270,20 +270,6 @@ def CheckoutRepos(args):
     return
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
-
-  # Back out previous local patches. This needs to be kept around a bit
-  # until all bots have cycled. See https://crbug.com/755777.
-  files = [
-    'lib/Transforms/InstCombine/InstructionCombining.cpp',
-    'test/DebugInfo/X86/formal_parameter.ll',
-    'test/DebugInfo/X86/instcombine-instrinsics.ll',
-    'test/Transforms/InstCombine/debuginfo-skip.ll',
-    'test/Transforms/InstCombine/debuginfo.ll',
-    'test/Transforms/Util/simplify-dbg-declare-load.ll',
-  ]
-  for f in [os.path.join(LLVM_DIR, f) for f in files]:
-    RunCommand(['svn', 'revert', f])
-
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
   if True:
     Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
