@@ -33,30 +33,10 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "core/dom/StaticNodeList.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAllCollection.h"
 
 namespace blink {
-
-template <class CallbackInfo>
-static v8::Local<v8::Value> GetNamedItems(HTMLAllCollection* collection,
-                                          AtomicString name,
-                                          const CallbackInfo& info) {
-  HeapVector<Member<Element>> named_items;
-  collection->NamedItems(name, named_items);
-
-  if (!named_items.size())
-    return V8Undefined();
-
-  if (named_items.size() == 1)
-    return ToV8(named_items.at(0).Release(), info.Holder(), info.GetIsolate());
-
-  // FIXME: HTML5 specification says this should be a HTMLCollection.
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-  return ToV8(StaticElementList::Adopt(named_items), info.Holder(),
-              info.GetIsolate());
-}
 
 template <class CallbackInfo>
 static v8::Local<v8::Value> GetItem(
@@ -72,11 +52,14 @@ static v8::Local<v8::Value> GetItem(
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       named_feature);
     TOSTRING_DEFAULT(V8StringResource<>, name, argument,
-                     v8::Undefined(info.GetIsolate()));
-    v8::Local<v8::Value> result = GetNamedItems(collection, name, info);
+                     v8::Null(info.GetIsolate()));
+    HTMLCollectionOrElement named_items;
+    collection->namedGetter(name, named_items);
+    v8::Local<v8::Value> result =
+        ToV8(named_items, info.Holder(), info.GetIsolate());
 
     if (result.IsEmpty())
-      return v8::Undefined(info.GetIsolate());
+      return v8::Null(info.GetIsolate());
 
     return result;
   }
@@ -96,6 +79,7 @@ void V8HTMLAllCollection::itemMethodCustom(
   if (info.Length() < 1) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kDocumentAllItemNoArguments);
+    V8SetReturnValue(info, v8::Null(info.GetIsolate()));
     return;
   }
 
