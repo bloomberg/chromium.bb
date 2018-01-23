@@ -658,6 +658,7 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateStreamComplete(int result) {
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
   std::unique_ptr<QuicChromiumClientStream::Handle> quic_stream =
       quic_session_->ReleaseStream();
+
   transport_socket_.reset(new QuicProxyClientSocket(
       std::move(quic_stream), std::move(quic_session_), user_agent_, endpoint_,
       net_log_, http_auth_controller_.get()));
