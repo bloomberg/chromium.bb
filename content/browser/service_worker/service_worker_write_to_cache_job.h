@@ -26,6 +26,7 @@ namespace content {
 
 class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
+class ServiceWorkerContextRequestHandlerTest;
 
 // A URLRequestJob derivative used to cache the main script
 // and its imports during the initial install of a new version.
@@ -60,12 +61,12 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   const static net::Error kIdenticalScriptError;
 
  private:
+  friend class ServiceWorkerContextRequestHandlerTest;
+  // TODO(https://crbug.com/675540): Remove the following
+  // FRIEND_TEST_ALL_PREFIXES directive when the update_via_cache flag is
+  // shipped to stable.
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateBefore24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateAfter24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateForceBypassCache);
+                           UpdateBefore24HoursWithoutUpdateViaCache);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            ServiceWorkerDataRequestAnnotation);
 

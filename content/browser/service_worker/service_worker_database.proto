@@ -23,6 +23,12 @@ message ServiceWorkerNavigationPreloadState {
 }
 
 message ServiceWorkerRegistrationData {
+  enum ServiceWorkerUpdateViaCacheType {
+    IMPORTS = 0;
+    ALL = 1;
+    NONE = 2;
+  }
+
   required int64 registration_id = 1;
   required string scope_url = 2;
   required string script_url = 3;
@@ -54,6 +60,9 @@ message ServiceWorkerRegistrationData {
   // The set of features that the worker used up until the time installation
   // completed. The values must be from blink::UseCounter::Feature enum.
   repeated uint32 used_features = 13;
+
+  optional ServiceWorkerUpdateViaCacheType update_via_cache = 14
+      [default = IMPORTS];
 }
 
 message ServiceWorkerResourceRecord {

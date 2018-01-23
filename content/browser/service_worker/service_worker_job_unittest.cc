@@ -464,7 +464,67 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern =
       FindRegistrationForPattern(options.scope);
 
-  ASSERT_EQ(new_registration, old_registration);
+  EXPECT_EQ(new_registration_by_pattern, old_registration);
+}
+
+// Make sure that the same registration is used and the update_via_cache value
+// is updated when registering a duplicate pattern+script_url with a different
+// update_via_cache value.
+TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
+  // During registration, handles will be created for hosting the worker's
+  // context. KeepHandlesDispatcherHost will store the handles.
+  auto dispatcher_host = base::MakeRefCounted<KeepHandlesDispatcherHost>(
+      helper_->mock_render_process_id(),
+      helper_->browser_context()->GetResourceContext());
+  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
+                                  dispatcher_host);
+  dispatcher_host->Init(helper_->context_wrapper());
+
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = GURL("https://www.example.com/");
+
+  scoped_refptr<ServiceWorkerRegistration> old_registration =
+      RunRegisterJob(script_url, options);
+
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+            old_registration->update_via_cache());
+
+  // During the above registration, a service worker registration object host
+  // for ServiceWorkerGlobalScope#registration has been created/added into
+  // |provider_host|.
+  ServiceWorkerProviderHost* provider_host =
+      old_registration->active_version()->provider_host();
+  ASSERT_NE(nullptr, provider_host);
+
+  // Clear all service worker handles.
+  dispatcher_host->Clear();
+  // Ensure that the registration's object host doesn't have the reference.
+  EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
+  provider_host->registration_object_hosts_.clear();
+  EXPECT_EQ(0UL, provider_host->registration_object_hosts_.size());
+  ASSERT_TRUE(old_registration->HasOneRef());
+
+  scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
+      FindRegistrationForPattern(options.scope);
+
+  ASSERT_TRUE(old_registration_by_pattern.get());
+
+  options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
+  scoped_refptr<ServiceWorkerRegistration> new_registration =
+      RunRegisterJob(script_url, options);
+
+  // Ensure that the registration object is not copied.
+  ASSERT_EQ(old_registration, new_registration);
+  EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kNone,
+            new_registration->update_via_cache());
+
+  ASSERT_FALSE(old_registration->HasOneRef());
+
+  scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern =
+      FindRegistrationForPattern(options.scope);
+
+  EXPECT_EQ(new_registration_by_pattern, old_registration);
 }
 
 class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {

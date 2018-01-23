@@ -99,6 +99,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void SetProxy(blink::WebServiceWorkerRegistrationProxy* proxy) override;
   blink::WebServiceWorkerRegistrationProxy* Proxy() override;
   blink::WebURL Scope() const override;
+  blink::mojom::ServiceWorkerUpdateViaCache UpdateViaCache() const override;
   void Update(
       std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) override;
   void Unregister(std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>

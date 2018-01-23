@@ -420,6 +420,7 @@ void ServiceWorkerStorage::StoreRegistration(
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
   data.scope = registration->pattern();
+  data.update_via_cache = registration->update_via_cache();
   data.script = version->script_url();
   data.has_fetch_handler = version->fetch_handler_existence() ==
                            ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
@@ -1312,6 +1313,7 @@ void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
 
     ServiceWorkerRegistrationInfo info;
     info.pattern = registration_data.scope;
+    info.update_via_cache = registration_data.update_via_cache;
     info.registration_id = registration_data.registration_id;
     info.stored_version_size_bytes =
         registration_data.resources_total_size_bytes;
@@ -1505,8 +1507,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (registration)
     return registration;
 
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  options.scope = data.scope;
+  blink::mojom::ServiceWorkerRegistrationOptions options(data.scope,
+                                                         data.update_via_cache);
   registration =
       new ServiceWorkerRegistration(options, data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
