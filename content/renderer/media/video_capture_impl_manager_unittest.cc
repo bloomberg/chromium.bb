@@ -12,10 +12,10 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/common/video_capture.mojom.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capture/mojo/video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +46,7 @@ class PauseResumeCallback {
 };
 
 class MockVideoCaptureImpl : public VideoCaptureImpl,
-                             public mojom::VideoCaptureHost {
+                             public media::mojom::VideoCaptureHost {
  public:
   MockVideoCaptureImpl(media::VideoCaptureSessionId session_id,
                        PauseResumeCallback* pause_callback,
@@ -61,11 +61,11 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   void Start(int32_t device_id,
              int32_t session_id,
              const media::VideoCaptureParams& params,
-             mojom::VideoCaptureObserverPtr observer) override {
+             media::mojom::VideoCaptureObserverPtr observer) override {
     // For every Start(), expect a corresponding Stop() call.
     EXPECT_CALL(*this, Stop(_));
     // Simulate device started.
-    OnStateChanged(mojom::VideoCaptureState::STARTED);
+    OnStateChanged(media::mojom::VideoCaptureState::STARTED);
   }
 
   MOCK_METHOD1(Stop, void(int32_t));

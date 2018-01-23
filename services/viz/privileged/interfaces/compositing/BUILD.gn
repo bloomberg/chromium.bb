@@ -15,7 +15,7 @@ mojom("compositing") {
 
   public_deps = [
     "//gpu/ipc/common:interfaces",
-    "//media/capture/mojo:capture_types",
+    "//media/capture/mojo:video_capture",
     "//media/mojo/interfaces:interfaces",
     "//mojo/common:common_custom_types",
     "//services/viz/public/interfaces",

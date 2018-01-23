@@ -99,7 +99,6 @@ jumbo_source_set("browser") {
     "//media",
     "//media:media_features",
     "//media/capture",
-    "//media/capture/mojo:image_capture",
     "//media/midi",
     "//media/midi:mojo",
     "//media/mojo:features",

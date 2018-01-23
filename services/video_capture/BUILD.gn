@@ -92,7 +92,7 @@ source_set("tests") {
     ":lib",
     ":video_capture",
     "//base/test:test_support",
-    "//media/capture/mojo:capture_types",
+    "//media/capture/mojo:video_capture",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",

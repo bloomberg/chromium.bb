@@ -14,7 +14,7 @@ source_set("tests") {
     "//components/viz/common:common",
     "//components/viz/test:test_support",
     "//gpu/ipc/common:struct_traits",
-    "//media/capture/mojo:capture_types",
+    "//media/capture/mojo:video_capture",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/viz/public/interfaces",

@@ -576,7 +576,6 @@ mojom("mojo_bindings") {
     "shared_worker/shared_worker_info.mojom",
     "storage_partition_service.mojom",
     "url_loader_factory_bundle.mojom",
-    "video_capture.mojom",
     "widget.mojom",
   ]
 
@@ -593,7 +592,6 @@ mojom("mojo_bindings") {
     "//components/leveldb/public/interfaces",
     "//content/public/common:interfaces",
     "//ipc:mojom_constants",
-    "//media/capture/mojo:capture_types",
     "//media/mojo/interfaces",
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",

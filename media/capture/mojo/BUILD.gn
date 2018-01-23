@@ -4,8 +4,9 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("capture_types") {
+mojom("video_capture") {
   sources = [
+    "video_capture.mojom",
     "video_capture_types.mojom",
   ]
 
