@@ -29,10 +29,6 @@ InfoBarDelegate::InfoBarAutomationType
   return UNKNOWN_INFOBAR;
 }
 
-InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
-  return WARNING_TYPE;
-}
-
 int InfoBarDelegate::GetIconId() const {
   return kNoIconID;
 }
@@ -46,10 +42,8 @@ gfx::Image InfoBarDelegate::GetIcon() const {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   const gfx::VectorIcon& vector_icon = GetVectorIcon();
   if (!vector_icon.is_empty()) {
-    return gfx::Image(gfx::CreateVectorIcon(vector_icon, 16,
-                                            GetInfoBarType() == WARNING_TYPE
-                                                ? SkColorSetRGB(0xFF, 0x67, 0)
-                                                : gfx::kGoogleBlue500));
+    return gfx::Image(
+        gfx::CreateVectorIcon(vector_icon, 16, gfx::kGoogleBlue500));
   }
 #endif
 

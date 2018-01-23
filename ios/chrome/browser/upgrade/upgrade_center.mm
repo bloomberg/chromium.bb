@@ -96,10 +96,6 @@ class UpgradeInfoBarDelegate : public ConfirmInfoBarDelegate {
     return icon_;
   }
 
-  InfoBarDelegate::Type GetInfoBarType() const override {
-    return PAGE_ACTION_TYPE;
-  }
-
   base::string16 GetMessageText() const override {
     return l10n_util::GetStringUTF16(IDS_IOS_UPGRADE_AVAILABLE);
   }

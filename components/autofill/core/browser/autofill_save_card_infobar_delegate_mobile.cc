@@ -91,11 +91,6 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-infobars::InfoBarDelegate::Type
-AutofillSaveCardInfoBarDelegateMobile::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 AutofillSaveCardInfoBarDelegateMobile::GetIdentifier() const {
   return AUTOFILL_CC_INFOBAR_DELEGATE_MOBILE;

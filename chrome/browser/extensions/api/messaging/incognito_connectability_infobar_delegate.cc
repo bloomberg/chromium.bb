@@ -36,11 +36,6 @@ IncognitoConnectabilityInfoBarDelegate::
   }
 }
 
-infobars::InfoBarDelegate::Type
-IncognitoConnectabilityInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 IncognitoConnectabilityInfoBarDelegate::GetIdentifier() const {
   return INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE;

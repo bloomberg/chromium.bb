@@ -44,7 +44,6 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
   ~AppBannerInfoBarDelegateDesktop() override;
 
   // ConfirmInfoBarDelegate:
-  Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   void InfoBarDismissed() override;

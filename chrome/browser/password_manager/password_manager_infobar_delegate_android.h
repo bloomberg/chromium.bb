@@ -18,7 +18,6 @@ class PasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const gfx::Range& message_link_range() const { return message_link_range_; }
 
   // ConfirmInfoBarDelegate:
-  Type GetInfoBarType() const override;
   InfoBarAutomationType GetInfoBarAutomationType() const override;
   int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;

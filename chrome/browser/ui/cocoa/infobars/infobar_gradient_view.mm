@@ -7,11 +7,9 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
-#include "components/infobars/core/infobar.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -38,13 +36,11 @@
   return self;
 }
 
-- (void)setInfobarType:(infobars::InfoBarDelegate::Type)infobarType {
+- (void)setInfobarBackgroundColor:(SkColor)color {
   // TODO(ellyjones): no need to use a gradient here.
-  SkColor topColor = infobars::InfoBar::GetBackgroundColor(infobarType);
-  SkColor bottomColor = topColor;
   base::scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
-      initWithStartingColor:skia::SkColorToCalibratedNSColor(topColor)
-                endingColor:skia::SkColorToCalibratedNSColor(bottomColor)]);
+      initWithStartingColor:skia::SkColorToCalibratedNSColor(color)
+                endingColor:skia::SkColorToCalibratedNSColor(color)]);
   [self setGradient:gradient];
 }
 

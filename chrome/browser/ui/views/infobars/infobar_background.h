@@ -7,12 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/infobars/core/infobar_delegate.h"
 #include "ui/views/background.h"
 
 class InfoBarBackground : public views::Background {
  public:
-  explicit InfoBarBackground(infobars::InfoBarDelegate::Type infobar_type);
+  InfoBarBackground();
   ~InfoBarBackground() override;
 
  private:

@@ -35,11 +35,6 @@ IOSChromePasswordManagerInfoBarDelegate::
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smart_lock_branding_enabled_(is_smart_lock_branding_enabled) {}
 
-infobars::InfoBarDelegate::Type
-IOSChromePasswordManagerInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-};
-
 base::string16 IOSChromePasswordManagerInfoBarDelegate::GetLinkText() const {
   return is_smart_lock_branding_enabled_
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK)

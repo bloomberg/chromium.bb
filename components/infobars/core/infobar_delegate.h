@@ -170,10 +170,6 @@ class InfoBarDelegate {
   // this point nothing is visible onscreen.
   virtual ~InfoBarDelegate();
 
-  // Returns the type of the infobar.  The type determines the appearance (such
-  // as background color) of the infobar.
-  virtual Type GetInfoBarType() const;
-
   // Returns a unique value identifying the infobar.
   // New implementers must append a new value to the InfoBarIdentifier enum here
   // and in histograms.xml.

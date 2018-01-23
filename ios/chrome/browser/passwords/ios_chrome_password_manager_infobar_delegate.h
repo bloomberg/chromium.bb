@@ -53,7 +53,6 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate implementation.
-  Type GetInfoBarType() const override;
   base::string16 GetLinkText() const override;
   int GetIconId() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
