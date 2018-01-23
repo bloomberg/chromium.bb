@@ -137,7 +137,7 @@ paper-item:hover {
   border: 0;
 }
 
-paper-menu {
+paper-listbox {
   color: rgba(0, 0, 0, 0.87);
   overflow-x: hidden;
   overflow-y: auto;

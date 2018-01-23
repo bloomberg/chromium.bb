@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../media_router_header/media_router_header.html">
 <link rel="import" href="../route_details/route_details.html">
@@ -57,7 +57,7 @@
     </media-router-header>
     <div id="content">
       <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
-        <paper-menu id="cast-mode-list" role="presentation"
+        <paper-listbox id="cast-mode-list" role="presentation"
             selectable="paper-item" selected="{{selectedCastModeMenuItem_}}">
           <template is="dom-repeat" id="presentationCastModeList"
               items="[[computePresentationCastModeList_(castModeList)]]">
@@ -94,7 +94,7 @@
               <div><span>[[item.description]]</span></div>
             </paper-item>
           </template>
-        </paper-menu>
+        </paper-listbox>
       </template>
       <template is="dom-if"
           if="[[!computeRouteDetailsHidden_(currentView_, issue)]]">
@@ -121,7 +121,7 @@
         </div>
         <template is="dom-if" if="[[!computeSinkListHidden_(sinksToShow_)]]">
           <div id="sink-list" hidden$="[[hideSinkListForAnimation_]]">
-            <paper-menu id="sink-list-paper-menu" role="presentation">
+            <paper-listbox id="sink-list-paper-menu" role="presentation">
               <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
                 <paper-item on-tap="onSinkClick_">
                   <div class="sink-content">
@@ -158,7 +158,7 @@
                   </div>
                 </paper-item>
               </template>
-            </paper-menu>
+            </paper-listbox>
           </div>
         </template>
         <template is="dom-if" if="[[searchEnabled_]]">
@@ -185,7 +185,8 @@
             </div>
             <div id="search-results"
                 hidden$="[[computeSearchResultsHidden_(searchResultsToShow_, isSearchListHidden_)]]">
-              <paper-menu id="search-results-paper-menu" selected="0" role="presentation">
+              <paper-listbox id="search-results-paper-menu" selected="0"
+                  role="presentation">
                 <template is="dom-repeat" id="searchResults"
                     items="[[searchResultsToShow_]]">
                   <paper-item class="search-item" on-tap="onSinkClick_">
@@ -226,7 +227,7 @@
                     </div>
                   </paper-item>
                 </template>
-              </paper-menu>
+              </paper-listbox>
             </div>
           </div>
         </template>
