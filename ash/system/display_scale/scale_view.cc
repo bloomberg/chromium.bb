@@ -20,6 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -46,7 +47,7 @@ ScaleView::ScaleView(SystemTrayItem* owner, bool is_default_view)
 
   slider_ = TrayPopupUtils::CreateSlider(this);
   slider_->SetValue((display::Display::GetForcedDeviceScaleFactor() - 1.f) / 2);
-  slider_->SetAccessibleName(
+  slider_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCALE_SLIDER));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 

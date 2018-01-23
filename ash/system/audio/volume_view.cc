@@ -22,6 +22,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -130,7 +131,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
 
   slider_ = TrayPopupUtils::CreateSlider(this);
   slider_->SetValue(CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f);
-  slider_->SetAccessibleName(
+  slider_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VOLUME));
   tri_view_->AddView(TriView::Container::CENTER, slider_);
 
