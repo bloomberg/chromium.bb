@@ -1762,6 +1762,7 @@ split_static_library("ui") {
       "cocoa/bookmarks/bookmark_menu_cocoa_controller.mm",
       "cocoa/browser_window_command_handler.h",
       "cocoa/browser_window_command_handler.mm",
+      "cocoa/browser_window_views_mac.h",
       "cocoa/chrome_command_dispatcher_delegate.h",
       "cocoa/chrome_command_dispatcher_delegate.mm",
       "cocoa/chrome_style.cc",
@@ -1871,6 +1872,7 @@ split_static_library("ui") {
       # MacViews sources that we still want to keep behind a compile-time flag.
       # TODO(jackhou): Move items to general views sources out of here.
       sources += [
+        "cocoa/browser_window_views_mac.mm",
         "views/apps/chrome_app_window_client_views_mac.mm",
         "views/certificate_viewer_mac_views.mm",
         "views/dropdown_bar_host_mac.mm",
@@ -1994,6 +1996,7 @@ split_static_library("ui") {
         "cocoa/browser_dialogs_views_mac.h",
         "cocoa/browser_window_cocoa.h",
         "cocoa/browser_window_cocoa.mm",
+        "cocoa/browser_window_cocoa_views_mac.mm",
         "cocoa/browser_window_controller.h",
         "cocoa/browser_window_controller.mm",
         "cocoa/browser_window_controller_private.h",
