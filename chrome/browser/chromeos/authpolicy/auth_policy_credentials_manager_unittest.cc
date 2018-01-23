@@ -11,8 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
@@ -50,14 +52,15 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     chromeos::NetworkHandler::Initialize();
     fake_auth_policy_client()->DisableOperationDelayForTesting();
 
+    TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
+        std::make_unique<StubNotificationUIManager>());
+
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName("user@gmail.com");
     profile_ = profile_builder.Build();
     account_id_ = AccountId::AdFromUserEmailObjGuid(
         profile()->GetProfileUserName(), "1234567890");
     mock_user_manager()->AddUser(account_id_);
-    display_service_ =
-        std::make_unique<NotificationDisplayServiceTester>(profile());
 
     base::RunLoop run_loop;
     fake_auth_policy_client()->set_on_get_status_closure(
@@ -75,7 +78,6 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    display_service_.reset();
     EXPECT_CALL(*mock_user_manager(), Shutdown());
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -97,18 +99,19 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   }
 
   int GetNumberOfNotifications() {
-    return display_service_
-        ->GetDisplayedNotificationsForType(NotificationHandler::Type::TRANSIENT)
+    return TestingBrowserProcess::GetGlobal()
+        ->notification_ui_manager()
+        ->GetAllIdsByProfile(profile())
         .size();
   }
 
-  void CancelNotificationById(int message_id) {
+  bool CancelNotificationById(int message_id) {
     const std::string notification_id = kProfileSigninNotificationId +
                                         profile()->GetProfileUserName() +
                                         std::to_string(message_id);
-    EXPECT_TRUE(display_service_->GetNotification(notification_id));
-    display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
-                                         notification_id, false);
+    return TestingBrowserProcess::GetGlobal()
+        ->notification_ui_manager()
+        ->CancelById(notification_id, profile());
   }
 
   void CallGetUserStatusAndWait() {
@@ -120,6 +123,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(mock_user_manager());
   }
 
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
   AccountId account_id_;
   std::unique_ptr<TestingProfile> profile_;
@@ -128,9 +132,6 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   AuthPolicyCredentialsManager* auth_policy_credentials_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
-
- private:
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyCredentialsManagerTest);
 };
 
@@ -161,7 +162,7 @@ TEST_F(AuthPolicyCredentialsManagerTest, ShowSameNotificationOnce) {
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), true));
   CallGetUserStatusAndWait();
   EXPECT_EQ(1, GetNumberOfNotifications());
-  CancelNotificationById(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED);
+  EXPECT_TRUE(CancelNotificationById(IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED));
 
   // Do not show the same notification twice.
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), true));
@@ -180,8 +181,8 @@ TEST_F(AuthPolicyCredentialsManagerTest, ShowDifferentNotifications) {
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), true));
   CallGetUserStatusAndWait();
   EXPECT_EQ(2, GetNumberOfNotifications());
-  CancelNotificationById(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED);
-  CancelNotificationById(IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN);
+  EXPECT_TRUE(CancelNotificationById(IDS_ACTIVE_DIRECTORY_PASSWORD_CHANGED));
+  EXPECT_TRUE(CancelNotificationById(IDS_ACTIVE_DIRECTORY_REFRESH_AUTH_TOKEN));
   EXPECT_EQ(0, GetNumberOfNotifications());
 }
 
