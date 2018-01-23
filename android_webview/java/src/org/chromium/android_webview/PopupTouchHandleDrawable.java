@@ -46,20 +46,6 @@ import java.lang.reflect.Method;
  */
 @JNINamespace("android_webview")
 public class PopupTouchHandleDrawable extends View implements DisplayAndroidObserver {
-    @Override
-    public void onRotationChanged(int rotation) {
-        mRotationChanged = true;
-    }
-
-    @Override
-    public void onDIPScaleChanged(float dipScale) {
-        if (mDeviceScale != dipScale) {
-            mDeviceScale = dipScale;
-
-            // Postpone update till onConfigurationChanged()
-            mNeedsUpdateDrawable = true;
-        }
-    }
 
     private final PopupWindow mContainer;
     private final PositionObserver.Listener mParentPositionListener;
@@ -211,6 +197,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
             return;
         }
 
+        // Android doc says PopupWindow#setWindowLayoutType() was added since API level 23, however,
+        // it was introduced long time before M as a hidden API. Using reflection here to access it
+        // on blew M.
         try {
             Method setWindowLayoutTypeMethod =
                     PopupWindow.class.getMethod("setWindowLayoutType", int.class);
@@ -238,6 +227,23 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
             default:
                 assert false;
                 return HandleViewResources.getCenterHandleDrawable(context);
+        }
+    }
+
+    // Implements DisplayAndroidObserver
+    @Override
+    public void onRotationChanged(int rotation) {
+        mRotationChanged = true;
+    }
+
+    // Implements DisplayAndroidObserver
+    @Override
+    public void onDIPScaleChanged(float dipScale) {
+        if (mDeviceScale != dipScale) {
+            mDeviceScale = dipScale;
+
+            // Postpone update till onConfigurationChanged()
+            mNeedsUpdateDrawable = true;
         }
     }
 
