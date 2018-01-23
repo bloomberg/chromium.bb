@@ -227,76 +227,122 @@ bool AudioWorkletGlobalScope::Process(
   ScriptState::Scope scope(script_state);
 
   v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Context> current_context = script_state->GetContext();
   AudioWorkletProcessorDefinition* definition =
       FindDefinition(processor->Name());
   DCHECK(definition);
 
-  // To expose AudioBuffer on JS side, we have to repackage |Vector<AudioBus*>|
-  // to |sequence<sequence<Float32Array>>|.
-  HeapVector<HeapVector<Member<DOMFloat32Array>>> inputs;
-  HeapVector<HeapVector<Member<DOMFloat32Array>>> outputs;
-
-  for (const auto input_bus : *input_buses) {
-    HeapVector<Member<DOMFloat32Array>> input;
-    for (unsigned channel_index = 0;
-         channel_index < input_bus->NumberOfChannels();
-         ++channel_index) {
-      DOMFloat32Array* channel_data_array =
-          DOMFloat32Array::Create(input_bus->length());
-      memcpy(channel_data_array->Data(),
-             input_bus->Channel(channel_index)->Data(),
-             input_bus->length() * sizeof(float));
-      input.push_back(channel_data_array);
-    }
-    inputs.push_back(input);
-  }
-
-  for (const auto output_bus : *output_buses) {
-    HeapVector<Member<DOMFloat32Array>> output;
-    for (unsigned channel_index = 0;
-         channel_index < output_bus->NumberOfChannels();
-         ++channel_index) {
-      output.push_back(
-          DOMFloat32Array::Create(output_bus->length()));
-    }
-    outputs.push_back(output);
-  }
-
-  V8ObjectBuilder param_values(script_state);
-  for (const auto& param_name : param_value_map->Keys()) {
-    const AudioFloatArray* source_param_array = param_value_map->at(param_name);
-    DOMFloat32Array* param_array =
-        DOMFloat32Array::Create(source_param_array->size());
-    memcpy(param_array->Data(),
-           source_param_array->Data(),
-           sizeof(float) * source_param_array->size());
-    param_values.Add(
-        StringView(param_name.IsolatedCopy()),
-        ToV8(param_array, script_state->GetContext()->Global(), isolate));
-  }
-
-  v8::Local<v8::Value> argv[] = {
-    ToV8(inputs, script_state->GetContext()->Global(), isolate),
-    ToV8(outputs, script_state->GetContext()->Global(), isolate),
-    param_values.V8Value()
-  };
-
   v8::TryCatch block(isolate);
   block.SetVerbose(true);
+
+  // Prepare arguments of JS callback (inputs, outputs and param_values) with
+  // directly using V8 API because the overhead of
+  // ToV8(HeapVector<HeapVector<DOMFloat32Array>>) is not negligible and there
+  // is no need to externalize the array buffers.
+
+  // 1st arg of JS callback: inputs
+  v8::Local<v8::Array> inputs = v8::Array::New(isolate, input_buses->size());
+  uint32_t input_bus_index = 0;
+  for (const auto& input_bus : *input_buses) {
+    v8::Local<v8::Array> channels =
+        v8::Array::New(isolate, input_bus->NumberOfChannels());
+    bool success;
+    if (!inputs
+             ->CreateDataProperty(current_context, input_bus_index++, channels)
+             .To(&success)) {
+      return false;
+    }
+    for (uint32_t channel_index = 0;
+         channel_index < input_bus->NumberOfChannels(); ++channel_index) {
+      v8::Local<v8::ArrayBuffer> array_buffer =
+          v8::ArrayBuffer::New(isolate, input_bus->length() * sizeof(float));
+      v8::Local<v8::Float32Array> float32_array =
+          v8::Float32Array::New(array_buffer, 0, input_bus->length());
+      if (!channels
+               ->CreateDataProperty(current_context, channel_index,
+                                    float32_array)
+               .To(&success)) {
+        return false;
+      }
+      const v8::ArrayBuffer::Contents& contents = array_buffer->GetContents();
+      memcpy(contents.Data(), input_bus->Channel(channel_index)->Data(),
+             input_bus->length() * sizeof(float));
+    }
+  }
+
+  // 2nd arg of JS callback: outputs
+  v8::Local<v8::Array> outputs = v8::Array::New(isolate, output_buses->size());
+  uint32_t output_bus_index = 0;
+  // |js_output_raw_ptrs| stores raw pointers to underlying array buffers so
+  // that we can copy them back to |output_buses|. The raw pointers are valid
+  // as long as the v8::ArrayBuffers are alive, i.e. as long as |outputs| is
+  // holding v8::ArrayBuffers.
+  Vector<Vector<void*>> js_output_raw_ptrs;
+  js_output_raw_ptrs.ReserveInitialCapacity(output_buses->size());
+  for (const auto& output_bus : *output_buses) {
+    js_output_raw_ptrs.UncheckedAppend(Vector<void*>());
+    js_output_raw_ptrs.back().ReserveInitialCapacity(
+        output_bus->NumberOfChannels());
+    v8::Local<v8::Array> channels =
+        v8::Array::New(isolate, output_bus->NumberOfChannels());
+    bool success;
+    if (!outputs
+             ->CreateDataProperty(current_context, output_bus_index++, channels)
+             .To(&success)) {
+      return false;
+    }
+    for (uint32_t channel_index = 0;
+         channel_index < output_bus->NumberOfChannels(); ++channel_index) {
+      v8::Local<v8::ArrayBuffer> array_buffer =
+          v8::ArrayBuffer::New(isolate, output_bus->length() * sizeof(float));
+      v8::Local<v8::Float32Array> float32_array =
+          v8::Float32Array::New(array_buffer, 0, output_bus->length());
+      if (!channels
+               ->CreateDataProperty(current_context, channel_index,
+                                    float32_array)
+               .To(&success)) {
+        return false;
+      }
+      const v8::ArrayBuffer::Contents& contents = array_buffer->GetContents();
+      js_output_raw_ptrs.back().UncheckedAppend(contents.Data());
+    }
+  }
+
+  // 3rd arg of JS callback: param_values
+  v8::Local<v8::Object> param_values = v8::Object::New(isolate);
+  for (const auto& param : *param_value_map) {
+    const String& param_name = param.key;
+    const AudioFloatArray* param_array = param.value.get();
+    v8::Local<v8::ArrayBuffer> array_buffer =
+        v8::ArrayBuffer::New(isolate, param_array->size() * sizeof(float));
+    v8::Local<v8::Float32Array> float32_array =
+        v8::Float32Array::New(array_buffer, 0, param_array->size());
+    bool success;
+    if (!param_values
+             ->CreateDataProperty(current_context,
+                                  V8String(isolate, param_name.IsolatedCopy()),
+                                  float32_array)
+             .To(&success)) {
+      return false;
+    }
+    const v8::ArrayBuffer::Contents& contents = array_buffer->GetContents();
+    memcpy(contents.Data(), param_array->Data(),
+           param_array->size() * sizeof(float));
+  }
+
+  v8::Local<v8::Value> argv[] = {inputs, outputs, param_values};
 
   // Perform JS function process() in AudioWorkletProcessor instance. The actual
   // V8 operation happens here to make the AudioWorkletProcessor class a thin
   // wrapper of v8::Object instance.
-  v8::Local<v8::Value> processor_handle =
-      ToV8(processor, script_state->GetContext()->Global(), isolate);
+  v8::Local<v8::Value> processor_handle = ToV8(processor, script_state);
   v8::Local<v8::Value> local_result;
   if (!V8ScriptRunner::CallFunction(definition->ProcessLocal(isolate),
                                     ExecutionContext::From(script_state),
-                                    processor_handle,
-                                    WTF_ARRAY_LENGTH(argv),
-                                    argv,
-                                    isolate).ToLocal(&local_result) ||
-    block.HasCaught()) {
+                                    processor_handle, WTF_ARRAY_LENGTH(argv),
+                                    argv, isolate)
+           .ToLocal(&local_result) ||
+      block.HasCaught()) {
     // process() method call method call failed for some reason or an exception
     // was thrown by the user supplied code. Disable the processor to exclude
     // it from the subsequent rendering task.
@@ -309,17 +355,14 @@ bool AudioWorkletGlobalScope::Process(
 
   // Copy |sequence<sequence<Float32Array>>| back to the original
   // |Vector<AudioBus*>|.
-  for (unsigned output_index = 0;
-       output_index < output_buses->size();
-       ++output_index) {
-    HeapVector<Member<DOMFloat32Array>> output = outputs.at(output_index);
-    AudioBus* original_output_bus = output_buses->at(output_index);
-    for (unsigned channel_index = 0;
-         channel_index < original_output_bus->NumberOfChannels();
-         ++channel_index) {
-      memcpy(original_output_bus->Channel(channel_index)->MutableData(),
-             output.at(channel_index)->Data(),
-             sizeof(float) * original_output_bus->length());
+  for (uint32_t output_bus_index = 0; output_bus_index < output_buses->size();
+       ++output_bus_index) {
+    AudioBus* output_bus = (*output_buses)[output_bus_index];
+    for (uint32_t channel_index = 0;
+         channel_index < output_bus->NumberOfChannels(); ++channel_index) {
+      memcpy(output_bus->Channel(channel_index)->MutableData(),
+             js_output_raw_ptrs[output_bus_index][channel_index],
+             output_bus->length() * sizeof(float));
     }
   }
 
