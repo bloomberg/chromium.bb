@@ -1230,7 +1230,9 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   close_button->SetSize(kVoiceSearchCloseButtonWidth,
                         kVoiceSearchCloseButtonHeight);
   close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
-  close_button->SetTranslate(0.0, -kVoiceSearchCloseButtonYOffset, 0.f);
+  close_button->SetTranslate(0, -kVoiceSearchCloseButtonYOffset, 0);
+  close_button->SetRotate(
+      1, 0, 0, atan(-kVoiceSearchCloseButtonYOffset / kContentDistance));
   VR_BIND_BUTTON_COLORS(model_, close_button.get(), &ColorScheme::button_colors,
                         &DiscButton::SetButtonColors);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
@@ -1837,6 +1839,14 @@ void UiSceneCreator::CreateCloseButton() {
                                        : kCloseButtonVerticalOffset,
                                  value ? -kCloseButtonFullscreenDistance
                                        : -kCloseButtonDistance)));
+  element->AddBinding(VR_BIND(
+      bool, Model, model_, model->fullscreen_enabled(), UiElement,
+      element.get(),
+      view->SetRotate(
+          1, 0, 0,
+          atan(value ? kCloseButtonFullscreenVerticalOffset /
+                           kCloseButtonFullscreenDistance
+                     : kCloseButtonVerticalOffset / kCloseButtonDistance))));
   element->AddBinding(VR_BIND(
       bool, Model, model_, model->fullscreen_enabled(), UiElement,
       element.get(),
