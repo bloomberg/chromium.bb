@@ -169,7 +169,6 @@ void InitializeFieldTrialAndFeatureList(
 }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-
 void LoadV8SnapshotFile() {
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
   static constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
@@ -196,6 +195,7 @@ void LoadV8SnapshotFile() {
     return;
   }
 #endif  // OS_POSIX && !OS_MACOSX
+
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER

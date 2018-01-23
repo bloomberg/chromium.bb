@@ -11,8 +11,9 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 } else if (is_mac) {
@@ -645,13 +646,11 @@ if (is_mac) {
   bundle_data("content_shell_framework_resources") {
     sources = [
       "$root_out_dir/content_shell.pak",
-      "$root_out_dir/v8_context_snapshot.bin",
       "resources/missingImage.png",
     ]
 
     public_deps = [
       ":pak",
-      "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
     if (icu_use_data_file) {
@@ -662,11 +661,14 @@ if (is_mac) {
     }
 
     if (v8_use_external_startup_data) {
-      sources += [
-        "$root_out_dir/natives_blob.bin",
-        "$root_out_dir/snapshot_blob.bin",
-      ]
+      sources += [ "$root_out_dir/natives_blob.bin" ]
       public_deps += [ "//v8" ]
+      if (use_v8_context_snapshot) {
+        sources += [ "$root_out_dir/v8_context_snapshot.bin" ]
+        public_deps += [ "//tools/v8_context_snapshot" ]
+      } else {
+        sources += [ "$root_out_dir/snapshot_blob.bin" ]
+      }
     }
 
     outputs = [

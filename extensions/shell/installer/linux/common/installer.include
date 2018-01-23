@@ -122,11 +122,17 @@ stage_install_common() {
   # ICU data file; Necessary when the GN icu_use_data_file flag is true.
   install -m 644 "${BUILDDIR}/icudtl.dat" "${STAGEDIR}/${INSTALLDIR}/"
 
-  # V8 snapshot files; Necessary when the GN v8_use_external_startup_data flag
+  # V8 snapshot files; Necessary when the GN v8_use_external_startup_data flag 
   # is true.
   if [ -f "${BUILDDIR}/natives_blob.bin" ]; then
     install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
-    install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+    # Use v8_context_snapshot.bin instead of snapshot_blob.bin if it is available.
+    # TODO(crbug.com/764576): Unship snapshot_blob.bin on ChromeOS and drop this branch
+    if [ -f "${BUILDDIR}/v8_context_snapshot.bin" ]; then
+      install -m 644 "${BUILDDIR}/v8_context_snapshot.bin" "${STAGEDIR}/${INSTALLDIR}/"
+    else
+      install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+    fi
   fi
 
   # ANGLE
