@@ -853,15 +853,6 @@ void SimpleSynchronousEntry::Close(
         Doom();
     }
     file_tracker_->Close(this, SubFileForFileIndex(i));
-    const int64_t file_size = entry_stat.GetFileSize(key_.size(), i);
-    SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
-                     "LastClusterSize", cache_type_,
-                     file_size % 4096, 0, 4097, 50);
-    const int64_t cluster_loss = file_size % 4096 ? 4096 - file_size % 4096 : 0;
-    SIMPLE_CACHE_UMA(PERCENTAGE,
-                     "LastClusterLossPercent", cache_type_,
-                     static_cast<base::HistogramBase::Sample>(
-                         cluster_loss * 100 / (cluster_loss + file_size)));
   }
 
   if (sparse_file_open()) {
