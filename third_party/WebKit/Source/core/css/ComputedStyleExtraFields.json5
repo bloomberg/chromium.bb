@@ -875,14 +875,6 @@
       computed_style_custom_functions: ["setter"],
     },
     {
-      name: "HasNormalColumnGap",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "*->multi-col",
-      default_value: "true",
-      computed_style_custom_functions: ["setter"],
-    },
-    {
       name: "NamedGridColumnLines",
       field_template: "external",
       type_name: "NamedGridLinesMap",

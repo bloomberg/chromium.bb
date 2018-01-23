@@ -519,16 +519,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
   }
 
-  // column-gap (aka -webkit-column-gap)
-  void SetColumnGap(float f) {
-    SetHasNormalColumnGapInternal(false);
-    SetColumnGapInternal(f);
-  }
-  void SetHasNormalColumnGap() {
-    SetHasNormalColumnGapInternal(true);
-    SetColumnGapInternal(0);
-  }
-
   // column-rule-color (aka -webkit-column-rule-color)
   void SetColumnRuleColor(const StyleColor& c) {
     if (ColumnRuleColor() != c) {
