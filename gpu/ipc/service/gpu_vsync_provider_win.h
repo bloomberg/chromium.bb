@@ -33,7 +33,8 @@ class GPU_IPC_SERVICE_EXPORT GpuVSyncProviderWin : public gfx::VSyncProvider {
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
   bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
                                      base::TimeDelta* interval) override;
-  bool SupportGetVSyncParametersIfAvailable() override;
+  bool SupportGetVSyncParametersIfAvailable() const override;
+  bool IsHWClock() const override;
 
  private:
   void OnVSync(base::TimeTicks timestamp, base::TimeDelta interval);

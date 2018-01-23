@@ -198,6 +198,8 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
     return false;
   }
 
+  bool IsHWClock() const override { return true; }
+
  private:
   EGLSurface surface_;
 

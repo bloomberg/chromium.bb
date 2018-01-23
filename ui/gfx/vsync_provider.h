@@ -33,7 +33,10 @@ class GFX_EXPORT VSyncProvider {
                                              base::TimeDelta* interval) = 0;
 
   // Returns true, if GetVSyncParametersIfAvailable is supported.
-  virtual bool SupportGetVSyncParametersIfAvailable() = 0;
+  virtual bool SupportGetVSyncParametersIfAvailable() const = 0;
+
+  // Returns true, if VSyncProvider gets VSync timebase from HW.
+  virtual bool IsHWClock() const = 0;
 };
 
 // Provides a constant timebase and interval.
@@ -48,7 +51,8 @@ class GFX_EXPORT FixedVSyncProvider : public VSyncProvider {
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
   bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
                                      base::TimeDelta* interval) override;
-  bool SupportGetVSyncParametersIfAvailable() override;
+  bool SupportGetVSyncParametersIfAvailable() const override;
+  bool IsHWClock() const override;
 
  private:
   base::TimeTicks timebase_;

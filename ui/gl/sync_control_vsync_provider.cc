@@ -164,7 +164,7 @@ bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
 #endif  // defined(OS_LINUX)
 }
 
-bool SyncControlVSyncProvider::SupportGetVSyncParametersIfAvailable() {
+bool SyncControlVSyncProvider::SupportGetVSyncParametersIfAvailable() const {
 #if defined(OS_LINUX)
   return true;
 #else
