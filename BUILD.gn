@@ -643,7 +643,7 @@ group("gn_all") {
     }
   }
 
-  if (is_mac || is_linux) {
+  if (is_mac || is_linux || is_android) {
     deps += [ "//third_party/perfetto:all" ]
   }
 
