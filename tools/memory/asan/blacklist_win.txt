@@ -33,12 +33,13 @@ fun:*TargetNtSetInformationThread
 fun:*TargetNtSetInformationThread64
 fun:*TargetNtUnmapViewOfSection64
 
-src:*pe_image.h
-src:*pe_image.cc
-src:*resolver_32.cc
 src:*filesystem_interception.cc
+src:*interceptors_64.cc
+src:*pe_image.cc
+src:*pe_image.h
 src:*process_thread_interception.cc
 src:*registry_interception.cc
+src:*resolver_32.cc
 src:*sandbox_nt_util.cc
 src:*sync_interception.cc
 ################################################################################
