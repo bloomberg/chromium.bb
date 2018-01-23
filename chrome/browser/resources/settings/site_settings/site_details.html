@@ -132,12 +132,6 @@
           id="midiDevices" label="$i18n{siteSettingsMidiDevices}">
       </site-details-permission>
       <site-details-permission
-          category="{{ContentSettingsTypes.CLIPBOARD}}"
-          icon="settings:clipboard" id="clipboard"
-          label="$i18n{siteSettingsClipboard}"
-          hidden$="[[!enableClipboardContentSetting_]]">
-      </site-details-permission>
-      <site-details-permission
           category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
           icon="cr:extension" id="unsandboxedPlugins"
           label="$i18n{siteSettingsUnsandboxedPlugins}">
@@ -155,6 +149,12 @@
         label="$i18n{siteSettingsSensors}"
         hidden$="[[!enableSensorsContentSetting_]]">
     </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.CLIPBOARD}}"
+          icon="settings:clipboard" id="clipboard"
+          label="$i18n{siteSettingsClipboard}"
+          hidden$="[[!enableClipboardContentSetting_]]">
+      </site-details-permission>
     </div>
 
     <div id="clearAndReset" class="settings-box"
