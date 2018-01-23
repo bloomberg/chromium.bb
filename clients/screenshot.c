@@ -217,7 +217,8 @@ write_png(int width, int height)
 						      CAIRO_FORMAT_ARGB32,
 						      width, height, buffer_stride);
 
-	fp = file_create_dated("wayland-screenshot-", ".png", filepath, sizeof(filepath));
+	fp = file_create_dated(getenv("XDG_PICTURES_DIR"), "wayland-screenshot-",
+			       ".png", filepath, sizeof(filepath));
 	if (fp) {
 		fclose (fp);
 		cairo_surface_write_to_png(surface, filepath);
