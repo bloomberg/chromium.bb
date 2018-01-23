@@ -56,6 +56,7 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
   bool AreAuthorShadowsAllowed() const override { return false; }
   bool ShouldAppearIndeterminate() const override;
   bool SupportLabels() const override { return true; }
+  bool ShouldForceLegacyLayout() const final { return true; }
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   LayoutProgress* GetLayoutProgress() const;

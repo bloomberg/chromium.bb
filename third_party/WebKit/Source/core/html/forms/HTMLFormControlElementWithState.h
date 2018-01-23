@@ -65,6 +65,8 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool IsFormControlElementWithState() const final;
 
  private:
+  bool ShouldForceLegacyLayout() const final { return true; }
+
   // Pointers for DoublyLinkedListNode<HTMLFormControlElementWithState>. This
   // is used for adding an instance to a list of form controls stored in
   // DocumentState. Each instance is only added to its containing document's
