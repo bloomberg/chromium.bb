@@ -25,10 +25,6 @@ function bytesToHexString(bytes)
 {
     if (!bytes)
         return null;
-    // "bytes" could be a typed array with a detached buffer, in which case the
-    // constructor below would throw.
-    if (bytes.length === 0)
-        return "";
 
     bytes = new Uint8Array(bytes);
     var hexBytes = [];
