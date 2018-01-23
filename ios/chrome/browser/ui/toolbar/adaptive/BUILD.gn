@@ -57,6 +57,7 @@ source_set("adaptive_ui") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
