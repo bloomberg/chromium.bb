@@ -112,7 +112,7 @@ bool DOMSelection::IsBaseFirstInSelection() const {
   DCHECK(GetFrame());
   const SelectionInDOMTree& selection =
       GetFrame()->Selection().GetSelectionInDOMTree();
-  return selection.Base() <= selection.Extent();
+  return selection.IsBaseFirst();
 }
 
 // TODO(tkent): Following four functions based on VisibleSelection should be
