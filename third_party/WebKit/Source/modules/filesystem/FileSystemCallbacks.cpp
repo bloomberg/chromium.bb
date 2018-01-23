@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "bindings/modules/v8/V8EntryCallback.h"
 #include "bindings/modules/v8/V8ErrorCallback.h"
+#include "bindings/modules/v8/V8FileCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -45,7 +46,6 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/Entry.h"
-#include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileWriterBase.h"
@@ -384,23 +384,35 @@ void FileWriterBaseCallbacks::DidCreateFileWriter(
 
 // SnapshotFileCallback -------------------------------------------------------
 
+void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnDidCreateSnapshotFileCallback::Trace(visitor);
+}
+
+void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::OnSuccess(
+    File* file) {
+  callback_->handleEvent(file);
+}
+
 std::unique_ptr<AsyncFileSystemCallbacks> SnapshotFileCallback::Create(
     DOMFileSystemBase* filesystem,
     const String& name,
     const KURL& url,
-    FileCallback* success_callback,
+    OnDidCreateSnapshotFileCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context) {
   return base::WrapUnique(new SnapshotFileCallback(
       filesystem, name, url, success_callback, error_callback, context));
 }
 
-SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem,
-                                           const String& name,
-                                           const KURL& url,
-                                           FileCallback* success_callback,
-                                           ErrorCallbackBase* error_callback,
-                                           ExecutionContext* context)
+SnapshotFileCallback::SnapshotFileCallback(
+    DOMFileSystemBase* filesystem,
+    const String& name,
+    const KURL& url,
+    OnDidCreateSnapshotFileCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context)
     : FileSystemCallbacksBase(error_callback, filesystem, context),
       name_(name),
       url_(url),
@@ -413,16 +425,16 @@ void SnapshotFileCallback::DidCreateSnapshotFile(
     return;
 
   // We can't directly use the snapshot blob data handle because the content
-  // type on it hasn't been set.  The |snapshot| param is here to provide a a
+  // type on it hasn't been set.  The |snapshot| param is here to provide a
   // chain of custody thru thread bridging that is held onto until *after* we've
   // coined a File with a new handle that has the correct type set on it. This
   // allows the blob storage system to track when a temp file can and can't be
   // safely deleted.
 
-  HandleEventOrScheduleCallback(
-      success_callback_.Release(),
-      DOMFileSystemBase::CreateFile(metadata, url_, file_system_->GetType(),
-                                    name_));
+  InvokeOrScheduleCallback(&OnDidCreateSnapshotFileCallback::OnSuccess,
+                           success_callback_.Release(),
+                           DOMFileSystemBase::CreateFile(
+                               metadata, url_, file_system_->GetType(), name_));
 }
 
 // VoidCallbacks --------------------------------------------------------------
