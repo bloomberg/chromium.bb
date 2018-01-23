@@ -54,8 +54,7 @@ Blob system terminology:
 
 * **Blob**: This is a blob object, which can consist of bytes or files, as
 described above.
-* **BlobItem** or **[DataElement](
-https://cs.chromium.org/chromium/src/storage/common/data_element.h)**:
+* **BlobItem**:
 This is a primitive element that can basically be a File, Bytes, or another
 Blob. It also stores an offset and size, so this can be a part of a file. (This
 can also represent a "future" file and "future" bytes, which is used to signify

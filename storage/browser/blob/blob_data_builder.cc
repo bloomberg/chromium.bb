@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/disk_cache/disk_cache.h"
+#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
@@ -29,7 +30,6 @@ namespace storage {
 namespace {
 
 const static int kInvalidDiskCacheSideStreamIndex = -1;
-const FilePath::CharType kFutureFileName[] = FILE_PATH_LITERAL("_future_name_");
 
 }  // namespace
 
@@ -52,8 +52,6 @@ bool BlobDataBuilder::FutureData::Populate(base::span<const char> data,
 base::span<char> BlobDataBuilder::FutureData::GetDataToPopulate(
     size_t offset,
     size_t length) const {
-  network::DataElement* element = item_->data_element_ptr();
-
   // We lazily allocate our data buffer by waiting until the first
   // PopulateFutureData call.
   // Why? The reason we have the AppendFutureData  method is to create our Blob
@@ -61,18 +59,17 @@ base::span<char> BlobDataBuilder::FutureData::GetDataToPopulate(
   // allocating the memory yet, as we might not have the quota yet. So we don't
   // want to allocate the memory until we're actually receiving the data (which
   // the browser process only does when it has quota).
-  if (element->type() == network::DataElement::TYPE_BYTES_DESCRIPTION) {
-    element->SetToAllocatedBytes(element->length());
-    // The type of the element is now TYPE_BYTES.
+  if (item_->type() == BlobDataItem::Type::kBytesDescription) {
+    item_->AllocateBytes();
   }
-  DCHECK_EQ(element->type(), network::DataElement::TYPE_BYTES);
+  DCHECK_EQ(item_->type(), BlobDataItem::Type::kBytes);
   base::CheckedNumeric<size_t> checked_end = offset;
   checked_end += length;
-  if (!checked_end.IsValid() || checked_end.ValueOrDie() > element->length()) {
+  if (!checked_end.IsValid() || checked_end.ValueOrDie() > item_->length()) {
     DVLOG(1) << "Invalid offset or length.";
     return nullptr;
   }
-  return base::make_span(element->mutable_bytes() + offset, length);
+  return item_->mutable_bytes().subspan(offset, length);
 }
 
 BlobDataBuilder::FutureData::FutureData(scoped_refptr<BlobDataItem> item)
@@ -90,46 +87,15 @@ bool BlobDataBuilder::FutureFile::Populate(
     DVLOG(1) << "File item already populated";
     return false;
   }
-  network::DataElement* element = item_->data_element_ptr();
-  DCHECK_EQ(element->type(), network::DataElement::TYPE_FILE);
-  uint64_t length = element->length();
-  uint64_t offset = element->offset();
-  element->SetToFilePathRange(file_reference->path(), offset, length,
-                              expected_modification_time);
-  item_->data_handle_ = std::move(file_reference);
+  DCHECK_EQ(item_->type(), BlobDataItem::Type::kFile);
+  item_->PopulateFile(file_reference->path(), expected_modification_time,
+                      file_reference);
   item_ = nullptr;
   return true;
 }
 
 BlobDataBuilder::FutureFile::FutureFile(scoped_refptr<BlobDataItem> item)
     : item_(item) {}
-
-/* static */
-base::FilePath BlobDataBuilder::GetFutureFileItemPath(uint64_t file_id) {
-  std::string file_id_str = base::NumberToString(file_id);
-  return base::FilePath(kFutureFileName)
-      .AddExtension(
-          base::FilePath::StringType(file_id_str.begin(), file_id_str.end()));
-}
-
-/* static */
-bool BlobDataBuilder::IsFutureFileItem(const network::DataElement& element) {
-  const FilePath::StringType prefix(kFutureFileName);
-  // The prefix shouldn't occur unless the user used "AppendFutureFile". We
-  // DCHECK on AppendFile to make sure no one appends a future file.
-  return base::StartsWith(element.path().value(), prefix,
-                          base::CompareCase::SENSITIVE);
-}
-
-/* static */
-uint64_t BlobDataBuilder::GetFutureFileID(const network::DataElement& element) {
-  DCHECK(IsFutureFileItem(element));
-  uint64_t id = 0;
-  bool success =
-      base::StringToUint64(element.path().Extension().substr(1), &id);
-  DCHECK(success) << element.path().Extension();
-  return id;
-}
 
 BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
 BlobDataBuilder::~BlobDataBuilder() = default;
@@ -174,10 +140,7 @@ void BlobDataBuilder::AppendIPCDataElement(
 void BlobDataBuilder::AppendData(const char* data, size_t length) {
   if (!length)
     return;
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToBytes(data, length);
-  scoped_refptr<BlobDataItem> item = new BlobDataItem(std::move(element));
-
+  auto item = BlobDataItem::CreateBytes(base::make_span(data, length));
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
       std::move(item), ShareableBlobDataItem::QUOTA_NEEDED);
   // Even though we already prepopulate this data, we treat it as needing
@@ -194,10 +157,7 @@ void BlobDataBuilder::AppendData(const char* data, size_t length) {
 
 BlobDataBuilder::FutureData BlobDataBuilder::AppendFutureData(size_t length) {
   CHECK_NE(length, 0u);
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToBytesDescription(length);
-  scoped_refptr<BlobDataItem> item = new BlobDataItem(std::move(element));
-
+  auto item = BlobDataItem::CreateBytesDescription(length);
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
       item, ShareableBlobDataItem::QUOTA_NEEDED);
   pending_transport_items_.push_back(shareable_item);
@@ -217,11 +177,8 @@ BlobDataBuilder::FutureFile BlobDataBuilder::AppendFutureFile(
     uint64_t length,
     uint64_t file_id) {
   CHECK_NE(length, 0ull);
-  DCHECK_NE(length, network::DataElement::kUnknownSize);
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToFilePathRange(GetFutureFileItemPath(file_id), offset, length,
-                              base::Time());
-  scoped_refptr<BlobDataItem> item = new BlobDataItem(std::move(element));
+  DCHECK_NE(length, BlobDataItem::kUnknownSize);
+  auto item = BlobDataItem::CreateFutureFile(offset, length, file_id);
 
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
       item, ShareableBlobDataItem::QUOTA_NEEDED);
@@ -241,19 +198,17 @@ void BlobDataBuilder::AppendFile(const FilePath& file_path,
                                  uint64_t offset,
                                  uint64_t length,
                                  const base::Time& expected_modification_time) {
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToFilePathRange(file_path, offset, length,
-                              expected_modification_time);
-  DCHECK(!IsFutureFileItem(*element)) << file_path.value();
-  scoped_refptr<BlobDataItem> item = new BlobDataItem(
-      std::move(element), ShareableFileReference::Get(file_path));
+  auto item = BlobDataItem::CreateFile(file_path, offset, length,
+                                       expected_modification_time,
+                                       ShareableFileReference::Get(file_path));
+  DCHECK(!item->IsFutureFileItem()) << file_path.value();
 
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
       std::move(item), ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA);
   items_.push_back(std::move(shareable_item));
 
   total_size_ += length;
-  bool unknown_size = length == network::DataElement::kUnknownSize;
+  bool unknown_size = length == BlobDataItem::kUnknownSize;
   UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.File.Unknown", unknown_size);
   if (!unknown_size)
     UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.File", length / 1024);
@@ -264,9 +219,6 @@ void BlobDataBuilder::AppendBlob(const std::string& uuid,
                                  uint64_t length,
                                  const BlobStorageRegistry& blob_registry) {
   DCHECK_GT(length, 0ul);
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToBlobRange(uuid, offset, length);
-
   const BlobEntry* ref_entry = blob_registry.GetEntry(uuid);
 
   // Self-references or non-existing blob references are invalid.
@@ -283,12 +235,12 @@ void BlobDataBuilder::AppendBlob(const std::string& uuid,
   }
 
   // We can't reference a blob with unknown size.
-  if (ref_entry->total_size() == network::DataElement::kUnknownSize) {
+  if (ref_entry->total_size() == BlobDataItem::kUnknownSize) {
     has_blob_errors_ = true;
     return;
   }
 
-  if (length == network::DataElement::kUnknownSize)
+  if (length == BlobDataItem::kUnknownSize)
     length = ref_entry->total_size() - offset;
 
   UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.Blob", length / 1024);
@@ -298,9 +250,9 @@ void BlobDataBuilder::AppendBlob(const std::string& uuid,
   // If we're referencing the whole blob, then we don't need to slice.
   if (offset == 0 && length == ref_entry->total_size()) {
     for (const auto& shareable_item : ref_entry->items()) {
-      if (shareable_item->item()->type() == network::DataElement::TYPE_BYTES ||
+      if (shareable_item->item()->type() == BlobDataItem::Type::kBytes ||
           shareable_item->item()->type() ==
-              network::DataElement::TYPE_BYTES_DESCRIPTION) {
+              BlobDataItem::Type::kBytesDescription) {
         total_memory_size_ += shareable_item->item()->length();
       }
       items_.push_back(shareable_item);
@@ -338,7 +290,7 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
     const scoped_refptr<BlobDataItem>& source_item =
         source_items[item_index]->item();
     uint64_t source_length = source_item->length();
-    network::DataElement::Type type = source_item->type();
+    BlobDataItem::Type type = source_item->type();
     DCHECK_NE(source_length, std::numeric_limits<uint64_t>::max());
     DCHECK_NE(source_length, 0ull);
 
@@ -351,8 +303,8 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
     if (reusing_blob_item) {
       // We can share the entire item.
       items_.push_back(source_items[item_index]);
-      if (type == network::DataElement::TYPE_BYTES ||
-          type == network::DataElement::TYPE_BYTES_DESCRIPTION) {
+      if (type == BlobDataItem::Type::kBytes ||
+          type == BlobDataItem::Type::kBytesDescription) {
         total_memory_size_ += source_length;
       }
       continue;
@@ -363,8 +315,8 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
     ShareableBlobDataItem::State state =
         ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA;
     switch (type) {
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
-      case network::DataElement::TYPE_BYTES: {
+      case BlobDataItem::Type::kBytesDescription:
+      case BlobDataItem::Type::kBytes: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.Bytes",
                                 read_size / 1024);
         need_copy = true;
@@ -374,62 +326,45 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
         // for this data. When our blob is finished constructing, all dependent
         // blobs are done, and we have enough memory quota, we'll copy the data
         // over.
-        std::unique_ptr<network::DataElement> element(
-            new network::DataElement());
-        element->SetToBytesDescription(base::checked_cast<size_t>(read_size));
-        data_item = new BlobDataItem(std::move(element));
+        data_item = BlobDataItem::CreateBytesDescription(
+            base::checked_cast<size_t>(read_size));
         state = ShareableBlobDataItem::QUOTA_NEEDED;
         break;
       }
-      case network::DataElement::TYPE_FILE: {
+      case BlobDataItem::Type::kFile: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.File",
                                 read_size / 1024);
-        std::unique_ptr<network::DataElement> element(
-            new network::DataElement());
-        element->SetToFilePathRange(
+        data_item = BlobDataItem::CreateFile(
             source_item->path(), source_item->offset() + item_offset, read_size,
-            source_item->expected_modification_time());
-        data_item =
-            new BlobDataItem(std::move(element), source_item->data_handle_);
+            source_item->expected_modification_time(),
+            source_item->data_handle_);
 
-        if (BlobDataBuilder::IsFutureFileItem(source_item->data_element())) {
+        if (source_item->IsFutureFileItem()) {
           // The source file isn't a real file yet (path is fake), so store the
           // items we need to copy from later.
           need_copy = true;
         }
         break;
       }
-      case network::DataElement::TYPE_FILE_FILESYSTEM: {
+      case BlobDataItem::Type::kFileFilesystem: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.FileSystem",
                                 read_size / 1024);
-        std::unique_ptr<network::DataElement> element(
-            new network::DataElement());
-        element->SetToFileSystemUrlRange(
+        data_item = BlobDataItem::CreateFileFilesystem(
             source_item->filesystem_url(), source_item->offset() + item_offset,
-            read_size, source_item->expected_modification_time());
-        data_item = new BlobDataItem(std::move(element),
-                                     source_item->file_system_context());
+            read_size, source_item->expected_modification_time(),
+            source_item->file_system_context());
         break;
       }
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
+      case BlobDataItem::Type::kDiskCacheEntry: {
         UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.BlobSlice.CacheEntry",
                                 read_size / 1024);
-        std::unique_ptr<network::DataElement> element(
-            new network::DataElement());
-        element->SetToDiskCacheEntryRange(source_item->offset() + item_offset,
-                                          read_size);
-        data_item =
-            new BlobDataItem(std::move(element), source_item->data_handle_,
-                             source_item->disk_cache_entry(),
-                             source_item->disk_cache_stream_index(),
-                             source_item->disk_cache_side_stream_index());
+        data_item = BlobDataItem::CreateDiskCacheEntry(
+            source_item->offset() + item_offset, read_size,
+            source_item->data_handle_, source_item->disk_cache_entry(),
+            source_item->disk_cache_stream_index(),
+            source_item->disk_cache_side_stream_index());
         break;
       }
-      case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_BLOB:
-      case network::DataElement::TYPE_DATA_PIPE:
-      case network::DataElement::TYPE_UNKNOWN:
-        CHECK(false) << "Illegal blob item type: " << type;
     }
 
     items_.push_back(new ShareableBlobDataItem(std::move(data_item), state));
@@ -443,7 +378,7 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid,
                                  const BlobStorageRegistry& blob_registry) {
-  AppendBlob(uuid, 0, network::DataElement::kUnknownSize, blob_registry);
+  AppendBlob(uuid, 0, BlobDataItem::kUnknownSize, blob_registry);
 }
 
 void BlobDataBuilder::AppendFileSystemFile(
@@ -453,18 +388,16 @@ void BlobDataBuilder::AppendFileSystemFile(
     const base::Time& expected_modification_time,
     scoped_refptr<FileSystemContext> file_system_context) {
   DCHECK_GT(length, 0ul);
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToFileSystemUrlRange(url, offset, length,
-                                   expected_modification_time);
-  scoped_refptr<BlobDataItem> item =
-      new BlobDataItem(std::move(element), std::move(file_system_context));
+  auto item = BlobDataItem::CreateFileFilesystem(
+      url, offset, length, expected_modification_time,
+      std::move(file_system_context));
 
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(
       std::move(item), ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA);
   items_.push_back(std::move(shareable_item));
 
   total_size_ += length;
-  bool unknown_size = length == network::DataElement::kUnknownSize;
+  bool unknown_size = length == BlobDataItem::kUnknownSize;
   UMA_HISTOGRAM_BOOLEAN("Storage.BlobItemSize.FileSystem.Unknown",
                         unknown_size);
   if (!unknown_size)
@@ -485,12 +418,9 @@ void BlobDataBuilder::AppendDiskCacheEntryWithSideData(
     disk_cache::Entry* disk_cache_entry,
     int disk_cache_stream_index,
     int disk_cache_side_stream_index) {
-  std::unique_ptr<network::DataElement> element(new network::DataElement());
-  element->SetToDiskCacheEntryRange(
-      0U, disk_cache_entry->GetDataSize(disk_cache_stream_index));
-  scoped_refptr<BlobDataItem> item =
-      new BlobDataItem(std::move(element), data_handle, disk_cache_entry,
-                       disk_cache_stream_index, disk_cache_side_stream_index);
+  auto item = BlobDataItem::CreateDiskCacheEntry(
+      0u, disk_cache_entry->GetDataSize(disk_cache_stream_index), data_handle,
+      disk_cache_entry, disk_cache_stream_index, disk_cache_side_stream_index);
 
   total_size_ += item->length();
   UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",

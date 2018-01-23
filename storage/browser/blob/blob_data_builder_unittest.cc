@@ -7,25 +7,22 @@
 #include <string>
 
 #include "base/logging.h"
-#include "services/network/public/cpp/data_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
 
 TEST(BlobDataBuilderTest, TestFutureFiles) {
   const std::string kId = "id";
+  const uint64_t kFileId = 13;
 
-  network::DataElement element;
-  element.SetToFilePath(BlobDataBuilder::GetFutureFileItemPath(0));
-  EXPECT_TRUE(BlobDataBuilder::IsFutureFileItem(element));
-  EXPECT_EQ(0ull, BlobDataBuilder::GetFutureFileID(element));
+  auto item = BlobDataItem::CreateFutureFile(0, 10, kFileId);
+  EXPECT_TRUE(item->IsFutureFileItem());
+  EXPECT_EQ(kFileId, item->GetFutureFileID());
 
   BlobDataBuilder builder(kId);
-  builder.AppendFutureFile(0, 10, 0);
-  EXPECT_TRUE(BlobDataBuilder::IsFutureFileItem(
-      builder.items()[0]->item()->data_element()));
-  EXPECT_EQ(0ull, BlobDataBuilder::GetFutureFileID(
-                      builder.items()[0]->item()->data_element()));
+  builder.AppendFutureFile(0, 10, kFileId);
+  EXPECT_TRUE(builder.items()[0]->item()->IsFutureFileItem());
+  EXPECT_EQ(kFileId, builder.items()[0]->item()->GetFutureFileID());
 }
 
 }  // namespace storage
