@@ -3462,3 +3462,7 @@ crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scrol
 # This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
 # WebKit Linux Trusty (dbg).
 crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-restored-breakpoint.js [ Pass Failure ]
+
+# Sheriff failures 2018-01-23
+# Flaking on linux_chromium_rel_ng
+crbug.com/804709 [ Linux ] virtual/gpu/fast/canvas/canvas-fillPath-shadow.html [ Pass Failure ]
