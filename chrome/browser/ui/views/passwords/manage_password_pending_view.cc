@@ -25,6 +25,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
@@ -124,21 +125,27 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
 }  // namespace
 
 ManagePasswordPendingView::ManagePasswordPendingView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent),
-      save_button_(nullptr),
-      never_button_(nullptr),
+    content::WebContents* web_contents,
+    views::View* anchor_view,
+    const gfx::Point& anchor_point,
+    DisplayReason reason)
+    : ManagePasswordsBubbleDelegateViewBase(web_contents,
+                                            anchor_view,
+                                            anchor_point,
+                                            reason),
+      sign_in_promo_(nullptr),
+      desktop_ios_promo_(nullptr),
       username_field_(nullptr),
       password_view_button_(nullptr),
+      initially_focused_view_(nullptr),
       password_dropdown_(nullptr),
       password_label_(nullptr),
       are_passwords_revealed_(
-          parent_->model()->are_passwords_revealed_when_bubble_is_opened()) {
+          model()->are_passwords_revealed_when_bubble_is_opened()) {
   // Create credentials row.
-  const autofill::PasswordForm& password_form =
-      parent_->model()->pending_password();
+  const autofill::PasswordForm& password_form = model()->pending_password();
   const bool is_password_credential = password_form.federation_origin.unique();
-  if (parent_->model()->enable_editing()) {
+  if (model()->enable_editing()) {
     username_field_ = CreateUsernameEditable(password_form).release();
   } else {
     username_field_ = CreateUsernameLabel(password_form).release();
@@ -151,49 +158,109 @@ ManagePasswordPendingView::ManagePasswordPendingView(
         CreatePasswordViewButton(this, are_passwords_revealed_).release();
   }
 
-  // Create buttons.
-  save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  never_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
-
   CreateAndSetLayout(is_password_credential);
-  if (parent_->model()->enable_editing() &&
-      parent_->model()->pending_password().username_value.empty()) {
-    parent_->set_initially_focused_view(username_field_);
-  } else {
-    parent_->set_initially_focused_view(save_button_);
+  if (model()->enable_editing() &&
+      model()->pending_password().username_value.empty()) {
+    initially_focused_view_ = username_field_;
   }
 }
 
 ManagePasswordPendingView::~ManagePasswordPendingView() = default;
 
+bool ManagePasswordPendingView::Accept() {
+  if (sign_in_promo_)
+    return sign_in_promo_->Accept();
+#if defined(OS_WIN)
+  if (desktop_ios_promo_)
+    return desktop_ios_promo_->Accept();
+#endif
+  UpdateUsernameAndPasswordInModel();
+  model()->OnSaveClicked();
+  if (model()->ReplaceToShowPromotionIfNeeded()) {
+    ReplaceWithPromo();
+    return false;  // Keep open.
+  }
+  return true;
+}
+
+bool ManagePasswordPendingView::Cancel() {
+  if (sign_in_promo_)
+    return sign_in_promo_->Cancel();
+#if defined(OS_WIN)
+  if (desktop_ios_promo_)
+    return desktop_ios_promo_->Cancel();
+#endif
+  model()->OnNeverForThisSiteClicked();
+  return true;
+}
+
+bool ManagePasswordPendingView::Close() {
+  return true;
+}
+
 void ManagePasswordPendingView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  if (sender == save_button_) {
-    UpdateUsernameAndPasswordInModel();
-    parent_->model()->OnSaveClicked();
-    if (parent_->model()->ReplaceToShowPromotionIfNeeded()) {
-      ReplaceWithPromo();
-      return;
-    }
-  } else if (sender == never_button_) {
-    parent_->model()->OnNeverForThisSiteClicked();
-  } else if (sender == password_view_button_) {
-    TogglePasswordVisibility();
-    return;
-  } else {
-    NOTREACHED();
-  }
+  DCHECK(sender == password_view_button_);
+  TogglePasswordVisibility();
+}
 
-  parent_->CloseBubble();
+void ManagePasswordPendingView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  DCHECK_EQ(model()->title_brand_link_range(), range);
+  model()->OnBrandLinkClicked();
 }
 
 gfx::Size ManagePasswordPendingView::CalculatePreferredSize() const {
   return gfx::Size(ManagePasswordsBubbleView::kDesiredBubbleWidth,
                    GetLayoutManager()->GetPreferredHeightForWidth(
                        this, ManagePasswordsBubbleView::kDesiredBubbleWidth));
+}
+
+views::View* ManagePasswordPendingView::GetInitiallyFocusedView() {
+  if (initially_focused_view_)
+    return initially_focused_view_;
+  return ManagePasswordsBubbleDelegateViewBase::GetInitiallyFocusedView();
+}
+
+base::string16 ManagePasswordPendingView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (sign_in_promo_)
+    return sign_in_promo_->GetDialogButtonLabel(button);
+#if defined(OS_WIN)
+  if (desktop_ios_promo_)
+    return desktop_ios_promo_->GetDialogButtonLabel(button);
+#endif
+
+  return l10n_util::GetStringUTF16(
+      button == ui::DIALOG_BUTTON_OK
+          ? IDS_PASSWORD_MANAGER_SAVE_BUTTON
+          : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON);
+}
+
+gfx::ImageSkia ManagePasswordPendingView::GetWindowIcon() {
+#if defined(OS_WIN)
+  if (desktop_ios_promo_)
+    return desktop_ios_promo_->GetWindowIcon();
+#endif
+  return gfx::ImageSkia();
+}
+
+void ManagePasswordPendingView::AddedToWidget() {
+  auto title_view =
+      base::MakeUnique<views::StyledLabel>(base::string16(), this);
+  title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
+  UpdateTitleText(title_view.get());
+  GetBubbleFrameView()->SetTitleView(std::move(title_view));
+}
+
+bool ManagePasswordPendingView::ShouldShowWindowIcon() const {
+  return desktop_ios_promo_ != nullptr;
+}
+
+bool ManagePasswordPendingView::ShouldShowCloseButton() const {
+  return true;
 }
 
 void ManagePasswordPendingView::CreateAndSetLayout(bool show_password_label) {
@@ -208,23 +275,12 @@ void ManagePasswordPendingView::CreateAndSetLayout(bool show_password_label) {
   ManagePasswordsBubbleView::BuildCredentialRows(
       layout, username_field_, password_field, password_view_button_,
       show_password_label);
-  layout->AddPaddingRow(
-      0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
-
-  // Button row.
-  ManagePasswordsBubbleView::BuildColumnSet(
-      layout, ManagePasswordsBubbleView::DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRow(0, ManagePasswordsBubbleView::DOUBLE_BUTTON_COLUMN_SET);
-  layout->AddView(save_button_);
-  layout->AddView(never_button_);
 }
 
 void ManagePasswordPendingView::CreatePasswordField() {
-  const autofill::PasswordForm& password_form =
-      parent_->model()->pending_password();
+  const autofill::PasswordForm& password_form = model()->pending_password();
   if (password_form.all_possible_passwords.size() > 1 &&
-      parent_->model()->enable_editing()) {
+      model()->enable_editing()) {
     password_dropdown_ =
         CreatePasswordDropdownView(password_form, are_passwords_revealed_)
             .release();
@@ -238,7 +294,7 @@ void ManagePasswordPendingView::CreatePasswordField() {
 }
 
 void ManagePasswordPendingView::TogglePasswordVisibility() {
-  if (!are_passwords_revealed_ && !parent_->model()->RevealPasswords())
+  if (!are_passwords_revealed_ && !model()->RevealPasswords())
     return;
 
   UpdateUsernameAndPasswordInModel();
@@ -254,48 +310,57 @@ void ManagePasswordPendingView::TogglePasswordVisibility() {
 }
 
 void ManagePasswordPendingView::UpdateUsernameAndPasswordInModel() {
-  const bool username_editable = parent_->model()->enable_editing();
+  const bool username_editable = model()->enable_editing();
   const bool password_editable =
-      password_dropdown_ && parent_->model()->enable_editing();
+      password_dropdown_ && model()->enable_editing();
   if (!username_editable && !password_editable)
     return;
 
-  base::string16 new_username =
-      parent_->model()->pending_password().username_value;
-  base::string16 new_password =
-      parent_->model()->pending_password().password_value;
+  base::string16 new_username = model()->pending_password().username_value;
+  base::string16 new_password = model()->pending_password().password_value;
   if (username_editable) {
     new_username = static_cast<views::Textfield*>(username_field_)->text();
     base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
   if (password_editable) {
-    new_password =
-        parent_->model()->pending_password().all_possible_passwords.at(
-            password_dropdown_->selected_index());
+    new_password = model()->pending_password().all_possible_passwords.at(
+        password_dropdown_->selected_index());
   }
-  parent_->model()->OnCredentialEdited(new_username, new_password);
+  model()->OnCredentialEdited(new_username, new_password);
 }
 
 void ManagePasswordPendingView::ReplaceWithPromo() {
   RemoveAllChildViews(true);
-  parent_->initially_focused_view_ = NULL;
+  initially_focused_view_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  if (parent_->model()->state() ==
-      password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    AddChildView(new ManagePasswordSignInPromoView(parent_));
+  if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    sign_in_promo_ = new ManagePasswordSignInPromoView(model());
+    AddChildView(sign_in_promo_);
 #if defined(OS_WIN)
-  } else if (parent_->model()->state() ==
+  } else if (model()->state() ==
              password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
-    AddChildView(new DesktopIOSPromotionBubbleView(
-        parent_->model()->GetProfile(),
-        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE));
+    desktop_ios_promo_ = new DesktopIOSPromotionBubbleView(
+        model()->GetProfile(),
+        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
+    AddChildView(desktop_ios_promo_);
 #endif
   } else {
     NOTREACHED();
   }
-  parent_->GetWidget()->UpdateWindowIcon();
-  parent_->UpdateTitleText(
-      static_cast<views::StyledLabel*>(parent_->GetBubbleFrameView()->title()));
-  parent_->DialogModelChanged();
-  parent_->SizeToContents();
+  GetWidget()->UpdateWindowIcon();
+  UpdateTitleText(
+      static_cast<views::StyledLabel*>(GetBubbleFrameView()->title()));
+  DialogModelChanged();
+
+  SizeToContents();
+}
+
+void ManagePasswordPendingView::UpdateTitleText(
+    views::StyledLabel* title_view) {
+  title_view->SetText(GetWindowTitle());
+  if (!model()->title_brand_link_range().is_empty()) {
+    auto link_style = views::StyledLabel::RangeStyleInfo::CreateForLink();
+    link_style.disable_line_wrapping = false;
+    title_view->AddStyleRange(model()->title_brand_link_range(), link_style);
+  }
 }

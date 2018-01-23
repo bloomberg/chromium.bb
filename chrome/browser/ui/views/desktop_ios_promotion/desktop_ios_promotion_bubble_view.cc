@@ -15,9 +15,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace {
 // Returns the appropriate size for the promotion text label on the bubble.
@@ -42,61 +40,25 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
           std::make_unique<DesktopIOSPromotionBubbleController>(profile,
                                                                 this,
                                                                 entry_point)) {
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetBorder(views::CreateEmptyBorder(
-      0,
-      provider->GetInsetsMetric(views::INSETS_DIALOG).left() +
-          desktop_ios_promotion::GetPromoImage(
-              GetNativeTheme()->GetSystemColor(
-                  ui::NativeTheme::kColorId_TextfieldDefaultColor))
-              .width(),
-      0, 0));
-  send_sms_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-      this, l10n_util::GetStringUTF16(IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE));
-  no_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS));
-  constexpr int kLabelColumnSet = 1;
-  views::ColumnSet* column_set = layout->AddColumnSet(kLabelColumnSet);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                        views::GridLayout::USE_PREF, 0, 0);
-  constexpr int kDoubleButtonColumnSet = 2;
-  column_set = layout->AddColumnSet(kDoubleButtonColumnSet);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(
-      0,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(
+      views::CreateEmptyBorder(0,
+                               ChromeLayoutProvider::Get()
+                                       ->GetInsetsMetric(views::INSETS_DIALOG)
+                                       .left() +
+                                   GetWindowIcon().width(),
+                               0, 0));
+
   promotion_text_label_->SetEnabledColor(SK_ColorGRAY);
   promotion_text_label_->SetMultiLine(true);
   promotion_text_label_->SizeToFit(GetPromoBubbleTextLabelWidth(entry_point));
   promotion_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRow(0, kLabelColumnSet);
-  layout->AddView(promotion_text_label_);
-  layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  layout->StartRow(0, kDoubleButtonColumnSet);
-  layout->AddView(send_sms_button_);
-  layout->AddView(no_button_);
+  AddChildView(promotion_text_label_);
+
   promotion_controller_->OnPromotionShown();
 }
 
 DesktopIOSPromotionBubbleView::~DesktopIOSPromotionBubbleView() = default;
-
-void DesktopIOSPromotionBubbleView::ButtonPressed(views::Button* sender,
-                                                  const ui::Event& event) {
-  if (sender == send_sms_button_) {
-    promotion_controller_->OnSendSMSClicked();
-  } else if (sender == no_button_) {
-    promotion_controller_->OnNoThanksClicked();
-  } else {
-    NOTREACHED();
-  }
-  GetWidget()->Close();
-}
 
 void DesktopIOSPromotionBubbleView::UpdateRecoveryPhoneLabel() {
   std::string number = promotion_controller_->GetUsersRecoveryPhoneNumber();
@@ -110,4 +72,26 @@ void DesktopIOSPromotionBubbleView::UpdateRecoveryPhoneLabel() {
         widget->GetRootView()->GetHeightForWidth(old_bounds.width()));
     widget->SetBounds(old_bounds);
   }
+}
+
+bool DesktopIOSPromotionBubbleView::Accept() {
+  promotion_controller_->OnSendSMSClicked();
+  return true;
+}
+
+bool DesktopIOSPromotionBubbleView::Cancel() {
+  promotion_controller_->OnNoThanksClicked();
+  return true;
+}
+
+base::string16 DesktopIOSPromotionBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE
+                                       : IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS);
+}
+
+gfx::ImageSkia DesktopIOSPromotionBubbleView::GetWindowIcon() {
+  return desktop_ios_promotion::GetPromoImage(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -83,7 +84,7 @@ ManagePasswordsBubbleDelegateViewBase::CreateBubble(
     views::View* anchor_view,
     const gfx::Point& anchor_point,
     DisplayReason reason) {
-  ManagePasswordsBubbleDelegateViewBase* view;
+  ManagePasswordsBubbleDelegateViewBase* view = nullptr;
   password_manager::ui::State model_state =
       PasswordsModelDelegateFromWebContents(web_contents)->GetState();
   if (model_state == password_manager::ui::MANAGE_STATE) {
@@ -99,12 +100,11 @@ ManagePasswordsBubbleDelegateViewBase::CreateBubble(
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     view = new ManagePasswordUpdatePendingView(web_contents, anchor_view,
                                                anchor_point, reason);
-
-  } else {
-    // TODO(crbug.com/654115): Get rid of the one-bubble-for-everything
-    // BubbleView.
-    view = new ManagePasswordsBubbleView(web_contents, anchor_view,
+  } else if (model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
+    view = new ManagePasswordPendingView(web_contents, anchor_view,
                                          anchor_point, reason);
+  } else {
+    NOTREACHED();
   }
 
   g_manage_passwords_bubble_ = view;
