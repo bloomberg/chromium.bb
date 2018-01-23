@@ -27,7 +27,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
            gfx::BufferFormat::RG_88 == format_ ||
            gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
-           gfx::BufferFormat::UYVY_422 == format_);
+           gfx::BufferFormat::UYVY_422 == format_ ||
+           gfx::BufferFormat::BGRX_1010102 == format_);
     DCHECK(num_planes_ <= kMaxPlanes);
     for (int i = 0; i < static_cast<int>(num_planes_); ++i) {
       bytes_[i].resize(gfx::RowSizeForBufferFormat(size_.width(), format_, i) *

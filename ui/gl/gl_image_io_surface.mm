@@ -39,6 +39,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_RG:
     case GL_BGRA_EXT:
     case GL_RGB:
+    case GL_RGB10_A2_EXT:
     case GL_RGB_YCBCR_420V_CHROMIUM:
     case GL_RGB_YCBCR_422_CHROMIUM:
     case GL_RGBA:
