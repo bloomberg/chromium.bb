@@ -66,6 +66,7 @@ crbug.com/769942 svg/custom/clip-path-with-transform.svg [ Failure ]
 crbug.com/769942 svg/custom/focus-ring.svg [ Failure ]
 crbug.com/769942 svg/custom/image-with-transform-clip-filter.svg [ Failure ]
 crbug.com/769942 svg/custom/masking-clipping-hidpi.svg [ Failure ]
+crbug.com/769942 svg/custom/local-url-references.html [ Failure ]
 crbug.com/769942 svg/custom/recursive-clippath.svg [ Failure ]
 crbug.com/769942 svg/custom/text-clip.svg [ Failure ]
 crbug.com/769942 svg/custom/transformed-outlines.svg [ Failure ]
@@ -86,21 +87,16 @@ crbug.com/769942 virtual/exotic-color-space/images/color-profile-svg-foreign-obj
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
-# Reflection mask outset is clipped.
-crbug.com/771643 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
-# Incorrect painting of dragged image.
-crbug.com/771643 images/drag-image-transformed-parent.html [ Failure ]
-crbug.com/771643 virtual/exotic-color-space/images/drag-image-transformed-parent.html [ Failure ]
-crbug.com/771643 virtual/gpu-rasterization/images/drag-image-transformed-parent.html [ Failure ]
 # This will pass with --root-layer-scrolls.
 crbug.com/771643 scrollbars/custom-scrollbars-paint-outside-iframe.html [ Failure ]
 # A few (sub?)-pixels clipped off.
 crbug.com/771643 svg/as-background-image/svg-as-background-6.html [ Failure ]
 # Mask clip issue.
+crbug.com/771643 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
+crbug.com/771643 fast/reflections/reflection-masks.html [ Pass Failure ]
 crbug.com/771643 svg/batik/masking/maskRegions.svg [ Failure ]
 crbug.com/771643 svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ]
 # Incorect LocalBorderBoxProperties for absolute-pos under transformed table section. 
 crbug.com/771643 tables/table-transform-absolute-position-child.html [ Failure ]
 # Others.
-crbug.com/771643 svg/custom/local-url-references.html [ Failure ]
 crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
