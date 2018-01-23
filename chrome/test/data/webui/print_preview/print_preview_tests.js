@@ -820,7 +820,6 @@ cr.define('print_preview_test', function() {
           // display. There will be 2 preview requests. Since we only catch
           // the first one, only verify fit to page in print ticket.
           return nativeLayer.whenCalled('getPreview').then(function(args) {
-            console.log('args.printticket ' + args.printTicket);
             const updatedTicket = JSON.parse(args.printTicket);
             expectFalse(updatedTicket.fitToPageEnabled);
             expectFalse(fitToPageContainer.querySelector('.checkbox').checked);
