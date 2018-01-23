@@ -1,40 +1,33 @@
 # SPIR-V Headers
 
-This repository contains machine-readable files from the
+This repository contains machine-readable files for the
 [SPIR-V Registry](https://www.khronos.org/registry/spir-v/).
 This includes:
 
 * Header files for various languages.
-* JSON files describing the grammar for the SPIR-V core instruction set,
-  and for the GLSL.std.450 extended instruction set.
+* JSON files describing the grammar for the SPIR-V core instruction set
+  and the extended instruction sets.
 * The XML registry file.
+* A tool to build the headers from the JSON grammar.
 
-Under the [include](include) directory, header files are provided according to
-their own version.  Only major and minor version numbers count.
-For example, the headers for SPIR-V 1.1 are in
-[include/spirv/1.1](include/spirv/1.1).  Also, the headers for the 1.0 versions
-of the GLSL.std.450 and OpenCL extended instruction sets are in
-[include/spirv/1.0](include/spirv/1.0).
+Headers are provided in the [include](include) directory, with up-to-date
+headers in the `unified1` subdirectory. Older headers are provided according to
+their version.
 
 In contrast, the XML registry file has a linear history, so it is
 not tied to SPIR-V specification versions.
 
 ## How is this repository updated?
 
-When a new version or revision of the SPIR-V header files are published,
-the SPIR Working Group will push new commits onto master, updating
+When a new version or revision of the SPIR-V specification is published,
+the SPIR-V Working Group will push new commits onto master, updating
 the files under [include](include).
-A newer revision of a header file always replaces an older revision of
-the same version.  For example, verison 1.0 Rev 4 of `spirv.h` is placed in
-`include/spirv/1.0/spirv.h` and if there is a Rev 5, then it will be placed
-in the same location.
 
-The SPIR-V XML registry file is updated by the Khronos registrar whenever
-a new enum range is allocated.
+The SPIR-V XML registry file is updated by Khronos whenever a new enum range is allocated.
 
-In particular, pull requests that update header files will not be accepted.
-Issues with the header files should be filed in the [issue
-tracker](https://github.com/KhronosGroup/SPIRV-Headers/issues).
+Pull requests can be made to 
+- request allocation of new enum ranges in the XML registry file
+- reserve specific tokens in the JSON grammar
 
 ## How to install the headers
 
@@ -48,7 +41,7 @@ cmake --build . --target install-headers
 cmake --build . --config Debug --target install-headers
 ```
 
-Then, for example, you will have `/usr/local/include/spirv/1.0/spirv.h`
+Then, for example, you will have `/usr/local/include/spirv/unified1/spirv.h`
 
 If you want to install them somewhere else, then use
 `-DCMAKE_INSTALL_PREFIX=/other/path` on the first `cmake` command.
@@ -61,30 +54,40 @@ A CMake-based project can use the headers without installing, as follows:
 2. Use `${SPIRV-Headers_SOURCE_DIR}/include}` in a `target_include_directories`
    directive.
 3. In your C or C++ source code use `#include` directives that explicitly mention
-   the `spirv` path component.  For example the following uses SPIR-V 1.1
-   core instructions, and the 1.0 versions of the GLSL.std.450 and OpenCL
-   extended instructions.
+   the `spirv` path component.
 ```
-#include "spirv/1.0/GLSL.std.450.h"
-#include "spirv/1.0/OpenCL.std.h"
-#include "spirv/1.1/spirv.hpp"
+#include "spirv/unified1/GLSL.std.450.h"
+#include "spirv/unified1/OpenCL.std.h"
+#include "spirv/unified1/spirv.hpp"
 ```
 
 See also the [example](example/) subdirectory.  But since that example is
 *inside* this repostory, it doesn't use and `add_subdirectory` directive.
 
+## Generating the headers from the JSON grammar
+
+This will generally be done by Khronos, for a change to the JSON grammar.
+However, the project for the tool to do this is included in this repository,
+and can be used to test a PR, or even to include the results in the PR.
+This is not required though.
+
+The header-generation project is under the `buildHeaders` directory.
+Use CMake to build the project, in a `buildHeaders/build` subdirectory.
+There is a bash script at `buildHeaders/bin/makeHeaders` that shows how to use the built
+header-generator binary to generate the headers from the JSON grammar.
+
+Notes:
+- this generator is used in a broader context within Khronos to generate the specification,
+  and that influences the languages used, for legacy reasons
+- the C++ structures built may similarly include more than strictly necessary, for the same reason
+
 ## FAQ
 
 * *How are different versions published?*
 
-  All versions are present in the master branch of the repository.
-  They are located in different subdirectories under
-  [include/spirv](include/spirv), where the subdirectory at that
-  level encodes the major and minor version number of the relevant spec.
-
-  An application should consciously select the targeted spec version
-  number, by naming the specific version in its `#include` directives,
-  as above and in the examples.
+  The multiple versions of the headers have been simplified into a
+  single `unified1` view. The JSON grammar has a "version" field saying
+  what version things first showed up in.
 
 * *How do you handle the evolution of extended instruction sets?*
 
