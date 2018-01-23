@@ -203,11 +203,17 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
   switch (new_auto_enrollment_state) {
     case policy::AUTO_ENROLLMENT_STATE_IDLE:
     case policy::AUTO_ENROLLMENT_STATE_PENDING:
-    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return false;
+    case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
+      if (auto_enrollment_controller_->GetFRERequirement() !=
+          AutoEnrollmentController::EXPLICITLY_REQUIRED) {
+        return false;
+      }
+    // Fall to the same behavior like any connection error if the device is
+    // enrolled.
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
       ShowErrorScreen(NetworkError::ERROR_STATE_OFFLINE);
       return true;
@@ -255,7 +261,9 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
       return false;
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
-    // Server errors don't block OOBE.
+      // Server errors should block OOBE for enrolled devices.
+      return auto_enrollment_controller_->GetFRERequirement() !=
+             AutoEnrollmentController::EXPLICITLY_REQUIRED;
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
