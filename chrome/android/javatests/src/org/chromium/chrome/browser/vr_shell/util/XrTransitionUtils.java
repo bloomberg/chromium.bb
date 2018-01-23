@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.vr_shell.util;
 
-import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr_shell.VrTestFramework;
+import org.chromium.chrome.browser.vr_shell.XrTestFramework;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -20,18 +20,15 @@ import org.chromium.content.browser.ContentViewCore;
  * as opposed to NFC tag simulation which involves receiving an intent from
  * an outside application (VR Services).
  */
-public class VrTransitionUtils extends TransitionUtils {
+public class XrTransitionUtils extends TransitionUtils {
     /**
-     * Sends a click event directly to the WebGL canvas then waits for WebVR to
-     * think that it is presenting, failing if this does not occur within the
-     * allotted time.
-     *
-     * @param cvc The ContentViewCore for the tab the canvas is in.
+     * WebXR version of enterPresentationOrFail since the condition to check is different between
+     * the two APIs.
      */
     public static void enterPresentationOrFail(ContentViewCore cvc) {
         enterPresentation(cvc);
-        Assert.assertTrue(VrTestFramework.pollJavaScriptBoolean(
-                "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
+        Assert.assertTrue(XrTestFramework.pollJavaScriptBoolean(
+                "exclusiveSession != null", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
         Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 }

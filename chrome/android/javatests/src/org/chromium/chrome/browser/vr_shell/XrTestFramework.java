@@ -8,19 +8,19 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * Extension of TestFramework containing WebVR-specific functionality.
+ * Extension of TestFramework containing WebXR-specific functionality.
  */
-public class VrTestFramework extends TestFramework {
-    public VrTestFramework(ChromeActivityTestRule rule) {
+public class XrTestFramework extends TestFramework {
+    public XrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
     }
 
     /**
-     * Checks whether a VRDisplay was actually found.
+     * Checks whether an XRDevice was actually found.
      * @param webContents The WebContents to run the JavaScript through.
-     * @return Whether a VRDisplay was found.
+     * @return Whether an XRDevice was found.
      */
-    public static boolean vrDisplayFound(WebContents webContents) {
-        return !runJavaScriptOrFail("vrDisplay", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
+    public static boolean xrDeviceFound(WebContents webContents) {
+        return !runJavaScriptOrFail("xrDevice", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
     }
 }
