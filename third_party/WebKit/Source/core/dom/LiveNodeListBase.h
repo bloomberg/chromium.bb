@@ -76,8 +76,6 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
   static bool ShouldInvalidateTypeOnAttributeChange(NodeListInvalidationType,
                                                     const QualifiedName&);
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(owner_node_); }
-
  protected:
   Document& GetDocument() const { return owner_node_->GetDocument(); }
 
@@ -99,6 +97,8 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
       unsigned offset,
       unsigned& current_offset,
       MatchFunc);
+
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(owner_node_); }
 
  private:
   Member<ContainerNode> owner_node_;  // Cannot be null.

@@ -224,8 +224,8 @@ class TraceTrait {
   static HeapObjectHeader* GetHeapObjectHeader(const void*);
 
   template <typename VisitorDispatcher>
-  static void Mark(VisitorDispatcher visitor, const void* t) {
-    AdjustAndMarkTrait<T>::Mark(visitor, reinterpret_cast<const T*>(t));
+  static void Mark(VisitorDispatcher visitor, const T* t) {
+    AdjustAndMarkTrait<T>::Mark(visitor, t);
   }
 
  private:
@@ -318,8 +318,7 @@ class TraceTrait<std::pair<T, U>> {
   static const bool kFirstIsTraceable = WTF::IsTraceable<T>::value;
   static const bool kSecondIsTraceable = WTF::IsTraceable<U>::value;
   template <typename VisitorDispatcher>
-  static void Trace(VisitorDispatcher visitor, void* self) {
-    std::pair<T, U>* pair = reinterpret_cast<std::pair<T, U>*>(self);
+  static void Trace(VisitorDispatcher visitor, std::pair<T, U>* pair) {
     TraceIfEnabled<T, kFirstIsTraceable>::Trace(visitor, pair->first);
     TraceIfEnabled<U, kSecondIsTraceable>::Trace(visitor, pair->second);
   }

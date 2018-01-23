@@ -68,47 +68,6 @@ struct TraceMethodDelegate {
   }
 };
 
-using MarkCallback = void (*)(Visitor*, const void*);
-using HandleWeakCellCallback = void (*)(Visitor*, void*);
-
-struct HeapObjectDescriptor {
-  STACK_ALLOCATED();
-  TraceCallback trace;
-  MarkCallback mark;
-};
-
-struct WeakHeapObjectDescriptor {
-  STACK_ALLOCATED();
-  TraceCallback trace;
-  void** cell;
-  HandleWeakCellCallback handle_weak_cell;
-};
-
-// TODO(mlippautz): Rename ObjectVisitor->Visitor and Visitor->MarkingVisitor.
-// This way there is no need to adjust signatures of Trace calls.
-class PLATFORM_EXPORT ObjectVisitor {
- public:
-  // TODO(mlippautz): Move Trace methods here.
-
- protected:
-  // Object visitation interface.
-  virtual void Visit(void*, const HeapObjectDescriptor&) = 0;
-  virtual void Visit(void*, const WeakHeapObjectDescriptor&) = 0;
-
-  // Helper method to invoke virtual Visit method with object descriptor.
-  // TODO(mlippautz): Should stay private once Trace methods move to this class.
-  template <typename T>
-  void VisitHelper(const T* object) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-    if (!object)
-      return;
-    HeapObjectDescriptor descriptor{TraceTrait<T>::Trace, TraceTrait<T>::Mark};
-    Visit(const_cast<void*>(reinterpret_cast<const void*>(object)), descriptor);
-  }
-};
-
 // Visitor is used to traverse the Blink object graph. Used for the
 // marking phase of the mark-sweep garbage collector.
 //
@@ -118,7 +77,7 @@ class PLATFORM_EXPORT ObjectVisitor {
 // Pointers within objects are traced by calling the |trace| methods
 // with the object as an argument. Tracing objects will mark all of the
 // contained pointers and push them on the marking stack.
-class PLATFORM_EXPORT Visitor : public ObjectVisitor {
+class PLATFORM_EXPORT Visitor {
  public:
   enum MarkingMode {
     // This is a default visitor. This is used for GCType=GCWithSweep
@@ -144,38 +103,51 @@ class PLATFORM_EXPORT Visitor : public ObjectVisitor {
   Visitor(ThreadState*, MarkingMode);
   virtual ~Visitor();
 
+  // One-argument templated mark method. This uses the static type of
+  // the argument to get the TraceTrait. By default, the mark method
+  // of the TraceTrait just calls the virtual two-argument mark method on this
+  // visitor, where the second argument is the static trace method of the trait.
+  template <typename T>
+  void Mark(T* t) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    if (!t)
+      return;
+    TraceTrait<T>::Mark(this, t);
+  }
+
   // Member version of the one-argument templated trace method.
   template <typename T>
   void Trace(const Member<T>& t) {
-    VisitHelper(t.Get());
+    Mark(t.Get());
   }
 
   template <typename T>
   void Trace(const TraceWrapperMember<T>& t) {
-    VisitHelper(t.Get());
+    Trace(*(static_cast<const Member<T>*>(&t)));
   }
 
   template <typename T>
   void Trace(const SameThreadCheckedMember<T>& t) {
-    VisitHelper(t.Get());
+    Trace(*(static_cast<const Member<T>*>(&t)));
   }
 
   // Only called from automatically generated bindings code.
   template <typename T>
   void TraceFromGeneratedCode(const T* t) {
-    VisitHelper(t);
+    Mark(const_cast<T*>(t));
   }
 
-  // Fallback methods used only when we need to trace raw pointers of T. This is
-  // the case when a member is a union where we do not support members.
+  // Fallback method used only when we need to trace raw pointers of T.
+  // This is the case when a member is a union where we do not support members.
   template <typename T>
   void Trace(const T* t) {
-    VisitHelper(t);
+    Mark(const_cast<T*>(t));
   }
-
   template <typename T>
   void Trace(T* t) {
-    VisitHelper(t);
+    Mark(t);
   }
 
   // WeakMember version of the templated trace method. It doesn't keep
@@ -189,14 +161,13 @@ class PLATFORM_EXPORT Visitor : public ObjectVisitor {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
-    WeakHeapObjectDescriptor descriptor{
-        TraceTrait<T>::Trace,
-        reinterpret_cast<void**>(
-            const_cast<typename std::remove_const<T>::type**>(t.Cell())),
-        &HandleWeakCell<T>};
-    Visit(reinterpret_cast<void*>(
-              const_cast<typename std::remove_const<T>::type*>(t.Get())),
-          descriptor);
+    RegisterWeakCell(const_cast<WeakMember<T>&>(t).Cell());
+  }
+
+  template <typename T>
+  void TraceInCollection(T& t,
+                         WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+    HashTraits<T>::TraceInCollection(this, t, strongify);
   }
 
   // Fallback trace method for part objects to allow individual trace methods
@@ -215,21 +186,7 @@ class PLATFORM_EXPORT Visitor : public ObjectVisitor {
       if (!vtable)
         return;
     }
-    TraceTrait<T>::Trace(this, reinterpret_cast<void*>(&const_cast<T&>(t)));
-  }
-
-  // One-argument templated mark method. This uses the static type of
-  // the argument to get the TraceTrait. By default, the mark method
-  // of the TraceTrait just calls the virtual two-argument mark method on this
-  // visitor, where the second argument is the static trace method of the trait.
-  template <typename T>
-  void Mark(T* t) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-    if (!t)
-      return;
-    TraceTrait<T>::Mark(this, t);
+    TraceTrait<T>::Trace(this, &const_cast<T&>(t));
   }
 
   // For simple cases where you just want to zero out a cell when the thing
@@ -320,19 +277,9 @@ class PLATFORM_EXPORT Visitor : public ObjectVisitor {
 
   inline MarkingMode GetMarkingMode() const { return marking_mode_; }
 
- protected:
-  // Object visitation for marking visitor.
-  void Visit(void* object, const HeapObjectDescriptor& descriptor) final {
-    descriptor.mark(this, object);
-  }
-
-  void Visit(void* object, const WeakHeapObjectDescriptor& descriptor) final {
-    RegisterWeakCallback(descriptor.cell, descriptor.handle_weak_cell);
-  }
-
  private:
   template <typename T>
-  static void HandleWeakCell(Visitor*, void*);
+  static void HandleWeakCell(Visitor* self, void*);
 
   static void MarkNoTracingCallback(Visitor*, void*);
 
