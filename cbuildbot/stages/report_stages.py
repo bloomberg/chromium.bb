@@ -1047,7 +1047,7 @@ class ReportStage(generic_stages.BuilderStage,
               fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
       if config_lib.IsMasterCQ(self._run.config):
-        logging.PrintBuildbotStepText(risk_report.CLRiskText(build_id))
+        self._RunRiskReport()
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
             constants.SELF_DESTRUCTED_BUILD, False)
         mon_fields = {'status': status_for_db,
@@ -1062,6 +1062,13 @@ class ReportStage(generic_stages.BuilderStage,
 
       # Dump report about things we retry.
       retry_stats.ReportStats(sys.stdout)
+
+  def _RunRiskReport(self):
+    """Fetches the CL-Scanner risk report and prints step text and links."""
+    build_id, _ = self._run.GetCIDBHandle()
+    report = risk_report.GetCLRiskReport(build_id)
+    for link_text, url in sorted(report.iteritems()):
+      logging.PrintBuildbotLink(link_text, url)
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.

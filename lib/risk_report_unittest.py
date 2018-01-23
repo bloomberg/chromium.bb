@@ -23,30 +23,34 @@ class RiskReportTest(cros_test_lib.MockTestCase):
 
   def testMissing(self):
     self.risks = {}
-    self.assertEqual(
-        risk_report.CLRiskText(42),
-        '')
+    self.assertEqual(risk_report.GetCLRiskReport(42), {})
 
   def testSingle(self):
     self.risks = {1: 0.0}
-    self.assertEqual(
-        risk_report.CLRiskText(42),
-        'CL-Scanner risks: 1=0.0%')
+    self.assertEqual(risk_report.GetCLRiskReport(42), {
+        '1 = 0.0%': 'http://crrev.com/c/1'
+    })
 
   def testMultipleBelow(self):
     self.risks = {1: 0.05, 2: 0.03, 3: 0.01}
-    self.assertEqual(
-        risk_report.CLRiskText(42),
-        'CL-Scanner risks: 1=5.0%')
+    self.assertEqual(risk_report.GetCLRiskReport(42), {
+        '1 = 5.0%': 'http://crrev.com/c/1'
+    })
 
-  def testMultipleAbove(self):
-    self.risks = {1: 0.5, 2: 0.4999, 3: 0.4998}
-    self.assertEqual(
-        risk_report.CLRiskText(42),
-        'CL-Scanner risks: 1=50.0%, 2=50.0%, 3=50.0%')
+  def testMultipleAboveAndSomeBelow(self):
+    # Anything below the 10% threshold won't be displayed so long as there are
+    # other CLs whose risk is above the threshold.
+    self.risks = {1: 0.5, 2: 0.4999, 3: 0.4998, 4: 0.01}
+    self.assertEqual(risk_report.GetCLRiskReport(42), {
+        '1 = 50.0%': 'http://crrev.com/c/1',
+        '2 = 50.0%': 'http://crrev.com/c/2',
+        '3 = 50.0%': 'http://crrev.com/c/3'
+    })
 
   def testWithinSmallPercentOfTop(self):
     self.risks = {1: 0.05, 2: 0.0499, 3: 0.0498}
-    self.assertEqual(
-        risk_report.CLRiskText(42),
-        'CL-Scanner risks: 1=5.0%, 2=5.0%, 3=5.0%')
+    self.assertEqual(risk_report.GetCLRiskReport(42), {
+        '1 = 5.0%': 'http://crrev.com/c/1',
+        '2 = 5.0%': 'http://crrev.com/c/2',
+        '3 = 5.0%': 'http://crrev.com/c/3'
+    })
