@@ -386,6 +386,13 @@ Polymer({
   },
 
   /** @private */
+  connectIfConfigured_: function() {
+    if (!this.isConfigured_)
+      return;
+    this.saveOrConnect();
+  },
+
+  /** @private */
   close_: function() {
     this.fire('close');
   },
