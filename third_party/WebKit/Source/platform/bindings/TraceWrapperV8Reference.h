@@ -5,7 +5,7 @@
 #ifndef TraceWrapperV8Reference_h
 #define TraceWrapperV8Reference_h
 
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 
 namespace blink {
 

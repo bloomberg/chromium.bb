@@ -6,7 +6,7 @@
 
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8PerIsolateData.h"
 

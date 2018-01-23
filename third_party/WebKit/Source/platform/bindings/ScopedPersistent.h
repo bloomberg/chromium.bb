@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "v8/include/v8.h"

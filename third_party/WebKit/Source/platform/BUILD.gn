@@ -553,6 +553,8 @@ jumbo_component("platform") {
     "bindings/ScriptState.h",
     "bindings/ScriptWrappable.cpp",
     "bindings/ScriptWrappable.h",
+    "bindings/ScriptWrappableMarkingVisitor.cpp",
+    "bindings/ScriptWrappableMarkingVisitor.h",
     "bindings/ScriptWrappableVisitor.cpp",
     "bindings/ScriptWrappableVisitor.h",
     "bindings/ScriptWrappableVisitorVerifier.h",
