@@ -193,13 +193,7 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
 }
 
 // Note: This test is currently skipped on Android. See http://crbug.com/139398
-// Disabled on Mac for the typesetter migration. http://crbug.com/803354.
-#if defined(OS_MACOSX)
-#define MAYBE_InterruptTooltip DISABLED_InterruptTooltip
-#else
-#define MAYBE_InterruptTooltip InterruptTooltip
-#endif
-TEST_F(DownloadItemModelTest, MAYBE_InterruptTooltip) {
+TEST_F(DownloadItemModelTest, InterruptTooltip) {
   // Test that we have the correct interrupt tooltip for downloads that are in
   // the INTERRUPTED state.
   const struct TestCase {
@@ -298,7 +292,9 @@ TEST_F(DownloadItemModelTest, MAYBE_InterruptTooltip) {
     for (const base::string16& line :
          base::SplitString(truncated_tooltip, base::ASCIIToUTF16("\n"),
                            base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
-      EXPECT_GE(kSmallTooltipWidth, gfx::GetStringWidth(line, font_list));
+      // Tooltips are always typeset with the native typesetter.
+      EXPECT_GE(kSmallTooltipWidth,
+                gfx::GetStringWidth(line, font_list, gfx::Typesetter::NATIVE));
   }
 }
 
