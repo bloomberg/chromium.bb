@@ -5,6 +5,8 @@
 #ifndef PDF_PDF_H_
 #define PDF_PDF_H_
 
+#include "build/build_config.h"
+#include "pdf/pdf_export.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/cpp/module.h"
 
@@ -30,10 +32,10 @@ class PDFModule : public pp::Module {
   pp::Instance* CreateInstance(PP_Instance instance) override;
 };
 
-int PPP_InitializeModule(PP_Module module_id,
-                         PPB_GetInterface get_browser_interface);
-void PPP_ShutdownModule();
-const void* PPP_GetInterface(const char* interface_name);
+PDF_EXPORT int PPP_InitializeModule(PP_Module module_id,
+                                    PPB_GetInterface get_browser_interface);
+PDF_EXPORT void PPP_ShutdownModule();
+PDF_EXPORT const void* PPP_GetInterface(const char* interface_name);
 
 #if defined(OS_WIN)
 // Printing modes - type to convert PDF to for printing
@@ -71,35 +73,35 @@ enum PrintingMode {
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
 // Returns false if the document or the page number are not valid.
-bool RenderPDFPageToDC(const void* pdf_buffer,
-                       int buffer_size,
-                       int page_number,
-                       HDC dc,
-                       int dpi,
-                       int bounds_origin_x,
-                       int bounds_origin_y,
-                       int bounds_width,
-                       int bounds_height,
-                       bool fit_to_bounds,
-                       bool stretch_to_bounds,
-                       bool keep_aspect_ratio,
-                       bool center_in_bounds,
-                       bool autorotate);
+PDF_EXPORT bool RenderPDFPageToDC(const void* pdf_buffer,
+                                  int buffer_size,
+                                  int page_number,
+                                  HDC dc,
+                                  int dpi,
+                                  int bounds_origin_x,
+                                  int bounds_origin_y,
+                                  int bounds_width,
+                                  int bounds_height,
+                                  bool fit_to_bounds,
+                                  bool stretch_to_bounds,
+                                  bool keep_aspect_ratio,
+                                  bool center_in_bounds,
+                                  bool autorotate);
 
-void SetPDFEnsureTypefaceCharactersAccessible(
+PDF_EXPORT void SetPDFEnsureTypefaceCharactersAccessible(
     PDFEnsureTypefaceCharactersAccessible func);
 
-void SetPDFUseGDIPrinting(bool enable);
+PDF_EXPORT void SetPDFUseGDIPrinting(bool enable);
 
-void SetPDFUsePrintMode(int mode);
+PDF_EXPORT void SetPDFUsePrintMode(int mode);
 #endif  // defined(OS_WIN)
 
 // |page_count| and |max_page_width| are optional and can be NULL.
 // Returns false if the document is not valid.
-bool GetPDFDocInfo(const void* pdf_buffer,
-                   int buffer_size,
-                   int* page_count,
-                   double* max_page_width);
+PDF_EXPORT bool GetPDFDocInfo(const void* pdf_buffer,
+                              int buffer_size,
+                              int* page_count,
+                              double* max_page_width);
 
 // Gets the dimensions of a specific page in a document.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
@@ -110,11 +112,11 @@ bool GetPDFDocInfo(const void* pdf_buffer,
 // |width| is the output for the width of the page in points.
 // |height| is the output for the height of the page in points.
 // Returns false if the document or the page number are not valid.
-bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                           int pdf_buffer_size,
-                           int page_number,
-                           double* width,
-                           double* height);
+PDF_EXPORT bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                                      int pdf_buffer_size,
+                                      int page_number,
+                                      double* width,
+                                      double* height);
 
 // Renders PDF page into 4-byte per pixel BGRA color bitmap.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
@@ -128,14 +130,14 @@ bool GetPDFPageSizeByIndex(const void* pdf_buffer,
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
 // Returns false if the document or the page number are not valid.
-bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                           int pdf_buffer_size,
-                           int page_number,
-                           void* bitmap_buffer,
-                           int bitmap_width,
-                           int bitmap_height,
-                           int dpi,
-                           bool autorotate);
+PDF_EXPORT bool RenderPDFPageToBitmap(const void* pdf_buffer,
+                                      int pdf_buffer_size,
+                                      int page_number,
+                                      void* bitmap_buffer,
+                                      int bitmap_width,
+                                      int bitmap_height,
+                                      int dpi,
+                                      bool autorotate);
 
 }  // namespace chrome_pdf
 

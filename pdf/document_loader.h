@@ -15,18 +15,19 @@
 #include <vector>
 
 #include "pdf/chunk_stream.h"
+#include "pdf/pdf_export.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace chrome_pdf {
 
 class URLLoaderWrapper;
 
-class DocumentLoader {
+class PDF_EXPORT DocumentLoader {
  public:
   // Number was chosen in crbug.com/78264#c8
   static constexpr uint32_t kDefaultRequestSize = 65536;
 
-  class Client {
+  class PDF_EXPORT Client {
    public:
     virtual ~Client();
 
