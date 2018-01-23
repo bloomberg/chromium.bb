@@ -39,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -835,10 +836,12 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
 
   // ContentBrowserClient overrides.
   void RenderProcessWillLaunch(
-      content::RenderProcessHost* process_host) override {
+      content::RenderProcessHost* process_host,
+      service_manager::mojom::ServiceRequest* service_request) override {
     filters_.push_back(new TestSpellCheckMessageFilter(process_host));
     process_host->AddFilter(filters_.back().get());
-    ChromeContentBrowserClient::RenderProcessWillLaunch(process_host);
+    ChromeContentBrowserClient::RenderProcessWillLaunch(process_host,
+                                                        service_request);
   }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -881,8 +884,11 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   void BindSpellCheckHostRequest(
       spellcheck::mojom::SpellCheckHostRequest request,
       const service_manager::BindSourceInfo& source_info) {
+    service_manager::Identity renderer_identity(
+        content::mojom::kRendererServiceName, source_info.identity.user_id(),
+        source_info.identity.instance());
     content::RenderProcessHost* host =
-        content::RenderProcessHost::FromRendererIdentity(source_info.identity);
+        content::RenderProcessHost::FromRendererIdentity(renderer_identity);
     scoped_refptr<TestSpellCheckMessageFilter> filter =
         GetSpellCheckMessageFilterForProcess(host);
     CHECK(filter);

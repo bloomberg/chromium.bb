@@ -49,19 +49,18 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
     // Allows caller to specify a callback to bind requests for |interface_name|
     // from |service_name| locally, rather than passing the request through the
     // Service Manager.
-    void OverrideBinderForTesting(const std::string& service_name,
+    void OverrideBinderForTesting(const service_manager::Identity& identity,
                                   const std::string& interface_name,
                                   const Binder& binder) {
-      connector_->OverrideBinderForTesting(service_name, interface_name,
-                                           binder);
+      connector_->OverrideBinderForTesting(identity, interface_name, binder);
     }
-    bool HasBinderOverride(const std::string& service_name,
+    bool HasBinderOverride(const service_manager::Identity& identity,
                            const std::string& interface_name) {
-      return connector_->HasBinderOverride(service_name, interface_name);
+      return connector_->HasBinderOverride(identity, interface_name);
     }
-    void ClearBinderOverride(const std::string& service_name,
+    void ClearBinderOverride(const service_manager::Identity& identity,
                              const std::string& interface_name) {
-      connector_->ClearBinderOverride(service_name, interface_name);
+      connector_->ClearBinderOverride(identity, interface_name);
     }
     void ClearBinderOverrides() { connector_->ClearBinderOverrides(); }
 
@@ -149,12 +148,12 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
 
   void OnConnectionError();
 
-  void OverrideBinderForTesting(const std::string& service_name,
+  void OverrideBinderForTesting(const service_manager::Identity& identity,
                                 const std::string& interface_name,
                                 const TestApi::Binder& binder);
-  bool HasBinderOverride(const std::string& service_name,
+  bool HasBinderOverride(const service_manager::Identity& identity,
                          const std::string& interface_name);
-  void ClearBinderOverride(const std::string& service_name,
+  void ClearBinderOverride(const service_manager::Identity& identity,
                            const std::string& interface_name);
   void ClearBinderOverrides();
   void SetStartServiceCallback(const StartServiceCallback& callback);
@@ -171,7 +170,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::map<std::string, BinderOverrideMap> local_binder_overrides_;
+  std::map<service_manager::Identity, BinderOverrideMap>
+      local_binder_overrides_;
   StartServiceCallback start_service_callback_;
 
   base::WeakPtrFactory<Connector> weak_factory_;

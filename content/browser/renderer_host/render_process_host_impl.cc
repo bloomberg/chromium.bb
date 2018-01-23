@@ -1480,7 +1480,13 @@ bool RenderProcessHostImpl::Init() {
   channel_->Unpause(false /* flush */);
 
   // Call the embedder first so that their IPC filters have priority.
-  GetContentClient()->browser()->RenderProcessWillLaunch(this);
+  service_manager::mojom::ServiceRequest service_request;
+  GetContentClient()->browser()->RenderProcessWillLaunch(this,
+                                                         &service_request);
+  if (service_request.is_pending()) {
+    GetRendererInterface()->CreateEmbedderRendererService(
+        std::move(service_request));
+  }
 
 #if !defined(OS_MACOSX)
   // Intentionally delay the hang monitor creation after the first renderer

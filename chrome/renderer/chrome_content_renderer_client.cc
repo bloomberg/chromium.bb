@@ -111,6 +111,7 @@
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -270,30 +271,6 @@ void AppendParams(
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-class SpellCheckReplacer : public content::RenderFrameVisitor {
- public:
-  explicit SpellCheckReplacer(SpellCheck* spellcheck)
-      : spellcheck_(spellcheck) {}
-  ~SpellCheckReplacer() override;
-  bool Visit(content::RenderFrame* render_frame) override;
-
- private:
-  // New shared spellcheck for all frames. Weak Ptr.
-  SpellCheck* const spellcheck_;
-  DISALLOW_COPY_AND_ASSIGN(SpellCheckReplacer);
-};
-
-bool SpellCheckReplacer::Visit(content::RenderFrame* render_frame) {
-  SpellCheckProvider* provider = SpellCheckProvider::Get(render_frame);
-  DCHECK(provider);
-  provider->set_spellcheck(spellcheck_);
-  return true;
-}
-
-SpellCheckReplacer::~SpellCheckReplacer() = default;
-#endif
-
 bool IsStandaloneExtensionProcess() {
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
@@ -404,8 +381,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    thread->GetConnector()->BindInterface(chrome::mojom::kServiceName,
-                                          &startup_metric_host);
+    GetConnector()->BindInterface(chrome::mojom::kServiceName,
+                                  &startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
@@ -441,12 +418,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  // ChromeRenderViewTest::SetUp() creates a Spellcheck and injects it using
-  // SetSpellcheck(). Don't overwrite it.
-  if (!spellcheck_) {
-    spellcheck_.reset(new SpellCheck(this));
-    thread->AddObserver(spellcheck_.get());
-  }
+  if (!spellcheck_)
+    InitSpellCheck();
 #endif
 #if defined(FULL_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
@@ -1062,10 +1035,24 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
+void ChromeContentRendererClient::OnStart() {
+  context()->connector()->BindConnectorRequest(std::move(connector_request_));
+}
+
+void ChromeContentRendererClient::OnBindInterface(
+    const service_manager::BindSourceInfo& remote_info,
+    const std::string& name,
+    mojo::ScopedMessagePipeHandle handle) {
+  registry_.TryBindInterface(name, &handle);
+}
+
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  RenderThread::Get()->GetConnector()->BindInterface(
+  // In some tests, this may not be configured.
+  if (!connector_)
+    return;
+  connector_->BindInterface(
       service_manager::Identity(chrome::mojom::kServiceName), interface_name,
       std::move(interface_pipe));
 }
@@ -1361,19 +1348,6 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
   return true;
 }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
-  RenderThread* thread = RenderThread::Get();
-  if (spellcheck_.get() && thread)
-    thread->RemoveObserver(spellcheck_.get());
-  spellcheck_.reset(spellcheck);
-  SpellCheckReplacer replacer(spellcheck_.get());
-  content::RenderFrame::ForEach(&replacer);
-  if (thread)
-    thread->AddObserver(spellcheck_.get());
-}
-#endif
-
 bool ChromeContentRendererClient::IsExternalPepperPlugin(
     const std::string& module_name) {
   // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
@@ -1389,6 +1363,12 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
   const extensions::ExtensionSet* extension_set =
       extensions::RendererExtensionRegistry::Get()->GetMainThreadExtensionSet();
   return ::IsExtensionOrSharedModuleWhitelisted(url, extension_set, whitelist);
+}
+#endif
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+void ChromeContentRendererClient::InitSpellCheck() {
+  spellcheck_ = std::make_unique<SpellCheck>(&registry_, this);
 }
 #endif
 
@@ -1711,6 +1691,19 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
       "more information.",
       url::Origin::Create(url).Serialize().c_str(), in_future_string);
   return true;
+}
+
+void ChromeContentRendererClient::CreateRendererService(
+    service_manager::mojom::ServiceRequest service_request) {
+  service_context_ = std::make_unique<service_manager::ServiceContext>(
+      std::make_unique<service_manager::ForwardingService>(this),
+      std::move(service_request));
+}
+
+service_manager::Connector* ChromeContentRendererClient::GetConnector() {
+  if (!connector_)
+    connector_ = service_manager::Connector::Create(&connector_request_);
+  return connector_.get();
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>

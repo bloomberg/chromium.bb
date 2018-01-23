@@ -7,12 +7,8 @@
         "browser": [
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::SearchBouncer",
-          "spellcheck::mojom::SpellChecker",
           "profiling::mojom::ProfilingClient"
         ]
-      },
-      "requires": {
-        "chrome": [ "renderer" ]
       }
     },
     "navigation:frame": {

@@ -38,3 +38,6 @@ per-file chrome_exe_main_mac.cc=mark@chromium.org
 
 per-file chrome_manifest.json=set noparent
 per-file chrome_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_renderer_manifest.json=set noparent
+per-file chrome_renderer_manifest.json=file://ipc/SECURITY_OWNERS

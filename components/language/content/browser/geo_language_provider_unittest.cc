@@ -93,7 +93,7 @@ class GeoLanguageProviderTest : public testing::Test {
     connector_ = service_manager::Connector::Create(&request);
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
-        device::mojom::kServiceName,
+        service_manager::Identity(device::mojom::kServiceName),
         device::mojom::PublicIpAddressGeolocationProvider::Name_,
         base::BindRepeating(&MockIpGeoLocationProvider::Bind,
                             base::Unretained(&mock_ip_geo_location_provider_)));
