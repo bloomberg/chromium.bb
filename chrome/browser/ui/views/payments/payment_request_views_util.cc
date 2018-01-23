@@ -179,13 +179,12 @@ int GetActualDialogWidth() {
   return actual_width;
 }
 
-std::unique_ptr<views::View> CreateSheetHeaderView(
-    bool show_back_arrow,
-    const base::string16& title,
-    views::ButtonListener* listener) {
-  std::unique_ptr<views::View> container = std::make_unique<views::View>();
+void PopulateSheetHeaderView(bool show_back_arrow,
+                             std::unique_ptr<views::View> header_content_view,
+                             views::ButtonListener* listener,
+                             views::View* container) {
   views::GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container.get()));
+      std::make_unique<views::GridLayout>(container));
 
   constexpr int kHeaderTopVerticalInset = 14;
   constexpr int kHeaderBottomVerticalInset = 8;
@@ -223,14 +222,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     layout->AddView(back_arrow);
   }
 
-  views::Label* title_label =
-      new views::Label(title, views::style::CONTEXT_DIALOG_TITLE);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
-  title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  layout->AddView(title_label);
-
-  return container;
+  layout->AddView(header_content_view.release());
 }
 
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(
