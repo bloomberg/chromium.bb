@@ -35,6 +35,7 @@ function onRequestSession() {
 }
 
 function onSessionStarted(session) {
+  session.addEventListener('end', onSessionEnded);
   // Initialize the WebGL context for use with XR if it hasn't been already
   if (!gl) {
     glAttribs['compatibleXrDevice'] = session.device;
