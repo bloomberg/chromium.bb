@@ -38,6 +38,11 @@ static void MakeAsyncCopyRequest(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
+  if (!window->GetCompositor()) {
+    std::move(callback).Run(std::make_unique<viz::CopyOutputResult>(
+        viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP, gfx::Rect()));
+    return;
+  }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
