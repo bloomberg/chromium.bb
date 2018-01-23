@@ -658,6 +658,7 @@ test("chromeos_unittests") {
     "audio/audio_devices_pref_handler_impl_unittest.cc",
     "audio/cras_audio_handler_unittest.cc",
     "cert_loader_unittest.cc",
+    "cryptohome/cryptohome_util_unittest.cc",
     "cryptohome/homedir_methods_unittest.cc",
     "cryptohome/system_salt_getter_unittest.cc",
     "dbus/biod/biod_client_unittest.cc",
