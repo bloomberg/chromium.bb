@@ -47,6 +47,7 @@ NavigationItemImpl::NavigationItemImpl()
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
+      error_retry_state_(ErrorRetryState::kNoNavigationError),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
       is_unsafe_(false) {}
 
@@ -74,6 +75,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       should_skip_repost_form_confirmation_(
           item.should_skip_repost_form_confirmation_),
       post_data_([item.post_data_ copy]),
+      error_retry_state_(item.error_retry_state_),
       navigation_initiation_type_(item.navigation_initiation_type_),
       is_unsafe_(item.is_unsafe_),
       cached_display_title_(item.cached_display_title_) {}
@@ -285,6 +287,40 @@ void NavigationItemImpl::ResetForCommit() {
   // Navigation initiation type is only valid for pending navigations, thus
   // always reset to NONE after the item is committed.
   SetNavigationInitiationType(web::NavigationInitiationType::NONE);
+}
+
+void NavigationItemImpl::SetErrorRetryState(ErrorRetryState state) {
+  switch (state) {
+    case ErrorRetryState::kNoNavigationError:
+      DCHECK_EQ(ErrorRetryState::kRetryFailedNavigationItem,
+                error_retry_state_);
+      break;
+    case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
+      DCHECK(error_retry_state_ == ErrorRetryState::kNoNavigationError ||
+             error_retry_state_ == ErrorRetryState::kRetryFailedNavigationItem)
+          << "Got unexpected state: " << static_cast<int>(error_retry_state_);
+      break;
+    case ErrorRetryState::kDisplayingErrorForFailedNavigation:
+      DCHECK_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+                error_retry_state_);
+      break;
+    case ErrorRetryState::kNavigatingToFailedNavigationItem:
+      DCHECK_EQ(ErrorRetryState::kDisplayingErrorForFailedNavigation,
+                error_retry_state_);
+      break;
+    case ErrorRetryState::kRetryFailedNavigationItem:
+      DCHECK_EQ(ErrorRetryState::kNavigatingToFailedNavigationItem,
+                error_retry_state_);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  error_retry_state_ = state;
+}
+
+ErrorRetryState NavigationItemImpl::GetErrorRetryState() const {
+  return error_retry_state_;
 }
 
 // static

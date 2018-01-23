@@ -20,8 +20,6 @@ source_set("navigation") {
   sources = [
     "crw_navigation_item_holder.h",
     "crw_navigation_item_holder.mm",
-    "crw_placeholder_navigation_info.h",
-    "crw_placeholder_navigation_info.mm",
     "crw_session_controller+private_constructors.h",
     "crw_session_controller.h",
     "crw_session_controller.mm",
