@@ -45,8 +45,10 @@ Polymer({
    * @private
    */
   onAndroidAppsInfoUpdate_: function() {
-    if (!this.androidAppsInfo.playStoreEnabled)
+    if (!this.androidAppsInfo.playStoreEnabled &&
+        settings.getCurrentRoute() == settings.routes.ANDROID_APPS_DETAILS) {
       settings.navigateToPreviousRoute();
+    }
   },
 
   /**
