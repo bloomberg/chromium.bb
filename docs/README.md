@@ -210,8 +210,6 @@ used when committed.
 *   [Running Layout Tests on Linux](layout_tests_linux.md) - Linux-specific
     instructions for running layout tests.
 *   [Linux Sysroot Images](linux_sysroot.md) - How builds use libraries on Linux
-*   [`msttcorefonts` on Mandriva](mandriva_msttcorefonts.md) - Getting fonts
-    needed to build Chrome that are not available for Mandriva
 *   [Linux Hardware Video Decoding](linux_hw_video_decode.md) - Enabling
     hardware video decode codepaths on Linux
 

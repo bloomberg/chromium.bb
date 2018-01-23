@@ -398,22 +398,6 @@ For the optional packages:
 
 You can just run `emerge www-client/chromium`.
 
-### Mandriva
-
-Instead of running `build/install-build-deps.sh`, run:
-
-```shell
-urpmi lib64fontconfig-devel lib64alsa2-devel lib64dbus-1-devel \
-lib64freetype6-devel lib64atk1.0-devel lib64gtk+2.0_0-devel \
-lib64pango1.0-devel lib64cairo-devel lib64nss-devel lib64nspr-devel g++ python \
-perl bison flex subversion gperf
-```
-
-* `msttcorefonts` are not available, you will need to build your own (see
-  instructions, not hard to do, see
-  [mandriva\_msttcorefonts.md](mandriva_msttcorefonts.md)) or use `drakfont` to
-  import the fonts from a Windows installation.
-
 ### OpenSUSE
 
 Use `zypper` command to install dependencies:
