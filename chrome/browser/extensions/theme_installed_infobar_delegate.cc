@@ -88,11 +88,6 @@ ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   theme_service_->OnInfobarDestroyed();
 }
 
-infobars::InfoBarDelegate::Type
-ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 ThemeInstalledInfoBarDelegate::GetIdentifier() const {
   return THEME_INSTALLED_INFOBAR_DELEGATE;

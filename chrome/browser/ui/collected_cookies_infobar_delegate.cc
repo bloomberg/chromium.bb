@@ -27,11 +27,6 @@ CollectedCookiesInfoBarDelegate::CollectedCookiesInfoBarDelegate()
 CollectedCookiesInfoBarDelegate::~CollectedCookiesInfoBarDelegate() {
 }
 
-infobars::InfoBarDelegate::Type
-CollectedCookiesInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 CollectedCookiesInfoBarDelegate::GetIdentifier() const {
   return COLLECTED_COOKIES_INFOBAR_DELEGATE;

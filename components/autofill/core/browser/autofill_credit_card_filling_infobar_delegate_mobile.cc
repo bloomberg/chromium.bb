@@ -72,11 +72,6 @@ bool AutofillCreditCardFillingInfoBarDelegateMobile::Cancel() {
   return true;
 }
 
-infobars::InfoBarDelegate::Type
-AutofillCreditCardFillingInfoBarDelegateMobile::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 AutofillCreditCardFillingInfoBarDelegateMobile::GetIdentifier() const {
   return AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_DELEGATE_ANDROID;

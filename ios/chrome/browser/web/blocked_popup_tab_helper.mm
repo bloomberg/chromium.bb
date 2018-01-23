@@ -55,10 +55,6 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
     return icon_;
   }
 
-  infobars::InfoBarDelegate::Type GetInfoBarType() const override {
-    return WARNING_TYPE;
-  }
-
   base::string16 GetMessageText() const override {
     return l10n_util::GetStringFUTF16(
         IDS_IOS_POPUPS_BLOCKED_MOBILE,

@@ -49,10 +49,8 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(
   InfoBarAndroid* android_bar = static_cast<InfoBarAndroid*>(infobar);
   if (!android_bar) {
     // TODO(bulach): CLANK: implement other types of InfoBars.
-    // TODO(jrg): this will always print out WARNING_TYPE as an int.
-    // Try and be more helpful.
-    NOTIMPLEMENTED() << "CLANK: infobar type "
-                     << infobar->delegate()->GetInfoBarType();
+    NOTIMPLEMENTED() << "CLANK: infobar identifier "
+                     << infobar->delegate()->GetIdentifier();
     return;
   }
 

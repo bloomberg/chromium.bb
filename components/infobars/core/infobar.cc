@@ -34,17 +34,6 @@ InfoBar::~InfoBar() {
   DCHECK(!owner_);
 }
 
-// static
-SkColor InfoBar::GetBackgroundColor(InfoBarDelegate::Type infobar_type) {
-  static const SkColor kWarningBackgroundColor =
-      SkColorSetRGB(0xFF, 0xEC, 0xB3);  // Yellow
-  static constexpr SkColor kPageActionBackgroundColor = SK_ColorWHITE;
-
-  return infobar_type == InfoBarDelegate::WARNING_TYPE
-             ? kWarningBackgroundColor
-             : kPageActionBackgroundColor;
-}
-
 void InfoBar::SetOwner(InfoBarManager* owner) {
   DCHECK(!owner_);
   owner_ = owner;

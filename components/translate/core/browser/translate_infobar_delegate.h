@@ -222,7 +222,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   void InfoBarDismissed() override;

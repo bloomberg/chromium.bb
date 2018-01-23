@@ -34,11 +34,6 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
   inline_link_range_ = gfx::Range(offset, offset + link.length());
 }
 
-infobars::InfoBarDelegate::Type
-GeneratedPasswordSavedInfoBarDelegateAndroid::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 GeneratedPasswordSavedInfoBarDelegateAndroid::GetIdentifier() const {
   return GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID;

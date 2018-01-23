@@ -83,7 +83,7 @@
     [nextSubview setFrame:frame];
   }
 
-  [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];
+  [infoBarView_ setInfobarBackgroundColor:infobars::InfoBar::kBackgroundColor];
   [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   cocoa_l10n_util::FlipAllSubviewsIfNecessary(
       base::mac::ObjCCast<NSView>(infoBarView_));

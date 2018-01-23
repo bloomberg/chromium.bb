@@ -99,11 +99,6 @@ void SearchGeolocationDisclosureInfoBarDelegate::InfoBarDismissed() {
   pref_service_->SetBoolean(prefs::kSearchGeolocationDisclosureDismissed, true);
 }
 
-infobars::InfoBarDelegate::Type
-SearchGeolocationDisclosureInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 SearchGeolocationDisclosureInfoBarDelegate::GetIdentifier() const {
   return SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID;

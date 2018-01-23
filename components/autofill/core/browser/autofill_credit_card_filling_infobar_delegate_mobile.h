@@ -41,7 +41,6 @@ class AutofillCreditCardFillingInfoBarDelegateMobile
 
  private:
   // ConfirmInfoBarDelegate (continued):
-  Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
 

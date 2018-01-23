@@ -54,11 +54,6 @@ void DefaultBrowserInfoBarDelegate::AllowExpiry() {
   should_expire_ = true;
 }
 
-infobars::InfoBarDelegate::Type DefaultBrowserInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 DefaultBrowserInfoBarDelegate::GetIdentifier() const {
   return DEFAULT_BROWSER_INFOBAR_DELEGATE;

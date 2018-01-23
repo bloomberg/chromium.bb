@@ -24,11 +24,6 @@ PageInfoInfoBarDelegate::PageInfoInfoBarDelegate() : ConfirmInfoBarDelegate() {}
 
 PageInfoInfoBarDelegate::~PageInfoInfoBarDelegate() {}
 
-infobars::InfoBarDelegate::Type PageInfoInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 PageInfoInfoBarDelegate::GetIdentifier() const {
   return PAGE_INFO_INFOBAR_DELEGATE;

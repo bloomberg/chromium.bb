@@ -50,11 +50,6 @@ AppBannerInfoBarDelegateDesktop::~AppBannerInfoBarDelegateDesktop() {
     TrackUserResponse(USER_RESPONSE_WEB_APP_IGNORED);
 }
 
-infobars::InfoBarDelegate::Type
-AppBannerInfoBarDelegateDesktop::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 AppBannerInfoBarDelegateDesktop::GetIdentifier() const {
   return APP_BANNER_INFOBAR_DELEGATE;

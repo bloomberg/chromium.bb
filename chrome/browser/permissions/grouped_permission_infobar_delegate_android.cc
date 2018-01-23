@@ -73,11 +73,6 @@ GroupedPermissionInfoBarDelegate::GetIdentifier() const {
   return GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID;
 }
 
-infobars::InfoBarDelegate::Type
-GroupedPermissionInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
 int GroupedPermissionInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
