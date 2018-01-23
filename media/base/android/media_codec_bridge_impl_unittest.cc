@@ -170,14 +170,14 @@ void DecodeMediaFrame(MediaCodecBridge* media_codec,
 }
 
 // Performs basic, codec-specific sanity checks on the encoded H264 frame:
-// whether we've seen keyframes before non-keyframes, correct sequences of H.264
-// NALUs (SPS before PPS and before slices), etc.
+// - as to key frames, correct sequences of H.264 NALUs (SPS before PPS and
+//   before slices).
+// - as to non key frames, contain no SPS/PPS infront.
 void H264Validate(const uint8_t* frame, size_t size) {
   H264Parser h264_parser;
   h264_parser.SetStream(frame, static_cast<off_t>(size));
-  bool seen_sps;
-  bool seen_pps;
-  bool seen_idr;
+  bool seen_sps = false;
+  bool seen_pps = false;
 
   while (1) {
     H264NALU nalu;
@@ -186,21 +186,18 @@ void H264Validate(const uint8_t* frame, size_t size) {
     result = h264_parser.AdvanceToNextNALU(&nalu);
     if (result == H264Parser::kEOStream)
       break;
-
     ASSERT_THAT(result, H264Parser::kOk);
 
-    bool keyframe = false;
-
     switch (nalu.nal_unit_type) {
-      case H264NALU::kIDRSlice:
+      case H264NALU::kIDRSlice: {
         ASSERT_TRUE(seen_sps);
         ASSERT_TRUE(seen_pps);
-        seen_idr = true;
-        keyframe = true;
-      // fallthrough
+        break;
+      }
+
       case H264NALU::kNonIDRSlice: {
-        ASSERT_TRUE(seen_idr);
-        seen_sps = seen_pps = false;
+        ASSERT_FALSE(seen_sps);
+        ASSERT_FALSE(seen_pps);
         break;
       }
 
@@ -474,6 +471,20 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   // A monotonically-growing value.
   base::TimeDelta input_timestamp;
   // Src_file should contain 40 frames. Here we only encode 3 of them.
+  for (int frame = 0; frame < num_frames && frame < 3; frame++) {
+    ASSERT_THAT(src.Read(src_offset, (char*)frame_data.get(), frame_size),
+                frame_size);
+    src_offset += static_cast<off_t>(frame_size);
+
+    input_timestamp += base::TimeDelta::FromMicroseconds(
+        base::Time::kMicrosecondsPerSecond / frame_rate);
+    EncodeMediaFrame(media_codec.get(), frame_data.get(), frame_size, width,
+                     height, input_timestamp);
+  }
+
+  // Reuest key frame and encode 3 more frames. The second key frame should
+  // also contain SPS/PPS NALUs.
+  media_codec->RequestKeyFrameSoon();
   for (int frame = 0; frame < num_frames && frame < 3; frame++) {
     ASSERT_THAT(src.Read(src_offset, (char*)frame_data.get(), frame_size),
                 frame_size);
