@@ -1322,7 +1322,8 @@ void UiSceneCreator::CreateController() {
   auto back_button_label = CreateControllerLabel(
       kControllerBackButtonLabel, kControllerBackButtonOffset,
       l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model_);
-  VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled());
+  VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled() ||
+                                            model->voice_search_enabled());
   callout_group->AddChild(std::move(back_button_label));
 
   controller->AddChild(std::move(callout_group));

@@ -111,7 +111,6 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetLoadProgress(0.4);
   ui_->SetVideoCaptureEnabled(true);
   ui_->SetScreenCaptureEnabled(true);
-  ui_->SetAudioCaptureEnabled(true);
   ui_->SetBluetoothConnected(true);
   ui_->SetLocationAccessEnabled(true);
   ui_->input_manager()->set_hit_test_strategy(
@@ -232,6 +231,12 @@ void VrTestContext::HandleInput(ui::Event* event) {
   }
 
   const ui::MouseEvent* mouse_event = event->AsMouseEvent();
+
+  if (mouse_event->IsMiddleMouseButton()) {
+    if (mouse_event->type() == ui::ET_MOUSE_RELEASED) {
+      ui_->OnAppButtonClicked();
+    }
+  }
 
   // TODO(cjgrant): Figure out why, quite regularly, mouse click events do not
   // make it into this method and are missed.
