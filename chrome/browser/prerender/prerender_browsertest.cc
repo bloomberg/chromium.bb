@@ -156,6 +156,9 @@ using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
+// crbug.com/708158
+#if !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
+
 // Prerender tests work as follows:
 //
 // A page with a prefetch link to the test page is loaded.  Once prerendered,
@@ -3859,3 +3862,5 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 #endif  // BUILDFLAG(ENABLE_NACL)
 
 }  // namespace prerender
+
+#endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
