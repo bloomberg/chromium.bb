@@ -170,7 +170,7 @@ by a child template that "extends" this file.
             android:relinquishTaskIdentity="true"
             android:taskAffinity=""
             android:excludeFromRecents="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
@@ -358,7 +358,7 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:relinquishTaskIdentity="true"
             android:excludeFromRecents="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density">
             <!-- TODO(mthiesse, b/72214458): This is a duplication of the icon metadata below.
                  Daydream will actually ignore the metadata here, and use the metadata on the
                  activity-alias. However, play store apk validation fails to find the icons on the

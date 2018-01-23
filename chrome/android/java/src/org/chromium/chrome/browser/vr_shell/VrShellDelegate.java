@@ -934,9 +934,7 @@ public class VrShellDelegate
      */
     public static void onNewIntentWithNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
-        // If we get an intent while we're already in VR, we just drop it. This is mostly
-        // because crbug.com/780673 since on Android O, every intent gets dispatched twice.
-        if (sInstance != null && sInstance.mInVr) return;
+
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
         // TODO(ymalik): We should cache whether or not VR mode is set so we don't set it
