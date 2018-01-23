@@ -292,7 +292,8 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 }
 
 void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  session->SetRenderer(frame_host_ ? frame_host_->GetProcess() : nullptr,
+  session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
+                                   : ChildProcessHost::kInvalidUniqueID,
                        frame_host_);
 
   protocol::EmulationHandler* emulation_handler =
@@ -441,7 +442,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   if (IsAttached()) {
     GrantPolicy();
     for (DevToolsSession* session : sessions()) {
-      session->SetRenderer(frame_host ? frame_host->GetProcess() : nullptr,
+      session->SetRenderer(frame_host ? frame_host->GetProcess()->GetID() : -1,
                            frame_host);
     }
     MaybeReattachToRenderFrame();

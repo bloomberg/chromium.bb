@@ -34,7 +34,10 @@ SharedWorkerDevToolsAgentHost::~SharedWorkerDevToolsAgentHost() {
 }
 
 BrowserContext* SharedWorkerDevToolsAgentHost::GetBrowserContext() {
-  RenderProcessHost* rph = GetProcess();
+  if (!worker_host_)
+    return nullptr;
+  RenderProcessHost* rph =
+      RenderProcessHost::FromID(worker_host_->process_id());
   return rph ? rph->GetBrowserContext() : nullptr;
 }
 
@@ -67,7 +70,7 @@ void SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(GetId()));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
-  session->SetRenderer(GetProcess(), nullptr);
+  session->SetRenderer(worker_host_ ? worker_host_->process_id() : -1, nullptr);
   if (state_ == WORKER_READY)
     session->AttachToAgent(EnsureAgent());
 }
@@ -101,7 +104,7 @@ void SharedWorkerDevToolsAgentHost::WorkerRestarted(
   state_ = WORKER_NOT_READY;
   worker_host_ = worker_host;
   for (DevToolsSession* session : sessions())
-    session->SetRenderer(GetProcess(), nullptr);
+    session->SetRenderer(worker_host_->process_id(), nullptr);
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
@@ -111,14 +114,9 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   for (DevToolsSession* session : sessions())
-    session->SetRenderer(nullptr, nullptr);
+    session->SetRenderer(-1, nullptr);
   worker_host_ = nullptr;
   agent_ptr_.reset();
-}
-
-RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcess() {
-  return worker_host_ ? RenderProcessHost::FromID(worker_host_->process_id())
-                      : nullptr;
 }
 
 const blink::mojom::DevToolsAgentAssociatedPtr&

@@ -11,6 +11,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/common/child_process_host.h"
 
 namespace content {
 
@@ -33,7 +34,7 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
     : binding_(this),
       agent_host_(agent_host),
       client_(client),
-      process_(nullptr),
+      process_host_id_(ChildProcessHost::kInvalidUniqueID),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
       weak_factory_(this) {
@@ -50,16 +51,16 @@ DevToolsSession::~DevToolsSession() {
 void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
   handler->Wire(dispatcher_.get());
-  handler->SetRenderer(process_, host_);
+  handler->SetRenderer(process_host_id_, host_);
   handlers_[handler->name()] = std::move(handler);
 }
 
-void DevToolsSession::SetRenderer(RenderProcessHost* process_host,
+void DevToolsSession::SetRenderer(int process_host_id,
                                   RenderFrameHostImpl* frame_host) {
-  process_ = process_host;
+  process_host_id_ = process_host_id;
   host_ = frame_host;
   for (auto& pair : handlers_)
-    pair.second->SetRenderer(process_, host_);
+    pair.second->SetRenderer(process_host_id_, host_);
 }
 
 void DevToolsSession::SetBrowserOnly(bool browser_only) {
@@ -215,9 +216,10 @@ void DevToolsSession::DispatchProtocolMessage(
 
 void DevToolsSession::ReceivedBadMessage() {
   MojoConnectionDestroyed();
-  if (process_) {
+  RenderProcessHost* process = RenderProcessHost::FromID(process_host_id_);
+  if (process) {
     bad_message::ReceivedBadMessage(
-        process_, bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
+        process, bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
   }
 }
 

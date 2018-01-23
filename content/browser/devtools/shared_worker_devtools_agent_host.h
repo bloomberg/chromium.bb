@@ -14,7 +14,6 @@ namespace content {
 
 class SharedWorkerInstance;
 class SharedWorkerHost;
-class RenderProcessHost;
 
 class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
  public:
@@ -50,7 +49,6 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
  private:
   ~SharedWorkerDevToolsAgentHost() override;
-  RenderProcessHost* GetProcess();
   const blink::mojom::DevToolsAgentAssociatedPtr& EnsureAgent();
 
   enum WorkerState {
