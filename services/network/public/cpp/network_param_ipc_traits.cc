@@ -423,10 +423,6 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       m->WriteData(p.bytes(), static_cast<int>(p.length()));
       break;
     }
-    case network::DataElement::TYPE_BYTES_DESCRIPTION: {
-      WriteParam(m, p.length());
-      break;
-    }
     case network::DataElement::TYPE_FILE: {
       WriteParam(m, p.path());
       WriteParam(m, p.offset());
@@ -444,21 +440,10 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case network::DataElement::TYPE_FILE_FILESYSTEM: {
-      WriteParam(m, p.filesystem_url());
-      WriteParam(m, p.offset());
-      WriteParam(m, p.length());
-      WriteParam(m, p.expected_modification_time());
-      break;
-    }
     case network::DataElement::TYPE_BLOB: {
       WriteParam(m, p.blob_uuid());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
-      break;
-    }
-    case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
-      NOTREACHED() << "Can't be sent by IPC.";
       break;
     }
     case network::DataElement::TYPE_DATA_PIPE: {
@@ -489,13 +474,6 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       if (!iter->ReadData(&data, &len))
         return false;
       r->SetToBytes(data, len);
-      return true;
-    }
-    case network::DataElement::TYPE_BYTES_DESCRIPTION: {
-      uint64_t length;
-      if (!ReadParam(m, iter, &length))
-        return false;
-      r->SetToBytesDescription(length);
       return true;
     }
     case network::DataElement::TYPE_FILE: {
@@ -535,22 +513,6 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
                         expected_modification_time);
       return true;
     }
-    case network::DataElement::TYPE_FILE_FILESYSTEM: {
-      GURL file_system_url;
-      uint64_t offset, length;
-      base::Time expected_modification_time;
-      if (!ReadParam(m, iter, &file_system_url))
-        return false;
-      if (!ReadParam(m, iter, &offset))
-        return false;
-      if (!ReadParam(m, iter, &length))
-        return false;
-      if (!ReadParam(m, iter, &expected_modification_time))
-        return false;
-      r->SetToFileSystemUrlRange(file_system_url, offset, length,
-                                 expected_modification_time);
-      return true;
-    }
     case network::DataElement::TYPE_BLOB: {
       std::string blob_uuid;
       uint64_t offset, length;
@@ -562,10 +524,6 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
         return false;
       r->SetToBlobRange(blob_uuid, offset, length);
       return true;
-    }
-    case network::DataElement::TYPE_DISK_CACHE_ENTRY: {
-      NOTREACHED() << "Can't be sent by IPC.";
-      return false;
     }
     case network::DataElement::TYPE_DATA_PIPE: {
       network::mojom::DataPipeGetterPtr data_pipe_getter;

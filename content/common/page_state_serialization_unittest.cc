@@ -46,7 +46,6 @@ void ExpectEquality(const network::DataElement& expected,
               std::string(actual.bytes(), actual.length()));
   }
   EXPECT_EQ(expected.path(), actual.path());
-  EXPECT_EQ(expected.filesystem_url(), actual.filesystem_url());
   EXPECT_EQ(expected.offset(), actual.offset());
   EXPECT_EQ(expected.length(), actual.length());
   EXPECT_EQ(expected.expected_modification_time(),
@@ -661,9 +660,6 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_HttpBody) {
   base::FilePath path(FILE_PATH_LITERAL("file.txt"));
   http_body.request_body->AppendFileRange(base::FilePath(path), 100, 1024,
                                           base::Time::FromDoubleT(9999.0));
-
-  http_body.request_body->AppendFileSystemFileRange(
-      GURL("file://some_file.txt"), 100, 1024, base::Time::FromDoubleT(9999.0));
 
   ExplodedPageState saved_state;
   ReadBackwardsCompatPageState("http_body", 26, &saved_state);

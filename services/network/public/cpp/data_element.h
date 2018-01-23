@@ -38,14 +38,8 @@ class DataElement {
     TYPE_DATA_PIPE,
     TYPE_RAW_FILE,
 
-    // Only used for Blob:
-    TYPE_BYTES_DESCRIPTION,
-    TYPE_DISK_CACHE_ENTRY,  // Only used by CacheStorage
-    TYPE_FILE_FILESYSTEM,
-
-    // Commonly used for Blob, and also for Upload when Network Service is
-    // disabled:
-    TYPE_BLOB,  // Used old IPC codepath only.
+    // Used for Upload when Network Service is disabled:
+    TYPE_BLOB,
     TYPE_FILE,
 
     // Commonly used in every case:
@@ -64,7 +58,6 @@ class DataElement {
   const char* bytes() const { return bytes_ ? bytes_ : buf_.data(); }
   const base::FilePath& path() const { return path_; }
   const base::File& file() const { return file_; }
-  const GURL& filesystem_url() const { return filesystem_url_; }
   const std::string& blob_uuid() const { return blob_uuid_; }
   const mojom::DataPipeGetterPtr& data_pipe() const {
     return data_pipe_getter_;
@@ -104,12 +97,6 @@ class DataElement {
     DCHECK(!bytes_);
     buf_.insert(buf_.end(), bytes, bytes + bytes_len);
     length_ = buf_.size();
-  }
-
-  void SetToBytesDescription(size_t bytes_len) {
-    type_ = TYPE_BYTES_DESCRIPTION;
-    bytes_ = nullptr;
-    length_ = bytes_len;
   }
 
   // Sets TYPE_BYTES data. This does NOT copy the given data and the caller
@@ -163,15 +150,6 @@ class DataElement {
                       uint64_t offset,
                       uint64_t length);
 
-  // Sets TYPE_FILE_FILESYSTEM with range.
-  void SetToFileSystemUrlRange(const GURL& filesystem_url,
-                               uint64_t offset,
-                               uint64_t length,
-                               const base::Time& expected_modification_time);
-
-  // Sets to TYPE_DISK_CACHE_ENTRY with range.
-  void SetToDiskCacheEntryRange(uint64_t offset, uint64_t length);
-
   // Sets TYPE_DATA_PIPE data.
   void SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
 
@@ -190,7 +168,6 @@ class DataElement {
   const char* bytes_;      // For TYPE_BYTES.
   base::FilePath path_;    // For TYPE_FILE and TYPE_RAW_FILE.
   base::File file_;        // For TYPE_RAW_FILE.
-  GURL filesystem_url_;    // For TYPE_FILE_FILESYSTEM.
   std::string blob_uuid_;  // For TYPE_BLOB.
   mojom::DataPipeGetterPtr data_pipe_getter_;  // For TYPE_DATA_PIPE.
   uint64_t offset_;

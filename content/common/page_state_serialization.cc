@@ -66,17 +66,6 @@ void AppendFileRangeToRequestBody(
       file_modification_time);
 }
 
-void AppendURLRangeToRequestBody(
-    const scoped_refptr<network::ResourceRequestBody>& request_body,
-    const GURL& url,
-    int file_start,
-    int file_length,
-    base::Time file_modification_time) {
-  request_body->AppendFileSystemFileRange(
-      url, static_cast<uint64_t>(file_start),
-      static_cast<uint64_t>(file_length), file_modification_time);
-}
-
 void AppendBlobToRequestBody(
     const scoped_refptr<network::ResourceRequestBody>& request_body,
     const std::string& uuid) {
@@ -304,10 +293,6 @@ bool ReadBoolean(SerializeObject* obj) {
   return false;
 }
 
-void WriteGURL(const GURL& url, SerializeObject* obj) {
-  obj->pickle.WriteString(url.possibly_invalid_spec());
-}
-
 GURL ReadGURL(SerializeObject* obj) {
   std::string spec;
   if (obj->iter.ReadString(&spec))
@@ -442,20 +427,11 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case network::DataElement::TYPE_FILE_FILESYSTEM:
-        WriteInteger(blink::WebHTTPBody::Element::kTypeFileSystemURL, obj);
-        WriteGURL(element.filesystem_url(), obj);
-        WriteInteger64(static_cast<int64_t>(element.offset()), obj);
-        WriteInteger64(static_cast<int64_t>(element.length()), obj);
-        WriteReal(element.expected_modification_time().ToDoubleT(), obj);
-        break;
       case network::DataElement::TYPE_BLOB:
         WriteInteger(blink::WebHTTPBody::Element::kTypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
       case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
       default:
         NOTREACHED();
         continue;
@@ -485,14 +461,6 @@ void ReadResourceRequestBody(
       double file_modification_time = ReadReal(obj);
       AppendFileRangeToRequestBody(
           request_body, file_path, file_start, file_length,
-          base::Time::FromDoubleT(file_modification_time));
-    } else if (type == blink::WebHTTPBody::Element::kTypeFileSystemURL) {
-      GURL url = ReadGURL(obj);
-      int64_t file_start = ReadInteger64(obj);
-      int64_t file_length = ReadInteger64(obj);
-      double file_modification_time = ReadReal(obj);
-      AppendURLRangeToRequestBody(
-          request_body, url, file_start, file_length,
           base::Time::FromDoubleT(file_modification_time));
     } else if (type == blink::WebHTTPBody::Element::kTypeBlob) {
       if (obj->version >= 16) {
@@ -735,19 +703,10 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         data_element->set_file(std::move(file));
         break;
       }
-      case network::DataElement::TYPE_FILE_FILESYSTEM: {
-        mojom::FileSystemFilePtr file_system = mojom::FileSystemFile::New(
-            element.filesystem_url(), element.offset(), element.length(),
-            element.expected_modification_time());
-        data_element->set_file_system_file(std::move(file_system));
-        break;
-      }
       case network::DataElement::TYPE_BLOB:
         data_element->set_blob_uuid(element.blob_uuid());
         break;
       case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
       case network::DataElement::TYPE_DATA_PIPE:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
@@ -776,16 +735,11 @@ void ReadResourceRequestBody(
                                      file->length, file->modification_time);
         break;
       }
-      case mojom::Element::Tag::FILE_SYSTEM_FILE: {
-        mojom::FileSystemFile* file_system =
-            element->get_file_system_file().get();
-        AppendURLRangeToRequestBody(request_body, file_system->filesystem_url,
-                                    file_system->offset, file_system->length,
-                                    file_system->modification_time);
-        break;
-      }
       case mojom::Element::Tag::BLOB_UUID:
         AppendBlobToRequestBody(request_body, element->get_blob_uuid());
+        break;
+      case mojom::Element::Tag::DEPRECATED_FILE_SYSTEM_FILE:
+        // No longer supported.
         break;
     }
   }

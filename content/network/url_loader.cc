@@ -162,9 +162,6 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
         element_readers.push_back(std::make_unique<RawFileElementReader>(
             body, file_task_runner, element));
         break;
-      case network::DataElement::TYPE_FILE_FILESYSTEM:
-        CHECK(false) << "Should never be reached";
-        break;
       case network::DataElement::TYPE_BLOB: {
         CHECK(false) << "Network service always uses DATA_PIPE for blobs.";
         break;
@@ -175,8 +172,6 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
                       ->ReleaseDataPipeGetter()));
         break;
       }
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
       case network::DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;

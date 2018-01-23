@@ -1488,22 +1488,6 @@ struct FuzzTraits<network::DataElement> {
         p->SetToBlobRange(uuid, offset, length);
         return true;
       }
-      case network::DataElement::Type::TYPE_FILE_FILESYSTEM: {
-        GURL url;
-        uint64_t offset;
-        uint64_t length;
-        base::Time modification_time;
-        if (!FuzzParam(&url, fuzzer))
-          return false;
-        if (!FuzzParam(&offset, fuzzer))
-          return false;
-        if (!FuzzParam(&length, fuzzer))
-          return false;
-        if (!FuzzParam(&modification_time, fuzzer))
-          return false;
-        p->SetToFileSystemUrlRange(url, offset, length, modification_time);
-        return true;
-      }
       default: {
         NOTREACHED();
         return false;

@@ -420,9 +420,6 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
         break;
       }
       case network::DataElement::TYPE_UNKNOWN:
-      case network::DataElement::TYPE_BYTES_DESCRIPTION:
-      case network::DataElement::TYPE_DISK_CACHE_ENTRY:
-      case network::DataElement::TYPE_FILE_FILESYSTEM:
       case network::DataElement::TYPE_RAW_FILE:
         NOTREACHED();
         break;
@@ -482,15 +479,6 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
               base::Time::FromDoubleT(element.modification_time));
         }
         break;
-      case WebHTTPBody::Element::kTypeFileSystemURL: {
-        GURL file_system_url = element.file_system_url;
-        DCHECK(file_system_url.SchemeIsFileSystem());
-        request_body->AppendFileSystemFileRange(
-            file_system_url, static_cast<uint64_t>(element.file_start),
-            static_cast<uint64_t>(element.file_length),
-            base::Time::FromDoubleT(element.modification_time));
-        break;
-      }
       case WebHTTPBody::Element::kTypeBlob: {
         if (base::FeatureList::IsEnabled(features::kNetworkService)) {
           if (!blob_registry.is_bound()) {
