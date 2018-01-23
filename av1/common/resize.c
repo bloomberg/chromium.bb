@@ -1127,16 +1127,15 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
     // (downscaled_x0 - 1 + (x0_qn/2^14)), and this quantity increases
     // by exactly dst_width * (x_step_qn/2^14) pixels each iteration.
     const int downscaled_x0 = tile_col.mi_col_start << (MI_SIZE_LOG2 - ss_x);
-    const int downscaled_x1 = AOMMIN(
-        downscaled_plane_width, tile_col.mi_col_end << (MI_SIZE_LOG2 - ss_x));
+    const int downscaled_x1 = tile_col.mi_col_end << (MI_SIZE_LOG2 - ss_x);
     const int src_width = downscaled_x1 - downscaled_x0;
 
     const int upscaled_x0 = (downscaled_x0 * superres_denom) / SCALE_NUMERATOR;
     int upscaled_x1;
     if (j == cm->tile_cols - 1) {
       // Note that we can't just use AOMMIN here - due to rounding,
-      // (downscaled_plane_width * superres_denom) / SCALE_NUMERATOR
-      // may be less than upscaled_plane_width.
+      // (downscaled_x1 * superres_denom) / SCALE_NUMERATOR may be less than
+      // upscaled_plane_width.
       upscaled_x1 = upscaled_plane_width;
     } else {
       upscaled_x1 = (downscaled_x1 * superres_denom) / SCALE_NUMERATOR;
@@ -1247,7 +1246,8 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
 
   YV12_BUFFER_CONFIG *const frame_to_show = get_frame_new_buffer(cm);
 
-  if (aom_alloc_frame_buffer(&copy_buffer, cm->width, cm->height,
+  const int aligned_width = ALIGN_POWER_OF_TWO(cm->width, 3);
+  if (aom_alloc_frame_buffer(&copy_buffer, aligned_width, cm->height,
                              cm->subsampling_x, cm->subsampling_y,
                              cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
                              cm->byte_alignment))
@@ -1257,7 +1257,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   // Copy function assumes the frames are the same size, doesn't copy bit_depth.
   aom_yv12_copy_frame(frame_to_show, &copy_buffer, num_planes);
   copy_buffer.bit_depth = frame_to_show->bit_depth;
-  assert(copy_buffer.y_crop_width == cm->width);
+  assert(copy_buffer.y_crop_width == aligned_width);
   assert(copy_buffer.y_crop_height == cm->height);
 
   // Realloc the current frame buffer at a higher resolution in place.
