@@ -857,6 +857,9 @@ void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
   if (content_id_ != content_id)
     return;
 
+  if (!android_ui_gesture_target_)
+    return;
+
   android_ui_gesture_target_->DispatchWebInputEvent(std::move(event));
 }
 
