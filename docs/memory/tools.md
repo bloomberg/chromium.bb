@@ -164,7 +164,7 @@ looking similar due to the nature of DOM node allocation.
      dump of all the profiled processes. On Android, enable debugging via USB
      and use chrome://inspect/?tracing#devices to take a memory-infra trace
      which will have the heap dump embedded.
-  2. Symbolize trace using  [`symbolize_trace.py`](../../third_party/catapult/experimental/tracing/bin/symbolize_trace.py)
+  2. Symbolize trace using  [`symbolize_trace.py`](../../third_party/catapult/tracing/bin/symbolize_trace). If the Chrome binary was built locally, pass the flag "--is-local-build".
   3. Analyze resuing heap dump using [`diff_heap_profiler.py`](#diff-heap-profiler), or [Heap Profile view in Chrome Tracing](#tracing-heap-profile)
 
 On deskop, using chrome://memory-internals to take a heap dump is more reliable
