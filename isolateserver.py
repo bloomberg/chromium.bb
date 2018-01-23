@@ -965,6 +965,16 @@ class LocalCache(object):
   def initial_size(self):
     return self._initial_size
 
+  @property
+  def number_items(self):
+    """Returns the total size of the cache in bytes."""
+    raise NotImplementedError()
+
+  @property
+  def total_size(self):
+    """Returns the total size of the cache in bytes."""
+    raise NotImplementedError()
+
   def cached_set(self):
     """Returns a set of all cached digests (always a new object)."""
     raise NotImplementedError()
@@ -1028,6 +1038,16 @@ class MemoryCache(LocalCache):
   def __contains__(self, digest):
     with self._lock:
       return digest in self._contents
+
+  @property
+  def number_items(self):
+    with self._lock:
+      return len(self._contents)
+
+  @property
+  def total_size(self):
+    with self._lock:
+      return sum(len(i) for i in self._contents.itervalues())
 
   def cached_set(self):
     with self._lock:
@@ -1154,6 +1174,16 @@ class DiskCache(LocalCache):
             '       %8dkb free',
             self._free_disk / 1024)
     return False
+
+  @property
+  def number_items(self):
+    with self._lock:
+      return len(self._lru)
+
+  @property
+  def total_size(self):
+    with self._lock:
+      return sum(self._lru.itervalues())
 
   def cached_set(self):
     with self._lock:
@@ -1737,8 +1767,12 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
 
   # Cache could evict some items we just tried to fetch, it's a fatal error.
   if not fetch_queue.verify_all_cached():
-    raise isolated_format.MappingError(
-        'Cache is too small to hold all requested files')
+    free_disk = file_path.get_free_space(cache.cache_dir)
+    msg = (
+        'Cache is too small to hold all requested files.\n'
+        '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
+          cache.policies, cache.total_size, cache.number_items, free_disk)
+    raise isolated_format.MappingError(msg)
   return bundle
 
 
