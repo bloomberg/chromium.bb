@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
@@ -1202,20 +1203,25 @@ void BrowserAccessibilityManager::UseCustomDeviceScaleFactorForTesting(
 
 BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
     const gfx::Point& screen_point) {
+  gfx::Point scaled_point =
+      UseZoomForDSFEnabled()
+          ? ScaleToRoundedPoint(screen_point, device_scale_factor())
+          : screen_point;
+
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager && root_manager != this)
-    return root_manager->CachingAsyncHitTest(screen_point);
+    return root_manager->CachingAsyncHitTest(scaled_point);
 
   if (delegate()) {
     // This triggers an asynchronous request to compute the true object that's
-    // under |screen_point|.
-    HitTest(screen_point - GetViewBounds().OffsetFromOrigin());
+    // under |scaled_point|.
+    HitTest(scaled_point - GetViewBounds().OffsetFromOrigin());
 
     // Unfortunately we still have to return an answer synchronously because
     // the APIs were designed that way. The best case scenario is that the
     // screen point is within the bounds of the last result we got from a
     // call to AccessibilityHitTest - in that case, we can return that object!
-    if (last_hover_bounds_.Contains(screen_point)) {
+    if (last_hover_bounds_.Contains(scaled_point)) {
       BrowserAccessibilityManager* manager =
           BrowserAccessibilityManager::FromID(last_hover_ax_tree_id_);
       if (manager) {
