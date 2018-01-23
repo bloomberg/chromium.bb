@@ -30,6 +30,10 @@ bool AreFiltersEqual(const PaintFilter* one, const PaintFilter* two) {
     return !one && !two;
   return *one == *two;
 }
+
+bool AreScalarsEqual(SkScalar one, SkScalar two) {
+  return PaintOp::AreEqualEvenIfNaN(one, two);
+}
 }  // namespace
 
 PaintFilter::PaintFilter(Type type, const CropRect* crop_rect) : type_(type) {
@@ -406,7 +410,8 @@ MatrixConvolutionPaintFilter::~MatrixConvolutionPaintFilter() = default;
 bool MatrixConvolutionPaintFilter::operator==(
     const MatrixConvolutionPaintFilter& other) const {
   return kernel_size_ == other.kernel_size_ &&
-         kernel_.container() == other.kernel_.container() &&
+         std::equal(kernel_.container().begin(), kernel_.container().end(),
+                    other.kernel_.container().begin(), AreScalarsEqual) &&
          PaintOp::AreEqualEvenIfNaN(gain_, other.gain_) &&
          PaintOp::AreEqualEvenIfNaN(bias_, other.bias_) &&
          kernel_offset_ == other.kernel_offset_ &&
