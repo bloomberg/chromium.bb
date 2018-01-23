@@ -185,7 +185,7 @@ trigger_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 
 	unpremultiply_and_swap_a8b8g8r8_to_PAMrgba(pixels, sz);
 
-	fp = file_create_dated(prefix, suffix, fname, sizeof(fname));
+	fp = file_create_dated(NULL, prefix, suffix, fname, sizeof(fname));
 	if (!fp) {
 		const char *msg;
 

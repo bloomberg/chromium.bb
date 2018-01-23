@@ -66,14 +66,15 @@ create_file_excl(const char *fname)
 
 /** Create a unique file with date and time in the name
  *
- * \param path_prefix Path and file name prefix.
+ * \param path File path
+ * \param prefix File name prefix.
  * \param suffix File name suffix.
  * \param name_out[out] Buffer for the resulting file name.
  * \param name_len Number of bytes usable in name_out.
  * \return stdio FILE pointer, or NULL on failure.
  *
  * Create and open a new file with the name concatenated from
- * path_prefix, date and time, and suffix. If a file with this name
+ * path/prefix, date and time, and suffix. If a file with this name
  * already exists, an counter number is added to the end of the
  * date and time sub-string. The counter is increased until a free file
  * name is found.
@@ -82,19 +83,23 @@ create_file_excl(const char *fname)
  * On failure, the contents of name_out are undefined and errno is set.
  */
 FILE *
-file_create_dated(const char *path_prefix, const char *suffix,
+file_create_dated(const char *path, const char *prefix, const char *suffix,
 		  char *name_out, size_t name_len)
 {
 	char timestr[128];
 	int ret;
 	int fd;
 	int cnt = 0;
+	int with_path;
+
+	with_path = path && path[0];
 
 	if (current_time_str(timestr, sizeof(timestr), "%F_%H-%M-%S") < 0)
 		return NULL;
 
-	ret = snprintf(name_out, name_len, "%s%s%s",
-		       path_prefix, timestr, suffix);
+	ret = snprintf(name_out, name_len, "%s%s%s%s%s",
+		       with_path ? path : "", with_path ? "/" : "",
+		       prefix, timestr, suffix);
 	if (ret < 0 || (size_t)ret >= name_len) {
 		errno = ENOBUFS;
 		return NULL;
@@ -105,8 +110,9 @@ file_create_dated(const char *path_prefix, const char *suffix,
 	while (fd == -1 && errno == EEXIST) {
 		cnt++;
 
-		ret = snprintf(name_out, name_len, "%s%s-%d%s",
-			       path_prefix, timestr, cnt, suffix);
+		ret = snprintf(name_out, name_len, "%s%s%s%s-%d%s",
+			       with_path ? path : "", with_path ? "/" : "",
+			       prefix, timestr, cnt, suffix);
 		if (ret < 0 || (size_t)ret >= name_len) {
 			errno = ENOBUFS;
 			return NULL;

@@ -53,7 +53,7 @@ weston_timeline_do_open(void)
 	const char *suffix = ".log";
 	char fname[1000];
 
-	timeline_.file = file_create_dated(prefix, suffix,
+	timeline_.file = file_create_dated(NULL, prefix, suffix,
 					   fname, sizeof(fname));
 	if (!timeline_.file) {
 		const char *msg;

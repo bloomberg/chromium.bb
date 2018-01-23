@@ -33,7 +33,7 @@ extern "C" {
 #include <stdio.h>
 
 FILE *
-file_create_dated(const char *path_prefix, const char *suffix,
+file_create_dated(const char *path, const char *prefix, const char *suffix,
 		  char *name_out, size_t name_len);
 
 char *
