@@ -89,7 +89,7 @@ class ASH_EXPORT BluetoothPowerController
   void SetBluetoothPower(bool enabled);
 
   // Sets the bluetooth power given the ready adapter.
-  void SetBluetoothPowerOnAdapterReady(bool enabled);
+  void SetBluetoothPowerOnAdapterReady();
 
   using BluetoothTask = base::OnceClosure;
 
@@ -144,6 +144,11 @@ class ASH_EXPORT BluetoothPowerController
   // True indicates that pending_bluetooth_tasks_ is being executed and
   // waiting for complete callback.
   bool pending_tasks_busy_ = false;
+
+  // If not empty this indicates the pending target bluetooth power to be set.
+  // This needs to be tracked so that we can combine multiple pending power
+  // change requests.
+  base::Optional<bool> pending_bluetooth_power_target_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 

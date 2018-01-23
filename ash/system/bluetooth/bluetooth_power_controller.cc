@@ -239,12 +239,22 @@ void BluetoothPowerController::ApplyBluetoothLocalStatePref() {
 }
 
 void BluetoothPowerController::SetBluetoothPower(bool enabled) {
+  if (pending_bluetooth_power_target_.has_value()) {
+    // There is already a pending bluetooth power change request, so don't
+    // enqueue a new SetPowered operation but rather change the target power.
+    pending_bluetooth_power_target_ = enabled;
+    return;
+  }
+  pending_bluetooth_power_target_ = enabled;
   RunBluetoothTaskWhenAdapterReady(
       base::BindOnce(&BluetoothPowerController::SetBluetoothPowerOnAdapterReady,
-                     weak_ptr_factory_.GetWeakPtr(), enabled));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothPowerController::SetBluetoothPowerOnAdapterReady(bool enabled) {
+void BluetoothPowerController::SetBluetoothPowerOnAdapterReady() {
+  DCHECK(pending_bluetooth_power_target_.has_value());
+  bool enabled = pending_bluetooth_power_target_.value();
+  pending_bluetooth_power_target_.reset();
   // Always run the next pending task after SetPowered completes regardless
   // the error.
   bluetooth_adapter_->SetPowered(
