@@ -201,6 +201,18 @@ static NSString* gUserAgentProduct = nil;
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
+#pragma mark - UIView
+
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  [super willMoveToSuperview:newSuperview];
+
+  if (newSuperview) {
+    _webState->WasShown();
+  } else {
+    _webState->WasHidden();
+  }
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateDestroyed:(web::WebState*)webState {
