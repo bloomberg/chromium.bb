@@ -24,11 +24,8 @@ GLSurfacePresentationHelper::Frame& GLSurfacePresentationHelper::Frame::
 operator=(Frame&& other) = default;
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
-    gfx::VSyncProvider* vsync_provider,
-    bool hw_clock)
-    : vsync_provider_(vsync_provider),
-      hw_clock_(hw_clock),
-      weak_ptr_factory_(this) {
+    gfx::VSyncProvider* vsync_provider)
+    : vsync_provider_(vsync_provider), weak_ptr_factory_(this) {
   DCHECK(vsync_provider_);
 }
 
@@ -36,7 +33,6 @@ GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     base::TimeTicks timebase,
     base::TimeDelta interval)
     : vsync_provider_(nullptr),
-      hw_clock_(false),
       vsync_timebase_(timebase),
       vsync_interval_(interval),
       weak_ptr_factory_(this) {}
@@ -155,6 +151,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         };
 
     const bool fixed_vsync = !vsync_provider_;
+    const bool hw_clock = vsync_provider_ && vsync_provider_->IsHWClock();
     if (vsync_interval_.is_zero() || fixed_vsync) {
       // If VSync parameters are fixed or not avaliable, we just run
       // presentation callbacks with timestamp from GPUTimers.
@@ -170,7 +167,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         // The |vsync_timebase_| is the closest VSync's timestamp after the GPU
         // finished renderering.
         timestamp = vsync_timebase_;
-        if (hw_clock_)
+        if (hw_clock)
           flags |= gfx::PresentationFeedback::kHWClock;
       } else {
         // The |vsync_timebase_| isn't the closest VSync's timestamp after the

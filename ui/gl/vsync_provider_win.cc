@@ -122,7 +122,11 @@ bool VSyncProviderWin::GetVSyncParametersIfAvailable(
   return true;
 }
 
-bool VSyncProviderWin::SupportGetVSyncParametersIfAvailable() {
+bool VSyncProviderWin::SupportGetVSyncParametersIfAvailable() const {
+  return true;
+}
+
+bool VSyncProviderWin::IsHWClock() const {
   return true;
 }
 

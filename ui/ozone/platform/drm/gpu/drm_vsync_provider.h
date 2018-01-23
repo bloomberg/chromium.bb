@@ -21,7 +21,8 @@ class DrmVSyncProvider : public gfx::VSyncProvider {
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
   bool GetVSyncParametersIfAvailable(base::TimeTicks* timebase,
                                      base::TimeDelta* interval) override;
-  bool SupportGetVSyncParametersIfAvailable() override;
+  bool SupportGetVSyncParametersIfAvailable() const override;
+  bool IsHWClock() const override;
 
  private:
   DrmWindowProxy* window_;

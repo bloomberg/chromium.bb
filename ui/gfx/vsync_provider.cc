@@ -19,8 +19,12 @@ bool FixedVSyncProvider::GetVSyncParametersIfAvailable(
   return true;
 }
 
-bool FixedVSyncProvider::SupportGetVSyncParametersIfAvailable() {
+bool FixedVSyncProvider::SupportGetVSyncParametersIfAvailable() const {
   return true;
+}
+
+bool FixedVSyncProvider::IsHWClock() const {
+  return false;
 }
 
 }  // namespace gfx

@@ -222,7 +222,11 @@ bool SoftwareOutputDeviceMac::GetVSyncParametersIfAvailable(
   return false;
 }
 
-bool SoftwareOutputDeviceMac::SupportGetVSyncParametersIfAvailable() {
+bool SoftwareOutputDeviceMac::SupportGetVSyncParametersIfAvailable() const {
+  return false;
+}
+
+bool SoftwareOutputDeviceMac::IsHWClock() const {
   return false;
 }
 
