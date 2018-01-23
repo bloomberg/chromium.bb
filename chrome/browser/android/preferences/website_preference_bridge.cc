@@ -262,6 +262,35 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
 
 }  // anonymous namespace
 
+static void JNI_WebsitePreferenceBridge_GetClipboardOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
+      &Java_WebsitePreferenceBridge_insertClipboardInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetClipboardSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& origin,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, origin, origin, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetClipboardSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& origin,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, origin, origin,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
 static void JNI_WebsitePreferenceBridge_GetGeolocationOrigins(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

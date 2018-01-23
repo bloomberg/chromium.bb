@@ -224,6 +224,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return website.site().getBackgroundSyncPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showCameraSites()) {
             return website.site().getCameraPermission() == ContentSetting.BLOCK;
+        } else if (mCategory.showClipboardSites()) {
+            return website.site().getClipboardPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showCookiesSites()) {
             return website.site().getCookiePermission() == ContentSetting.BLOCK;
         } else if (mCategory.showGeolocationSites()) {
@@ -503,6 +505,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 PrefServiceBridge.getInstance().setBackgroundSyncEnabled((boolean) newValue);
             } else if (mCategory.showCameraSites()) {
                 PrefServiceBridge.getInstance().setCameraEnabled((boolean) newValue);
+            } else if (mCategory.showClipboardSites()) {
+                PrefServiceBridge.getInstance().setClipboardEnabled((boolean) newValue);
             } else if (mCategory.showCookiesSites()) {
                 PrefServiceBridge.getInstance().setAllowCookiesEnabled((boolean) newValue);
                 updateThirdPartyCookiesCheckBox();
@@ -526,7 +530,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
             if (mCategory.showAutoplaySites() || mCategory.showBackgroundSyncSites()
-                    || mCategory.showJavaScriptSites() || mCategory.showSoundSites()) {
+                    || mCategory.showJavaScriptSites() || mCategory.showSoundSites()
+                    || mCategory.showClipboardSites()) {
                 if ((boolean) newValue) {
                     Preference addException = getPreferenceScreen().findPreference(
                             ADD_EXCEPTION_KEY);
@@ -559,6 +564,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
             resource = R.string.website_settings_add_site_description_autoplay;
         } else if (mCategory.showBackgroundSyncSites()) {
             resource = R.string.website_settings_add_site_description_background_sync;
+        } else if (mCategory.showClipboardSites()) {
+            resource = PrefServiceBridge.getInstance().isClipboardEnabled()
+                    ? R.string.website_settings_add_site_description_clipboard_block
+                    : R.string.website_settings_add_site_description_clipboard_allow;
         } else if (mCategory.showJavaScriptSites()) {
             resource = R.string.website_settings_add_site_description_javascript;
         } else if (mCategory.showSoundSites()) {
@@ -632,7 +641,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if ((mCategory.showAutoplaySites() && !PrefServiceBridge.getInstance().isAutoplayEnabled())
                 || (mCategory.showJavaScriptSites()
                            && !PrefServiceBridge.getInstance().javaScriptEnabled())
-                || mCategory.showSoundSites()
+                || mCategory.showSoundSites() || mCategory.showClipboardSites()
                 || (mCategory.showBackgroundSyncSites()
                            && !PrefServiceBridge.getInstance().isBackgroundSyncAllowed())) {
             getPreferenceScreen().addPreference(
@@ -750,6 +759,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                             PrefServiceBridge.getInstance().isBackgroundSyncAllowed());
                 } else if (mCategory.showCameraSites()) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().isCameraEnabled());
+                } else if (mCategory.showClipboardSites()) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().isClipboardEnabled());
                 } else if (mCategory.showCookiesSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isAcceptCookiesEnabled());

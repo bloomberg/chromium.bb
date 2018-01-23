@@ -366,6 +366,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return true if websites are allowed to read from the clipboard.
+     */
+    public boolean isClipboardEnabled() {
+        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ);
+    }
+
+    /**
      * @return true if websites are allowed to play sound.
      */
     public boolean isSoundEnabled() {
@@ -699,6 +706,10 @@ public final class PrefServiceBridge {
 
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
         nativeSetBlockThirdPartyCookiesEnabled(enabled);
+    }
+
+    public void setClipboardEnabled(boolean allow) {
+        nativeSetClipboardEnabled(allow);
     }
 
     public void setDoNotTrackEnabled(boolean enabled) {
@@ -1108,6 +1119,7 @@ public final class PrefServiceBridge {
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBackgroundSyncEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
+    private native void nativeSetClipboardEnabled(boolean allow);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);

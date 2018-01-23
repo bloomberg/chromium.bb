@@ -166,7 +166,8 @@ static jboolean JNI_PrefServiceBridge_IsContentSettingEnabled(
   // that the functionality provided below is correct.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_ADS);
+         content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
   return GetBooleanForContentSetting(type);
@@ -653,6 +654,17 @@ static void JNI_PrefServiceBridge_SetAutoplayEnabled(
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_AUTOPLAY,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_PrefServiceBridge_SetClipboardEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_PrefServiceBridge_SetSoundEnabled(

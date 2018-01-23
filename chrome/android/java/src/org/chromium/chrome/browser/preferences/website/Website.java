@@ -32,6 +32,7 @@ public class Website implements Serializable {
     private ContentSettingException mAutoplayExceptionInfo;
     private ContentSettingException mBackgroundSyncExceptionInfo;
     private CameraInfo mCameraInfo;
+    private ClipboardInfo mClipboardInfo;
     private ContentSettingException mCookieException;
     private GeolocationInfo mGeolocationInfo;
     private ContentSettingException mJavaScriptException;
@@ -212,6 +213,31 @@ public class Website implements Serializable {
      */
     public void setCameraPermission(ContentSetting value) {
         if (mCameraInfo != null) mCameraInfo.setContentSetting(value);
+    }
+
+    /**
+     * Sets the ClipboardInfo object for this Website.
+     */
+    public void setClipboardInfo(ClipboardInfo info) {
+        mClipboardInfo = info;
+    }
+
+    public ClipboardInfo getClipboardInfo() {
+        return mClipboardInfo;
+    }
+
+    /**
+     * Returns what permission governs Clipboard access.
+     */
+    public ContentSetting getClipboardPermission() {
+        return mClipboardInfo != null ? mClipboardInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure Clipboard permission access setting for this site.
+     */
+    public void setClipboardPermission(ContentSetting value) {
+        if (mClipboardInfo != null) mClipboardInfo.setContentSetting(value);
     }
 
     /**
