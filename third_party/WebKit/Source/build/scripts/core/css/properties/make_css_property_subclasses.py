@@ -97,12 +97,6 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             if (property_name in ['Clip', 'ColumnCount', 'ColumnWidth', 'ZIndex']):
                 property_['custom_apply'] = "auto"
                 property_['custom_apply_args'] = {'auto_identity': 'CSSValueAuto'}
-            elif property_name == 'ColumnGap':
-                property_['custom_apply'] = "auto"
-                property_['custom_apply_args'] = {
-                    'auto_getter': 'HasNormalColumnGap',
-                    'auto_setter': 'SetHasNormalColumnGap',
-                    'auto_identity': 'CSSValueNormal'}
             elif (property_name in [
                     'BorderImageOutset', 'BorderImageRepeat', 'BorderImageSlice', 'BorderImageWidth', 'WebkitMaskBoxImageOutset',
                     'WebkitMaskBoxImageRepeat', 'WebkitMaskBoxImageSlice', 'WebkitMaskBoxImageWidth']):

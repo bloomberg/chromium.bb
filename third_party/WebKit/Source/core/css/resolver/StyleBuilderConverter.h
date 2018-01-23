@@ -142,6 +142,7 @@ class StyleBuilderConverter {
   static StyleContentAlignmentData ConvertContentAlignmentData(
       StyleResolverState&,
       const CSSValue&);
+  static GapLength ConvertGapLength(StyleResolverState&, const CSSValue&);
   static GridAutoFlow ConvertGridAutoFlow(StyleResolverState&, const CSSValue&);
   static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
   static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
@@ -151,6 +152,7 @@ class StyleBuilderConverter {
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static float ConvertBorderWidth(StyleResolverState&, const CSSValue&);
+  static GapLength ConvertGapLength(const StyleResolverState&, const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);

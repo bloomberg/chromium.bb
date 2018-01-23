@@ -42,6 +42,7 @@ ALIGNMENT_ORDER = [
     'Vector<CSSPropertyID>',
     'Vector<GridTrackSize>',
     'GridPosition',
+    'GapLength',
     'AtomicString',
     'scoped_refptr',
     'Persistent',

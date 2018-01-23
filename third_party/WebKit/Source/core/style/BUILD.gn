@@ -41,6 +41,7 @@ blink_core_sources("rendering") {
     "FilterOperation.h",
     "FilterOperations.cpp",
     "FilterOperations.h",
+    "GapLength.h",
     "GridArea.h",
     "GridLength.h",
     "GridPosition.h",

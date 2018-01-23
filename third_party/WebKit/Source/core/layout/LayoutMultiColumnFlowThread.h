@@ -300,7 +300,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
  private:
   void CalculateColumnHeightAvailable();
   void CalculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
-  static LayoutUnit ColumnGap(const ComputedStyle&);
+  static LayoutUnit ColumnGap(const ComputedStyle&, LayoutUnit available_width);
   void CreateAndInsertMultiColumnSet(LayoutBox* insert_before = nullptr);
   void CreateAndInsertSpannerPlaceholder(
       LayoutBox* spanner_object_in_flow_thread,

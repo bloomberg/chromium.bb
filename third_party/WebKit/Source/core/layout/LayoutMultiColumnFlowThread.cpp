@@ -734,7 +734,7 @@ void LayoutMultiColumnFlowThread::CalculateColumnCountAndWidth(
   LayoutBlock* column_block = MultiColumnBlockFlow();
   const ComputedStyle* column_style = column_block->Style();
   LayoutUnit available_width = column_block->ContentLogicalWidth();
-  LayoutUnit column_gap = ColumnGap(*column_style);
+  LayoutUnit column_gap = ColumnGap(*column_style, available_width);
   LayoutUnit computed_column_width =
       max(LayoutUnit(1), LayoutUnit(column_style->ColumnWidth()));
   unsigned computed_column_count = max<int>(1, column_style->ColumnCount());
@@ -762,12 +762,13 @@ void LayoutMultiColumnFlowThread::CalculateColumnCountAndWidth(
   }
 }
 
-LayoutUnit LayoutMultiColumnFlowThread::ColumnGap(const ComputedStyle& style) {
-  if (style.HasNormalColumnGap()) {
+LayoutUnit LayoutMultiColumnFlowThread::ColumnGap(const ComputedStyle& style,
+                                                  LayoutUnit available_width) {
+  if (style.ColumnGap().IsNormal()) {
     // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return LayoutUnit(style.GetFontDescription().ComputedSize());
   }
-  return LayoutUnit(style.ColumnGap());
+  return ValueForLength(style.ColumnGap().GetLength(), available_width);
 }
 
 void LayoutMultiColumnFlowThread::CreateAndInsertMultiColumnSet(
@@ -1304,7 +1305,8 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   LayoutUnit column_count(
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit column_width;
-  LayoutUnit gap_extra((column_count - 1) * ColumnGap(*multicol_style));
+  LayoutUnit gap_extra((column_count - 1) *
+                       ColumnGap(*multicol_style, LayoutUnit()));
   if (multicol_style->HasAutoColumnWidth()) {
     min_preferred_logical_width_ =
         min_preferred_logical_width_ * column_count + gap_extra;
