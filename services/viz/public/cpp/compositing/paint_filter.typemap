@@ -6,9 +6,6 @@ mojom = "//services/viz/public/interfaces/compositing/paint_filter.mojom"
 public_headers = [ "//cc/paint/paint_filter.h" ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/paint_filter_struct_traits.h" ]
-sources = [
-  "//services/viz/public/cpp/compositing/paint_filter_struct_traits.cc",
-]
 deps = [
   "//cc/paint",
 ]
