@@ -359,9 +359,10 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // txfm_buf's length is  txfm_size_row * txfm_size_col + 2 *
   // AOMMAX(txfm_size_row, txfm_size_col)
   // it is used for intermediate data buffering
+  const int buf_offset = AOMMAX(txfm_size_row, txfm_size_col);
   int32_t *temp_in = txfm_buf;
-  int32_t *temp_out = temp_in + AOMMAX(txfm_size_row, txfm_size_col);
-  int32_t *buf = temp_out + AOMMAX(txfm_size_row, txfm_size_col);
+  int32_t *temp_out = temp_in + buf_offset;
+  int32_t *buf = temp_out + buf_offset;
   int32_t *buf_ptr = buf;
   int c, r;
 
