@@ -167,6 +167,10 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       for (size_t i = 1; i < tokens.size(); i++) {
+        if (!tokens[i].ContainsOnlyASCII()) {
+          messages->push_back("Non-ASCII characters in origin.");
+          continue;
+        }
         if (EqualIgnoringASCIICase(tokens[i], "'self'")) {
           origins.push_back(self_origin->ToUrlOrigin());
         } else if (src_origin && EqualIgnoringASCIICase(tokens[i], "'src'")) {
