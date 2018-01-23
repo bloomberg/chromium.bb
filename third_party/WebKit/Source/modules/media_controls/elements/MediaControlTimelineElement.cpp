@@ -122,7 +122,7 @@ void MediaControlTimelineElement::OnPlaying() {
     return;
   metrics_.RecordPlaying(
       frame->GetChromeClient().GetScreenInfo().orientation_type,
-      MediaElement().IsFullscreen(), Width());
+      MediaElement().IsFullscreen(), TrackWidth());
 }
 
 const char* MediaControlTimelineElement::GetNameForHistograms() const {
@@ -150,7 +150,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.ScrubbingEnd"));
     GetMediaControls().EndScrubbing();
-    metrics_.RecordEndGesture(Width(), MediaElement().duration());
+    metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
 
     if (current_time_display_)
       current_time_display_->SetIsWanted(false);
@@ -160,7 +160,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
     metrics_.StartKey();
   }
   if (event->type() == EventTypeNames::keyup && event->IsKeyboardEvent()) {
-    metrics_.RecordEndKey(Width(), ToKeyboardEvent(event)->keyCode());
+    metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event)->keyCode());
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
@@ -177,7 +177,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
       return;
 
     const Touch* touch = touch_event->touches()->item(0);
-    double position = max(0.0, fmin(1.0, touch->clientX() / Width()));
+    double position = max(0.0, fmin(1.0, touch->clientX() / TrackWidth()));
     SetPosition(position * MediaElement().duration());
   } else if (event->type() != EventTypeNames::input) {
     return;
@@ -242,7 +242,6 @@ void MediaControlTimelineElement::RenderBarSegments() {
     return;
   }
 
-  // int current_position = int(current_time * Width() / duration);
   double current_position = current_time / duration;
   for (unsigned i = 0; i < buffered_time_ranges->length(); ++i) {
     float start = buffered_time_ranges->start(i, ASSERT_NO_EXCEPTION);
@@ -260,22 +259,32 @@ void MediaControlTimelineElement::RenderBarSegments() {
       continue;
     }
 
-    // int start_position = int(start * Width() / duration);
-    // int end_position = int(end * Width() / duration);
     double start_position = start / duration;
     double end_position = end / duration;
 
-    // Draw highlight to show what we have played.
-    if (current_position > start_position) {
+    if (MediaControlsImpl::IsModern()) {
+      // Draw highlight to show what we have played.
+      SetBeforeSegmentPosition(MediaControlSliderElement::Position(
+          start_position, current_position - start_position));
+
+      // Draw dark grey highlight to show what we have loaded.
       SetAfterSegmentPosition(MediaControlSliderElement::Position(
-          start_position, current_position));
+          current_position, end_position - current_position));
+    } else {
+      // Draw highlight to show what we have played.
+      if (current_position > start_position) {
+        SetAfterSegmentPosition(MediaControlSliderElement::Position(
+            start_position, current_position));
+      }
+
+      // Draw dark grey highlight to show what we have loaded.
+      if (end_position > current_position) {
+        SetBeforeSegmentPosition(MediaControlSliderElement::Position(
+            current_position, end_position - current_position));
+      }
     }
 
-    // Draw dark grey highlight to show what we have loaded.
-    if (end_position > current_position) {
-      SetBeforeSegmentPosition(MediaControlSliderElement::Position(
-          current_position, end_position - current_position));
-    }
+    // Return since we've drawn the only buffered range we're going to draw.
     return;
   }
 

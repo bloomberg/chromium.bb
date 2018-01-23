@@ -31,7 +31,7 @@ class MODULES_EXPORT MediaControlSliderElement
 
   // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
   // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
-  int Width();
+  int TrackWidth();
 
  protected:
   class MediaControlSliderElementResizeObserverDelegate;

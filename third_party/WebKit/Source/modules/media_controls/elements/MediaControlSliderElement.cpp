@@ -11,6 +11,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "core/resize_observer/ResizeObserverEntry.h"
+#include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -119,7 +120,7 @@ void MediaControlSliderElement::SetBeforeSegmentPosition(
   DCHECK(segment_highlight_before_);
   before_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        Width(), ZoomFactor());
+                        TrackWidth(), ZoomFactor());
 }
 
 void MediaControlSliderElement::SetAfterSegmentPosition(
@@ -127,13 +128,14 @@ void MediaControlSliderElement::SetAfterSegmentPosition(
   DCHECK(segment_highlight_after_);
   after_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        Width(), ZoomFactor());
+                        TrackWidth(), ZoomFactor());
 }
 
-int MediaControlSliderElement::Width() {
-  if (LayoutBoxModelObject* box = GetLayoutBoxModelObject())
-    return box->OffsetWidth().Round();
-  return 0;
+int MediaControlSliderElement::TrackWidth() {
+  LayoutBoxModelObject* box = MediaControlsImpl::IsModern()
+                                  ? GetTrackElement().GetLayoutBoxModelObject()
+                                  : GetLayoutBoxModelObject();
+  return box ? box->OffsetWidth().Round() : 0;
 }
 
 float MediaControlSliderElement::ZoomFactor() const {
@@ -144,9 +146,9 @@ float MediaControlSliderElement::ZoomFactor() const {
 
 void MediaControlSliderElement::NotifyElementSizeChanged() {
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        Width(), ZoomFactor());
+                        TrackWidth(), ZoomFactor());
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        Width(), ZoomFactor());
+                        TrackWidth(), ZoomFactor());
 }
 
 void MediaControlSliderElement::Trace(blink::Visitor* visitor) {
