@@ -55,9 +55,13 @@ class PlatformThreadRef {
 #elif defined(OS_POSIX)
   typedef pthread_t RefType;
 #endif
-  constexpr PlatformThreadRef() : id_(0) {}
+  PlatformThreadRef()
+      : id_(0) {
+  }
 
-  explicit constexpr PlatformThreadRef(RefType id) : id_(id) {}
+  explicit PlatformThreadRef(RefType id)
+      : id_(id) {
+  }
 
   bool operator==(PlatformThreadRef other) const {
     return id_ == other.id_;
@@ -81,9 +85,9 @@ class PlatformThreadHandle {
   typedef pthread_t Handle;
 #endif
 
-  constexpr PlatformThreadHandle() : handle_(0) {}
+  PlatformThreadHandle() : handle_(0) {}
 
-  explicit constexpr PlatformThreadHandle(Handle handle) : handle_(handle) {}
+  explicit PlatformThreadHandle(Handle handle) : handle_(handle) {}
 
   bool is_equal(const PlatformThreadHandle& other) const {
     return handle_ == other.handle_;

@@ -37,7 +37,7 @@ namespace internal {
 template <typename T>
 class VectorBuffer {
  public:
-  constexpr VectorBuffer() = default;
+  VectorBuffer() = default;
 
 #if defined(__clang__) && !defined(__native_client__)
   // This constructor converts an uninitialized void* to a T* which triggers
