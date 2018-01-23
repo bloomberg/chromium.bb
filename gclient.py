@@ -1264,6 +1264,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Provide some built-in variables.
     result = {
         'checkout_android': 'android' in self.target_os,
+        'checkout_chromeos': 'chromeos' in self.target_os,
         'checkout_fuchsia': 'fuchsia' in self.target_os,
         'checkout_ios': 'ios' in self.target_os,
         'checkout_linux': 'unix' in self.target_os,
