@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 Found 59 tests; 46 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS utility code
-PASS application/octet-stream
-PASS video/x-new-fictional-format
+PASS application/octet-stream not supported
+PASS fictional formats and codecs not supported
 FAIL audio/mp4 (optional) assert_equals: audio/mp4 expected "maybe" but got ""
 FAIL audio/mp4; codecs="mp4a.40.2" (optional) assert_equals: audio/mp4; codecs="mp4a.40.2" expected "probably" but got ""
 PASS audio/mp4 with bogus codec
