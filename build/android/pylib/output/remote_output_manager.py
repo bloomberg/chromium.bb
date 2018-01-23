@@ -88,4 +88,4 @@ class GoogleStorageArchivedFile(output_manager.ArchivedFile):
     if self._datatype == output_manager.Datatype.HTML:
       content_type = 'text/html'
     google_storage_helper.upload(
-        self._upload_path, self.name, self._bucket, content_type)
+        self._upload_path, self.name, self._bucket, content_type=content_type)
