@@ -434,10 +434,10 @@ The full answer is here: we [Prefer Secure Origins For Powerful New
 Features](https://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features).
 In short, many web platform features give web origins access to sensitive new
 sources of information, or significant power over a user's experience with their
-computer/phone/watch/et c., or over their experience with it. We would therefore
+computer/phone/watch/etc., or over their experience with it. We would therefore
 like to have some basis to believe the origin meets a minimum bar for security,
 that the sensitive information is transported over the Internet in an
-authetnicated and confidential way, and that users can make meaningful choices
+authenticated and confidential way, and that users can make meaningful choices
 to trust or not trust a web origin.
 
 Note that the reason we require secure origins for WebCrypto is slightly
