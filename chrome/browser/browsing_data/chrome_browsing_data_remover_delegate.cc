@@ -960,12 +960,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     } else {
       // TODO(msramek): Store filters from the currently executed task on the
       // object to avoid having to copy them to callback methods.
-      flash_lso_helper_->StartFetching(
-          base::AdaptCallbackForRepeating(base::BindOnce(
-              &ChromeBrowsingDataRemoverDelegate::OnSitesWithFlashDataFetched,
-              weak_ptr_factory_.GetWeakPtr(),
-              filter_builder.BuildPluginFilter(),
-              CreatePendingTaskCompletionClosure())));
+      flash_lso_helper_->StartFetching(base::BindOnce(
+          &ChromeBrowsingDataRemoverDelegate::OnSitesWithFlashDataFetched,
+          weak_ptr_factory_.GetWeakPtr(), filter_builder.BuildPluginFilter(),
+          CreatePendingTaskCompletionClosure()));
     }
   }
 #endif
