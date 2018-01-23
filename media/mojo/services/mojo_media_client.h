@@ -37,7 +37,6 @@ class MediaLog;
 class RendererFactory;
 class VideoDecoder;
 class VideoRendererSink;
-struct CdmHostFilePath;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
@@ -49,10 +48,6 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // Called exactly once before any other method. |connector| can be used by
   // |this| to connect to other services. It is guaranteed to outlive |this|.
   virtual void Initialize(service_manager::Connector* connector);
-
-  // Called by the MediaService to ensure the process is sandboxed. It could be
-  // a no-op if the process is already sandboxed.
-  virtual void EnsureSandboxed();
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -88,12 +83,6 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // entity, e.g. hardware CDM modules.
   virtual std::unique_ptr<CdmProxy> CreateCdmProxy(const std::string& cdm_guid);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-  // Gets a list of CDM host file paths and put them in |cdm_host_file_paths|.
-  virtual void AddCdmHostFilePaths(
-      std::vector<CdmHostFilePath>* cdm_host_file_paths);
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
  protected:
   MojoMediaClient();

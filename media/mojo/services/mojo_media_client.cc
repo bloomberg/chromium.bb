@@ -25,8 +25,6 @@ MojoMediaClient::~MojoMediaClient() = default;
 
 void MojoMediaClient::Initialize(service_manager::Connector* connector) {}
 
-void MojoMediaClient::EnsureSandboxed() {}
-
 std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return nullptr;
@@ -66,10 +64,5 @@ std::unique_ptr<CdmProxy> MojoMediaClient::CreateCdmProxy(
   return nullptr;
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-void MojoMediaClient::AddCdmHostFilePaths(
-    std::vector<media::CdmHostFilePath>* /* cdm_host_file_paths */) {}
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
 }  // namespace media
