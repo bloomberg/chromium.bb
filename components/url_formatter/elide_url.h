@@ -42,7 +42,8 @@ namespace url_formatter {
 // http://crbug.com/6487 for more information.
 base::string16 ElideUrl(const GURL& url,
                         const gfx::FontList& font_list,
-                        float available_pixel_width);
+                        float available_pixel_width,
+                        gfx::Typesetter typesetter = gfx::Typesetter::DEFAULT);
 
 // This function takes a GURL object and elides the host to fit within
 // the given width. The function will never elide past the TLD+1 point,
