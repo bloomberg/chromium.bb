@@ -105,10 +105,20 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // No expected call to DeleteTextures becaus skia recycles
+  // No expected call to ProduceTextureDirectCHROMIUM(0, *) because
+  // mailbox is cached by GraphicsContext3DUtils and therefore does not need to
+  // be orphaned.
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(0, _)).Times(0);
+  resource = nullptr;
+
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  // Purging skia's resource cache will finally delete the GrTexture, resulting
+  // in the mailbox being orphaned via ProduceTextureDirectCHROMIUM.
   EXPECT_CALL(gl_,
               ProduceTextureDirectCHROMIUM(0, Pointee(test_mailbox.name[0])))
-      .Times(1);
-  resource = nullptr;
+      .Times(0);
+  GetGrContext()->performDeferredCleanup(std::chrono::milliseconds(0));
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 }

@@ -128,13 +128,9 @@ bool CanvasResource_Bitmap::IsValid() const {
 
 void CanvasResource_Bitmap::TearDown() {
   WaitSyncTokenBeforeRelease();
-  auto gl = ContextGL();
-  if (gl && HasGpuMailbox()) {
-    DCHECK(image_->IsTextureBacked());
-    // To avoid leaking Mailbox records, we must disassociate the mailbox
-    // before image_ goes out of scope because skia might recycle the texture.
-    gl->ProduceTextureDirectCHROMIUM(0, GetOrCreateGpuMailbox().name);
-  }
+  // We must not disassociate the mailbox from the texture object here because
+  // the texture may be recycled by skia and the associated cached mailbox
+  // stored by GraphicsContext3DUtils.cpp must remain valid.
   image_ = nullptr;
 }
 
