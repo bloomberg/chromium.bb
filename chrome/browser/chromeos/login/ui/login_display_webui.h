@@ -62,13 +62,9 @@ class LoginDisplayWebUI : public LoginDisplay,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;
   void Signout() override;
-  void CompleteLogin(const UserContext& user_context) override;
 
   void OnSigninScreenReady() override;
-  void OnGaiaScreenReady() override;
   void CancelUserAdding() override;
-  void LoadWallpaper(const AccountId& account_id) override;
-  void LoadSigninWallpaper() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
@@ -84,13 +80,9 @@ class LoginDisplayWebUI : public LoginDisplay,
   bool IsAllowNewUser() const override;
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
-  void SetDisplayEmail(const std::string& email) override;
-  void SetDisplayAndGivenName(const std::string& display_name,
-                              const std::string& given_name) override;
 
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;
-  bool IsUserWhitelisted(const AccountId& account_id) override;
 
   // ui::UserActivityDetector implementation:
   void OnUserActivity(const ui::Event* event) override;

@@ -56,14 +56,10 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   // SigninScreenHandlerDelegate implementation:
   void CancelPasswordChangedFlow() override;
   void CancelUserAdding() override;
-  void CompleteLogin(const UserContext& user_context) override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   void MigrateUserData(const std::string& old_password) override;
-  void LoadWallpaper(const AccountId& account_id) override;
-  void LoadSigninWallpaper() override;
   void OnSigninScreenReady() override;
-  void OnGaiaScreenReady() override;
   void RemoveUser(const AccountId& account_id) override;
   void ResyncUserData() override;
   void ShowEnterpriseEnrollmentScreen() override;
@@ -80,13 +76,9 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   bool AllowNewUserChanged() const override;
   bool IsSigninInProgress() const override;
   bool IsUserSigninCompleted() const override;
-  void SetDisplayEmail(const std::string& email) override;
-  void SetDisplayAndGivenName(const std::string& display_name,
-                              const std::string& given_name) override;
   void Signout() override;
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;
-  bool IsUserWhitelisted(const AccountId& account_id) override;
 
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;
