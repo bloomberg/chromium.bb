@@ -170,5 +170,45 @@ TEST_F(NavigationItemTest, GetDisplayTitleForURL) {
   EXPECT_EQ("1.gz", base::UTF16ToUTF8(title));
 }
 
+// Tests state transitions between ErrorRetryStates.
+TEST_F(NavigationItemTest, SetErrorRetryState) {
+  NavigationItemImpl item;
+
+  // item is not tracked in error_retry_states_ so should default to NO_ERROR.
+  EXPECT_EQ(ErrorRetryState::kNoNavigationError, item.GetErrorRetryState());
+
+  // The orders below matter because not all state transitions are valid.
+  // Invalid transitions are not tested because death tests are not supported in
+  // iOS simulator build.
+  item.SetErrorRetryState(
+      ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
+  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+            item.GetErrorRetryState());
+
+  item.SetErrorRetryState(ErrorRetryState::kDisplayingErrorForFailedNavigation);
+  ASSERT_EQ(ErrorRetryState::kDisplayingErrorForFailedNavigation,
+            item.GetErrorRetryState());
+
+  item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
+  ASSERT_EQ(ErrorRetryState::kNavigatingToFailedNavigationItem,
+            item.GetErrorRetryState());
+
+  item.SetErrorRetryState(ErrorRetryState::kRetryFailedNavigationItem);
+  ASSERT_EQ(ErrorRetryState::kRetryFailedNavigationItem,
+            item.GetErrorRetryState());
+
+  item.SetErrorRetryState(
+      ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
+  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+            item.GetErrorRetryState());
+
+  // Cycle through again, this time, terminate in no error.
+  item.SetErrorRetryState(ErrorRetryState::kDisplayingErrorForFailedNavigation);
+  item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
+  item.SetErrorRetryState(ErrorRetryState::kRetryFailedNavigationItem);
+  item.SetErrorRetryState(ErrorRetryState::kNoNavigationError);
+  ASSERT_EQ(ErrorRetryState::kNoNavigationError, item.GetErrorRetryState());
+}
+
 }  // namespace
 }  // namespace web

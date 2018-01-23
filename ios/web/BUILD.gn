@@ -245,7 +245,6 @@ source_set("ios_web_navigation_unittests") {
   sources = [
     "navigation/crw_navigation_item_holder_unittest.mm",
     "navigation/crw_navigation_item_storage_unittest.mm",
-    "navigation/crw_placeholder_navigation_info_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
