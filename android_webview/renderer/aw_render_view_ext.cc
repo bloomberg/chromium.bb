@@ -56,7 +56,7 @@ void AwRenderViewExt::CheckContentsSize() {
   if (!webview || !main_render_frame)
     return;
 
-  gfx::Size contents_size = main_render_frame->GetWebFrame()->ContentsSize();
+  gfx::Size contents_size = main_render_frame->GetWebFrame()->DocumentSize();
 
   // Fall back to contentsPreferredMinimumSize if the mainFrame is reporting a
   // 0x0 size (this happens during initial load).

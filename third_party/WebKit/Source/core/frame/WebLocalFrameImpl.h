@@ -92,7 +92,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebSharedWorkerRepositoryClient*) override;
   WebSize GetScrollOffset() const override;
   void SetScrollOffset(const WebSize&) override;
-  WebSize ContentsSize() const override;
+  WebSize DocumentSize() const override;
   bool HasVisibleContent() const override;
   WebRect VisibleContentRect() const override;
   WebView* View() const override;
