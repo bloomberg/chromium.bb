@@ -21,7 +21,8 @@
 
 [
     Constructor(DOMString type, optional MouseEventInit eventInitDict),
-    ConstructorCallWith=ScriptState
+    ConstructorCallWith=ScriptState,
+    Exposed=Window
 ] interface MouseEvent : UIEvent {
     readonly attribute double           screenX;
     readonly attribute double           screenY;

@@ -5,6 +5,7 @@
 // https://html.spec.whatwg.org/multipage/interaction.html#dragevent
 
 [
+    Exposed=Window,
     Constructor(DOMString type, optional DragEventInit eventInitDict)
 ] interface DragEvent : MouseEvent {
     [ImplementedAs=getDataTransfer] readonly attribute DataTransfer? dataTransfer;
