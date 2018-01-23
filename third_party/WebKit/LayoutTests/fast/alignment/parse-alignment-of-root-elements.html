@@ -106,9 +106,9 @@ console.log();
 
 test(function() {
     shadowHost.style.alignItems = "center";
-    shadowNode.style.alignItems = "right";
+    shadowNode.style.alignItems = "end";
     checkValues(shadowHost, "alignItems", "align-items", "center", "center");
-    checkValues(shadowNode, "alignItems", "align-items", "right", "right");
+    checkValues(shadowNode, "alignItems", "align-items", "end", "end");
     shadowNode.style.alignItems = "";
     checkValues(shadowNode, "alignItems", "align-items", "", "normal");
     shadowNode.style.alignSelf = "auto";
@@ -153,9 +153,9 @@ var slotted = document.getElementById("slotted");
 
 test(function() {
     shadowHost.style.alignItems = "center";
-    shadowNode.style.alignItems = "right";
-    slotted.style.alignItems = "left";
-    checkValues(slotted, "alignItems", "align-items", "left", "left");
+    shadowNode.style.alignItems = "start";
+    slotted.style.alignItems = "end";
+    checkValues(slotted, "alignItems", "align-items", "end", "end");
     slotted.style.alignItems = "";
     checkValues(slotted, "alignItems", "align-items", "", "normal");
     slotted.style.alignSelf = "start";
@@ -203,9 +203,9 @@ shadowNode.appendChild(slot);
 
 test(function() {
     shadowHost.style.alignItems = "center";
-    shadowNode.style.alignItems = "right";
-    slotted.style.alignItems = "left";
-    checkValues(slotted, "alignItems", "align-items", "left", "left");
+    shadowNode.style.alignItems = "end";
+    slotted.style.alignItems = "start";
+    checkValues(slotted, "alignItems", "align-items", "start", "start");
     slotted.style.alignItems = "";
     checkValues(slotted, "alignItems", "align-items", "", "normal");
     slotted.style.alignSelf = "start";
@@ -248,13 +248,13 @@ test(function() {
 
 test(function() {
     shadowHost.style.alignItems = "center";
-    shadowNode.style.alignItems = "right";
-    slot.style.alignItems = "left";
-    checkValues(slot, "alignItems", "align-items",  "left", "left");
+    shadowNode.style.alignItems = "end";
+    slot.style.alignItems = "start";
+    checkValues(slot, "alignItems", "align-items",  "start", "start");
     slot.style.alignItems = "";
     checkValues(slot, "alignItems", "align-items", "", "normal");
-    slot.style.alignSelf = "left";
-    checkValues(slot, "alignSelf", "align-self",  "left", "left");
+    slot.style.alignSelf = "start";
+    checkValues(slot, "alignSelf", "align-self",  "start", "start");
     slot.style.alignSelf = "auto";
     checkValues(slot, "alignSelf", "align-self",  "auto", "auto");
 }, "The 'slot' element should not use its parent inside the ShadowDOM tree to resolve the align-self 'auto' values because Blink does not support slots in the flat tree.");

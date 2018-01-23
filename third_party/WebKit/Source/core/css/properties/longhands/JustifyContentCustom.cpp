@@ -15,7 +15,8 @@ const CSSValue* JustifyContent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(range);
+  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(
+      range, CSSParsingUtils::IsContentPositionOrLeftOrRightKeyword);
 }
 
 const CSSValue* JustifyContent::CSSValueFromComputedStyleInternal(

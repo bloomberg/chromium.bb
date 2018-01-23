@@ -1870,16 +1870,6 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       // self-end is based on the child's block-flow direction. That's why we
       // need to check against the grid container's block-flow direction.
       return has_same_writing_mode ? kGridAxisEnd : kGridAxisStart;
-    case ItemPosition::kLeft:
-      // Aligns the alignment subject to be flush with the alignment container's
-      // 'line-left' edge. The alignment axis (column axis) is always orthogonal
-      // to the inline axis, hence this value behaves as 'start'.
-      return kGridAxisStart;
-    case ItemPosition::kRight:
-      // Aligns the alignment subject to be flush with the alignment container's
-      // 'line-right' edge. The alignment axis (column axis) is always
-      // orthogonal to the inline axis, hence this value behaves as 'start'.
-      return kGridAxisStart;
     case ItemPosition::kCenter:
       return kGridAxisCenter;
     // Only used in flex layout, otherwise equivalent to 'start'.
@@ -1901,6 +1891,8 @@ GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
       return kGridAxisStart;
     case ItemPosition::kAuto:
     case ItemPosition::kNormal:
+    case ItemPosition::kLeft:
+    case ItemPosition::kRight:
       break;
   }
 
@@ -2326,13 +2318,13 @@ ContentAlignmentData LayoutGrid::ComputeContentPositionAndDistributionOffset(
   bool is_row_axis = direction == kForColumns;
   switch (position) {
     case ContentPosition::kLeft:
-      // The align-content's axis is always orthogonal to the inline-axis.
-      return {LayoutUnit(), LayoutUnit()};
+      if (is_row_axis)
+        return {LayoutUnit(), LayoutUnit()};
+      break;
     case ContentPosition::kRight:
       if (is_row_axis)
         return {available_free_space, LayoutUnit()};
-      // The align-content's axis is always orthogonal to the inline-axis.
-      return {LayoutUnit(), LayoutUnit()};
+      break;
     case ContentPosition::kCenter:
       return {available_free_space / 2, LayoutUnit()};
     // Only used in flex layout, for other layout, it's equivalent to 'End'.
