@@ -10,6 +10,8 @@ include_rules = [
   "+content/common/content_export.h",
   "+content/network",
   "+content/public/network",
+  # TODO(yhirano): Remove this dependency.
+  "+content/public/common/content_features.h",
   "+services/network",
   "+services/service_manager/public",
   "+services/service_manager/sandbox",
