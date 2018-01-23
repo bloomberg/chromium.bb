@@ -30,7 +30,7 @@ constexpr base::FilePath::CharType kCachedLogoDirectory[] =
 
 bool UseGrayLogo() {
 #if defined(OS_ANDROID)
-  return !chrome::android::GetIsChromeHomeEnabled();
+  return !chrome::android::GetIsChromeModernDesignEnabled();
 #else
   return false;
 #endif

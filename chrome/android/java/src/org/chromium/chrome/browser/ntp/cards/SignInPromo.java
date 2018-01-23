@@ -282,7 +282,7 @@ public class SignInPromo extends OptionalLeaf {
                             ? R.layout.personalized_signin_promo_view_modern_content_suggestions
                             : R.layout.personalized_signin_promo_view_ntp_content_suggestions,
                     parent, config, contextMenuManager);
-            if (!FeatureUtilities.isChromeHomeEnabled()) {
+            if (!FeatureUtilities.isChromeModernDesignEnabled()) {
                 getParams().topMargin = parent.getResources().getDimensionPixelSize(
                         R.dimen.ntp_sign_in_promo_margin_top);
             }

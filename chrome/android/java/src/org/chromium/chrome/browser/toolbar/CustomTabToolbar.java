@@ -477,8 +477,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(getToolbarDataProvider().getSecurityIconResource());
-            mSecurityButton.setTint(LocationBarLayout.getColorStateList(
-                    getToolbarDataProvider(), getResources(), false));
+            mSecurityButton.setTint(
+                    LocationBarLayout.getColorStateList(getToolbarDataProvider(), getResources()));
         }
 
         if (showSecurityButton) {
@@ -750,6 +750,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public boolean isSuggestionsListShown() {
         // Custom tabs do not support suggestions.
+        return false;
+    }
+
+    @Override
+    public boolean useModernDesign() {
         return false;
     }
 }

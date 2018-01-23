@@ -204,7 +204,7 @@ public class SelectableListLayout<E>
         mToolbarShadow.init(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
-        if (FeatureUtilities.isChromeHomeEnabled()) mToolbarShadow.setAlpha(0);
+        if (FeatureUtilities.isChromeModernDesignEnabled()) mToolbarShadow.setAlpha(0);
 
         mShowShadowOnSelection = showShadowOnSelection;
         delegate.addObserver(this);
@@ -346,7 +346,7 @@ public class SelectableListLayout<E>
     }
 
     private void setEmptyOrLoadingViewStyle(View view) {
-        if (!FeatureUtilities.isChromeHomeEnabled()) return;
+        if (!FeatureUtilities.isChromeModernDesignEnabled()) return;
 
         ((FrameLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.CENTER_HORIZONTAL;
         ApiCompatibilityUtils.setPaddingRelative(view, ApiCompatibilityUtils.getPaddingStart(view),
