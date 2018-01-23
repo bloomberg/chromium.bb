@@ -66,7 +66,6 @@ extern "C" {
 
 #if CONFIG_REFERENCE_BUFFER
 /* Constant values while waiting for the sequence header */
-#define FRAME_ID_NUMBERS_PRESENT_FLAG 1
 #define FRAME_ID_LENGTH 15
 #define DELTA_FRAME_ID_LENGTH 14
 #endif  // CONFIG_REFERENCE_BUFFER

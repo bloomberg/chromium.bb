@@ -3316,7 +3316,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 #if CONFIG_EXT_TILE
       cm->large_scale_tile ? 0 :
 #endif  // CONFIG_EXT_TILE
-                           FRAME_ID_NUMBERS_PRESENT_FLAG;
+                           cm->error_resilient_mode;
   seq_params->frame_id_length = FRAME_ID_LENGTH;
   seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
 
