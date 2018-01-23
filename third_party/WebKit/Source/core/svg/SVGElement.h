@@ -173,8 +173,8 @@ class CORE_EXPORT SVGElement : public Element {
 
   SVGElementProxySet* ElementProxySet();
 
-  SVGElementSet* SetOfIncomingReferences() const;
   void AddReferenceTo(SVGElement*);
+  void NotifyIncomingReferences(bool needs_layout);
   void RebuildAllIncomingReferences();
   void RemoveAllIncomingReferences();
   void RemoveAllOutgoingReferences();
@@ -241,6 +241,8 @@ class CORE_EXPORT SVGElement : public Element {
   virtual bool SelfHasRelativeLengths() const { return false; }
 
   bool HasSVGParent() const;
+
+  SVGElementSet* SetOfIncomingReferences() const;
 
   SVGElementRareData* EnsureSVGRareData();
   inline bool HasSVGRareData() const { return svg_rare_data_; }

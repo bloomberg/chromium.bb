@@ -211,31 +211,7 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
   if (!object->GetNode() || !object->GetNode()->IsSVGElement())
     return;
 
-  SVGElementSet* dependencies =
-      ToSVGElement(object->GetNode())->SetOfIncomingReferences();
-  if (!dependencies)
-    return;
-
-  // We allow cycles in SVGDocumentExtensions reference sets in order to avoid
-  // expensive reference graph adjustments on changes, so we need to break
-  // possible cycles here.
-  // This strong reference is safe, as it is guaranteed that this set will be
-  // emptied at the end of recursion.
-  DEFINE_STATIC_LOCAL(SVGElementSet, invalidating_dependencies,
-                      (new SVGElementSet));
-
-  for (SVGElement* element : *dependencies) {
-    if (LayoutObject* layout_object = element->GetLayoutObject()) {
-      if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
-        // Reference cycle: we are in process of invalidating this dependant.
-        continue;
-      }
-
-      LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-          layout_object, needs_layout);
-      invalidating_dependencies.erase(element);
-    }
-  }
+  ToSVGElement(object->GetNode())->NotifyIncomingReferences(needs_layout);
 }
 
 void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
