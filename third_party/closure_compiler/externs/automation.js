@@ -87,7 +87,6 @@ chrome.automation.RoleType = {
   BANNER: 'banner',
   BLOCKQUOTE: 'blockquote',
   BUTTON: 'button',
-  BUTTON_DROP_DOWN: 'buttonDropDown',
   CANVAS: 'canvas',
   CAPTION: 'caption',
   CARET: 'caret',
