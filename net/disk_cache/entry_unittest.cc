@@ -2857,7 +2857,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheQueuedOpenOnDoomedEntry) {
   // Close(B);
   //
   // ... where the execution of the Open sits on the queue all the way till
-  // Doom. Currently this fails the open.
+  // Doom. This now succeeds, as the doom is merely queued at time of Open,
+  // rather than completed.
 
   SetSimpleCacheMode();
   // Disable optimistic ops so we can block on CreateEntry and start
@@ -2879,12 +2880,48 @@ TEST_F(DiskCacheEntryTest, SimpleCacheQueuedOpenOnDoomedEntry) {
   ASSERT_EQ(net::ERR_IO_PENDING,
             cache_->OpenEntry(key, &entry2, cb.callback()));
 
-  cache_->DoomEntry(key, base::Bind([](int) {}));
+  net::TestCompletionCallback cb2;
+  cache_->DoomEntry(key, cb2.callback());
   // Now event loop.
-  EXPECT_EQ(net::ERR_FAILED, cb.WaitForResult());
-  ASSERT_TRUE(entry2 == nullptr);
+  EXPECT_EQ(net::OK, cb.WaitForResult());
+  ASSERT_TRUE(entry2 != nullptr);
+  entry2->Close();
 
+  EXPECT_EQ(net::OK, cb2.WaitForResult());
   EXPECT_EQ(0, cache_->GetEntryCount());
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomErrorRace) {
+  // Code coverage for a doom racing with a doom induced by a failure.
+  SetSimpleCacheMode();
+  // Disable optimistic ops so we can block on CreateEntry and start
+  // WriteData off with an empty op queue.
+  SetCacheType(net::APP_CACHE);
+  InitCache();
+
+  const char kKey[] = "the first key";
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  CacheTestFillBuffer(buffer1->data(), kSize1, false);
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_EQ(net::OK, CreateEntry(kKey, &entry));
+  ASSERT_TRUE(entry != nullptr);
+
+  // Now an empty _1 file, to cause a stream 2 write to fail.
+  base::FilePath entry_file1_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(kKey, 1));
+  base::File entry_file1(entry_file1_path,
+                         base::File::FLAG_WRITE | base::File::FLAG_CREATE);
+  ASSERT_TRUE(entry_file1.IsValid());
+
+  entry->WriteData(2, 0, buffer1.get(), kSize1, net::CompletionCallback(),
+                   /* truncate= */ true);
+
+  net::TestCompletionCallback cb;
+  cache_->DoomEntry(kKey, cb.callback());
+  entry->Close();
+  EXPECT_EQ(0, cb.WaitForResult());
 }
 
 bool TruncatePath(const base::FilePath& file_path, int64_t length) {
