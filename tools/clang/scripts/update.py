@@ -131,7 +131,6 @@ def DownloadUrl(url, output_file):
 
 def EnsureDirExists(path):
   if not os.path.exists(path):
-    print "Creating directory %s" % path
     os.makedirs(path)
 
 
@@ -461,20 +460,16 @@ def UpdateClang(args):
   if ReadStampFile() == expected_stamp and not args.force_local_build:
     return 0
 
-  print 'Updating Clang to %s...' % PACKAGE_VERSION
-
   # Reset the stamp file in case the build is unsuccessful.
   WriteStampFile('')
 
   if not args.force_local_build:
-    print 'Downloading prebuilt clang'
     if os.path.exists(LLVM_BUILD_DIR):
       RmTree(LLVM_BUILD_DIR)
 
     DownloadAndUnpackClangPackage(sys.platform)
     if 'win' in target_os:
       DownloadAndUnpackClangPackage('win32', runtimes_only=True)
-    print 'clang %s unpacked' % PACKAGE_VERSION
     if sys.platform == 'win32':
       CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
     WriteStampFile(expected_stamp)
@@ -487,6 +482,8 @@ def UpdateClang(args):
     print 'https://www.chromium.org/developers/how-tos/android-build-instructions'
     print 'for how to install the NDK, or pass --without-android.'
     return 1
+
+  print 'Locally building Clang %s...' % PACKAGE_VERSION
 
   DownloadHostGcc(args)
   AddCMakeToPath(args)
