@@ -5,30 +5,18 @@
 #ifndef UI_APP_LIST_VIEWS_FOLDER_BACKGROUND_VIEW_H_
 #define UI_APP_LIST_VIEWS_FOLDER_BACKGROUND_VIEW_H_
 
-#include "base/macros.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 
 namespace app_list {
 
 class AppListFolderView;
 
-// Draws the ink bubble indicating the boundary of the folder when user drags an
-// item inside a folder.
-class FolderBackgroundView : public views::View,
-                             public ui::ImplicitAnimationObserver {
+// An invisible background view of the folder in fullscreen app list. It is used
+// to close folder when the user clicks/taps outside the opened folder.
+class FolderBackgroundView : public views::View {
  public:
-  enum ShowState {
-    NO_BUBBLE,
-    SHOW_BUBBLE,
-    HIDE_BUBBLE,
-  };
-
-  FolderBackgroundView();
+  explicit FolderBackgroundView(AppListFolderView* folder_view);
   ~FolderBackgroundView() override;
-
-  // Updates the ink bubble's ShowState.
-  void UpdateFolderContainerBubble(ShowState state);
 
   void set_folder_view(AppListFolderView* folder_view) {
     folder_view_ = folder_view;
@@ -36,15 +24,13 @@ class FolderBackgroundView : public views::View,
 
  private:
   // views::View overrides:
-  void OnPaint(gfx::Canvas* canvas) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // ui::ImplicitAnimationObserver overrides:
-  void OnImplicitAnimationsCompleted() override;
-
-  float GetBubbleOpacity() const;
+  // Handles mouse click event or gesture tap event.
+  void HandleClickOrTap();
 
   AppListFolderView* folder_view_;
-  ShowState show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderBackgroundView);
 };
