@@ -1505,6 +1505,34 @@ IntRect Editor::FirstRectForRange(const EphemeralRange& range) const {
       start_caret_rect.Height());
 }
 
+EphemeralRange Editor::RangeForPoint(const IntPoint& frame_point) const {
+  const PositionWithAffinity position_with_affinity =
+      GetFrame().PositionForPoint(frame_point);
+  if (position_with_affinity.IsNull())
+    return EphemeralRange();
+
+  const VisiblePosition position =
+      CreateVisiblePosition(position_with_affinity);
+  const VisiblePosition previous = PreviousPositionOf(position);
+  if (previous.IsNotNull()) {
+    const EphemeralRange previous_character_range =
+        MakeRange(previous, position);
+    const IntRect rect = FirstRectForRange(previous_character_range);
+    if (rect.Contains(frame_point))
+      return EphemeralRange(previous_character_range);
+  }
+
+  const VisiblePosition next = NextPositionOf(position);
+  const EphemeralRange next_character_range = MakeRange(position, next);
+  if (next_character_range.IsNotNull()) {
+    const IntRect rect = FirstRectForRange(next_character_range);
+    if (rect.Contains(frame_point))
+      return EphemeralRange(next_character_range);
+  }
+
+  return EphemeralRange();
+}
+
 void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
                                       InputEvent::InputType input_type) {
   if (!style || style->IsEmpty()) {

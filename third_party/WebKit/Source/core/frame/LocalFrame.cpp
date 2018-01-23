@@ -42,9 +42,7 @@
 #include "core/dom/events/Event.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/editing/ime/InputMethodController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -713,33 +711,6 @@ Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
   HitTestResult result = GetEventHandler().HitTestResultAtPoint(
       pt, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   return result.InnerNode() ? &result.InnerNode()->GetDocument() : nullptr;
-}
-
-EphemeralRange LocalFrame::RangeForPoint(const IntPoint& frame_point) {
-  const PositionWithAffinity position_with_affinity =
-      PositionForPoint(frame_point);
-  if (position_with_affinity.IsNull())
-    return EphemeralRange();
-
-  VisiblePosition position = CreateVisiblePosition(position_with_affinity);
-  VisiblePosition previous = PreviousPositionOf(position);
-  if (previous.IsNotNull()) {
-    const EphemeralRange previous_character_range =
-        MakeRange(previous, position);
-    IntRect rect = GetEditor().FirstRectForRange(previous_character_range);
-    if (rect.Contains(frame_point))
-      return EphemeralRange(previous_character_range);
-  }
-
-  VisiblePosition next = NextPositionOf(position);
-  const EphemeralRange next_character_range = MakeRange(position, next);
-  if (next_character_range.IsNotNull()) {
-    IntRect rect = GetEditor().FirstRectForRange(next_character_range);
-    if (rect.Contains(frame_point))
-      return EphemeralRange(next_character_range);
-  }
-
-  return EphemeralRange();
 }
 
 bool LocalFrame::ShouldReuseDefaultView(const KURL& url) const {
