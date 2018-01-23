@@ -140,6 +140,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   const int boosted = frame_is_boosted(cpi);
 
+  // Speed 0 for all speed features that give neutral coding performance change.
+  sf->reduce_inter_modes = 1;
+
   if (speed >= 1) {
     sf->selective_ref_frame = 1;
     sf->tx_size_search_init_depth_rect = 1;
@@ -452,6 +455,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->tx_size_search_method = USE_FULL_RD;
   sf->tx_size_search_init_depth_sqr = 0;
   sf->tx_size_search_init_depth_rect = 0;
+  sf->reduce_inter_modes = 0;
   sf->adaptive_motion_search = 0;
   sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;

@@ -9908,6 +9908,22 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
           mbmi->ref_mv_idx = 1 + ref_idx;
 
+          if (cpi->sf.reduce_inter_modes) {
+            if (mbmi->ref_frame[0] == LAST2_FRAME ||
+                mbmi->ref_frame[0] == LAST3_FRAME ||
+                mbmi->ref_frame[1] == LAST2_FRAME ||
+                mbmi->ref_frame[1] == LAST3_FRAME) {
+              if (mbmi_ext
+                      ->ref_mv_stack[ref_frame_type]
+                                    [mbmi->ref_mv_idx + idx_offset]
+                      .weight < REF_CAT_LEVEL) {
+                *mbmi = backup_mbmi;
+                x->skip = backup_skip;
+                continue;
+              }
+            }
+          }
+
           if (comp_pred) {
             int ref_mv_idx = mbmi->ref_mv_idx;
             // Special case: NEAR_NEWMV and NEW_NEARMV modes use

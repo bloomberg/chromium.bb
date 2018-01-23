@@ -300,6 +300,9 @@ typedef struct SPEED_FEATURES {
   // adds overhead.
   int static_segmentation;
 
+  // Limit the inter mode tested in the RD loop
+  int reduce_inter_modes;
+
   // If 1 we iterate finding a best reference for 2 ref frames together - via
   // a log search that iterates 4 times (check around mv for last for best
   // error of combined predictor then check around mv for alt). If 0 we
