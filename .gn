@@ -147,20 +147,24 @@ check_targets = [
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
-  "//third_party/breakpad/*",
+  #"//third_party/breakpad/*",  # Small errors.
   "//third_party/brotli/*",
   "//third_party/hunspell/*",
   "//third_party/leveldatabase/*",
-  "//third_party/libaddressinput/*",
+
+  #"//third_party/libaddressinput/*",  # Small errors.
   "//third_party/libphonenumber/*",
-  "//third_party/libwebp/*",
+
+  #"//third_party/libwebp/*",  # Errors: https://crbug.com/800762
   "//third_party/snappy/*",
-  "//third_party/WebKit/*",
+
+  #"//third_party/WebKit/*",  # Errors: https://crbug.com/800764
   "//tools/*",
 
   "//ui/*",
   "//url/*",
-  "//v8/*",
+
+  #"//v8/*",  # Errors: https://bugs.chromium.org/p/v8/issues/detail?id=7330
   "//win8/*",
 ]
 

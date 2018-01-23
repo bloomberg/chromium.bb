@@ -476,6 +476,7 @@ component("skia") {
     "//base/third_party/dynamic_annotations",
     "//third_party/libpng",
     "//third_party/libwebp",
+    "//third_party/libwebp:libwebp_webp",
   ]
 
   if (!is_ios) {
@@ -503,6 +504,7 @@ component("skia") {
   if (skia_support_pdf) {
     deps += [
       "//third_party/sfntly",
+      "//third_party/sfntly:sfntly_chromium",
       "//third_party/zlib",
     ]
     sources += skia_pdf_sources

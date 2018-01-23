@@ -133,5 +133,9 @@ template("buildflag_header") {
                              "testonly",
                              "visibility",
                            ])
+
+    public_deps = [
+      "//build:buildflag_header_h",
+    ]
   }
 }

@@ -37,6 +37,11 @@ source_set("chrome_dll_resources") {
   sources = [
     "chrome_dll_resource.h",
   ]
+
+  deps = [
+    ":command_ids",
+  ]
+
   if (is_win) {
     sources += [ "chrome_dll.rc" ]
     if (enable_basic_printing) {
@@ -45,9 +50,7 @@ source_set("chrome_dll_resources") {
       # toggle off of the enable-basic-printing flag in the .rc file.
       defines = [ "ENABLE_BASIC_PRINTING_FOR_RC" ]
     }
-    deps = [
-      "//printing/features",
-    ]
+    deps += [ "//printing/features" ]
   }
 }
 

@@ -46,7 +46,6 @@ static_library("vector_icons") {
 
 static_library("toolbar") {
   sources = [
-    "features.h",
     "toolbar_model.h",
     "toolbar_model_delegate.h",
     "toolbar_model_impl.cc",
