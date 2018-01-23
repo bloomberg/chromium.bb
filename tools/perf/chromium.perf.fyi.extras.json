@@ -352,7 +352,7 @@
         "isolate_name": "performance_test_suite",
         "name": "performance_test_suite",
         "override_compile_targets": [
-          "peformance_test_suite"
+          "performance_test_suite"
         ],
         "merge": {
           "args": [

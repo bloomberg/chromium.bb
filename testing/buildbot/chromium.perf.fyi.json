@@ -541,7 +541,7 @@
         },
         "name": "performance_test_suite",
         "override_compile_targets": [
-          "peformance_test_suite"
+          "performance_test_suite"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
