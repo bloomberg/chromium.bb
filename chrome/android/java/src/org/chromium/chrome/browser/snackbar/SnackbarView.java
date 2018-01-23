@@ -240,14 +240,16 @@ class SnackbarView {
         int backgroundColor = snackbar.getBackgroundColor();
         if (backgroundColor == 0) {
             backgroundColor = ApiCompatibilityUtils.getColor(mContainerView.getResources(),
-                    FeatureUtilities.isChromeHomeEnabled() ? R.color.modern_primary_color
-                                                           : R.color.snackbar_background_color);
+                    FeatureUtilities.isChromeModernDesignEnabled()
+                            ? R.color.modern_primary_color
+                            : R.color.snackbar_background_color);
         }
 
         int textAppearanceResId = snackbar.getTextAppearance();
         if (textAppearanceResId == 0) {
-            textAppearanceResId = FeatureUtilities.isChromeHomeEnabled() ? R.style.BlackBodyDefault
-                                                                         : R.style.WhiteBody;
+            textAppearanceResId = FeatureUtilities.isChromeModernDesignEnabled()
+                    ? R.style.BlackBodyDefault
+                    : R.style.WhiteBody;
         }
         ApiCompatibilityUtils.setTextAppearance(mMessageView, textAppearanceResId);
 
