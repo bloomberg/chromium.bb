@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -261,18 +262,19 @@ AutomationInternalEnableTabFunction::Run() {
   content::WebContents* contents = NULL;
   if (params->args.tab_id.get()) {
     int tab_id = *params->args.tab_id;
-    if (!ExtensionTabUtil::GetTabById(tab_id,
-                                      GetProfile(),
-                                      include_incognito(),
-                                      NULL, /* browser out param*/
-                                      NULL, /* tab_strip out param */
-                                      &contents,
-                                      NULL /* tab_index out param */)) {
+    if (!ExtensionTabUtil::GetTabById(
+            tab_id, browser_context(), include_incognito(),
+            NULL, /* browser out param*/
+            NULL, /* tab_strip out param */
+            &contents, NULL /* tab_index out param */)) {
       return RespondNow(
           Error(tabs_constants::kTabNotFoundError, base::IntToString(tab_id)));
     }
   } else {
-    contents = GetCurrentBrowser()->tab_strip_model()->GetActiveWebContents();
+    contents = ChromeExtensionFunctionDetails(this)
+                   .GetCurrentBrowser()
+                   ->tab_strip_model()
+                   ->GetActiveWebContents();
     if (!contents)
       return RespondNow(Error("No active tab"));
   }
