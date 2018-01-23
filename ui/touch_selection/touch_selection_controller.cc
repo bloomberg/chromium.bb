@@ -88,12 +88,31 @@ void TouchSelectionController::OnSelectionBoundsChanged(
 
   // Swap the Handles when the start and end selection points cross each other.
   if (active_status_ == SELECTION_ACTIVE) {
-    if ((start_selection_handle_->IsActive() &&
-         end_.edge_bottom() == start.edge_bottom()) ||
-        (end_selection_handle_->IsActive() &&
-         end.edge_bottom() == start_.edge_bottom())) {
+    // Bounds have the same orientation.
+    bool need_swap = (start_selection_handle_->IsActive() &&
+                      end_.edge_bottom() == start.edge_bottom()) ||
+                     (end_selection_handle_->IsActive() &&
+                      end.edge_bottom() == start_.edge_bottom());
+
+    // Bounds have different orientation.
+    // Specifically, for writing-mode: vertical-*, selection bounds are
+    // horizontal.
+    // When vertical-lr:
+    //   - start bound is from right to left,
+    //   - end bound is from left to right.
+    // When vertical-rl:
+    //   - start bound is from left to right,
+    //   - end bound is from right to left.
+    // So when previous start/end bound become current end/start bound,
+    // edge_top() and edge_bottom() are swapped. Therefore, we are comparing
+    // edge_bottom() with edge_top() here.
+    need_swap |= (start_selection_handle_->IsActive() &&
+                  end_.edge_bottom() == start.edge_top()) ||
+                 (end_selection_handle_->IsActive() &&
+                  end.edge_bottom() == start_.edge_top());
+
+    if (need_swap)
       start_selection_handle_.swap(end_selection_handle_);
-    }
   }
 
   start_ = start;
