@@ -502,9 +502,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_BUTTON:
       message_id = IDS_AX_ROLE_BUTTON;
       break;
-    case ui::AX_ROLE_BUTTON_DROP_DOWN:
-      message_id = IDS_AX_ROLE_BUTTON_DROP_DOWN;
-      break;
     case ui::AX_ROLE_CANVAS:
       // No role description.
       break;

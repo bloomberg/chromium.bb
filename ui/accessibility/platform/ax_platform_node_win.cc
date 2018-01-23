@@ -2710,7 +2710,6 @@ int AXPlatformNodeWin::MSAARole() {
 
     // TODO(dmazzoni): figure out the proper MSAA role for roles listed below.
     case AX_ROLE_BLOCKQUOTE:
-    case AX_ROLE_BUTTON_DROP_DOWN:
     case AX_ROLE_CARET:
     case AX_ROLE_CLIENT:
     case AX_ROLE_DEFINITION:

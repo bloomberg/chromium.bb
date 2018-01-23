@@ -127,7 +127,7 @@ void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
 
 void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_BUTTON_DROP_DOWN;
+  node_data->role = ui::AX_ROLE_BUTTON;
   node_data->AddState(ui::AX_STATE_HASPOPUP);
   if (enabled()) {
     node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
