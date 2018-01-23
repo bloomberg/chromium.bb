@@ -190,9 +190,10 @@ void DOMFileSystem::CreateWriter(const FileEntry* file_entry,
                                  std::move(callbacks));
 }
 
-void DOMFileSystem::CreateFile(const FileEntry* file_entry,
-                               FileCallback* success_callback,
-                               ErrorCallbackBase* error_callback) {
+void DOMFileSystem::CreateFile(
+    const FileEntry* file_entry,
+    SnapshotFileCallback::OnDidCreateSnapshotFileCallback* success_callback,
+    ErrorCallbackBase* error_callback) {
   KURL file_system_url = CreateFileSystemURL(file_entry);
   if (!FileSystem()) {
     ReportError(error_callback, FileError::kAbortErr);

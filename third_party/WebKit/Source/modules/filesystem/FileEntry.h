@@ -38,8 +38,8 @@
 namespace blink {
 
 class DOMFileSystemBase;
-class FileCallback;
 class FileWriterCallback;
+class V8FileCallback;
 
 class MODULES_EXPORT FileEntry final : public Entry {
   DEFINE_WRAPPERTYPEINFO();
@@ -51,7 +51,7 @@ class MODULES_EXPORT FileEntry final : public Entry {
   }
 
   void createWriter(FileWriterCallback*, V8ErrorCallback* = nullptr);
-  void file(FileCallback*, V8ErrorCallback* = nullptr);
+  void file(V8FileCallback*, V8ErrorCallback* = nullptr);
 
   bool isFile() const override { return true; }
 

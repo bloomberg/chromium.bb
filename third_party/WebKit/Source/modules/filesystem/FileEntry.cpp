@@ -32,7 +32,6 @@
 
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriterCallback.h"
 
@@ -47,10 +46,13 @@ void FileEntry::createWriter(FileWriterCallback* success_callback,
                              ScriptErrorCallback::Wrap(error_callback));
 }
 
-void FileEntry::file(FileCallback* success_callback,
+void FileEntry::file(V8FileCallback* success_callback,
                      V8ErrorCallback* error_callback) {
-  filesystem()->CreateFile(this, success_callback,
-                           ScriptErrorCallback::Wrap(error_callback));
+  filesystem()->CreateFile(
+      this,
+      SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Create(
+          success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void FileEntry::Trace(blink::Visitor* visitor) {
