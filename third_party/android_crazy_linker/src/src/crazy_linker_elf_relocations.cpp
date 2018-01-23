@@ -6,15 +6,17 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <memory>
 
 #include "crazy_linker_debug.h"
 #include "crazy_linker_elf_symbols.h"
 #include "crazy_linker_elf_view.h"
 #include "crazy_linker_error.h"
-#include "crazy_linker_leb128.h"
 #include "crazy_linker_system.h"
 #include "crazy_linker_util.h"
 #include "linker_phdr.h"
+#include "linker_reloc_iterators.h"
+#include "linker_sleb128.h"
 
 #define DEBUG_RELOCATIONS 0
 
@@ -187,11 +189,6 @@ bool ElfRelocations::Init(const ElfView* view, Error* error) {
   phdr_count_ = view->phdr_count();
   load_bias_ = view->load_bias();
 
-  // We handle only Rel or Rela, but not both. If DT_RELA or DT_RELASZ
-  // then we require DT_PLTREL to agree.
-  bool has_rela_relocations = false;
-  bool has_rel_relocations = false;
-
   // Parse the dynamic table.
   ElfView::DynamicIterator dyn(view);
   for (; dyn.HasNext(); dyn.GetNext()) {
@@ -200,88 +197,93 @@ bool ElfRelocations::Init(const ElfView* view, Error* error) {
 
     const ELF::Addr tag = dyn.GetTag();
     switch (tag) {
+#if defined(USE_RELA)
+      case DT_REL:
+      case DT_RELSZ:
+      case DT_ANDROID_REL:
+      case DT_ANDROID_RELSZ:
+#else
+      case DT_RELA:
+      case DT_RELASZ:
+      case DT_ANDROID_RELA:
+      case DT_ANDROID_RELASZ:
+#endif
+        LOG("unsupported relocation type");
+        *error = "Relocation for wrong architecture";
+        return false;
       case DT_PLTREL:
         RLOG("  DT_PLTREL value=%d\n", dyn_value);
-        if (dyn_value != DT_REL && dyn_value != DT_RELA) {
-          *error = "Invalid DT_PLTREL value in dynamic section";
+#if defined(USE_RELA)
+        if (dyn_value != DT_RELA) {
+          RLOG("unsupported DT_PLTREL in \"%s\"; expected DT_RELA");
           return false;
         }
-        relocations_type_ = dyn_value;
+#else
+        if (dyn_value != DT_REL) {
+          RLOG("unsupported DT_PLTREL in \"%s\"; expected DT_REL");
+          return false;
+        }
+#endif
         break;
       case DT_JMPREL:
-        RLOG("  DT_JMPREL addr=%p\n", dyn_addr);
+        RLOG("  DT_JMPREL addr=%p\n", dyn_addr - load_bias_);
         plt_relocations_ = dyn_addr;
         break;
       case DT_PLTRELSZ:
         plt_relocations_size_ = dyn_value;
         RLOG("  DT_PLTRELSZ size=%d\n", dyn_value);
         break;
+#if defined(USE_RELA)
       case DT_RELA:
+#else
       case DT_REL:
-        RLOG("  %s addr=%p\n",
-             (tag == DT_RELA) ? "DT_RELA" : "DT_REL",
-             dyn_addr);
+#endif
+        RLOG("  %s addr=%p\n", (tag == DT_RELA) ? "DT_RELA" : "DT_REL",
+             dyn_addr - load_bias_);
         if (relocations_) {
           *error = "Unsupported DT_RELA/DT_REL combination in dynamic section";
           return false;
         }
         relocations_ = dyn_addr;
-        if (tag == DT_RELA)
-          has_rela_relocations = true;
-        else
-          has_rel_relocations = true;
         break;
+#if defined(USE_RELA)
       case DT_RELASZ:
+#else
       case DT_RELSZ:
-        RLOG("  %s size=%d\n",
-             (tag == DT_RELASZ) ? "DT_RELASZ" : "DT_RELSZ",
-             dyn_addr);
-        if (relocations_size_) {
-          *error = "Unsupported DT_RELASZ/DT_RELSZ combination in dyn section";
-          return false;
-        }
+#endif
+        RLOG("  %s size=%d\n", (tag == DT_RELASZ) ? "DT_RELASZ" : "DT_RELSZ",
+             dyn_value);
         relocations_size_ = dyn_value;
-        if (tag == DT_RELASZ)
-          has_rela_relocations = true;
-        else
-          has_rel_relocations = true;
         break;
+#if defined(USE_RELA)
       case DT_ANDROID_RELA:
+#else
       case DT_ANDROID_REL:
+#endif
         RLOG("  %s addr=%p\n",
-             (tag == DT_ANDROID_RELA) ? "DT_ANDROID_RELA" : "DT_ANDROID_REL",
-             dyn_addr);
+             (tag == DT_ANDROID_REL) ? "DT_ANDROID_REL" : "DT_ANDROID_RELA",
+             dyn_addr - load_bias_);
         if (android_relocations_) {
-          *error = "Unsupported DT_ANDROID_RELA/DT_ANDROID_REL "
-                   "combination in dynamic section";
+          *error = "Multiple DT_ANDROID_* sections defined.";
           return false;
         }
         android_relocations_ = reinterpret_cast<uint8_t*>(dyn_addr);
-        if (tag == DT_ANDROID_RELA)
-          has_rela_relocations = true;
-        else
-          has_rel_relocations = true;
         break;
+#if defined(USE_RELA)
       case DT_ANDROID_RELASZ:
+#else
       case DT_ANDROID_RELSZ:
+#endif
         RLOG("  %s size=%d\n",
-             (tag == DT_ANDROID_RELASZ)
-                 ? "DT_ANDROID_RELASZ" : "DT_ANDROID_RELSZ", dyn_addr);
-        if (android_relocations_size_) {
-          *error = "Unsupported DT_ANDROID_RELASZ/DT_ANDROID_RELSZ "
-                   "combination in dyn section";
-          return false;
-        }
+             (tag == DT_ANDROID_RELASZ) ? "DT_ANDROID_RELASZ"
+                                        : "DT_ANDROID_RELSZ",
+             dyn_value);
         android_relocations_size_ = dyn_value;
-        if (tag == DT_ANDROID_RELASZ)
-          has_rela_relocations = true;
-        else
-          has_rel_relocations = true;
         break;
       case DT_PLTGOT:
         // Only used on MIPS currently. Could also be used on other platforms
         // when lazy binding (i.e. RTLD_LAZY) is implemented.
-        RLOG("  DT_PLTGOT addr=%p\n", dyn_addr);
+        RLOG("  DT_PLTGOT addr=%p\n", dyn_addr - load_bias_);
         plt_got_ = reinterpret_cast<ELF::Addr*>(dyn_addr);
         break;
       case DT_TEXTREL:
@@ -322,32 +324,6 @@ bool ElfRelocations::Init(const ElfView* view, Error* error) {
     }
   }
 
-  if (has_rel_relocations && has_rela_relocations) {
-    *error = "Combining relocations with and without addends is not "
-             "currently supported";
-    return false;
-  }
-
-  // If DT_PLTREL did not explicitly assign relocations_type_, set it
-  // here based on the type of relocations found.
-  if (relocations_type_ != DT_REL && relocations_type_ != DT_RELA) {
-    if (has_rel_relocations)
-      relocations_type_ = DT_REL;
-    else if (has_rela_relocations)
-      relocations_type_ = DT_RELA;
-  }
-
-  if (relocations_type_ == DT_REL && has_rela_relocations) {
-    *error = "Found relocations with addends in dyn section, "
-             "but DT_PLTREL is DT_REL";
-    return false;
-  }
-  if (relocations_type_ == DT_RELA && has_rel_relocations) {
-    *error = "Found relocations without addends in dyn section, "
-             "but DT_PLTREL is DT_RELA";
-    return false;
-  }
-
   return true;
 }
 
@@ -366,35 +342,13 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
   if (!ApplyAndroidRelocations(symbols, resolver, error))
     return false;
 
-  if (relocations_type_ == DT_REL) {
-    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(relocations_),
-                        relocations_size_ / sizeof(ELF::Rel),
-                        symbols,
-                        resolver,
-                        error))
-      return false;
-    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(plt_relocations_),
-                        plt_relocations_size_ / sizeof(ELF::Rel),
-                        symbols,
-                        resolver,
-                        error))
-      return false;
-  }
-
-  if (relocations_type_ == DT_RELA) {
-    if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(relocations_),
-                         relocations_size_ / sizeof(ELF::Rela),
-                         symbols,
-                         resolver,
-                         error))
-      return false;
-    if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(plt_relocations_),
-                         plt_relocations_size_ / sizeof(ELF::Rela),
-                         symbols,
-                         resolver,
-                         error))
-      return false;
-  }
+  if (!ApplyRelocs(reinterpret_cast<rel_t*>(relocations_),
+                   relocations_size_ / sizeof(rel_t), symbols, resolver, error))
+    return false;
+  if (!ApplyRelocs(reinterpret_cast<rel_t*>(plt_relocations_),
+                   plt_relocations_size_ / sizeof(rel_t), symbols, resolver,
+                   error))
+    return false;
 
 #ifdef __mips__
   if (!RelocateMipsGot(symbols, resolver, error))
@@ -442,76 +396,41 @@ class AndroidPackedRelocationGroupFlags {
   const size_t flags_;
 };
 
+template <typename ElfRelIteratorT>
+bool ElfRelocations::ForEachAndroidRelocationHelper(
+    ElfRelIteratorT&& rel_iterator,
+    RelocationHandler handler,
+    void* opaque) {
+  size_t relocations_handled = 0;
+  while (rel_iterator.has_next()) {
+    const auto rel = rel_iterator.next();
+    if (rel == nullptr) {
+      LOG("%s: failed to parse relocation %d\n", __FUNCTION__,
+          relocations_handled);
+      return false;
+    }
+    // Pass the relocation to the supplied handler function. If the handler
+    // returns false we view this as failure and return false to our caller.
+    if (!handler(this, rel, opaque)) {
+      LOG("%s: failed handling relocation %d\n", __FUNCTION__,
+          relocations_handled);
+      return false;
+    }
+    relocations_handled++;
+  }
+  LOG("%s: relocations_handled=%d\n", __FUNCTION__, relocations_handled);
+  return true;
+}
+
 bool ElfRelocations::ForEachAndroidRelocation(RelocationHandler handler,
                                               void* opaque) {
   // Skip over the "APS2" signature.
-  Sleb128Decoder decoder(android_relocations_ + 4,
-                         android_relocations_size_ - 4);
-
-  // Unpacking into a relocation with addend, both for REL and RELA, is
-  // convenient at this point. If REL, the handler needs to take care of
-  // any conversion before use.
-  ELF::Rela relocation;
-  memset(&relocation, 0, sizeof(relocation));
-
-  // Read the relocation count and initial offset.
-  const size_t relocation_count = decoder.pop_front();
-  relocation.r_offset = decoder.pop_front();
-
-  LOG("%s: relocation_count=%d, initial r_offset=%p\n",
-      __FUNCTION__,
-      relocation_count,
-      relocation.r_offset);
-
-  size_t relocations_handled = 0;
-  while (relocations_handled < relocation_count) {
-    // Read the start of the group header to obtain its size and flags.
-    const size_t group_size = decoder.pop_front();
-    AndroidPackedRelocationGroupFlags group_flags(decoder.pop_front());
-
-    // Read other group header fields, depending on the flags read above.
-    size_t group_r_offset_delta = 0;
-    if (group_flags.is_relocation_grouped_by_offset_delta())
-      group_r_offset_delta = decoder.pop_front();
-
-    if (group_flags.is_relocation_grouped_by_info())
-      relocation.r_info = decoder.pop_front();
-
-    if (group_flags.is_relocation_group_has_addend() &&
-        group_flags.is_relocation_grouped_by_addend())
-      relocation.r_addend += decoder.pop_front();
-    else if (!group_flags.is_relocation_group_has_addend())
-      relocation.r_addend = 0;
-
-    // Expand the group into individual relocations.
-    for (size_t group_index = 0; group_index < group_size; group_index++) {
-      if (group_flags.is_relocation_grouped_by_offset_delta())
-        relocation.r_offset += group_r_offset_delta;
-      else
-        relocation.r_offset += decoder.pop_front();
-
-      if (!group_flags.is_relocation_grouped_by_info())
-        relocation.r_info = decoder.pop_front();
-
-      if (group_flags.is_relocation_group_has_addend() &&
-          !group_flags.is_relocation_grouped_by_addend())
-        relocation.r_addend += decoder.pop_front();
-
-      // Pass the relocation to the supplied handler function. If the handler
-      // returns false we view this as failure and return false to our caller.
-      if (!handler(this, &relocation, opaque)) {
-        LOG("%s: failed handling relocation %d\n",
-            __FUNCTION__,
-            relocations_handled);
-        return false;
-      }
-
-      relocations_handled++;
-    }
-  }
-
-  LOG("%s: relocations_handled=%d\n", __FUNCTION__, relocations_handled);
-  return true;
+  const uint8_t* packed_relocs = android_relocations_ + 4;
+  const size_t packed_relocs_size = android_relocations_size_ - 4;
+  return ForEachAndroidRelocationHelper(
+      packed_reloc_iterator<sleb128_decoder>(
+          sleb128_decoder(packed_relocs, packed_relocs_size)),
+      handler, opaque);
 }
 
 namespace {
@@ -529,19 +448,10 @@ bool IsValidAndroidPackedRelocations(const uint8_t* android_relocations,
           android_relocations[3] == '2');
 }
 
-// Narrow a Rela to its equivalent Rel. The r_addend field in the input
-// Rela must be zero.
-void ConvertRelaToRel(const ELF::Rela* rela, ELF::Rel* rel) {
-  assert(rela->r_addend == 0);
-  rel->r_offset = rela->r_offset;
-  rel->r_info = rela->r_info;
-}
-
 }  // namespace
 
 // Args for ApplyAndroidRelocation handler function.
 struct ApplyAndroidRelocationArgs {
-  ELF::Addr relocations_type;
   const ElfSymbols* symbols;
   ElfRelocations::SymbolResolver* resolver;
   Error* error;
@@ -549,28 +459,16 @@ struct ApplyAndroidRelocationArgs {
 
 // Static ForEachAndroidRelocation() handler.
 bool ElfRelocations::ApplyAndroidRelocation(ElfRelocations* relocations,
-                                            const ELF::Rela* relocation,
+                                            const rel_t* relocation,
                                             void* opaque) {
   // Unpack args from opaque.
   ApplyAndroidRelocationArgs* args =
       reinterpret_cast<ApplyAndroidRelocationArgs*>(opaque);
-  const ELF::Addr relocations_type = args->relocations_type;
   const ElfSymbols* symbols = args->symbols;
   ElfRelocations::SymbolResolver* resolver = args->resolver;
   Error* error = args->error;
 
-  // For REL relocations, convert from RELA to REL and apply the conversion.
-  // For RELA relocations, apply RELA directly.
-  if (relocations_type == DT_REL) {
-    ELF::Rel converted;
-    ConvertRelaToRel(relocation, &converted);
-    return relocations->ApplyRelReloc(&converted, symbols, resolver, error);
-  }
-
-  if (relocations_type == DT_RELA)
-    return relocations->ApplyRelaReloc(relocation, symbols, resolver, error);
-
-  return true;
+  return relocations->ApplyReloc(relocation, symbols, resolver, error);
 }
 
 bool ElfRelocations::ApplyAndroidRelocations(const ElfSymbols* symbols,
@@ -584,17 +482,17 @@ bool ElfRelocations::ApplyAndroidRelocations(const ElfSymbols* symbols,
     return false;
 
   ApplyAndroidRelocationArgs args;
-  args.relocations_type = relocations_type_;
   args.symbols = symbols;
   args.resolver = resolver;
   args.error = error;
   return ForEachAndroidRelocation(&ApplyAndroidRelocation, &args);
 }
 
-bool ElfRelocations::ApplyResolvedRelaReloc(const ELF::Rela* rela,
-                                            ELF::Addr sym_addr,
-                                            bool resolved CRAZY_UNUSED,
-                                            Error* error) {
+#if defined(USE_RELA)
+bool ElfRelocations::ApplyResolvedReloc(const ELF::Rela* rela,
+                                        ELF::Addr sym_addr,
+                                        bool resolved CRAZY_UNUSED,
+                                        Error* error) {
   const ELF::Word rela_type = ELF_R_TYPE(rela->r_info);
   const ELF::Word CRAZY_UNUSED rela_symbol = ELF_R_SYM(rela->r_info);
   const ELF::Sword CRAZY_UNUSED addend = rela->r_addend;
@@ -686,10 +584,12 @@ bool ElfRelocations::ApplyResolvedRelaReloc(const ELF::Rela* rela,
   return true;
 }
 
-bool ElfRelocations::ApplyResolvedRelReloc(const ELF::Rel* rel,
-                                           ELF::Addr sym_addr,
-                                           bool resolved CRAZY_UNUSED,
-                                           Error* error) {
+#else
+
+bool ElfRelocations::ApplyResolvedReloc(const ELF::Rel* rel,
+                                        ELF::Addr sym_addr,
+                                        bool resolved CRAZY_UNUSED,
+                                        Error* error) {
   const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
   const ELF::Word CRAZY_UNUSED rel_symbol = ELF_R_SYM(rel->r_info);
 
@@ -791,6 +691,7 @@ bool ElfRelocations::ApplyResolvedRelReloc(const ELF::Rel* rel,
 
   return true;
 }
+#endif  // defined(USE_RELA)
 
 bool ElfRelocations::ResolveSymbol(ELF::Word rel_type,
                                    ELF::Word rel_symbol,
@@ -847,20 +748,17 @@ bool ElfRelocations::ResolveSymbol(ELF::Word rel_type,
   return false;
 }
 
-bool ElfRelocations::ApplyRelReloc(const ELF::Rel* rel,
-                                   const ElfSymbols* symbols,
-                                   SymbolResolver* resolver,
-                                   Error* error) {
+bool ElfRelocations::ApplyReloc(const rel_t* rel,
+                                const ElfSymbols* symbols,
+                                SymbolResolver* resolver,
+                                Error* error) {
   const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
   const ELF::Word rel_symbol = ELF_R_SYM(rel->r_info);
 
   ELF::Addr sym_addr = 0;
   ELF::Addr reloc = static_cast<ELF::Addr>(rel->r_offset + load_bias_);
-  RLOG("  reloc=%p offset=%p type=%d symbol=%d\n",
-       reloc,
-       rel->r_offset,
-       rel_type,
-       rel_symbol);
+  RLOG("  offset=%p type=%d reloc=%p symbol=%d\n", rel->r_offset, rel_type,
+       reloc, rel_symbol);
 
   if (rel_type == 0)
     return true;
@@ -881,14 +779,14 @@ bool ElfRelocations::ApplyRelReloc(const ELF::Rel* rel,
     resolved = true;
   }
 
-  return ApplyResolvedRelReloc(rel, sym_addr, resolved, error);
+  return ApplyResolvedReloc(rel, sym_addr, resolved, error);
 }
 
-bool ElfRelocations::ApplyRelRelocs(const ELF::Rel* rel,
-                                    size_t rel_count,
-                                    const ElfSymbols* symbols,
-                                    SymbolResolver* resolver,
-                                    Error* error) {
+bool ElfRelocations::ApplyRelocs(const rel_t* rel,
+                                 size_t rel_count,
+                                 const ElfSymbols* symbols,
+                                 SymbolResolver* resolver,
+                                 Error* error) {
   RLOG("%s: rel=%p rel_count=%d\n", __FUNCTION__, rel, rel_count);
 
   if (!rel)
@@ -897,64 +795,7 @@ bool ElfRelocations::ApplyRelRelocs(const ELF::Rel* rel,
   for (size_t rel_n = 0; rel_n < rel_count; rel++, rel_n++) {
     RLOG("  Relocation %d of %d:\n", rel_n + 1, rel_count);
 
-    if (!ApplyRelReloc(rel, symbols, resolver, error))
-      return false;
-  }
-
-  return true;
-}
-
-bool ElfRelocations::ApplyRelaReloc(const ELF::Rela* rela,
-                                    const ElfSymbols* symbols,
-                                    SymbolResolver* resolver,
-                                    Error* error) {
-  const ELF::Word rel_type = ELF_R_TYPE(rela->r_info);
-  const ELF::Word rel_symbol = ELF_R_SYM(rela->r_info);
-
-  ELF::Addr sym_addr = 0;
-  ELF::Addr reloc = static_cast<ELF::Addr>(rela->r_offset + load_bias_);
-  RLOG("  reloc=%p offset=%p type=%d symbol=%d\n",
-       reloc,
-       rela->r_offset,
-       rel_type,
-       rel_symbol);
-
-  if (rel_type == 0)
-    return true;
-
-  bool resolved = false;
-
-  // If this is a symbolic relocation, compute the symbol's address.
-  if (__builtin_expect(rel_symbol != 0, 0)) {
-    if (!ResolveSymbol(rel_type,
-                       rel_symbol,
-                       symbols,
-                       resolver,
-                       reloc,
-                       &sym_addr,
-                       error)) {
-      return false;
-    }
-    resolved = true;
-  }
-
-  return ApplyResolvedRelaReloc(rela, sym_addr, resolved, error);
-}
-
-bool ElfRelocations::ApplyRelaRelocs(const ELF::Rela* rela,
-                                     size_t rela_count,
-                                     const ElfSymbols* symbols,
-                                     SymbolResolver* resolver,
-                                     Error* error) {
-  RLOG("%s: rela=%p rela_count=%d\n", __FUNCTION__, rela, rela_count);
-
-  if (!rela)
-    return true;
-
-  for (size_t rel_n = 0; rel_n < rela_count; rela++, rel_n++) {
-    RLOG("  Relocation %d of %d:\n", rel_n + 1, rela_count);
-
-    if (!ApplyRelaReloc(rela, symbols, resolver, error))
+    if (!ApplyReloc(rel, symbols, resolver, error))
       return false;
   }
 
@@ -1050,7 +891,7 @@ void ElfRelocations::AdjustRelocation(ELF::Word rel_type,
   }
 }
 
-void ElfRelocations::AdjustAndroidRelocation(const ELF::Rela* relocation,
+void ElfRelocations::AdjustAndroidRelocation(const rel_t* relocation,
                                              size_t src_addr,
                                              size_t dst_addr,
                                              size_t map_addr,
@@ -1088,7 +929,7 @@ struct RelocateAndroidRelocationArgs {
 
 // Static ForEachAndroidRelocation() handler.
 bool ElfRelocations::RelocateAndroidRelocation(ElfRelocations* relocations,
-                                               const ELF::Rela* relocation,
+                                               const rel_t* relocation,
                                                void* opaque) {
   // Unpack args from opaque, to obtain addrs and size;
   RelocateAndroidRelocationArgs* args =
@@ -1098,11 +939,6 @@ bool ElfRelocations::RelocateAndroidRelocation(ElfRelocations* relocations,
   const size_t map_addr = args->map_addr;
   const size_t size = args->size;
 
-  // Relocate the given relocation.  Because the r_addend field is ignored
-  // in relocating RELA relocations we do not need to convert from REL to
-  // RELA and supply alternative relocator functions; instead we can work
-  // here directly on the RELA supplied by ForEachAndroidRelocation(), even
-  // on REL architectures.
   relocations->AdjustAndroidRelocation(relocation,
                                        src_addr,
                                        dst_addr,
@@ -1129,7 +965,6 @@ void ElfRelocations::RelocateAndroidRelocations(size_t src_addr,
   ForEachAndroidRelocation(&RelocateAndroidRelocation, &args);
 }
 
-template<typename Rel>
 void ElfRelocations::RelocateRelocations(size_t src_addr,
                                          size_t dst_addr,
                                          size_t map_addr,
@@ -1140,9 +975,9 @@ void ElfRelocations::RelocateRelocations(size_t src_addr,
   const size_t map_delta = map_addr - src_addr;
 
   // Ignore PLT relocations, which all target symbols (ignored here).
-  const Rel* rel = reinterpret_cast<Rel*>(relocations_);
-  const size_t relocations_count = relocations_size_ / sizeof(Rel);
-  const Rel* rel_limit = rel + relocations_count;
+  const rel_t* rel = reinterpret_cast<rel_t*>(relocations_);
+  const size_t relocations_count = relocations_size_ / sizeof(rel_t);
+  const rel_t* rel_limit = rel + relocations_count;
 
   for (; rel < rel_limit; ++rel) {
     const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
@@ -1163,12 +998,6 @@ void ElfRelocations::RelocateRelocations(size_t src_addr,
   }
 }
 
-template void ElfRelocations::RelocateRelocations<ELF::Rel>(
-    size_t src_addr, size_t dst_addr, size_t map_addr, size_t size);
-
-template void ElfRelocations::RelocateRelocations<ELF::Rela>(
-    size_t src_addr, size_t dst_addr, size_t map_addr, size_t size);
-
 void ElfRelocations::CopyAndRelocate(size_t src_addr,
                                      size_t dst_addr,
                                      size_t map_addr,
@@ -1182,11 +1011,7 @@ void ElfRelocations::CopyAndRelocate(size_t src_addr,
   RelocateAndroidRelocations(src_addr, dst_addr, map_addr, size);
 
   // Relocate relocations.
-  if (relocations_type_ == DT_REL)
-    RelocateRelocations<ELF::Rel>(src_addr, dst_addr, map_addr, size);
-
-  if (relocations_type_ == DT_RELA)
-    RelocateRelocations<ELF::Rela>(src_addr, dst_addr, map_addr, size);
+  RelocateRelocations(src_addr, dst_addr, map_addr, size);
 
 #ifdef __mips__
   // Add this value to each source address to get the corresponding
