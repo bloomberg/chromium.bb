@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -43,8 +44,6 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_paths.h"
@@ -480,11 +479,6 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   mojo::edk::ScopedIPCSupport ipc_support(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-
-  TestingBrowserProcess* browser_process =
-      TestingBrowserProcess::GetGlobal();
-  TestingProfileManager profile_manager(browser_process);
-  ASSERT_TRUE(profile_manager.SetUp());
 
   base::Process process =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
