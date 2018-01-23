@@ -65,13 +65,9 @@ bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
   // but a value of 0 for MSC if they cannot access the CRTC data structure
   // associated with the surface. crbug.com/231945
-  bool prev_invalid_msc = invalid_msc_;
   invalid_msc_ = (media_stream_counter == 0);
-  if (invalid_msc_) {
-    LOG_IF(ERROR, !prev_invalid_msc) << "glXGetSyncValuesOML "
-        "should not return TRUE with a media stream counter of 0.";
+  if (invalid_msc_)
     return false;
-  }
 
   struct timespec real_time;
   clock_gettime(CLOCK_REALTIME, &real_time);
