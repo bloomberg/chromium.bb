@@ -28,8 +28,9 @@
 
 [
     Constructor(DOMString type, optional PopStateEventInit eventInitDict),
-    ConstructorCallWith=ScriptState
+    ConstructorCallWith=ScriptState,
     // TODO(foolip): Exposed=(Window,Worker)
+    Exposed=Window
 ] interface PopStateEvent : Event {
     [Custom=Getter] readonly attribute any state;
 };
