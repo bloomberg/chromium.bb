@@ -27,8 +27,6 @@ static_library("vr_android") {
     "gvr_util.h",
     "mailbox_to_surface_bridge.cc",
     "mailbox_to_surface_bridge.h",
-    "vr_compositor.cc",
-    "vr_compositor.h",
     "vr_controller.cc",
     "vr_controller.h",
     "vr_core_info.cc",

@@ -485,10 +485,24 @@ public interface WebContents extends Parcelable {
     void setHasPersistentVideo(boolean value);
 
     /**
-     * Set the view size of WebContents. The size is in physical pixel.
+     * Set the view size of the WebContents. The size is in physical pixels.
      *
      * @param width The width of the view.
      * @param height The height of the view.
      */
     void setSize(int width, int height);
+
+    /**
+     * Gets the view size width of the WebContents. The size is in physical pixels.
+     *
+     * @return The width of the view.
+     */
+    int getWidth();
+
+    /**
+     * Gets the view size width of the WebContents. The size is in physical pixels.
+     *
+     * @return The width of the view.
+     */
+    int getHeight();
 }

@@ -120,6 +120,9 @@ void AndroidUiGestureTarget::SetPointer(int x, int y) {
 // static
 AndroidUiGestureTarget* AndroidUiGestureTarget::FromJavaObject(
     const JavaRef<jobject>& obj) {
+  if (obj.is_null())
+    return nullptr;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   return reinterpret_cast<AndroidUiGestureTarget*>(
       Java_AndroidUiGestureTarget_getNativeObject(env, obj));

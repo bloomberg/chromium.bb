@@ -46,13 +46,19 @@ ContentElement::~ContentElement() = default;
 
 void ContentElement::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
-  if (!texture_id_)
-    return;
   gfx::RectF copy_rect(0, 0, 1, 1);
-  renderer->DrawTexturedQuad(texture_id_, texture_location_,
-                             model.view_proj_matrix * world_space_transform(),
-                             copy_rect, computed_opacity(), size(),
-                             corner_radius());
+  if (texture_id_) {
+    renderer->DrawTexturedQuad(texture_id_, texture_location_,
+                               model.view_proj_matrix * world_space_transform(),
+                               copy_rect, computed_opacity(), size(),
+                               corner_radius());
+  }
+  if (overlay_texture_id_) {
+    renderer->DrawTexturedQuad(overlay_texture_id_, overlay_texture_location_,
+                               model.view_proj_matrix * world_space_transform(),
+                               copy_rect, computed_opacity(), size(),
+                               corner_radius());
+  }
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
@@ -80,21 +86,25 @@ void ContentElement::OnFlingStart(
     const gfx::PointF& position) {
   delegate_->OnContentFlingStart(std::move(gesture), position);
 }
+
 void ContentElement::OnFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   delegate_->OnContentFlingCancel(std::move(gesture), position);
 }
+
 void ContentElement::OnScrollBegin(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   delegate_->OnContentScrollBegin(std::move(gesture), position);
 }
+
 void ContentElement::OnScrollUpdate(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   delegate_->OnContentScrollUpdate(std::move(gesture), position);
 }
+
 void ContentElement::OnScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
@@ -108,6 +118,15 @@ void ContentElement::SetTextureId(unsigned int texture_id) {
 void ContentElement::SetTextureLocation(
     UiElementRenderer::TextureLocation location) {
   texture_location_ = location;
+}
+
+void ContentElement::SetOverlayTextureId(unsigned int texture_id) {
+  overlay_texture_id_ = texture_id;
+}
+
+void ContentElement::SetOverlayTextureLocation(
+    UiElementRenderer::TextureLocation location) {
+  overlay_texture_location_ = location;
 }
 
 void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {

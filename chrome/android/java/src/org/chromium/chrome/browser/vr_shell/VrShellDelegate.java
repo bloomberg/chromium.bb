@@ -134,7 +134,6 @@ public class VrShellDelegate
     private VrDaydreamApi mVrDaydreamApi;
     private Boolean mIsDaydreamCurrentViewer;
     private VrCoreVersionChecker mVrCoreVersionChecker;
-    private TabModelSelector mTabModelSelector;
 
     private boolean mProbablyInDon;
     private boolean mInVr;
@@ -446,6 +445,14 @@ public class VrShellDelegate
         return false;
     }
 
+    public static boolean activitySupportsVrBrowsing(Activity activity) {
+        if (activity instanceof ChromeTabbedActivity) return true;
+        if (activity instanceof CustomTabActivity) {
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_IN_CUSTOM_TAB);
+        }
+        return false;
+    }
+
     @CalledByNative
     private static VrShellDelegate getInstance() {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -484,14 +491,6 @@ public class VrShellDelegate
 
     private static boolean activitySupportsAutopresentation(Activity activity) {
         return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity;
-    }
-
-    private static boolean activitySupportsVrBrowsing(Activity activity) {
-        if (activity instanceof ChromeTabbedActivity) return true;
-        if (activity instanceof CustomTabActivity) {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_IN_CUSTOM_TAB);
-        }
-        return false;
     }
 
     private static boolean activitySupportsExitFeedback(Activity activity) {
@@ -808,8 +807,9 @@ public class VrShellDelegate
         return true;
     }
 
-    private boolean isVrBrowsingEnabled() {
-        return isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity);
+    /* package */ boolean isVrBrowsingEnabled() {
+        return isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity)
+                && isDaydreamCurrentViewer();
     }
 
     private void enterVr(final boolean tentativeWebVrMode) {
@@ -841,7 +841,7 @@ public class VrShellDelegate
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
         mVrShell.initializeNative(mActivity.getActivityTab(), webVrMode, mAutopresentWebVr,
-                mActivity instanceof CustomTabActivity, !isVrBrowsingEnabled());
+                mActivity instanceof CustomTabActivity);
         mVrShell.setWebVrModeEnabled(webVrMode, false);
 
         // We're entering VR, but not in WebVr mode.
@@ -1172,8 +1172,7 @@ public class VrShellDelegate
             mVrDaydreamApi.launchVrHomescreen();
             return;
         }
-        if (!isVrShellEnabled(mVrSupportLevel) || !activitySupportsVrBrowsing(mActivity)
-                || !isDaydreamCurrentViewer()) {
+        if (!isVrBrowsingEnabled()) {
             if (isDaydreamCurrentViewer()) {
                 mVrDaydreamApi.launchVrHomescreen();
             } else {
@@ -1683,11 +1682,11 @@ public class VrShellDelegate
         assert mVrShell == null;
         if (mVrClassesWrapper == null) return false;
         if (mActivity.getCompositorViewHolder() == null) return false;
-        mTabModelSelector = mActivity.getCompositorViewHolder().detachForVr();
-        if (mTabModelSelector == null) return false;
+        TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
+        if (tabModelSelector == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            mVrShell = mVrClassesWrapper.createVrShell(mActivity, this, mTabModelSelector);
+            mVrShell = mVrClassesWrapper.createVrShell(mActivity, this, tabModelSelector);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -1704,7 +1703,6 @@ public class VrShellDelegate
     }
 
     private void removeVrViews() {
-        mVrShell.onBeforeWindowDetached();
         mActivity.onExitVr();
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mVrShell.getContainer());
@@ -1718,10 +1716,6 @@ public class VrShellDelegate
             mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(null);
             mVrShell.teardown();
             mVrShell = null;
-            if (mActivity.getCompositorViewHolder() != null) {
-                mActivity.getCompositorViewHolder().onExitVr(mTabModelSelector);
-            }
-            mTabModelSelector = null;
         }
     }
 

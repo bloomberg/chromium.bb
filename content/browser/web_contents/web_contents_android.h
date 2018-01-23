@@ -216,6 +216,8 @@ class CONTENT_EXPORT WebContentsAndroid
                const base::android::JavaParamRef<jobject>& obj,
                jint width,
                jint height);
+  int GetWidth(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  int GetHeight(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetOrCreateEventForwarder(
       JNIEnv* env,

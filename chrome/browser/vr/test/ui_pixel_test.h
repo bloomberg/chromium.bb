@@ -43,6 +43,7 @@ class UiPixelTest : public testing::Test {
   std::unique_ptr<MockUiBrowserInterface> browser_;
   std::unique_ptr<MockContentInputDelegate> content_input_delegate_;
   GLuint content_texture_ = 0;
+  GLuint content_overlay_texture_ = 0;
   gfx::Size frame_buffer_size_;
   std::unique_ptr<Ui> ui_;
 };

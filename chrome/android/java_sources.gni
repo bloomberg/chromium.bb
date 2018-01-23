@@ -1273,6 +1273,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/OnExitVrRequestListener.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrFirstRunActivity.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrViewContainer.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",

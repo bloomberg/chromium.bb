@@ -751,6 +751,13 @@ void UiSceneCreator::CreateContentQuad() {
                                         Model, model_, model->content_location,
                                         ContentElement, main_content.get(),
                                         SetTextureLocation));
+  main_content->AddBinding(VR_BIND_FUNC(
+      unsigned int, Model, model_, model->content_overlay_texture_id,
+      ContentElement, main_content.get(), SetOverlayTextureId));
+  main_content->AddBinding(
+      VR_BIND_FUNC(UiElementRenderer::TextureLocation, Model, model_,
+                   model->content_overlay_location, ContentElement,
+                   main_content.get(), SetOverlayTextureLocation));
 
   shadow->AddChild(std::move(main_content));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(shadow));

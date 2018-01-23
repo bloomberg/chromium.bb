@@ -662,6 +662,16 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         nativeSetSize(mNativeWebContentsAndroid, width, height);
     }
 
+    @Override
+    public int getWidth() {
+        return nativeGetWidth(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public int getHeight() {
+        return nativeGetHeight(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private final void setMediaSession(MediaSessionImpl mediaSession) {
         mMediaSession = mediaSession;
@@ -810,5 +820,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
     private native Rect nativeGetFullscreenVideoSize(long nativeWebContentsAndroid);
     private native void nativeSetSize(long nativeWebContentsAndroid, int width, int height);
+    private native int nativeGetWidth(long nativeWebContentsAndroid);
+    private native int nativeGetHeight(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
 }

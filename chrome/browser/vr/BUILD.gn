@@ -204,8 +204,6 @@ static_library("vr_common") {
     "ui_unsupported_mode.h",
     "vr_gl_util.cc",
     "vr_gl_util.h",
-    "web_contents_event_forwarder.cc",
-    "web_contents_event_forwarder.h",
   ]
 
   public_deps = [
