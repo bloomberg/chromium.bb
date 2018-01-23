@@ -27,6 +27,7 @@ from webkitpy.common.checkout.git import Git
 from webkitpy.common.path_finder import get_chromium_src_dir
 from webkitpy.common.path_finder import get_scripts_dir
 from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.filesystem import FileSystem
 
 _log = logging.getLogger('move_blink_source')
@@ -88,13 +89,20 @@ class MoveBlinkSource(object):
 
         self._updated_files = []
 
-    def update(self):
+    def update(self, apply_only=None):
+        """Updates contents of files affected by Blink source move.
+
+        Args:
+            apply_only: If it's None, updates all affected files. Otherwise,
+                it should be a set of file paths and this function updates
+                only the files in |apply_only|.
+        """
         _log.info('Planning renaming ...')
         file_pairs = plan_blink_move(self._fs, [])
         _log.info('Will move %d files', len(file_pairs))
 
         self._create_basename_maps(file_pairs)
-        dirs = self._update_file_content()
+        dirs = self._update_file_content(apply_only)
 
         # Updates #includes in files in directories with updated DEPS +
         # third_party/WebKit/{Source,common,public}.
@@ -103,7 +111,7 @@ class MoveBlinkSource(object):
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'third_party', 'WebKit', 'public'))
         self._append_unless_upper_dir_exists(dirs, self._fs.join(self._repo_root, 'mojo', 'public', 'tools',
                                                                  'bindings', 'generators', 'cpp_templates'))
-        self._update_cpp_includes_in_directories(dirs)
+        self._update_cpp_includes_in_directories(dirs, apply_only)
 
         # Content update for individual files.
         # The following is a list of tuples.
@@ -177,7 +185,8 @@ class MoveBlinkSource(object):
              [('third_party/WebKit/public', 'third_party/blink/renderer/public')]),
         ]
         for file_path, replacement_list in file_replacement_list:
-            self._update_single_file_content(file_path, replacement_list, should_write=self._options.run)
+            if not apply_only or file_path in apply_only:
+                self._update_single_file_content(file_path, replacement_list, should_write=self._options.run)
 
         if self._options.run:
             _log.info('Formatting updated %d files ...', len(self._updated_files))
@@ -190,8 +199,9 @@ class MoveBlinkSource(object):
                 git.run(['cl', 'format'] + self._updated_files[:end_index])
                 self._updated_files = self._updated_files[end_index:]
 
-            _log.info('Make a local commit ...')
-            git.commit_locally_with_message("""The Great Blink mv for source files, part 1.
+            if not apply_only:
+                _log.info('Make a local commit ...')
+                git.commit_locally_with_message("""The Great Blink mv for source files, part 1.
 
 Update file contents without moving files.
 
@@ -199,9 +209,21 @@ NOAUTOREVERT=true
 Bug: 768828
 """)
 
-    def move(self):
+    def move(self, apply_only=None):
+        """Move Blink source files.
+
+        Args:
+            apply_only: If it's None, move all affected files. Otherwise,
+                it should be a set of file paths and this function moves
+                only the files in |apply_only|.
+        """
         _log.info('Planning renaming ...')
         file_pairs = plan_blink_move(self._fs, [])
+
+        if apply_only:
+            file_pairs = [(src, dest) for (src, dest) in file_pairs
+                          if 'third_party/WebKit/' + src.replace('\\', '/') in apply_only]
+            print 'Update file_pairs = ', file_pairs
         _log.info('Will move %d files', len(file_pairs))
 
         git = Git(cwd=self._repo_root)
@@ -220,6 +242,9 @@ Bug: 768828
                 self._fs.move(self._fs.join(self._repo_root, src_from_repo),
                               self._fs.join(self._repo_root, dest_from_repo))
                 _log.info('[%d/%d] Moved %s', i + 1, len(file_pairs), src)
+        if apply_only:
+            return
+
         self._update_single_file_content(
             'build/get_landmines.py',
             [('\ndef main', '  print \'The Great Blink mv for source files (crbug.com/768828)\'\n\ndef main')])
@@ -243,10 +268,20 @@ Bug: 768828
     def fix_branch(self):
         git = Git(cwd=self._repo_root)
         status = self._get_local_change_status(git)
+        if len(status) == 0:
+            _log.info('No local changes.')
+            return
+        modified_files = {f for (s, f) in status if s != 'D'}
+        deleted_files = {f for (s, f) in status if s == 'D'}
 
-        # TODO(tkent): Apply "update" command only to files without "D" status.
-        # TODO(tkent): Apply "move" command only to them
-        # TODO(tkent): Show a message about "D" status files.
+        self.update(apply_only=modified_files)
+        self.move(apply_only=modified_files)
+        try:
+            git.commit_locally_with_message('This commit should be squashed.')
+        except ScriptError:
+            _log.info('move_blink_source.py modified nothing.')
+
+        # TODO(tkent): Show a message about deleted_files.
 
     def _get_local_change_status(self, git):
         """Returns a list of tuples representing local change summary.
@@ -392,7 +427,7 @@ Bug: 768828
                 return
         dirs.append(new_dir)
 
-    def _update_file_content(self):
+    def _update_file_content(self, apply_only):
         _log.info('Find *.gn, *.mojom, *.py, *.typemap, DEPS, and OWNERS ...')
         files = self._fs.files_under(
             self._repo_root, dirs_to_skip=['.git', 'out'], file_filter=self._filter_file)
@@ -424,7 +459,7 @@ Bug: 768828
 
             if original_content == content:
                 continue
-            if self._options.run:
+            if self._options.run and (not apply_only or file_path.replace('\\', '/') in apply_only):
                 self._fs.write_text_file(file_path, content)
                 self._updated_files.append(file_path)
             if file_type == FileType.DEPS:
@@ -432,7 +467,7 @@ Bug: 768828
             _log.info('Updated %s', self._shorten_path(file_path))
         return updated_deps_dirs
 
-    def _update_cpp_includes_in_directories(self, dirs):
+    def _update_cpp_includes_in_directories(self, dirs, apply_only):
         for dirname in dirs:
             _log.info('Processing #include in %s ...', self._shorten_path(dirname))
             files = self._fs.files_under(
@@ -440,17 +475,18 @@ Bug: 768828
                     ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl',
                      '.h.tmpl', 'XPathGrammar.y', '.gperf')))
             for file_path in files:
+                posix_file_path = file_path.replace('\\', '/')
                 original_content = self._fs.read_text_file(file_path)
 
                 content = self._update_cpp_includes(original_content)
-                if file_path.endswith('.h') and '/third_party/WebKit/public/' in file_path.replace('\\', '/'):
+                if file_path.endswith('.h') and '/third_party/WebKit/public/' in posix_file_path:
                     content = self._update_basename_only_includes(content, file_path)
-                if file_path.endswith('.h') and '/third_party/WebKit/' in file_path.replace('\\', '/'):
+                if file_path.endswith('.h') and '/third_party/WebKit/' in posix_file_path:
                     content = self._update_include_guard(content, file_path)
 
                 if original_content == content:
                     continue
-                if self._options.run:
+                if self._options.run and (not apply_only or posix_file_path in apply_only):
                     self._fs.write_text_file(file_path, content)
                     self._updated_files.append(file_path)
                 _log.info('Updated %s', self._shorten_path(file_path))
