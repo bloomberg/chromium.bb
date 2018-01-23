@@ -1008,6 +1008,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/AddExceptionPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/website/CameraInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ClearWebsiteStorage.java",
+  "java/src/org/chromium/chrome/browser/preferences/website/ClipboardInfo.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSetting.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSettingException.java",
   "java/src/org/chromium/chrome/browser/preferences/website/ContentSettingsResources.java",
