@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintRenderingContext2DSettings.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -25,7 +26,7 @@ class ImageResourceObserver;
 // Represents a javascript class registered on the PaintWorkletGlobalScope by
 // the author. It will store the properties for invalidation and input argument
 // types as well.
-class CSSPaintDefinition final
+class MODULES_EXPORT CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition>,
       public TraceWrapperBase {
  public:
