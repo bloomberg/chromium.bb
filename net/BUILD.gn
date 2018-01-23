@@ -596,7 +596,6 @@ component("net") {
       "cert/test_root_certs_mac.cc",
       "cert/test_root_certs_nss.cc",
       "cert/test_root_certs_win.cc",
-      "cert/x509_certificate_known_roots_win.h",
       "cert/x509_util_android.cc",
       "cert/x509_util_ios.cc",
       "cert/x509_util_ios.h",

@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/known_roots.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_ios.h"
@@ -270,7 +271,7 @@ int CertVerifyProcIOS::VerifyInternal(
   if (CFArrayGetCount(final_chain) == 0)
     return ERR_FAILED;
 
-  // TODO(sleevi): Support CRLSet revocation.
+  // TODO(rsleevi): Support CRLSet revocation.
   switch (trust_result) {
     case kSecTrustResultUnspecified:
     case kSecTrustResultProceed:
@@ -284,10 +285,18 @@ int CertVerifyProcIOS::VerifyInternal(
 
   GetCertChainInfo(final_chain, verify_result);
 
-  // iOS lacks the ability to distinguish built-in versus non-built-in roots,
-  // so opt to 'fail open' of any restrictive policies that apply to built-in
-  // roots.
-  verify_result->is_issued_by_known_root = false;
+  // While iOS lacks the ability to distinguish system-trusted versus
+  // user-installed roots, the set of roots that are expected to comply with
+  // the Baseline Requirements can be determined by
+  // GetNetTrustAnchorHistogramForSPKI() - a non-zero value means that it is
+  // known as a publicly trusted, and therefore subject to the BRs, cert.
+  for (auto it = verify_result->public_key_hashes.rbegin();
+       it != verify_result->public_key_hashes.rend() &&
+       !verify_result->is_issued_by_known_root;
+       ++it) {
+    verify_result->is_issued_by_known_root =
+        GetNetTrustAnchorHistogramIdForSPKI(*it) != 0;
+  }
 
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);

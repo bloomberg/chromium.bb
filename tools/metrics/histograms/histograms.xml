@@ -47873,6 +47873,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSL_AuthRootConsistency" enum="SSLAuthRootConsistency">
+  <obsolete>
+    Deprecated 2018-01 with the transition to a unified root list with OS
+    fallback.
+  </obsolete>
   <owner>rsleevi@chromium.org</owner>
   <summary>
     The results of comparing the built-in list of known Windows roots against
