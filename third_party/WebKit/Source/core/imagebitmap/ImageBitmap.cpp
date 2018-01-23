@@ -335,6 +335,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
   }
   sk_sp<SkImage> resized_sk_image =
       SkImage::MakeFromRaster(resized_pixmap, freePixels, pixels);
+  if (!resized_sk_image)
+    return nullptr;
   return StaticBitmapImage::Create(resized_sk_image,
                                    image->ContextProviderWrapper());
 }
