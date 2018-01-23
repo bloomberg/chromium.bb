@@ -125,6 +125,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='buffet', gid=264, users={'chronos', 'buffet', 'power'}),
     GroupEntry(group='webservd', gid=266, users={'buffet', 'webservd'}),
     GroupEntry(group='lpadmin', gid=269, users={'cups', 'lpadmin'}),
+    GroupEntry(group='policy-readers', gid=303, users={'chronos', 'u2f'}),
     GroupEntry(group='arc-camera', gid=603, users={'chronos'}),
     GroupEntry(group='daemon-store', gid=400, users={'chaps', 'biod'}),
     GroupEntry(group='logs-access', gid=401, users={'debugd-logs'}),
