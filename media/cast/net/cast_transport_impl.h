@@ -51,8 +51,6 @@
 namespace media {
 namespace cast {
 
-class UdpTransport;
-
 class CastTransportImpl final : public CastTransport {
  public:
   CastTransportImpl(

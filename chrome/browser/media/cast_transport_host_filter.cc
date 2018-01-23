@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/cast/net/cast_transport.h"
+#include "media/cast/net/udp_transport_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/device/public/interfaces/constants.mojom.h"
@@ -173,13 +174,11 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
     id_map_.Remove(channel_id);
   }
 
-  std::unique_ptr<media::cast::UdpTransport> udp_transport(
-      new media::cast::UdpTransport(
-          url_request_context_getter_->GetURLRequestContext()->net_log(),
-          base::ThreadTaskRunnerHandle::Get(), local_end_point,
-          remote_end_point,
-          base::Bind(&CastTransportHostFilter::OnStatusChanged,
-                     weak_factory_.GetWeakPtr(), channel_id)));
+  auto udp_transport = std::make_unique<media::cast::UdpTransportImpl>(
+      url_request_context_getter_->GetURLRequestContext()->net_log(),
+      base::ThreadTaskRunnerHandle::Get(), local_end_point, remote_end_point,
+      base::BindRepeating(&CastTransportHostFilter::OnStatusChanged,
+                          weak_factory_.GetWeakPtr(), channel_id));
   udp_transport->SetUdpOptions(options);
   std::unique_ptr<media::cast::CastTransport> transport =
       media::cast::CastTransport::Create(
@@ -228,8 +227,9 @@ void CastTransportHostFilter::OnInitializeStream(
       remoting_sender_map_.AddWithID(
           std::make_unique<CastRemotingSender>(
               transport, config, kSendEventsInterval,
-              base::Bind(&CastTransportHostFilter::OnCastRemotingSenderEvents,
-                         weak_factory_.GetWeakPtr(), channel_id)),
+              base::BindRepeating(
+                  &CastTransportHostFilter::OnCastRemotingSenderEvents,
+                  weak_factory_.GetWeakPtr(), channel_id)),
           config.rtp_stream_id);
       DVLOG(3) << "Create CastRemotingSender for stream: "
                << config.rtp_stream_id;
