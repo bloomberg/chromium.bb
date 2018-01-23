@@ -341,6 +341,22 @@ float MotionEventAndroid::GetY(size_t pointer_index) const {
       AttachCurrentThread(), event_, pointer_index));
 }
 
+float MotionEventAndroid::GetXPix(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  if (pointer_index < MAX_POINTERS_TO_CACHE)
+    return cached_pointers_[pointer_index].position.x() / pix_to_dip_;
+  return JNI_MotionEvent::Java_MotionEvent_getXF_I(AttachCurrentThread(),
+                                                   event_, pointer_index);
+}
+
+float MotionEventAndroid::GetYPix(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  if (pointer_index < MAX_POINTERS_TO_CACHE)
+    return cached_pointers_[pointer_index].position.y() / pix_to_dip_;
+  return JNI_MotionEvent::Java_MotionEvent_getYF_I(AttachCurrentThread(),
+                                                   event_, pointer_index);
+}
+
 float MotionEventAndroid::GetRawX(size_t pointer_index) const {
   return GetX(pointer_index) + cached_raw_position_offset_.x();
 }

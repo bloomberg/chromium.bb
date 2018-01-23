@@ -86,6 +86,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                       BrowserAccessibility* node) override;
   void FireGeneratedEvent(AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
+  gfx::Rect GetViewBounds() override;
 
   void FireLocationChanged(BrowserAccessibility* node);
 

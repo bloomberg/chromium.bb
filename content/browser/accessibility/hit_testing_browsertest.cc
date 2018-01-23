@@ -6,6 +6,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -38,7 +39,10 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
       event_waiter.ListenToAdditionalFrame(node->current_frame_host());
     ui::AXActionData action_data;
     action_data.action = ui::AX_ACTION_HIT_TEST;
-    action_data.target_point = point;
+    action_data.target_point =
+        UseZoomForDSFEnabled()
+            ? ScaleToRoundedPoint(point, manager->device_scale_factor())
+            : point;
     action_data.hit_test_event_to_fire = event_to_fire;
     manager->delegate()->AccessibilityPerformAction(action_data);
     event_waiter.WaitForNotification();

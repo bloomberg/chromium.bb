@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_role_properties.h"
 
 namespace content {
@@ -360,6 +361,19 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
 
   if (android_node)
     wcax->HandleHover(android_node->unique_id());
+}
+
+gfx::Rect BrowserAccessibilityManagerAndroid::GetViewBounds() {
+  // We have to take the device scale factor into account on Android.
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (delegate) {
+    gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
+    if (UseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
+        device_scale_factor() != 1.0)
+      bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
+    return bounds;
+  }
+  return gfx::Rect();
 }
 
 void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
