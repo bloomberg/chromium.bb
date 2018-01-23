@@ -4,8 +4,11 @@
 
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/render_text.h"
+#include "ui/gfx/text_utils.h"
 
 namespace vr {
 
@@ -14,6 +17,9 @@ namespace {
 constexpr SkColor kDefaultColor = 0xFF000001;
 constexpr SkColor kDimColor = 0xFF000002;
 constexpr SkColor kUrlColor = 0xFF000003;
+
+constexpr bool kNoOffset = false;
+constexpr bool kHasOffset = true;
 
 }  // namespace
 
@@ -62,5 +68,82 @@ TEST(OmniboxFormatting, MultiLine) {
   EXPECT_EQ(formatting[5].color(), SK_ColorTRANSPARENT);
   EXPECT_EQ(formatting[5].range(), gfx::Range(4, 5));
 }
+
+struct ElisionTestcase {
+  std::string url_string;
+  std::string reference_url_string;
+  bool has_offset;
+  bool fade_left;
+  bool fade_right;
+};
+
+class ElisionTest : public ::testing::TestWithParam<ElisionTestcase> {};
+
+TEST_P(ElisionTest, ProperOffsetAndFading) {
+  // Use the reference URL to compute a text field width into which the actual
+  // URL will be rendered.
+  GURL reference_gurl(base::UTF8ToUTF16(GetParam().reference_url_string));
+  ASSERT_TRUE(reference_gurl.is_valid());
+  const base::string16 reference_text = url_formatter::FormatUrl(
+      reference_gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, nullptr,
+      nullptr, nullptr);
+  gfx::FontList font_list;
+  auto field_width = gfx::GetStringWidth(reference_text, font_list);
+  gfx::Rect field(field_width, font_list.GetHeight());
+
+  // Format the actual test URL.
+  GURL gurl(base::UTF8ToUTF16(GetParam().url_string));
+  ASSERT_TRUE(gurl.is_valid());
+  url::Parsed parsed;
+  const base::string16 text = url_formatter::FormatUrl(
+      gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed, nullptr,
+      nullptr);
+
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  render_text->SetFontList(font_list);
+  render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
+  render_text->SetText(text);
+  render_text->SetDisplayRect(field);
+  render_text->SetCursorEnabled(false);
+
+  auto min_path_width =
+      gfx::GetStringWidth(base::UTF8ToUTF16("aaa"), font_list);
+  ElisionParameters result =
+      GetElisionParameters(gurl, parsed, render_text.get(), min_path_width);
+
+  EXPECT_EQ(result.offset != 0, GetParam().has_offset);
+  EXPECT_EQ(result.fade_left, GetParam().fade_left);
+  EXPECT_EQ(result.fade_right, GetParam().fade_right);
+}
+
+const std::vector<ElisionTestcase> elision_test_cases = {
+    // URL exactly matches the field width.
+    {"http://abc.com", "http://abc.com", kNoOffset, false, false},
+    {"http://abc.com/aaa", "http://abc.com/aaa", kNoOffset, false, false},
+    // URL is narrower than the field.
+    {"http://abc.com/a", "http://abc.com/aaa", kNoOffset, false, false},
+    // A really long path should not interfere with a short domain.
+    {"http://abc.com/aaaaaaaaaaaaaaaaaaaaaaaaa", "http://abc.com/aaa",
+     kNoOffset, false, true},
+    // A long domain should be offset and fade on the left.
+    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com", "http://abc.com/aaa",
+     kHasOffset, true, false},
+    // A long domain with a tiny path should preserve the path.
+    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/a", "http://abc.com/aaa",
+     kHasOffset, true, false},
+    // A long domain and path should see fading at both ends.
+    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+     "http://abc.com/aaa", kHasOffset, true, true},
+    // A file URL should always fade to the right.
+    {"file://filer/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "file://filer/aaa",
+     kNoOffset, false, true},
+    {"data:text/plain;charset=UTF-8;aaaaaaaaaaaaaaaaaaa", "data:text/plain",
+     kNoOffset, false, true},
+};
+
+INSTANTIATE_TEST_CASE_P(ElisionTestCases,
+                        ElisionTest,
+                        ::testing::ValuesIn(elision_test_cases));
 
 }  // namespace vr

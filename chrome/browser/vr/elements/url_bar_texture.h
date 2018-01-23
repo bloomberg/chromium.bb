@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
@@ -54,6 +55,7 @@ class UrlBarTexture : public UiTexture {
   bool url_dirty() const { return url_dirty_; }
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
+  ElisionParameters elision_parameters_;
 
   // Rendered state for test purposes. The text rectangles represent regions
   // available to text, not the smaller area of the actual rendered text.
