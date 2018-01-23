@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
 namespace {
@@ -33,8 +34,9 @@ bool CallWriteFile(Scope* scope,
 
 }  // namespace
 
-TEST(WriteFile, WithData) {
-  Scheduler scheduler;
+using WriteFileTest = TestWithScheduler;
+
+TEST_F(WriteFileTest, WithData) {
   TestWithScope setup;
 
   // Make a real directory for writing the files.

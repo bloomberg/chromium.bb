@@ -4,10 +4,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 
-TEST(FunctionForwardVariablesFrom, List) {
-  Scheduler scheduler;
+using FunctionForwardVariablesFromTest = TestWithScheduler;
+
+TEST_F(FunctionForwardVariablesFromTest, List) {
   Err err;
   std::string program =
       "template(\"a\") {\n"
@@ -50,8 +52,7 @@ TEST(FunctionForwardVariablesFrom, List) {
   }
 }
 
-TEST(FunctionForwardVariablesFrom, LiteralList) {
-  Scheduler scheduler;
+TEST_F(FunctionForwardVariablesFromTest, LiteralList) {
   TestWithScope setup;
 
   // Forwards all variables from a literal scope into another scope definition.
@@ -72,8 +73,7 @@ TEST(FunctionForwardVariablesFrom, LiteralList) {
   setup.print_output().clear();
 }
 
-TEST(FunctionForwardVariablesFrom, ListWithExclusion) {
-  Scheduler scheduler;
+TEST_F(FunctionForwardVariablesFromTest, ListWithExclusion) {
   TestWithScope setup;
 
   // Defines a template and copy the two x and y, and z values out.
@@ -100,8 +100,7 @@ TEST(FunctionForwardVariablesFrom, ListWithExclusion) {
   setup.print_output().clear();
 }
 
-TEST(FunctionForwardVariablesFrom, ErrorCases) {
-  Scheduler scheduler;
+TEST_F(FunctionForwardVariablesFromTest, ErrorCases) {
   TestWithScope setup;
 
   // Type check the source scope.
@@ -190,8 +189,7 @@ TEST(FunctionForwardVariablesFrom, ErrorCases) {
   EXPECT_EQ("Wrong number of arguments.", err.message());
 }
 
-TEST(FunctionForwardVariablesFrom, Star) {
-  Scheduler scheduler;
+TEST_F(FunctionForwardVariablesFromTest, Star) {
   TestWithScope setup;
 
   // Defines a template and copy the two x and y values out. The "*" behavior
@@ -217,9 +215,7 @@ TEST(FunctionForwardVariablesFrom, Star) {
   setup.print_output().clear();
 }
 
-
-TEST(FunctionForwardVariablesFrom, StarWithExclusion) {
-  Scheduler scheduler;
+TEST_F(FunctionForwardVariablesFromTest, StarWithExclusion) {
   TestWithScope setup;
 
   // Defines a template and copy all values except z value. The "*" behavior

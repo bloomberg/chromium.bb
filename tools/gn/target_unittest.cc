@@ -12,6 +12,7 @@
 #include "tools/gn/config.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/test_with_scheduler.h"
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/toolchain.h"
 
@@ -33,9 +34,11 @@ void AssertSchedulerHasOneUnknownFileMatching(const Target* target,
 
 }  // namespace
 
+using TargetTest = TestWithScheduler;
+
 // Tests that lib[_dir]s are inherited across deps boundaries for static
 // libraries but not executables.
-TEST(Target, LibInheritance) {
+TEST_F(TargetTest, LibInheritance) {
   TestWithScope setup;
   Err err;
 
@@ -80,7 +83,7 @@ TEST(Target, LibInheritance) {
 }
 
 // Test all_dependent_configs and public_config inheritance.
-TEST(Target, DependentConfigs) {
+TEST_F(TargetTest, DependentConfigs) {
   TestWithScope setup;
   Err err;
 
@@ -139,7 +142,7 @@ TEST(Target, DependentConfigs) {
 }
 
 // Tests that dependent configs don't propagate between toolchains.
-TEST(Target, NoDependentConfigsBetweenToolchains) {
+TEST_F(TargetTest, NoDependentConfigsBetweenToolchains) {
   TestWithScope setup;
   Err err;
 
@@ -193,7 +196,7 @@ TEST(Target, NoDependentConfigsBetweenToolchains) {
   ASSERT_EQ(0u, a.all_dependent_configs().size());
 }
 
-TEST(Target, InheritLibs) {
+TEST_F(TargetTest, InheritLibs) {
   TestWithScope setup;
   Err err;
 
@@ -230,7 +233,7 @@ TEST(Target, InheritLibs) {
   EXPECT_EQ(&b, a_inherited[0]);
 }
 
-TEST(Target, InheritCompleteStaticLib) {
+TEST_F(TargetTest, InheritCompleteStaticLib) {
   TestWithScope setup;
   Err err;
 
@@ -271,7 +274,7 @@ TEST(Target, InheritCompleteStaticLib) {
   EXPECT_EQ(lib_dir, a.all_lib_dirs()[0]);
 }
 
-TEST(Target, InheritCompleteStaticLibStaticLibDeps) {
+TEST_F(TargetTest, InheritCompleteStaticLibStaticLibDeps) {
   TestWithScope setup;
   Err err;
 
@@ -300,7 +303,7 @@ TEST(Target, InheritCompleteStaticLibStaticLibDeps) {
   EXPECT_EQ(&b, a_inherited[0]);
 }
 
-TEST(Target, InheritCompleteStaticLibInheritedCompleteStaticLibDeps) {
+TEST_F(TargetTest, InheritCompleteStaticLibInheritedCompleteStaticLibDeps) {
   TestWithScope setup;
   Err err;
 
@@ -331,7 +334,7 @@ TEST(Target, InheritCompleteStaticLibInheritedCompleteStaticLibDeps) {
   EXPECT_EQ(&c, a_inherited[1]);
 }
 
-TEST(Target, NoActionDepPropgation) {
+TEST_F(TargetTest, NoActionDepPropgation) {
   TestWithScope setup;
   Err err;
 
@@ -356,7 +359,7 @@ TEST(Target, NoActionDepPropgation) {
   }
 }
 
-TEST(Target, GetComputedOutputName) {
+TEST_F(TargetTest, GetComputedOutputName) {
   TestWithScope setup;
   Err err;
 
@@ -393,7 +396,7 @@ TEST(Target, GetComputedOutputName) {
 }
 
 // Test visibility failure case.
-TEST(Target, VisibilityFails) {
+TEST_F(TargetTest, VisibilityFails) {
   TestWithScope setup;
   Err err;
 
@@ -411,7 +414,7 @@ TEST(Target, VisibilityFails) {
 }
 
 // Test visibility with a single data_dep.
-TEST(Target, VisibilityDatadeps) {
+TEST_F(TargetTest, VisibilityDatadeps) {
   TestWithScope setup;
   Err err;
 
@@ -429,7 +432,7 @@ TEST(Target, VisibilityDatadeps) {
 
 // Tests that A -> Group -> B where the group is visible from A but B isn't,
 // passes visibility even though the group's deps get expanded into A.
-TEST(Target, VisibilityGroup) {
+TEST_F(TargetTest, VisibilityGroup) {
   TestWithScope setup;
   Err err;
 
@@ -457,7 +460,7 @@ TEST(Target, VisibilityGroup) {
 // Verifies that only testonly targets can depend on other testonly targets.
 // Many of the above dependency checking cases covered the non-testonly
 // case.
-TEST(Target, Testonly) {
+TEST_F(TargetTest, Testonly) {
   TestWithScope setup;
   Err err;
 
@@ -479,7 +482,7 @@ TEST(Target, Testonly) {
   ASSERT_FALSE(product.OnResolved(&err));
 }
 
-TEST(Target, PublicConfigs) {
+TEST_F(TargetTest, PublicConfigs) {
   TestWithScope setup;
   Err err;
 
@@ -519,7 +522,7 @@ TEST(Target, PublicConfigs) {
 }
 
 // Tests that configs are ordered properly between local and pulled ones.
-TEST(Target, ConfigOrdering) {
+TEST_F(TargetTest, ConfigOrdering) {
   TestWithScope setup;
   Err err;
 
@@ -584,7 +587,7 @@ TEST(Target, ConfigOrdering) {
 }
 
 // Tests that different link/depend outputs work for solink tools.
-TEST(Target, LinkAndDepOutputs) {
+TEST_F(TargetTest, LinkAndDepOutputs) {
   TestWithScope setup;
   Err err;
 
@@ -625,7 +628,7 @@ TEST(Target, LinkAndDepOutputs) {
 
 // Tests that runtime_outputs works without an explicit link_output for
 // solink tools.
-TEST(Target, RuntimeOuputs) {
+TEST_F(TargetTest, RuntimeOuputs) {
   TestWithScope setup;
   Err err;
 
@@ -670,7 +673,7 @@ TEST(Target, RuntimeOuputs) {
 
 // Shared libraries should be inherited across public shared liobrary
 // boundaries.
-TEST(Target, SharedInheritance) {
+TEST_F(TargetTest, SharedInheritance) {
   TestWithScope setup;
   Err err;
 
@@ -710,8 +713,7 @@ TEST(Target, SharedInheritance) {
   EXPECT_EQ(&pub, exe_inherited[1]);
 }
 
-TEST(Target, GeneratedInputs) {
-  Scheduler scheduler;
+TEST_F(TargetTest, GeneratedInputs) {
   TestWithScope setup;
   Err err;
 
@@ -724,7 +726,7 @@ TEST(Target, GeneratedInputs) {
   EXPECT_TRUE(non_existent_generator.OnResolved(&err)) << err.message();
   AssertSchedulerHasOneUnknownFileMatching(&non_existent_generator,
                                            generated_file);
-  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+  scheduler().ClearUnknownGeneratedInputsAndWrittenFiles();
 
   // Make a target that generates the file.
   TestTarget generator(setup, "//foo:generator", Target::ACTION);
@@ -740,7 +742,7 @@ TEST(Target, GeneratedInputs) {
   existent_generator.sources().push_back(generated_file);
   existent_generator.private_deps().push_back(LabelTargetPair(&generator));
   EXPECT_TRUE(existent_generator.OnResolved(&err)) << err.message();
-  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+  EXPECT_TRUE(scheduler().GetUnknownGeneratedInputs().empty());
 
   // A target that depends on the previous one should *not* be allowed to
   // use the generated file, because existent_generator used private deps.
@@ -753,7 +755,7 @@ TEST(Target, GeneratedInputs) {
       LabelTargetPair(&existent_generator));
   EXPECT_TRUE(indirect_private.OnResolved(&err));
   AssertSchedulerHasOneUnknownFileMatching(&indirect_private, generated_file);
-  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+  scheduler().ClearUnknownGeneratedInputsAndWrittenFiles();
 
   // Now make a chain like the above but with all public deps, it should be OK.
   TestTarget existent_public(setup, "//foo:existent_public",
@@ -765,12 +767,11 @@ TEST(Target, GeneratedInputs) {
   indirect_public.sources().push_back(generated_file);
   indirect_public.public_deps().push_back(LabelTargetPair(&existent_public));
   EXPECT_TRUE(indirect_public.OnResolved(&err)) << err.message();
-  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+  EXPECT_TRUE(scheduler().GetUnknownGeneratedInputs().empty());
 }
 
 // This is sort of a Scheduler test, but is related to the above test more.
-TEST(Target, WriteFileGeneratedInputs) {
-  Scheduler scheduler;
+TEST_F(TargetTest, WriteFileGeneratedInputs) {
   TestWithScope setup;
   Err err;
 
@@ -783,21 +784,20 @@ TEST(Target, WriteFileGeneratedInputs) {
   EXPECT_TRUE(non_existent_generator.OnResolved(&err));
   AssertSchedulerHasOneUnknownFileMatching(&non_existent_generator,
                                            generated_file);
-  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+  scheduler().ClearUnknownGeneratedInputsAndWrittenFiles();
 
   // This target has a generated file and we've decared we write it.
   TestTarget existent_generator(setup, "//foo:existent_generator",
                                 Target::EXECUTABLE);
   existent_generator.sources().push_back(generated_file);
   EXPECT_TRUE(existent_generator.OnResolved(&err));
-  scheduler.AddWrittenFile(generated_file);
+  scheduler().AddWrittenFile(generated_file);
 
   // Should be OK.
-  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+  EXPECT_TRUE(scheduler().GetUnknownGeneratedInputs().empty());
 }
 
-TEST(Target, WriteRuntimeDepsGeneratedInputs) {
-  Scheduler scheduler;
+TEST_F(TargetTest, WriteRuntimeDepsGeneratedInputs) {
   TestWithScope setup;
   Err err;
 
@@ -816,14 +816,14 @@ TEST(Target, WriteRuntimeDepsGeneratedInputs) {
   dep_missing.sources().push_back(source_file);
   EXPECT_TRUE(dep_missing.OnResolved(&err));
   AssertSchedulerHasOneUnknownFileMatching(&dep_missing, source_file);
-  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+  scheduler().ClearUnknownGeneratedInputsAndWrittenFiles();
 
   // This target has a generated file and we've directly dependended on it.
   TestTarget dep_present(setup, "//foo:with_dep", Target::EXECUTABLE);
   dep_present.sources().push_back(source_file);
   dep_present.private_deps().push_back(LabelTargetPair(&generator));
   EXPECT_TRUE(dep_present.OnResolved(&err));
-  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+  EXPECT_TRUE(scheduler().GetUnknownGeneratedInputs().empty());
 
   // This target has a generated file and we've indirectly dependended on it
   // via data_deps.
@@ -832,7 +832,7 @@ TEST(Target, WriteRuntimeDepsGeneratedInputs) {
   dep_indirect.data_deps().push_back(LabelTargetPair(&middle_data_dep));
   EXPECT_TRUE(dep_indirect.OnResolved(&err));
   AssertSchedulerHasOneUnknownFileMatching(&dep_indirect, source_file);
-  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+  scheduler().ClearUnknownGeneratedInputsAndWrittenFiles();
 
   // This target has a generated file and we've directly dependended on it
   // via data_deps.
@@ -840,15 +840,14 @@ TEST(Target, WriteRuntimeDepsGeneratedInputs) {
   data_dep_present.sources().push_back(source_file);
   data_dep_present.data_deps().push_back(LabelTargetPair(&generator));
   EXPECT_TRUE(data_dep_present.OnResolved(&err));
-  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+  EXPECT_TRUE(scheduler().GetUnknownGeneratedInputs().empty());
 }
 
 // Tests that intermediate object files generated by binary targets are also
 // considered generated for the purposes of input checking. Above, we tested
 // the failure cases for generated inputs, so here only test .o files that are
 // present.
-TEST(Target, ObjectGeneratedInputs) {
-  Scheduler scheduler;
+TEST_F(TargetTest, ObjectGeneratedInputs) {
   TestWithScope setup;
   Err err;
 
@@ -868,7 +867,7 @@ TEST(Target, ObjectGeneratedInputs) {
   AssertSchedulerHasOneUnknownFileMatching(&final_target, object_file);
 }
 
-TEST(Target, ResolvePrecompiledHeaders) {
+TEST_F(TargetTest, ResolvePrecompiledHeaders) {
   TestWithScope setup;
   Err err;
 
@@ -886,7 +885,7 @@ TEST(Target, ResolvePrecompiledHeaders) {
   ASSERT_TRUE(config_1.OnResolved(&err));
   target.configs().push_back(LabelConfigPair(&config_1));
 
-  // No PCH info specified on target, but the config specifies one, the
+  // No PCH info specified on TargetTest, but the config specifies one, the
   // values should get copied to the target.
   EXPECT_TRUE(target.ResolvePrecompiledHeaders(&err));
   EXPECT_EQ(pch_1, target.config_values().precompiled_header());
@@ -925,7 +924,7 @@ TEST(Target, ResolvePrecompiledHeaders) {
       err.help_text());
 }
 
-TEST(Target, AssertNoDeps) {
+TEST_F(TargetTest, AssertNoDeps) {
   TestWithScope setup;
   Err err;
 
@@ -980,7 +979,7 @@ TEST(Target, AssertNoDeps) {
   ASSERT_TRUE(a2.OnResolved(&err));
 }
 
-TEST(Target, PullRecursiveBundleData) {
+TEST_F(TargetTest, PullRecursiveBundleData) {
   TestWithScope setup;
   Err err;
 
