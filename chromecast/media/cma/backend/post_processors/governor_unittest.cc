@@ -27,7 +27,6 @@ const char* kConfigTemplate =
 
 const float kDefaultClamp = 0.6f;
 const int kNumFrames = 100;
-const int kFrequency = 2000;
 const int kSampleRate = 44100;
 
 std::string MakeConfigString(float onset_volume, float clamp_multiplier) {
@@ -54,8 +53,9 @@ class GovernorTest : public ::testing::TestWithParam<float> {
     governor_->SetSlewTimeMsForTest(0);
     governor_->SetSampleRate(kSampleRate);
 
-    data_ = GetSineData(kNumFrames, kFrequency, kSampleRate);
-    expected_ = GetSineData(kNumFrames, kFrequency, kSampleRate);
+    data_ = LinearChirp(kNumFrames, std::vector<double>(kNumChannels, 0.0),
+                        std::vector<double>(kNumChannels, 1.0));
+    expected_ = data_;
   }
 
   void ProcessFrames(float volume) {

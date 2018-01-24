@@ -9,6 +9,9 @@
 // AudioPostProcessor2. This works by simply fowarding the input buffer as the
 // output buffer, since the original AudioPostProcessor API has equal numbers of
 // input and output channels.
+//
+// Note that AudioPostProcessor is DEPRECATED and support will be dropped
+// entirely in the near future.
 
 #include <memory>
 #include <string>
@@ -26,6 +29,11 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
   // AudioPostProcessorWrapper owns |pp|.
   AudioPostProcessorWrapper(std::unique_ptr<AudioPostProcessor> pp,
                             int channels);
+
+  // AudioPostProcessorWrapper does not own |pp|. Calling code is responsible
+  // for owning the lifetime of |pp|. This should only be used for testing.
+  AudioPostProcessorWrapper(AudioPostProcessor* pp, int channels);
+
   ~AudioPostProcessorWrapper() override;
 
  private:
@@ -37,12 +45,13 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
                     float volume_dbfs) override;
   float* GetOutputBuffer() override;
   int GetRingingTimeInFrames() override;
-  void UpdateParameters(const std::string& message) override;
+  bool UpdateParameters(const std::string& message) override;
   void SetContentType(AudioContentType content_type) override;
   void SetPlayoutChannel(int channel) override;
   int NumOutputChannels() override;
 
-  std::unique_ptr<AudioPostProcessor> pp_;
+  std::unique_ptr<AudioPostProcessor> owned_pp_;
+  AudioPostProcessor* pp_;
   int channels_;
   float* output_buffer_;
 

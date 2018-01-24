@@ -651,7 +651,7 @@ void StreamMixer::WriteMixedPcm(int frames) {
   for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
     observer->OnLoopbackAudio(
         expected_playback_time, kSampleFormatF32, output_samples_per_second_,
-        num_output_channels_, reinterpret_cast<uint8_t*>(mixed_data),
+        mix_channel_count, reinterpret_cast<uint8_t*>(mixed_data),
         static_cast<size_t>(frames) * num_output_channels_ * sizeof(float));
   }
 

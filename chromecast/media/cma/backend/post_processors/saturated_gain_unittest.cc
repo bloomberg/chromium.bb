@@ -47,17 +47,21 @@ TEST_P(PostProcessorTest, SaturatedGainPassthrough) {
 
 TEST_P(PostProcessorTest, Gain) {
   const int kNumFrames = 256;
-  const int kNumChannels = 2;
   std::string config = MakeConfigString(20.0);  // Exactly 10x multiplier.
   auto pp = std::make_unique<SaturatedGain>(config, kNumChannels);
-  std::vector<float> data = GetSineData(256, 1000, sample_rate_);
+  std::vector<float> data =
+      LinearChirp(kNumFrames, std::vector<double>(kNumChannels, 0.0),
+                  std::vector<double>(kNumChannels, 1.0));
+
   for (size_t i = 0; i < data.size(); ++i) {
     data[i] /= 100.0;
   }
-  float original_amplitude = SineAmplitude(data, kNumChannels);
+  float original_amplitude =
+      SineAmplitude(data.data(), kNumChannels * kNumFrames);
   pp->ProcessFrames(data.data(), kNumFrames, 1.0 /* doesn't matter */, -20.0);
 
-  EXPECT_FLOAT_EQ(original_amplitude * 10.0, SineAmplitude(data, kNumChannels))
+  EXPECT_FLOAT_EQ(original_amplitude * 10.0,
+                  SineAmplitude(data.data(), kNumChannels * kNumFrames))
       << "Expected a gain of 20dB";
 }
 

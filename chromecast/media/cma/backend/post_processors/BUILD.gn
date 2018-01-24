@@ -16,15 +16,9 @@ cast_source_set("post_processor_wrapper") {
   ]
 }
 
-# This is separate from ":governor" because the associated unittest needs
-# to create a Governor directly (to use test functions).
-cast_shared_library("libcast_governor_1.0") {
-  sources = [
-    "governor_create.cc",
-  ]
+cast_shared_library("libcast_governor_2.0") {
   deps = [
     ":governor",
-    "//chromecast/public/media",
   ]
   if (is_fuchsia) {
     ldflags = [ "-Wl,-Bsymbolic" ]
@@ -45,13 +39,9 @@ cast_source_set("governor") {
   public_configs = [ "//chromecast/public:public_config" ]
 }
 
-cast_shared_library("libcast_saturated_gain_1.0") {
-  sources = [
-    "saturated_gain_create.cc",
-  ]
+cast_shared_library("libcast_saturated_gain_2.0") {
   deps = [
     ":saturated_gain",
-    "//chromecast/public/media",
   ]
   if (is_fuchsia) {
     ldflags = [ "-Wl,-Bsymbolic" ]
@@ -81,6 +71,7 @@ cast_source_set("test_support") {
     "post_processor_unittest.h",
   ]
   deps = [
+    ":post_processor_wrapper",
     "//base",
     "//chromecast/public/media",
     "//testing/gtest",
@@ -95,6 +86,7 @@ cast_source_set("unittests") {
   ]
   deps = [
     ":governor",
+    ":post_processor_wrapper",
     ":saturated_gain",
     ":test_support",
     "//base",

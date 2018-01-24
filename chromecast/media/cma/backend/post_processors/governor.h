@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "chromecast/media/base/slew_volume.h"
-#include "chromecast/public/media/audio_post_processor_shlib.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 
 namespace chromecast {
 namespace media {
@@ -23,7 +23,7 @@ namespace media {
 // The configuration string for this plugin is:
 //  {"onset_volume": |VOLUME_TO_CLAMP|, "clamp_multiplier": |CLAMP_MULTIPLIER|}
 // Input volumes > |VOLUME_TO_CLAMP| will be attenuated by |CLAMP_MULTIPLIER|.
-class Governor : public AudioPostProcessor {
+class Governor : public AudioPostProcessor2 {
  public:
   Governor(const std::string& config, int channels);
   ~Governor() override;
@@ -35,6 +35,9 @@ class Governor : public AudioPostProcessor {
                     float cast_volume,
                     float volume_dbfs) override;
   int GetRingingTimeInFrames() override;
+  int NumOutputChannels() override;
+  float* GetOutputBuffer() override;
+  bool UpdateParameters(const std::string& message) override;
 
   void SetSlewTimeMsForTest(int slew_time_ms);
 
@@ -47,6 +50,7 @@ class Governor : public AudioPostProcessor {
   double onset_volume_;
   double clamp_multiplier_;
   SlewVolume slew_volume_;
+  float* data_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Governor);
 };
