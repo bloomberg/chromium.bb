@@ -228,9 +228,6 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   }
 
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
-  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
-    return true;
-  }
 
  private:
   ResolvedProxyInfo resolved_proxy_info_;

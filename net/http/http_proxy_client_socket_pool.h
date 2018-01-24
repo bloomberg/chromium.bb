@@ -56,6 +56,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
       QuicStreamFactory* quic_stream_factory,
+      bool is_trusted_proxy,
       bool tunnel);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
@@ -78,6 +79,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
     return quic_stream_factory_;
   }
   const HostResolver::RequestInfo& destination() const;
+  bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
 
  private:
@@ -93,6 +95,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const HostPortPair endpoint_;
   HttpAuthCache* const http_auth_cache_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
+  const bool is_trusted_proxy_;
   const bool tunnel_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);

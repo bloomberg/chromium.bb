@@ -21,7 +21,6 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_stream.h"
-#include "net/base/test_proxy_delegate.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
@@ -175,6 +174,12 @@ class SpdySessionTest : public PlatformTest {
     DCHECK(!session_);
     session_ =
         ::net::CreateSpdySession(http_session_.get(), key_, log_.bound());
+  }
+
+  void CreateTrustedSpdySession() {
+    DCHECK(!session_);
+    session_ = ::net::CreateTrustedSpdySession(http_session_.get(), key_,
+                                               log_.bound());
   }
 
   void StallSessionSend() {
@@ -1536,7 +1541,8 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
 
   session_ =
       http_session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key_, std::move(connection), log_.bound());
+          key_, /*is_trusted_proxy=*/false, std::move(connection),
+          log_.bound());
   EXPECT_TRUE(session_);
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
@@ -1644,7 +1650,8 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
 
   session_ =
       http_session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key_, std::move(connection), log_.bound());
+          key_, /*is_trusted_proxy=*/false, std::move(connection),
+          log_.bound());
   EXPECT_TRUE(session_);
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
 
@@ -5304,16 +5311,10 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  auto proxy_delegate = std::make_unique<TestProxyDelegate>();
-  proxy_delegate->set_trusted_spdy_proxy(
-      net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
-                       HostPortPair(GURL(kDefaultUrl).host(), 443)));
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
-
   AddSSLSocketData();
 
   CreateNetworkSession();
-  CreateSpdySession();
+  CreateTrustedSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,

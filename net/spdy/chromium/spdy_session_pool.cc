@@ -55,8 +55,7 @@ SpdySessionPool::SpdySessionPool(
     bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     const SettingsMap& initial_settings,
-    SpdySessionPool::TimeFunc time_func,
-    ProxyDelegate* proxy_delegate)
+    SpdySessionPool::TimeFunc time_func)
     : http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),
@@ -69,8 +68,7 @@ SpdySessionPool::SpdySessionPool(
       session_max_recv_window_size_(session_max_recv_window_size),
       initial_settings_(initial_settings),
       time_func_(time_func),
-      push_delegate_(nullptr),
-      proxy_delegate_(proxy_delegate) {
+      push_delegate_(nullptr) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
@@ -97,6 +95,7 @@ SpdySessionPool::~SpdySessionPool() {
 
 base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
+    bool is_trusted_proxy,
     std::unique_ptr<ClientSocketHandle> connection,
     const NetLogWithSource& net_log) {
   TRACE_EVENT0(kNetTracingCategory,
@@ -109,8 +108,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       key, http_server_properties_, transport_security_state_,
       quic_supported_versions_, enable_sending_initial_data_,
       enable_ping_based_connection_checking_, support_ietf_format_quic_altsvc_,
-      session_max_recv_window_size_, initial_settings_, time_func_,
-      push_delegate_, proxy_delegate_, net_log.net_log());
+      is_trusted_proxy, session_max_recv_window_size_, initial_settings_,
+      time_func_, push_delegate_, net_log.net_log());
 
   new_session->InitializeWithSocket(std::move(connection), this);
 

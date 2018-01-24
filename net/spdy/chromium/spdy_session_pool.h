@@ -44,7 +44,6 @@ class ClientSocketHandle;
 class HostResolver;
 class HttpServerProperties;
 class NetLogWithSource;
-class ProxyDelegate;
 class SpdySession;
 class TransportSecurityState;
 
@@ -65,8 +64,7 @@ class NET_EXPORT SpdySessionPool
                   bool support_ietf_format_quic_altsvc,
                   size_t session_max_recv_window_size,
                   const SettingsMap& initial_settings,
-                  SpdySessionPool::TimeFunc time_func,
-                  ProxyDelegate* proxy_delegate);
+                  SpdySessionPool::TimeFunc time_func);
   ~SpdySessionPool() override;
 
   // In the functions below, a session is "available" if this pool has
@@ -85,6 +83,7 @@ class NET_EXPORT SpdySessionPool
   // immediately afterwards if the first read of |connection| fails.
   base::WeakPtr<SpdySession> CreateAvailableSessionFromSocket(
       const SpdySessionKey& key,
+      bool is_trusted_proxy,
       std::unique_ptr<ClientSocketHandle> connection,
       const NetLogWithSource& net_log);
 
@@ -286,11 +285,6 @@ class NET_EXPORT SpdySessionPool
 
   TimeFunc time_func_;
   ServerPushDelegate* push_delegate_;
-
-  // Determines if a proxy is a trusted SPDY proxy, which is allowed to push
-  // resources from origins that are different from those of their associated
-  // streams. May be nullptr.
-  ProxyDelegate* proxy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPool);
 };

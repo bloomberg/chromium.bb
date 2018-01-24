@@ -208,13 +208,6 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }
 
-bool DataReductionProxyDelegate::IsTrustedSpdyProxy(
-    const net::ProxyServer& proxy_server) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return proxy_server.is_valid() && proxy_server.is_https() && config_ &&
-         config_->IsDataReductionProxy(proxy_server, nullptr);
-}
-
 void DataReductionProxyDelegate::SetTickClockForTesting(
     base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;

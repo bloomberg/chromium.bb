@@ -72,6 +72,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
       QuicStreamFactory* quic_stream_factory,
+      bool is_trusted_proxy,
       bool tunnel,
       const NetLogWithSource& net_log);
 
@@ -200,6 +201,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   const bool tunnel_;
 
   bool using_spdy_;
+  bool is_trusted_proxy_;
   NextProto negotiated_protocol_;
 
   std::unique_ptr<HttpResponseInfo> error_response_info_;

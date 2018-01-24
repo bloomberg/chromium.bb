@@ -49,6 +49,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     HttpAuthHandlerFactory* http_auth_handler_factory,
     SpdySessionPool* spdy_session_pool,
     QuicStreamFactory* quic_stream_factory,
+    bool is_trusted_proxy,
     bool tunnel,
     const NetLogWithSource& net_log)
     : next_state_(STATE_NONE),
@@ -69,6 +70,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       has_restarted_(false),
       tunnel_(tunnel),
       using_spdy_(false),
+      is_trusted_proxy_(is_trusted_proxy),
       quic_stream_request_(quic_stream_factory),
       http_auth_controller_(
           tunnel ? new HttpAuthController(
@@ -599,7 +601,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   } else {
     // Create a session direct to the proxy itself
     spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
-        key, std::move(transport_socket_handle_), net_log_);
+        key, is_trusted_proxy_, std::move(transport_socket_handle_), net_log_);
     DCHECK(spdy_session);
   }
 
