@@ -36,6 +36,9 @@ class Adb {
   virtual Status GetPidByName(const std::string& device_serial,
                               const std::string& process_name,
                               int* pid) = 0;
+  virtual Status GetSocketByPattern(const std::string& device_serial,
+                                    const std::string& grep_pattern,
+                                    std::string* socket_name) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_ADB_H_

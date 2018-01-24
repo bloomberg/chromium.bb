@@ -130,7 +130,22 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
             "process name must be specified if not equal to package name");
       return status;
     }
-    *device_socket = base::StringPrintf("webview_devtools_remote_%d", pid);
+
+    std::string socket_name;
+    // The leading '@' means abstract UNIX sockets. Some apps have a custom
+    // substring between the required "webview_devtools_remote_" prefix and
+    // their PID, which Chrome DevTools accepts and we also should.
+    std::string pattern =
+        base::StringPrintf("@webview_devtools_remote_.*%d", pid);
+    status = adb_->GetSocketByPattern(serial_, pattern, &socket_name);
+    if (status.IsError()) {
+      if (socket_name.empty())
+        status.AddDetails(
+            "make sure the app has its WebView configured for debugging");
+      return status;
+    }
+    // When used in adb with "localabstract:", the leading '@' is not needed.
+    *device_socket = socket_name.substr(1);
   }
 
   return adb_->ForwardPort(serial_, port, *device_socket);

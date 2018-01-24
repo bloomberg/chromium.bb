@@ -71,6 +71,13 @@ class FakeAdb : public Adb {
     *pid = 0; // avoid uninit error crbug.com/393231
     return Status(kOk);
   }
+
+  Status GetSocketByPattern(const std::string& device_serial,
+                            const std::string& grep_pattern,
+                            std::string* socket_name) override {
+    *socket_name = "@webview_devtools_remote_0";
+    return Status(kOk);
+  }
 };
 
 }  // namespace

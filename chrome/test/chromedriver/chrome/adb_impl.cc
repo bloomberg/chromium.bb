@@ -236,6 +236,32 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
                 "Failed to get PID for the following process: " + process_name);
 }
 
+Status AdbImpl::GetSocketByPattern(const std::string& device_serial,
+                                   const std::string& grep_pattern,
+                                   std::string* socket_name) {
+  std::string response;
+  std::string grep_command = "grep -a '" + grep_pattern + "' /proc/net/unix";
+  Status status =
+      ExecuteHostShellCommand(device_serial, grep_command, &response);
+
+  if (!status.IsOk())
+    return status;
+
+  for (const base::StringPiece& line : base::SplitString(
+           response, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+        line, base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+    if (tokens.size() != 8)
+      continue;
+    *socket_name = tokens[7].as_string();
+    return Status(kOk);
+  }
+
+  return Status(kUnknownError,
+                "Failed to get sockets matching: " + grep_pattern);
+}
+
 Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
   scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
