@@ -80,19 +80,10 @@ void TreeScope::ResetTreeScope() {
   selection_ = nullptr;
 }
 
-TreeScope* TreeScope::OlderShadowRootOrParentTreeScope() const {
-  if (RootNode().IsShadowRoot()) {
-    if (ShadowRoot* older_shadow_root =
-            ToShadowRoot(RootNode()).OlderShadowRoot())
-      return older_shadow_root;
-  }
-  return ParentTreeScope();
-}
-
 bool TreeScope::IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
     const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
-       current = current->OlderShadowRootOrParentTreeScope()) {
+       current = current->ParentTreeScope()) {
     if (current == this)
       return true;
   }
@@ -449,14 +440,6 @@ unsigned short TreeScope::ComparePosition(const TreeScope& other_scope) const {
       if (shadow_host1 != shadow_host2)
         return shadow_host1->compareDocumentPosition(
             shadow_host2, Node::kTreatShadowTreesAsDisconnected);
-
-      for (const ShadowRoot* child =
-               ToShadowRoot(child2->RootNode()).OlderShadowRoot();
-           child; child = child->OlderShadowRoot()) {
-        if (child == child1)
-          return Node::kDocumentPositionFollowing;
-      }
-
       return Node::kDocumentPositionPreceding;
     }
   }

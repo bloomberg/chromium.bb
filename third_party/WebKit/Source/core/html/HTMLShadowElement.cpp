@@ -49,21 +49,4 @@ DEFINE_NODE_FACTORY(HTMLShadowElement)
 
 HTMLShadowElement::~HTMLShadowElement() = default;
 
-Node::InsertionNotificationRequest HTMLShadowElement::InsertedInto(
-    ContainerNode* insertion_point) {
-  if (insertion_point->isConnected()) {
-    // Warn if trying to reproject between user agent and author shadows.
-    ShadowRoot* root = ContainingShadowRoot();
-    if (root && root->OlderShadowRoot() &&
-        root->GetType() != root->OlderShadowRoot()->GetType()) {
-      String message =
-          String::Format("<shadow> doesn't work for %s element host.",
-                         root->host().tagName().Utf8().data());
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kRenderingMessageSource, kWarningMessageLevel, message));
-    }
-  }
-  return V0InsertionPoint::InsertedInto(insertion_point);
-}
-
 }  // namespace blink

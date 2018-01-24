@@ -336,10 +336,6 @@ static ContainerNode* NextTraversingShadowTree(const ContainerNode& node,
     ShadowRoot* shadow_root = current->ContainingShadowRoot();
     if (shadow_root == root_node)
       return nullptr;
-    if (ShadowRoot* younger_shadow_root = shadow_root->YoungerShadowRoot()) {
-      DCHECK(younger_shadow_root->IsOpenOrV0());
-      return younger_shadow_root;
-    }
 
     current = &shadow_root->host();
   }
