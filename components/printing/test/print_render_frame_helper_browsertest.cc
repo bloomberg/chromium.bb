@@ -631,7 +631,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
       EXPECT_NE(0, std::get<0>(preview_param).document_cookie);
       EXPECT_NE(0, std::get<0>(preview_param).expected_pages_count);
-      EXPECT_NE(0U, std::get<0>(preview_param).data_size);
+      EXPECT_NE(0U, std::get<0>(preview_param).content.data_size);
     }
   }
 
@@ -660,7 +660,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
         PrintHostMsg_DidPreviewPage::Read(msg, &page_param);
         if (std::get<0>(page_param).page_number == page_number) {
           msg_found = true;
-          data_size = std::get<0>(page_param).data_size;
+          data_size = std::get<0>(page_param).content.data_size;
           break;
         }
       }

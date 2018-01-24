@@ -340,7 +340,8 @@ void PrintViewManagerBase::OnDidPrintDocument(
   if (!document)
     return;
 
-  if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  if (!base::SharedMemory::IsHandleValid(content.metafile_data_handle)) {
     NOTREACHED() << "invalid memory handle";
     web_contents()->Stop();
     return;
@@ -353,14 +354,14 @@ void PrintViewManagerBase::OnDidPrintDocument(
         params.document_cookie,
         GenFrameGuid(render_frame_host->GetProcess()->GetID(),
                      render_frame_host->GetRoutingID()),
-        params.metafile_data_handle, params.data_size, ContentToFrameMap(),
+        content.metafile_data_handle, content.data_size, ContentToFrameMap(),
         base::BindOnce(&PrintViewManagerBase::OnComposePdfDone,
                        weak_ptr_factory_.GetWeakPtr(), params));
     return;
   }
-  std::unique_ptr<base::SharedMemory> shared_buf =
-      std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
-  if (!shared_buf->Map(params.data_size)) {
+  auto shared_buf =
+      std::make_unique<base::SharedMemory>(content.metafile_data_handle, true);
+  if (!shared_buf->Map(content.data_size)) {
     NOTREACHED() << "couldn't map";
     web_contents()->Stop();
     return;
@@ -368,7 +369,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
   scoped_refptr<base::RefCountedBytes> bytes =
       base::MakeRefCounted<base::RefCountedBytes>(
           reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-          params.data_size);
+          content.data_size);
   PrintDocument(document, bytes, params.page_size, params.content_area,
                 params.physical_offsets);
 }
