@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
 
 namespace content {
@@ -76,8 +77,15 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual void ImportPasswords(content::WebContents* web_contents) = 0;
 
   // Trigger the password export procedure, allowing the user to save a file
-  // containing their passwords.
-  virtual void ExportPasswords(content::WebContents* web_contents) = 0;
+  // containing their passwords. |callback| will be called with an error
+  // message if the request is rejected, because another export is in progress.
+  virtual void ExportPasswords(
+      base::OnceCallback<void(const std::string&)> callback,
+      content::WebContents* web_contents) = 0;
+
+  // Get the most recent progress status.
+  virtual api::passwords_private::ExportProgressStatus
+  GetExportProgressStatus() = 0;
 };
 
 }  // namespace extensions

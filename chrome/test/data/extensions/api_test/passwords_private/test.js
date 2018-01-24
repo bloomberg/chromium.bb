@@ -118,8 +118,26 @@ var availableTests = [
   },
 
   function exportPasswords() {
-    chrome.passwordsPrivate.exportPasswords();
-    chrome.test.succeed();
+    let callback = function() {
+      chrome.test.assertNoLastError();
+
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.exportPasswords(callback);
+  },
+
+  function requestExportProgressStatus() {
+    let callback = function(status) {
+      chrome.test.assertEq(
+          chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS, status);
+
+      // Ensure that the callback is invoked.
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.requestExportProgressStatus(callback);
   },
 ];
 

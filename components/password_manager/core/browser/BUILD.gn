@@ -142,6 +142,7 @@ static_library("browser") {
     "suppressed_form_fetcher.h",
     "ui/credential_provider_interface.h",
     "ui/export_flow.h",
+    "ui/export_progress_status.h",
     "ui/import_flow.h",
     "webdata/logins_table.cc",
     "webdata/logins_table.h",

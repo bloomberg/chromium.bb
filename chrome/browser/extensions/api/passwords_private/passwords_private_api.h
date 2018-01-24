@@ -155,7 +155,26 @@ class PasswordsPrivateExportPasswordsFunction
   ResponseAction Run() override;
 
  private:
+  void ExportRequestCompleted(const std::string& error);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateExportPasswordsFunction);
+};
+
+class PasswordsPrivateRequestExportProgressStatusFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateRequestExportProgressStatusFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestExportProgressStatus",
+                             PASSWORDSPRIVATE_REQUESTEXPORTPROGRESSSTATUS);
+
+ protected:
+  ~PasswordsPrivateRequestExportProgressStatusFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRequestExportProgressStatusFunction);
 };
 
 }  // namespace extensions

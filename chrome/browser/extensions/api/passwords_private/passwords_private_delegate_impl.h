@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
 
 class Profile;
@@ -51,7 +52,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RequestShowPassword(size_t index,
                            content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
-  void ExportPasswords(content::WebContents* web_contents) override;
+  void ExportPasswords(base::OnceCallback<void(const std::string&)> accepted,
+                       content::WebContents* web_contents) override;
+  api::passwords_private::ExportProgressStatus GetExportProgressStatus()
+      override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
@@ -67,6 +71,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 #if !defined(OS_ANDROID)
   gfx::NativeWindow GetNativeWindow() const override;
 #endif
+
+  // Callback for when the password list has been written to the destination.
+  void OnPasswordsExportProgress(password_manager::ExportProgressStatus status,
+                                 const std::string& folder_name);
 
   // KeyedService overrides:
   void Shutdown() override;
