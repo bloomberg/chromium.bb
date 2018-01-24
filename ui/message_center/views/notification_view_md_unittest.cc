@@ -637,20 +637,6 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
   EXPECT_EQ(collapsed_height, notification_view()->message_view_->height());
   EXPECT_EQ(collapsed_preferred_height,
             notification_view()->GetPreferredSize().height());
-
-  // Test |manually_expanded_or_collapsed| being set when the toggle is done by
-  // user interaction.
-  EXPECT_FALSE(notification_view()->manually_expanded_or_collapsed());
-
-  // Construct a mouse click event 1 pixel inside the header.
-  gfx::Point done_cursor_location(1, 1);
-  views::View::ConvertPointToScreen(notification_view()->header_row_,
-                                    &done_cursor_location);
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
-  generator.MoveMouseTo(done_cursor_location);
-  generator.ClickLeftButton();
-
-  EXPECT_TRUE(notification_view()->manually_expanded_or_collapsed());
 }
 
 TEST_F(NotificationViewMDTest, TestAccentColor) {
