@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_APITEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_APITEST_H_
+
 #include "base/values.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "extensions/shell/test/shell_test.h"
@@ -63,3 +66,5 @@ class WebViewDPIAPITest : public WebViewAPITest {
 };
 
 }  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_APITEST_H_

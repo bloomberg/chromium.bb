@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_BROWSER_SERVICE_WORKER_MANAGER_H_
+#define EXTENSIONS_BROWSER_SERVICE_WORKER_MANAGER_H_
+
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -38,3 +41,5 @@ class ServiceWorkerManager : public ExtensionRegistryObserver {
 };
 
 }  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_SERVICE_WORKER_MANAGER_H_
