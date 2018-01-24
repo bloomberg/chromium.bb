@@ -1,0 +1,1183 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: Illegal constructor
+Found 442 tests; 183 PASS, 259 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS a: Define a customized built-in element
+FAIL a: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL a: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyA extends HTMLAnchorElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAnchorElement() { [native code] }"
+FAIL a: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyA extends HTMLAnchorElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAnchorElement() { [native code] }"
+PASS abbr: Define a customized built-in element
+PASS abbr: Operator 'new' should instantiate a customized built-in element
+PASS abbr: document.createElement() should instantiate a customized built-in element
+FAIL abbr: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyAbbr extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS address: Define a customized built-in element
+PASS address: Operator 'new' should instantiate a customized built-in element
+PASS address: document.createElement() should instantiate a customized built-in element
+FAIL address: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyAddress extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS area: Define a customized built-in element
+FAIL area: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL area: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyArea extends HTMLAreaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAreaElement() { [native code] }"
+FAIL area: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyArea extends HTMLAreaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAreaElement() { [native code] }"
+PASS article: Define a customized built-in element
+PASS article: Operator 'new' should instantiate a customized built-in element
+PASS article: document.createElement() should instantiate a customized built-in element
+FAIL article: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyArticle extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS aside: Define a customized built-in element
+PASS aside: Operator 'new' should instantiate a customized built-in element
+PASS aside: document.createElement() should instantiate a customized built-in element
+FAIL aside: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyAside extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS audio: Define a customized built-in element
+FAIL audio: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL audio: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyAudio extends HTMLAudioElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAudioElement() { [native code] }"
+FAIL audio: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyAudio extends HTMLAudioElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLAudioElement() { [native code] }"
+PASS b: Define a customized built-in element
+PASS b: Operator 'new' should instantiate a customized built-in element
+PASS b: document.createElement() should instantiate a customized built-in element
+FAIL b: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyB extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS base: Define a customized built-in element
+FAIL base: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL base: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBase extends HTMLBaseElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLBaseElement() { [native code] }"
+FAIL base: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBase extends HTMLBaseElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLBaseElement() { [native code] }"
+PASS bdi: Define a customized built-in element
+FAIL bdi: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL bdi: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBdi extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL bdi: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBdi extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS bdo: Define a customized built-in element
+PASS bdo: Operator 'new' should instantiate a customized built-in element
+PASS bdo: document.createElement() should instantiate a customized built-in element
+FAIL bdo: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBdo extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS blockquote: Define a customized built-in element
+FAIL blockquote: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL blockquote: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBlockquote extends HTMLQuoteElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLQuoteElement() { [native code] }"
+FAIL blockquote: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBlockquote extends HTMLQuoteElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLQuoteElement() { [native code] }"
+PASS body: Define a customized built-in element
+FAIL body: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL body: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBody extends HTMLBodyElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLBodyElement() { [native code] }"
+PASS br: Define a customized built-in element
+FAIL br: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL br: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyBr extends HTMLBRElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLBRElement() { [native code] }"
+FAIL br: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyBr extends HTMLBRElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLBRElement() { [native code] }"
+PASS button: Define a customized built-in element
+FAIL button: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL button: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyButton extends HTMLButtonElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLButtonElement() { [native code] }"
+FAIL button: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyButton extends HTMLButtonElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLButtonElement() { [native code] }"
+PASS canvas: Define a customized built-in element
+FAIL canvas: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL canvas: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyCanvas extends HTMLCanvasElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLCanvasElement() { [native code] }"
+FAIL canvas: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCanvas extends HTMLCanvasElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLCanvasElement() { [native code] }"
+PASS caption: Define a customized built-in element
+FAIL caption: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL caption: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyCaption extends HTMLTableCaptionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCaptionElement() { [native code] }"
+FAIL caption: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCaption extends HTMLTableCaptionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCaptionElement() { [native code] }"
+PASS cite: Define a customized built-in element
+PASS cite: Operator 'new' should instantiate a customized built-in element
+PASS cite: document.createElement() should instantiate a customized built-in element
+FAIL cite: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCite extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS code: Define a customized built-in element
+PASS code: Operator 'new' should instantiate a customized built-in element
+PASS code: document.createElement() should instantiate a customized built-in element
+FAIL code: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCode extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS col: Define a customized built-in element
+FAIL col: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL col: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyCol extends HTMLTableColElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableColElement() { [native code] }"
+FAIL col: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyCol extends HTMLTableColElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableColElement() { [native code] }"
+PASS colgroup: Define a customized built-in element
+FAIL colgroup: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL colgroup: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyColgroup extends HTMLTableColElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableColElement() { [native code] }"
+FAIL colgroup: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyColgroup extends HTMLTableColElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableColElement() { [native code] }"
+PASS data: Define a customized built-in element
+PASS data: Operator 'new' should instantiate a customized built-in element
+PASS data: document.createElement() should instantiate a customized built-in element
+FAIL data: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyData extends HTMLDataElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDataElement() { [native code] }"
+PASS dd: Define a customized built-in element
+PASS dd: Operator 'new' should instantiate a customized built-in element
+PASS dd: document.createElement() should instantiate a customized built-in element
+FAIL dd: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDd extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS del: Define a customized built-in element
+FAIL del: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL del: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyDel extends HTMLModElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLModElement() { [native code] }"
+FAIL del: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDel extends HTMLModElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLModElement() { [native code] }"
+PASS details: Define a customized built-in element
+FAIL details: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL details: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyDetails extends HTMLDetailsElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDetailsElement() { [native code] }"
+FAIL details: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDetails extends HTMLDetailsElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDetailsElement() { [native code] }"
+PASS dfn: Define a customized built-in element
+PASS dfn: Operator 'new' should instantiate a customized built-in element
+PASS dfn: document.createElement() should instantiate a customized built-in element
+FAIL dfn: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDfn extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS div: Define a customized built-in element
+PASS div: Operator 'new' should instantiate a customized built-in element
+PASS div: document.createElement() should instantiate a customized built-in element
+FAIL div: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDiv extends HTMLDivElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDivElement() { [native code] }"
+PASS dl: Define a customized built-in element
+FAIL dl: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL dl: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyDl extends HTMLDListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDListElement() { [native code] }"
+FAIL dl: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDl extends HTMLDListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLDListElement() { [native code] }"
+PASS dt: Define a customized built-in element
+PASS dt: Operator 'new' should instantiate a customized built-in element
+PASS dt: document.createElement() should instantiate a customized built-in element
+FAIL dt: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDt extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS em: Define a customized built-in element
+PASS em: Operator 'new' should instantiate a customized built-in element
+PASS em: document.createElement() should instantiate a customized built-in element
+FAIL em: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyEm extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS embed: Define a customized built-in element
+FAIL embed: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL embed: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyEmbed extends HTMLEmbedElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLEmbedElement() { [native code] }"
+FAIL embed: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyEmbed extends HTMLEmbedElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLEmbedElement() { [native code] }"
+PASS fieldset: Define a customized built-in element
+FAIL fieldset: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL fieldset: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyFieldset extends HTMLFieldSetElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLFieldSetElement() { [native code] }"
+FAIL fieldset: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyFieldset extends HTMLFieldSetElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLFieldSetElement() { [native code] }"
+PASS figcaption: Define a customized built-in element
+PASS figcaption: Operator 'new' should instantiate a customized built-in element
+PASS figcaption: document.createElement() should instantiate a customized built-in element
+FAIL figcaption: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyFigcaption extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS figure: Define a customized built-in element
+PASS figure: Operator 'new' should instantiate a customized built-in element
+PASS figure: document.createElement() should instantiate a customized built-in element
+FAIL figure: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyFigure extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS footer: Define a customized built-in element
+PASS footer: Operator 'new' should instantiate a customized built-in element
+PASS footer: document.createElement() should instantiate a customized built-in element
+FAIL footer: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyFooter extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS form: Define a customized built-in element
+FAIL form: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL form: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyForm extends HTMLFormElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLFormElement() { [native code] }"
+FAIL form: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyForm extends HTMLFormElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLFormElement() { [native code] }"
+PASS h1: Define a customized built-in element
+FAIL h1: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h1: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH1 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h1: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH1 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS h2: Define a customized built-in element
+FAIL h2: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h2: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH2 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h2: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH2 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS h3: Define a customized built-in element
+FAIL h3: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h3: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH3 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h3: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH3 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS h4: Define a customized built-in element
+FAIL h4: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h4: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH4 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h4: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH4 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS h5: Define a customized built-in element
+FAIL h5: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h5: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH5 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h5: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH5 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS h6: Define a customized built-in element
+FAIL h6: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL h6: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyH6 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+FAIL h6: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyH6 extends HTMLHeadingElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHeadingElement() { [native code] }"
+PASS header: Define a customized built-in element
+PASS header: Operator 'new' should instantiate a customized built-in element
+PASS header: document.createElement() should instantiate a customized built-in element
+FAIL header: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyHeader extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS hgroup: Define a customized built-in element
+PASS hgroup: Operator 'new' should instantiate a customized built-in element
+PASS hgroup: document.createElement() should instantiate a customized built-in element
+FAIL hgroup: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyHgroup extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS hr: Define a customized built-in element
+FAIL hr: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL hr: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyHr extends HTMLHRElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHRElement() { [native code] }"
+FAIL hr: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyHr extends HTMLHRElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHRElement() { [native code] }"
+PASS html: Define a customized built-in element
+FAIL html: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL html: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyHtml extends HTMLHtmlElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLHtmlElement() { [native code] }"
+PASS i: Define a customized built-in element
+PASS i: Operator 'new' should instantiate a customized built-in element
+PASS i: document.createElement() should instantiate a customized built-in element
+FAIL i: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyI extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS iframe: Define a customized built-in element
+FAIL iframe: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL iframe: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyIframe extends HTMLIFrameElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLIFrameElement() { [native code] }"
+FAIL iframe: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyIframe extends HTMLIFrameElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLIFrameElement() { [native code] }"
+PASS img: Define a customized built-in element
+FAIL img: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL img: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyImg extends HTMLImageElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLImageElement() { [native code] }"
+FAIL img: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyImg extends HTMLImageElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLImageElement() { [native code] }"
+PASS input: Define a customized built-in element
+FAIL input: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL input: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyInput extends HTMLInputElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLInputElement() { [native code] }"
+FAIL input: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyInput extends HTMLInputElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLInputElement() { [native code] }"
+PASS ins: Define a customized built-in element
+FAIL ins: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL ins: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyIns extends HTMLModElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLModElement() { [native code] }"
+FAIL ins: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyIns extends HTMLModElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLModElement() { [native code] }"
+PASS kbd: Define a customized built-in element
+PASS kbd: Operator 'new' should instantiate a customized built-in element
+PASS kbd: document.createElement() should instantiate a customized built-in element
+FAIL kbd: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyKbd extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS label: Define a customized built-in element
+FAIL label: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL label: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyLabel extends HTMLLabelElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLabelElement() { [native code] }"
+FAIL label: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyLabel extends HTMLLabelElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLabelElement() { [native code] }"
+PASS legend: Define a customized built-in element
+FAIL legend: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL legend: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyLegend extends HTMLLegendElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLegendElement() { [native code] }"
+FAIL legend: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyLegend extends HTMLLegendElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLegendElement() { [native code] }"
+PASS li: Define a customized built-in element
+FAIL li: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL li: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyLi extends HTMLLIElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLIElement() { [native code] }"
+FAIL li: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyLi extends HTMLLIElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLIElement() { [native code] }"
+PASS link: Define a customized built-in element
+FAIL link: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL link: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyLink extends HTMLLinkElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLinkElement() { [native code] }"
+FAIL link: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyLink extends HTMLLinkElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLLinkElement() { [native code] }"
+PASS main: Define a customized built-in element
+PASS main: Operator 'new' should instantiate a customized built-in element
+PASS main: document.createElement() should instantiate a customized built-in element
+FAIL main: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMain extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS map: Define a customized built-in element
+FAIL map: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL map: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyMap extends HTMLMapElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMapElement() { [native code] }"
+FAIL map: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMap extends HTMLMapElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMapElement() { [native code] }"
+PASS mark: Define a customized built-in element
+PASS mark: Operator 'new' should instantiate a customized built-in element
+PASS mark: document.createElement() should instantiate a customized built-in element
+FAIL mark: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMark extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS menu: Define a customized built-in element
+FAIL menu: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL menu: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyMenu extends HTMLMenuElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMenuElement() { [native code] }"
+FAIL menu: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMenu extends HTMLMenuElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMenuElement() { [native code] }"
+PASS meta: Define a customized built-in element
+FAIL meta: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL meta: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyMeta extends HTMLMetaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMetaElement() { [native code] }"
+FAIL meta: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMeta extends HTMLMetaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMetaElement() { [native code] }"
+PASS meter: Define a customized built-in element
+FAIL meter: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL meter: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyMeter extends HTMLMeterElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMeterElement() { [native code] }"
+FAIL meter: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyMeter extends HTMLMeterElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLMeterElement() { [native code] }"
+PASS nav: Define a customized built-in element
+PASS nav: Operator 'new' should instantiate a customized built-in element
+PASS nav: document.createElement() should instantiate a customized built-in element
+FAIL nav: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyNav extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS noscript: Define a customized built-in element
+FAIL noscript: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL noscript: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyNoscript extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL noscript: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyNoscript extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS object: Define a customized built-in element
+FAIL object: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL object: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyObject extends HTMLObjectElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLObjectElement() { [native code] }"
+FAIL object: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyObject extends HTMLObjectElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLObjectElement() { [native code] }"
+PASS ol: Define a customized built-in element
+FAIL ol: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL ol: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyOl extends HTMLOListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOListElement() { [native code] }"
+FAIL ol: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyOl extends HTMLOListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOListElement() { [native code] }"
+PASS optgroup: Define a customized built-in element
+FAIL optgroup: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL optgroup: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyOptgroup extends HTMLOptGroupElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOptGroupElement() { [native code] }"
+FAIL optgroup: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyOptgroup extends HTMLOptGroupElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOptGroupElement() { [native code] }"
+PASS option: Define a customized built-in element
+FAIL option: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL option: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyOption extends HTMLOptionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOptionElement() { [native code] }"
+FAIL option: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyOption extends HTMLOptionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOptionElement() { [native code] }"
+PASS output: Define a customized built-in element
+FAIL output: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL output: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyOutput extends HTMLOutputElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOutputElement() { [native code] }"
+FAIL output: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyOutput extends HTMLOutputElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLOutputElement() { [native code] }"
+PASS p: Define a customized built-in element
+PASS p: Operator 'new' should instantiate a customized built-in element
+PASS p: document.createElement() should instantiate a customized built-in element
+FAIL p: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyP extends HTMLParagraphElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLParagraphElement() { [native code] }"
+PASS param: Define a customized built-in element
+FAIL param: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL param: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyParam extends HTMLParamElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLParamElement() { [native code] }"
+FAIL param: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyParam extends HTMLParamElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLParamElement() { [native code] }"
+PASS picture: Define a customized built-in element
+FAIL picture: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL picture: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyPicture extends HTMLPictureElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLPictureElement() { [native code] }"
+FAIL picture: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyPicture extends HTMLPictureElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLPictureElement() { [native code] }"
+PASS pre: Define a customized built-in element
+FAIL pre: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL pre: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyPre extends HTMLPreElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLPreElement() { [native code] }"
+FAIL pre: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyPre extends HTMLPreElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLPreElement() { [native code] }"
+PASS progress: Define a customized built-in element
+FAIL progress: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL progress: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyProgress extends HTMLProgressElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLProgressElement() { [native code] }"
+FAIL progress: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyProgress extends HTMLProgressElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLProgressElement() { [native code] }"
+PASS q: Define a customized built-in element
+FAIL q: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL q: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyQ extends HTMLQuoteElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLQuoteElement() { [native code] }"
+FAIL q: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyQ extends HTMLQuoteElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLQuoteElement() { [native code] }"
+PASS rp: Define a customized built-in element
+PASS rp: Operator 'new' should instantiate a customized built-in element
+PASS rp: document.createElement() should instantiate a customized built-in element
+FAIL rp: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyRp extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS rt: Define a customized built-in element
+FAIL rt: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL rt: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyRt extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL rt: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyRt extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS ruby: Define a customized built-in element
+FAIL ruby: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL ruby: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyRuby extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL ruby: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyRuby extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS s: Define a customized built-in element
+PASS s: Operator 'new' should instantiate a customized built-in element
+PASS s: document.createElement() should instantiate a customized built-in element
+FAIL s: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyS extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS samp: Define a customized built-in element
+PASS samp: Operator 'new' should instantiate a customized built-in element
+PASS samp: document.createElement() should instantiate a customized built-in element
+FAIL samp: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySamp extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS script: Define a customized built-in element
+FAIL script: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL script: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyScript extends HTMLScriptElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLScriptElement() { [native code] }"
+FAIL script: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyScript extends HTMLScriptElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLScriptElement() { [native code] }"
+PASS section: Define a customized built-in element
+PASS section: Operator 'new' should instantiate a customized built-in element
+PASS section: document.createElement() should instantiate a customized built-in element
+FAIL section: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySection extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS select: Define a customized built-in element
+FAIL select: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL select: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MySelect extends HTMLSelectElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSelectElement() { [native code] }"
+FAIL select: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySelect extends HTMLSelectElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSelectElement() { [native code] }"
+PASS small: Define a customized built-in element
+PASS small: Operator 'new' should instantiate a customized built-in element
+PASS small: document.createElement() should instantiate a customized built-in element
+FAIL small: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySmall extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS source: Define a customized built-in element
+FAIL source: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL source: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MySource extends HTMLSourceElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSourceElement() { [native code] }"
+FAIL source: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySource extends HTMLSourceElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSourceElement() { [native code] }"
+PASS span: Define a customized built-in element
+FAIL span: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL span: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MySpan extends HTMLSpanElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSpanElement() { [native code] }"
+FAIL span: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySpan extends HTMLSpanElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLSpanElement() { [native code] }"
+PASS strong: Define a customized built-in element
+PASS strong: Operator 'new' should instantiate a customized built-in element
+PASS strong: document.createElement() should instantiate a customized built-in element
+FAIL strong: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyStrong extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS style: Define a customized built-in element
+FAIL style: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL style: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyStyle extends HTMLStyleElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLStyleElement() { [native code] }"
+FAIL style: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyStyle extends HTMLStyleElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLStyleElement() { [native code] }"
+PASS sub: Define a customized built-in element
+PASS sub: Operator 'new' should instantiate a customized built-in element
+PASS sub: document.createElement() should instantiate a customized built-in element
+FAIL sub: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySub extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS summary: Define a customized built-in element
+FAIL summary: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL summary: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MySummary extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL summary: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySummary extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS sup: Define a customized built-in element
+PASS sup: Operator 'new' should instantiate a customized built-in element
+PASS sup: document.createElement() should instantiate a customized built-in element
+FAIL sup: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MySup extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS table: Define a customized built-in element
+FAIL table: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL table: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTable extends HTMLTableElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableElement() { [native code] }"
+FAIL table: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTable extends HTMLTableElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableElement() { [native code] }"
+PASS tbody: Define a customized built-in element
+FAIL tbody: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL tbody: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTbody extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+FAIL tbody: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTbody extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+PASS td: Define a customized built-in element
+FAIL td: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL td: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTd extends HTMLTableCellElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCellElement() { [native code] }"
+FAIL td: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTd extends HTMLTableCellElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCellElement() { [native code] }"
+PASS template: Define a customized built-in element
+FAIL template: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL template: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTemplate extends HTMLTemplateElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTemplateElement() { [native code] }"
+FAIL template: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTemplate extends HTMLTemplateElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTemplateElement() { [native code] }"
+PASS textarea: Define a customized built-in element
+FAIL textarea: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL textarea: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTextarea extends HTMLTextAreaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTextAreaElement() { [native code] }"
+FAIL textarea: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTextarea extends HTMLTextAreaElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTextAreaElement() { [native code] }"
+PASS tfoot: Define a customized built-in element
+FAIL tfoot: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL tfoot: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTfoot extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+FAIL tfoot: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTfoot extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+PASS th: Define a customized built-in element
+FAIL th: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL th: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTh extends HTMLTableCellElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCellElement() { [native code] }"
+FAIL th: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTh extends HTMLTableCellElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableCellElement() { [native code] }"
+PASS thead: Define a customized built-in element
+FAIL thead: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL thead: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyThead extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+FAIL thead: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyThead extends HTMLTableSectionElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableSectionElement() { [native code] }"
+PASS time: Define a customized built-in element
+PASS time: Operator 'new' should instantiate a customized built-in element
+PASS time: document.createElement() should instantiate a customized built-in element
+FAIL time: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTime extends HTMLTimeElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTimeElement() { [native code] }"
+PASS title: Define a customized built-in element
+FAIL title: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL title: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTitle extends HTMLTitleElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTitleElement() { [native code] }"
+FAIL title: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTitle extends HTMLTitleElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTitleElement() { [native code] }"
+PASS tr: Define a customized built-in element
+FAIL tr: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL tr: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTr extends HTMLTableRowElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableRowElement() { [native code] }"
+FAIL tr: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTr extends HTMLTableRowElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTableRowElement() { [native code] }"
+PASS track: Define a customized built-in element
+FAIL track: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL track: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyTrack extends HTMLTrackElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTrackElement() { [native code] }"
+FAIL track: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyTrack extends HTMLTrackElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLTrackElement() { [native code] }"
+PASS u: Define a customized built-in element
+PASS u: Operator 'new' should instantiate a customized built-in element
+PASS u: document.createElement() should instantiate a customized built-in element
+FAIL u: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyU extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS ul: Define a customized built-in element
+FAIL ul: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL ul: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyUl extends HTMLUListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLUListElement() { [native code] }"
+FAIL ul: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyUl extends HTMLUListElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLUListElement() { [native code] }"
+PASS var: Define a customized built-in element
+PASS var: Operator 'new' should instantiate a customized built-in element
+PASS var: document.createElement() should instantiate a customized built-in element
+FAIL var: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyVar extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS video: Define a customized built-in element
+FAIL video: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL video: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyVideo extends HTMLVideoElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLVideoElement() { [native code] }"
+FAIL video: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyVideo extends HTMLVideoElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLVideoElement() { [native code] }"
+PASS wbr: Define a customized built-in element
+FAIL wbr: Operator 'new' should instantiate a customized built-in element Illegal constructor: localName does not match the HTML element interface
+FAIL wbr: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyWbr extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+FAIL wbr: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyWbr extends HTMLElement {
+  constructor() {
+    super();
+  }
+}" but got function "function HTMLElement() { [native code] }"
+PASS datalist: Define a customized built-in element
+FAIL datalist: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL datalist: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class extends HTMLDataListElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLDataListElement() { [native code] }"
+FAIL datalist: innerHTML should instantiate a customized built-in element assert_equals: expected function "class extends HTMLDataListElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLDataListElement() { [native code] }"
+PASS dialog: Define a customized built-in element
+FAIL dialog: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL dialog: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class MyDialog extends HTMLDialogElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLDialogElement() { [native code] }"
+FAIL dialog: innerHTML should instantiate a customized built-in element assert_equals: expected function "class MyDialog extends HTMLDialogElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLDialogElement() { [native code] }"
+PASS slot: Define a customized built-in element
+FAIL slot: Operator 'new' should instantiate a customized built-in element Illegal constructor
+FAIL slot: document.createElement() should instantiate a customized built-in element assert_equals: expected function "class extends HTMLSlotElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLSlotElement() { [native code] }"
+FAIL slot: innerHTML should instantiate a customized built-in element assert_equals: expected function "class extends HTMLSlotElement {
+    constructor() {
+      super();
+    }
+  }" but got function "function HTMLSlotElement() { [native code] }"
+Harness: the test ran to completion.
+
