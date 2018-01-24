@@ -88,6 +88,8 @@ class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
       return 16;
     } else if (1024 == num_coeffs_) {
       return 32;
+    } else if (4096 == num_coeffs_) {
+      return 64;
     } else {
       return 0;
     }
@@ -151,6 +153,12 @@ using std::tr1::make_tuple;
   &av1_fwd_txfm2d_16x16_c, &av1_inv_txfm2d_add_16x16_sse4_1, \
       &av1_inv_txfm2d_add_16x16_c, 256
 #endif
+#if CONFIG_TX64X64
+#define PARAM_LIST_64X64                                     \
+  &av1_fwd_txfm2d_64x64_c, &av1_inv_txfm2d_add_64x64_sse4_1, \
+      &av1_inv_txfm2d_add_64x64_c, 4096
+#endif
+
 const IHbdHtParam kArrayIhtParam[] = {
 // 16x16
 #if !CONFIG_DAALA_TX16
@@ -214,6 +222,10 @@ const IHbdHtParam kArrayIhtParam[] = {
   make_tuple(PARAM_LIST_4X4, ADST_FLIPADST, 12),
   make_tuple(PARAM_LIST_4X4, FLIPADST_ADST, 10),
   make_tuple(PARAM_LIST_4X4, FLIPADST_ADST, 12),
+#endif
+#if CONFIG_TX64X64
+  make_tuple(PARAM_LIST_64X64, DCT_DCT, 10),
+  make_tuple(PARAM_LIST_64X64, DCT_DCT, 12),
 #endif
 };
 
