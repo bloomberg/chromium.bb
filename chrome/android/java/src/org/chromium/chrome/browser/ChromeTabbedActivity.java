@@ -214,7 +214,8 @@ public class ChromeTabbedActivity
     private static final String ACTION_CLOSE_TABS =
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
 
-    private static final String LAST_BACKGROUNDED_TIME_MS_PREF =
+    @VisibleForTesting
+    public static final String LAST_BACKGROUNDED_TIME_MS_PREF =
             "ChromeTabbedActivity.BackgroundTimeMs";
     private static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
 
@@ -982,8 +983,7 @@ public class ChromeTabbedActivity
 
     private void logMainIntentBehavior(Intent intent) {
         assert isMainIntentFromLauncher(intent);
-        long currentTime = System.currentTimeMillis();
-        mMainIntentMetrics.onMainIntentWithNative(currentTime - getTimeSinceLastBackgroundedMs());
+        mMainIntentMetrics.onMainIntentWithNative(getTimeSinceLastBackgroundedMs());
     }
 
     /** Access the main intent metrics for test validation. */
@@ -1110,9 +1110,13 @@ public class ChromeTabbedActivity
      * Returns the number of milliseconds since Chrome was last backgrounded.
      */
     private long getTimeSinceLastBackgroundedMs() {
-        long lastBackgroundedTimeMs =
-                ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
-        return System.currentTimeMillis() - lastBackgroundedTimeMs;
+        // TODO(tedchoc): We should cache the last visible time and reuse it to avoid different
+        //                values of this depending on when it is called after the activity was
+        //                shown.
+        long currentTime = System.currentTimeMillis();
+        long lastBackgroundedTimeMs = ContextUtils.getAppSharedPreferences().getLong(
+                LAST_BACKGROUNDED_TIME_MS_PREF, currentTime);
+        return currentTime - lastBackgroundedTimeMs;
     }
 
     @Override
