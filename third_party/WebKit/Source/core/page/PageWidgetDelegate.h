@@ -65,13 +65,6 @@ class CORE_EXPORT PageWidgetEventHandler {
       const WebPointerEvent&,
       const std::vector<const WebInputEvent*>&);
   virtual ~PageWidgetEventHandler() {}
-  virtual WebInputEventResult DispatchBufferedTouchEvents() = 0;
-
- protected:
-  virtual WebInputEventResult HandleInputEventInternal(
-      const WebCoalescedInputEvent&) = 0;
-  WebInputEventResult HandleInputEventIncludingTouch(
-      const WebCoalescedInputEvent&);
 };
 
 // Common implementation of WebViewImpl and WebPagePopupImpl.

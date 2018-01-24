@@ -70,6 +70,9 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   bool ProcessTouchAction(cc::TouchAction touch_action);
 
  private:
+  blink::WebInputEventResult HandleTouchEvent(
+      const blink::WebCoalescedInputEvent& coalesced_event);
+
   RenderWidgetInputHandlerDelegate* const delegate_;
 
   RenderWidget* const widget_;

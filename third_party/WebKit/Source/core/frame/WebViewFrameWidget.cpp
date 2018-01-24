@@ -97,6 +97,10 @@ WebInputEventResult WebViewFrameWidget::HandleInputEvent(
   return web_view_->HandleInputEvent(event);
 }
 
+WebInputEventResult WebViewFrameWidget::DispatchBufferedTouchEvents() {
+  return web_view_->DispatchBufferedTouchEvents();
+}
+
 void WebViewFrameWidget::SetCursorVisibilityState(bool is_visible) {
   return web_view_->SetCursorVisibilityState(is_visible);
 }

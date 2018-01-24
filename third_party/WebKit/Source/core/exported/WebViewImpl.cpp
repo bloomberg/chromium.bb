@@ -1984,11 +1984,6 @@ WebInputEventResult WebViewImpl::DispatchBufferedTouchEvents() {
 
 WebInputEventResult WebViewImpl::HandleInputEvent(
     const WebCoalescedInputEvent& coalesced_event) {
-  return HandleInputEventIncludingTouch(coalesced_event);
-}
-
-WebInputEventResult WebViewImpl::HandleInputEventInternal(
-    const WebCoalescedInputEvent& coalesced_event) {
   const WebInputEvent& input_event = coalesced_event.Event();
   // TODO(dcheng): The fact that this is getting called when there is no local
   // main frame is problematic and probably indicates a bug in the input event

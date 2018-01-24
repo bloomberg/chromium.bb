@@ -121,6 +121,7 @@ class MockHandledEventCallback {
 
 class MockWebWidget : public blink::WebWidget {
  public:
+  MOCK_METHOD0(DispatchBufferedTouchEvents, blink::WebInputEventResult());
   MOCK_METHOD1(
       HandleInputEvent,
       blink::WebInputEventResult(const blink::WebCoalescedInputEvent&));
@@ -302,6 +303,11 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
 
+  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
+      .Times(7)
+      .WillRepeatedly(
+          ::testing::Return(blink::WebInputEventResult::kNotHandled));
+
   widget()->SendInputEvent(touch, HandledEventCallback());
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_CANCELABLE, 1);
@@ -353,6 +359,8 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       2);
 
   EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+      .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
+  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledSuppressed));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
@@ -361,6 +369,8 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
                                        PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED, 1);
 
   EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+      .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
+  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledApplication));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;

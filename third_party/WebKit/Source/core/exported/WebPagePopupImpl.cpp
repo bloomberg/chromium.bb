@@ -510,11 +510,6 @@ WebInputEventResult WebPagePopupImpl::DispatchBufferedTouchEvents() {
 }
 
 WebInputEventResult WebPagePopupImpl::HandleInputEvent(
-    const WebCoalescedInputEvent& coalesced_event) {
-  return HandleInputEventIncludingTouch(coalesced_event);
-}
-
-WebInputEventResult WebPagePopupImpl::HandleInputEventInternal(
     const WebCoalescedInputEvent& event) {
   if (closing_)
     return WebInputEventResult::kNotHandled;
