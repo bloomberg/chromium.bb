@@ -150,10 +150,20 @@ class TestDelegate : public PasswordsPrivateDelegate {
     importPasswordsTriggered = true;
   }
 
-  void ExportPasswords(content::WebContents* web_contents) override {
+  void ExportPasswords(base::OnceCallback<void(const std::string&)> callback,
+                       content::WebContents* web_contents) override {
     // The testing of password exporting itself should be handled via
     // |PasswordManagerPorter|.
     exportPasswordsTriggered = true;
+    std::move(callback).Run(std::string());
+  }
+
+  api::passwords_private::ExportProgressStatus GetExportProgressStatus()
+      override {
+    // The testing of password exporting itself should be handled via
+    // |PasswordManagerPorter|.
+    return api::passwords_private::ExportProgressStatus::
+        EXPORT_PROGRESS_STATUS_IN_PROGRESS;
   }
 
   // Flags for detecting whether import/export operations have been invoked.
@@ -279,6 +289,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExportPasswords) {
   if (!ExtensionApiTest::ExtensionSubtestsAreSkipped()) {
     EXPECT_TRUE(exportPasswordsWasTriggered());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestExportProgressStatus) {
+  EXPECT_TRUE(RunPasswordsSubtest("requestExportProgressStatus")) << message_;
 }
 
 }  // namespace extensions

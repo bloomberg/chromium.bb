@@ -5,13 +5,19 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_UI_EXPORT_FLOW_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_UI_EXPORT_FLOW_H_
 
+#include "components/password_manager/core/browser/ui/export_progress_status.h"
+
 namespace password_manager {
 
 // This represents the controller for the UI flow of exporting passwords.
 class ExportFlow {
  public:
-  // Store exported passwords to the export destination.
-  virtual void Store() = 0;
+  // Store exported passwords to the export destination. If an export is already
+  // in progress this will do nothing and return false.
+  virtual bool Store() = 0;
+
+  // Get the status of the export, which was initiated by Store().
+  virtual password_manager::ExportProgressStatus GetExportProgressStatus() = 0;
 
  protected:
   virtual ~ExportFlow() {}

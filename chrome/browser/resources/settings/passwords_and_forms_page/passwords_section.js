@@ -10,6 +10,8 @@
 
 /**
  * Interface for all callbacks to the password API.
+ * TODO(crbug.com/802352) Move the PasswordManager proxy to a separate
+ * location.
  * @interface
  */
 class PasswordManager {
@@ -84,8 +86,27 @@ class PasswordManager {
 
   /**
    * Triggers the dialogue for exporting passwords.
+   * @param {function():void} callback
    */
-  exportPasswords() {}
+  exportPasswords(callback) {}
+
+  /**
+   * Queries the status of any ongoing export.
+   * @param {function(!PasswordManager.ExportProgressStatus):void} callback
+   */
+  requestExportProgressStatus(callback) {}
+
+  /**
+   * Add an observer to the export progress.
+   * @param {function(!PasswordManager.PasswordExportProgress):void} listener
+   */
+  addPasswordsFileExportProgressListener(listener) {}
+
+  /**
+   * Remove an observer from the export progress.
+   * @param {function(!PasswordManager.PasswordExportProgress):void} listener
+   */
+  removePasswordsFileExportProgressListener(listener) {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -102,6 +123,12 @@ PasswordManager.PlaintextPasswordEvent;
 
 /** @typedef {{ entry: !PasswordManager.PasswordUiEntry, password: string }} */
 PasswordManager.UiEntryWithPassword;
+
+/** @typedef {chrome.passwordsPrivate.PasswordExportProgress} */
+PasswordManager.PasswordExportProgress;
+
+/** @typedef {chrome.passwordsPrivate.ExportProgressStatus} */
+PasswordManager.ExportProgressStatus;
 
 /**
  * Implementation that accesses the private API.
@@ -176,8 +203,24 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  exportPasswords() {
-    chrome.passwordsPrivate.exportPasswords();
+  exportPasswords(callback) {
+    chrome.passwordsPrivate.exportPasswords(callback);
+  }
+
+  /** @override */
+  requestExportProgressStatus(callback) {
+    chrome.passwordsPrivate.requestExportProgressStatus(callback);
+  }
+
+  /** @override */
+  addPasswordsFileExportProgressListener(listener) {
+    chrome.passwordsPrivate.onPasswordsFileExportProgress.addListener(listener);
+  }
+
+  /** @override */
+  removePasswordsFileExportProgressListener(listener) {
+    chrome.passwordsPrivate.onPasswordsFileExportProgress.removeListener(
+        listener);
   }
 }
 

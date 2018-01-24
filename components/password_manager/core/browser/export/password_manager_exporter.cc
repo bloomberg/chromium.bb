@@ -32,8 +32,11 @@ namespace password_manager {
 
 PasswordManagerExporter::PasswordManagerExporter(
     password_manager::CredentialProviderInterface*
-        credential_provider_interface)
+        credential_provider_interface,
+    ProgressCallback on_progress)
     : credential_provider_interface_(credential_provider_interface),
+      on_progress_(std::move(on_progress)),
+      last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(&base::WriteFile),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE, base::MayBlock()})),
@@ -62,6 +65,13 @@ void PasswordManagerExporter::Cancel() {
 
   destination_.clear();
   password_list_.clear();
+
+  OnProgress(ExportProgressStatus::FAILED_CANCELLED, std::string());
+}
+
+password_manager::ExportProgressStatus
+PasswordManagerExporter::GetProgressStatus() {
+  return last_progress_status_;
 }
 
 void PasswordManagerExporter::SetWriteForTesting(
@@ -79,6 +89,8 @@ void PasswordManagerExporter::Export() {
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list_.size());
 
+  OnProgress(ExportProgressStatus::IN_PROGRESS, std::string());
+
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
@@ -92,9 +104,23 @@ void PasswordManagerExporter::Export() {
 }
 
 void PasswordManagerExporter::OnPasswordsSerialised(
-    base::FilePath destination,
+    const base::FilePath& destination,
     const std::string& serialised) {
-  write_function_(destination, serialised.c_str(), serialised.size());
+  int written =
+      write_function_(destination, serialised.c_str(), serialised.size());
+  if (written == static_cast<int>(serialised.size())) {
+    OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
+  } else {
+    OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
+               destination.DirName().BaseName().AsUTF8Unsafe());
+  }
+}
+
+void PasswordManagerExporter::OnProgress(
+    password_manager::ExportProgressStatus status,
+    const std::string& folder) {
+  last_progress_status_ = status;
+  on_progress_.Run(status, folder);
 }
 
 }  // namespace password_manager

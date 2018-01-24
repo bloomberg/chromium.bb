@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_MANAGER_PORTER_H_
 
 #include <memory>
+#include <string>
 
 #include "components/password_manager/core/browser/import/password_importer.h"
 #include "components/password_manager/core/browser/ui/export_flow.h"
+#include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "components/password_manager/core/browser/ui/import_flow.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -29,22 +31,31 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
                               public password_manager::ExportFlow,
                               public password_manager::ImportFlow {
  public:
-  // This constructor injects PasswordManagerPorter's dependencies directly to
-  // facilitate testing. Primary constructor.
+  using ProgressCallback =
+      base::RepeatingCallback<void(password_manager::ExportProgressStatus,
+                                   const std::string&)>;
+
   explicit PasswordManagerPorter(
       std::unique_ptr<password_manager::PasswordManagerExporter> exporter);
-
-  explicit PasswordManagerPorter(password_manager::CredentialProviderInterface*
-                                     credential_provider_interface);
-
   ~PasswordManagerPorter() override;
+
+  // Create an instance of PasswordManagerPorter.
+  // |credential_provider_interface| provides the credentials which can be
+  // exported. |on_export_progress_callback| will be called with updates to
+  // the progress of exporting.
+  static std::unique_ptr<PasswordManagerPorter>
+  CreatePasswordManagerPorterWithCredentialProvider(
+      password_manager::CredentialProviderInterface*
+          credential_provider_interface,
+      ProgressCallback on_export_progress_callback);
 
   void set_web_contents(content::WebContents* web_contents) {
     web_contents_ = web_contents;
   }
 
   // password_manager::ExportFlow
-  void Store() override;
+  bool Store() override;
+  password_manager::ExportProgressStatus GetExportProgressStatus() override;
 
   // password_manager::ImportFlow
   void Load() override;
