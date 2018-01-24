@@ -94,15 +94,8 @@ ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
 }
 
 void ElementShadow::AppendShadowRoot(ShadowRoot& shadow_root) {
-  if (!shadow_root_) {
-    shadow_root_ = &shadow_root;
-    return;
-  }
-  ShadowRoot& youngest = YoungestShadowRoot();
-  DCHECK(shadow_root.GetType() == ShadowRootType::V0);
-  DCHECK(youngest.GetType() == ShadowRootType::V0);
-  youngest.SetYoungerShadowRoot(shadow_root);
-  shadow_root.SetOlderShadowRoot(youngest);
+  DCHECK(!shadow_root_);
+  shadow_root_ = &shadow_root;
 }
 
 void ElementShadow::Attach(const Node::AttachContext& context) {

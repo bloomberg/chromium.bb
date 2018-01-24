@@ -49,7 +49,6 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   bool IsActive() const;
   bool CanBeActive() const;
 
-  bool IsShadowInsertionPoint() const;
   bool IsContentInsertionPoint() const;
 
   StaticNodeList* getDistributedNodes();
@@ -103,17 +102,10 @@ inline bool IsActiveV0InsertionPoint(const Node& node) {
   return node.IsV0InsertionPoint() && ToV0InsertionPoint(node).IsActive();
 }
 
-inline bool IsActiveShadowInsertionPoint(const Node& node) {
-  return node.IsV0InsertionPoint() &&
-         ToV0InsertionPoint(node).IsShadowInsertionPoint();
-}
-
 inline ElementShadow* ShadowWhereNodeCanBeDistributedForV0(const Node& node) {
   Node* parent = node.parentNode();
   if (!parent)
     return nullptr;
-  if (parent->IsShadowRoot() && !ToShadowRoot(parent)->IsYoungest())
-    return node.OwnerShadowHost()->Shadow();
   if (IsActiveV0InsertionPoint(*parent))
     return node.OwnerShadowHost()->Shadow();
   if (parent->IsElementNode())

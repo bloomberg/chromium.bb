@@ -188,16 +188,7 @@ void ElementShadowV0::Distribute() {
     HTMLShadowElement* shadow_insertion_point = shadow_insertion_points[i - 1];
     ShadowRoot* root = shadow_insertion_point->ContainingShadowRoot();
     DCHECK(root);
-    if (root->IsOldest()) {
-      pool.DistributeTo(shadow_insertion_point, this);
-    } else if (root->OlderShadowRoot()->GetType() == root->GetType()) {
-      // Only allow reprojecting older shadow roots between the same type to
-      // disallow reprojecting UA elements into author shadows.
-      DistributionPool older_shadow_root_pool(*root->OlderShadowRoot());
-      older_shadow_root_pool.DistributeTo(shadow_insertion_point, this);
-      root->OlderShadowRoot()->SetShadowInsertionPointOfYoungerShadowRoot(
-          shadow_insertion_point);
-    }
+    pool.DistributeTo(shadow_insertion_point, this);
     if (ElementShadow* shadow =
             ShadowWhereNodeCanBeDistributedForV0(*shadow_insertion_point))
       shadow->SetNeedsDistributionRecalc();
@@ -252,10 +243,6 @@ void ElementShadowV0::WillAffectSelector() {
 
 void ElementShadowV0::ClearDistribution() {
   node_to_insertion_points_.clear();
-
-  for (ShadowRoot* root = &element_shadow_->YoungestShadowRoot(); root;
-       root = root->OlderShadowRoot())
-    root->SetShadowInsertionPointOfYoungerShadowRoot(nullptr);
 }
 
 void ElementShadowV0::Trace(blink::Visitor* visitor) {
