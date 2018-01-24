@@ -8,33 +8,32 @@
 #include <jni.h>
 
 #include <stdint.h>
-#include <string>
-#include <utility>
-#include <vector>
 
-#include "base/debug/proc_maps_linux.h"
+#include "base/android/library_loader/anchor_functions_flags.h"
+#include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
 namespace base {
 namespace android {
 
 // Forks and waits for a process prefetching the native library. This is done in
 // a forked process for the following reasons:
-// - Isolating the main process from mistakes in the parsing. If the parsing
-//   returns an incorrect address, only the forked process will crash.
+// - Isolating the main process from mistakes in getting the address range, only
+//   crashing the forked process in case of mistake.
 // - Not inflating the memory used by the main process uselessly, which could
 //   increase its likelihood to be killed.
 // The forked process has background priority and, since it is not declared to
 // the Android runtime, can be killed at any time, which is not an issue here.
 class BASE_EXPORT NativeLibraryPrefetcher {
  public:
-  using AddressRange = std::pair<uintptr_t, uintptr_t>;
-
-  // Finds the ranges matching the native library, forks a low priority
-  // process pre-fetching these ranges and wait()s for it.
+  // Finds the executable code range, forks a low priority process pre-fetching
+  // it wait()s for the process to exit or die.
   // Returns true for success.
   static bool ForkAndPrefetchNativeLibrary();
+
   // Returns the percentage of the native library code currently resident in
   // memory, or -1 in case of error.
   static int PercentageOfResidentNativeLibraryCode();
@@ -47,43 +46,19 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   static void MadviseRandomText();
 
  private:
-  // Returns true if the region matches native code or data.
-  static bool IsGoodToPrefetch(const base::debug::MappedMemoryRegion& region);
-  // Filters the regions to keep only libchrome ranges if possible.
-  static void FilterLibchromeRangesOnlyIfPossible(
-      const std::vector<base::debug::MappedMemoryRegion>& regions,
-      std::vector<AddressRange>* ranges);
-  // Finds the ranges matching the native library in /proc/self/maps.
-  // Returns true for success.
-  static bool FindRanges(std::vector<AddressRange>* ranges);
-
-  // Returns the percentage of the given address ranges currently resident in
+  // Returns the percentage of [start, end] currently resident in
   // memory, or -1 in case of error.
-  static int PercentageOfResidentCode(const std::vector<AddressRange>& ranges);
+  static int PercentageOfResidentCode(size_t start, size_t end);
 
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestIsGoodToPrefetchNoRange);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestIsGoodToPrefetchUnreadableRange);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestIsGoodToPrefetchSkipSharedRange);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestIsGoodToPrefetchLibchromeRange);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestIsGoodToPrefetchBaseApkRange);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestFilterLibchromeRangesOnlyIfPossibleNoLibchrome);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestFilterLibchromeRangesOnlyIfPossibleHasLibchrome);
   FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
                            TestPercentageOfResidentCode);
-  FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
-                           TestPercentageOfResidentCodeTwoRegions);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(NativeLibraryPrefetcher);
 };
 
 }  // namespace android
 }  // namespace base
+
+#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
 #endif  // BASE_ANDROID_LIBRARY_LOADER_LIBRARY_PREFETCHER_H_
