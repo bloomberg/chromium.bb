@@ -193,7 +193,7 @@ public class WebApkIntegrationTest {
     public void testLaunchIntervalHistogramRecordedOnSecondLaunch() throws Exception {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
-        final String histogramName = "WebApk.LaunchInterval";
+        final String histogramName = "WebApk.LaunchInterval2";
         final String packageName = "org.chromium.webapk";
 
         WebappDataStorage storage =
