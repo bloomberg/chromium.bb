@@ -30,22 +30,21 @@ class APP_LIST_EXPORT AppListPage : public views::View {
 
   // Triggered after the animation has updated.
   virtual void OnAnimationUpdated(double progress,
-                                  AppListModel::State from_state,
-                                  AppListModel::State to_state);
+                                  ash::AppListState from_state,
+                                  ash::AppListState to_state);
 
   // Returns where the search box should be when this page is shown. Is at the
   // top of the app list by default, in the contents view's coordinate space.
   virtual gfx::Rect GetSearchBoxBounds() const;
 
   // Returns the bounds of the search box according to |state|.
-  virtual gfx::Rect GetSearchBoxBoundsForState(AppListModel::State state) const;
+  virtual gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
 
   // Returns where this page should move to when the given state is active.
-  virtual gfx::Rect GetPageBoundsForState(AppListModel::State state) const = 0;
+  virtual gfx::Rect GetPageBoundsForState(ash::AppListState state) const = 0;
 
   // Returns the bounds of the page during dragging.
-  virtual gfx::Rect GetPageBoundsDuringDragging(
-      AppListModel::State state) const;
+  virtual gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
 
   const ContentsView* contents_view() const { return contents_view_; }
   void set_contents_view(ContentsView* contents_view) {

@@ -37,7 +37,7 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
   void SetStatus(app_list::AppListModel::Status status) override;
-  void SetState(app_list::AppListModel::State state) override;
+  void SetState(ash::AppListState state) override;
   void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
   void SetSearchTabletAndClamshellAccessibleName(

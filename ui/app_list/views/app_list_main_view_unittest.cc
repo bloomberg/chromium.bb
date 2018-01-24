@@ -292,7 +292,7 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
   AppListItemView* item1 = RootViewModel()->view_at(1);
 
   // Switch to All Apps page.
-  GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
+  GetContentsView()->SetActiveState(ash::AppListState::kStateApps);
   GetContentsView()->Layout();
 
   generator.MoveMouseTo(item0->GetBoundsInScreen().CenterPoint());
@@ -323,7 +323,7 @@ TEST_F(AppListMainViewTest, TapGestureToHighlight) {
   AppListItemView* item = RootViewModel()->view_at(0);
 
   // Switch to All Apps page.
-  GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
+  GetContentsView()->SetActiveState(ash::AppListState::kStateApps);
   GetContentsView()->Layout();
 
   generator.set_current_location(item->GetBoundsInScreen().CenterPoint());
@@ -396,7 +396,7 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
 
   // Ensure we are on the apps grid view page.
   app_list::ContentsView* contents_view = GetContentsView();
-  contents_view->SetActiveState(AppListModel::STATE_APPS);
+  contents_view->SetActiveState(ash::AppListState::kStateApps);
   contents_view->Layout();
 
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//ash/public/interfaces/app_list.typemap",
   "//ash/public/interfaces/session_controller.typemap",
   "//ash/public/interfaces/shelf.typemap",
   "//ash/public/interfaces/user_info.typemap",

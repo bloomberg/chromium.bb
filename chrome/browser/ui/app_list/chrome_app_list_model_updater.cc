@@ -55,7 +55,7 @@ void ChromeAppListModelUpdater::SetStatus(
   model_->SetStatus(status);
 }
 
-void ChromeAppListModelUpdater::SetState(app_list::AppListModel::State state) {
+void ChromeAppListModelUpdater::SetState(ash::AppListState state) {
   model_->SetState(state);
 }
 

@@ -21,8 +21,8 @@ void AppListPage::OnHidden() {}
 void AppListPage::OnWillBeHidden() {}
 
 void AppListPage::OnAnimationUpdated(double progress,
-                                     AppListModel::State from_state,
-                                     AppListModel::State to_state) {}
+                                     ash::AppListState from_state,
+                                     ash::AppListState to_state) {}
 
 gfx::Rect AppListPage::GetSearchBoxBounds() const {
   DCHECK(contents_view_);
@@ -30,12 +30,12 @@ gfx::Rect AppListPage::GetSearchBoxBounds() const {
 }
 
 gfx::Rect AppListPage::GetSearchBoxBoundsForState(
-    AppListModel::State state) const {
+    ash::AppListState state) const {
   return GetSearchBoxBounds();
 }
 
 gfx::Rect AppListPage::GetPageBoundsDuringDragging(
-    AppListModel::State state) const {
+    ash::AppListState state) const {
   return GetPageBoundsForState(state);
 }
 

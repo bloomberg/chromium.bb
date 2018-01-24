@@ -13,6 +13,7 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/strings/string16.h"
 
 class ChromeAppListItem;
@@ -44,7 +45,7 @@ class AppListModelUpdater {
   virtual void MoveItemToFolder(const std::string& id,
                                 const std::string& folder_id) {}
   virtual void SetStatus(app_list::AppListModel::Status status) {}
-  virtual void SetState(app_list::AppListModel::State state) {}
+  virtual void SetState(ash::AppListState state) {}
   virtual void HighlightItemInstalledFromUI(const std::string& id) {}
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}

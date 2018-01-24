@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/app_list_model.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
@@ -55,7 +55,7 @@ class AppListServiceAsh : public AppListServiceImpl {
 
   // Shows the app list if it isn't already showing and Switches to |state|,
   // unless it is |INVALID_STATE| (in which case, opens on the default state).
-  void ShowAndSwitchToState(app_list::AppListModel::State state);
+  void ShowAndSwitchToState(ash::AppListState state);
 
   // AppListService overrides:
   base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override;
