@@ -626,7 +626,13 @@ TEST_P(ParameterizedWebFrameTest, CallingPostPausableTaskWhileNotPaused) {
             *callback_helper.result());
 }
 
-TEST_P(ParameterizedWebFrameTest, CallingPostPausableTaskWhilePaused) {
+// Flaky on Android: crbug.com/804892.
+#if defined(OS_ANDROID)
+TEST_P(ParameterizedWebFrameTest, DISABLED_CallingPostPausableTaskWhilePaused)
+#else
+TEST_P(ParameterizedWebFrameTest, CallingPostPausableTaskWhilePaused)
+#endif
+{
   RegisterMockedHttpURLLoad("foo.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
