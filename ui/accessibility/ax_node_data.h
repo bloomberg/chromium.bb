@@ -66,7 +66,7 @@ struct AX_EXPORT AXNodeData {
   bool GetFloatAttribute(AXFloatAttribute attr, float* value) const;
 
   bool HasIntAttribute(AXIntAttribute attribute) const;
-  int GetIntAttribute(AXIntAttribute attribute) const;
+  int32_t GetIntAttribute(AXIntAttribute attribute) const;
   bool GetIntAttribute(AXIntAttribute attribute, int* value) const;
 
   bool HasStringAttribute(
@@ -98,7 +98,7 @@ struct AX_EXPORT AXNodeData {
   // Setting accessibility attributes.
   void AddStringAttribute(AXStringAttribute attribute,
                           const std::string& value);
-  void AddIntAttribute(AXIntAttribute attribute, int value);
+  void AddIntAttribute(AXIntAttribute attribute, int32_t value);
   void AddFloatAttribute(AXFloatAttribute attribute, float value);
   void AddBoolAttribute(AXBoolAttribute attribute, bool value);
   void AddIntListAttribute(AXIntListAttribute attribute,
@@ -115,12 +115,57 @@ struct AX_EXPORT AXNodeData {
   void SetValue(const base::string16& value);
 
   // Returns true if the given enum bit is 1.
-  bool HasState(ui::AXState state_enum) const;
-  bool HasAction(ui::AXAction state_enum) const;
+  bool HasState(AXState state_enum) const;
+  bool HasAction(AXAction state_enum) const;
 
   // Set bits in the given enum's corresponding bitfield.
-  void AddState(ui::AXState state_enum);
-  void AddAction(ui::AXAction action_enum);
+  void AddState(AXState state_enum);
+  void AddAction(AXAction action_enum);
+
+  // Helper functions to get some common int attributes with some specific
+  // enum types:
+  AXCheckedState GetCheckedState() const {
+    return static_cast<AXCheckedState>(GetIntAttribute(AX_ATTR_CHECKED_STATE));
+  }
+  AXDefaultActionVerb GetDefaultActionVerb() const {
+    return static_cast<AXDefaultActionVerb>(
+        GetIntAttribute(AX_ATTR_DEFAULT_ACTION_VERB));
+  }
+  AXInvalidState GetInvalidState() const {
+    return static_cast<AXInvalidState>(GetIntAttribute(AX_ATTR_INVALID_STATE));
+  }
+  AXNameFrom GetNameFrom() const {
+    return static_cast<AXNameFrom>(GetIntAttribute(AX_ATTR_NAME_FROM));
+  }
+  AXRestriction GetRestriction() const {
+    return static_cast<AXRestriction>(GetIntAttribute(AX_ATTR_RESTRICTION));
+  }
+  AXTextDirection GetTextDirection() const {
+    return static_cast<AXTextDirection>(
+        GetIntAttribute(AX_ATTR_TEXT_DIRECTION));
+  }
+
+  // Helper functions to set some common int attributes.
+  void SetCheckedState(AXCheckedState checked_state) {
+    AddIntAttribute(AX_ATTR_CHECKED_STATE, static_cast<int32_t>(checked_state));
+  }
+  void SetDefaultActionVerb(AXDefaultActionVerb default_action_verb) {
+    AddIntAttribute(AX_ATTR_DEFAULT_ACTION_VERB,
+                    static_cast<int32_t>(default_action_verb));
+  }
+  void SetInvalidState(AXInvalidState invalid_state) {
+    AddIntAttribute(AX_ATTR_INVALID_STATE, static_cast<int32_t>(invalid_state));
+  }
+  void SetNameFrom(AXNameFrom name_from) {
+    AddIntAttribute(AX_ATTR_NAME_FROM, static_cast<int32_t>(name_from));
+  }
+  void SetRestriction(AXRestriction restriction) {
+    AddIntAttribute(AX_ATTR_RESTRICTION, static_cast<int32_t>(restriction));
+  }
+  void SetTextDirection(AXTextDirection text_direction) {
+    AddIntAttribute(AX_ATTR_TEXT_DIRECTION,
+                    static_cast<int32_t>(text_direction));
+  }
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;
@@ -129,8 +174,8 @@ struct AX_EXPORT AXNodeData {
   // copyable struct.
   int32_t id = -1;
   AXRole role = AX_ROLE_UNKNOWN;
-  uint32_t state = AX_STATE_NONE;
-  uint32_t actions = AX_ACTION_NONE;
+  uint32_t state = static_cast<uint32_t>(AX_STATE_NONE);
+  uint32_t actions = static_cast<uint32_t>(AX_ACTION_NONE);
   std::vector<std::pair<AXStringAttribute, std::string>> string_attributes;
   std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
   std::vector<std::pair<AXFloatAttribute, float>> float_attributes;

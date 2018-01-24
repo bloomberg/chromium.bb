@@ -584,7 +584,7 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
           int start_offset = start > 0 ? character_offsets[start - 1] : 0;
           int end_offset = end > 0 ? character_offsets[end - 1] : 0;
 
-          switch (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION)) {
+          switch (node->data().GetTextDirection()) {
             case ui::AX_TEXT_DIRECTION_LTR:
             default:
               local_bounds.set_x(local_bounds.x() + start_offset);
@@ -779,9 +779,8 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       "GetRestriction",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        const ui::AXRestriction restriction = static_cast<ui::AXRestriction>(
-            node->data().GetIntAttribute(ui::AX_ATTR_RESTRICTION));
-        if (restriction) {
+        const ui::AXRestriction restriction = node->data().GetRestriction();
+        if (restriction != ui::AX_RESTRICTION_NONE) {
           const std::string restriction_str = ui::ToString(restriction);
           result.Set(v8::String::NewFromUtf8(isolate, restriction_str.c_str()));
         }
@@ -844,20 +843,22 @@ void AutomationInternalCustomBindings::GetSchemaAdditions(
   v8::Isolate* isolate = GetIsolate();
 
   gin::DataObjectBuilder name_from_type(isolate);
-  for (int i = ui::AX_NAME_FROM_NONE; i <= ui::AX_NAME_FROM_LAST; ++i) {
+  for (int32_t i = static_cast<int32_t>(ui::AX_NAME_FROM_NONE);
+       i <= static_cast<int32_t>(ui::AX_NAME_FROM_LAST); ++i) {
     name_from_type.Set(
         i, base::StringPiece(ui::ToString(static_cast<ui::AXNameFrom>(i))));
   }
 
   gin::DataObjectBuilder restriction(isolate);
-  for (int i = ui::AX_RESTRICTION_NONE; i <= ui::AX_RESTRICTION_LAST; ++i) {
+  for (int32_t i = static_cast<int32_t>(ui::AX_RESTRICTION_NONE);
+       i <= static_cast<int32_t>(ui::AX_RESTRICTION_LAST); ++i) {
     restriction.Set(
         i, base::StringPiece(ui::ToString(static_cast<ui::AXRestriction>(i))));
   }
 
   gin::DataObjectBuilder description_from_type(isolate);
-  for (int i = ui::AX_DESCRIPTION_FROM_NONE; i <= ui::AX_DESCRIPTION_FROM_LAST;
-       ++i) {
+  for (int32_t i = static_cast<int32_t>(ui::AX_DESCRIPTION_FROM_NONE);
+       i <= static_cast<int32_t>(ui::AX_DESCRIPTION_FROM_LAST); ++i) {
     description_from_type.Set(
         i,
         base::StringPiece(ui::ToString(static_cast<ui::AXDescriptionFrom>(i))));
@@ -1061,12 +1062,14 @@ void AutomationInternalCustomBindings::GetState(
        focused_tree_wrapper == tree_wrapper && focused_node == node) ||
       tree_wrapper->tree()->data().focus_id == node->id();
   if (focused)
-    state.Set(ToString(api::automation::STATE_TYPE_FOCUSED), true);
+    state.Set(api::automation::ToString(api::automation::STATE_TYPE_FOCUSED),
+              true);
 
   bool offscreen = false;
   ComputeGlobalNodeBounds(tree_wrapper, node, gfx::RectF(), &offscreen);
   if (offscreen)
-    state.Set(ToString(api::automation::STATE_TYPE_OFFSCREEN), true);
+    state.Set(api::automation::ToString(api::automation::STATE_TYPE_OFFSCREEN),
+              true);
 
   args.GetReturnValue().Set(state.Build());
 }

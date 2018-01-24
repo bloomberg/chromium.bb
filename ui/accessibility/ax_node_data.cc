@@ -30,7 +30,8 @@ uint32_t ModifyFlag(uint32_t bitfield, uint32_t flag, bool set) {
 
 std::string StateBitfieldToString(uint32_t state) {
   std::string str;
-  for (uint32_t i = AX_STATE_NONE + 1; i <= AX_STATE_LAST; ++i) {
+  for (uint32_t i = static_cast<uint32_t>(AX_STATE_NONE) + 1;
+       i <= static_cast<uint32_t>(AX_STATE_LAST); ++i) {
     if (IsFlagSet(state, i))
       str += " " + base::ToUpperASCII(ui::ToString(static_cast<AXState>(i)));
   }
@@ -39,7 +40,8 @@ std::string StateBitfieldToString(uint32_t state) {
 
 std::string ActionsBitfieldToString(uint32_t actions) {
   std::string str;
-  for (uint32_t i = AX_ACTION_NONE + 1; i <= AX_ACTION_LAST; ++i) {
+  for (uint32_t i = static_cast<uint32_t>(AX_ACTION_NONE) + 1;
+       i <= static_cast<uint32_t>(AX_ACTION_LAST); ++i) {
     if (IsFlagSet(actions, i)) {
       str += ui::ToString(static_cast<AXAction>(i));
       actions = ModifyFlag(actions, i, false);
@@ -473,16 +475,16 @@ void AXNodeData::SetValue(const base::string16& value) {
 }
 
 bool AXNodeData::HasState(AXState state_enum) const {
-  return IsFlagSet(state, state_enum);
+  return IsFlagSet(state, static_cast<uint32_t>(state_enum));
 }
 
 bool AXNodeData::HasAction(AXAction action_enum) const {
-  return IsFlagSet(actions, action_enum);
+  return IsFlagSet(actions, static_cast<uint32_t>(action_enum));
 }
 
 void AXNodeData::AddState(AXState state_enum) {
   DCHECK_NE(state_enum, AX_STATE_NONE);
-  state = ModifyFlag(state, state_enum, true);
+  state = ModifyFlag(state, static_cast<uint32_t>(state_enum), true);
 }
 
 void AXNodeData::AddAction(AXAction action_enum) {
@@ -525,7 +527,7 @@ void AXNodeData::AddAction(AXAction action_enum) {
       break;
   }
 
-  actions = ModifyFlag(actions, action_enum, true);
+  actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
 }
 
 std::string AXNodeData::ToString() const {
@@ -631,7 +633,7 @@ std::string AXNodeData::ToString() const {
         result += " row_index=" + value;
         break;
       case AX_ATTR_SORT_DIRECTION:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXSortDirection>(int_attributes[i].second)) {
           case AX_SORT_DIRECTION_UNSORTED:
             result += " sort_direction=none";
             break;
@@ -643,6 +645,8 @@ std::string AXNodeData::ToString() const {
             break;
           case AX_SORT_DIRECTION_OTHER:
             result += " sort_direction=other";
+            break;
+          default:
             break;
         }
         break;
@@ -685,7 +689,7 @@ std::string AXNodeData::ToString() const {
                                      int_attributes[i].second);
         break;
       case AX_ATTR_ARIA_CURRENT_STATE:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXAriaCurrentState>(int_attributes[i].second)) {
           case AX_ARIA_CURRENT_STATE_FALSE:
             result += " aria_current_state=false";
             break;
@@ -707,6 +711,8 @@ std::string AXNodeData::ToString() const {
           case AX_ARIA_CURRENT_STATE_TIME:
             result += " aria_current_state=time";
             break;
+          default:
+            break;
         }
         break;
       case AX_ATTR_BACKGROUND_COLOR:
@@ -717,7 +723,7 @@ std::string AXNodeData::ToString() const {
         result += base::StringPrintf(" color=&%X", int_attributes[i].second);
         break;
       case AX_ATTR_TEXT_DIRECTION:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXTextDirection>(int_attributes[i].second)) {
           case AX_TEXT_DIRECTION_LTR:
             result += " text_direction=ltr";
             break;
@@ -730,20 +736,22 @@ std::string AXNodeData::ToString() const {
           case AX_TEXT_DIRECTION_BTT:
             result += " text_direction=btt";
             break;
+          default:
+            break;
         }
         break;
       case AX_ATTR_TEXT_STYLE: {
-        auto text_style = static_cast<AXTextStyle>(int_attributes[i].second);
-        if (text_style == AX_TEXT_STYLE_NONE)
+        int32_t text_style = int_attributes[i].second;
+        if (text_style == static_cast<int32_t>(AX_TEXT_STYLE_NONE))
           break;
         std::string text_style_value(" text_style=");
-        if (text_style & AX_TEXT_STYLE_BOLD)
+        if (text_style & static_cast<int32_t>(AX_TEXT_STYLE_BOLD))
           text_style_value += "bold,";
-        if (text_style & AX_TEXT_STYLE_ITALIC)
+        if (text_style & static_cast<int32_t>(AX_TEXT_STYLE_ITALIC))
           text_style_value += "italic,";
-        if (text_style & AX_TEXT_STYLE_UNDERLINE)
+        if (text_style & static_cast<int32_t>(AX_TEXT_STYLE_UNDERLINE))
           text_style_value += "underline,";
-        if (text_style & AX_TEXT_STYLE_LINE_THROUGH)
+        if (text_style & static_cast<int32_t>(AX_TEXT_STYLE_LINE_THROUGH))
           text_style_value += "line-through,";
         result += text_style_value.substr(0, text_style_value.size() - 1);
         break;
@@ -755,7 +763,7 @@ std::string AXNodeData::ToString() const {
         result += " posinset=" + value;
         break;
       case AX_ATTR_INVALID_STATE:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXInvalidState>(int_attributes[i].second)) {
           case AX_INVALID_STATE_FALSE:
             result += " invalid_state=false";
             break;
@@ -771,10 +779,12 @@ std::string AXNodeData::ToString() const {
           case AX_INVALID_STATE_OTHER:
             result += " invalid_state=other";
             break;
+          default:
+            break;
         }
         break;
       case AX_ATTR_CHECKED_STATE:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXCheckedState>(int_attributes[i].second)) {
           case AX_CHECKED_STATE_FALSE:
             result += " checked_state=false";
             break;
@@ -784,15 +794,19 @@ std::string AXNodeData::ToString() const {
           case AX_CHECKED_STATE_MIXED:
             result += " checked_state=mixed";
             break;
+          default:
+            break;
         }
         break;
       case AX_ATTR_RESTRICTION:
-        switch (int_attributes[i].second) {
+        switch (static_cast<AXRestriction>(int_attributes[i].second)) {
           case AX_RESTRICTION_READ_ONLY:
             result += " restriction=readonly";
             break;
           case AX_RESTRICTION_DISABLED:
             result += " restriction=disabled";
+            break;
+          default:
             break;
         }
         break;
@@ -977,22 +991,22 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_MARKER_TYPES: {
         std::string types_str;
         for (size_t i = 0; i < values.size(); ++i) {
-          auto type = static_cast<AXMarkerType>(values[i]);
-          if (type == AX_MARKER_TYPE_NONE)
+          int32_t type = values[i];
+          if (type == static_cast<int32_t>(AX_MARKER_TYPE_NONE))
             continue;
 
           if (i > 0)
             types_str += ',';
 
-          if (type & AX_MARKER_TYPE_SPELLING)
+          if (type & static_cast<int32_t>(AX_MARKER_TYPE_SPELLING))
             types_str += "spelling&";
-          if (type & AX_MARKER_TYPE_GRAMMAR)
+          if (type & static_cast<int32_t>(AX_MARKER_TYPE_GRAMMAR))
             types_str += "grammar&";
-          if (type & AX_MARKER_TYPE_TEXT_MATCH)
+          if (type & static_cast<int32_t>(AX_MARKER_TYPE_TEXT_MATCH))
             types_str += "text_match&";
-          if (type & AX_MARKER_TYPE_ACTIVE_SUGGESTION)
+          if (type & static_cast<int32_t>(AX_MARKER_TYPE_ACTIVE_SUGGESTION))
             types_str += "active_suggestion&";
-          if (type & AX_MARKER_TYPE_SUGGESTION)
+          if (type & static_cast<int32_t>(AX_MARKER_TYPE_SUGGESTION))
             types_str += "suggestion&";
 
           if (!types_str.empty())

@@ -117,14 +117,16 @@ int AXPlatformRelationWin::EnumerateRelationships(
       intlist_attributes_with_reverse_relations;
   static bool first_time = true;
   if (first_time) {
-    for (int attr_index = AX_INT_ATTRIBUTE_NONE;
-         attr_index <= AX_INT_ATTRIBUTE_LAST; ++attr_index) {
+    for (int32_t attr_index = static_cast<int32_t>(AX_INT_ATTRIBUTE_NONE);
+         attr_index <= static_cast<int32_t>(AX_INT_ATTRIBUTE_LAST);
+         ++attr_index) {
       auto attr = static_cast<AXIntAttribute>(attr_index);
       if (!GetIA2ReverseRelationFromIntAttr(attr).empty())
         int_attributes_with_reverse_relations.push_back(attr);
     }
-    for (int attr_index = AX_INT_LIST_ATTRIBUTE_NONE;
-         attr_index <= AX_INT_LIST_ATTRIBUTE_LAST; ++attr_index) {
+    for (int32_t attr_index = static_cast<int32_t>(AX_INT_LIST_ATTRIBUTE_NONE);
+         attr_index <= static_cast<int32_t>(AX_INT_LIST_ATTRIBUTE_LAST);
+         ++attr_index) {
       auto attr = static_cast<AXIntListAttribute>(attr_index);
       if (!GetIA2ReverseRelationFromIntListAttr(attr).empty())
         intlist_attributes_with_reverse_relations.push_back(attr);

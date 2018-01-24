@@ -250,8 +250,8 @@ void AddMisspelledTextAttributes(
     const std::vector<int>& marker_ends =
         text_object->GetIntListAttribute(ui::AX_ATTR_MARKER_ENDS);
     for (size_t i = 0; i < marker_types.size(); ++i) {
-      if (!(static_cast<ui::AXMarkerType>(marker_types[i]) &
-            ui::AX_MARKER_TYPE_SPELLING)) {
+      if (!(marker_types[i] &
+            static_cast<int32_t>(ui::AX_MARKER_TYPE_SPELLING))) {
         continue;
       }
 
@@ -337,7 +337,7 @@ NSString* NSStringForStringAttribute(
 // GetState checks the bitmask used in AXNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, ui::AXState state) {
-  return ((accessibility->GetState() >> state) & 1);
+  return accessibility->GetData().HasState(state);
 }
 
 // Given a search key provided to AXUIElementCountForSearchPredicate or
@@ -963,7 +963,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   // from its descendants.
   base::string16 value = browserAccessibility_->GetValue();
   if (browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE) &&
-      !IsControl(browserAccessibility_->GetRole()) && value.empty() &&
+      !ui::IsControl(browserAccessibility_->GetRole()) && value.empty() &&
       [self internalRole] != ui::AX_ROLE_DATE_TIME &&
       [self internalRole] != ui::AX_ROLE_WEB_AREA &&
       [self internalRole] != ui::AX_ROLE_ROOT_WEB_AREA) {
@@ -1061,9 +1061,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)enabled {
   if (![self instanceActive])
     return nil;
-  return [NSNumber numberWithBool:browserAccessibility_->GetIntAttribute(
-                                      ui::AX_ATTR_RESTRICTION) !=
-                                  ui::AX_RESTRICTION_DISABLED];
+  return [NSNumber
+      numberWithBool:browserAccessibility_->GetData().GetRestriction() !=
+                     ui::AX_RESTRICTION_DISABLED];
 }
 
 // Returns a text marker that points to the last character in the document that
@@ -1214,17 +1214,16 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       ui::AX_ATTR_INVALID_STATE, &invalidState))
     return @"false";
 
-  switch (invalidState) {
-  case ui::AX_INVALID_STATE_FALSE:
-    return @"false";
-  case ui::AX_INVALID_STATE_TRUE:
-    return @"true";
-  case ui::AX_INVALID_STATE_SPELLING:
-    return @"spelling";
-  case ui::AX_INVALID_STATE_GRAMMAR:
-    return @"grammar";
-  case ui::AX_INVALID_STATE_OTHER:
-    {
+  switch (static_cast<ui::AXInvalidState>(invalidState)) {
+    case ui::AX_INVALID_STATE_FALSE:
+      return @"false";
+    case ui::AX_INVALID_STATE_TRUE:
+      return @"true";
+    case ui::AX_INVALID_STATE_SPELLING:
+      return @"spelling";
+    case ui::AX_INVALID_STATE_GRAMMAR:
+      return @"grammar";
+    case ui::AX_INVALID_STATE_OTHER: {
       std::string ariaInvalidValue;
       if (browserAccessibility_->GetStringAttribute(
           ui::AX_ATTR_ARIA_INVALID_VALUE,
@@ -1414,7 +1413,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 // internal
 - (BOOL)shouldExposeTitleUIElement {
   // VoiceOver ignores TitleUIElement if the element isn't a control.
-  if (!IsControl(browserAccessibility_->GetRole()))
+  if (!ui::IsControl(browserAccessibility_->GetRole()))
     return false;
 
   ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
@@ -1923,17 +1922,17 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       ui::AX_ATTR_SORT_DIRECTION, &sortDirection))
     return nil;
 
-  switch (sortDirection) {
-  case ui::AX_SORT_DIRECTION_UNSORTED:
-    return nil;
-  case ui::AX_SORT_DIRECTION_ASCENDING:
-    return NSAccessibilityAscendingSortDirectionValue;
-  case ui::AX_SORT_DIRECTION_DESCENDING:
-    return NSAccessibilityDescendingSortDirectionValue;
-  case ui::AX_SORT_DIRECTION_OTHER:
-    return NSAccessibilityUnknownSortDirectionValue;
-  default:
-    NOTREACHED();
+  switch (static_cast<ui::AXSortDirection>(sortDirection)) {
+    case ui::AX_SORT_DIRECTION_UNSORTED:
+      return nil;
+    case ui::AX_SORT_DIRECTION_ASCENDING:
+      return NSAccessibilityAscendingSortDirectionValue;
+    case ui::AX_SORT_DIRECTION_DESCENDING:
+      return NSAccessibilityDescendingSortDirectionValue;
+    case ui::AX_SORT_DIRECTION_OTHER:
+      return NSAccessibilityUnknownSortDirectionValue;
+    default:
+      NOTREACHED();
   }
 
   return nil;
@@ -2736,7 +2735,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (browserAccessibility_->IsClickable())
     [actions insertObject:NSAccessibilityPressAction atIndex:0];
 
-  if (IsMenuRelated(browserAccessibility_->GetRole()))
+  if (ui::IsMenuRelated(browserAccessibility_->GetRole()))
     [actions addObject:NSAccessibilityCancelAction];
 
   if ([self internalRole] == ui::AX_ROLE_SLIDER ||

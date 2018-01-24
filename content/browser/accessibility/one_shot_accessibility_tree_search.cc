@@ -427,19 +427,19 @@ bool AccessibilityTextfieldPredicate(
 bool AccessibilityTextStyleBoldPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & ui::AX_TEXT_STYLE_BOLD);
+  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD));
 }
 
 bool AccessibilityTextStyleItalicPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & ui::AX_TEXT_STYLE_BOLD);
+  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD));
 }
 
 bool AccessibilityTextStyleUnderlinePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & ui::AX_TEXT_STYLE_UNDERLINE);
+  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE));
 }
 
 bool AccessibilityTreePredicate(

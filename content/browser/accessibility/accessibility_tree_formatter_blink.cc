@@ -161,9 +161,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
   dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
 
-  for (int state_index = ui::AX_STATE_NONE;
-       state_index <= ui::AX_STATE_LAST;
-       ++state_index) {
+  for (int32_t state_index = static_cast<int32_t>(ui::AX_STATE_NONE);
+       state_index <= static_cast<int32_t>(ui::AX_STATE_LAST); ++state_index) {
     auto state = static_cast<ui::AXState>(state_index);
     if (node.HasState(state))
       dict->SetBoolean(ui::ToString(state), true);
@@ -172,16 +171,16 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   if (offscreen)
     dict->SetBoolean(STATE_OFFSCREEN, true);
 
-  for (int attr_index = ui::AX_STRING_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_STRING_ATTRIBUTE_LAST;
+  for (int32_t attr_index = static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXStringAttribute>(attr_index);
     if (node.HasStringAttribute(attr))
       dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
   }
 
-  for (int attr_index = ui::AX_INT_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_INT_ATTRIBUTE_LAST;
+  for (int32_t attr_index = static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
     if (node.HasIntAttribute(attr)) {
@@ -190,24 +189,25 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     }
   }
 
-  for (int attr_index = ui::AX_FLOAT_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_FLOAT_ATTRIBUTE_LAST;
+  for (int32_t attr_index = static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
     if (node.HasFloatAttribute(attr) && isfinite(node.GetFloatAttribute(attr)))
       dict->SetDouble(ui::ToString(attr), node.GetFloatAttribute(attr));
   }
 
-  for (int attr_index = ui::AX_BOOL_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_BOOL_ATTRIBUTE_LAST;
+  for (int32_t attr_index = static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXBoolAttribute>(attr_index);
     if (node.HasBoolAttribute(attr))
       dict->SetBoolean(ui::ToString(attr), node.GetBoolAttribute(attr));
   }
 
-  for (int attr_index = ui::AX_INT_LIST_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_INT_LIST_ATTRIBUTE_LAST;
+  for (int32_t attr_index =
+           static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXIntListAttribute>(attr_index);
     if (node.HasIntListAttribute(attr)) {
@@ -242,8 +242,9 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   std::vector<std::string> actions_strings;
-  for (int action_index = ui::AX_ACTION_NONE + 1;
-       action_index <= ui::AX_ACTION_LAST; ++action_index) {
+  for (int32_t action_index = static_cast<int32_t>(ui::AX_ACTION_NONE) + 1;
+       action_index <= static_cast<int32_t>(ui::AX_ACTION_LAST);
+       ++action_index) {
     auto action = static_cast<ui::AXAction>(action_index);
     if (node.HasAction(action))
       actions_strings.push_back(ui::ToString(action));
@@ -271,9 +272,8 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   dict.GetString("internalRole", &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
-  for (int state_index = ui::AX_STATE_NONE;
-       state_index <= ui::AX_STATE_LAST;
-       ++state_index) {
+  for (int state_index = static_cast<int32_t>(ui::AX_STATE_NONE);
+       state_index <= static_cast<int32_t>(ui::AX_STATE_LAST); ++state_index) {
     auto state = static_cast<ui::AXState>(state_index);
     const base::Value* value;
     if (!dict.Get(ui::ToString(state), &value))
@@ -320,8 +320,8 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (dict.GetBoolean("transform", &transform) && transform)
     WriteAttribute(false, "transform", &line);
 
-  for (int attr_index = ui::AX_STRING_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_STRING_ATTRIBUTE_LAST;
+  for (int attr_index = static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXStringAttribute>(attr_index);
     std::string string_value;
@@ -333,8 +333,8 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = ui::AX_INT_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_INT_ATTRIBUTE_LAST;
+  for (int attr_index = static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXIntAttribute>(attr_index);
     std::string string_value;
@@ -346,8 +346,8 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = ui::AX_BOOL_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_BOOL_ATTRIBUTE_LAST;
+  for (int attr_index = static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXBoolAttribute>(attr_index);
     bool bool_value;
@@ -359,8 +359,9 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
                    &line);
   }
 
-  for (int attr_index = ui::AX_FLOAT_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_FLOAT_ATTRIBUTE_LAST; ++attr_index) {
+  for (int attr_index = static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_LAST);
+       ++attr_index) {
     auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
     double float_value;
     if (!dict.GetDouble(ui::ToString(attr), &float_value))
@@ -370,8 +371,8 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = ui::AX_INT_LIST_ATTRIBUTE_NONE;
-       attr_index <= ui::AX_INT_LIST_ATTRIBUTE_LAST;
+  for (int attr_index = static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_NONE);
+       attr_index <= static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_LAST);
        ++attr_index) {
     auto attr = static_cast<ui::AXIntListAttribute>(attr_index);
     const base::ListValue* value;

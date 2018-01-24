@@ -2800,14 +2800,14 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   const AXNodeData& data = GetData();
   int32_t ia2_state = IA2_STATE_OPAQUE;
 
-  const auto checked_state =
-      static_cast<AXCheckedState>(GetIntAttribute(AX_ATTR_CHECKED_STATE));
-  if (checked_state) {
+  const auto checked_state = data.GetCheckedState();
+  if (checked_state != ui::AX_CHECKED_STATE_NONE) {
     ia2_state |= IA2_STATE_CHECKABLE;
   }
 
   if (HasIntAttribute(AX_ATTR_INVALID_STATE) &&
-      GetIntAttribute(AX_ATTR_INVALID_STATE) != AX_INVALID_STATE_FALSE)
+      GetIntAttribute(AX_ATTR_INVALID_STATE) !=
+          static_cast<int32_t>(AX_INVALID_STATE_FALSE))
     ia2_state |= IA2_STATE_INVALID_ENTRY;
   if (data.HasState(AX_STATE_REQUIRED))
     ia2_state |= IA2_STATE_REQUIRED;
@@ -3017,7 +3017,7 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   // Expose the non-standard explicit-name IA2 attribute.
   int name_from;
   if (GetIntAttribute(AX_ATTR_NAME_FROM, &name_from) &&
-      name_from != AX_NAME_FROM_CONTENTS) {
+      name_from != static_cast<int32_t>(AX_NAME_FROM_CONTENTS)) {
     result.push_back(L"explicit-name:true");
   }
 

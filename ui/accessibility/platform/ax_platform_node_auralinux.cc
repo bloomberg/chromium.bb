@@ -80,9 +80,9 @@ static const gchar* ax_platform_node_auralinux_get_name(AtkObject* atk_object) {
   if (!obj)
     return nullptr;
 
+  ui::AXNameFrom name_from = obj->GetData().GetNameFrom();
   if (obj->GetStringAttribute(ui::AX_ATTR_NAME).empty() &&
-      !(obj->GetIntAttribute(ui::AX_ATTR_NAME_FROM) ==
-        ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY))
+      name_from != ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY)
     return nullptr;
 
   return obj->GetStringAttribute(ui::AX_ATTR_NAME).c_str();
@@ -977,8 +977,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
 
   // Checked state
-  const auto checked_state = static_cast<ui::AXCheckedState>(
-      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  const auto checked_state = GetData().GetCheckedState();
   switch (checked_state) {
     case ui::AX_CHECKED_STATE_MIXED:
       atk_state_set_add_state(atk_state_set, ATK_STATE_INDETERMINATE);
@@ -993,7 +992,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       break;
   }
 
-  switch (GetIntAttribute(ui::AX_ATTR_RESTRICTION)) {
+  switch (GetData().GetRestriction()) {
     case ui::AX_RESTRICTION_NONE:
       atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
       break;
@@ -1003,6 +1002,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       atk_state_set_add_state(atk_state_set, ATK_STATE_READ_ONLY);
 #endif
 #endif
+      break;
+    default:
       break;
   }
 

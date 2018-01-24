@@ -287,8 +287,7 @@ TEST(AXEventGeneratorTest, InvalidStatusChanged) {
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes[0].AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
-                                  ui::AX_INVALID_STATE_SPELLING);
+  update.nodes[0].SetInvalidState(AX_INVALID_STATE_SPELLING);
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("INVALID_STATUS_CHANGED on 1", DumpEvents(&event_generator));
 }
@@ -317,8 +316,7 @@ TEST(AXEventGeneratorTest, CheckedStateChanged) {
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                                  ui::AX_CHECKED_STATE_TRUE);
+  update.nodes[0].SetCheckedState(AX_CHECKED_STATE_TRUE);
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("CHECKED_STATE_CHANGED on 1", DumpEvents(&event_generator));
 }
@@ -440,8 +438,7 @@ TEST(AXEventGeneratorTest, LiveRegionOnlyTextChanges) {
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
   update.nodes[1].AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "Description 1");
-  update.nodes[2].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                                  ui::AX_CHECKED_STATE_TRUE);
+  update.nodes[2].SetCheckedState(AX_CHECKED_STATE_TRUE);
 
   // Note that we do NOT expect a LIVE_REGION_CHANGED event here, because
   // the name did not change.

@@ -535,7 +535,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
     delegate_->OnRoleChanged(this, node, old_data.role, new_data.role);
 
   if (old_data.state != new_data.state) {
-    for (int i = AX_STATE_NONE + 1; i <= AX_STATE_LAST; ++i) {
+    for (int32_t i = static_cast<int32_t>(AX_STATE_NONE) + 1;
+         i <= static_cast<int32_t>(AX_STATE_LAST); ++i) {
       AXState state = static_cast<AXState>(i);
       if (old_data.HasState(state) != new_data.HasState(state))
         delegate_->OnStateChanged(this, node, state, new_data.HasState(state));

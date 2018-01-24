@@ -512,8 +512,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ui::AXNodeData check_box;
   check_box.id = 14;
   check_box.role = ui::AX_ROLE_CHECK_BOX;
-  check_box.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                            ui::AX_CHECKED_STATE_TRUE);
+  check_box.SetCheckedState(ui::AX_CHECKED_STATE_TRUE);
   check_box.SetName(base::UTF16ToUTF8(check_box_name));
   check_box.SetValue(base::UTF16ToUTF8(check_box_value));
 
@@ -753,8 +752,7 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
-  checkbox.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                           ui::AX_CHECKED_STATE_TRUE);
+  checkbox.SetCheckedState(ui::AX_CHECKED_STATE_TRUE);
 
   ui::AXNodeData root;
   root.id = 1;
@@ -1661,7 +1659,8 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   text_before.SetName("Before ");
   text_before.AddIntAttribute(
       ui::AX_ATTR_TEXT_STYLE,
-      (ui::AX_TEXT_STYLE_BOLD | ui::AX_TEXT_STYLE_ITALIC));
+      static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD) |
+          static_cast<int32_t>(ui::AX_TEXT_STYLE_ITALIC));
 
   ui::AXNodeData link;
   link.id = 4;
@@ -1670,7 +1669,8 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   link.AddState(ui::AX_STATE_FOCUSABLE);
   link.AddState(ui::AX_STATE_LINKED);
   link.SetName("lnk");
-  link.AddIntAttribute(ui::AX_ATTR_TEXT_STYLE, ui::AX_TEXT_STYLE_UNDERLINE);
+  link.AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
+                       static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE));
 
   ui::AXNodeData link_text;
   link_text.id = 5;
@@ -1680,7 +1680,7 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   link_text.AddState(ui::AX_STATE_LINKED);
   link_text.SetName("lnk");
   link_text.AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
-                            ui::AX_TEXT_STYLE_UNDERLINE);
+                            static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE));
 
   // The name "lnk" is misspelled.
   std::vector<int32_t> marker_types{

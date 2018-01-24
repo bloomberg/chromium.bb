@@ -280,9 +280,8 @@ void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if ((toggled_ && !images_[ButtonState::STATE_NORMAL].isNull()) ||
       (!toggled_ && !alternate_images_[ButtonState::STATE_NORMAL].isNull())) {
     node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-    node_data->AddIntAttribute(
-        ui::AX_ATTR_CHECKED_STATE,
-        toggled_ ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE);
+    node_data->SetCheckedState(toggled_ ? ui::AX_CHECKED_STATE_TRUE
+                                        : ui::AX_CHECKED_STATE_FALSE);
   }
 }
 

@@ -8,68 +8,64 @@
 
 namespace content {
 
-uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
-  uint32_t state = 0;
-
+void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   blink::WebAXExpanded expanded = o.IsExpanded();
   if (expanded) {
     if (expanded == blink::kWebAXExpandedCollapsed)
-      state |= (1 << ui::AX_STATE_COLLAPSED);
+      dst->AddState(ui::AX_STATE_COLLAPSED);
     else if (expanded == blink::kWebAXExpandedExpanded)
-      state |= (1 << ui::AX_STATE_EXPANDED);
+      dst->AddState(ui::AX_STATE_EXPANDED);
   }
 
   if (o.CanSetFocusAttribute())
-    state |= (1 << ui::AX_STATE_FOCUSABLE);
+    dst->AddState(ui::AX_STATE_FOCUSABLE);
 
   if (o.Role() == blink::kWebAXRolePopUpButton || o.AriaHasPopup())
-    state |= (1 << ui::AX_STATE_HASPOPUP);
+    dst->AddState(ui::AX_STATE_HASPOPUP);
 
   if (o.IsHovered())
-    state |= (1 << ui::AX_STATE_HOVERED);
+    dst->AddState(ui::AX_STATE_HOVERED);
 
   if (!o.IsVisible())
-    state |= (1 << ui::AX_STATE_INVISIBLE);
+    dst->AddState(ui::AX_STATE_INVISIBLE);
 
   if (o.IsLinked())
-    state |= (1 << ui::AX_STATE_LINKED);
+    dst->AddState(ui::AX_STATE_LINKED);
 
   if (o.IsMultiline())
-    state |= (1 << ui::AX_STATE_MULTILINE);
+    dst->AddState(ui::AX_STATE_MULTILINE);
 
   if (o.IsMultiSelectable())
-    state |= (1 << ui::AX_STATE_MULTISELECTABLE);
+    dst->AddState(ui::AX_STATE_MULTISELECTABLE);
 
   if (o.IsPasswordField())
-    state |= (1 << ui::AX_STATE_PROTECTED);
+    dst->AddState(ui::AX_STATE_PROTECTED);
 
   if (o.IsRequired())
-    state |= (1 << ui::AX_STATE_REQUIRED);
+    dst->AddState(ui::AX_STATE_REQUIRED);
 
   if (o.IsSelected() != blink::kWebAXSelectedStateUndefined)
-    state |= (1 << ui::AX_STATE_SELECTABLE);
+    dst->AddState(ui::AX_STATE_SELECTABLE);
 
   if (o.IsEditable())
-    state |= (1 << ui::AX_STATE_EDITABLE);
+    dst->AddState(ui::AX_STATE_EDITABLE);
 
   if (o.IsSelected() == blink::kWebAXSelectedStateTrue)
-    state |= (1 << ui::AX_STATE_SELECTED);
+    dst->AddState(ui::AX_STATE_SELECTED);
 
   if (o.IsRichlyEditable())
-    state |= (1 << ui::AX_STATE_RICHLY_EDITABLE);
+    dst->AddState(ui::AX_STATE_RICHLY_EDITABLE);
 
   if (o.IsVisited())
-    state |= (1 << ui::AX_STATE_VISITED);
+    dst->AddState(ui::AX_STATE_VISITED);
 
   if (o.Orientation() == blink::kWebAXOrientationVertical)
-    state |= (1 << ui::AX_STATE_VERTICAL);
+    dst->AddState(ui::AX_STATE_VERTICAL);
   else if (o.Orientation() == blink::kWebAXOrientationHorizontal)
-    state |= (1 << ui::AX_STATE_HORIZONTAL);
+    dst->AddState(ui::AX_STATE_HORIZONTAL);
 
   if (o.IsVisited())
-    state |= (1 << ui::AX_STATE_VISITED);
-
-  return state;
+    dst->AddState(ui::AX_STATE_VISITED);
 }
 
 ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
@@ -442,15 +438,15 @@ ui::AXTextDirection AXTextDirectionFromBlink(
 }
 
 ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
-  unsigned int browser_text_style = ui::AX_TEXT_STYLE_NONE;
+  uint32_t browser_text_style = static_cast<uint32_t>(ui::AX_TEXT_STYLE_NONE);
   if (text_style & blink::kWebAXTextStyleBold)
-    browser_text_style |= ui::AX_TEXT_STYLE_BOLD;
+    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD);
   if (text_style & blink::kWebAXTextStyleItalic)
-    browser_text_style |= ui::AX_TEXT_STYLE_ITALIC;
+    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_ITALIC);
   if (text_style & blink::kWebAXTextStyleUnderline)
-    browser_text_style |= ui::AX_TEXT_STYLE_UNDERLINE;
+    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE);
   if (text_style & blink::kWebAXTextStyleLineThrough)
-    browser_text_style |= ui::AX_TEXT_STYLE_LINE_THROUGH;
+    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_LINE_THROUGH);
   return static_cast<ui::AXTextStyle>(browser_text_style);
 }
 
