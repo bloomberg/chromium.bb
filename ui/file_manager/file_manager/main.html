@@ -89,6 +89,7 @@
                shortcut="c|Ctrl">
       <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"
                shortcut="v|Ctrl">
+      <command id="paste-into-current-folder" i18n-values="label:PASTE_BUTTON_LABEL">
       <command id="paste-into-folder"
                i18n-values="label:PASTE_INTO_FOLDER_BUTTON_LABEL">
       <command id="get-info" i18n-values="label:GET_INFO_BUTTON_LABEL"
@@ -233,6 +234,8 @@
 
     <cr-menu id="gear-menu" class="chrome-menu files-menu" showShortcuts
              menu-item-selector="cr-menu-item, hr">
+      <cr-menu-item command="#paste-into-current-folder" visibleif="full-page"></cr-menu-item>
+      <hr visibleif="full-page">
       <cr-menu-item id="gear-menu-newwindow" command="#new-window"></cr-menu-item>
       <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
       <hr>
