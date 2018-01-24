@@ -24,6 +24,8 @@ enum class SkiaDocumentType {
 sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
                                   SkWStream* stream);
 
+uint64_t GenFrameGuid(int process_id, int frame_id);
+
 }  // namespace printing
 
 #endif  // PRINTING_COMMON_PDF_METAFILE_UTILS_H_

@@ -42,6 +42,7 @@ if (enable_basic_printing || enable_print_preview) {
   source_set("unit_tests") {
     testonly = true
     sources = [
+      "pdf_compositor_impl_unittest.cc",
       "pdf_compositor_service_unittest.cc",
     ]
 
@@ -57,6 +58,7 @@ if (enable_basic_printing || enable_print_preview) {
       "//components/printing/service/public/interfaces",
       "//mojo/common",
       "//services/service_manager/public/cpp:service_test_support",
+      "//skia",
       "//testing/gmock",
       "//testing/gtest",
     ]
