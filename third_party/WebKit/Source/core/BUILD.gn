@@ -2038,6 +2038,7 @@ jumbo_source_set("unit_tests") {
     "paint/compositing/CompositingInputsUpdaterTest.cpp",
     "paint/compositing/CompositingReasonFinderTest.cpp",
     "paint/compositing/PaintLayerCompositorTest.cpp",
+    "paint/ng/ng_paint_fragment_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
     "policy/PolicyTest.cpp",
     "resize_observer/ResizeObserverTest.cpp",
