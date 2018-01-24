@@ -142,8 +142,8 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 
 // static
 bool ServiceWorkerUtils::IsServicificationEnabled() {
-  return IsBrowserSideNavigationEnabled() &&
-         base::FeatureList::IsEnabled(features::kNetworkService);
+  return base::FeatureList::IsEnabled(features::kNetworkService) ||
+         base::FeatureList::IsEnabled(features::kServiceWorkerServicification);
 }
 
 // static
