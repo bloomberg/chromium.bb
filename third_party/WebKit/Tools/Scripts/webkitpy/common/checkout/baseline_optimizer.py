@@ -267,8 +267,6 @@ class BaselineOptimizer(object):
 
         # Read the base (non-virtual) results.
         results_by_directory = self.read_results_by_directory(self._virtual_base(baseline_name))
-        # Since implicit_all_pass defaults to True, we can also optimize away
-        # redundant all-PASS testharness.js results at the virtual root.
         results_by_port_name = self._results_by_port_name(results_by_directory)
 
         for port_name in self._ports.keys():
@@ -323,18 +321,16 @@ class BaselineOptimizer(object):
         """Returns the absolute path to the baseline in the given directory."""
         return self._filesystem.join(self._parent_of_tests, directory, baseline_name)
 
-    def _results_by_port_name(self, results_by_directory, implicit_all_pass=True):
+    def _results_by_port_name(self, results_by_directory):
         """Transforms a by-directory result dict to by-port-name.
 
         The method mimicks the baseline search behaviour, i.e. results[port] is
-        the first baseline found on the baseline search path of the port.
+        the first baseline found on the baseline search path of the port. If no
+        baseline is found on the search path, the test is assumed to be an all-
+        PASS testharness.js test.
 
         Args:
             results_by_directory: A dictionary returned by read_results_by_directory().
-            implicit_all_pass: If True, ports with no baselines found will have
-                all-PASS testharness.js results, which matches the real-world
-                behaviour of run-webkit-tests for testharness.js tests.
-                Otherwise, such ports will not be found in the dict.
 
         Returns:
             A dictionary mapping port names to their baselines.
@@ -345,7 +341,7 @@ class BaselineOptimizer(object):
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
-            if port_name not in results_by_port_name and implicit_all_pass:
+            if port_name not in results_by_port_name:
                 results_by_port_name[port_name] = ALL_PASS
         return results_by_port_name
 
@@ -399,9 +395,7 @@ class BaselineOptimizer(object):
 
     def _find_optimal_result_placement(self, baseline_name):
         results_by_directory = self.read_results_by_directory(baseline_name)
-        # Set implicit_all_pass=False so that we won't get non-existent all-PASS
-        # testharness.js results, which would break _find_in_search_path.
-        results_by_port_name = self._results_by_port_name(results_by_directory, implicit_all_pass=False)
+        results_by_port_name = self._results_by_port_name(results_by_directory)
 
         new_results_by_directory = self._remove_redundant_results(
             results_by_directory, results_by_port_name)
@@ -459,7 +453,10 @@ class BaselineOptimizer(object):
         for index, directory in enumerate(search_path):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
-        assert False, 'result %s not found in search path %s, %s' % (current_result, search_path, results_by_directory)
+        assert current_result == ALL_PASS, (
+            'result %s not found in search path %s, %s' % (current_result, search_path, results_by_directory))
+        # Implicit all-PASS at the root.
+        return len(search_path) - 1, search_path[-1]
 
     def _remove_all_pass_testharness_result_at_root(self, baseline_name):
         """Removes the all-PASS testharness.js result at the non-virtual root."""
