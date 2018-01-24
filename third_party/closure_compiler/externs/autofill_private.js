@@ -108,7 +108,6 @@ chrome.autofillPrivate.AddressComponents;
  *   cardNumber: (string|undefined),
  *   expirationMonth: (string|undefined),
  *   expirationYear: (string|undefined),
- *   billingAddressId: (string|undefined),
  *   metadata: (!chrome.autofillPrivate.AutofillMetadata|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/autofillPrivate#type-CreditCardEntry
