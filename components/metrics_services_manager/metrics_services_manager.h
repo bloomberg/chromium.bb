@@ -80,6 +80,9 @@ class MetricsServicesManager {
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);
 
+  // Gets the current state of metric reporting.
+  bool IsMetricsReportingEnabled() const;
+
  private:
   // Update the managed services when permissions for recording/uploading
   // metrics change.

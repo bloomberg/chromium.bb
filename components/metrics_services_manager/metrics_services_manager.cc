@@ -165,4 +165,8 @@ void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
                     client_->IsMetricsConsentGiven(), may_upload);
 }
 
+bool MetricsServicesManager::IsMetricsReportingEnabled() const {
+  return client_->IsMetricsReportingEnabled();
+}
+
 }  // namespace metrics_services_manager
