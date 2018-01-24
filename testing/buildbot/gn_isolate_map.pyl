@@ -311,16 +311,6 @@
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
   },
-  "chromedriver_py_tests": {
-    "label": "//chrome/test/chromedriver:chromedriver_py_tests",
-    "type": "script",
-    "script": "//testing/xvfb.py",
-    "args": [
-      "../../chrome/test/chromedriver/test/run_py_tests.py",
-      "--chromedriver=chromedriver",
-      "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
-    ],
-  },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
