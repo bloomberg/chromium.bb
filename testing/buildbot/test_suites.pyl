@@ -1087,6 +1087,7 @@
     'mus_content_browsertests': {
       'args': [
         '--mus',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mus.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,

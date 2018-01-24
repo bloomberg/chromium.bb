@@ -481,6 +481,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
 GpuProcessHost::~GpuProcessHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (in_process_gpu_thread_)
+    DCHECK(process_);
 
   SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
 

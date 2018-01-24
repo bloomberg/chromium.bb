@@ -7,4 +7,9 @@ specific_include_rules = {
   "gpu_process_host\.cc": [
     "+ui/ozone/public",
   ],
+  "in_process_gpu_thread_browsertests\.cc": [
+    # Let's move in_process_gpu_thread* to
+    # content/browser/gpu to avoid this rule.
+    "+content/gpu/in_process_gpu_thread.h"
+  ],
 }
