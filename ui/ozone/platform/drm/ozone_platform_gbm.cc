@@ -4,8 +4,6 @@
 
 #include "ui/ozone/platform/drm/ozone_platform_gbm.h"
 
-#include <dlfcn.h>
-#include <fcntl.h>
 #include <gbm.h>
 #include <stdlib.h>
 #include <xf86drm.h>
@@ -60,26 +58,6 @@
 namespace ui {
 
 namespace {
-
-class GlApiLoader {
- public:
-  GlApiLoader()
-      : glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)) {}
-
-  ~GlApiLoader() {
-    if (glapi_lib_)
-      dlclose(glapi_lib_);
-  }
-
- private:
-  // HACK: gbm drivers have broken linkage. The Mesa DRI driver references
-  // symbols in the libglapi library however it does not explicitly link against
-  // it. That caused linkage errors when running an application that does not
-  // explicitly link against libglapi.
-  void* glapi_lib_;
-
-  DISALLOW_COPY_AND_ASSIGN(GlApiLoader);
-};
 
 class OzonePlatformGbm : public OzonePlatform {
  public:
@@ -240,9 +218,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
     GpuThreadAdapter* adapter;
 
-    if (single_process_)
-      gl_api_loader_.reset(new GlApiLoader());
-
     if (using_mojo_) {
       host_drm_device_ = base::MakeRefCounted<HostDrmDevice>(cursor_.get());
       drm_device_connector_ = std::make_unique<DrmDeviceConnector>(
@@ -271,9 +246,6 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU(const InitParams& args) override {
     using_mojo_ = args.using_mojo;
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
-    if (!single_process_)
-      gl_api_loader_.reset(new GlApiLoader());
 
     InterThreadMessagingProxy* itmp;
     if (!using_mojo_) {
@@ -331,7 +303,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
-  std::unique_ptr<GlApiLoader> gl_api_loader_;
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
   scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
