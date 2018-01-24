@@ -167,14 +167,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl'], bug=2198) # angle bug ID
 
     # Passthrough command decoder / OpenGL / Intel
-    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
-        ['passthrough', 'opengl', 'intel'], bug=665521)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['passthrough', 'opengl', 'intel'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
+        ['passthrough', 'opengl', 'intel'], bug=665521)
+    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
     # self.Fail('conformance/extensions/ext-sRGB.html',
     #     ['passthrough', 'opengl', 'amd'], bug=679696)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/glsl/constructors/' +
@@ -221,10 +225,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=794339)
-
-    # Passthrough command decoder / OpenGL / Intel
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough', 'opengl', 'intel'], bug=1523)
 
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
