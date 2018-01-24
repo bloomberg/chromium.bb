@@ -44,9 +44,7 @@ if (is_android) {
   # This is the result of profiling Chromium. Blindly applying it to arbitrary
   # downstream projects and hoping it'll grant a speedup seems fragile. (Not
   # to mention that it resides in a Chromium-specific directory.)
-  # FIXME(gbiv): remove the !defined() check after removing custom profiling
-  # logic from //clank.
-  if (!defined(clang_default_afdo_profile) && build_with_chromium) {
+  if (build_with_chromium) {
     clang_default_afdo_profile =
         rebase_path("//chrome/android/profiles/afdo.prof")
   }
