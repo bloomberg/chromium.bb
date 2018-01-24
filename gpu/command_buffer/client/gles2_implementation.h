@@ -520,6 +520,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* renderbuffers);
   void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
+  void UnbindTexturesHelper(GLsizei n, const GLuint* textures);
   bool DeleteProgramHelper(GLuint program);
   bool DeleteShaderHelper(GLuint shader);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* queries);
