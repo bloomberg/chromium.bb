@@ -554,7 +554,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
              HWND* hwnd) { *hwnd = test_harness->CreateTestWindow(); },
           Unretained(this), &hwnd));
 
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 
   ASSERT_NE(hwnd, nullptr);
   // If the message pump isn't running, we will hang here. This simulates how

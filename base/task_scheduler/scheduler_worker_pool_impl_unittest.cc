@@ -75,7 +75,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
 
   void CommonTearDown() {
     service_thread_.Stop();
-    task_tracker_.Flush();
+    task_tracker_.FlushForTesting();
     worker_pool_->WaitForAllWorkersIdleForTesting();
     worker_pool_->JoinForTesting();
   }
@@ -422,7 +422,7 @@ TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest,
   EXPECT_NE(task_1_thread_ref, task_2_thread_ref);
 
   barrier.Signal();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 // Verify that posting many tasks before Start will cause the number of workers
@@ -1012,7 +1012,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
             2 * kNumWorkersInWorkerPool);
 
   UnblockTasks();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
   EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
             kNumWorkersInWorkerPool);
 }
@@ -1106,7 +1106,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
   extra_threads_continue.Signal();
 
   thread_continue.Signal();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 // Verify that workers become idle when the pool is over-capacity and that
 // those workers do no work.
@@ -1192,7 +1192,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
   is_exiting.Set();
   // Unblocks the new workers.
   thread_continue.Signal();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -1231,7 +1231,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
             kNumWorkersInWorkerPool);
 
   UnblockTasks();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
   EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
             kNumWorkersInWorkerPool);
 }
@@ -1312,7 +1312,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
 
   // Tear down.
   can_return.Signal();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
   EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
             kNumWorkersInWorkerPool);
 }
@@ -1530,7 +1530,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
             kNumWorkersInWorkerPool + kNumExtraTasks);
   late_release_thread_contine.Signal();
   final_tasks_continue.Signal();
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 }  // namespace internal

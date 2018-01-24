@@ -249,8 +249,8 @@ void TaskTracker::Shutdown() {
   PerformShutdown();
   DCHECK(IsShutdownComplete());
 
-  // Unblock Flush() and perform the FlushAsyncForTesting callback when
-  // shutdown completes.
+  // Unblock FlushForTesting() and perform the FlushAsyncForTesting callback
+  // when shutdown completes.
   {
     AutoSchedulerLock auto_lock(flush_lock_);
     flush_cv_->Signal();
@@ -258,7 +258,7 @@ void TaskTracker::Shutdown() {
   CallFlushCallbackForTesting();
 }
 
-void TaskTracker::Flush() {
+void TaskTracker::FlushForTesting() {
   AutoSchedulerLock auto_lock(flush_lock_);
   while (subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0 &&
          !IsShutdownComplete()) {
