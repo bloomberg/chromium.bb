@@ -88,6 +88,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/appcache/appcache_dispatcher.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -7343,6 +7344,12 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
 
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
   GetRenderWidget()->SetWidgetBinding(std::move(request));
+}
+
+blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {
+  if (!computed_ax_tree_)
+    computed_ax_tree_ = std::make_unique<AomContentAxTree>(this);
+  return computed_ax_tree_.get();
 }
 
 }  // namespace content

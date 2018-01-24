@@ -173,6 +173,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* GetOrCreate(Node*);
   AXObject* GetOrCreate(AbstractInlineTextBox*);
 
+  AXID GetAXID(Node*) override;
+
   // will only return the AXObject if it already exists
   AXObject* Get(AccessibleNode*);
   AXObject* Get(const Node*) override;

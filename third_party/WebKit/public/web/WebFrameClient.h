@@ -88,6 +88,7 @@ enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDocumentLoader;
@@ -845,6 +846,12 @@ class BLINK_EXPORT WebFrameClient {
     NOTREACHED();
     return nullptr;
   }
+
+  // Accessibility Object Model -------------------------------------------
+
+  // This method is used to expose the AX Tree stored in content/renderer to the
+  // DOM as part of AOM Phase 4.
+  virtual WebComputedAXTree* GetOrCreateWebComputedAXTree() { return nullptr; }
 };
 
 }  // namespace blink
