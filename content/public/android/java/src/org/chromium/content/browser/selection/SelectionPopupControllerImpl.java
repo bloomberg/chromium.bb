@@ -1189,7 +1189,7 @@ public class SelectionPopupControllerImpl
             case SelectionEventType.INSERTION_HANDLE_CLEARED:
                 destroyPastePopup();
                 mIsInsertionForTesting = false;
-                mSelectionRect.setEmpty();
+                if (!hasSelection()) mSelectionRect.setEmpty();
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STARTED:
@@ -1241,7 +1241,7 @@ public class SelectionPopupControllerImpl
 
     @CalledByNative
     private void onSelectionChanged(String text) {
-        if (text.length() == 0 && mHasSelection && mSelectionMetricsLogger != null) {
+        if (text.length() == 0 && hasSelection() && mSelectionMetricsLogger != null) {
             mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
                     SmartSelectionMetricsLogger.ActionType.ABANDON,
                     /* SelectionClient.Result = */ null);
