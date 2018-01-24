@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "ui/base/material_design/material_design_controller.h"
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
 
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/md_text_button.h"

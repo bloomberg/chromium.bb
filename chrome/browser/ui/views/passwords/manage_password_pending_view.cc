@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,6 +34,47 @@ namespace {
 
 // TODO(pbos): Investigate expicitly obfuscating items inside ComboboxModel.
 constexpr base::char16 kBulletChar = gfx::RenderText::kPasswordReplacementChar;
+
+enum ColumnSetType {
+  // | | (LEADING, FILL) | | (FILL, FILL) | |
+  // Used for the username/password line of the bubble, for the pending view.
+  DOUBLE_VIEW_COLUMN_SET_USERNAME,
+  DOUBLE_VIEW_COLUMN_SET_PASSWORD,
+
+  // | | (LEADING, FILL) | | (FILL, FILL) | | (TRAILING, FILL) | |
+  // Used for the password line of the bubble, for the pending view.
+  // Views are label, password and the eye icon.
+  TRIPLE_VIEW_COLUMN_SET,
+};
+
+// Construct an appropriate ColumnSet for the given |type|, and add it
+// to |layout|.
+void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
+  views::ColumnSet* column_set = layout->AddColumnSet(type);
+  const int column_divider = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  switch (type) {
+    case DOUBLE_VIEW_COLUMN_SET_USERNAME:
+    case DOUBLE_VIEW_COLUMN_SET_PASSWORD:
+      column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                            0, views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(0, column_divider);
+      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                            views::GridLayout::USE_PREF, 0, 0);
+      break;
+    case TRIPLE_VIEW_COLUMN_SET:
+      column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                            0, views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(0, column_divider);
+      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                            views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(0, column_divider);
+      column_set->AddColumn(views::GridLayout::TRAILING,
+                            views::GridLayout::FILL, 0,
+                            views::GridLayout::USE_PREF, 0, 0);
+      break;
+  }
+}
 
 // A combobox model for password dropdown that allows to reveal/mask values in
 // the combobox.
@@ -165,6 +205,53 @@ ManagePasswordPendingView::ManagePasswordPendingView(
   }
 }
 
+// Builds a credential row, adds the given elements to the layout.
+// |password_view_button| is an optional field. If it is a nullptr, a
+// DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
+// TRIPLE_VIEW_COLUMN_SET.
+void ManagePasswordPendingView::BuildCredentialRows(
+    views::GridLayout* layout,
+    views::View* username_field,
+    views::View* password_field,
+    views::ToggleImageButton* password_view_button,
+    bool show_password_label) {
+  // Username row.
+  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
+  layout->StartRow(0, DOUBLE_VIEW_COLUMN_SET_USERNAME);
+  std::unique_ptr<views::Label> username_label(new views::Label(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL),
+      views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
+  username_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
+  std::unique_ptr<views::Label> password_label(new views::Label(
+      show_password_label
+          ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)
+          : base::string16(),
+      views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
+  password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
+  int labels_width = std::max(username_label->GetPreferredSize().width(),
+                              password_label->GetPreferredSize().width());
+
+  layout->AddView(username_label.release(), 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::FILL, labels_width, 0);
+  layout->AddView(username_field);
+
+  layout->AddPaddingRow(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_CONTROL_LIST_VERTICAL));
+
+  // Password row.
+  ColumnSetType type = password_view_button ? TRIPLE_VIEW_COLUMN_SET
+                                            : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
+  BuildColumnSet(layout, type);
+  layout->StartRow(0, type);
+  layout->AddView(password_label.release(), 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::FILL, labels_width, 0);
+  layout->AddView(password_field);
+  // The eye icon is also added to the layout if it was passed.
+  if (password_view_button) {
+    layout->AddView(password_view_button);
+  }
+}
+
 ManagePasswordPendingView::~ManagePasswordPendingView() = default;
 
 bool ManagePasswordPendingView::Accept() {
@@ -213,9 +300,10 @@ void ManagePasswordPendingView::StyledLabelLinkClicked(
 }
 
 gfx::Size ManagePasswordPendingView::CalculatePreferredSize() const {
-  return gfx::Size(ManagePasswordsBubbleView::kDesiredBubbleWidth,
-                   GetLayoutManager()->GetPreferredHeightForWidth(
-                       this, ManagePasswordsBubbleView::kDesiredBubbleWidth));
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 views::View* ManagePasswordPendingView::GetInitiallyFocusedView() {
@@ -266,15 +354,12 @@ bool ManagePasswordPendingView::ShouldShowCloseButton() const {
 void ManagePasswordPendingView::CreateAndSetLayout(bool show_password_label) {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
-  layout->set_minimum_size(
-      gfx::Size(ManagePasswordsBubbleView::kDesiredBubbleWidth, 0));
 
   views::View* password_field =
       password_dropdown_ ? static_cast<views::View*>(password_dropdown_)
                          : static_cast<views::View*>(password_label_);
-  ManagePasswordsBubbleView::BuildCredentialRows(
-      layout, username_field_, password_field, password_view_button_,
-      show_password_label);
+  BuildCredentialRows(layout, username_field_, password_field,
+                      password_view_button_, show_password_label);
 }
 
 void ManagePasswordPendingView::CreatePasswordField() {

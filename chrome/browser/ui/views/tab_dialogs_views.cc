@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/hung_renderer_view.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
 #include "content/public/browser/web_contents.h"
 
 #if !defined(OS_CHROMEOS)
@@ -71,9 +71,9 @@ void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
   if (ManagePasswordsBubbleDelegateViewBase::manage_password_bubble()) {
     // The bubble is currently shown for some other tab. We should close it now
     // and open for |web_contents_|.
-    ManagePasswordsBubbleView::CloseCurrentBubble();
+    ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble();
   }
-  ManagePasswordsBubbleView::ShowBubble(
+  ManagePasswordsBubbleDelegateViewBase::ShowBubble(
       web_contents_, user_action ? LocationBarBubbleDelegateView::USER_GESTURE
                                  : LocationBarBubbleDelegateView::AUTOMATIC);
 }
@@ -84,5 +84,5 @@ void TabDialogsViews::HideManagePasswordsBubble() {
   if (!bubble)
     return;
   if (bubble->GetWebContents() == web_contents_)
-    ManagePasswordsBubbleView::CloseCurrentBubble();
+    ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble();
 }
