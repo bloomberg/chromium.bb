@@ -424,6 +424,8 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   if (frame_host == frame_host_) {
     if (frame_host && !render_frame_alive_) {
       render_frame_alive_ = true;
+      for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+        inspector->TargetReloadedAfterCrash();
       MaybeReattachToRenderFrame();
     }
     return;
@@ -439,7 +441,11 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     RevokePolicy();
   frame_host_ = frame_host;
   agent_ptr_.reset();
-  render_frame_alive_ = true;
+  if (!render_frame_alive_) {
+    render_frame_alive_ = true;
+    for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+      inspector->TargetReloadedAfterCrash();
+  }
   if (IsAttached()) {
     GrantPolicy();
     for (DevToolsSession* session : sessions()) {
