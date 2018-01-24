@@ -22,6 +22,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -40,6 +41,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -305,6 +307,12 @@
 using content::BrowserThread;
 
 namespace {
+
+// The profiler object is stored in a SequenceLocalStorageSlot on the IO thread
+// so that it will be destroyed when the IO thread stops.
+base::LazyInstance<base::SequenceLocalStorageSlot<
+    std::unique_ptr<base::StackSamplingProfiler>>>::Leaky
+    io_thread_sampling_profiler = LAZY_INSTANCE_INITIALIZER;
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -611,6 +619,23 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
   }
 }
 
+// Starts to profile the IO thread.
+void StartIOThreadProfiling() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  StackSamplingConfiguration* config = StackSamplingConfiguration::Get();
+  if (config->IsProfilerEnabledForCurrentProcess()) {
+    auto profiler = std::make_unique<base::StackSamplingProfiler>(
+        base::PlatformThread::CurrentId(),
+        config->GetSamplingParamsForCurrentProcess(),
+        metrics::CallStackProfileMetricsProvider::
+            GetProfilerCallbackForBrowserProcessIOThreadStartup());
+
+    profiler->Start();
+    io_thread_sampling_profiler.Get().Set(std::move(profiler));
+  }
+}
+
 class ScopedMainMessageLoopRunEvent {
  public:
   ScopedMainMessageLoopRunEvent() {
@@ -650,15 +675,16 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      sampling_profiler_(base::PlatformThread::CurrentId(),
-                         StackSamplingConfiguration::Get()
-                             ->GetSamplingParamsForCurrentProcess(),
-                         metrics::CallStackProfileMetricsProvider::
-                             GetProfilerCallbackForBrowserProcessStartup()),
+      ui_thread_sampling_profiler_(
+          base::PlatformThread::CurrentId(),
+          StackSamplingConfiguration::Get()
+              ->GetSamplingParamsForCurrentProcess(),
+          metrics::CallStackProfileMetricsProvider::
+              GetProfilerCallbackForBrowserProcessUIThreadStartup()),
       profile_(NULL),
       run_message_loop_(true) {
   if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    sampling_profiler_.Start();
+    ui_thread_sampling_profiler_.Start();
 
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
@@ -1194,6 +1220,18 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   SetupMetrics();
 
   return content::RESULT_CODE_NORMAL_EXIT;
+}
+
+void ChromeBrowserMainParts::PostCreateThreads() {
+  // This task should be posted after the IO thread starts, and prior to the
+  // base version of the function being invoked. It is functionally okay to post
+  // this task in method ChromeBrowserMainParts::BrowserThreadsStarted() which
+  // we also need to add in this class, and call this method at the very top of
+  // BrowserMainLoop::InitializeMainThread(). PostCreateThreads is preferred to
+  // BrowserThreadsStarted as it matches the PreCreateThreads and CreateThreads
+  // stages.
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&StartIOThreadProfiling));
 }
 
 void ChromeBrowserMainParts::ServiceManagerConnectionStarted(

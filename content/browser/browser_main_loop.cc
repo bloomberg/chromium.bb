@@ -992,6 +992,10 @@ void BrowserMainLoop::CreateStartupTasks() {
       base::Bind(&BrowserMainLoop::CreateThreads, base::Unretained(this));
   startup_task_runner_->AddTask(create_threads);
 
+  StartupTask post_create_threads =
+      base::Bind(&BrowserMainLoop::PostCreateThreads, base::Unretained(this));
+  startup_task_runner_->AddTask(post_create_threads);
+
   StartupTask browser_thread_started = base::Bind(
       &BrowserMainLoop::BrowserThreadsStarted, base::Unretained(this));
   startup_task_runner_->AddTask(browser_thread_started);
@@ -1211,6 +1215,15 @@ int BrowserMainLoop::CreateThreads() {
     TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
   }
   created_threads_ = true;
+  return result_code_;
+}
+
+int BrowserMainLoop::PostCreateThreads() {
+  if (parts_) {
+    TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateThreads");
+    parts_->PostCreateThreads();
+  }
+
   return result_code_;
 }
 

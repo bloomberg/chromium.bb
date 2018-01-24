@@ -241,6 +241,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Create all secondary threads.
   int CreateThreads();
 
+  // Called just after creating the threads.
+  int PostCreateThreads();
+
   // Called right after the browser threads have been started.
   int BrowserThreadsStarted();
 
@@ -272,6 +275,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // CreateStartupTasks()
   //   PreCreateThreads()
   //   CreateThreads()
+  //   PostCreateThreads()
   //   BrowserThreadsStarted()
   //     InitializeMojo()
   //     InitStartupTracingForDuration()

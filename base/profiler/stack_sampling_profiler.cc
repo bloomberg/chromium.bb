@@ -29,6 +29,12 @@ namespace base {
 
 namespace {
 
+// This value is used to initialize the WaitableEvent object. This MUST BE set
+// to MANUAL for correct operation of the IsSignaled() call in Start(). See the
+// comment there for why.
+constexpr WaitableEvent::ResetPolicy kResetPolicy =
+    WaitableEvent::ResetPolicy::MANUAL;
+
 // This value is used when there is no collection in progress and thus no ID
 // for referencing the active collection to the SamplingThread.
 const int NULL_PROFILER_ID = -1;
@@ -779,8 +785,7 @@ StackSamplingProfiler::StackSamplingProfiler(
       completed_callback_(callback),
       // The event starts "signaled" so code knows it's safe to start thread
       // and "manual" so that it can be waited in multiple places.
-      profiling_inactive_(WaitableEvent::ResetPolicy::MANUAL,
-                          WaitableEvent::InitialState::SIGNALED),
+      profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),
       profiler_id_(NULL_PROFILER_ID),
       test_delegate_(test_delegate) {}
 
@@ -814,8 +819,16 @@ void StackSamplingProfiler::Start() {
   if (!native_sampler)
     return;
 
-  // Wait for profiling to be "inactive", then reset it for the upcoming run.
-  profiling_inactive_.Wait();
+  // The IsSignaled() check below requires that the WaitableEvent be manually
+  // reset, to avoid signaling the event in IsSignaled() itself.
+  static_assert(kResetPolicy == WaitableEvent::ResetPolicy::MANUAL,
+                "The reset policy must be set to MANUAL");
+
+  // If a previous profiling phase is still winding down, wait for it to
+  // complete. We can't use task posting for this coordination because the
+  // thread owning the profiler may not have a message loop.
+  if (!profiling_inactive_.IsSignaled())
+    profiling_inactive_.Wait();
   profiling_inactive_.Reset();
 
   DCHECK_EQ(NULL_PROFILER_ID, profiler_id_);
