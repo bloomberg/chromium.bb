@@ -757,9 +757,34 @@ Node* Internals::effectiveRootScroller(Document* document) {
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host) {
+  // TODO(kochi): Rewrite all references of youngestShadowRoot and
+  // oldestShadowRoot to shadowRoot.
+  return youngestShadowRoot(host);
+}
+
+ShadowRoot* Internals::youngestShadowRoot(Element* host) {
   DCHECK(host);
   if (ElementShadow* shadow = host->Shadow())
     return &shadow->GetShadowRoot();
+  return nullptr;
+}
+
+ShadowRoot* Internals::oldestShadowRoot(Element* host) {
+  DCHECK(host);
+  if (ElementShadow* shadow = host->Shadow())
+    return &shadow->GetShadowRoot();
+  return nullptr;
+}
+
+ShadowRoot* Internals::youngerShadowRoot(Node* shadow,
+                                         ExceptionState& exception_state) {
+  DCHECK(shadow);
+  if (!shadow->IsShadowRoot()) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError, "The node provided is not a shadow root.");
+    return nullptr;
+  }
+
   return nullptr;
 }
 

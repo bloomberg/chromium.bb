@@ -120,7 +120,7 @@ function mouseMoveToIndexInListbox(index, listboxId) {
 }
 
 function getUserAgentShadowTextContent(element) {
-    return internals.shadowRoot(element).textContent;
+    return internals.youngestShadowRoot(element).textContent;
 };
 
 function cumulativeOffset(element) {

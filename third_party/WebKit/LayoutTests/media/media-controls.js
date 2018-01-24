@@ -342,7 +342,7 @@ function pictureInPictureInterstitial(videoElement) {
 function checkPictureInPictureInterstitialDoesNotExist(videoElement) {
   var controlID = '-internal-picture-in-picture-interstitial';
 
-  var interstitial = getElementByPseudoId(internals.shadowRoot(videoElement), controlID);
+  var interstitial = getElementByPseudoId(internals.oldestShadowRoot(videoElement), controlID);
   if (interstitial)
       throw 'Should not have a picture in picture interstitial';
 }
