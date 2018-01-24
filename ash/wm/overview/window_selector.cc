@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/window_grid.h"
@@ -273,7 +274,7 @@ void WindowSelector::Init(const WindowList& windows,
 
     std::unique_ptr<WindowGrid> grid(
         new WindowGrid(root, windows, this, GetGridBoundsInScreen(root)));
-    if (grid->empty())
+    if (!IsNewOverviewUi() && grid->empty())
       continue;
     num_items_ += grid->size();
     grid_list_.push_back(std::move(grid));
@@ -305,7 +306,8 @@ void WindowSelector::Init(const WindowList& windows,
                                                &text_filter_bottom_));
   }
 
-  DCHECK(!grid_list_.empty());
+  if (!IsNewOverviewUi())
+    DCHECK(!grid_list_.empty());
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
   Shell::Get()->activation_client()->AddObserver(this);
@@ -565,6 +567,14 @@ void WindowSelector::PositionWindows(bool animate) {
 
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
+  // Do not do anything with the events if none of the window grids have windows
+  // in them.
+  bool empty_grids = true;
+  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+    empty_grids &= grid->empty();
+  if (empty_grids)
+    return true;
+
   if (key_event.type() != ui::ET_KEY_PRESSED)
     return false;
 
@@ -742,8 +752,8 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
     text_filter_widget_window->SetTransform(transform);
     showing_text_filter_ = should_show_text_filter;
   }
-  for (auto iter = grid_list_.begin(); iter != grid_list_.end(); iter++)
-    (*iter)->FilterItems(new_contents);
+  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+    grid->FilterItems(new_contents);
 
   // If the selection widget is not active, execute a Move() command so that it
   // shows up on the first undimmed item.

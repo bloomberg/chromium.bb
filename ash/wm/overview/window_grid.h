@@ -151,7 +151,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override;
 
+  bool IsNoItemsIndicatorLabelVisibleForTesting();
+
  private:
+  class ShieldView;
   friend class WindowSelectorTest;
 
   // Initializes the screen shield widget.
@@ -199,6 +202,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Widget that darkens the screen background.
   std::unique_ptr<views::Widget> shield_widget_;
+
+  // A pointer to |shield_widget_|'s content view.
+  ShieldView* shield_view_ = nullptr;
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;

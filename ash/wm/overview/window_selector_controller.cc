@@ -10,6 +10,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -85,7 +86,7 @@ bool WindowSelectorController::ToggleOverview() {
 
     if (!Shell::Get()->IsSplitViewModeActive()) {
       // Don't enter overview with no window if the split view mode is inactive.
-      if (windows.empty())
+      if (!IsNewOverviewUi() && windows.empty())
         return false;
     } else {
       // Don't enter overview with less than 1 window if the split view mode is
