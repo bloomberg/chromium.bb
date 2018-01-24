@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-extern const uint16_t av1_prob_cost[256];
+extern const uint16_t av1_prob_cost[128];
 
 // The factor to scale from cost in bits to cost in av1_prob_cost units.
 #define AV1_PROB_COST_SHIFT 9
@@ -32,8 +32,9 @@ extern const uint16_t av1_prob_cost[256];
 static INLINE int av1_cost_symbol(aom_cdf_prob p15) {
   assert(0 < p15 && p15 < CDF_PROB_TOP);
   const int shift = CDF_PROB_BITS - 1 - get_msb(p15);
-  return av1_prob_cost[get_prob(p15 << shift, CDF_PROB_TOP)] +
-         av1_cost_literal(shift);
+  const int prob = get_prob(p15 << shift, CDF_PROB_TOP);
+  assert(prob >= 128);
+  return av1_prob_cost[prob - 128] + av1_cost_literal(shift);
 }
 
 void av1_cost_tokens_from_cdf(int *costs, const aom_cdf_prob *cdf,
