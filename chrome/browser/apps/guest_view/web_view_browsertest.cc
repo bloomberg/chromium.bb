@@ -661,12 +661,18 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
     ExtensionTestMessageListener done_listener("TEST_PASSED", false);
     done_listener.set_failure_message("TEST_FAILED");
-    if (!content::ExecuteScript(
-            embedder_web_contents,
-            base::StringPrintf("runTest('%s')", test_name.c_str()))) {
-      LOG(ERROR) << "UNABLE TO START TEST.";
-      return;
-    }
+    // Note that domAutomationController may not exist for some tests so we
+    // must use the async version of ExecuteScript.
+    content::ExecuteScriptAsync(
+        embedder_web_contents,
+        base::StringPrintf("try { "
+                           "  runTest('%s'); "
+                           "} catch (e) { "
+                           "  console.log('UNABLE TO START TEST.'); "
+                           "  console.log(e); "
+                           "  chrome.test.sendMessage('TEST_FAILED'); "
+                           "}",
+                           test_name.c_str()));
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
@@ -3683,27 +3689,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInaccessibleResource) {
   EXPECT_EQ(foo_url, web_view_contents->GetLastCommittedURL());
 }
 
-// Tests that a webview inside an iframe can load and that it is destroyed when
-// the iframe is detached.
-IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInsideIframe) {
-  TestHelper("testLoadWebviewInsideIframe",
-             "web_view/load_webview_inside_iframe", NEEDS_TEST_SERVER);
-
-  // WebContents is leaked when using BrowserPlugin.
-  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
-    return;
-
-  content::WebContentsDestroyedWatcher watcher(
-      GetGuestViewManager()->GetLastGuestCreated());
-
-  // Remove the iframe.
-  EXPECT_TRUE(content::ExecuteScript(
-      GetEmbedderWebContents(), "document.querySelector('iframe').remove()"));
-
-  // Wait for guest to be destroyed.
-  watcher.Wait();
-}
-
 // Makes sure that a webview will display correctly after reloading it after a
 // crash.
 IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadAfterCrash) {
@@ -3734,6 +3719,58 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadAfterCrash) {
   // WaitForChildFrameSurfaceReady will only return when the guest is embedded
   // within the root surface.
   WaitForChildFrameSurfaceReady(GetGuestWebContents()->GetMainFrame());
+}
+
+// The presence of DomAutomationController interferes with these tests, so we
+// disable it.
+class WebViewTestNoDomAutomationController : public WebViewTest {
+ public:
+  ~WebViewTestNoDomAutomationController() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    WebViewTest::SetUpInProcessBrowserTestFixture();
+
+    // DomAutomationController is added in BrowserTestBase::SetUp, so we need
+    // to remove it here instead of in SetUpCommandLine.
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    base::CommandLine new_command_line(command_line->GetProgram());
+    base::CommandLine::SwitchMap switches = command_line->GetSwitches();
+    switches.erase(switches::kDomAutomationController);
+    for (const auto& s : switches)
+      new_command_line.AppendSwitchNative(s.first, s.second);
+
+    *command_line = new_command_line;
+  }
+};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        WebViewTestNoDomAutomationController,
+                        testing::Bool());
+
+// Tests that a webview inside an iframe can load and that it is destroyed when
+// the iframe is detached.
+// We need to disable DomAutomationController because it forces the creation of
+// a script context. We want to test that we handle the case where there is no
+// script context for the iframe. See crbug.com/788914
+IN_PROC_BROWSER_TEST_P(WebViewTestNoDomAutomationController,
+                       LoadWebviewInsideIframe) {
+  TestHelper("testLoadWebviewInsideIframe",
+             "web_view/load_webview_inside_iframe", NEEDS_TEST_SERVER);
+
+  ASSERT_TRUE(GetGuestViewManager()->GetLastGuestCreated());
+
+  // WebContents is leaked when using BrowserPlugin.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  content::WebContentsDestroyedWatcher watcher(
+      GetGuestViewManager()->GetLastGuestCreated());
+
+  // Remove the iframe.
+  content::ExecuteScriptAsync(GetEmbedderWebContents(),
+                              "document.querySelector('iframe').remove()");
+
+  // Wait for guest to be destroyed.
+  watcher.Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, LoadWebViewAccessibility) {

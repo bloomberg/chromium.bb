@@ -18,13 +18,20 @@ function testLoadWebviewInsideIframe() {
   var iframe = document.querySelector('iframe');
   var webview = iframe.contentDocument.querySelector('webview');
 
-  webview.addEventListener('loadstop', function () {
-    window.addEventListener('message', function (e) {
-    if(e.data == 'TEST_PASSED') {
-      chrome.test.sendMessage('TEST_PASSED');
-    } else {
-      chrome.test.sendMessage('TEST_FAILED');
-    }});
+  if (webview.contentWindow === undefined) {
+    window.console.log('The webview was not initialized.');
+    chrome.test.sendMessage('TEST_FAILED');
+    return;
+  }
+
+  webview.addEventListener('loadstop', function() {
+    window.addEventListener('message', function(e) {
+      if (e.data == 'TEST_PASSED') {
+        chrome.test.sendMessage('TEST_PASSED');
+      } else {
+        chrome.test.sendMessage('TEST_FAILED');
+      }
+    });
     webview.contentWindow.postMessage('TEST_START', '*');
   });
 

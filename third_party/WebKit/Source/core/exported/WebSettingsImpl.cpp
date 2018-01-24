@@ -71,6 +71,10 @@ void WebSettingsImpl::SetFixedFontFamily(const WebString& font,
     settings_->NotifyGenericFontFamilyChange();
 }
 
+void WebSettingsImpl::SetForceMainWorldInitialization(bool enabled) {
+  settings_->SetForceMainWorldInitialization(enabled);
+}
+
 void WebSettingsImpl::SetForcePreloadNoneForMediaElements(bool enabled) {
   settings_->SetForcePreloadNoneForMediaElements(enabled);
 }
