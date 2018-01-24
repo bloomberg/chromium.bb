@@ -16,6 +16,7 @@
 -ContentBrowserTestSanityTest.SingleProcess
 -DomSerializerTests.*
 -IndexedDBBrowserTestSingleProcess.RenderThreadShutdownTest
+-InProcessGpuTest.*
 -RenderThreadImplDiscardableMemoryBrowserTest.*
 -RenderViewBrowserTest.ConfirmCacheInformationPlumbed
 -ResourceFetcherTests.*

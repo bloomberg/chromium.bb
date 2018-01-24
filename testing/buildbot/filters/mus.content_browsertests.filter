@@ -1,0 +1,2 @@
+# Crash during shutdown on wrong thread http://crbug.com/785023
+-InProcessGpuTest.*

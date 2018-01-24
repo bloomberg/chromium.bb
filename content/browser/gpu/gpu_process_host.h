@@ -268,8 +268,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool swiftshader_rendering_;
   GpuProcessKind kind_;
 
-  std::unique_ptr<base::Thread> in_process_gpu_thread_;
-
   // Whether we actually launched a GPU process.
   bool process_launched_;
 
@@ -289,7 +287,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   static bool crashed_before_;
   static int swiftshader_crash_count_;
 
+  // Here the bottom-up destruction order matters:
+  // The GPU thread depends on its host so stop the host last.
+  // Otherwise, under rare timings when the thread is still in Init(),
+  // it could crash as it fails to find a message pipe to the host.
   std::unique_ptr<BrowserChildProcessHostImpl> process_;
+  std::unique_ptr<base::Thread> in_process_gpu_thread_;
 
   // Track the URLs of the pages which have live offscreen contexts,
   // assumed to be associated with untrusted content such as WebGL.
