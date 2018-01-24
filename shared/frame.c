@@ -449,6 +449,20 @@ frame_set_title(struct frame *frame, const char *title)
 }
 
 void
+frame_set_icon(struct frame *frame, cairo_surface_t *icon)
+{
+	struct frame_button *button;
+	wl_list_for_each(button, &frame->buttons, link) {
+		if (button->status_effect != FRAME_STATUS_MENU)
+			continue;
+		if (button->icon)
+			cairo_surface_destroy(button->icon);
+		button->icon = icon;
+		frame->status |= FRAME_STATUS_REPAINT;
+	}
+}
+
+void
 frame_set_flag(struct frame *frame, enum frame_flag flag)
 {
 	if (flag & FRAME_FLAG_MAXIMIZED && !(frame->flags & FRAME_FLAG_MAXIMIZED))

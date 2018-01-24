@@ -139,7 +139,7 @@ struct weston_wm_window {
 	struct frame *frame;
 	cairo_surface_t *cairo_surface;
 	int icon;
-	cairo_surface_t *icon_surface;
+	cairo_surface_t *icon_surface; /* A temporary slot, to be passed to frame on creation */
 	uint32_t surface_id;
 	struct weston_surface *surface;
 	struct weston_desktop_xwayland_surface *shsurf;
@@ -994,6 +994,7 @@ weston_wm_window_create_frame(struct weston_wm_window *window)
 	                             window->width, window->height,
 	                             buttons, window->name,
 	                             window->icon_surface);
+	window->icon_surface = NULL;
 	frame_resize_inside(window->frame, window->width, window->height);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
@@ -1392,10 +1393,10 @@ weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 		return;
 	}
 
-	if (window->icon_surface)
-		cairo_surface_destroy(window->icon_surface);
-
-	window->icon_surface = new_surface;
+	if (window->frame)
+		frame_set_icon(window->frame, new_surface);
+	else /* We don’t have a frame yet */
+		window->icon_surface = new_surface;
 }
 
 static void
@@ -1422,7 +1423,10 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 		if (property_notify->state != XCB_PROPERTY_DELETE) {
 			weston_wm_handle_icon(wm, window);
 		} else {
-			cairo_surface_destroy(window->icon_surface);
+			if (window->frame)
+				frame_set_icon(window->frame, NULL);
+			if (window->icon_surface)
+				cairo_surface_destroy(window->icon_surface);
 			window->icon_surface = NULL;
 		}
 		weston_wm_window_schedule_repaint(window);

@@ -137,6 +137,10 @@ frame_set_title(struct frame *frame, const char *title);
 
 /* May set FRAME_STATUS_REPAINT */
 void
+frame_set_icon(struct frame *frame, cairo_surface_t *icon);
+
+/* May set FRAME_STATUS_REPAINT */
+void
 frame_set_flag(struct frame *frame, enum frame_flag flag);
 
 /* May set FRAME_STATUS_REPAINT */
