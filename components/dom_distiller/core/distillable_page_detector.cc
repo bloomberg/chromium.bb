@@ -13,20 +13,6 @@
 
 namespace dom_distiller {
 
-const DistillablePageDetector* DistillablePageDetector::GetDefault() {
-  static DistillablePageDetector* detector = nullptr;
-  if (!detector) {
-    std::string serialized_proto =
-        ui::ResourceBundle::GetSharedInstance()
-            .GetRawDataResource(IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL)
-            .as_string();
-    std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
-    CHECK(proto->ParseFromString(serialized_proto));
-    detector = new DistillablePageDetector(std::move(proto));
-  }
-  return detector;
-}
-
 const DistillablePageDetector* DistillablePageDetector::GetNewModel() {
   static DistillablePageDetector* detector = nullptr;
   if (!detector) {
