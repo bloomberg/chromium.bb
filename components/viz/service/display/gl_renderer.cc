@@ -2128,7 +2128,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   // clamping to tex_coord_rect in all cases would cause these border
   // texels to not be sampled.  Therefore, only clamp texture coordinates
   // for external edge bottom/right tiles that don't have content all
-  // the way to the edge.
+  // the way to the edge and are using bilinear filtering.
   gfx::Size texture_size = quad->texture_size;
   bool fills_right_edge =
       quad->shared_quad_state->quad_layer_rect.right() != quad->rect.right() ||
@@ -2137,7 +2137,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                                quad->rect.bottom() ||
                            texture_size.height() == tex_coord_rect.bottom();
   bool has_tex_clamp_rect =
-      (!fills_right_edge || !fills_bottom_edge) && !quad->nearest_neighbor;
+      filter == GL_LINEAR && (!fills_right_edge || !fills_bottom_edge);
   gfx::SizeF tex_clamp_size(texture_size);
   // Clamp from the original tex coord rect, instead of the one that has
   // been adjusted by the visible rect.
