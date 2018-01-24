@@ -226,7 +226,7 @@ TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
           view,
           0,
           static_cast<WebInputEvent::Modifiers>(event.Event().GetModifiers()),
-          TimeTicks::FromSeconds(event.Event().TimeStampSeconds()),
+          TimeTicksFromSeconds(event.Event().TimeStampSeconds()),
           view ? view->GetInputDeviceCapabilities()->FiresTouchEvents(true)
                : nullptr),
       touches_(touches),

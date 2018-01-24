@@ -60,7 +60,7 @@ class PointerEventFactoryTest : public ::testing::Test {
         web_pointer_event, coalesced_events, nullptr);
     EXPECT_EQ(unique_id, pointer_event->pointerId());
     EXPECT_EQ(is_primary, pointer_event->isPrimary());
-    EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting),
+    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
               pointer_event->PlatformTimeStamp());
     const char* expected_pointer_type =
         PointerTypeNameForWebPointPointerType(pointer_type);
@@ -72,7 +72,7 @@ class PointerEventFactoryTest : public ::testing::Test {
       EXPECT_EQ(is_primary,
                 pointer_event->getCoalescedEvents()[i]->isPrimary());
       EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
-      EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting),
+      EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
                 pointer_event->PlatformTimeStamp());
     }
     return pointer_event;
@@ -123,13 +123,13 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckPointerCancel(
     int unique_id,
     bool is_primary) {
   PointerEvent* pointer_event = pointer_event_factory_.CreatePointerCancelEvent(
-      unique_id, TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting));
+      unique_id, TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting));
   EXPECT_EQ("pointercancel", pointer_event->type());
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
   EXPECT_EQ(PointerTypeNameForWebPointPointerType(pointer_type),
             pointer_event->pointerType());
-  EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting),
+  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
             pointer_event->PlatformTimeStamp());
 
   return pointer_event;
@@ -178,7 +178,7 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
       coalesced_events, nullptr);
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
-  EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting),
+  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting),
             pointer_event->PlatformTimeStamp());
   const char* expected_pointer_type =
       PointerTypeNameForWebPointPointerType(pointer_type);
@@ -188,7 +188,7 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckMouseEvent(
     EXPECT_EQ(unique_id, pointer_event->getCoalescedEvents()[i]->pointerId());
     EXPECT_EQ(is_primary, pointer_event->getCoalescedEvents()[i]->isPrimary());
     EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
-    EXPECT_EQ(TimeTicks::FromSeconds(WebInputEvent::kTimeStampForTesting + i),
+    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::kTimeStampForTesting + i),
               pointer_event->getCoalescedEvents()[i]->PlatformTimeStamp());
   }
   return pointer_event;

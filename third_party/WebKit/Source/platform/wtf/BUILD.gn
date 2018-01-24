@@ -344,7 +344,6 @@ jumbo_source_set("wtf_unittests_sources") {
     "ScopedLoggerTest.cpp",
     "StringExtrasTest.cpp",
     "StringHasherTest.cpp",
-    "TimeTest.cpp",
     "TreeNodeTest.cpp",
     "TypeTraitsTest.cpp",
     "VectorTest.cpp",

@@ -252,7 +252,7 @@ void PointerEventManager::HandlePointerInterruption(
     canceled_pointer_events.push_back(
         pointer_event_factory_.CreatePointerCancelEvent(
             PointerEventFactory::kMouseId,
-            TimeTicks::FromSeconds(web_pointer_event.TimeStampSeconds())));
+            TimeTicksFromSeconds(web_pointer_event.TimeStampSeconds())));
   } else {
     // TODO(nzolghadr): Maybe canceling all the scroll capable pointers is not
     // the best strategy here. See the github issue for more details:
@@ -267,7 +267,7 @@ void PointerEventManager::HandlePointerInterruption(
         canceled_pointer_events.push_back(
             pointer_event_factory_.CreatePointerCancelEvent(
                 pointer_id,
-                TimeTicks::FromSeconds(web_pointer_event.TimeStampSeconds())));
+                TimeTicksFromSeconds(web_pointer_event.TimeStampSeconds())));
       }
 
       scroll_capable_pointers_canceled_ = true;

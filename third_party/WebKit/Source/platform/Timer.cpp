@@ -171,7 +171,7 @@ bool TimerBase::Comparator::operator()(const TimerBase* a,
 
 // static
 TimeTicks TimerBase::TimerCurrentTimeTicksInSeconds() const {
-  return TimeTicks::FromSeconds(
+  return TimeTicksFromSeconds(
       TimerTaskRunner()->MonotonicallyIncreasingVirtualTimeSeconds());
 }
 

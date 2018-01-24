@@ -1061,7 +1061,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
           scroll_manager_->GetAutoscrollController()) {
     controller->UpdateDragAndDrop(
         new_target, FlooredIntPoint(event.PositionInRootFrame()),
-        TimeTicks::FromSeconds(event.TimeStampSeconds()));
+        TimeTicksFromSeconds(event.TimeStampSeconds()));
   }
 
   if (drag_target_ != new_target) {
@@ -1891,7 +1891,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      WebInputEvent::kNoModifiers, CurrentTimeTicks().InSeconds(), source_type);
+      WebInputEvent::kNoModifiers, CurrentTimeTicksInSeconds(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

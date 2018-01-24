@@ -22,6 +22,7 @@ namespace WTF {
 
 using TimeDelta = base::TimeDelta;
 using Time = base::Time;
+using TimeTicks = base::TimeTicks;
 
 // Returns the current UTC time in seconds, counted from January 1, 1970.
 // Precision varies depending on platform but is usually as good or better
@@ -44,66 +45,6 @@ WTF_EXPORT TimeFunction SetTimeFunctionsForTesting(TimeFunction);
 // Allows wtf/Time.h to use the same mock time function
 WTF_EXPORT TimeFunction GetTimeFunctionForTesting();
 
-class TimeTicks {
- public:
-  TimeTicks() = default;
-  TimeTicks(base::TimeTicks value) : value_(value) {}
-
-  static TimeTicks UnixEpoch() {
-    return TimeTicks(base::TimeTicks::UnixEpoch());
-  }
-
-  int64_t ToInternalValueForTesting() const { return value_.ToInternalValue(); }
-
-  // Only use this conversion when interfacing with legacy code that represents
-  // time in double. Converting to double can lead to losing information for
-  // large time values.
-  double InSeconds() const { return (value_ - base::TimeTicks()).InSecondsF(); }
-
-  static TimeTicks FromSeconds(double seconds) {
-    return TimeTicks() + TimeDelta::FromSecondsD(seconds);
-  }
-
-  TimeDelta since_origin() const { return value_.since_origin(); }
-
-  bool is_null() const { return value_.is_null(); }
-
-  operator base::TimeTicks() const { return value_; }
-
-  TimeTicks& operator=(TimeTicks other) {
-    value_ = other.value_;
-    return *this;
-  }
-
-  TimeDelta operator-(TimeTicks other) const { return value_ - other.value_; }
-
-  TimeTicks operator+(TimeDelta delta) const {
-    return TimeTicks(value_ + delta);
-  }
-  TimeTicks operator-(TimeDelta delta) const {
-    return TimeTicks(value_ - delta);
-  }
-
-  TimeTicks& operator+=(TimeDelta delta) {
-    value_ += delta;
-    return *this;
-  }
-  TimeTicks& operator-=(TimeDelta delta) {
-    value_ -= delta;
-    return *this;
-  }
-
-  bool operator==(TimeTicks other) const { return value_ == other.value_; }
-  bool operator!=(TimeTicks other) const { return value_ != other.value_; }
-  bool operator<(TimeTicks other) const { return value_ < other.value_; }
-  bool operator<=(TimeTicks other) const { return value_ <= other.value_; }
-  bool operator>(TimeTicks other) const { return value_ > other.value_; }
-  bool operator>=(TimeTicks other) const { return value_ >= other.value_; }
-
- private:
-  base::TimeTicks value_;
-};
-
 // Monotonically increasing clock time since an arbitrary and unspecified origin
 // time. Mockable using SetTimeFunctionsForTesting().
 WTF_EXPORT TimeTicks CurrentTimeTicks();
@@ -112,6 +53,9 @@ WTF_EXPORT TimeTicks CurrentTimeTicks();
 // confusion errors.
 WTF_EXPORT double CurrentTimeTicksInSeconds();
 WTF_EXPORT double CurrentTimeTicksInMilliseconds();
+
+WTF_EXPORT TimeTicks TimeTicksFromSeconds(double);
+WTF_EXPORT double TimeTicksInSeconds(TimeTicks);
 
 }  // namespace WTF
 
@@ -125,5 +69,7 @@ using WTF::Time;
 using WTF::TimeDelta;
 using WTF::TimeFunction;
 using WTF::TimeTicks;
+using WTF::TimeTicksFromSeconds;
+using WTF::TimeTicksInSeconds;
 
 #endif  // Time_h

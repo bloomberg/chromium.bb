@@ -97,7 +97,7 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
           dom_window,
           0,
           static_cast<WebInputEvent::Modifiers>(key.GetModifiers()),
-          TimeTicks::FromSeconds(key.TimeStampSeconds()),
+          TimeTicksFromSeconds(key.TimeStampSeconds()),
           dom_window
               ? dom_window->GetInputDeviceCapabilities()->FiresTouchEvents(
                     false)
