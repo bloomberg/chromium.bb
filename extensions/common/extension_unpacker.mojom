@@ -21,8 +21,8 @@ interface ExtensionUnpacker {
   // the Declarative Net Request API in |json_ruleset|. The supplied |location|,
   // and the |creation_flags| defined by Extension::InitFromValueFlags are
   // passed into Extension::Create() when unpacking the extension. Decoded
-  // image and message catalog data from the extension is written to files
-  // kDecodedImagesFilename and kDecodedMessageCatalogsFilename in |path|.
+  // message catalog data from the extension is written to the
+  // kDecodedMessageCatalogsFilename file in |path|.
   // If Unpack() fails for any reason, |error| contains a user-displayable
   // explanation of what went wrong.
   // |channel| and |type| are needed to initialize the global state of the

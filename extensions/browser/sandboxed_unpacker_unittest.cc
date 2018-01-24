@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
@@ -23,11 +24,44 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/test_extensions_client.h"
+#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace extensions {
+
+namespace {
+
+// Inserts an illegal path into the browser images returned by
+// TestExtensionsClient for any extension.
+class IllegalImagePathInserter
+    : public TestExtensionsClient::BrowserImagePathsFilter {
+ public:
+  IllegalImagePathInserter(TestExtensionsClient* client) : client_(client) {
+    client_->AddBrowserImagePathsFilter(this);
+  }
+
+  virtual ~IllegalImagePathInserter() {
+    client_->RemoveBrowserImagePathsFilter(this);
+  }
+
+  void Filter(const Extension* extension,
+              std::set<base::FilePath>* paths) override {
+    base::FilePath illegal_path =
+        base::FilePath(base::FilePath::kParentDirectory)
+            .AppendASCII(kTempExtensionName)
+            .AppendASCII("product_logo_128.png");
+    paths->insert(illegal_path);
+  }
+
+ private:
+  TestExtensionsClient* client_;
+};
+
+}  // namespace
 
 class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
  public:
@@ -83,7 +117,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     client_ = new MockSandboxedUnpackerClient;
 
     sandboxed_unpacker_ = new SandboxedUnpacker(
-        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.GetPath(),
+        test_data_decoder_service_.connector()->Clone(), Manifest::INTERNAL,
+        Extension::NO_FLAGS, extensions_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
@@ -145,19 +180,40 @@ class SandboxedUnpackerTest : public ExtensionsTest {
                    sandboxed_unpacker_));
   }
 
-  base::FilePath GetInstallPath() {
+  bool InstallSucceeded() const { return !client_->temp_dir().empty(); }
+
+  base::FilePath GetInstallPath() const {
     return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
-  base::string16 GetInstallError() { return client_->unpack_err(); }
+  base::string16 GetInstallError() const { return client_->unpack_err(); }
 
  protected:
+  data_decoder::TestDataDecoderService test_data_decoder_service_;
   base::ScopedTempDir extensions_dir_;
   MockSandboxedUnpackerClient* client_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
 };
+
+TEST_F(SandboxedUnpackerTest, ImageDecodingError) {
+  const char kExpected[] = "Could not decode image: ";
+  SetupUnpacker("bad_image.crx", "");
+  EXPECT_TRUE(base::StartsWith(GetInstallError(), base::ASCIIToUTF16(kExpected),
+                               base::CompareCase::INSENSITIVE_ASCII))
+      << "Expected prefix: \"" << kExpected << "\", actual error: \""
+      << GetInstallError() << "\"";
+}
+
+TEST_F(SandboxedUnpackerTest, BadPathError) {
+  IllegalImagePathInserter inserter(
+      static_cast<TestExtensionsClient*>(ExtensionsClient::Get()));
+  SetupUnpacker("good_package.crx", "");
+  // Install should have failed with an error.
+  EXPECT_FALSE(InstallSucceeded());
+  EXPECT_FALSE(GetInstallError().empty());
+}
 
 TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   SetupUnpacker("no_l10n.crx", "");

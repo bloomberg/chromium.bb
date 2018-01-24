@@ -4792,6 +4792,7 @@ static_library("test_support") {
       "//components/drive:test_support",
       "//components/storage_monitor:test_support",
       "//extensions:test_support",
+      "//services/data_decoder/public/cpp:test_support",
     ]
   }
 

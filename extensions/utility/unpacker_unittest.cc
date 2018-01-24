@@ -141,61 +141,6 @@ TEST_F(UnpackerTest, NoL10n) {
   EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
 }
 
-namespace {
-
-// Inserts an illegal path into the browser images returned by
-// TestExtensionsClient for any extension.
-class IllegalImagePathInserter
-    : public TestExtensionsClient::BrowserImagePathsFilter {
- public:
-  IllegalImagePathInserter(TestExtensionsClient* client) : client_(client) {
-    client_->AddBrowserImagePathsFilter(this);
-  }
-
-  virtual ~IllegalImagePathInserter() {
-    client_->RemoveBrowserImagePathsFilter(this);
-  }
-
-  void Filter(const Extension* extension,
-              std::set<base::FilePath>* paths) override {
-    base::FilePath illegal_path =
-        base::FilePath(base::FilePath::kParentDirectory)
-            .AppendASCII(kTempExtensionName)
-            .AppendASCII("product_logo_128.png");
-    paths->insert(illegal_path);
-  }
-
- private:
-  TestExtensionsClient* client_;
-};
-
-}  // namespace
-
-TEST_F(UnpackerTest, BadPathError) {
-  const char kExpected[] = "Illegal path (absolute or relative with '..'): ";
-  SetupUnpacker("good_package.crx");
-  IllegalImagePathInserter inserter(
-      static_cast<TestExtensionsClient*>(ExtensionsClient::Get()));
-
-  EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
-                               ASCIIToUTF16(kExpected),
-                               base::CompareCase::INSENSITIVE_ASCII))
-      << "Expected prefix: \"" << kExpected << "\", actual error: \""
-      << unpacker_->error_message() << "\"";
-}
-
-TEST_F(UnpackerTest, ImageDecodingError) {
-  const char kExpected[] = "Could not decode image: ";
-  SetupUnpacker("bad_image.crx");
-  EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
-                               ASCIIToUTF16(kExpected),
-                               base::CompareCase::INSENSITIVE_ASCII))
-      << "Expected prefix: \"" << kExpected << "\", actual error: \""
-      << unpacker_->error_message() << "\"";
-}
-
 struct UnzipFileFilterTestCase {
   const base::FilePath::CharType* input;
   const bool should_unzip;

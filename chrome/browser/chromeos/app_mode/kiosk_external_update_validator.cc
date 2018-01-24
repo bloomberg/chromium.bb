@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -27,10 +29,12 @@ KioskExternalUpdateValidator::~KioskExternalUpdateValidator() {
 }
 
 void KioskExternalUpdateValidator::Start() {
-  scoped_refptr<extensions::SandboxedUnpacker> unpacker(
-      new extensions::SandboxedUnpacker(
-          extensions::Manifest::EXTERNAL_PREF, extensions::Extension::NO_FLAGS,
-          crx_unpack_dir_, backend_task_runner_.get(), this));
+  auto unpacker = base::MakeRefCounted<extensions::SandboxedUnpacker>(
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->Clone(),
+      extensions::Manifest::EXTERNAL_PREF, extensions::Extension::NO_FLAGS,
+      crx_unpack_dir_, backend_task_runner_.get(), this);
   if (!backend_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&extensions::SandboxedUnpacker::StartWithCrx,

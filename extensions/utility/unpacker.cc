@@ -20,12 +20,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "extensions/common/extension_resource_path_normalizer.h"
 #include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
@@ -46,53 +44,11 @@ namespace {
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
 
-// A limit to stop us passing dangerously large canvases to the browser.
-const int kMaxImageCanvas = 4096 * 4096;
-
 constexpr const base::FilePath::CharType* kAllowedThemeFiletypes[] = {
     FILE_PATH_LITERAL(".bmp"),  FILE_PATH_LITERAL(".gif"),
     FILE_PATH_LITERAL(".jpeg"), FILE_PATH_LITERAL(".jpg"),
     FILE_PATH_LITERAL(".json"), FILE_PATH_LITERAL(".png"),
     FILE_PATH_LITERAL(".webp")};
-
-SkBitmap DecodeImage(const base::FilePath& path) {
-  // Read the file from disk.
-  std::string file_contents;
-  if (!base::PathExists(path) ||
-      !base::ReadFileToString(path, &file_contents)) {
-    return SkBitmap();
-  }
-
-  // Decode the image using WebKit's image decoder.
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(file_contents.data());
-  SkBitmap bitmap =
-      content::DecodeImage(data, gfx::Size(), file_contents.length());
-  if (bitmap.computeByteSize() > kMaxImageCanvas)
-    return SkBitmap();
-  return bitmap;
-}
-
-bool PathContainsParentDirectory(const base::FilePath& path) {
-  const base::FilePath::StringType kSeparators(base::FilePath::kSeparators);
-  const base::FilePath::StringType kParentDirectory(
-      base::FilePath::kParentDirectory);
-  const size_t npos = base::FilePath::StringType::npos;
-  const base::FilePath::StringType& value = path.value();
-
-  for (size_t i = 0; i < value.length();) {
-    i = value.find(kParentDirectory, i);
-    if (i != npos) {
-      if ((i == 0 || kSeparators.find(value[i - 1]) == npos) &&
-          (i + 1 < value.length() || kSeparators.find(value[i + 1]) == npos)) {
-        return true;
-      }
-      ++i;
-    }
-  }
-
-  return false;
-}
 
 bool WritePickle(const IPC::Message& pickle, const base::FilePath& dest_path) {
   int size = base::checked_cast<int>(pickle.size());
@@ -103,10 +59,6 @@ bool WritePickle(const IPC::Message& pickle, const base::FilePath& dest_path) {
 
 }  // namespace
 
-struct Unpacker::InternalData {
-  DecodedImages decoded_images;
-};
-
 Unpacker::Unpacker(const base::FilePath& working_dir,
                    const base::FilePath& extension_dir,
                    const std::string& extension_id,
@@ -116,9 +68,7 @@ Unpacker::Unpacker(const base::FilePath& working_dir,
       extension_dir_(extension_dir),
       extension_id_(extension_id),
       location_(location),
-      creation_flags_(creation_flags) {
-  internal_data_.reset(new InternalData());
-}
+      creation_flags_(creation_flags) {}
 
 Unpacker::~Unpacker() {
 }
@@ -221,20 +171,6 @@ bool Unpacker::Run() {
   }
   extension->AddInstallWarnings(warnings);
 
-  // Decode any images that the browser needs to display. |GetBrowserImagePaths|
-  // can contain duplicates like "icon.png" and "./icon.png". It is required to
-  // normalize paths to avoid unpacking of the same icon twice.
-  const std::set<base::FilePath> image_paths =
-      ExtensionsClient::Get()->GetBrowserImagePaths(extension.get());
-  if (!VerifyOriginalImagePaths(image_paths))
-    return false;  // Error was already reported.
-  const std::set<base::FilePath> normalized_image_paths =
-      NormalizeExtensionResourcePaths(image_paths);
-  for (const base::FilePath& path : normalized_image_paths) {
-    if (!AddDecodedImage(path))
-      return false;  // Error was already reported.
-  }
-
   // Parse all message catalogs (if any).
   parsed_catalogs_.reset(new base::DictionaryValue);
   if (!LocaleInfo::GetDefaultLocale(extension.get()).empty()) {
@@ -242,7 +178,7 @@ bool Unpacker::Run() {
       return false;  // Error was already reported.
   }
 
-  return ReadJSONRulesetIfNeeded(extension.get()) && DumpImagesToFile() &&
+  return ReadJSONRulesetIfNeeded(extension.get()) &&
          DumpMessageCatalogsToFile();
 }
 
@@ -270,19 +206,6 @@ bool Unpacker::ReadJSONRulesetIfNeeded(const Extension* extension) {
   return true;
 }
 
-bool Unpacker::DumpImagesToFile() {
-  IPC::Message pickle;  // We use a Message so we can use WriteParam.
-  IPC::WriteParam(&pickle, internal_data_->decoded_images);
-
-  base::FilePath path = working_dir_.AppendASCII(kDecodedImagesFilename);
-  if (!WritePickle(pickle, path)) {
-    SetError("Could not write image data to disk.");
-    return false;
-  }
-
-  return true;
-}
-
 bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::Message pickle;
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
@@ -294,35 +217,6 @@ bool Unpacker::DumpMessageCatalogsToFile() {
     return false;
   }
 
-  return true;
-}
-
-bool Unpacker::AddDecodedImage(const base::FilePath& path) {
-  SkBitmap image_bitmap = DecodeImage(extension_dir_.Append(path));
-  if (image_bitmap.isNull()) {
-    SetUTF16Error(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
-        base::i18n::GetDisplayStringInLTRDirectionality(
-            path.BaseName().LossyDisplayName())));
-    return false;
-  }
-
-  internal_data_->decoded_images.push_back(std::make_tuple(image_bitmap, path));
-  return true;
-}
-
-bool Unpacker::VerifyOriginalImagePaths(
-    const std::set<base::FilePath>& image_paths) {
-  for (const base::FilePath& path : image_paths) {
-    // Make sure it's not referencing a file outside the extension's subdir.
-    if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
-      SetUTF16Error(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
-          base::i18n::GetDisplayStringInLTRDirectionality(
-              path.LossyDisplayName())));
-      return false;
-    }
-  }
   return true;
 }
 

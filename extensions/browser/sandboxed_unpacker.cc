@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -41,6 +42,8 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "services/data_decoder/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -182,21 +185,6 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
   return false;
 }
 
-// Read the decoded images back from the file we saved them to.
-// |extension_path| is the path to the extension we unpacked that wrote the
-// data. Returns true on success.
-bool ReadImagesFromFile(const base::FilePath& extension_path,
-                        DecodedImages* images) {
-  base::FilePath path = extension_path.AppendASCII(kDecodedImagesFilename);
-  std::string file_str;
-  if (!base::ReadFileToString(path, &file_str))
-    return false;
-
-  IPC::Message pickle(file_str.data(), file_str.size());
-  base::PickleIterator iter(pickle);
-  return IPC::ReadParam(&pickle, &iter, images);
-}
-
 // Read the decoded message catalogs back from the file we saved them to.
 // |extension_path| is the path to the extension we unpacked that wrote the
 // data. Returns true on success.
@@ -223,12 +211,14 @@ SandboxedUnpackerClient::SandboxedUnpackerClient()
 }
 
 SandboxedUnpacker::SandboxedUnpacker(
+    std::unique_ptr<service_manager::Connector> connector,
     Manifest::Location location,
     int creation_flags,
     const base::FilePath& extensions_dir,
     const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
-    : client_(client),
+    : connector_(std::move(connector)),
+      client_(client),
       extensions_dir_(extensions_dir),
       location_(location),
       creation_flags_(creation_flags),
@@ -237,6 +227,12 @@ SandboxedUnpacker::SandboxedUnpacker(
   // the utility process kills itself for a bad IPC.
   CHECK_GT(location, Manifest::INVALID_LOCATION);
   CHECK_LT(location, Manifest::NUM_LOCATIONS);
+
+  // Use a random instance ID to guarantee the connection is to a new data
+  // decoder service (running in its own process).
+  data_decoder_identity_ = service_manager::Identity(
+      data_decoder::mojom::kServiceName, service_manager::mojom::kInheritUserID,
+      base::UnguessableToken::Create().ToString());
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
@@ -501,21 +497,105 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
     return;
   }
 
-  SkBitmap install_icon;
-  if (!RewriteImageFiles(&install_icon))
+  // The install icon path may be empty, which is OK, but if it is not it should
+  // be normalized successfully.
+  const std::string& original_install_icon_path =
+      IconsInfo::GetIcons(extension_.get())
+          .Get(extension_misc::EXTENSION_ICON_LARGE,
+               ExtensionIconSet::MATCH_BIGGER);
+  if (!original_install_icon_path.empty() &&
+      !NormalizeExtensionResourcePath(
+          base::FilePath::FromUTF8Unsafe(original_install_icon_path),
+          &install_icon_path_)) {
+    // Invalid path for browser image.
+    ReportFailure(INVALID_PATH_FOR_BROWSER_IMAGE,
+                  l10n_util::GetStringFUTF16(
+                      IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                      ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
     return;
-
-  if (!RewriteCatalogFiles())
-    return;
-
-  // Index and persist ruleset for the Declarative Net Request API.
-  base::Optional<int> dnr_ruleset_checksum;
-  if (!IndexAndPersistRulesIfNeeded(std::move(json_ruleset),
-                                    &dnr_ruleset_checksum)) {
-    return;  // Failure was already reported.
   }
 
-  ReportSuccess(std::move(manifest), install_icon, dnr_ruleset_checksum);
+  std::set<base::FilePath> image_paths =
+      ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
+  image_sanitizer_ = ImageSanitizer::CreateAndStart(
+      connector_.get(), data_decoder_identity_, extension_root_, image_paths,
+      base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
+      base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this,
+                     std::move(manifest), std::move(json_ruleset)));
+}
+
+void SandboxedUnpacker::ImageSanitizationDone(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    std::unique_ptr<base::ListValue> json_ruleset,
+    ImageSanitizer::Status status,
+    const base::FilePath& file_path_for_error) {
+  // Release |image_sanitizer_|, it is not useful anymore and reference |this|.
+  // (keep a local ref to this so if |image_sanitizer_| was the last ref to
+  // |this| it stays valid for the duration of the call).
+  scoped_refptr<SandboxedUnpacker> keep_this_alive = this;
+  image_sanitizer_ = nullptr;
+
+  if (status == ImageSanitizer::Status::kSuccess) {
+    if (!RewriteCatalogFiles())
+      return;
+
+    // Index and persist ruleset for the Declarative Net Request API.
+    base::Optional<int> dnr_ruleset_checksum;
+    if (!IndexAndPersistRulesIfNeeded(std::move(json_ruleset),
+                                      &dnr_ruleset_checksum)) {
+      return;  // Failure was already reported.
+    }
+
+    ReportSuccess(std::move(manifest), dnr_ruleset_checksum);
+    return;
+  }
+
+  FailureReason failure_reason = UNPACKER_CLIENT_FAILED;
+  base::string16 error;
+  switch (status) {
+    case ImageSanitizer::Status::kImagePathError:
+      failure_reason = INVALID_PATH_FOR_BROWSER_IMAGE;
+      error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+          ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE"));
+      break;
+    case ImageSanitizer::Status::kFileReadError:
+    case ImageSanitizer::Status::kDecodingError:
+      error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
+          base::i18n::GetDisplayStringInLTRDirectionality(
+              file_path_for_error.BaseName().LossyDisplayName()));
+      break;
+    case ImageSanitizer::Status::kFileDeleteError:
+      failure_reason = ERROR_REMOVING_OLD_IMAGE_FILE;
+      error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+          ASCIIToUTF16("ERROR_REMOVING_OLD_IMAGE_FILE"));
+      break;
+    case ImageSanitizer::Status::kEncodingError:
+      failure_reason = ERROR_RE_ENCODING_THEME_IMAGE;
+      error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+          ASCIIToUTF16("ERROR_RE_ENCODING_THEME_IMAGE"));
+      break;
+    case ImageSanitizer::Status::kFileWriteError:
+      failure_reason = ERROR_SAVING_THEME_IMAGE;
+      error =
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                                     ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE"));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  ReportFailure(failure_reason, error);
+}
+
+void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
+                                                   SkBitmap image) {
+  if (path == install_icon_path_)
+    install_icon_ = image;
 }
 
 bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
@@ -754,7 +834,6 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
 
 void SandboxedUnpacker::ReportSuccess(
     std::unique_ptr<base::DictionaryValue> original_manifest,
-    const SkBitmap& install_icon,
     const base::Optional<int>& dnr_ruleset_checksum) {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
@@ -767,7 +846,7 @@ void SandboxedUnpacker::ReportSuccess(
   // Client takes ownership of temporary directory, manifest, and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
                            std::move(original_manifest), extension_.get(),
-                           install_icon, dnr_ruleset_checksum);
+                           install_icon_, dnr_ruleset_checksum);
   extension_ = NULL;
 }
 
@@ -804,131 +883,6 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   }
 
   return final_manifest.release();
-}
-
-bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
-  DCHECK(!temp_dir_.GetPath().empty());
-
-  DecodedImages images;
-  if (!ReadImagesFromFile(temp_dir_.GetPath(), &images)) {
-    // Couldn't read image data from disk.
-    ReportFailure(COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
-                  l10n_util::GetStringFUTF16(
-                      IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                      ASCIIToUTF16("COULD_NOT_READ_IMAGE_DATA_FROM_DISK")));
-    return false;
-  }
-
-  // Delete any images that may be used by the browser.  We're going to write
-  // out our own versions of the parsed images, and we want to make sure the
-  // originals are gone for good.
-  std::set<base::FilePath> image_paths =
-      ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
-
-  // Decoded |images| set contains normalized paths and |image_paths| contains
-  // original paths. It is required to check sizes of normalized sets.
-  std::set<base::FilePath> normalized_image_paths =
-      NormalizeExtensionResourcePaths(image_paths);
-  if (normalized_image_paths.size() != images.size()) {
-    // Decoded images don't match what's in the manifest.
-    ReportFailure(
-        DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-            ASCIIToUTF16("DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST")));
-    return false;
-  }
-
-  // Report if original icons paths invalid. Normalization procedure may skip
-  // invalid paths, so it is required to check exactly original paths.
-  for (const auto& path : image_paths) {
-    if (path.IsAbsolute() || path.ReferencesParent()) {
-      // Invalid path for browser image.
-      ReportFailure(INVALID_PATH_FOR_BROWSER_IMAGE,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                        ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
-      return false;
-    }
-  }
-
-  for (const auto& path : normalized_image_paths) {
-    if (!base::DeleteFile(extension_root_.Append(path), false)) {
-      // Error removing old image file.
-      ReportFailure(ERROR_REMOVING_OLD_IMAGE_FILE,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                        ASCIIToUTF16("ERROR_REMOVING_OLD_IMAGE_FILE")));
-      return false;
-    }
-  }
-
-  // Get install icon normalized path. Original install icon path may be empty
-  // and it is ok. But if original install icon path is not empty, it should be
-  // normalized successfully.
-  const std::string& install_icon_path =
-      IconsInfo::GetIcons(extension_.get())
-          .Get(extension_misc::EXTENSION_ICON_LARGE,
-               ExtensionIconSet::MATCH_BIGGER);
-  base::FilePath normalized_install_icon_path;
-  if (!install_icon_path.empty() &&
-      !NormalizeExtensionResourcePath(
-          base::FilePath::FromUTF8Unsafe(install_icon_path),
-          &normalized_install_icon_path)) {
-    // Invalid path for browser image.
-    ReportFailure(INVALID_PATH_FOR_BROWSER_IMAGE,
-                  l10n_util::GetStringFUTF16(
-                      IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                      ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
-    return false;
-  }
-
-  // Write our parsed images back to disk as well.
-  for (size_t i = 0; i < images.size(); ++i) {
-    const SkBitmap& image = std::get<0>(images[i]);
-    const base::FilePath& path_suffix = std::get<1>(images[i]);
-    if (path_suffix == normalized_install_icon_path)
-      *install_icon = image;
-
-    if (path_suffix.IsAbsolute() || path_suffix.ReferencesParent()) {
-      // Invalid path for bitmap image.
-      ReportFailure(INVALID_PATH_FOR_BITMAP_IMAGE,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                        ASCIIToUTF16("INVALID_PATH_FOR_BITMAP_IMAGE")));
-      return false;
-    }
-
-    base::FilePath path = extension_root_.Append(path_suffix);
-
-    std::vector<unsigned char> image_data;
-    // TODO(mpcomplete): It's lame that we're encoding all images as PNG, even
-    // though they may originally be .jpg, etc.  Figure something out.
-    // http://code.google.com/p/chromium/issues/detail?id=12459
-    if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data)) {
-      // Error re-encoding theme image.
-      ReportFailure(ERROR_RE_ENCODING_THEME_IMAGE,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                        ASCIIToUTF16("ERROR_RE_ENCODING_THEME_IMAGE")));
-      return false;
-    }
-
-    // Note: we're overwriting existing files that the utility process wrote,
-    // so we can be sure the directory exists.
-    const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
-    int size = base::checked_cast<int>(image_data.size());
-    if (base::WriteFile(path, image_data_ptr, size) != size) {
-      // Error saving theme image.
-      ReportFailure(
-          ERROR_SAVING_THEME_IMAGE,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                     ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE")));
-      return false;
-    }
-  }
-
-  return true;
 }
 
 bool SandboxedUnpacker::RewriteCatalogFiles() {
