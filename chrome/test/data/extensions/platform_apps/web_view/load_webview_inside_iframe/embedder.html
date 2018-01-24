@@ -6,6 +6,12 @@
 -->
 <html>
 <body>
+  <!--
+   * Do not include any scripts in this file as that would create a script
+   * context for the iframe. We want to test that the browser ensures the
+   * creation of a script context so that this webview is recognized as a
+   * custom element.
+  -->
   <webview></webview>
 </body>
 </html>

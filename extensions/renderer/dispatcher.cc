@@ -112,6 +112,7 @@
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1406,6 +1407,17 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
       base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
+  }
+
+  if (requires_guest_view_module) {
+    // If a frame has guest view custom elements defined, we need to make sure
+    // the custom elements are also defined in subframes. The subframes will
+    // need a scripting context which we will need to forcefully create if
+    // the subframe doesn't otherwise have any scripts.
+    context->web_frame()
+        ->View()
+        ->GetSettings()
+        ->SetForceMainWorldInitialization(true);
   }
 
   // The "guestViewDeny" module must always be loaded last. It registers
