@@ -72,6 +72,8 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
       is_prompt_active_ = true;
       base::WeakPtr<AppLauncherTabHelper> weak_this =
           weak_factory_.GetWeakPtr();
+      GURL copied_url = url;
+      GURL copied_source_page_url = source_page_url;
       [delegate_ appLauncherTabHelper:this
           showAlertOfRepeatedLaunchesWithCompletionHandler:^(
               BOOL user_allowed) {
@@ -81,13 +83,13 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
               // By confirming that user wants to launch the application, there
               // is no need to check for |link_tapped|.
               [delegate_ appLauncherTabHelper:weak_this.get()
-                             launchAppWithURL:url
+                             launchAppWithURL:copied_url
                                    linkTapped:YES];
             } else {
               // TODO(crbug.com/674649): Once non modal dialogs are implemented,
               // update this to always prompt instead of blocking the app.
-              [policy_decider_ blockLaunchingAppURL:url
-                                  fromSourcePageURL:source_page_url];
+              [policy_decider_ blockLaunchingAppURL:copied_url
+                                  fromSourcePageURL:copied_source_page_url];
             }
             is_prompt_active_ = false;
           }];
