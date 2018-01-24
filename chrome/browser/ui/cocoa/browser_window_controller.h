@@ -207,8 +207,9 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
       omniboxPopupModelObserverBridge_;
 }
 
-// A convenience class method which gets the |BrowserWindowController| for a
-// given window. This method returns nil if no window in the chain has a BWC.
+// A convenience class method which returns the |BrowserWindowController| for
+// |window|, or nil if neither |window| nor its parent or any other ancestor
+// has one.
 + (BrowserWindowController*)browserWindowControllerForWindow:(NSWindow*)window;
 
 // A convenience class method which gets the |BrowserWindowController| for a

@@ -72,8 +72,9 @@
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
 @property(readonly, nonatomic) NSView* chromeContentView;
 
-// A convenience class method which returns the |TabWindowController| for a
-// given window, or nil if no window in the chain has one.
+// A convenience class method which returns the |TabWindowController| for
+// |window|, or nil if neither |window| nor its parent or any other ancestor
+// has one.
 + (TabWindowController*)tabWindowControllerForWindow:(NSWindow*)window;
 
 // This is the designated initializer for this class.
