@@ -9,10 +9,6 @@
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 
 // Ozone requires a IPC from the browser (or mus-ws) process to the gpu (or
@@ -22,7 +18,8 @@ namespace ui {
 // priviledged process.
 class HostCursorProxy : public DrmCursorProxy {
  public:
-  explicit HostCursorProxy(service_manager::Connector* connector);
+  HostCursorProxy(ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr,
+                  ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr);
   ~HostCursorProxy() override;
 
  private:
@@ -34,13 +31,13 @@ class HostCursorProxy : public DrmCursorProxy {
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override;
   void InitializeOnEvdevIfNecessary() override;
 
-  std::unique_ptr<service_manager::Connector> connector_;
-
   // Mojo implementation of the DrmCursorProxy.
-  ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr_;
-  ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr_;
+  ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr_ = nullptr;
+  ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr_ = nullptr;
 
   base::PlatformThreadRef ui_thread_ref_;
+  bool evdev_bound_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(HostCursorProxy);
 };
 

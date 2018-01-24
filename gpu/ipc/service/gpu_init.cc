@@ -19,6 +19,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/switches.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
@@ -312,6 +313,9 @@ bool GpuInit::InitializeAndStartSandbox(
       gles2::PassthroughCommandDecoderSupported();
 
   init_successful_ = true;
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+#endif
   return true;
 }
 
@@ -324,7 +328,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
+  params.using_mojo = switches::IsMusHostingViz();
   ui::OzonePlatform::InitializeForGPU(params);
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
   if (gpu_info) {
