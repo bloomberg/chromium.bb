@@ -4,6 +4,7 @@
     {
       "id": 1,
       "description": "Imagination driver doesn't like uploading lots of buffer data constantly",
+      "cr_bugs": [178093],
       "os": {
         "type": "android"
       },
@@ -15,6 +16,7 @@
     {
       "id": 2,
       "description": "ARM driver doesn't like uploading lots of buffer data constantly",
+      "cr_bugs": [178093],
       "os": {
         "type": "android"
       },
