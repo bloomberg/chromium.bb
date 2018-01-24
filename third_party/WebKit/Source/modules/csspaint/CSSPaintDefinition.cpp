@@ -69,9 +69,6 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
     const ImageResourceObserver& client,
     const IntSize& container_size,
     const CSSStyleValueVector* paint_arguments) {
-  if (!paint_arguments)
-    return nullptr;
-
   // TODO: Break dependency on LayoutObject. Passing the Node should work.
   const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
 
@@ -104,11 +101,19 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
                                                native_invalidation_properties_,
                                                custom_invalidation_properties_);
 
-  v8::Local<v8::Value> argv[] = {
-      ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
-      ToV8(paint_size, script_state_->GetContext()->Global(), isolate),
-      ToV8(style_map, script_state_->GetContext()->Global(), isolate),
-      ToV8(*paint_arguments, script_state_->GetContext()->Global(), isolate)};
+  Vector<v8::Local<v8::Value>, 4> argv;
+  if (paint_arguments) {
+    argv = {
+        ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
+        ToV8(paint_size, script_state_->GetContext()->Global(), isolate),
+        ToV8(style_map, script_state_->GetContext()->Global(), isolate),
+        ToV8(*paint_arguments, script_state_->GetContext()->Global(), isolate)};
+  } else {
+    argv = {
+        ToV8(rendering_context, script_state_->GetContext()->Global(), isolate),
+        ToV8(paint_size, script_state_->GetContext()->Global(), isolate),
+        ToV8(style_map, script_state_->GetContext()->Global(), isolate)};
+  }
 
   v8::Local<v8::Function> paint = paint_.NewLocal(isolate);
 
@@ -117,7 +122,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
 
   V8ScriptRunner::CallFunction(paint,
                                ExecutionContext::From(script_state_.get()),
-                               instance, WTF_ARRAY_LENGTH(argv), argv, isolate);
+                               instance, argv.size(), argv.data(), isolate);
 
   // The paint function may have produced an error, in which case produce an
   // invalid image.
