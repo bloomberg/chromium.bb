@@ -12,6 +12,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -36,6 +37,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -1921,6 +1923,69 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   resizer->Drag(location, 0);
   ToggleOverview();
   resizer->RevertDrag();
+}
+
+// Verify that the overview no windows indicator appears when entering overview
+// mode with no windows.
+TEST_F(WindowSelectorTest, OverviewNoWindowsIndicator) {
+  // Verify that entering overview mode without windows with the old ui is not
+  // possible.
+  ToggleOverview();
+  EXPECT_FALSE(window_selector());
+
+  // Verify that by entering overview mode without windows, the no items
+  // indicator appears.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+  ToggleOverview();
+  ASSERT_TRUE(window_selector());
+  EXPECT_EQ(0u, GetWindowItemsForRoot(0).size());
+  EXPECT_TRUE(window_selector()
+                  ->grid_list_for_testing()[0]
+                  ->IsNoItemsIndicatorLabelVisibleForTesting());
+}
+
+// Verify that when opening overview mode with multiple displays, the no items
+// indicator appears on the grid(s) if it has no windows.
+TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+
+  // Create two windows, one each on the first two monitors.
+  UpdateDisplay("400x400,400x400,400x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  const gfx::Rect bounds1(0, 0, 100, 100);
+  const gfx::Rect bounds2(400, 0, 100, 100);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
+  ASSERT_EQ(root_windows[0], window1->GetRootWindow());
+  ASSERT_EQ(root_windows[1], window2->GetRootWindow());
+
+  // Enter overview mode. Verify the no windows indicator is visible on the
+  // third display but not on the first two.
+  ToggleOverview();
+  ASSERT_TRUE(window_selector());
+  EXPECT_FALSE(window_selector()
+                   ->grid_list_for_testing()[0]
+                   ->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_FALSE(window_selector()
+                   ->grid_list_for_testing()[1]
+                   ->IsNoItemsIndicatorLabelVisibleForTesting());
+  EXPECT_TRUE(window_selector()
+                  ->grid_list_for_testing()[2]
+                  ->IsNoItemsIndicatorLabelVisibleForTesting());
+}
+
+// Verify that pressing and releasing keys does not show the overview textbox
+// when there are no windows opened.
+TEST_F(WindowSelectorTest, TextfilterHiddenWhenNoWindows) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableNewOverviewUi);
+  ToggleOverview();
+  ASSERT_TRUE(window_selector());
+
+  SendKey(ui::VKEY_J);
+  EXPECT_FALSE(showing_filter_widget());
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {

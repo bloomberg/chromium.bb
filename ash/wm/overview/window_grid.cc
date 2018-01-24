@@ -17,6 +17,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -31,6 +32,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -42,6 +44,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -101,6 +104,16 @@ constexpr float kOverviewInsetRatio = 0.05f;
 // Additional vertical inset reserved for windows in overview mode.
 constexpr float kOverviewVerticalInset = 0.1f;
 
+// Values for the no items indicator which appears when opening overview mode
+// with no opened windows.
+constexpr int kNoItemsIndicatorHeightDp = 32;
+constexpr int kNoItemsIndicatorHorizontalPaddingDp = 16;
+constexpr int kNoItemsIndicatorRoundingDp = 16;
+constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
+constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
+constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
+constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
+
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
 // that the border is 1 pixel thick regardless of display scaling.
@@ -109,9 +122,47 @@ class BackgroundWith1PxBorder : public views::Background {
   BackgroundWith1PxBorder(SkColor background,
                           SkColor border_color,
                           int border_thickness,
-                          int corner_radius);
+                          int corner_radius)
+      : border_color_(border_color),
+        border_thickness_(border_thickness),
+        corner_radius_(corner_radius) {
+    SetNativeControlColor(background);
+  }
 
-  void Paint(gfx::Canvas* canvas, views::View* view) const override;
+  // views::Background:
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    gfx::RectF border_rect_f(view->GetContentsBounds());
+
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
+    border_rect_f.Inset(border_thickness_, border_thickness_);
+    border_rect_f = gfx::ScaleRect(border_rect_f, scale);
+
+    SkPath path;
+    const SkScalar scaled_corner_radius =
+        SkFloatToScalar(corner_radius_ * scale + 0.5f);
+    path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
+                      scaled_corner_radius);
+
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(1);
+    flags.setAntiAlias(true);
+
+    SkPath stroke_path;
+    flags.getFillPath(path, &stroke_path);
+
+    SkPath fill_path;
+    Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(get_color());
+    canvas->sk_canvas()->drawPath(fill_path, flags);
+
+    if (border_thickness_ > 0) {
+      flags.setColor(border_color_);
+      canvas->sk_canvas()->drawPath(stroke_path, flags);
+    }
+  }
 
  private:
   // Color for the one pixel border.
@@ -125,52 +176,6 @@ class BackgroundWith1PxBorder : public views::Background {
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
 };
-
-BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
-                                                 SkColor border_color,
-                                                 int border_thickness,
-                                                 int corner_radius)
-    : border_color_(border_color),
-      border_thickness_(border_thickness),
-      corner_radius_(corner_radius) {
-  SetNativeControlColor(background);
-}
-
-void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
-                                    views::View* view) const {
-  gfx::RectF border_rect_f(view->GetContentsBounds());
-
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  const float scale = canvas->UndoDeviceScaleFactor();
-  border_rect_f.Scale(scale);
-  const float inset = border_thickness_ * scale - 0.5f;
-  border_rect_f.Inset(inset, inset);
-
-  SkPath path;
-  const SkScalar scaled_corner_radius =
-      SkFloatToScalar(corner_radius_ * scale + 0.5f);
-  path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
-                    scaled_corner_radius);
-
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(1);
-  flags.setAntiAlias(true);
-
-  SkPath stroke_path;
-  flags.getFillPath(path, &stroke_path);
-
-  SkPath fill_path;
-  Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(get_color());
-  canvas->sk_canvas()->drawPath(fill_path, flags);
-
-  if (border_thickness_ > 0) {
-    flags.setColor(border_color_);
-    canvas->sk_canvas()->drawPath(stroke_path, flags);
-  }
-}
 
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
@@ -242,6 +247,74 @@ bool IsMinimizedStateType(mojom::WindowStateType type) {
 }
 
 }  // namespace
+
+// ShieldView contains the background for overview mode. It also contains text
+// which is shown if there are no windows to be displayed.
+class WindowGrid::ShieldView : public views::View {
+ public:
+  ShieldView() {
+    background_view_ = new views::View();
+    background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    background_view_->layer()->SetColor(kShieldBaseColor);
+    background_view_->layer()->SetOpacity(kShieldOpacity);
+
+    label_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
+        views::style::CONTEXT_LABEL);
+    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    label_->SetEnabledColor(kNoItemsIndicatorTextColor);
+    label_->SetBackgroundColor(kNoItemsIndicatorBackgroundColor);
+
+    // |label_container_| is the parent of |label_| which allows the text to
+    // have padding and rounded edges.
+    label_container_ = new RoundedRectView(kNoItemsIndicatorRoundingDp,
+                                           kNoItemsIndicatorBackgroundColor);
+    label_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(kNoItemsIndicatorVerticalPaddingDp,
+                    kNoItemsIndicatorHorizontalPaddingDp)));
+    label_container_->AddChildView(label_);
+    label_container_->SetPaintToLayer();
+    label_container_->layer()->SetFillsBoundsOpaquely(false);
+    label_container_->layer()->SetOpacity(kNoItemsIndicatorBackgroundOpacity);
+
+    AddChildView(background_view_);
+    AddChildView(label_container_);
+  }
+
+  ~ShieldView() override = default;
+
+  void SetBackgroundColor(SkColor color) {
+    background_view_->layer()->SetColor(color);
+  }
+
+  void SetLabelVisibility(bool visible) {
+    label_container_->SetVisible(visible);
+  }
+
+  bool IsLabelVisible() const { return label_container_->visible(); }
+
+ protected:
+  // views::View:
+  void Layout() override {
+    background_view_->SetBoundsRect(GetLocalBounds());
+
+    const int label_width = label_->GetPreferredSize().width() +
+                            2 * kNoItemsIndicatorHorizontalPaddingDp;
+    gfx::Rect label_container_bounds = GetLocalBounds();
+    label_container_bounds.ClampToCenteredSize(
+        gfx::Size(label_width, kNoItemsIndicatorHeightDp));
+    label_container_->SetBoundsRect(label_container_bounds);
+  }
+
+ private:
+  // Owned by views heirarchy.
+  views::View* background_view_ = nullptr;
+  RoundedRectView* label_container_ = nullptr;
+  views::Label* label_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ShieldView);
+};
 
 WindowGrid::WindowGrid(aura::Window* root_window,
                        const std::vector<aura::Window*>& windows,
@@ -459,6 +532,9 @@ void WindowGrid::PositionWindows(bool animate,
 }
 
 bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
+  if (empty())
+    return true;
+
   bool recreate_selection_widget = false;
   bool out_of_bounds = false;
   bool changed_selection_index = false;
@@ -684,6 +760,10 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
   }
 }
 
+bool WindowGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
+  return shield_view_ && shield_view_->IsLabelVisible();
+}
+
 void WindowGrid::InitShieldWidget() {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that
@@ -706,14 +786,23 @@ void WindowGrid::InitShieldWidget() {
                                                          dark_muted_color);
     }
   }
-  shield_widget_.reset(
-      CreateBackgroundWidget(root_window_, ui::LAYER_SOLID_COLOR, shield_color,
-                             0, 0, SK_ColorTRANSPARENT, initial_opacity));
+  shield_widget_.reset(CreateBackgroundWidget(
+      root_window_, ui::LAYER_SOLID_COLOR,
+      IsNewOverviewUi() ? SK_ColorTRANSPARENT : shield_color, 0, 0,
+      SK_ColorTRANSPARENT, initial_opacity));
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   const gfx::Rect bounds = widget_window->parent()->bounds();
   widget_window->SetBounds(bounds);
   widget_window->SetName("OverviewModeShield");
 
+  if (IsNewOverviewUi()) {
+    // Create |shield_view_| and animate its background and label if needed.
+    shield_view_ = new ShieldView();
+    shield_view_->SetBackgroundColor(shield_color);
+    shield_view_->SetLabelVisibility(empty());
+    shield_widget_->SetContentsView(shield_view_);
+    shield_widget_->SetOpacity(initial_opacity);
+  }
   ui::ScopedLayerAnimationSettings animation_settings(
       widget_window->layer()->GetAnimator());
   animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
@@ -721,8 +810,7 @@ void WindowGrid::InitShieldWidget() {
   animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  shield_widget_->SetOpacity(IsNewOverviewUi() ? kShieldOpacity
-                                               : kOldShieldOpacity);
+  shield_widget_->SetOpacity(IsNewOverviewUi() ? 1.f : kOldShieldOpacity);
 }
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
