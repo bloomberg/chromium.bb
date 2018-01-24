@@ -12,6 +12,7 @@
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 
 namespace network {
+class ResourceRequestBody;
 struct ResourceRequest;
 struct ResourceResponseHead;
 }
@@ -51,6 +52,15 @@ class ServiceWorkerLoaderHelpers {
       const net::HttpRequestHeaders& headers,
       base::OnceCallback<void(int net_error)> on_blob_read_complete,
       mojo::ScopedDataPipeConsumerHandle* handle_out);
+
+  // Returns a new copy of the given body. This is useful for service worker
+  // with NetworkService because it sends the ResourceRequestBody over Mojo IPC,
+  // which moves out the DataPipeGetter elements in the Pickle code in
+  // resources_messages.cc. We can't change the Pickle code to call
+  // DataPipeGetter's Clone method because that code can run on different thread
+  // than the DataPipeGetter.
+  static scoped_refptr<network::ResourceRequestBody> CloneResourceRequestBody(
+      const network::ResourceRequestBody* body);
 };
 
 }  // namespace content

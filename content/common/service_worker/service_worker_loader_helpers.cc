@@ -14,6 +14,7 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "ui/base/page_transition_types.h"
 
@@ -172,6 +173,48 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
   }
   *handle_out = std::move(data_pipe.consumer_handle);
   return net::OK;
+}
+
+// static
+scoped_refptr<network::ResourceRequestBody>
+ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
+    const network::ResourceRequestBody* body) {
+  auto clone = base::MakeRefCounted<network::ResourceRequestBody>();
+
+  clone->set_identifier(body->identifier());
+  clone->set_contains_sensitive_info(body->contains_sensitive_info());
+  for (const network::DataElement& element : *body->elements()) {
+    switch (element.type()) {
+      case network::DataElement::TYPE_UNKNOWN:
+        NOTREACHED();
+        break;
+      case network::DataElement::TYPE_DATA_PIPE: {
+        network::mojom::DataPipeGetterPtrInfo clone_ptr_info;
+        element.data_pipe()->Clone(mojo::MakeRequest(&clone_ptr_info));
+        network::mojom::DataPipeGetterPtr clone_ptr(std::move(clone_ptr_info));
+        clone->AppendDataPipe(std::move(clone_ptr));
+        break;
+      }
+      case network::DataElement::TYPE_RAW_FILE:
+        clone->AppendRawFileRange(element.file().Duplicate(), element.path(),
+                                  element.offset(), element.length(),
+                                  element.expected_modification_time());
+        break;
+      case network::DataElement::TYPE_BLOB:
+        NOTREACHED() << "There should be no blob elements in NetworkService";
+        break;
+      case network::DataElement::TYPE_FILE:
+        clone->AppendFileRange(element.path(), element.offset(),
+                               element.length(),
+                               element.expected_modification_time());
+        break;
+      case network::DataElement::TYPE_BYTES:
+        clone->AppendBytes(element.bytes(), element.length());
+        break;
+    }
+  }
+
+  return clone;
 }
 
 }  // namespace content

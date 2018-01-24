@@ -112,6 +112,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
+  // The request destined for the controller service worker. This is used
+  // separately from |resource_request_| for the restarting mechanism when the
+  // first attempt to dispatch to the controller failed.
   std::unique_ptr<network::ResourceRequest> inflight_fetch_request_;
   bool fetch_request_restarted_;
 
@@ -122,7 +125,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   const uint32_t options_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-  // |resource_request_| changes due to redirects.
+  // |resource_request_| is initialized in the constructor, and may change
+  // over the lifetime of this loader due to redirects.
   network::ResourceRequest resource_request_;
 
   // For network fallback.

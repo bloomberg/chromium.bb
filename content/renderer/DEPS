@@ -47,7 +47,4 @@ specific_include_rules = {
   "renderer_main\.cc": [
     "+ui/ozone/public/client_native_pixmap_factory_ozone.h",
   ],
-  "service_worker_subresource_loader_unittest\.cc": [
-    "+storage/browser",
-  ]
 }
