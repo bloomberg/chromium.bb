@@ -7,12 +7,19 @@
 
 #include "content/common/content_export.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace content {
+namespace desktop_capture {
 
 // Creates a DesktopCaptureOptions with required settings.
 CONTENT_EXPORT webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions();
 
+// Creats specific DesktopCapturer with required settings.
+CONTENT_EXPORT std::unique_ptr<webrtc::DesktopCapturer> CreateScreenCapturer();
+CONTENT_EXPORT std::unique_ptr<webrtc::DesktopCapturer> CreateWindowCapturer();
+
+}  // namespace desktop_capture
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_DESKTOP_CAPTURE_H_

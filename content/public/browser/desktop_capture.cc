@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 
 namespace content {
+namespace desktop_capture {
 
 webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
   auto options = webrtc::DesktopCaptureOptions::CreateDefault();
@@ -27,4 +28,15 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
   return options;
 }
 
+std::unique_ptr<webrtc::DesktopCapturer> CreateScreenCapturer() {
+  return webrtc::DesktopCapturer::CreateScreenCapturer(
+      CreateDesktopCaptureOptions());
+}
+
+std::unique_ptr<webrtc::DesktopCapturer> CreateWindowCapturer() {
+  return webrtc::DesktopCapturer::CreateWindowCapturer(
+      CreateDesktopCaptureOptions());
+}
+
+}  // namespace desktop_capture
 }  // namespace content

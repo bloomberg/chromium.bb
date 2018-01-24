@@ -479,7 +479,7 @@ base::TimeTicks DesktopCaptureDevice::Core::NowTicks() const {
 // static
 std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     const DesktopMediaID& source) {
-  auto options = CreateDesktopCaptureOptions();
+  auto options = desktop_capture::CreateDesktopCaptureOptions();
   std::unique_ptr<webrtc::DesktopCapturer> capturer;
   std::unique_ptr<media::VideoCaptureDevice> result;
 

@@ -381,6 +381,6 @@ jumbo_source_set("browser_sources") {
       "webrtc_log.cc",
       "webrtc_log.h",
     ]
-    deps += [ "//third_party/webrtc/modules/desktop_capture" ]
+    public_deps += [ "//third_party/webrtc/modules/desktop_capture" ]
   }
 }
