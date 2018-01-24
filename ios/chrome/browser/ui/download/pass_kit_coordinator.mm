@@ -102,6 +102,8 @@ PresentAddPassesDialogResult GetUmaResult(
   UMA_HISTOGRAM_ENUMERATION(kUmaPresentAddPassesDialogResult,
                             GetUmaResult(self.baseViewController),
                             PresentAddPassesDialogResult::kCount);
+  if (_viewController)
+    return;
 
   _viewController = [[PKAddPassesViewController alloc] initWithPass:self.pass];
   _viewController.delegate = self;

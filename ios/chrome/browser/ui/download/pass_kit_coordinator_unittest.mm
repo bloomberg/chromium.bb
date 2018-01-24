@@ -144,6 +144,12 @@ TEST_F(PassKitCoordinatorTest, MultiplePassKitObjects) {
           PresentAddPassesDialogResult::
               kAnotherAddPassesViewControllerIsPresented),
       1);
+
+  // Previously presented view controller can be dismissed.
+  [coordinator_ stop];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return base_view_controller_.presentedViewController == nil;
+  }));
 }
 
 // Tests presenting valid PKPass object, while another view controller is
