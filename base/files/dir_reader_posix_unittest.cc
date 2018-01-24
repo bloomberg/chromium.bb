@@ -32,7 +32,11 @@ TEST(DirReaderPosixUnittest, Read) {
   const char* dir = temp_dir.GetPath().value().c_str();
   ASSERT_TRUE(dir);
 
+  char wdbuf[PATH_MAX];
+  getcwd(wdbuf, PATH_MAX);
+  LOG(ERROR) << "Current directory: " << wdbuf;
   const int prev_wd = open(".", O_RDONLY | O_DIRECTORY);
+  PLOG_IF(ERROR, prev_wd < 0) << "opening . failed with ";
   DCHECK_GE(prev_wd, 0);
 
   PCHECK(chdir(dir) == 0);
