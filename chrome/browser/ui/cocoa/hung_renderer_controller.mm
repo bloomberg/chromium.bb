@@ -133,6 +133,8 @@ class HungRendererWebContentsObserverBridge
   [messageView_ setStringValue:
       l10n_util::GetPluralNSStringF(IDS_BROWSER_HANGMONITOR_RENDERER,
                                     count)];
+  [killButton_ setTitle:l10n_util::GetPluralNSStringF(
+                            IDS_BROWSER_HANGMONITOR_RENDERER_END, count)];
 
   // Make the message fit.
   CGFloat messageShift =
