@@ -489,6 +489,7 @@ Polymer({
    */
   onImportTap_: function() {
     this.passwordManager_.importPasswords();
+    this.$.exportImportMenu.close();
   },
 
   /**
