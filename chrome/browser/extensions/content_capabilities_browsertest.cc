@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
@@ -200,9 +202,14 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardWrite) {
   // script without a user gesture.
   EXPECT_TRUE(
       CanWriteClipboard(extension.get(), GetTestURLFor("bar.example.com")));
-  EXPECT_TRUE(
-      CanWriteClipboardInAboutBlankFrame(extension.get(),
-                                          GetTestURLFor("bar.example.com")));
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+    EXPECT_TRUE(CanWriteClipboardInAboutBlankFrame(
+        extension.get(), GetTestURLFor("bar.example.com")));
+  } else {
+    // In UserActivationV2, acitvation doesn't propagate to a child frame.
+    EXPECT_FALSE(CanWriteClipboardInAboutBlankFrame(
+        extension.get(), GetTestURLFor("bar.example.com")));
+  }
 
   EXPECT_FALSE(
       CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));

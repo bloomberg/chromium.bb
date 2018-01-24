@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -120,7 +122,12 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, HostedAppNoPermission) {
   // the no user gesture case without a lot of code duplication.
   EXPECT_TRUE(ExecuteCopyInSelectedTab()) << message_;
   EXPECT_FALSE(ExecutePasteInSelectedTab()) << message_;
-  EXPECT_TRUE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+    EXPECT_TRUE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+  } else {
+    // In UserActivationV2, acitvation doesn't propagate to a child frame.
+    EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+  }
   EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("paste")) << message_;
 }
-
