@@ -20,7 +20,7 @@ var tab = '\t';
 var shift = ['shiftKey'];
 
 $('tabindex10').focus();
-var shadowRoot = internals.youngestShadowRoot($('time-with-tabindex20'));
+var shadowRoot = internals.shadowRoot($('time-with-tabindex20'));
 
 debug('Forword:');
 shouldBeEqualToString('eventSender.keyDown(tab); document.activeElement.id', 'tabindex20-1');

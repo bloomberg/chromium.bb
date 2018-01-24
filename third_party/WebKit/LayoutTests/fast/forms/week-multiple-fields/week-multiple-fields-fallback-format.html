@@ -14,7 +14,7 @@ document.body.appendChild(input);
 
 function setDateTimeFormat(pattern) {
     var value = input.value;
-    getElementByPseudoId(internals.youngestShadowRoot(input), '-webkit-datetime-edit').setAttribute('pattern', pattern);
+    getElementByPseudoId(internals.shadowRoot(input), '-webkit-datetime-edit').setAttribute('pattern', pattern);
     input.value = ''; // Updates the element for new format
     input.value = value;
 }

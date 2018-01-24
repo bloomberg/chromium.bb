@@ -76,7 +76,7 @@ onload = function() {
 
     // With ICU 52 on Linux/Android, a comma is used to delimete date and time and
     // the hour and time field positions are shifted.
-    var commaOffset = window.internals.oldestShadowRoot(input).textContent.indexOf(', ') == -1 ? 0 : 16;
+    var commaOffset = window.internals.shadowRoot(input).textContent.indexOf(', ') == -1 ? 0 : 16;
 
     debug('');
     debug('==> Focus on the hour field.');

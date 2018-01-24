@@ -12,7 +12,7 @@ description('Test for crbug.com/271451. The calendar picker should not change th
 
 var input = document.createElement('input');
 input.type = 'datetime-local';
-getElementByPseudoId(internals.youngestShadowRoot(input), '-webkit-datetime-edit').setAttribute('pattern', 'yyyy-MM-dd HH:mm');
+getElementByPseudoId(internals.shadowRoot(input), '-webkit-datetime-edit').setAttribute('pattern', 'yyyy-MM-dd HH:mm');
 document.body.appendChild(input);
 
 input.value = '1999-07-31T12:59';
