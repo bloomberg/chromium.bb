@@ -178,14 +178,10 @@ public class ChildProcessLauncherHelper {
 
     @VisibleForTesting
     @CalledByNative
-    public static ChildProcessLauncherHelper createAndStart(long nativePointer, int paramId,
-            String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
+    public static ChildProcessLauncherHelper createAndStart(
+            long nativePointer, String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
-        ChildProcessCreationParams creationParams = ChildProcessCreationParams.get(paramId);
-        if (paramId != ChildProcessCreationParams.DEFAULT_ID && creationParams == null) {
-            throw new RuntimeException("CreationParams id " + paramId + " not found");
-        }
-
+        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
         String processType =
                 ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
 

@@ -5,11 +5,8 @@
 package org.chromium.content.browser;
 
 import android.os.Bundle;
-import android.util.SparseArray;
 
 import org.chromium.base.library_loader.LibraryProcessType;
-
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Allows specifying the package name for looking up child services
@@ -21,52 +18,16 @@ public class ChildProcessCreationParams {
     private static final String EXTRA_LIBRARY_PROCESS_TYPE =
             "org.chromium.content.common.child_service_params.library_process_type";
 
-    /** ID used for the default params. */
-    public static final int DEFAULT_ID = 0;
-
-    private static final Object sLock = new Object();
-    @GuardedBy("sLock")
-    private static final SparseArray<ChildProcessCreationParams> sParamMap = new SparseArray<>();
-    @GuardedBy("sLock")
-    private static int sNextId = 1; // 0 is reserved for DEFAULT_ID.
+    private static ChildProcessCreationParams sParams;
 
     /** Registers default params. This should be called once on start up. */
     public static void registerDefault(ChildProcessCreationParams params) {
-        synchronized (sLock) {
-            // TODO(boliu): Assert not overwriting existing entry once WebApk is fixed.
-            sParamMap.append(DEFAULT_ID, params);
-        }
+        assert sParams == null;
+        sParams = params;
     }
 
     public static ChildProcessCreationParams getDefault() {
-        return get(DEFAULT_ID);
-    }
-
-    /** Registers new params. Returns the allocated ID corresponding this params. */
-    public static int register(ChildProcessCreationParams params) {
-        assert params != null;
-        int id = -1;
-        synchronized (sLock) {
-            id = sNextId++;
-            sParamMap.append(id, params);
-        }
-        assert id > 0;
-        return id;
-    }
-
-    /** Releases param corresponding to this ID. Any future use of this ID will crash. */
-    public static void unregister(int id) {
-        assert id > DEFAULT_ID; // Not allowed to unregister default.
-        synchronized (sLock) {
-            sParamMap.delete(id);
-        }
-    }
-
-    public static ChildProcessCreationParams get(int id) {
-        assert id >= 0;
-        synchronized (sLock) {
-            return sParamMap.get(id);
-        }
+        return sParams;
     }
 
     // Members should all be immutable to avoid worrying about thread safety.
