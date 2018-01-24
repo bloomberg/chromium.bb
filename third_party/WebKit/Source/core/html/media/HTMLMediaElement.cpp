@@ -3919,7 +3919,9 @@ void HTMLMediaElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(autoplay_policy_);
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
-  visitor->Trace(audio_source_node_);
+  visitor->template RegisterWeakMembers<HTMLMediaElement,
+                                        &HTMLMediaElement::ClearWeakMembers>(
+      this);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
   PausableObject::Trace(visitor);
@@ -4090,6 +4092,13 @@ EnumerationHistogram& HTMLMediaElement::ShowControlsHistogram() const {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("Media.Controls.Show.Audio", kMediaControlsShowMax));
   return histogram;
+}
+
+void HTMLMediaElement::ClearWeakMembers(Visitor* visitor) {
+  if (!ThreadHeap::IsHeapObjectAlive(audio_source_node_)) {
+    GetAudioSourceProvider().SetClient(nullptr);
+    audio_source_node_ = nullptr;
+  }
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::Wrap(
