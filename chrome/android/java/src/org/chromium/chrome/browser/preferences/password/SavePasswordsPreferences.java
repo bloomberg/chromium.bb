@@ -46,7 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 
 /**
  * The "Save passwords" screen in Settings, which allows the user to enable or disable password
@@ -302,7 +302,7 @@ public class SavePasswordsPreferences
         }
         tempFile.deleteOnExit();
         try (BufferedWriter tempWriter = new BufferedWriter(new OutputStreamWriter(
-                     new FileOutputStream(tempFile), StandardCharsets.UTF_8))) {
+                     new FileOutputStream(tempFile), Charset.forName("UTF-8")))) {
             tempWriter.write(serializedPasswords);
         } catch (IOException e) {
             // TODO(crbug.com/788701): Change e.getMessage to an appropriate error, following the

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -745,6 +746,7 @@ public class NotificationPlatformBridge {
      * because earlier versions were subject to a race condition briefly after showing or closing a
      * notification, during which, this data would be incorrect.
      */
+    @TargetApi(Build.VERSION_CODES.O)
     @CalledByNative
     private String[] getActiveNotificationsIds() {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;

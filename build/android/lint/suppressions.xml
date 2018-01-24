@@ -25,7 +25,7 @@ Still reading?
   <issue id="AllowBackup">
     <ignore path="AndroidManifest.xml"/>
   </issue>
-  <!-- TODO(crbug.com/799070): File bugs to fix this -->
+  <!-- TODO(crbug.com/804427): Remove this suppression or add rationale. -->
   <issue id="AppCompatResource" severity="ignore"/>
   <!-- We use asserts in Chromium. See https://chromium.googlesource.com/chromium/src/+/master/styleguide/java/java.md#Asserts -->
   <issue id="Assert" severity="ignore"/>
@@ -71,10 +71,10 @@ Still reading?
     <ignore regexp="content/public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java"/>
     <ignore regexp="content/public/android/java/src/org/chromium/content/browser/PopupZoomer.java"/>
   </issue>
-  <!-- TODO(crbug.com/799070): File bugs to fix this -->
+  <!-- TODO(crbug.com/804432): Remove this and fix the offending xml files. -->
   <issue id="EllipsizeMaxLines" severity="ignore"/>
   <issue id="ExifInterface">
-    <!-- TODO(crbug.com/799070): Update android.support.media.ExifInterface and use it instead -->
+    <!-- TODO(crbug.com/804438): Cannot update until android.media.ExifInterface supports file descriptors -->
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/photo_picker/BitmapUtils.java"/>
   </issue>
   <issue id="ExportedContentProvider">
@@ -91,7 +91,7 @@ Still reading?
   <issue id="GoogleAppIndexingWarning" severity="Error">
     <ignore regexp="AndroidManifest.xml"/>
   </issue>
-  <!-- TODO(crbug.com/799070): Fix for remoting -->
+  <!-- TODO(crbug.com/804441): Fix for remoting -->
   <issue id="AppLinkUrlError">
     <ignore regexp="AndroidManifest.xml"/>
   </issue>
@@ -130,7 +130,7 @@ Still reading?
   </issue>
   <issue id="IconDipSize">
     <ignore regexp="chromecast/internal"/>
-    <!-- TODO(crbug.com/799070): File bugs to fix these icons -->
+    <!-- These only need to be 1px for all densities. See: crbug.com/804449 -->
     <ignore regexp="chrome/android/java/res/.*tab_strip_fade"/>
   </issue>
   <issue id="IconDuplicates" severity="Error">
@@ -149,10 +149,12 @@ Still reading?
   </issue>
   <issue id="IconLocation">
     <ignore regexp="chromecast/internal"/>
+    <!-- This is just for testing -->
+    <ignore regexp="chrome/test/chromedriver/test/webview_shell/java/res/drawable/icon.png"/>
+    <!-- Memconsumer is only for tooling -->
+    <ignore regexp="tools/android/memconsumer/java/res/drawable/"/>
     <!-- It is OK for content_shell_apk to have missing assets. -->
     <ignore regexp="content/shell/android/java/res/"/>
-    <!-- Suppression for chrome/test/chromedriver/test/webview_shell/java/res/drawable/icon.png -->
-    <ignore regexp="res/drawable/icon.png"/>
   </issue>
   <issue id="IconMissingDensityFolder">
     <!-- see crbug.com/542435 -->
@@ -185,7 +187,7 @@ Still reading?
   <issue id="LabelFor" severity="Error">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml"/>
   </issue>
-  <!-- TODO(crbug.com/799070): File bugs to fix this. -->
+  <!-- TODO(crbug.com/804453): Remove this after fixing. -->
   <issue id="KeyboardInaccessibleWidget" severity="ignore"/>
   <issue id="LintError" severity="Error"/>
   <issue id="LogConditional" severity="ignore"/>
@@ -224,9 +226,12 @@ Still reading?
     <ignore regexp="Call requires API level 19.*`java.lang.Throwable#addSuppressed`"/>
     <!-- We support default methods via desugar. -->
     <ignore regexp="Default method requires API level 24"/>
+    <!-- TODO(crbug.com/805479): Remove the following suppression and fix. -->
+    <ignore regexp="Call requires API level 18.*android.view.View#setClipBounds"/>
+    <!-- TODO(crbug.com/805509): Remove the following suppression and fix. -->
+    <ignore regexp="Call requires API level 19.*new java.lang.AssertionError"/>
     <!-- TODO(crbug.com/799070): Fix these after lint upgrade. -->
     <ignore regexp="Static interface  method requires API level 24"/>
-    <ignore regexp="(current min is 1)"/>
     <!-- Suppressions below this line need rationale :( -->
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
@@ -371,7 +376,7 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable-hdpi/omnibox_info.png"/>
     <ignore regexp="clank/java/clank_strings_grd.resources.zip/values/android_internal_strings.xml"/>
     <ignore regexp="tools/android/audio_focus_grabber/java/res/drawable-hdpi/notification_icon.png"/>
-    <!-- # TODO(crbug.com/799070): Fix these. -->
+    <!-- TODO(crbug.com/799070): Fix these. -->
     <ignore regexp="ui/android/java/res/values/colors.xml"/>
     <ignore regexp="ui/android/java/res/values/dimens.xml"/>
     <ignore regexp="ui/android/java/res/values-v17/styles.xml"/>
