@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_layout_test.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
@@ -26,11 +27,15 @@ class NGCaretRectTest : public NGLayoutTest,
  protected:
   void SetInlineFormattingContext(const char* id,
                                   const char* html,
-                                  unsigned width) {
-    SetBodyInnerHTML(
-        String::Format("<div id='%s' style='font: 1em/1em Ahem; width: %uem; "
-                       "word-break: break-all'>%s</div>",
-                       id, width, html));
+                                  unsigned width,
+                                  TextDirection dir = TextDirection::kLtr) {
+    const char* pattern =
+        dir == TextDirection::kLtr
+            ? "<div id='%s' style='font: 10px/10px Ahem; width: %u0px; "
+              "word-break: break-all'>%s</div>"
+            : "<bdo dir=rtl id='%s' style='font: 10px/10px Ahem; width: %u0px; "
+              "word-break: break-all; display: block'>%s</bdo>";
+    SetBodyInnerHTML(String::Format(pattern, id, width, html));
     container_ = GetElementById(id);
     DCHECK(container_);
     context_ = ToLayoutBlockFlow(container_->GetLayoutObject());
@@ -57,11 +62,11 @@ class NGCaretRectTest : public NGLayoutTest,
   const NGPhysicalBoxFragment* root_fragment_;
 };
 
-#define TEST_CARET(caret, fragment_, type_, offset_)            \
-  {                                                             \
-    EXPECT_EQ(caret.fragment.get(), fragment_);                 \
-    EXPECT_EQ(caret.position_type, NGCaretPositionType::type_); \
-    EXPECT_EQ(caret.text_offset, offset_);                      \
+#define TEST_CARET(caret, fragment_, type_, offset_)                          \
+  {                                                                           \
+    EXPECT_EQ(caret.fragment.get(), fragment_) << caret.fragment->ToString(); \
+    EXPECT_EQ(caret.position_type, NGCaretPositionType::type_);               \
+    EXPECT_EQ(caret.text_offset, offset_) << caret.text_offset.value_or(-1);  \
   }
 
 TEST_F(NGCaretRectTest, CaretPositionInOneLineOfText) {
@@ -189,6 +194,84 @@ TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenImages) {
              img2_fragment, kBeforeBox, WTF::nullopt);
   TEST_CARET(ComputeNGCaretPosition(1, TextAffinity::kUpstream), img1_fragment,
              kAfterBox, WTF::nullopt);
+}
+
+TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenMultipleTextNodes) {
+  SetInlineFormattingContext("t",
+                             "<span>A</span>"
+                             "<span>B</span>"
+                             "<span id=span-c>C</span>"
+                             "<span id=span-d>D</span>"
+                             "<span>E</span>"
+                             "<span>F</span>",
+                             3);
+  const Node* text_c = GetElementById("span-c")->firstChild();
+  const Node* text_d = GetElementById("span-d")->firstChild();
+  const NGPhysicalFragment* fragment_c = FragmentOf(text_c);
+  const NGPhysicalFragment* fragment_d = FragmentOf(text_d);
+
+  const Position wrap_position(text_c, 1);
+  const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
+  const unsigned wrap_offset =
+      mapping.GetTextContentOffset(wrap_position).value();
+
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
+             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
+             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
+}
+
+TEST_F(NGCaretRectTest,
+       CaretPositionAtSoftLineWrapBetweenMultipleTextNodesRtl) {
+  SetInlineFormattingContext("t",
+                             "<span>A</span>"
+                             "<span>B</span>"
+                             "<span id=span-c>C</span>"
+                             "<span id=span-d>D</span>"
+                             "<span>E</span>"
+                             "<span>F</span>",
+                             3, TextDirection::kRtl);
+  const Node* text_c = GetElementById("span-c")->firstChild();
+  const Node* text_d = GetElementById("span-d")->firstChild();
+  const NGPhysicalFragment* fragment_c = FragmentOf(text_c);
+  const NGPhysicalFragment* fragment_d = FragmentOf(text_d);
+
+  const Position wrap_position(text_c, 1);
+  const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
+  const unsigned wrap_offset =
+      mapping.GetTextContentOffset(wrap_position).value();
+
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
+             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
+             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
+}
+
+TEST_F(NGCaretRectTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
+  SetInlineFormattingContext(
+      "t",
+      "<style>span {border: 1px solid black}</style>"
+      "<span>A</span>"
+      "<span>B</span>"
+      "<span id=span-c>C</span>"
+      "<span id=span-d>D</span>"
+      "<span>E</span>"
+      "<span>F</span>",
+      4);  // Wider space to allow border and 3 characters
+  const Node* text_c = GetElementById("span-c")->firstChild();
+  const Node* text_d = GetElementById("span-d")->firstChild();
+  const NGPhysicalFragment* fragment_c = FragmentOf(text_c);
+  const NGPhysicalFragment* fragment_d = FragmentOf(text_d);
+
+  const Position wrap_position(text_c, 1);
+  const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
+  const unsigned wrap_offset =
+      mapping.GetTextContentOffset(wrap_position).value();
+
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
+             fragment_c, kAtTextOffset, Optional<unsigned>(wrap_offset));
+  TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kDownstream),
+             fragment_d, kAtTextOffset, Optional<unsigned>(wrap_offset));
 }
 
 }  // namespace blink

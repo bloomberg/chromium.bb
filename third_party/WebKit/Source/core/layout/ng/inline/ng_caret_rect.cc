@@ -56,10 +56,8 @@ bool IsFragmentAfterLineWrap(const NGPhysicalFragment& fragment,
                              const NGPhysicalLineBoxFragment* last_line) {
   if (!last_line)
     return false;
-  // Only the logically first fragment in each line can be continuation from the
-  // last line.
-  // TODO(xiaochengh): Verify if this works for RtL
-  if (&fragment != current_line.Children().front().get())
+  // A fragment after line wrap must be the first logical leaf in its line.
+  if (&fragment != current_line.FirstLogicalLeaf())
     return false;
   DCHECK(last_line->BreakToken());
   DCHECK(last_line->BreakToken()->IsInlineType());
@@ -81,10 +79,8 @@ bool CanResolveCaretPositionBeforeFragment(
 // TODO(xiaochengh): Move this function to NGPhysicalFragment.
 bool IsFragmentBeforeLineWrap(const NGPhysicalFragment& fragment,
                               const NGPhysicalLineBoxFragment& current_line) {
-  // Only the logically last fragment in each line can have continuation in the
-  // next line.
-  // TODO(xiaochengh): Verify if this works for RtL
-  if (&fragment != current_line.Children().back().get())
+  // A fragment before line wrap must be the last logical leaf in its line.
+  if (&fragment != current_line.LastLogicalLeaf())
     return false;
   DCHECK(current_line.BreakToken());
   DCHECK(current_line.BreakToken()->IsInlineType());
