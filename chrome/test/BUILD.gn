@@ -2025,9 +2025,6 @@ test("browser_tests") {
           "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
         ]
       }
-      if (!is_chromeos) {
-        sources += [ "../browser/ui/views/message_center/popups_only_ui_delegate_browsertest.cc" ]
-      }
     }
 
     if (is_chromeos || (is_linux && use_dbus)) {
@@ -4160,6 +4157,9 @@ test("unit_tests") {
         "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
         "../browser/ui/views/webshare/webshare_target_picker_view_unittest.cc",
       ]
+    }
+    if ((is_linux && !is_chromeos) || is_win) {
+      sources += [ "../browser/ui/views/message_center/popups_only_ui_delegate_unittest.cc" ]
     }
     if (use_aura) {
       sources += [
