@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
@@ -133,6 +134,13 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
   // file names.
   const base::FilePath::StringType base_name = file_path.BaseName().value();
   const std::string file_name(base_name.begin(), base_name.end());
+
+  // Cleanup any left over doomed entries.
+  if (base::StartsWith(file_name, "todelete_", base::CompareCase::SENSITIVE)) {
+    base::DeleteFile(file_path, false);
+    return;
+  }
+
   if (file_name.size() != kEntryFilesLength)
     return;
   const base::StringPiece hash_string(

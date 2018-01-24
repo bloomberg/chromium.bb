@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/simple/simple_file_tracker.h"
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -122,6 +124,34 @@ void SimpleFileTracker::Close(const SimpleSynchronousEntry* owner,
   // The destructor of file_to_close will close it if needed. Thing to watch
   // for impl with stealing: race between bookkeeping above and actual
   // close --- the FD is still alive for it.
+}
+
+void SimpleFileTracker::Doom(const SimpleSynchronousEntry* owner,
+                             EntryFileKey* key) {
+  base::AutoLock hold_lock(lock_);
+  auto iter = tracked_files_.find(key->entry_hash);
+  DCHECK(iter != tracked_files_.end());
+
+  uint64_t max_doom_gen = 0;
+  for (const TrackedFiles& file_with_same_hash : iter->second) {
+    max_doom_gen =
+        std::max(max_doom_gen, file_with_same_hash.key.doom_generation);
+  }
+
+  // It would take >502 years to doom the same hash enough times (at 10^9 dooms
+  // per second) to wrap the 64 bit counter. Still, if it does wrap around,
+  // there is a security risk since we could confuse different keys.
+  CHECK_NE(max_doom_gen, std::numeric_limits<uint64_t>::max());
+  uint64_t new_doom_gen = max_doom_gen + 1;
+
+  // Update external key.
+  key->doom_generation = new_doom_gen;
+
+  // Update our own.
+  for (TrackedFiles& file_with_same_hash : iter->second) {
+    if (file_with_same_hash.owner == owner)
+      file_with_same_hash.key.doom_generation = new_doom_gen;
+  }
 }
 
 bool SimpleFileTracker::IsEmptyForTesting() {

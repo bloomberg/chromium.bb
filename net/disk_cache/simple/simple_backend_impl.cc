@@ -323,7 +323,8 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
   // 1. There are corresponding entries in active set, pending doom, or both
   //    sets, and so the hash should be doomed individually to avoid flakes.
   // 2. The hash is not in active use at all, so we can call
-  //    SimpleSynchronousEntry::DoomEntrySet and delete the files en masse.
+  //    SimpleSynchronousEntry::DeleteEntrySetFiles and delete the files en
+  //    masse.
   for (int i = mass_doom_entry_hashes->size() - 1; i >= 0; --i) {
     const uint64_t entry_hash = (*mass_doom_entry_hashes)[i];
     if (!active_entries_.count(entry_hash) &&
@@ -361,15 +362,12 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
   // base::Passed before mass_doom_entry_hashes.get().
   std::vector<uint64_t>* mass_doom_entry_hashes_ptr =
       mass_doom_entry_hashes.get();
-  PostTaskAndReplyWithResult(worker_pool_.get(),
-                             FROM_HERE,
-                             base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                                        mass_doom_entry_hashes_ptr,
-                                        path_),
-                             base::Bind(&SimpleBackendImpl::DoomEntriesComplete,
-                                        AsWeakPtr(),
-                                        base::Passed(&mass_doom_entry_hashes),
-                                        barrier_callback));
+  PostTaskAndReplyWithResult(
+      worker_pool_.get(), FROM_HERE,
+      base::Bind(&SimpleSynchronousEntry::DeleteEntrySetFiles,
+                 mass_doom_entry_hashes_ptr, path_),
+      base::Bind(&SimpleBackendImpl::DoomEntriesComplete, AsWeakPtr(),
+                 base::Passed(&mass_doom_entry_hashes), barrier_callback));
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {

@@ -76,13 +76,12 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
 
     uint64_t entry_hash;
 
-    // In case of a hash collision, there may be multiple SimpleEntryImpl's
-    // around which have the same entry_hash but different key. In that case,
-    // we doom all but the most recent one and this number will eventually be
-    // used to name the files for the doomed ones.
-    // 0 here means the entry is the active one, and is the only value that's
-    // presently in use here.
-    uint32_t doom_generation;
+    // 0 means this a non-doomed, active entry, for its backend that will be
+    // checked on OpenEntry(key) where hash(key) = entry_hash.  Other values of
+    // |doom_generation| are used to generate distinct file names for entries
+    // that have been Doom()ed, either by explicit API call by the client or
+    // internal operation (eviction, collisions, etc.)
+    uint64_t doom_generation;
   };
 
   SimpleFileTracker();
@@ -113,6 +112,13 @@ class NET_EXPORT_PRIVATE SimpleFileTracker {
   // If Close() has been called and the handle to the file is no longer alive,
   // a new backing file can be established by calling Register() again.
   void Close(const SimpleSynchronousEntry* owner, SubFile file);
+
+  // Updates key->doom_generation to one not in use for the hash; it's the
+  // caller's responsibility to update file names accordingly, and to prevent
+  // others from stomping on things while this is going on. SimpleBackendImpl's
+  // entries_pending_doom_ is the mechanism for protecting this action from
+  // races.
+  void Doom(const SimpleSynchronousEntry* owner, EntryFileKey* key);
 
   // Returns true if there is no in-memory state around, e.g. everything got
   // cleaned up. This is a test-only method since this object is expected to be

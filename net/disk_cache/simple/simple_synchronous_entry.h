@@ -176,25 +176,31 @@ class SimpleSynchronousEntry {
                           SimpleFileTracker* file_tracker,
                           SimpleEntryCreationResults* out_results);
 
-  // Deletes an entry from the file system without affecting the state of the
-  // corresponding instance, if any (allowing operations to continue to be
-  // executed through that instance). Returns a net error code.
-  static int DoomEntry(const base::FilePath& path,
-                       net::CacheType cache_type,
-                       uint64_t entry_hash);
+  // Renames the entry on the file system, making it no longer possible to open
+  // it again, but allowing operations to continue to be executed through that
+  // instance. The renamed file will be removed once the entry is closed.
+  // Returns a net error code.
+  int Doom();
 
-  // Like |DoomEntry()| above, except that it truncates the entry files rather
-  // than deleting them. Used when dooming entries after the backend has
+  // Deletes an entry from the file system.  This variant should only be used
+  // if there is no actual open instance around, as it doesn't account for
+  // possibility of it having been renamed to a non-standard name.
+  static int DeleteEntryFiles(const base::FilePath& path,
+                              net::CacheType cache_type,
+                              uint64_t entry_hash);
+
+  // Like |DeleteEntryFiles()| above, except that it truncates the entry files
+  // rather than deleting them. Used when dooming entries after the backend has
   // shutdown. See implementation of |SimpleEntryImpl::DoomEntryInternal()| for
   // more.
   static int TruncateEntryFiles(const base::FilePath& path,
                                 uint64_t entry_hash);
 
-  // Like |DoomEntry()| above. Deletes all entries corresponding to the
+  // Like |DeleteEntryFiles()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted. Returns a net
   // error code.
-  static int DoomEntrySet(const std::vector<uint64_t>* key_hashes,
-                          const base::FilePath& path);
+  static int DeleteEntrySetFiles(const std::vector<uint64_t>* key_hashes,
+                                 const base::FilePath& path);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord(), ReadSparseData(),
   // WriteSparseData() and Close() may block on IO.
@@ -365,8 +371,6 @@ class SimpleSynchronousEntry {
                            const SimpleEntryStat& entry_stat,
                            const SimpleFileEOF& eof_record,
                            SimpleStreamPrefetchData* out);
-
-  void Doom() const;
 
   // Opens the sparse data file and scans it if it exists.
   bool OpenSparseFileIfExists(int32_t* out_sparse_data_size);

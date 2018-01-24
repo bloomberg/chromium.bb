@@ -23,6 +23,7 @@
 #include "net/base/hash_value.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_experiment.h"
 #include "net/disk_cache/simple/simple_histogram_enums.h"
@@ -291,14 +292,57 @@ void SimpleSynchronousEntry::CreateEntry(
 }
 
 // static
-int SimpleSynchronousEntry::DoomEntry(const FilePath& path,
-                                      net::CacheType cache_type,
-                                      uint64_t entry_hash) {
+int SimpleSynchronousEntry::DeleteEntryFiles(const FilePath& path,
+                                             net::CacheType cache_type,
+                                             uint64_t entry_hash) {
   base::TimeTicks start = base::TimeTicks::Now();
   const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
   SIMPLE_CACHE_UMA(TIMES, "DiskDoomLatency", cache_type,
                    base::TimeTicks::Now() - start);
   return deleted_well ? net::OK : net::ERR_FAILED;
+}
+
+int SimpleSynchronousEntry::Doom() {
+  if (entry_file_key_.doom_generation != 0u) {
+    // Already doomed.
+    return true;
+  }
+
+  if (have_open_files_) {
+    base::TimeTicks start = base::TimeTicks::Now();
+    bool ok = true;
+    SimpleFileTracker::EntryFileKey orig_key = entry_file_key_;
+    file_tracker_->Doom(this, &entry_file_key_);
+
+    for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
+      if (!empty_file_omitted_[i]) {
+        File::Error out_error;
+        FilePath old_name = path_.AppendASCII(
+            GetFilenameFromEntryFileKeyAndFileIndex(orig_key, i));
+        FilePath new_name = path_.AppendASCII(
+            GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, i));
+        ok = base::ReplaceFile(old_name, new_name, &out_error) && ok;
+      }
+    }
+
+    if (sparse_file_open()) {
+      File::Error out_error;
+      FilePath old_name =
+          path_.AppendASCII(GetSparseFilenameFromEntryFileKey(orig_key));
+      FilePath new_name =
+          path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_));
+      ok = base::ReplaceFile(old_name, new_name, &out_error) && ok;
+    }
+
+    SIMPLE_CACHE_UMA(TIMES, "DiskDoomLatency", cache_type_,
+                     base::TimeTicks::Now() - start);
+
+    return ok ? net::OK : net::ERR_FAILED;
+  } else {
+    // No one has ever called Create or Open on us, so we don't have to worry
+    // about being accessible to other ops after doom.
+    return DeleteEntryFiles(path_, cache_type_, entry_file_key_.entry_hash);
+  }
 }
 
 // static
@@ -309,7 +353,7 @@ int SimpleSynchronousEntry::TruncateEntryFiles(const base::FilePath& path,
 }
 
 // static
-int SimpleSynchronousEntry::DoomEntrySet(
+int SimpleSynchronousEntry::DeleteEntrySetFiles(
     const std::vector<uint64_t>* key_hashes,
     const FilePath& path) {
   const size_t did_delete_count = std::count_if(
@@ -852,7 +896,7 @@ void SimpleSynchronousEntry::Close(
       if (!file.IsOK() || !CheckHeaderAndKey(file.get(), i))
         Doom();
     }
-    file_tracker_->Close(this, SubFileForFileIndex(i));
+    CloseFile(i);
   }
 
   if (sparse_file_open()) {
@@ -1083,6 +1127,15 @@ void SimpleSynchronousEntry::CloseFile(int index) {
   if (empty_file_omitted_[index]) {
     empty_file_omitted_[index] = false;
   } else {
+    // We want to delete files that were renamed for doom here; and we should do
+    // this before calling SimpleFileTracker::Close, since that would make the
+    // name available to other threads.
+    if (entry_file_key_.doom_generation != 0u) {
+      base::DeleteFile(
+          path_.AppendASCII(
+              GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, index)),
+          false);
+    }
     file_tracker_->Close(this, SubFileForFileIndex(index));
   }
 }
@@ -1453,18 +1506,13 @@ int SimpleSynchronousEntry::GetEOFRecordData(base::File* file,
   return net::OK;
 }
 
-void SimpleSynchronousEntry::Doom() const {
-  DCHECK_EQ(0u, entry_file_key_.doom_generation);
-  DoomEntry(path_, cache_type_, entry_file_key_.entry_hash);
-}
-
 // static
 bool SimpleSynchronousEntry::DeleteFileForEntryHash(const FilePath& path,
                                                     const uint64_t entry_hash,
                                                     const int file_index) {
   FilePath to_delete = path.AppendASCII(GetFilenameFromEntryFileKeyAndFileIndex(
       SimpleFileTracker::EntryFileKey(entry_hash), file_index));
-  return simple_util::SimpleCacheDeleteFile(to_delete);
+  return base::DeleteFile(to_delete, false);
 }
 
 // static
@@ -1565,6 +1613,9 @@ bool SimpleSynchronousEntry::CreateSparseFile() {
 
 void SimpleSynchronousEntry::CloseSparseFile() {
   DCHECK(sparse_file_open());
+  if (entry_file_key_.doom_generation != 0u)
+    DeleteCacheFile(
+        path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_)));
   file_tracker_->Close(this, SimpleFileTracker::SubFile::FILE_SPARSE);
   sparse_file_open_ = false;
 }

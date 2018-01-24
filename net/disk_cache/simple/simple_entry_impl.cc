@@ -1048,9 +1048,9 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   // Retain a reference to |buf| in |reply| instead of |task|, so that we can
   // reduce cross thread malloc/free pairs. The cross thread malloc/free pair
   // increases the apparent memory usage due to the thread cached free list.
-  // TODO(morlovich): Remove the doom_state_ argument to WriteData once the
-  // follow up implementation of doom as renaming rather than delete is in, as
-  // with it creating a new stream 2 of doomed entry will just work.
+  // TODO(morlovich): Remove the doom_state_ argument to WriteData, since with
+  // renaming rather than delete, creating a new stream 2 of doomed entry will
+  // just work.
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
       SimpleSynchronousEntry::EntryOperationData(
@@ -1210,12 +1210,14 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
 
   if (!backend_) {
     // If there's no backend, we want to truncate the files rather than delete
-    // them. Removing files will update the entry directory's mtime, which will
-    // likely force a full index rebuild on the next startup; this is clearly an
-    // undesirable cost. Instead, the lesser evil is to set the entry files to
-    // length zero, leaving the invalid entry in the index. On the next attempt
-    // to open the entry, it will fail asynchronously (since the magic numbers
-    // will not be found), and the files will actually be removed.
+    // or rename them. Either op will update the entry directory's mtime, which
+    // will likely force a full index rebuild on the next startup; this is
+    // clearly an undesirable cost. Instead, the lesser evil is to set the entry
+    // files to length zero, leaving the invalid entry in the index. On the next
+    // attempt to open the entry, it will fail asynchronously (since the magic
+    // numbers will not be found), and the files will actually be removed.
+    // Since there is no backend, new entries to conflict with us also can't be
+    // created.
     PostTaskAndReplyWithResult(
         worker_pool_.get(), FROM_HERE,
         base::Bind(&SimpleSynchronousEntry::TruncateEntryFiles, path_,
@@ -1227,11 +1229,28 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
     state_ = STATE_IO_PENDING;
     return;
   }
-  PostTaskAndReplyWithResult(worker_pool_.get(), FROM_HERE,
-                             base::Bind(&SimpleSynchronousEntry::DoomEntry,
-                                        path_, cache_type_, entry_hash_),
-                             base::Bind(&SimpleEntryImpl::DoomOperationComplete,
-                                        this, callback, state_));
+
+  if (synchronous_entry_) {
+    // If there is a backing object, we have to go through its instance methods,
+    // so that it can rename itself and keep track of the altenative name.
+    PostTaskAndReplyWithResult(
+        worker_pool_.get(), FROM_HERE,
+        base::Bind(&SimpleSynchronousEntry::Doom,
+                   base::Unretained(synchronous_entry_)),
+        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                   state_));
+  } else {
+    DCHECK_EQ(STATE_UNINITIALIZED, state_);
+    // If nothing is open, we can just delete the files. We know they have the
+    // base names, since if we ever renamed them our doom_state_ would be
+    // DOOM_COMPLETED, and we would exit at function entry.
+    PostTaskAndReplyWithResult(
+        worker_pool_.get(), FROM_HERE,
+        base::Bind(&SimpleSynchronousEntry::DeleteEntryFiles, path_,
+                   cache_type_, entry_hash_),
+        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                   state_));
+  }
   state_ = STATE_IO_PENDING;
 }
 
