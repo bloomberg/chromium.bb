@@ -707,6 +707,7 @@ interface CSSNumericValue : CSSStyleValue
     method sub
     method to
     method toSum
+    method type
 interface CSSPageRule : CSSRule
     attribute @@toStringTag
     getter selectorText

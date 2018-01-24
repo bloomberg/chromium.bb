@@ -357,6 +357,29 @@ CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
   return value;
 }
 
+void CSSNumericValue::type(CSSNumericType& type) const {
+  using BaseType = CSSNumericValueType::BaseType;
+
+  if (int exponent = type_.Exponent(BaseType::kLength))
+    type.setLength(exponent);
+  if (int exponent = type_.Exponent(BaseType::kAngle))
+    type.setAngle(exponent);
+  if (int exponent = type_.Exponent(BaseType::kTime))
+    type.setTime(exponent);
+  if (int exponent = type_.Exponent(BaseType::kFrequency))
+    type.setFrequency(exponent);
+  if (int exponent = type_.Exponent(BaseType::kResolution))
+    type.setResolution(exponent);
+  if (int exponent = type_.Exponent(BaseType::kFlex))
+    type.setFlex(exponent);
+  if (int exponent = type_.Exponent(BaseType::kPercent))
+    type.setPercent(exponent);
+  if (type_.HasPercentHint()) {
+    type.setPercentHint(
+        CSSNumericValueType::BaseTypeToString(type_.PercentHint()));
+  }
+}
+
 CSSNumericValue* CSSNumericValue::add(
     const HeapVector<CSSNumberish>& numberishes,
     ExceptionState& exception_state) {

@@ -56,6 +56,7 @@ CONSOLE MESSAGE: line 147:     method mul
 CONSOLE MESSAGE: line 147:     method sub
 CONSOLE MESSAGE: line 147:     method to
 CONSOLE MESSAGE: line 147:     method toSum
+CONSOLE MESSAGE: line 147:     method type
 CONSOLE MESSAGE: line 147: interface CSSPerspective : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter length
 CONSOLE MESSAGE: line 147:     method constructor
@@ -346,6 +347,7 @@ CONSOLE MESSAGE: line 147:     method mul
 CONSOLE MESSAGE: line 147:     method sub
 CONSOLE MESSAGE: line 147:     method to
 CONSOLE MESSAGE: line 147:     method toSum
+CONSOLE MESSAGE: line 147:     method type
 CONSOLE MESSAGE: line 147: interface CSSPerspective : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter length
 CONSOLE MESSAGE: line 147:     method constructor

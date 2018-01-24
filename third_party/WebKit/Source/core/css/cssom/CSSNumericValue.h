@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSNumericSumValue.h"
+#include "core/css/cssom/CSSNumericType.h"
 #include "core/css/cssom/CSSNumericValueType.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -48,6 +49,8 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   // Converts between compatible types, as defined in the IDL.
   CSSUnitValue* to(const String&, ExceptionState&);
   CSSMathSum* toSum(const Vector<String>&, ExceptionState&);
+
+  void type(CSSNumericType&) const;
 
   // Internal methods.
   // Arithmetic

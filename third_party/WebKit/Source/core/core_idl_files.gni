@@ -562,6 +562,7 @@ core_dictionary_idl_files =
                     "css/MediaQueryListEventInit.idl",
                     "css/PropertyDescriptor.idl",
                     "css/cssom/CSSMatrixComponentOptions.idl",
+                    "css/cssom/CSSNumericType.idl",
                     "dom/ElementCreationOptions.idl",
                     "dom/ElementDefinitionOptions.idl",
                     "dom/ElementRegistrationOptions.idl",
