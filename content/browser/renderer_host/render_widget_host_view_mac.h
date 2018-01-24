@@ -343,6 +343,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void OnSynchronizedDisplayPropertiesChanged() override;
+  void DidNavigate() override;
 
   bool LockMouse() override;
   void UnlockMouse() override;
@@ -493,6 +494,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   SkColor BrowserCompositorMacGetGutterColor() const override;
   void BrowserCompositorMacOnBeginFrame() override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
+  void DidReceiveFirstFrameAfterNavigation() override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;

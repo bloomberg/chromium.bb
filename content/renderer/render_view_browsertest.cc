@@ -446,6 +446,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     params.physical_backing_size = gfx::Size(200, 200);
     params.visible_viewport_size = params.new_size;
     params.needs_resize_ack = false;
+    params.content_source_id = view()->GetContentSourceId();
     view()->OnResize(params);
     ASSERT_EQ(dsf, view()->device_scale_factor_);
   }

@@ -555,8 +555,33 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(
       surface_info.device_scale_factor(), surface_info.size_in_pixels());
-
   if (enable_surface_synchronization_) {
+    // If this is the first Surface created after navigation, notify |client_|.
+    // If the Surface was created before navigation, drop it.
+    uint32_t parent_sequence_number =
+        surface_info.id().local_surface_id().parent_sequence_number();
+    uint32_t latest_parent_sequence_number =
+        client_->GetLocalSurfaceId().parent_sequence_number();
+    // If |latest_parent_sequence_number| is less than
+    // |first_parent_sequence_number_after_navigation_|, then the parent id has
+    // wrapped around. Make sure that case is covered.
+    if (parent_sequence_number >=
+            first_parent_sequence_number_after_navigation_ ||
+        (latest_parent_sequence_number <
+             first_parent_sequence_number_after_navigation_ &&
+         parent_sequence_number <= latest_parent_sequence_number)) {
+      if (!received_frame_after_navigation_) {
+        received_frame_after_navigation_ = true;
+        client_->DidReceiveFirstFrameAfterNavigation();
+      }
+    } else {
+      ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+      viz::HostFrameSinkManager* host_frame_sink_manager =
+          factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
+      host_frame_sink_manager->DropTemporaryReference(surface_info.id());
+      return;
+    }
+
     // If there's no primary surface, then we don't wish to display content at
     // this time (e.g. the view is hidden) and so we don't need a fallback
     // surface either. Since we won't use the fallback surface, we drop the
@@ -943,6 +968,12 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (compositor_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
+}
+
+void DelegatedFrameHost::DidNavigate() {
+  first_parent_sequence_number_after_navigation_ =
+      client_->GetLocalSurfaceId().parent_sequence_number();
+  received_frame_after_navigation_ = false;
 }
 
 }  // namespace content

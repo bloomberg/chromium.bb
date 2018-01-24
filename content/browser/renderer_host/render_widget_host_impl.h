@@ -357,11 +357,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // changed its state of ignoring input events.
   void ProcessIgnoreInputEventsChanged(bool ignore_input_events);
 
-  // Starts the rendering timeout, which will clear displayed graphics if
-  // a new compositor frame is not received before it expires. This also causes
-  // any new compositor frames received with content_source_id less than
-  // |next_source_id| to be discarded.
-  void StartNewContentRenderingTimeout(uint32_t next_source_id);
+  // Called after every cross-document navigation. If Surface Synchronizaton is
+  // on, we send a new LocalSurfaceId to RenderWidget to be used after
+  // navigation. If Surface Synchronization is off, we block CompositorFrames
+  // that have smaller content_source_id than |next_source_id|. In either case,
+  // we will clear the displayed graphics of the renderer after a certain
+  // timeout if it does not produce a new CompositorFrame after navigation.
+  void DidNavigate(uint32_t next_source_id);
 
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
@@ -637,6 +639,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFling(base::TimeTicks current_time);
   void StopFling();
+
+  void DidReceiveFirstFrameAfterNavigation();
+
+  uint32_t current_content_source_id() { return current_content_source_id_; }
+
+  void SetScreenOrientationForTesting(uint16_t angle,
+                                      ScreenOrientationValues type);
 
  protected:
   // ---------------------------------------------------------------------------
@@ -1065,6 +1074,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojom::WidgetInputHandlerPtr widget_input_handler_;
   std::unique_ptr<mojom::WidgetInputHandler> legacy_widget_input_handler_;
   viz::mojom::InputTargetClientPtr input_target_client_;
+
+  base::Optional<uint16_t> screen_orientation_angle_for_testing_;
+  base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
+
+  bool next_resize_needs_resize_ack_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

@@ -516,6 +516,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
       const gfx::Size& min_size,
       const gfx::Size& max_size,
       const content::ScreenInfo& screen_info,
+      uint32_t content_source_id,
       const viz::LocalSurfaceId& local_surface_id);
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
@@ -774,6 +775,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // The current directory enumeration callback
   std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;
   int enumeration_completion_id_;
+
+  base::Optional<float> device_scale_factor_for_testing_;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and

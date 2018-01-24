@@ -413,7 +413,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
 
   uint32_t GetContentSourceId();
-  void IncrementContentSourceId();
+  void DidNavigate();
 
   // MainThreadEventQueueClient overrides.
 
@@ -530,6 +530,7 @@ class CONTENT_EXPORT RenderWidget
   void SetLocalSurfaceIdForAutoResize(
       uint64_t sequence_number,
       const content::ScreenInfo& screen_info,
+      uint32_t content_source_id,
       const viz::LocalSurfaceId& local_surface_id);
 
   // RenderWidget IPC message handlers
@@ -546,6 +547,7 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Size& min_size,
       const gfx::Size& max_size,
       const content::ScreenInfo& screen_info,
+      uint32_t content_source_id,
       const viz::LocalSurfaceId& local_surface_id);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
@@ -618,6 +620,7 @@ class CONTENT_EXPORT RenderWidget
   bool next_paint_is_resize_ack() const;
   void set_next_paint_is_resize_ack();
   void set_next_paint_is_repaint_ack();
+  void reset_next_paint_is_resize_ack();
 
   // QueueMessage implementation extracted into a static method for easy
   // testing.
