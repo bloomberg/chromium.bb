@@ -17,6 +17,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -153,6 +154,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         mHandler.postDelayed(mHideNotificationDelayedTask, HIDE_NOTIFICATION_DELAY_MILLIS);
 
         mNotificationInfoBuilder = null;
+        mFavicon = null;
     }
 
     private void hideNotificationImmediately() {
@@ -286,9 +288,11 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         public void onFaviconUpdated(Tab tab, Bitmap icon) {
             assert tab == mTab;
 
+            // Store the favicon only if notification is being shown. Otherwise the favicon is
+            // obtained from large icon bridge when needed.
+            if (isNotificationHiddingOrHidden() || mPageMediaImage != null) return;
             if (!updateFavicon(icon)) return;
-
-            updateNotificationImage();
+            updateNotificationImage(mFavicon);
         }
 
         @Override
@@ -495,11 +499,11 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     @Override
     public void onImageDownloaded(Bitmap image) {
         mPageMediaImage = MediaNotificationManager.downscaleIconToIdealSize(image);
-        updateNotificationImage();
+        mFavicon = null;
+        updateNotificationImage(mPageMediaImage);
     }
 
-    private void updateNotificationImage() {
-        Bitmap newMediaImage = getNotificationImage();
+    private void updateNotificationImage(Bitmap newMediaImage) {
         if (mCurrentMediaImage == newMediaImage) return;
 
         mCurrentMediaImage = newMediaImage;
@@ -511,7 +515,31 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     }
 
     private Bitmap getNotificationImage() {
-        return (mPageMediaImage != null) ? mPageMediaImage : mFavicon;
+        if (mPageMediaImage != null) return mPageMediaImage;
+        if (mFavicon != null) return mFavicon;
+
+        // Fetch favicon image and update the notification when available.
+        if (mTab == null) return null;
+        WebContents webContents = mTab.getWebContents();
+        if (webContents == null) return null;
+        String pageUrl = webContents.getLastCommittedUrl();
+        int size = MediaNotificationManager.MINIMAL_MEDIA_IMAGE_SIZE_PX;
+        if (mTab.getProfile() == null) return null;
+        LargeIconBridge bridge = new LargeIconBridge(mTab.getProfile());
+        LargeIconBridge.LargeIconCallback callback = new LargeIconBridge.LargeIconCallback() {
+            @Override
+            public void onLargeIconAvailable(
+                    Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) {
+                if (isNotificationHiddingOrHidden() || mPageMediaImage != null) return;
+                if (updateFavicon(icon)) {
+                    updateNotificationImage(mFavicon);
+                }
+                bridge.destroy();
+            }
+        };
+        if (!bridge.getLargeIconForUrl(pageUrl, size, callback)) bridge.destroy();
+
+        return null;
     }
 
     private boolean isNotificationHiddingOrHidden() {
