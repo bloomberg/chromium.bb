@@ -398,8 +398,8 @@ class ResourceScheduler::Client {
  public:
   Client(const net::NetworkQualityEstimator* const network_quality_estimator,
          ResourceScheduler* resource_scheduler)
-      : is_loaded_(false),
-        has_html_body_(false),
+      : deprecated_is_loaded_(false),
+        deprecated_has_html_body_(false),
         using_spdy_proxy_(false),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
@@ -418,7 +418,7 @@ class ResourceScheduler::Client {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.
-      has_html_body_ = true;
+      deprecated_has_html_body_ = true;
     }
   }
 
@@ -447,8 +447,8 @@ class ResourceScheduler::Client {
 
       // Removing this request may have freed up another to load.
       LoadAnyStartablePendingRequests(
-          has_html_body_ ? RequestStartTrigger::COMPLETION_POST_BODY
-                         : RequestStartTrigger::COMPLETION_PRE_BODY);
+          deprecated_has_html_body_ ? RequestStartTrigger::COMPLETION_POST_BODY
+                                    : RequestStartTrigger::COMPLETION_PRE_BODY);
     }
   }
 
@@ -477,33 +477,35 @@ class ResourceScheduler::Client {
     return unowned_requests;
   }
 
-  bool is_loaded() const { return is_loaded_; }
+  bool deprecated_is_loaded() const { return deprecated_is_loaded_; }
 
-  void OnLoadingStateChanged(bool is_loaded) { is_loaded_ = is_loaded; }
+  void DeprecatedOnLoadingStateChanged(bool is_loaded) {
+    deprecated_is_loaded_ = is_loaded;
+  }
 
-  void OnNavigate() {
-    has_html_body_ = false;
+  void DeprecatedOnNavigate() {
+    deprecated_has_html_body_ = false;
     if (base::FeatureList::IsEnabled(
             features::kRendererSideResourceScheduler)) {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.
-      has_html_body_ = true;
+      deprecated_has_html_body_ = true;
     }
 
-    is_loaded_ = false;
+    deprecated_is_loaded_ = false;
     max_delayable_requests_ =
         resource_scheduler_->throttle_delayable_
             .GetParamsForNetworkQuality(network_quality_estimator_)
             .max_delayable_requests;
   }
 
-  void OnWillInsertBody() {
+  void DeprecatedOnWillInsertBody() {
     // Can be called multiple times per RVH in the case of out-of-process
     // iframes.
-    if (has_html_body_)
+    if (deprecated_has_html_body_)
       return;
-    has_html_body_ = true;
+    deprecated_has_html_body_ = true;
     LoadAnyStartablePendingRequests(RequestStartTrigger::BODY_REACHED);
   }
 
@@ -668,8 +670,9 @@ class ResourceScheduler::Client {
       // If a request is already marked as layout-blocking make sure to keep the
       // attribute across redirects.
       attributes |= kAttributeLayoutBlocking;
-    } else if (!has_html_body_ && request->url_request()->priority() >
-                                      kLayoutBlockingPriorityThreshold) {
+    } else if (!deprecated_has_html_body_ &&
+               request->url_request()->priority() >
+                   kLayoutBlockingPriorityThreshold) {
       // Requests that are above the non_delayable threshold before the HTML
       // body has been parsed are inferred to be layout-blocking.
       attributes |= kAttributeLayoutBlocking;
@@ -677,7 +680,7 @@ class ResourceScheduler::Client {
                kDelayablePriorityThreshold) {
       if (resource_scheduler_->priority_requests_delayable() ||
           (resource_scheduler_->head_priority_requests_delayable() &&
-           !has_html_body_)) {
+           !deprecated_has_html_body_)) {
         // Resources below the delayable priority threshold that are considered
         // delayable.
         attributes |= kAttributeDelayable;
@@ -801,7 +804,7 @@ class ResourceScheduler::Client {
     bool priority_delayable =
         resource_scheduler_->priority_requests_delayable() ||
         (resource_scheduler_->head_priority_requests_delayable() &&
-         !has_html_body_);
+         !deprecated_has_html_body_);
 
     if (!priority_delayable) {
       if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
@@ -845,7 +848,7 @@ class ResourceScheduler::Client {
     // delayable requests is handled above here so this is deciding what to
     // do with a delayable request while we are in the layout-blocking phase
     // of loading.
-    if (!has_html_body_ || total_layout_blocking_count_ != 0) {
+    if (!deprecated_has_html_body_ || total_layout_blocking_count_ != 0) {
       size_t non_delayable_requests_in_flight_count =
           in_flight_requests_.size() - in_flight_delayable_count_;
       if (non_delayable_requests_in_flight_count >
@@ -960,12 +963,12 @@ class ResourceScheduler::Client {
     }
   }
 
-  bool is_loaded_;
+  bool deprecated_is_loaded_;
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
   // This is disabled and the is always true when kRendererSideResourceScheduler
   // is enabled.
-  bool has_html_body_;
+  bool deprecated_has_html_body_;
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
@@ -1105,15 +1108,15 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   client_map_.erase(it);
 }
 
-void ResourceScheduler::OnLoadingStateChanged(int child_id,
-                                              int route_id,
-                                              bool is_loaded) {
+void ResourceScheduler::DeprecatedOnLoadingStateChanged(int child_id,
+                                                        int route_id,
+                                                        bool is_loaded) {
   Client* client = GetClient(child_id, route_id);
   DCHECK(client);
-  client->OnLoadingStateChanged(is_loaded);
+  client->DeprecatedOnLoadingStateChanged(is_loaded);
 }
 
-void ResourceScheduler::OnNavigate(int child_id, int route_id) {
+void ResourceScheduler::DeprecatedOnNavigate(int child_id, int route_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClientId client_id = MakeClientId(child_id, route_id);
 
@@ -1124,10 +1127,10 @@ void ResourceScheduler::OnNavigate(int child_id, int route_id) {
   }
 
   Client* client = it->second;
-  client->OnNavigate();
+  client->DeprecatedOnNavigate();
 }
 
-void ResourceScheduler::OnWillInsertBody(int child_id, int route_id) {
+void ResourceScheduler::DeprecatedOnWillInsertBody(int child_id, int route_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClientId client_id = MakeClientId(child_id, route_id);
 
@@ -1138,7 +1141,7 @@ void ResourceScheduler::OnWillInsertBody(int child_id, int route_id) {
   }
 
   Client* client = it->second;
-  client->OnWillInsertBody();
+  client->DeprecatedOnWillInsertBody();
 }
 
 void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(int child_id,
@@ -1155,9 +1158,9 @@ void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(int child_id,
   client->OnReceivedSpdyProxiedHttpResponse();
 }
 
-bool ResourceScheduler::HasLoadingClients() const {
+bool ResourceScheduler::DeprecatedHasLoadingClients() const {
   for (const auto& client : client_map_) {
-    if (!client.second->is_loaded())
+    if (!client.second->deprecated_is_loaded())
       return true;
   }
   return false;

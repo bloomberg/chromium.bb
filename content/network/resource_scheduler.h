@@ -123,16 +123,21 @@ class CONTENT_EXPORT ResourceScheduler {
   void OnClientDeleted(int child_id, int route_id);
 
   // Called when a renderer stops or restarts loading.
-  void OnLoadingStateChanged(int child_id, int route_id, bool is_loaded);
+  // Do not call this function when the network service is enabled.
+  void DeprecatedOnLoadingStateChanged(int child_id,
+                                       int route_id,
+                                       bool is_loaded);
 
   // Signals from IPC messages directly from the renderers:
 
   // Called when a client navigates to a new main document.
-  void OnNavigate(int child_id, int route_id);
+  // Do not call this function when the network service is enabled.
+  void DeprecatedOnNavigate(int child_id, int route_id);
 
   // Called when the client has parsed the <body> element. This is a signal that
   // resource loads won't interfere with first paint.
-  void OnWillInsertBody(int child_id, int route_id);
+  // Do not call this function when the network service is enabled.
+  void DeprecatedOnWillInsertBody(int child_id, int route_id);
 
   // Signals from the IO thread:
 
@@ -143,7 +148,8 @@ class CONTENT_EXPORT ResourceScheduler {
   // Client functions:
 
   // Returns true if at least one client is currently loading.
-  bool HasLoadingClients() const;
+  // Do not call this function when the network service is enabled.
+  bool DeprecatedHasLoadingClients() const;
 
   // Updates the priority for |request|. Modifies request->priority(), and may
   // start the request loading if it wasn't already started.
