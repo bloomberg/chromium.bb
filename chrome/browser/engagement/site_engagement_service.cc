@@ -137,7 +137,11 @@ SiteEngagementService::SiteEngagementService(Profile* profile)
   }
 }
 
-SiteEngagementService::~SiteEngagementService() = default;
+SiteEngagementService::~SiteEngagementService() {
+  // Clear any observers to avoid dangling pointers back to this object.
+  for (auto& observer : observer_list_)
+    observer.Observe(nullptr);
+}
 
 void SiteEngagementService::Shutdown() {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(

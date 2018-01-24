@@ -44,6 +44,8 @@ class SiteEngagementObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, Observers);
+  friend class SiteEngagementService;
+
   SiteEngagementService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementObserver);
