@@ -3,7 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-"""Calculate statistics about tasks.
+"""Calculate statistics about tasks, counts per day.
 
 Saves the data fetched from the server into a json file to enable reprocessing
 the data without having to always fetch from the server.
@@ -58,18 +58,6 @@ def _get_epoch(t):
   return int((t - _EPOCH).total_seconds())
 
 
-def _flatten_dimensions(dimensions):
-  items = {i['key']: i['value'] for i in dimensions}
-  return ','.join('%s=%s' % (k, v) for k, v in sorted(items.iteritems()))
-
-
-def _get_dimensions(data):
-  """Returns the list of flattened dimensions for these tasks."""
-  items = data.get('items', [])
-  logging.info('- proessing %d items', len(items))
-  return [_flatten_dimensions(t['properties']['dimensions']) for t in items]
-
-
 def _run_json(key, process, cmd):
   """Runs cmd and calls process with the decoded json."""
   logging.info('Running %s', ' '.join(cmd))
@@ -89,42 +77,42 @@ def _get_cmd(swarming, endpoint, start, end, state, tags):
   return cmd + [endpoint + '?' + urllib.urlencode(data)]
 
 
-def fetch_tasks(swarming, start, end, state, tags):
+def _flatten_dimensions(dimensions):
+  items = {i['key']: i['value'] for i in dimensions}
+  return ','.join('%s=%s' % (k, v) for k, v in sorted(items.iteritems()))
+
+
+def fetch_tasks(swarming, start, end, state, tags, parallel):
   """Fetches the data for each task.
 
   Fetch per hour because otherwise it's too slow.
   """
-  out = {}
+  def process(data):
+    """Returns the list of flattened dimensions for these tasks."""
+    items = data.get('items', [])
+    logging.info('- processing %d items', len(items))
+    return [_flatten_dimensions(t['properties']['dimensions']) for t in items]
   delta = datetime.timedelta(hours=1)
-  with threading_utils.ThreadPool(1, 100, 0) as pool:
-    while start < end:
-      cmd = _get_cmd(
-          swarming, 'tasks/requests', _get_epoch(start),
-          _get_epoch(start + delta), state, tags)
-      pool.add_task(
-          0, _run_json, start.strftime('%Y-%m-%d'), _get_dimensions, cmd)
-      start += delta
-    for k, v in pool.iter_results():
-      sys.stdout.write('.')
-      sys.stdout.flush()
-      out.setdefault(k, []).extend(v)
-  print('')
-  return out
+  return _fetch_daily_internal(
+      delta, swarming, process, 'tasks/requests', start, end, state, tags,
+      parallel)
 
 
-def fetch_counts(swarming, start, end, state, tags):
+def fetch_counts(swarming, start, end, state, tags, parallel):
   """Fetches counts from swarming and returns it."""
   def process(data):
     return int(data['count'])
+  delta = datetime.timedelta(days=1)
   return _fetch_daily_internal(
-      swarming, process, 'tasks/count', start, end, state, tags)
+      delta, swarming, process, 'tasks/count', start, end, state, tags,
+      parallel)
 
 
-def _fetch_daily_internal(swarming, process, endpoint, start, end, state, tags):
+def _fetch_daily_internal(
+    delta, swarming, process, endpoint, start, end, state, tags, parallel):
   """Executes 'process' by parallelizing it once per day."""
   out = {}
-  delta = datetime.timedelta(days=1)
-  with threading_utils.ThreadPool(1, 100, 0) as pool:
+  with threading_utils.ThreadPool(1, parallel, 0) as pool:
     while start < end:
       cmd = _get_cmd(
           swarming, endpoint, _get_epoch(start), _get_epoch(start + delta),
@@ -239,6 +227,9 @@ def main():
       '--json', default='counts.json',
       help='File containing raw data; default: %default')
   parser.add_option(
+      '--parallel', default=100, type='int',
+      help='Concurrent queries; default: %default')
+  parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Log')
   options, args = parser.parse_args()
 
@@ -253,10 +244,12 @@ def main():
   if options.swarming:
     if options.show_dimensions:
       data = fetch_tasks(
-          options.swarming, start, end, options.state, options.tags)
+          options.swarming, start, end, options.state, options.tags,
+          options.parallel)
     else:
       data = fetch_counts(
-          options.swarming, start, end, options.state, options.tags)
+          options.swarming, start, end, options.state, options.tags,
+          options.parallel)
     with open(options.json, 'wb') as f:
       json.dump(data, f)
   elif not os.path.isfile(options.json):

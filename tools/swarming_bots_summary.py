@@ -3,7 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-"""Calculate statistics about tasks.
+"""Calculate statistics about the fleet per OS and GPU.
 
 Saves the data fetched from the server into a json file to enable reprocessing
 the data without having to always fetch from the server.
@@ -16,7 +16,6 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
 
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
@@ -28,96 +27,15 @@ _EPOCH = datetime.datetime.utcfromtimestamp(0)
 MAJOR_OS, MINOR_OS, MINOR_OS_GPU = range(3)
 
 
-def seconds_to_timedelta(seconds):
-  """Converts seconds in datetime.timedelta, stripping sub-second precision.
-
-  This is for presentation, where subsecond values for summaries is not useful.
-  """
-  return datetime.timedelta(seconds=round(seconds))
-
-
-def parse_time_option(value):
-  """Converts time as an option into a datetime.datetime.
-
-  Returns None if not specified.
-  """
-  if not value:
-    return None
-  try:
-    return _EPOCH + datetime.timedelta(seconds=int(value))
-  except ValueError:
-    pass
-  for fmt in (
-      '%Y-%m-%d',
-      '%Y-%m-%d %H:%M',
-      '%Y-%m-%dT%H:%M',
-      '%Y-%m-%d %H:%M:%S',
-      '%Y-%m-%dT%H:%M:%S',
-      '%Y-%m-%d %H:%M:%S.%f',
-      '%Y-%m-%dT%H:%M:%S.%f'):
-    try:
-      return datetime.datetime.strptime(value, fmt)
-    except ValueError:
-      pass
-  raise ValueError('Failed to parse %s' % value)
-
-
-def parse_time(value):
-  """Converts serialized time from the API to datetime.datetime."""
-  for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S'):
-    try:
-      return datetime.datetime.strptime(value, fmt)
-    except ValueError:
-      pass
-  raise ValueError('Failed to parse %s' % value)
-
-
-def average(items):
-  if not items:
-    return 0.
-  return sum(items) / len(items)
-
-
-def median(items):
-  return percentile(items, 50)
-
-
-def percentile(items, percent):
-  """Uses NIST method."""
-  if not items:
-    return 0.
-  rank = percent * .01 * (len(items) + 1)
-  rank_int = int(rank)
-  rest = rank - rank_int
-  if rest and rank_int <= len(items) - 1:
-    return items[rank_int] + rest * (items[rank_int+1] - items[rank_int])
-  return items[min(rank_int, len(items) - 1)]
-
-
-def sp(dividend, divisor):
-  """Returns the percentage for dividend/divisor, safely."""
-  if not divisor:
-    return 0.
-  return 100. * float(dividend) / float(divisor)
-
-
-def fetch_data(options):
-  """Fetches data from options.swarming and writes it to options.json."""
+def fetch_data(verbose, swarming, out_json):
+  """Fetches data from swarming and writes it to out_json."""
   cmd = [
     sys.executable, os.path.join(CLIENT_DIR, 'swarming.py'),
-    'query',
-    '-S', options.swarming,
-    '--json', options.json,
-    # Start chocking at 1m bots. The chromium infrastructure is currently at
-    # around thousands range.
-    '--limit', '1000000',
-    '--progress',
+    'query', '-S', swarming, '--json', out_json, '--limit', '0', '--progress',
     'bots/list',
   ]
-  if options.verbose:
-    cmd.append('--verbose')
-    cmd.append('--verbose')
-    cmd.append('--verbose')
+  if verbose:
+    cmd.extend(['--verbose'] * 3)
   logging.info('%s', ' '.join(cmd))
   subprocess.check_call(cmd)
   print('')
@@ -128,8 +46,9 @@ def present_data(bots, bucket_type, order_count):
   maxlen = max(len(i) for i in buckets)
   print('%-*s  Alive  Dead' % (maxlen, 'Type'))
   counts = {
-      k: [len(v), sum(1 for i in v if i.get('is_dead'))]
-        for k, v in buckets.iteritems()}
+    k: [len(v), sum(1 for i in v if i.get('is_dead'))]
+    for k, v in buckets.iteritems()
+  }
   key = (lambda x: -x[1][0]) if order_count else (lambda x: x)
   for bucket, count in sorted(counts.iteritems(), key=key):
     print('%-*s: %5d %5d' % (maxlen, bucket, count[0], count[1]))
@@ -140,8 +59,10 @@ def do_bucket(bots, bucket_type):
   out = {}
   for bot in bots:
     # Convert dimensions from list of StringPairs to dict of list.
-    bot['dimensions'] = {i['key']: i['value'] for i in bot['dimensions']}
-    os_types = bot['dimensions']['os']
+    bot['dimensions'] = {
+      i['key']: i['value'] for i in bot.get('dimensions', [])
+    }
+    os_types = bot['dimensions'].get('os', ['Unknown'])
     try:
       os_types.remove('Linux')
     except ValueError:
@@ -191,7 +112,7 @@ def main():
     parser.error('Unsupported argument %s' % args)
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
   if options.swarming:
-    fetch_data(options)
+    fetch_data(options.verbose, options.swarming, options.json)
   elif not os.path.isfile(options.json):
     parser.error('--swarming is required.')
 
