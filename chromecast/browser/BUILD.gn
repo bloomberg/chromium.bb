@@ -44,8 +44,9 @@ cast_source_set("browser") {
     "cast_resource_dispatcher_host_delegate.h",
     "cast_web_contents_manager.cc",
     "cast_web_contents_manager.h",
-    "cast_web_view.cc",
     "cast_web_view.h",
+    "cast_web_view_default.cc",
+    "cast_web_view_default.h",
     "devtools/cast_devtools_manager_delegate.cc",
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
@@ -200,6 +201,10 @@ cast_source_set("browser") {
 
   if (enable_chromecast_extensions) {
     sources += [
+      "cast_extension_host.cc",
+      "cast_extension_host.h",
+      "cast_web_view_extension.cc",
+      "cast_web_view_extension.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
       "extensions/cast_display_info_provider.cc",

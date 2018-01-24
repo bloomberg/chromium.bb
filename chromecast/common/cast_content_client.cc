@@ -11,10 +11,15 @@
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/version.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "extensions/common/constants.h"  // nogncheck
+#endif
 
 #if defined(OS_ANDROID)
 #include "chromecast/common/media/cast_media_drm_bridge_client.h"
@@ -81,6 +86,9 @@ CastContentClient::~CastContentClient() {
 
 void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->standard_schemes.push_back(kChromeResourceScheme);
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  schemes->standard_schemes.push_back(extensions::kExtensionScheme);
+#endif
 }
 
 std::string CastContentClient::GetUserAgent() const {
