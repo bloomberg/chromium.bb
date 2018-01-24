@@ -5,13 +5,13 @@
 #include <linux/input.h>
 #include <wayland-server.h>
 
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/timer/timer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
-#include "ui/ozone/platform/wayland/wayland_window.h"
-#include "ui/ozone/test/mock_platform_window_delegate.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "base/memory/free_deleter.h"
@@ -325,6 +325,138 @@ TEST_P(WaylandKeyboardTest, CapsLockModifier) {
   EXPECT_EQ(ET_KEY_PRESSED, key_event3->type());
 }
 #endif
+
+TEST_P(WaylandKeyboardTest, EventAutoRepeat) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Auto repeat info in ms.
+  uint32_t rate = 75;
+  uint32_t delay = 25;
+
+  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+
+  {
+    scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner =
+        new base::TestMockTimeTaskRunner();
+    base::TestMockTimeTaskRunner::ScopedContext scoped_context(
+        mock_time_task_runner.get());
+
+    // Keep it pressed for doubled the rate time, to ensure events get fired.
+    mock_time_task_runner->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(rate * 2));
+  }
+
+  Sync();
+
+  std::unique_ptr<Event> event2;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event2));
+
+  wl_keyboard_send_key(keyboard->resource(), 3, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_RELEASED);
+  Sync();
+}
+
+TEST_P(WaylandKeyboardTest, NoEventAutoRepeatOnLeave) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Auto repeat info in ms.
+  uint32_t rate = 75;
+  uint32_t delay = 25;
+
+  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+
+  {
+    scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner =
+        new base::TestMockTimeTaskRunner();
+    base::TestMockTimeTaskRunner::ScopedContext scoped_context(
+        mock_time_task_runner.get());
+
+    // Keep it pressed for doubled the rate time, to ensure events get fired.
+    mock_time_task_runner->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(rate * 2));
+  }
+
+  wl_keyboard_send_leave(keyboard->resource(), 3, surface->resource());
+
+  Sync();
+
+  EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
+
+  wl_keyboard_send_key(keyboard->resource(), 4, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_RELEASED);
+  Sync();
+}
+
+TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
+  struct wl_array empty;
+  wl_array_init(&empty);
+
+  wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
+  wl_array_release(&empty);
+
+  // Auto repeat info in ms.
+  uint32_t rate = 500;
+  uint32_t delay = 50;
+
+  wl_keyboard_send_repeat_info(keyboard->resource(), rate, delay);
+
+  wl_keyboard_send_key(keyboard->resource(), 2, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_PRESSED);
+
+  std::unique_ptr<Event> event;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
+
+  Sync();
+
+  {
+    scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner =
+        new base::TestMockTimeTaskRunner();
+    base::TestMockTimeTaskRunner::ScopedContext scoped_context(
+        mock_time_task_runner.get());
+
+    // Keep it pressed for a fifth of the rate time, and no auto repeat events
+    // should get dispatched.
+    mock_time_task_runner->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(rate / 5));
+  }
+
+  wl_keyboard_send_key(keyboard->resource(), 4, 0, 30 /* a */,
+                       WL_KEYBOARD_KEY_STATE_RELEASED);
+
+  std::unique_ptr<Event> event2;
+  EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event2));
+
+  Sync();
+  ASSERT_TRUE(event2);
+  ASSERT_TRUE(event2->IsKeyEvent());
+
+  auto* key_event2 = event2->AsKeyEvent();
+  EXPECT_EQ(ET_KEY_RELEASED, key_event2->type());
+}
 
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
                         WaylandKeyboardTest,

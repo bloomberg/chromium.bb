@@ -10,6 +10,7 @@
 #include <memory>
 
 struct wl_buffer;
+struct wl_callback;
 struct wl_compositor;
 struct wl_keyboard;
 struct wl_output;
@@ -34,6 +35,12 @@ template <>
 struct ObjectTraits<wl_buffer> {
   static const wl_interface* interface;
   static void (*deleter)(wl_buffer*);
+};
+
+template <>
+struct ObjectTraits<wl_callback> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_callback*);
 };
 
 template <>
