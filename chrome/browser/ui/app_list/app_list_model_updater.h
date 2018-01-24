@@ -80,11 +80,9 @@ class AppListModelUpdater {
   virtual app_list::AppListFolderItem* FindFolderItem(
       const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
-  virtual app_list::AppListViewState StateFullscreen() = 0;
   virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
-  virtual bool TabletMode() = 0;
   virtual bool SearchEngineIsGoogle() = 0;
 
  protected:

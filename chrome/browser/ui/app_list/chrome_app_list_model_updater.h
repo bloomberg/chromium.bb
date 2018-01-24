@@ -73,8 +73,6 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   app_list::AppListFolderItem* FindFolderItem(
       const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
-  bool TabletMode() override;
-  app_list::AppListViewState StateFullscreen() override;
   bool SearchEngineIsGoogle() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
   size_t BadgedItemCount() override;

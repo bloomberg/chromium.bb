@@ -12,6 +12,8 @@ component("app_list") {
     "app_list_export.h",
     "app_list_features.cc",
     "app_list_features.h",
+    "app_list_metrics.cc",
+    "app_list_metrics.h",
     "app_list_switches.cc",
     "app_list_switches.h",
     "app_list_util.cc",

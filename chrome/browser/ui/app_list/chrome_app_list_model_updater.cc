@@ -181,14 +181,6 @@ bool ChromeAppListModelUpdater::FindItemIndexForTest(const std::string& id,
   return model_->top_level_item_list()->FindItemIndex(id, index);
 }
 
-bool ChromeAppListModelUpdater::TabletMode() {
-  return search_model_->tablet_mode();
-}
-
-app_list::AppListViewState ChromeAppListModelUpdater::StateFullscreen() {
-  return model_->state_fullscreen();
-}
-
 bool ChromeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_model_->search_engine_is_google();
 }

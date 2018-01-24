@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/vector_icons/vector_icons.h"
@@ -258,6 +259,8 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   if (IsSuggestedAppTile())
     LogAppLaunch();
 
+  RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
+                               view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(item_, event.flags());
 }
 
@@ -289,6 +292,8 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
     if (IsSuggestedAppTile())
       LogAppLaunch();
 
+    RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
+                                 view_delegate_->GetSearchModel());
     view_delegate_->OpenSearchResult(item_, event.flags());
     return true;
   }

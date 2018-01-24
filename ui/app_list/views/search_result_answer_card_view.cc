@@ -4,12 +4,15 @@
 
 #include "ui/app_list/views/search_result_answer_card_view.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/model/search/search_result_observer.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
@@ -114,8 +117,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
-    if (search_result_)
+    if (search_result_) {
+      RecordSearchResultOpenSource(search_result_, view_delegate_->GetModel(),
+                                   view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(search_result_, event.flags());
+    }
   }
 
   // SearchResultObserver overrides:

@@ -52,37 +52,6 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
 
-namespace {
-
-// The UMA histogram that logs which state search results are opened from.
-const char kAppListSearchResultOpenSourceHistogram[] =
-    "Apps.AppListSearchResultOpenedSource";
-
-// The different sources from which a search result is displayed. These values
-// are written to logs.  New enum values can be added, but existing enums must
-// never be renumbered or deleted and reused.
-enum ApplistSearchResultOpenedSource {
-  kHalfClamshell = 0,
-  kFullscreenClamshell = 1,
-  kFullscreenTablet = 2,
-  kMaxApplistSearchResultOpenedSource = 3,
-};
-
-void RecordHistogram(bool is_tablet_mode, app_list::AppListViewState state) {
-  ApplistSearchResultOpenedSource source;
-
-  if (is_tablet_mode) {
-    source = kFullscreenTablet;
-  } else {
-    source = state == app_list::AppListViewState::HALF ? kHalfClamshell
-                                                       : kFullscreenClamshell;
-  }
-  UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenSourceHistogram, source,
-                            kMaxApplistSearchResultOpenedSource);
-}
-
-}  // namespace
-
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(nullptr),
@@ -208,11 +177,6 @@ void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
 
 void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
                                            int event_flags) {
-  // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() != app_list::SearchResult::DISPLAY_RECOMMENDATION)
-    RecordHistogram(model_updater_->TabletMode(),
-                    model_updater_->StateFullscreen());
-
   search_controller_->OpenResult(result, event_flags);
 }
 
