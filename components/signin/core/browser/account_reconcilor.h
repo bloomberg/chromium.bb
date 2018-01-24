@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -160,6 +161,12 @@ class AccountReconcilor : public KeyedService,
                            AddAccountToCookieCompletedWithBogusAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, NoLoopWithBadPrimary);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, WontMergeAccountsWithError);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsCalled);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsNotCalled);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+                           DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
+
+  void set_timer_for_testing(std::unique_ptr<base::Timer> timer);
 
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
@@ -228,6 +235,8 @@ class AccountReconcilor : public KeyedService,
   void UnblockReconcile();
   bool IsReconcileBlocked() const;
 
+  void HandleReconcileTimeout();
+
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
   // The ProfileOAuth2TokenService associated with this reconcilor.
@@ -274,6 +283,11 @@ class AccountReconcilor : public KeyedService,
   bool reconcile_on_unblock_;
 
   base::ObserverList<Observer, true> observer_list_;
+
+  // A timer to set off reconciliation timeout handlers, if account
+  // reconciliation does not happen in a given timeout duration.
+  std::unique_ptr<base::Timer> timer_;
+  base::TimeDelta timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };
