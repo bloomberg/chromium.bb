@@ -942,7 +942,6 @@ test("browser_tests") {
       "//third_party/cacheinvalidation",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/webrtc/modules/desktop_capture",
       "//third_party/webrtc_overrides",
       "//third_party/widevine/cdm:headers",
       "//ui/accessibility:test_support",
