@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_view.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -19,7 +20,8 @@ class ChromeBrowserState;
 @protocol ToolbarCoordinatorDelegate;
 class LocationBarControllerImpl;
 
-@interface LocationBarCoordinator : NSObject<LocationBarURLLoader>
+@interface LocationBarCoordinator
+    : NSObject<LocationBarURLLoader, OmniboxFocuser>
 
 // LocationBarView containing the omnibox.
 @property(nonatomic, strong) LocationBarView* locationBarView;

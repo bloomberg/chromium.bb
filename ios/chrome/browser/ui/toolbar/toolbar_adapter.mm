@@ -137,11 +137,11 @@
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
-  [self.toolbarCoordinator focusOmnibox];
+  [self.toolbarCoordinator.omniboxFocuser focusOmnibox];
 }
 
 - (void)cancelOmniboxEdit {
-  [self.toolbarCoordinator cancelOmniboxEdit];
+  [self.toolbarCoordinator.omniboxFocuser cancelOmniboxEdit];
 }
 
 #pragma mark - FakeboxFocuser

@@ -29,8 +29,7 @@ class WebState;
 }
 
 // Coordinator to run a toolbar -- a UI element housing controls.
-@interface ToolbarCoordinator : NSObject<OmniboxFocuser,
-                                         FakeboxFocuser,
+@interface ToolbarCoordinator : NSObject<FakeboxFocuser,
                                          QRScannerResultLoading,
                                          ToolsMenuPresentationProvider,
                                          VoiceSearchControllerDelegate>
@@ -56,6 +55,9 @@ class WebState;
 
 // Returns the ActivityServicePositioner for this toolbar.
 - (id<ActivityServicePositioner>)activityServicePositioner;
+
+// Returns the OmniboxFocuser for this toolbar.
+- (id<OmniboxFocuser>)omniboxFocuser;
 
 // Start this coordinator.
 - (void)start;

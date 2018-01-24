@@ -131,8 +131,12 @@
 // methods are already necessary though.
 #pragma mark - OmniboxFocuser
 
-- (void)cancelOmniboxEdit {
-  _locationBarController->HideKeyboardAndEndEditing();
+- (void)focusOmnibox {
+  [self.locationBarView.textField becomeFirstResponder];
 }
 
+- (void)cancelOmniboxEdit {
+  _locationBarController->HideKeyboardAndEndEditing();
+  [self updateOmniboxState];
+}
 @end

@@ -104,6 +104,10 @@
   return self.toolbarController;
 }
 
+- (id<OmniboxFocuser>)omniboxFocuser {
+  return self.toolbarController;
+}
+
 #pragma mark - WebToolbarController public interface
 
 - (void)setToolbarController:(id<Toolbar>)toolbarController {
@@ -161,16 +165,6 @@
 
 - (void)triggerToolsMenuButtonAnimation {
   [self.toolbarController triggerToolsMenuButtonAnimation];
-}
-
-#pragma mark - OmniboxFocuser
-
-- (void)focusOmnibox {
-  [self.toolbarController focusOmnibox];
-}
-
-- (void)cancelOmniboxEdit {
-  [self.toolbarController cancelOmniboxEdit];
 }
 
 #pragma mark - FakeboxFocuser
@@ -288,7 +282,7 @@
 #pragma mark - Toolbar Commands
 
 - (void)contractToolbar {
-  [self cancelOmniboxEdit];
+  [self.toolbarController cancelOmniboxEdit];
 }
 
 #pragma mark - Fullscreen helpers
