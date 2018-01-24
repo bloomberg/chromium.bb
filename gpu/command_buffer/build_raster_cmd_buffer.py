@@ -1056,9 +1056,10 @@ def main(argv):
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")
   base_dir = os.getcwd()
-  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, _FUNCTION_INFO,
-                                         _NAMED_TYPE_INFO, _STATE_INFO,
-                                         _CAPABILITY_FLAGS)
+  build_cmd_buffer_lib.InitializePrefix("Raster")
+  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, "2018",
+                                         _FUNCTION_INFO, _NAMED_TYPE_INFO,
+                                         _STATE_INFO, _CAPABILITY_FLAGS)
   gen.ParseGLH("gpu/command_buffer/raster_cmd_buffer_functions.txt")
 
   # Support generating files under gen/
@@ -1068,10 +1069,10 @@ def main(argv):
   os.chdir(base_dir)
 
   # TODO(backer): Uncomment once the output looks good.
-  # gen.WriteCommandIds("gpu/command_buffer/common/raster_cmd_ids_autogen.h")
-  # gen.WriteFormat("gpu/command_buffer/common/raster_cmd_format_autogen.h")
-  # gen.WriteFormatTest(
-  #   "gpu/command_buffer/common/raster_cmd_format_test_autogen.h")
+  gen.WriteCommandIds("gpu/command_buffer/common/raster_cmd_ids_autogen.h")
+  gen.WriteFormat("gpu/command_buffer/common/raster_cmd_format_autogen.h")
+  gen.WriteFormatTest(
+    "gpu/command_buffer/common/raster_cmd_format_test_autogen.h")
   # gen.WriteGLES2InterfaceHeader(
   #   "gpu/command_buffer/client/raster_interface_autogen.h")
   # gen.WriteGLES2InterfaceStub(
@@ -1104,10 +1105,6 @@ def main(argv):
   # gen.WriteServiceUtilsImplementation(
   #   "gpu/command_buffer/service/"
   #   "raster_cmd_validation_implementation_autogen.h")
-  # gen.WriteCommonUtilsHeader(
-  #   "gpu/command_buffer/common/raster_cmd_utils_autogen.h")
-  # gen.WriteCommonUtilsImpl(
-  #   "gpu/command_buffer/common/raster_cmd_utils_implementation_autogen.h")
 
   build_cmd_buffer_lib.Format(gen.generated_cpp_filenames)
 

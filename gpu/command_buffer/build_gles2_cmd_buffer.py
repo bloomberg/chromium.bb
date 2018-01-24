@@ -4677,9 +4677,10 @@ def main(argv):
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")
   base_dir = os.getcwd()
-  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, _FUNCTION_INFO,
-                                         _NAMED_TYPE_INFO, _STATE_INFO,
-                                         _CAPABILITY_FLAGS)
+  build_cmd_buffer_lib.InitializePrefix("GLES2")
+  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, "2014",
+                                         _FUNCTION_INFO, _NAMED_TYPE_INFO,
+                                         _STATE_INFO, _CAPABILITY_FLAGS)
   gen.ParseGLH("gpu/command_buffer/gles2_cmd_buffer_functions.txt")
 
   # Support generating files under gen/
