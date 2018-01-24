@@ -399,6 +399,10 @@ void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
 
+void RenderWidgetHostViewMac::DidReceiveFirstFrameAfterNavigation() {
+  render_widget_host_->DidReceiveFirstFrameAfterNavigation();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 
@@ -1086,6 +1090,10 @@ void RenderWidgetHostViewMac::SetTooltipText(
 
 void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
   browser_compositor_->WasResized();
+}
+
+void RenderWidgetHostViewMac::DidNavigate() {
+  browser_compositor_->DidNavigate();
 }
 
 gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() const {

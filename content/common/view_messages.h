@@ -173,6 +173,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(needs_resize_ack)
+  IPC_STRUCT_TRAITS_MEMBER(content_source_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
@@ -345,12 +346,16 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
 
 // Tells the widget to use the provided viz::LocalSurfaceId to submit
 // CompositorFrames for autosize.
-IPC_MESSAGE_ROUTED5(ViewMsg_SetLocalSurfaceIdForAutoResize,
-                    uint64_t /* sequence_number */,
-                    gfx::Size /* min_size */,
-                    gfx::Size /* max_size */,
-                    content::ScreenInfo /* screen_info */,
-                    viz::LocalSurfaceId /* local_surface_id */)
+// TODO(fsamuel): Replace these parameters with ResizeParams eventually. After
+// surface sync is on by default everywhere, ResizeParams should be renamed to
+// SynchronizedVisualParams.
+IPC_MESSAGE_ROUTED(ViewMsg_SetLocalSurfaceIdForAutoResize,
+                   uint64_t /* sequence_number */,
+                   gfx::Size /* min_size */,
+                   gfx::Size /* max_size */,
+                   content::ScreenInfo /* screen_info */,
+                   uint32_t /* content_source_id */,
+                   viz::LocalSurfaceId /* local_surface_id */)
 
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,

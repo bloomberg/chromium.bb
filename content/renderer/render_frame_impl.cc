@@ -4266,7 +4266,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // track of that on the widget to help the browser process detect when stale
   // compositor frames are being shown after a commit.
   if (is_main_frame_ && !navigation_state->WasWithinSameDocument()) {
-    GetRenderWidget()->IncrementContentSourceId();
+    GetRenderWidget()->DidNavigate();
 
     // Update the URL used to key Ukm metrics in the compositor if the
     // navigation is not in the same document, which represents a new source

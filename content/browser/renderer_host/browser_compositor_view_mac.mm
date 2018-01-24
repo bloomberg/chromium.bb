@@ -564,4 +564,14 @@ ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
   return nullptr;
 }
 
+void BrowserCompositorMac::DidNavigate() {
+  delegated_frame_host_surface_id_ =
+      parent_local_surface_id_allocator_.GenerateId();
+  delegated_frame_host_->DidNavigate();
+}
+
+void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {
+  client_->DidReceiveFirstFrameAfterNavigation();
+}
+
 }  // namespace content

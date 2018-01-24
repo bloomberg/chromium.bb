@@ -614,6 +614,7 @@ void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
 void RenderWidget::SetLocalSurfaceIdForAutoResize(
     uint64_t sequence_number,
     const content::ScreenInfo& screen_info,
+    uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
   bool screen_info_changed = screen_info_ != screen_info;
 
@@ -632,7 +633,12 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
       observer.ScreenInfoChanged(screen_info);
   }
 
-  AutoResizeCompositor(local_surface_id);
+  // If the given LocalSurfaceId was generated before navigation, don't use it.
+  // We should receive a new LocalSurfaceId later.
+  if (content_source_id != current_content_source_id_)
+    AutoResizeCompositor(viz::LocalSurfaceId());
+  else
+    AutoResizeCompositor(local_surface_id);
 }
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
@@ -811,12 +817,13 @@ void RenderWidget::OnSetLocalSurfaceIdForAutoResize(
     const gfx::Size& min_size,
     const gfx::Size& max_size,
     const content::ScreenInfo& screen_info,
+    uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
   if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number)
     return;
 
   SetLocalSurfaceIdForAutoResize(sequence_number, screen_info,
-                                 local_surface_id);
+                                 content_source_id, local_surface_id);
 }
 
 void RenderWidget::OnEnableDeviceEmulation(
@@ -1295,6 +1302,10 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 }
 
 void RenderWidget::Resize(const ResizeParams& params) {
+  // The content_source_id that the browser sends us should never be larger than
+  // |current_content_source_id_|.
+  DCHECK_GE(1u << 30, current_content_source_id_ - params.content_source_id);
+
   bool orientation_changed =
       screen_info_.orientation_angle != params.screen_info.orientation_angle ||
       screen_info_.orientation_type != params.screen_info.orientation_type;
@@ -1315,15 +1326,22 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
     // one.
-    DCHECK(!params.needs_resize_ack || !next_paint_is_resize_ack());
+    DCHECK(!compositor_ || !params.needs_resize_ack ||
+           !next_paint_is_resize_ack());
   }
 
   // Ignore this during shutdown.
   if (!GetWebWidget())
     return;
 
-  if (params.local_surface_id)
+  // If the content_source_id of ResizeParams doesn't match
+  // |current_content_source_id_|, then the given LocalSurfaceId was generated
+  // before the navigation. Continue with the resize but don't use the
+  // LocalSurfaceId until the right one comes.
+  if (params.local_surface_id &&
+      params.content_source_id == current_content_source_id_) {
     local_surface_id_ = *params.local_surface_id;
+  }
 
   if (compositor_) {
     // If surface synchronization is enabled, then this will use the provided
@@ -1332,7 +1350,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
     // it receives a valid surface ID. This is a no-op if surface
     // synchronization is disabled.
     DCHECK(!compositor_->IsSurfaceSynchronizationEnabled() ||
-           !params.needs_resize_ack || local_surface_id_.is_valid());
+           !params.needs_resize_ack || params.local_surface_id->is_valid());
     compositor_->SetViewportSize(params.physical_backing_size,
                                  local_surface_id_);
     compositor_->SetBrowserControlsHeight(
@@ -1400,6 +1418,14 @@ void RenderWidget::Resize(const ResizeParams& params) {
   // If a resize ack is requested and it isn't set-up, then no more resizes will
   // come in and in general things will go wrong.
   DCHECK(!params.needs_resize_ack || next_paint_is_resize_ack());
+
+  // If this resize was initiated before navigation and surface synchronization
+  // is on, it is not expected to be acked.
+  if (compositor_ && compositor_->IsSurfaceSynchronizationEnabled() &&
+      params.needs_resize_ack && !local_surface_id_.is_valid()) {
+    DCHECK_NE(params.content_source_id, current_content_source_id_);
+    reset_next_paint_is_resize_ack();
+  }
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -1439,6 +1465,14 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_, device_scale_factor_, screen_info_);
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
+
+  // We can get into this state if surface synchronization is on and the last
+  // resize was initiated before navigation, in which case we don't have to ack
+  // it.
+  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
+      next_paint_is_resize_ack() && !local_surface_id_.is_valid()) {
+    reset_next_paint_is_resize_ack();
+  }
 
   compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
   OnDeviceScaleFactorChanged();
@@ -2147,6 +2181,11 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
   next_paint_flags_ |= ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_REPAINT_ACK;
 }
 
+void RenderWidget::reset_next_paint_is_resize_ack() {
+  DCHECK(next_paint_is_resize_ack());
+  next_paint_flags_ ^= ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
+}
+
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
   if (!ime_event_guard_)
     ime_event_guard_ = guard;
@@ -2551,9 +2590,19 @@ uint32_t RenderWidget::GetContentSourceId() {
   return current_content_source_id_;
 }
 
-void RenderWidget::IncrementContentSourceId() {
-  if (compositor_)
-    compositor_->SetContentSourceId(++current_content_source_id_);
+void RenderWidget::DidNavigate() {
+  if (!compositor_)
+    return;
+  compositor_->SetContentSourceId(++current_content_source_id_);
+  local_surface_id_ = viz::LocalSurfaceId();
+  compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
+  // If surface synchronization is on, navigation implicitly acks any resize
+  // that has happened so far so we can get the next ResizeParams containing the
+  // LocalSurfaceId that should be used after navigation.
+  if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
+      next_paint_is_resize_ack()) {
+    reset_next_paint_is_resize_ack();
+  }
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {

@@ -73,6 +73,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+  virtual void DidReceiveFirstFrameAfterNavigation() = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -211,6 +212,8 @@ class CONTENT_EXPORT DelegatedFrameHost
     return current_frame_size_in_dip_;
   }
 
+  void DidNavigate();
+
  private:
   friend class DelegatedFrameHostClient;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
@@ -341,6 +344,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       nullptr;
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
+
+  uint32_t first_parent_sequence_number_after_navigation_ = 0;
+  bool received_frame_after_navigation_ = false;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_ptr_factory_;
 };

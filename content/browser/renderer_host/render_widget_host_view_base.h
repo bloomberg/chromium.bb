@@ -507,6 +507,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void OnChildFrameDestroyed(int routing_id);
 #endif
 
+  virtual void DidNavigate() {}
+
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();

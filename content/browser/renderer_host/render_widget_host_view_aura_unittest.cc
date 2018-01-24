@@ -24,6 +24,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -38,6 +39,7 @@
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "content/browser/browser_main_loop.h"
@@ -505,6 +507,14 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     return widget_impl_->input_handler();
   }
 
+  void reset_new_content_rendering_timeout_fired() {
+    new_content_rendering_timeout_fired_ = false;
+  }
+
+  bool new_content_rendering_timeout_fired() const {
+    return new_content_rendering_timeout_fired_;
+  }
+
  private:
   MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                            RenderProcessHost* process,
@@ -520,6 +530,11 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo();
   }
 
+  void NotifyNewContentRenderingTimeoutForTesting() override {
+    new_content_rendering_timeout_fired_ = true;
+  }
+
+  bool new_content_rendering_timeout_fired_;
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 };
 
@@ -2349,7 +2364,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id2 = std::get<4>(params);
+    local_surface_id2 = std::get<5>(params);
     EXPECT_NE(local_surface_id1, local_surface_id2);
   }
 
@@ -2368,8 +2383,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(2, std::get<3>(params).device_scale_factor);
-    EXPECT_NE(local_surface_id1, std::get<4>(params));
-    EXPECT_NE(local_surface_id2, std::get<4>(params));
+    EXPECT_NE(local_surface_id1, std::get<5>(params));
+    EXPECT_NE(local_surface_id2, std::get<5>(params));
   }
 }
 
@@ -2410,7 +2425,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id2 = std::get<4>(params);
+    local_surface_id2 = std::get<5>(params);
     EXPECT_NE(local_surface_id1, local_surface_id2);
   }
 
@@ -2430,7 +2445,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
-    local_surface_id3 = std::get<4>(params);
+    local_surface_id3 = std::get<5>(params);
     EXPECT_NE(local_surface_id1, local_surface_id3);
     EXPECT_NE(local_surface_id2, local_surface_id3);
   }
@@ -6156,6 +6171,60 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
           ->GetActiveHitTestRegionList(surface_id);
   EXPECT_EQ(active_hit_test_region_list->flags, viz::mojom::kHitTestMine);
   EXPECT_EQ(active_hit_test_region_list->bounds, view_rect);
+}
+
+// Test that the rendering timeout for newly loaded content fires when enough
+// time passes without receiving a new compositor frame.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       NewContentRenderingTimeout) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
+  EXPECT_TRUE(id1.is_valid());
+
+  widget_host_->set_new_content_rendering_delay_for_testing(
+      base::TimeDelta::FromMicroseconds(10));
+
+  // Start the timer. Verify that a new LocalSurfaceId is allocated.
+  widget_host_->DidNavigate(5);
+  viz::LocalSurfaceId id2 = view_->GetLocalSurfaceId();
+  EXPECT_TRUE(id2.is_valid());
+  EXPECT_LT(id1.parent_sequence_number(), id2.parent_sequence_number());
+
+  // The renderer submits a frame to the old LocalSurfaceId. The timer should
+  // still fire.
+  auto frame = viz::CompositorFrameBuilder().AddDefaultRenderPass().Build();
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMicroseconds(20));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
+  widget_host_->reset_new_content_rendering_timeout_fired();
+
+  // Start the timer again. A new LocalSurfaceId should be allocated.
+  widget_host_->DidNavigate(10);
+  viz::LocalSurfaceId id3 = view_->GetLocalSurfaceId();
+  EXPECT_LT(id2.parent_sequence_number(), id3.parent_sequence_number());
+
+  // Submit to |id3|. Timer should not fire.
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id3), 1, gfx::Size(20, 20)));
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMicroseconds(20));
+    run_loop.Run();
+  }
+  EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
 }
 
 // This class provides functionality to test a RenderWidgetHostViewAura
