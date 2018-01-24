@@ -311,6 +311,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
   GpuProcess gpu_process(io_thread_priority);
+
+  if (client)
+    client->PostIOThreadCreated(gpu_process.io_task_runner());
+
   GpuChildThread* child_thread = new GpuChildThread(
       std::move(gpu_init), std::move(deferred_messages.Get()));
   deferred_messages.Get().clear();
