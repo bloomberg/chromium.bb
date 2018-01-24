@@ -91,9 +91,9 @@ class CONTENT_EXPORT LegacyInputRouterImpl
 
  private:
   friend class LegacyInputRouterImplTest;
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            SubframeTouchEventRouting);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            MainframeTouchEventRouting);
 
   // Keeps track of last position of touch points and sets MovementXY for them.
