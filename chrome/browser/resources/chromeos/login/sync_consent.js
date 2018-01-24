@@ -43,15 +43,6 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'Back' button of Settings section.
-   * @private
-   */
-  onSettingsBack_: function() {
-    this.activeSection_ = 'overview';
-    this.focus();
-  },
-
-  /**
    * This updates link to 'Settings' section on locale change.
    * @param {string} locale The UI language used.
    * @private
