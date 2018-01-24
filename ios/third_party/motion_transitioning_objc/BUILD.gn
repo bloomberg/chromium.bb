@@ -51,5 +51,8 @@ source_set("motion_transitioning_objc") {
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]
-  public_configs = [ ":config" ]
+  public_configs = [
+    ":config",
+    "//build/config/compiler:default_include_dirs",
+  ]
 }
