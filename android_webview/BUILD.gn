@@ -4,6 +4,7 @@
 
 import("//android_webview/system_webview_apk_tmpl.gni")
 import("//android_webview/webview_repack_locales.gni")
+import("//android_webview/variables.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -20,9 +21,6 @@ if (enable_resource_whitelist_generation) {
   system_webview_pak_whitelist =
       "$target_gen_dir/system_webview_pak_whitelist.txt"
 }
-
-system_webview_android_manifest =
-    "$target_gen_dir/system_webview_apk/AndroidManifest.xml"
 
 group("android_webview") {
   if (public_android_sdk) {
