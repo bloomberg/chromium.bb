@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
@@ -38,6 +39,32 @@ namespace {
 
 base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
     g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
+
+// The profiler object is stored in a SequenceLocalStorageSlot on the IO thread
+// so that it will be destroyed when the IO thread stops.
+base::LazyInstance<base::SequenceLocalStorageSlot<
+    std::unique_ptr<base::StackSamplingProfiler>>>::Leaky
+    io_thread_sampling_profiler = LAZY_INSTANCE_INITIALIZER;
+
+// Starts to profile the IO thread.
+void StartIOThreadProfiling() {
+  StackSamplingConfiguration* config = StackSamplingConfiguration::Get();
+
+  if (config->IsProfilerEnabledForCurrentProcess()) {
+    auto profiler = std::make_unique<base::StackSamplingProfiler>(
+        base::PlatformThread::CurrentId(),
+        config->GetSamplingParamsForCurrentProcess(),
+        g_call_stack_profile_collector.Get().GetProfilerCallback(
+            metrics::CallStackProfileParams(
+                metrics::CallStackProfileParams::GPU_PROCESS,
+                metrics::CallStackProfileParams::IO_THREAD,
+                metrics::CallStackProfileParams::PROCESS_STARTUP,
+                metrics::CallStackProfileParams::MAY_SHUFFLE)));
+
+    profiler->Start();
+    io_thread_sampling_profiler.Get().Set(std::move(profiler));
+  }
+}
 
 }  // namespace
 
@@ -96,6 +123,11 @@ void ChromeContentGpuClient::GpuServiceInitialized(
       content::mojom::kBrowserServiceName, &browser_interface);
   g_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
+}
+
+void ChromeContentGpuClient::PostIOThreadCreated(
+    base::SingleThreadTaskRunner* io_task_runner) {
+  io_task_runner->PostTask(FROM_HERE, base::BindOnce(&StartIOThreadProfiling));
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

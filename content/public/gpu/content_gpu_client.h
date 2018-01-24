@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/common/content_client.h"
 #include "media/media_features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -42,6 +43,10 @@ class CONTENT_EXPORT ContentGpuClient {
   // Called during initialization once the GpuService has been initialized.
   virtual void GpuServiceInitialized(
       const gpu::GpuPreferences& gpu_preferences) {}
+
+  // Called right after the IO thread is created.
+  virtual void PostIOThreadCreated(
+      base::SingleThreadTaskRunner* io_task_runner) {}
 
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.
