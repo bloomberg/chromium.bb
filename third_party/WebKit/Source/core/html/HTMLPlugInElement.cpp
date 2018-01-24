@@ -480,12 +480,12 @@ void HTMLPlugInElement::DisconnectContentFrame() {
   SetPersistedPlugin(nullptr);
 }
 
-bool HTMLPlugInElement::LayoutObjectIsFocusable() const {
+bool HTMLPlugInElement::IsFocusableStyle() const {
   if (HTMLFrameOwnerElement::SupportsFocus() &&
-      HTMLFrameOwnerElement::LayoutObjectIsFocusable())
+      HTMLFrameOwnerElement::IsFocusableStyle())
     return true;
 
-  if (UseFallbackContent() || !HTMLFrameOwnerElement::LayoutObjectIsFocusable())
+  if (UseFallbackContent() || !HTMLFrameOwnerElement::IsFocusableStyle())
     return false;
   return plugin_is_available_;
 }

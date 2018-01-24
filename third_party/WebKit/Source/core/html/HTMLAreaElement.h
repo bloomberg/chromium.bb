@@ -64,7 +64,7 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsKeyboardFocusable() const override;
   bool IsMouseFocusable() const override;
-  bool LayoutObjectIsFocusable() const override;
+  bool IsFocusableStyle() const override;
   void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
                                         const FocusOptions&) override;
   void SetFocused(bool, WebFocusType) override;

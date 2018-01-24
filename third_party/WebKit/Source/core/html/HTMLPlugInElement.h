@@ -142,7 +142,7 @@ class CORE_EXPORT HTMLPlugInElement
   // Element overrides:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   bool SupportsFocus() const final { return true; }
-  bool LayoutObjectIsFocusable() const final;
+  bool IsFocusableStyle() const final;
   bool IsKeyboardFocusable() const final;
   void DidAddUserAgentShadowRoot(ShadowRoot&) final;
 
