@@ -243,7 +243,6 @@
       'Mojo Android': 'android_release_bot_minimal_symbols_arm64',
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
-      'Ozone Linux': 'ozone_linux_release_bot',
       'Out of Process Profiling Android': 'android_release_bot_minimal_symbols',
       'Out of Process Profiling Linux': 'release_bot',
       'Out of Process Profiling Mac': 'release_bot',
@@ -337,6 +336,7 @@
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
       'Fuchsia x64 Cast Audio': 'release_bot_fuchsia_cast_audio',
       'Fuchsia x64': 'release_bot_fuchsia',
+      'Ozone Linux': 'ozone_linux_release_bot',
     },
 
     'chromium.lkgr': {
