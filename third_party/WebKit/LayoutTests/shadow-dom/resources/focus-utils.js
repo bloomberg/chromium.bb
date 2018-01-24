@@ -8,10 +8,11 @@ function innermostActiveElement(element) {
     return element;
   }
   if (isShadowHost(element)) {
-    let shadowRoot = window.internals.shadowRoot(element);
-    if (shadowRoot) {
+    let shadowRoot = window.internals.oldestShadowRoot(element);
+    while (shadowRoot) {
       if (shadowRoot.activeElement)
         return innermostActiveElement(shadowRoot.activeElement);
+      shadowRoot = window.internals.youngerShadowRoot(shadowRoot);
     }
   }
   return element;

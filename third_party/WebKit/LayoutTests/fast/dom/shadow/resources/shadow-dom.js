@@ -102,7 +102,7 @@ function createDOM(tagName, attributes)
 
 function isShadowHost(node)
 {
-    return window.internals.shadowRoot(node);
+    return window.internals.oldestShadowRoot(node);
 }
 
 function isShadowRoot(node)
@@ -115,6 +115,8 @@ function isIframeElement(element)
     return element && element.nodeName == 'IFRAME';
 }
 
+// You can specify youngerShadowRoot by consecutive slashes.
+// See LayoutTests/fast/dom/shadow/get-element-by-id-in-shadow-root.html for actual usages.
 function getNodeInComposedTree(path)
 {
     var ids = path.split('/');
@@ -124,8 +126,10 @@ function getNodeInComposedTree(path)
             node = node.contentDocument.getElementById(ids[i]);
             continue;
         }
-        if (internals.shadowRoot(node))
-          node = internals.shadowRoot(node);
+        if (isShadowRoot(node))
+            node = internals.youngerShadowRoot(node);
+        else if (internals.oldestShadowRoot(node))
+            node = internals.oldestShadowRoot(node);
         else
             return null;
         if (ids[i] != '')
@@ -172,10 +176,11 @@ function innermostActiveElement(element)
         return element;
     }
     if (isShadowHost(element)) {
-        var shadowRoot = window.internals.shadowRoot(element);
-        if (shadowRoot) {
+        var shadowRoot = window.internals.oldestShadowRoot(element);
+        while (shadowRoot) {
             if (shadowRoot.activeElement)
                 return innermostActiveElement(shadowRoot.activeElement);
+            shadowRoot = window.internals.youngerShadowRoot(shadowRoot);
         }
     }
     return element;
@@ -337,8 +342,7 @@ function getElementByIdConsideringShadowDOM(root, id) {
         if (root.nodeType != 1)
             return null;
 
-        var shadowRoot = internals.shadowRoot(root);
-        if (shadowRoot) {
+        for (var shadowRoot = internals.youngestShadowRoot(root); shadowRoot; shadowRoot = shadowRoot.olderShadowRoot) {
             var node = iter(shadowRoot, id);
             if (node != null)
                 return node;

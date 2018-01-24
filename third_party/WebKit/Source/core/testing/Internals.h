@@ -115,6 +115,9 @@ class Internals final : public ScriptWrappable {
   ShadowRoot* createUserAgentShadowRoot(Element* host);
 
   ShadowRoot* shadowRoot(Element* host);
+  ShadowRoot* youngestShadowRoot(Element* host);
+  ShadowRoot* oldestShadowRoot(Element* host);
+  ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionState&);
   String shadowRootType(const Node*, ExceptionState&) const;
   bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
   bool hasContentElement(const Node*, ExceptionState&) const;
