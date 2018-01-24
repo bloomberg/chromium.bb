@@ -36,6 +36,10 @@ jumbo_source_set("network_sources") {
   sources = [
     "cache_url_loader.cc",
     "cache_url_loader.h",
+    "cors/cors_url_loader.cc",
+    "cors/cors_url_loader.h",
+    "cors/cors_url_loader_factory.cc",
+    "cors/cors_url_loader_factory.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
     "http_server_properties_pref_delegate.cc",
