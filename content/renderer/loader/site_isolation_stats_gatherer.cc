@@ -119,7 +119,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   if (!CrossSiteDocumentClassifier::IsBlockableScheme(response_url))
     return nullptr;
 
-  if (CrossSiteDocumentClassifier::IsSameOrigin(frame_origin, response_url))
+  if (frame_origin.IsSameOriginWith(url::Origin::Create(response_url)))
     return nullptr;
 
   CrossSiteDocumentMimeType canonical_mime_type =
@@ -138,7 +138,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   info.headers->EnumerateHeader(nullptr, "access-control-allow-origin",
                                 &access_control_origin);
   if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
-          frame_origin, response_url, access_control_origin)) {
+          frame_origin, access_control_origin)) {
     return nullptr;
   }
 
