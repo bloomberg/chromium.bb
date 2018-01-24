@@ -28,8 +28,6 @@ class DevToolsSession : public protocol::FrontendChannel,
                   DevToolsAgentHostClient* client);
   ~DevToolsSession() override;
 
-  DevToolsAgentHostClient* client() const { return client_; }
-
   // Browser-only sessions do not talk to mojom::DevToolsAgent, but instead
   // handle all protocol messages locally in the browser process.
   void SetBrowserOnly(bool browser_only);
