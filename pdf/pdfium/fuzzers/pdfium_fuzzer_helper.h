@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef PDF_PDFIUM_FUZZERS_PDFIUM_FUZZER_HELPER_H_
+#define PDF_PDFIUM_FUZZERS_PDFIUM_FUZZER_HELPER_H_
+
 // This fuzzer is simplified & cleaned up pdfium/samples/pdfium_test.cc
 
 #include "third_party/pdfium/public/fpdf_ext.h"
@@ -26,3 +29,5 @@ class PDFiumFuzzerHelper {
                   FPDF_FORMHANDLE form,
                   const int page_index);
 };
+
+#endif  // PDF_PDFIUM_FUZZERS_PDFIUM_FUZZER_HELPER_H_
