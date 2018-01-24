@@ -147,12 +147,13 @@ void AutofillProviderAndroid::OnTextFieldDidScroll(
       transformed_bounding.width(), transformed_bounding.height());
 }
 
-void AutofillProviderAndroid::FireSuccessfulSubmission() {
+void AutofillProviderAndroid::FireSuccessfulSubmission(
+    SubmissionSource source) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AutofillProvider_onWillSubmitForm(env, obj);
+  Java_AutofillProvider_onFormSubmitted(env, obj, (int)source);
   Reset();
 }
 
@@ -165,10 +166,12 @@ bool AutofillProviderAndroid::OnFormSubmitted(AutofillHandlerProxy* handler,
   if (!IsCurrentlyLinkedHandler(handler) || !IsCurrentlyLinkedForm(form))
     return false;
 
-  if (known_success || source == SubmissionSource::FORM_SUBMISSION)
-    FireSuccessfulSubmission();
-
-  check_submission_ = true;
+  if (known_success || source == SubmissionSource::FORM_SUBMISSION) {
+    FireSuccessfulSubmission(source);
+  } else {
+    check_submission_ = true;
+    pending_submission_source_ = source;
+  }
   return true;
 }
 
@@ -248,15 +251,12 @@ void AutofillProviderAndroid::OnFormsSeen(AutofillHandlerProxy* handler,
   }
   // The form_ disappeared after it was submitted, we consider the submission
   // succeeded.
-  FireSuccessfulSubmission();
+  FireSuccessfulSubmission(pending_submission_source_);
 }
 
 void AutofillProviderAndroid::Reset(AutofillHandlerProxy* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler == handler_.get()) {
-    handler_.reset();
-    Reset();
-
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
     if (obj.is_null())

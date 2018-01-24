@@ -78,6 +78,12 @@ android_library("autofill_java") {
   ]
 }
 
+java_cpp_enum("generated_enum") {
+  sources = [
+    "../core/common/submission_source.h",
+  ]
+}
+
 android_library("provider_java") {
   deps = [
     "//base:base_java",
@@ -89,6 +95,7 @@ android_library("provider_java") {
     "java/src/org/chromium/components/autofill/FormData.java",
     "java/src/org/chromium/components/autofill/FormFieldData.java",
   ]
+  srcjar_deps = [ ":generated_enum" ]
 }
 
 generate_jni("jni_headers") {
