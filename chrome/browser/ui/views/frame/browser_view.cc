@@ -1051,7 +1051,10 @@ void BrowserView::FocusBookmarksToolbar() {
   }
 }
 
-void BrowserView::FocusInfobars() {
+void BrowserView::FocusInactivePopupForAccessibility() {
+  if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
+    return;
+
   if (infobar_container_->child_count() > 0)
     infobar_container_->SetPaneFocusAndFocusDefault();
 }

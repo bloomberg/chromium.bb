@@ -30,6 +30,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 
+class BubbleIconView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class FindBarIcon;
@@ -222,6 +223,10 @@ class LocationBarView : public LocationBar,
 
   // Clears the location bar's state for |contents|.
   void ResetTabState(content::WebContents* contents);
+
+  // Activates the first visible but inactive LocationBarBubbleDelegateView for
+  // accessibility.
+  bool ActivateFirstInactiveBubbleForAccessibility();
 
   // LocationBar:
   void FocusLocation(bool select_all) override;
@@ -439,6 +444,9 @@ class LocationBarView : public LocationBar,
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
+
+  // A list of all bubble descendants ordered by focus.
+  std::vector<BubbleIconView*> bubble_icons_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };

@@ -148,18 +148,18 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // On Chrome OS, Search + Esc is used to call out task manager.
   { ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, IDC_TASK_MANAGER },
 #else  // !OS_CHROMEOS
-  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
-  { ui::VKEY_LMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
-  { ui::VKEY_MENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
-  { ui::VKEY_RMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
-  // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are handled
-  // via WM_APPCOMMAND.
-  { ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH },
-  { ui::VKEY_M, ui::EF_SHIFT_DOWN | kPlatformModifier, IDC_SHOW_AVATAR_MENU },
+    {ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER},
+    {ui::VKEY_LMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR},
+    {ui::VKEY_MENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR},
+    {ui::VKEY_RMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR},
+    // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are
+    // handled via WM_APPCOMMAND.
+    {ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH},
+    {ui::VKEY_M, ui::EF_SHIFT_DOWN | kPlatformModifier, IDC_SHOW_AVATAR_MENU},
   // For each entry until the end of the !OS_CHROMEOS block, and an entry into
   // kChromeCmdId2AshActionId below if Ash has a corresponding accelerator.
 #if !defined(OS_MACOSX)
-  { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
+    {ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT},
 #endif  // !OS_MACOSX
 #endif  // !OS_CHROMEOS
 
@@ -216,44 +216,44 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN, IDC_STOP },
   { ui::VKEY_U, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, IDC_VIEW_SOURCE },
 #else  // !OS_MACOSX
-  // Alt by itself (or with just shift) is never used on Mac since it's used
-  // to generate non-ASCII characters. Such commands are given Mac-specific
-  // bindings as well. Mapping with just Alt appear here, and should have an
-  // alternative mapping in the block above.
-  { ui::VKEY_LEFT, ui::EF_ALT_DOWN, IDC_BACK },
+    // Alt by itself (or with just shift) is never used on Mac since it's used
+    // to generate non-ASCII characters. Such commands are given Mac-specific
+    // bindings as well. Mapping with just Alt appear here, and should have an
+    // alternative mapping in the block above.
+    {ui::VKEY_LEFT, ui::EF_ALT_DOWN, IDC_BACK},
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_BASIC_PRINT},
+    {ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_BASIC_PRINT},
 #endif  // ENABLE_BASIC_PRINTING
 #if !defined(OS_CHROMEOS)
-  { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_CLEAR_BROWSING_DATA },
+    {ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     IDC_CLEAR_BROWSING_DATA},
 #endif  // !OS_CHROMEOS
-  { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_DEV_TOOLS },
-  { ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_DEV_TOOLS_CONSOLE },
-  { ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_DEV_TOOLS_INSPECT },
-  { ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_BOOKMARKS },
-  { ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_INFOBARS },
-  { ui::VKEY_D, ui::EF_ALT_DOWN, IDC_FOCUS_LOCATION },
-  { ui::VKEY_E, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH },
-  { ui::VKEY_K, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH },
-  { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_TOOLBAR },
-  { ui::VKEY_RIGHT, ui::EF_ALT_DOWN, IDC_FORWARD },
-  { ui::VKEY_HOME, ui::EF_ALT_DOWN, IDC_HOME },
-  { ui::VKEY_E, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
-  { ui::VKEY_F, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
-  { ui::VKEY_O, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_SHOW_BOOKMARK_MANAGER },
-  { ui::VKEY_J, ui::EF_CONTROL_DOWN, IDC_SHOW_DOWNLOADS },
-  { ui::VKEY_H, ui::EF_CONTROL_DOWN, IDC_SHOW_HISTORY },
-  { ui::VKEY_U, ui::EF_CONTROL_DOWN, IDC_VIEW_SOURCE },
+    {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_DEV_TOOLS},
+    {ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     IDC_DEV_TOOLS_CONSOLE},
+    {ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     IDC_DEV_TOOLS_INSPECT},
+    {ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_BOOKMARKS},
+    {ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY},
+    {ui::VKEY_D, ui::EF_ALT_DOWN, IDC_FOCUS_LOCATION},
+    {ui::VKEY_E, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH},
+    {ui::VKEY_K, ui::EF_CONTROL_DOWN, IDC_FOCUS_SEARCH},
+    {ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FOCUS_TOOLBAR},
+    {ui::VKEY_RIGHT, ui::EF_ALT_DOWN, IDC_FORWARD},
+    {ui::VKEY_HOME, ui::EF_ALT_DOWN, IDC_HOME},
+    {ui::VKEY_E, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
+    {ui::VKEY_F, ui::EF_ALT_DOWN, IDC_SHOW_APP_MENU},
+    {ui::VKEY_O, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     IDC_SHOW_BOOKMARK_MANAGER},
+    {ui::VKEY_J, ui::EF_CONTROL_DOWN, IDC_SHOW_DOWNLOADS},
+    {ui::VKEY_H, ui::EF_CONTROL_DOWN, IDC_SHOW_HISTORY},
+    {ui::VKEY_U, ui::EF_CONTROL_DOWN, IDC_VIEW_SOURCE},
 #if !defined(OS_CHROMEOS)
-  // On Chrome OS, these keys are assigned to change UI scale.
-  { ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_ZOOM_MINUS },
-  { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_ZOOM_PLUS },
+    // On Chrome OS, these keys are assigned to change UI scale.
+    {ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+     IDC_ZOOM_MINUS},
+    {ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS},
 #endif  // !OS_CHROMEOS
 #endif  // OS_MACOSX
 };

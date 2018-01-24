@@ -5050,7 +5050,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="FocusInactivePopupForAccessibility">
+  <owner>dtseng@chromium.org</owner>
+  <description>
+    Places focus on non-modal UI such as info bars, bubble widgets for
+    accessibility.
+  </description>
+</action>
+
 <action name="FocusInfobars">
+  <obsolete>
+    No longer used. Generalized/renamed to FocusInactivePopupForAccessibility.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

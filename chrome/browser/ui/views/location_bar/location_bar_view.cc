@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
@@ -230,26 +231,31 @@ void LocationBarView::Init() {
     AddChildView(image_view);
   }
 
-  auto add_icon = [this](BubbleIconView* icon_view) -> void {
-    icon_view->Init();
-    icon_view->SetVisible(false);
-    AddChildView(icon_view);
-  };
-
-  add_icon(zoom_view_ = new ZoomView(delegate_));
-  add_icon(manage_passwords_icon_view_ =
-               new ManagePasswordsIconViews(command_updater()));
+  bubble_icons_.push_back(zoom_view_ = new ZoomView(delegate_));
+  bubble_icons_.push_back(manage_passwords_icon_view_ =
+                              new ManagePasswordsIconViews(command_updater()));
   if (browser_)
-    add_icon(save_credit_card_icon_view_ =
-                 new autofill::SaveCardIconView(command_updater(), browser_));
-  add_icon(translate_icon_view_ = new TranslateIconView(command_updater()));
+    bubble_icons_.push_back(
+        save_credit_card_icon_view_ =
+            new autofill::SaveCardIconView(command_updater(), browser_));
+  bubble_icons_.push_back(translate_icon_view_ =
+                              new TranslateIconView(command_updater()));
 #if defined(OS_CHROMEOS)
   if (browser_)
-    add_icon(intent_picker_view_ = new IntentPickerView(browser_));
+    bubble_icons_.push_back(intent_picker_view_ =
+                                new IntentPickerView(browser_));
 #endif
-  add_icon(find_bar_icon_ = new FindBarIcon());
+  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon());
   if (browser_)
-    add_icon(star_view_ = new StarView(command_updater(), browser_));
+    bubble_icons_.push_back(star_view_ =
+                                new StarView(command_updater(), browser_));
+
+  std::for_each(bubble_icons_.begin(), bubble_icons_.end(),
+                [this](BubbleIconView* icon_view) -> void {
+                  icon_view->Init();
+                  icon_view->SetVisible(false);
+                  AddChildView(icon_view);
+                });
 
   clear_all_button_ = views::CreateVectorImageButton(this);
   clear_all_button_->SetTooltipText(
@@ -648,6 +654,22 @@ void LocationBarView::Update(const WebContents* contents) {
 
 void LocationBarView::ResetTabState(WebContents* contents) {
   omnibox_view_->ResetTabState(contents);
+}
+
+bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
+  auto result = std::find_if(
+      bubble_icons_.begin(), bubble_icons_.end(), [](BubbleIconView* view) {
+        if (!view || !view->visible() || !view->GetBubble())
+          return false;
+
+        views::Widget* widget = view->GetBubble()->GetWidget();
+        return widget && widget->IsVisible() && !widget->IsActive();
+      });
+
+  if (result != bubble_icons_.end())
+    (*result)->GetBubble()->GetWidget()->Show();
+
+  return result != bubble_icons_.end();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1045,9 +1045,9 @@ void FocusBookmarksToolbar(Browser* browser) {
   browser->window()->FocusBookmarksToolbar();
 }
 
-void FocusInfobars(Browser* browser) {
-  base::RecordAction(UserMetricsAction("FocusInfobars"));
-  browser->window()->FocusInfobars();
+void FocusInactivePopupForAccessibility(Browser* browser) {
+  base::RecordAction(UserMetricsAction("FocusInactivePopupForAccessibility"));
+  browser->window()->FocusInactivePopupForAccessibility();
 }
 
 void FocusNextPane(Browser* browser) {

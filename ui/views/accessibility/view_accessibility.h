@@ -47,6 +47,7 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideRole(ui::AXRole role);
   void OverrideName(const std::string& name);
   void OverrideName(const base::string16& name);
+  void OverrideDescription(const std::string& description);
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ui::AXEvent event_type) {}
