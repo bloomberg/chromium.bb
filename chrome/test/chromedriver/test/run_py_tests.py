@@ -123,7 +123,7 @@ _OS_SPECIFIC_FILTER['linux'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2132
     'MobileEmulationCapabilityTest.testDeviceMetricsWithDeviceWidth',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
-    'ChromeDriverTest.testGoBackAndGoForward'
+    'ChromeDriverTest.testGoBackAndGoForward',
     'ChromeDriverTest.testAlertHandlingOnPageUnload',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
@@ -132,7 +132,7 @@ _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
     'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
-    'ChromeDriverTest.testGoBackAndGoForward'
+    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
