@@ -96249,6 +96249,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebApk.LaunchInterval" units="ms">
+  <obsolete>
+    Deprecated 2018-01. Replaced by WebApk.LaunchInterval2
+  </obsolete>
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the amount of time since the user last launched the WebAPK from the
+    homescreen. Not recorded on first launch.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.LaunchInterval2" units="minutes">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
