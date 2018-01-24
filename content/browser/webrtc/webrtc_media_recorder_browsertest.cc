@@ -80,7 +80,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, StartAndDataAvailable) {
                   kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, StartWithTimeSlice) {
+// TODO(crbug.com/805341): It seems to be flaky on Android. More details in
+// the bug.
+#if defined(OS_ANDROID)
+#define MAYBE_StartWithTimeSlice DISABLED_StartWithTimeSlice
+#else
+#define MAYBE_StartWithTimeSlice StartWithTimeSlice
+#endif
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MAYBE_StartWithTimeSlice) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testStartWithTimeSlice(\"%s\");",
                                      GetParam().mime_type.c_str()),
