@@ -23118,6 +23118,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Client connection error"/>
   <int value="3" label="Tethering unsupported"/>
   <int value="4" label="No cellular data"/>
+  <int value="5" label="Enabling hotspot failed"/>
+  <int value="6" label="Enabling hotspot timed out"/>
 </enum>
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">

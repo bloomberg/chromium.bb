@@ -230,6 +230,32 @@ TEST_F(HostConnectionMetricsLoggerTest,
                     ConnectionToHostResult_SuccessEventType::FAILURE);
 }
 
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureEnablingHotspotFailed) {
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED);
+
+  VerifyFailure(
+      HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
+          ENABLING_HOTSPOT_FAILED);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureEnablingHotspotTimeout) {
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT);
+
+  VerifyFailure(
+      HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
+          ENABLING_HOTSPOT_TIMEOUT);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

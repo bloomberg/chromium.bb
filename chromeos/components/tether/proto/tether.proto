@@ -63,7 +63,7 @@ message DeviceStatus {
 // Next id: 1
 message TetherAvailabilityRequest {}
 
-// Next id: 3
+// Next id: 6
 message TetherAvailabilityResponse {
   enum ResponseCode {
     UNKNOWN_ERROR = 0;
@@ -81,7 +81,7 @@ message TetherAvailabilityResponse {
 // Next id: 1
 message ConnectTetheringRequest {}
 
-// Next id: 5
+// Next id: 8
 message ConnectTetheringResponse {
   enum ResponseCode {
     UNKNOWN_ERROR = 0;
@@ -90,6 +90,8 @@ message ConnectTetheringResponse {
     TETHERING_TIMEOUT = 3;
     TETHERING_UNSUPPORTED = 4;
     NO_CELL_DATA = 5;
+    ENABLING_HOTSPOT_FAILED = 6;
+    ENABLING_HOTSPOT_TIMEOUT = 7;
   }
 
   optional ResponseCode response_code = 1;
