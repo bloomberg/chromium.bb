@@ -34,4 +34,15 @@ static_library("router") {
     "route_request_result.cc",
     "route_request_result.h",
   ]
+
+  deps = []
+
+  if (!is_android) {
+    sources += [
+      "providers/cast/cast_media_source.cc",
+      "providers/cast/cast_media_source.h",
+    ]
+
+    deps += [ "//components/cast_channel:cast_channel" ]
+  }
 }

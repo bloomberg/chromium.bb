@@ -111,7 +111,7 @@ base::TimeDelta GetRouteRequestTimeout(MediaCastMode cast_mode) {
 // used by the Media Router to find such a matching route if it exists.
 MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
   auto source_it =
-      std::find_if(sources.begin(), sources.end(), CanConnectToMediaSource);
+      std::find_if(sources.begin(), sources.end(), IsCastPresentationUrl);
   return source_it != sources.end() ? *source_it : MediaSource("");
 }
 

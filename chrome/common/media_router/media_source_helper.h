@@ -51,9 +51,8 @@ bool IsDesktopMirroringMediaSource(const MediaSource& source);
 bool IsTabMirroringMediaSource(const MediaSource& source);
 bool IsMirroringMediaSource(const MediaSource& source);
 
-// Returns true if |source| is a media source type that can be connected to the
-// Presentation API by from a request initiated by the browser.
-bool CanConnectToMediaSource(const MediaSource& source);
+// Returns true if |source| is represents a Cast Presentation URL.
+bool IsCastPresentationUrl(const MediaSource& source);
 
 // Parses the |source| and returns the SessionTabHelper tab ID referencing a
 // source tab. Returns a non-positive value on error.

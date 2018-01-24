@@ -53,24 +53,24 @@ TEST(MediaSourcesTest, IsValidPresentationUrl) {
   EXPECT_TRUE(IsValidPresentationUrl(GURL("cast:foo")));
 }
 
-TEST(MediaSourcesTest, CanConnectToMediaSource) {
-  EXPECT_TRUE(CanConnectToMediaSource(MediaSource(GURL("cast:233637DE"))));
-  EXPECT_TRUE(CanConnectToMediaSource(
+TEST(MediaSourcesTest, IsCastPresentationUrl) {
+  EXPECT_TRUE(IsCastPresentationUrl(MediaSource(GURL("cast:233637DE"))));
+  EXPECT_TRUE(IsCastPresentationUrl(
       MediaSource(GURL("https://google.com/cast#__castAppId__=233637DE"))));
   // false scheme
-  EXPECT_FALSE(CanConnectToMediaSource(
+  EXPECT_FALSE(IsCastPresentationUrl(
       MediaSource(GURL("http://google.com/cast#__castAppId__=233637DE"))));
   // false domain
-  EXPECT_FALSE(CanConnectToMediaSource(
+  EXPECT_FALSE(IsCastPresentationUrl(
       MediaSource(GURL("https://google2.com/cast#__castAppId__=233637DE"))));
   // empty path
   EXPECT_FALSE(
-      CanConnectToMediaSource(MediaSource(GURL("https://www.google.com"))));
+      IsCastPresentationUrl(MediaSource(GURL("https://www.google.com"))));
   // false path
-  EXPECT_FALSE(CanConnectToMediaSource(
-      MediaSource(GURL("https://www.google.com/path"))));
+  EXPECT_FALSE(
+      IsCastPresentationUrl(MediaSource(GURL("https://www.google.com/path"))));
 
-  EXPECT_FALSE(CanConnectToMediaSource(MediaSource(GURL(""))));
+  EXPECT_FALSE(IsCastPresentationUrl(MediaSource(GURL(""))));
 }
 
 }  // namespace media_router
