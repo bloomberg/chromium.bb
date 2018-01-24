@@ -94,24 +94,47 @@ TEST_P(WaylandWindowTest, SetTitle) {
 }
 
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
-  uint32_t serial = 12;
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
+  EXPECT_CALL(delegate,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
-  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   window->Maximize();
-  SendConfigureEvent(0, 0, serial, &states);
+  SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
+  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   window->Restore();
+  // Reinitialize wl_array, which removes previous old states.
+  InitializeWlArrayWithActivatedState(&states);
+  SendConfigureEvent(0, 0, 2, &states);
+  Sync();
 }
 
 TEST_P(WaylandWindowTest, Minimize) {
+  wl_array states;
+  wl_array_init(&states);
+
+  // Initialize to normal first.
+  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  SendConfigureEvent(0, 0, 1, &states);
+  Sync();
+
   EXPECT_CALL(*GetXdgSurface(), SetMinimized());
+  // The state of the window must retain minimized, which means we are not
+  // notified about the state, because 1) minimized state was set manually
+  // in WaylandWindow, and it has been confirmed in a back call from the server,
+  // which resulted in the same state as before.
+  EXPECT_CALL(delegate, OnWindowStateChanged(_)).Times(0);
   window->Minimize();
+  // Reinitialize wl_array, which removes previous old states.
+  wl_array_init(&states);
+  SendConfigureEvent(0, 0, 2, &states);
+  Sync();
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
@@ -121,34 +144,49 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
-  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  EXPECT_CALL(delegate,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window->ToggleFullscreen();
   SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
+  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window->Restore();
+  // Reinitialize wl_array, which removes previous old states.
+  InitializeWlArrayWithActivatedState(&states);
+  SendConfigureEvent(0, 0, 2, &states);
+  Sync();
 }
 
 TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   wl_array states;
   InitializeWlArrayWithActivatedState(&states);
 
-  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
-  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
-  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
-
+  EXPECT_CALL(delegate,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
   window->Maximize();
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
   SendConfigureEvent(0, 0, 2, &states);
   Sync();
 
+  EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(delegate,
+              OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window->ToggleFullscreen();
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
   SendConfigureEvent(0, 0, 3, &states);
   Sync();
 
+  EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
+  EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
+  EXPECT_CALL(delegate, OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window->Restore();
+  // Reinitialize wl_array, which removes previous old states.
+  InitializeWlArrayWithActivatedState(&states);
+  SendConfigureEvent(0, 0, 4, &states);
+  Sync();
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
