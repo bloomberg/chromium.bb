@@ -124,6 +124,7 @@ _OS_SPECIFIC_FILTER['linux'] = [
     'MobileEmulationCapabilityTest.testDeviceMetricsWithDeviceWidth',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
     'ChromeDriverTest.testGoBackAndGoForward'
+    'ChromeDriverTest.testAlertHandlingOnPageUnload',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
