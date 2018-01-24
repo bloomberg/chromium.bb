@@ -1116,6 +1116,8 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
     // associated with multiple tracks (multiple receivers).
     for (auto& receiver_state : states.receiver_states) {
       for (auto& stream_ref : receiver_state.stream_refs) {
+        CHECK(stream_ref);
+        CHECK(stream_ref->adapter().is_initialized());
         CHECK(!stream_ref->adapter().web_stream().IsNull());
         CHECK(stream_ref->adapter().webrtc_stream());
         auto* stream_state =

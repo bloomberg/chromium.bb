@@ -107,7 +107,8 @@ WebRtcMediaStreamAdapterMap::GetLocalStreamAdapter(
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
 WebRtcMediaStreamAdapterMap::GetOrCreateLocalStreamAdapter(
     const blink::WebMediaStream& web_stream) {
-  DCHECK(main_thread_->BelongsToCurrentThread());
+  CHECK(main_thread_->BelongsToCurrentThread());
+  CHECK(!web_stream.IsNull());
   base::AutoLock scoped_lock(lock_);
   AdapterEntry* adapter_entry =
       local_stream_adapters_.FindByPrimary(web_stream.UniqueId());
@@ -126,7 +127,8 @@ WebRtcMediaStreamAdapterMap::GetOrCreateLocalStreamAdapter(
 
     adapter_entry = local_stream_adapters_.Insert(web_stream.UniqueId(),
                                                   std::move(adapter));
-    DCHECK(adapter_entry->adapter->is_initialized());
+    CHECK(adapter_entry->adapter->is_initialized());
+    CHECK(adapter_entry->adapter->webrtc_stream());
     local_stream_adapters_.SetSecondaryKey(
         web_stream.UniqueId(), adapter_entry->adapter->webrtc_stream().get());
   }
@@ -166,8 +168,8 @@ WebRtcMediaStreamAdapterMap::GetRemoteStreamAdapter(
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
 WebRtcMediaStreamAdapterMap::GetOrCreateRemoteStreamAdapter(
     scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream) {
-  DCHECK(!main_thread_->BelongsToCurrentThread());
-  DCHECK(webrtc_stream);
+  CHECK(!main_thread_->BelongsToCurrentThread());
+  CHECK(webrtc_stream);
   base::AutoLock scoped_lock(lock_);
   AdapterEntry* adapter_entry =
       remote_stream_adapters_.FindByPrimary(webrtc_stream.get());
@@ -210,8 +212,9 @@ size_t WebRtcMediaStreamAdapterMap::GetRemoteStreamCount() const {
 
 void WebRtcMediaStreamAdapterMap::OnRemoteStreamAdapterInitialized(
     std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref) {
-  DCHECK(main_thread_->BelongsToCurrentThread());
-  DCHECK(adapter_ref->is_initialized());
+  CHECK(main_thread_->BelongsToCurrentThread());
+  CHECK(adapter_ref->is_initialized());
+  CHECK(!adapter_ref->adapter().web_stream().IsNull());
   {
     base::AutoLock scoped_lock(lock_);
     remote_stream_adapters_.SetSecondaryKey(
