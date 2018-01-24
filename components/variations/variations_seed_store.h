@@ -33,9 +33,10 @@ class VariationsSeedStore {
   // raw pref values into |seed_data| and |base64_signature|. If there is a
   // problem with loading, clears the seed pref value and returns false. If
   // successful, fills the the outparams with the loaded data and returns true.
-  bool LoadSeed(VariationsSeed* seed,
-                std::string* seed_data,
-                std::string* base64_seed_signature) WARN_UNUSED_RESULT;
+  // Virtual for testing.
+  virtual bool LoadSeed(VariationsSeed* seed,
+                        std::string* seed_data,
+                        std::string* base64_seed_signature) WARN_UNUSED_RESULT;
 
   // Stores the given seed |data| (serialized protobuf) to local state, along
   // with a base64-encoded digital signature for seed and the date when it was
@@ -63,8 +64,10 @@ class VariationsSeedStore {
   // loaded, it is guaranteed that no fields in |client_state| are modified.
   // Side-effect: Upon any failure to read or validate the safe seed, clears all
   // of the safe seed pref values. This occurs iff the method returns false.
-  bool LoadSafeSeed(VariationsSeed* seed,
-                    ClientFilterableState* client_state) WARN_UNUSED_RESULT;
+  // Virtual for testing.
+  virtual bool LoadSafeSeed(VariationsSeed* seed,
+                            ClientFilterableState* client_state)
+      WARN_UNUSED_RESULT;
 
   // Stores the given |seed_data| (a serialized protobuf) to local state as a
   // safe seed, along with a base64-encoded digital signature for seed and any

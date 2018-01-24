@@ -95088,7 +95088,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The result of verifying the latest variations seed's signature, recorded
-    when the seed is loaded from Local State.  Not recorded when running in safe
+    when the seed is loaded from Local State. Not recorded when running in safe
     mode.
   </summary>
 </histogram>
@@ -95299,7 +95299,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The time interval between when the variations seed was downloaded and when
-    it was used. Not recorded for expired seeds.
+    it was loaded for use. Not recorded for expired seeds.
+
+    TODO(isherman): Implement this metric for safe seeds as well. (It's
+    currently not implemented; but also, safe mode is not triggerable.)
   </summary>
 </histogram>
 
