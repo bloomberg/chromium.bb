@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
-#include "cc/trees/swap_promise_monitor.h"
-
 #ifndef CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
 #define CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
+
+#include "base/compiler_specific.h"
+#include "cc/trees/swap_promise_monitor.h"
 
 namespace ui {
 class LatencyInfo;
