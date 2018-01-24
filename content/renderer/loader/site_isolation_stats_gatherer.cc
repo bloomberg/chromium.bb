@@ -119,9 +119,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   if (!CrossSiteDocumentClassifier::IsBlockableScheme(response_url))
     return nullptr;
 
-  // TODO(csharrison): Add a path for IsSameSite/IsValidCorsHeaderSet to take an
-  // Origin.
-  if (CrossSiteDocumentClassifier::IsSameSite(frame_origin, response_url))
+  if (CrossSiteDocumentClassifier::IsSameOrigin(frame_origin, response_url))
     return nullptr;
 
   CrossSiteDocumentMimeType canonical_mime_type =
