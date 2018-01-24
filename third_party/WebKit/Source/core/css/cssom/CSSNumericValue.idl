@@ -20,6 +20,7 @@ typedef (double or CSSNumericValue) CSSNumberish;
 
   [RaisesException, NewObject] CSSUnitValue to(DOMString unit);
   [RaisesException, NewObject] CSSMathSum toSum(DOMString... units);
+  CSSNumericType type();
 
   // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
   [RaisesException, NewObject, Exposed=Window] static CSSNumericValue parse(DOMString cssText);
