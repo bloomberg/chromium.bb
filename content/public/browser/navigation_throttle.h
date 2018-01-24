@@ -150,8 +150,9 @@ class CONTENT_EXPORT NavigationThrottle {
   // CANCEL_AND_IGNORE or DEFER and perform the destruction asynchronously.
   virtual ThrottleCheckResult WillFailRequest();
 
-  // Called when a response's headers and metadata are available.
+  // Called when a response's metadata is available.
   //
+  // For HTTP(S) responses, headers will be available.
   // The implementer is responsible for ensuring that the WebContents this
   // throttle is associated with remain alive during the duration of this
   // method. Failing to do so will result in use-after-free bugs. Should the
