@@ -1756,6 +1756,7 @@ jumbo_static_library("test_support") {
   deps = [
     "//base/test:test_support",
     "//mojo/edk/system",
+    "//third_party/WebKit/Source/platform/blob:test_support",
     "//third_party/WebKit/Source/platform/loader:test_support",
     "//third_party/WebKit/Source/platform/network:test_support",
     "//third_party/WebKit/Source/platform/scheduler:test_support",

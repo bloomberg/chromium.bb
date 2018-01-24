@@ -38,10 +38,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/URLSecurityOriginMap.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
@@ -51,62 +48,18 @@
 
 namespace blink {
 
-class BlobOriginMap : public URLSecurityOriginMap {
- public:
-  BlobOriginMap();
-  SecurityOrigin* GetOrigin(const KURL&) override;
-};
-
 static WebBlobRegistry* GetBlobRegistry() {
   return Platform::Current()->GetBlobRegistry();
-}
-
-typedef HashMap<String, scoped_refptr<SecurityOrigin>> BlobURLOriginMap;
-static ThreadSpecific<BlobURLOriginMap>& OriginMap() {
-  // We want to create the BlobOriginMap exactly once because it is shared by
-  // all the threads.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobOriginMap, cache, ());
-  (void)cache;  // BlobOriginMap's constructor does the interesting work.
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<BlobURLOriginMap>, map, ());
-  return map;
-}
-
-static void SaveToOriginMap(SecurityOrigin* origin, const KURL& url) {
-  // If the blob URL contains null origin, as in the context with unique
-  // security origin or file URL, save the mapping between url and origin so
-  // that the origin can be retrieved when doing security origin check.
-  //
-  // See the definition of the origin of a Blob URL in the File API spec.
-  if (origin && BlobURL::GetOrigin(url) == "null")
-    OriginMap()->insert(url.GetString(), origin);
-}
-
-static void RemoveFromOriginMap(const KURL& url) {
-  if (BlobURL::GetOrigin(url) == "null")
-    OriginMap()->erase(url.GetString());
 }
 
 void BlobRegistry::RegisterPublicBlobURL(SecurityOrigin* origin,
                                          const KURL& url,
                                          scoped_refptr<BlobDataHandle> handle) {
-  SaveToOriginMap(origin, url);
   GetBlobRegistry()->RegisterPublicBlobURL(url, handle->Uuid());
 }
 
 void BlobRegistry::RevokePublicBlobURL(const KURL& url) {
-  RemoveFromOriginMap(url);
   GetBlobRegistry()->RevokePublicBlobURL(url);
-}
-
-BlobOriginMap::BlobOriginMap() {
-  SecurityOrigin::SetMap(this);
-}
-
-SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
-  if (url.ProtocolIs("blob"))
-    return OriginMap()->at(url.GetString());
-  return nullptr;
 }
 
 }  // namespace blink
