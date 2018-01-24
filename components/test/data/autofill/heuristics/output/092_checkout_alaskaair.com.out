@@ -36,5 +36,5 @@ ADDRESS_HOME_STATE | AncillaryCreditCardInformation.BillingAddressEntry.CAStates
 ADDRESS_HOME_STATE | AncillaryCreditCardInformation.BillingAddressEntry.MXStates_Selected | State/Province |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 UNKNOWN_TYPE | AncillaryCreditCardInformation.BillingAddressEntry.OtherStates_Selected | State/Province |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 ADDRESS_HOME_ZIP | AncillaryCreditCardInformation.BillingAddressEntry.PostalCode | Zip/Postal Code |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
-ADDRESS_HOME_COUNTRY | AncillaryCreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected | Country Code | 1 | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
-PHONE_HOME_WHOLE_NUMBER | AncillaryCreditCardInformation.BillingPhoneNumberEntry.Number | Phone (with area code) |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
+ADDRESS_HOME_COUNTRY | AncillaryCreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected | Country Code | 1 | AncillaryCreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
+PHONE_HOME_WHOLE_NUMBER | AncillaryCreditCardInformation.BillingPhoneNumberEntry.Number | Phone (with area code) |  | AncillaryCreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
