@@ -43,6 +43,7 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -1284,13 +1285,27 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
 }
 
 void DevToolsWindow::OpenInNewTab(const std::string& url) {
-  content::OpenURLParams params(GURL(url), content::Referrer(),
+  GURL fixed_url(url);
+  WebContents* inspected_web_contents = GetInspectedWebContents();
+  int child_id = content::ChildProcessHost::kInvalidUniqueID;
+  if (inspected_web_contents) {
+    content::RenderViewHost* render_view_host =
+        inspected_web_contents->GetRenderViewHost();
+    if (render_view_host)
+      child_id = render_view_host->GetProcess()->GetID();
+  }
+  // Use about:blank instead of an empty GURL. The browser treats an empty GURL
+  // as navigating to the home page, which may be privileged (chrome://newtab/).
+  if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+          child_id, fixed_url))
+    fixed_url = GURL(url::kAboutBlankURL);
+
+  content::OpenURLParams params(fixed_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  WebContents* inspected_web_contents = GetInspectedWebContents();
   if (!inspected_web_contents || !inspected_web_contents->OpenURL(params)) {
     chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-    chrome::AddSelectedTabWithURL(displayer.browser(), GURL(url),
+    chrome::AddSelectedTabWithURL(displayer.browser(), fixed_url,
                                   ui::PAGE_TRANSITION_LINK);
   }
 }

@@ -2089,3 +2089,47 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
                       redirect_url.spec().c_str());
   CloseDevToolsWindow();
 }
+
+// Tests that OpenInNewTab filters URLs.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
+  OpenDevToolsWindow(kDebuggerTestPage, false);
+  DevToolsUIBindings::Delegate* bindings_delegate_ =
+      static_cast<DevToolsUIBindings::Delegate*>(window_);
+  std::string test_url =
+      spawned_test_server()->GetURL(kDebuggerTestPage).spec();
+  const std::string self_blob_url =
+      base::StringPrintf("blob:%s", test_url.c_str());
+  const std::string self_filesystem_url =
+      base::StringPrintf("filesystem:%s", test_url.c_str());
+
+  // Pairs include a URL string and boolean whether it should be allowed.
+  std::vector<std::pair<const std::string, const std::string>> tests = {
+      {test_url, test_url},
+      {"data:,foo", "data:,foo"},
+      {"about://inspect", "about:blank"},
+      {"chrome://inspect", "about:blank"},
+      {"chrome://inspect/#devices", "about:blank"},
+      {self_blob_url, self_blob_url},
+      {"blob:chrome://inspect", "about:blank"},
+      {self_filesystem_url, self_filesystem_url},
+      {"filesystem:chrome://inspect", "about:blank"},
+      {"view-source:http://chromium.org", "about:blank"},
+      {"file:///", "about:blank"},
+      {"about://gpu", "about:blank"},
+      {"chrome://gpu", "about:blank"},
+      {"chrome://crash", "about:blank"},
+      {"", "about:blank"},
+  };
+
+  TabStripModel* tabs = browser()->tab_strip_model();
+  int i = 0;
+  for (const std::pair<const std::string, const std::string> pair : tests) {
+    bindings_delegate_->OpenInNewTab(pair.first);
+    i++;
+
+    std::string opened_url = tabs->GetWebContentsAt(i)->GetVisibleURL().spec();
+    SCOPED_TRACE(
+        base::StringPrintf("while testing URL: %s", pair.first.c_str()));
+    EXPECT_EQ(opened_url, pair.second);
+  }
+}
