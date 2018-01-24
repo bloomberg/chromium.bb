@@ -10,6 +10,7 @@
 namespace previews {
 namespace features {
 
+extern const base::Feature kPreviews;
 extern const base::Feature kOfflinePreviews;
 extern const base::Feature kClientLoFi;
 extern const base::Feature kNoScriptPreviews;

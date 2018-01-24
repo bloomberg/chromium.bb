@@ -947,10 +947,12 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   }
 }
 
-TEST_F(DataReductionProxyConfigTest, ShouldEnableServerPreviews) {
+TEST_F(DataReductionProxyConfigTest,
+       ShouldAcceptServerPreviewAllPreviewsDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitFromCommandLine(
+      "DataReductionProxyDecidesTransform" /* enable_features */,
+      "Previews" /* disable_features */);
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
@@ -960,10 +962,25 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableServerPreviews) {
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       std::make_unique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
+  EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
+}
 
-  previews_decider = std::make_unique<TestPreviewsDecider>(false);
+TEST_F(DataReductionProxyConfigTest,
+       ShouldAcceptServerPreviewServerPreviewsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "Previews" /* enable_features */,
+      "DataReductionProxyDecidesTransform" /* disable_features */);
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+      GURL(), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->SetLoadFlags(request->load_flags() |
+                        net::LOAD_MAIN_FRAME_DEPRECATED);
+  std::unique_ptr<TestPreviewsDecider> previews_decider =
+      std::make_unique<TestPreviewsDecider>(true);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 }

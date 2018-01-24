@@ -26,8 +26,10 @@ namespace {
 
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
-  bool server_previews_enabled = base::FeatureList::IsEnabled(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  bool server_previews_enabled =
+      previews::params::ArePreviewsAllowed() &&
+      base::FeatureList::IsEnabled(
+          data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();

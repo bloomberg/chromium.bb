@@ -266,8 +266,23 @@ TEST_F(DataReductionProxySettingsAndroidTest,
 TEST_F(DataReductionProxySettingsAndroidTest,
        MaybeRewriteWebliteUrlWithWebliteDisabled) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  scoped_list.InitFromCommandLine(
+      "Previews" /* enable_features */,
+      "DataReductionProxyDecidesTransform" /* disable_features */);
+  Init();
+  drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+
+  EXPECT_EQ("http://googleweblight.com/i?u=http://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "http://googleweblight.com/i?u=http://example.com/"));
+}
+
+TEST_F(DataReductionProxySettingsAndroidTest,
+       MaybeRewriteWebliteUrlWithPreviewsDisabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitFromCommandLine(
+      "DataReductionProxyDecidesTransform" /* enable_features */,
+      "Previews" /* disable_features */);
   Init();
   drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
 

@@ -761,7 +761,8 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
-  if (!base::FeatureList::IsEnabled(
+  if (!previews::params::ArePreviewsAllowed() ||
+      !base::FeatureList::IsEnabled(
           features::kDataReductionProxyDecidesTransform)) {
     return false;
   }

@@ -89,6 +89,19 @@ class PreviewsContentUtilTest : public testing::Test {
   net::TestURLRequestContext context_;
 };
 
+TEST_F(PreviewsContentUtilTest,
+       DetermineEnabledClientPreviewsStatePreviewsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("ClientLoFi" /* enable_features */,
+                                          "Previews" /* disable_features */);
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
+                                                          previews_decider()));
+  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews::DetermineEnabledClientPreviewsState(*CreateRequest(),
+                                                          previews_decider()));
+}
+
 TEST_F(PreviewsContentUtilTest, DetermineEnabledClientPreviewsStateClientLoFi) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("ClientLoFi", std::string());
