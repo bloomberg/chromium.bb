@@ -90,7 +90,10 @@ TEST_F(StructTraitsTest, BitmapWithExtraRowBytes) {
   SkBitmap input;
   // Ensure traits work with bitmaps containing additional bytes between rows.
   SkImageInfo info = SkImageInfo::MakeN32(8, 5, kPremul_SkAlphaType);
-  input.allocPixels(info, info.minRowBytes() + 2);
+  // Any extra bytes on each row must be a multiple of the row's pixel size to
+  // keep every row's pixels aligned.
+  size_t extra = info.bytesPerPixel();
+  input.allocPixels(info, info.minRowBytes() + extra);
   input.eraseColor(SK_ColorRED);
   input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
