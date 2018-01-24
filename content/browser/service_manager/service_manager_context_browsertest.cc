@@ -116,6 +116,9 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
 // crbug.com/804113.
 #if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && defined(ADDRESS_SANITIZER)
 #define MAYBE_TerminateOnServiceQuit DISABLED_TerminateOnServiceQuit
+#elif defined(OS_WIN)
+// crbug.com/804937.  Causes failures when test times out even if retry passes.
+#define MAYBE_TerminateOnServiceQuit DISABLED_TerminateOnServiceQuit
 #else
 #define MAYBE_TerminateOnServiceQuit TerminateOnServiceQuit
 #endif
