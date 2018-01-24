@@ -4093,14 +4093,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend2) {
   EXPECT_FALSE(cb2.have_result());
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_TypicalGET_ConditionalRequest \
-  DISABLED_TypicalGET_ConditionalRequest
-#else
-#define MAYBE_TypicalGET_ConditionalRequest TypicalGET_ConditionalRequest
-#endif
-TEST(HttpCache, MAYBE_TypicalGET_ConditionalRequest) {
+TEST(HttpCache, TypicalGET_ConditionalRequest) {
   MockHttpCache cache;
 
   // write to the cache
@@ -6248,15 +6241,9 @@ TEST(HttpCache, RangeGET_NoContentLength) {
   RemoveMockTransaction(&transaction);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_OK DISABLED_RangeGET_OK
-#else
-#define MAYBE_RangeGET_OK RangeGET_OK
-#endif
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network.
-TEST(HttpCache, MAYBE_RangeGET_OK) {
+TEST(HttpCache, RangeGET_OK) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
   std::string headers;
@@ -6314,15 +6301,9 @@ TEST(HttpCache, MAYBE_RangeGET_OK) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_SyncOK DISABLED_RangeGET_SyncOK
-#else
-#define MAYBE_RangeGET_SyncOK RangeGET_SyncOK
-#endif
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network, with synchronous responses.
-TEST(HttpCache, MAYBE_RangeGET_SyncOK) {
+TEST(HttpCache, RangeGET_SyncOK) {
   MockHttpCache cache;
 
   MockTransaction transaction(kRangeGET_TransactionOK);
@@ -6457,14 +6438,8 @@ TEST(HttpCache, RangeGET_Revalidate1) {
   RemoveMockTransaction(&transaction);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_Revalidate2 DISABLED_RangeGET_Revalidate2
-#else
-#define MAYBE_RangeGET_Revalidate2 RangeGET_Revalidate2
-#endif
 // Checks that we revalidate an entry when the headers say so.
-TEST(HttpCache, MAYBE_RangeGET_Revalidate2) {
+TEST(HttpCache, RangeGET_Revalidate2) {
   MockHttpCache cache;
   std::string headers;
 
@@ -7195,14 +7170,8 @@ TEST(HttpCache, GET_Previous206_NotValidation) {
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_Previous200 DISABLED_RangeGET_Previous200
-#else
-#define MAYBE_RangeGET_Previous200 RangeGET_Previous200
-#endif
 // Tests that we can handle range requests with cached 200 responses.
-TEST(HttpCache, MAYBE_RangeGET_Previous200) {
+TEST(HttpCache, RangeGET_Previous200) {
   MockHttpCache cache;
 
   // Store the whole thing with status 200.
@@ -7343,14 +7312,8 @@ TEST(HttpCache, RangeGET_MoreThanCurrentSize) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_Cancel DISABLED_RangeGET_Cancel
-#else
-#define MAYBE_RangeGET_Cancel RangeGET_Cancel
-#endif
 // Tests that we don't delete a sparse entry when we cancel a request.
-TEST(HttpCache, MAYBE_RangeGET_Cancel) {
+TEST(HttpCache, RangeGET_Cancel) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
 
@@ -7385,15 +7348,9 @@ TEST(HttpCache, MAYBE_RangeGET_Cancel) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_CancelWhileReading DISABLED_RangeGET_CancelWhileReading
-#else
-#define MAYBE_RangeGET_CancelWhileReading RangeGET_CancelWhileReading
-#endif
 // Tests that we don't mark an entry as truncated if it is partial and not
 // already truncated.
-TEST(HttpCache, MAYBE_RangeGET_CancelWhileReading) {
+TEST(HttpCache, RangeGET_CancelWhileReading) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
 
@@ -7429,15 +7386,9 @@ TEST(HttpCache, MAYBE_RangeGET_CancelWhileReading) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
-// Fails only on bots. crbug.com/533640
-#if defined(OS_ANDROID)
-#define MAYBE_RangeGET_Cancel2 DISABLED_RangeGET_Cancel2
-#else
-#define MAYBE_RangeGET_Cancel2 RangeGET_Cancel2
-#endif
 // Tests that we don't delete a sparse entry when we start a new request after
 // cancelling the previous one.
-TEST(HttpCache, MAYBE_RangeGET_Cancel2) {
+TEST(HttpCache, RangeGET_Cancel2) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
 
