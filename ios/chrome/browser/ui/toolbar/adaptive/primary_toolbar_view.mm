@@ -19,6 +19,9 @@
 #endif
 
 @interface PrimaryToolbarView ()
+// Factory used to create the buttons.
+@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
+
 // Container for the location bar.
 @property(nonatomic, strong) UIView* locationBarContainer;
 
@@ -82,22 +85,23 @@
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
 
-#pragma mark - UIView
+#pragma mark - Public
 
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  [self setUp];
-  [super willMoveToSuperview:newSuperview];
+- (instancetype)initWithButtonFactory:(ToolbarButtonFactory*)factory {
+  self = [super initWithFrame:CGRectZero];
+  if (self) {
+    _buttonFactory = factory;
+  }
+  return self;
 }
 
-#pragma mark - Setup
-
-// Sets all the subviews and constraints of this view.
 - (void)setUp {
   if (self.subviews.count > 0) {
     // Setup the view only once.
     return;
   }
   DCHECK(self.buttonFactory);
+  DCHECK(self.topSafeAnchor);
 
   self.backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
@@ -110,6 +114,8 @@
 
   [self setUpConstraints];
 }
+
+#pragma mark - Setup
 
 // Sets the location bar container and its view if present.
 - (void)setUpLocationBar {

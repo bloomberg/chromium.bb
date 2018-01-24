@@ -43,9 +43,12 @@ const CGFloat kLeadingLocationBarButtonImageInset = 15;
 // UILayoutPriorityRequired aside from the very small time interval during
 // which they are conflicting. Also, it allows to have potentially more
 // priorities.
-const UILayoutPriority kPrimaryToolbarButtonPriority = UILayoutPriorityRequired;
+const UILayoutPriority kPrimaryToolbarLeadingButtonPriority =
+    UILayoutPriorityRequired;
+const UILayoutPriority kPrimaryToolbarTrailingButtonPriority =
+    kPrimaryToolbarLeadingButtonPriority - 1;
 const UILayoutPriority kSecondaryToolbarButtonPriority =
-    kPrimaryToolbarButtonPriority - 1;
+    kPrimaryToolbarTrailingButtonPriority - 1;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 

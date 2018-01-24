@@ -58,23 +58,6 @@
   _guideName = guideName;
   [NSLayoutConstraint deactivateConstraints:self.namedGuideConstraints];
   self.namedGuideConstraints = nil;
-
-  if (!_guideName)
-    return;
-
-  UILayoutGuide* guide = FindNamedGuide(_guideName, self);
-  if (!guide)
-    return;
-
-  self.namedGuideConstraints = @[
-    [guide.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [guide.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [guide.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [guide.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
-  ];
-  for (NSLayoutConstraint* constraint in self.namedGuideConstraints) {
-    constraint.priority = self.constraintPriority;
-  }
 }
 
 #pragma mark - Public Methods
@@ -132,6 +115,25 @@
 // and hiddenInCurrentState properties, then updates its visibility accordingly.
 - (void)setHiddenForCurrentStateAndSizeClass {
   self.hidden = self.hiddenInCurrentState || self.hiddenInCurrentSizeClass;
+
+  if (!self.namedGuideConstraints && self.guideName) {
+    // The guide name can be set before the button is added to the view
+    // hierarchy. Checking here if the constraints are set to prevent it.
+    UILayoutGuide* guide = FindNamedGuide(_guideName, self);
+    if (!guide)
+      return;
+
+    self.namedGuideConstraints = @[
+      [guide.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+      [guide.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+      [guide.topAnchor constraintEqualToAnchor:self.topAnchor],
+      [guide.bottomAnchor constraintEqualToAnchor:self.bottomAnchor]
+    ];
+    for (NSLayoutConstraint* constraint in self.namedGuideConstraints) {
+      constraint.priority = self.constraintPriority;
+    }
+  }
+
   if (self.hidden) {
     [NSLayoutConstraint deactivateConstraints:self.namedGuideConstraints];
   } else {

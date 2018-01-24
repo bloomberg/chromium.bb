@@ -17,6 +17,8 @@
 #endif
 
 @interface SecondaryToolbarView ()
+// Factory used to create the buttons.
+@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 
 // Redefined as readwrite
 @property(nonatomic, strong, readwrite) NSArray<ToolbarButton*>* allButtons;
@@ -48,16 +50,20 @@
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize tabGridButton = _tabGridButton;
 
-#pragma mark - UIView
+#pragma mark - Public
 
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  [self setUp];
-  [super willMoveToSuperview:newSuperview];
+- (instancetype)initWithButtonFactory:(ToolbarButtonFactory*)factory {
+  self = [super initWithFrame:CGRectZero];
+  if (self) {
+    _buttonFactory = factory;
+    [self setUp];
+  }
+  return self;
 }
 
 #pragma mark - Setup
 
-// Sets all the subviews and constraints of this view.
+// Sets all the subviews and constraints of the view.
 - (void)setUp {
   if (self.subviews.count > 0) {
     // Make sure the view is instantiated only once.

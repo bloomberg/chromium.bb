@@ -9,15 +9,31 @@
 
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 
+@class ToolbarButtonFactory;
+
 // View for the primary toolbar. In an adaptive toolbar paradigm, this is the
 // toolbar always displayed.
 @interface PrimaryToolbarView : UIView<AdaptiveToolbarView>
 
+// Initialize this View with the button |factory|. To finish the initialization
+// of the view, a call to |setUp| is needed.
+- (instancetype)initWithButtonFactory:(ToolbarButtonFactory*)factory
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
 // Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
 // overlap with the Status Bar.
 @property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
+
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
+
+// Sets all the subviews and constraints of the view. The |topSafeAnchor| needs
+// to be set before calling this.
+- (void)setUp;
 
 @end
 
