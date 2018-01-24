@@ -52,7 +52,7 @@ std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
 class UsbPrinterDetectorImpl : public UsbPrinterDetector,
                                public device::UsbService::Observer {
  public:
-  UsbPrinterDetectorImpl(device::UsbService* usb_service)
+  explicit UsbPrinterDetectorImpl(device::UsbService* usb_service)
       : usb_observer_(this),
         observer_list_(
             new base::ObserverListThreadSafe<UsbPrinterDetector::Observer>),
@@ -73,29 +73,6 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   // PrinterDetector interface function.
   void RemoveObserver(UsbPrinterDetector::Observer* observer) override {
     observer_list_->RemoveObserver(observer);
-  }
-
-  void StartObservers() override {
-    // This is subtle.  We're scheduling a callback here, so we have to be
-    // careful about cancellation.  We can't just post the task to the sequence,
-    // because there's the possibility the observer will be deleted before the
-    // task executes.  We can't call the callbacks directly here because the
-    // common usage of observers involves having the observer object not be
-    // fully constructed when AddObserver is called.
-    //
-    // The easiest way to deal with this is to just let ThreadSafeObserverList
-    // sort it out.  It already handles the removed-before-callback-executes
-    // case, so makes things safe for us.  This means we may *over*-notify a
-    // bit, but since the number of observers is expected to be small (usually
-    // just 1) that's a price we're willing to pay.
-    observer_list_->Notify(
-        FROM_HERE, &PrinterDetector::Observer::OnPrintersFound, GetPrinters());
-
-    // In the case of the USB detector, we expect to always have up-to-date
-    // information, thus the scan is complete after the first OnPrintersFound
-    // callback.
-    observer_list_->Notify(FROM_HERE,
-                           &PrinterDetector::Observer::OnPrinterScanComplete);
   }
 
   // PrinterDetector interface function.

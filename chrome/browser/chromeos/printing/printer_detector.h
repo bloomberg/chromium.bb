@@ -44,25 +44,21 @@ class CHROMEOS_EXPORT PrinterDetector {
     // Called with a collection of printers as they are discovered.  On each
     // call |printers| is the full set of known printers; it is not
     // incremental; printers may be added or removed.
+    //
+    // To avoid race conditions of printer state changes, you should register
+    // your Observer and call PrinterDetector::GetPrinters() to populate the
+    // initial state in the same sequenced atom.
     virtual void OnPrintersFound(
         const std::vector<DetectedPrinter>& printers) = 0;
-
-    // Called when we are done with the initial scan for printers.  We may
-    // still call OnPrintersFound if the set of available printers
-    // changes, but the user can conclude that if a printer is currently
-    // available and not in the list, we're not still looking for it.
-    virtual void OnPrinterScanComplete() = 0;
   };
 
   virtual ~PrinterDetector() = default;
 
   // Observer management.  Observer callbacks will be performed on the calling
-  // sequence.
+  // sequence, but observers do not need to be on the same sequence as each
+  // other or the detector.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-
-  // Begins to issue the Notify callbacks for the attached observers.
-  virtual void StartObservers() = 0;
 
   // Get the current list of known printers.
   virtual std::vector<DetectedPrinter> GetPrinters() = 0;
