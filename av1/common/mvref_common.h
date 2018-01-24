@@ -351,7 +351,6 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
 #else
     assert(ref_frame_type > INTRA_FRAME);
 #endif
-    assert(ref_frame_type < TOTAL_REFS_PER_FRAME);
   }
 }
 
