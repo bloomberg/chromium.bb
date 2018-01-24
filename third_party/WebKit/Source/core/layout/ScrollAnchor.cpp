@@ -463,7 +463,7 @@ void ScrollAnchor::Adjust() {
 }
 
 bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
-  if (!scroller_ || anchor_object_) {
+  if (!scroller_ || anchor_object_ || !serialized_anchor.IsValid()) {
     return false;
   }
 

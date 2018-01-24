@@ -129,6 +129,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableRootLayerScrolling(bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeech(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollAnchoring(bool);
+  BLINK_PLATFORM_EXPORT static void EnableScrollAnchorSerialization(bool);
   BLINK_PLATFORM_EXPORT static void EnableServiceWorkerNavigationPreload(bool);
   BLINK_PLATFORM_EXPORT static void EnableServiceWorkerScriptStreaming(bool);
   BLINK_PLATFORM_EXPORT static void EnableServiceWorkerScriptFullCodeCache(

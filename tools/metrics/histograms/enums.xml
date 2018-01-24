@@ -25684,6 +25684,7 @@ from previous Chrome versions.
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
+  <int value="-920204598" label="ScrollAnchorSerialization:enabled"/>
   <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
@@ -26306,6 +26307,7 @@ from previous Chrome versions.
   <int value="721225492" label="PolicyTool:enabled"/>
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
+  <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
