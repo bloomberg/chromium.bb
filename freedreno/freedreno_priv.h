@@ -49,6 +49,7 @@
 #include "xf86atomic.h"
 
 #include "util_double_list.h"
+#include "util_math.h"
 
 #include "freedreno_drmif.h"
 #include "freedreno_ringbuffer.h"
@@ -173,7 +174,6 @@ struct fd_bo {
 	time_t free_time;        /* time when added to bucket-list */
 };
 
-#define ALIGN(v,a) (((v) + (a) - 1) & ~((a) - 1))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #define enable_debug 0  /* TODO make dynamic */
