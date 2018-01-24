@@ -368,6 +368,9 @@ typedef struct SPEED_FEATURES {
 
   int fast_cdef_search;
 
+  // 2-pass coding block partition search
+  int two_pass_partition_search;
+
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split.
   int less_rectangular_check;
