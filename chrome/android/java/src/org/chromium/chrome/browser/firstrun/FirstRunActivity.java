@@ -254,6 +254,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         TemplateUrlService.getInstance().runWhenLoaded(onNativeFinished);
     }
 
+    public boolean isNativeSideIsInitializedForTest() {
+        return mNativeSideIsInitialized;
+    }
+
     private void onNativeDependenciesFullyInitialized() {
         mNativeSideIsInitialized = true;
         if (mDeferredCompleteFRE) {
