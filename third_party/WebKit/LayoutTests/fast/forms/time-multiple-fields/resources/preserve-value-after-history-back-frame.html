@@ -4,7 +4,7 @@
 <input type=time id=test2 step=1>
 <script>
 function fieldsText(input) {
-    return window.internals.oldestShadowRoot(input).textContent;
+    return window.internals.shadowRoot(input).textContent;
 }
 
 function back(newState) {

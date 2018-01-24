@@ -11,7 +11,7 @@ if (!window.eventSender || !window.internals)
     debug('This test rquires DRT/WRT.');
 var time1 = $('time1');
 time1.focus();
-var container = getElementByPseudoId(internals.oldestShadowRoot(time1), '-webkit-datetime-edit');
+var container = getElementByPseudoId(internals.shadowRoot(time1), '-webkit-datetime-edit');
 var initialScrollLeft = container.scrollLeft;
 eventSender.keyDown('\t');
 shouldBeTrue('initialScrollLeft < container.scrollLeft');

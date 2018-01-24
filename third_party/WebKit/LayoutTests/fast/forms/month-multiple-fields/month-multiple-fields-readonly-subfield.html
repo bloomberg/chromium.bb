@@ -16,7 +16,7 @@ function createMonthInput(min, max, value) {
 
 // FIXME: Rename this function and the test file.
 function isReadOnlyField(input, pseudo) {
-    var node = internals.youngestShadowRoot(input).querySelector('*[pseudo="' + pseudo + '"]');
+    var node = internals.shadowRoot(input).querySelector('*[pseudo="' + pseudo + '"]');
     if (!node)
         testFailed('Requested node is missing.');
     return node && node.hasAttribute('disabled');
