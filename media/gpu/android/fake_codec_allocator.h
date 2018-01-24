@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MEDIA_GPU_ANDROID_FAKE_CODEC_ALLOCATOR_H_
+#define MEDIA_GPU_ANDROID_FAKE_CODEC_ALLOCATOR_H_
+
 #include <memory>
 
 #include "media/base/android/mock_media_codec_bridge.h"
@@ -91,3 +94,5 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
 };
 
 }  // namespace media
+
+#endif  // MEDIA_GPU_ANDROID_FAKE_CODEC_ALLOCATOR_H_
