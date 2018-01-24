@@ -945,11 +945,10 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
   CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
 }
 
-// Verifies that setDefaultBackgroundColor and captureScreenshot support a
-// transparent background, and that setDeviceMetricsOverride doesn't affect it.
-
-// Temporarily disabled while protocol methods are being refactored.
-IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, DISABLED_TransparentScreenshots) {
+// Verifies that setDefaultBackgroundColor and captureScreenshot support a fully
+// and semi-transparent background, and that setDeviceMetricsOverride doesn't
+// affect it.
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
   if (base::SysInfo::IsLowEndDevice())
     return;
 
@@ -958,13 +957,13 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, DISABLED_TransparentScreenshots) {
   WaitForLoadStop(shell()->web_contents());
   Attach();
 
-  // Override background to transparent.
-  std::unique_ptr<base::DictionaryValue> color(new base::DictionaryValue());
+  // Override background to fully transparent.
+  auto color = std::make_unique<base::DictionaryValue>();
   color->SetInteger("r", 0);
   color->SetInteger("g", 0);
   color->SetInteger("b", 0);
   color->SetDouble("a", 0);
-  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  auto params = std::make_unique<base::DictionaryValue>();
   params->Set("color", std::move(color));
   SendCommand("Emulation.setDefaultBackgroundColorOverride", std::move(params));
 
@@ -979,8 +978,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, DISABLED_TransparentScreenshots) {
   expected_bitmap.eraseColor(SK_ColorTRANSPARENT);
   CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
 
+#if !defined(OS_ANDROID)
   // Check that device emulation does not affect the transparency.
-  params.reset(new base::DictionaryValue());
+  params = std::make_unique<base::DictionaryValue>();
   params->SetInteger("width", view_size.width());
   params->SetInteger("height", view_size.height());
   params->SetDouble("deviceScaleFactor", 0);
@@ -988,6 +988,34 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, DISABLED_TransparentScreenshots) {
   params->SetBoolean("fitWindow", false);
   SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
   CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+  SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
+#endif  // !defined(OS_ANDROID)
+
+  // Override background to a semi-transparent color.
+  color = std::make_unique<base::DictionaryValue>();
+  color->SetInteger("r", 255);
+  color->SetInteger("g", 0);
+  color->SetInteger("b", 0);
+  color->SetDouble("a", 1.0 / 255 * 16);
+  params = std::make_unique<base::DictionaryValue>();
+  params->Set("color", std::move(color));
+  SendCommand("Emulation.setDefaultBackgroundColorOverride", std::move(params));
+
+  expected_bitmap.eraseColor(SkColorSetARGB(16, 255, 0, 0));
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+
+#if !defined(OS_ANDROID)
+  // Check that device emulation does not affect the transparency.
+  params = std::make_unique<base::DictionaryValue>();
+  params->SetInteger("width", view_size.width());
+  params->SetInteger("height", view_size.height());
+  params->SetDouble("deviceScaleFactor", 0);
+  params->SetBoolean("mobile", false);
+  params->SetBoolean("fitWindow", false);
+  SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+  SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
+#endif  // !defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)
