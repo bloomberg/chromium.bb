@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef GOOGLE_APIS_GCM_ENGINE_GCM_REQUEST_TEST_BASE_H_
+#define GOOGLE_APIS_GCM_ENGINE_GCM_REQUEST_TEST_BASE_H_
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -58,3 +61,5 @@ class GCMRequestTestBase : public testing::Test {
 };
 
 }  // namespace gcm
+
+#endif  // GOOGLE_APIS_GCM_ENGINE_GCM_REQUEST_TEST_BASE_H_
