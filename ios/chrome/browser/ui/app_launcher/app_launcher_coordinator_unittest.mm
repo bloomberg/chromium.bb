@@ -33,6 +33,8 @@ class AppLauncherCoordinatorTest : public PlatformTest {
     OCMStub([application_ sharedApplication]).andReturn(application_);
   }
 
+  ~AppLauncherCoordinatorTest() override { [application_ stopMocking]; }
+
   UIViewController* base_view_controller_ = nil;
   ScopedKeyWindow scoped_key_window_;
   AppLauncherCoordinator* coordinator_ = nil;
