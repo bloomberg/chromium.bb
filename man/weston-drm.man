@@ -45,6 +45,13 @@ including
 can run on other VTs. On switching back to Weston's VT, input devices
 and DRM master are re-acquired through the parent process
 .BR weston-launch .
+
+The DRM backend also supports virtual outputs that are transmitted over
+an RTP session as a series of JPEG images (RTP payload type 26) to a remote
+client. Virtual outputs are configured in the
+.BR remote-output
+section of
+.BR weston.ini.
 .
 .\" ***************************************************************
 .SH CONFIGURATION
@@ -138,6 +145,30 @@ Defaults to false. Note that
 When a connector is disconnected, there is no EDID information to provide
 a list of video modes. Therefore a forced output should also have a
 detailed mode line specified.
+
+.SS Section remote-output
+.TP
+\fBname\fR=\fIname\fR
+Specify unique name for the output.
+.TP
+\fBmode\fR=\fImode\fR
+Specify the video mode for the output. The argument
+.I mode
+is a resolution setting, such as:
+.TP
+\fBmode\fR=\fIwidthxheight\fR
+.TP
+\fBmode\fR=\fIwidthxheight@refresh_rate
+If refresh_rate is not specified it will default to a 60Hz.
+.TP
+\fBhost\fR=\fIhost\fR
+Specify the host name or IP Address that the remote output will be
+transmitted to.
+.TP
+\fBport\fR=\fIport\fR
+Specify the port number to transmit the remote output to. Usable port range
+is 1-65533.
+
 .
 .\" ***************************************************************
 .SH OPTIONS

@@ -226,6 +226,16 @@ if test x$enable_drm_compositor = xyes; then
 		    [AC_MSG_WARN([GBM does not support dmabuf import, will omit that capability])])
 fi
 
+AC_ARG_ENABLE(remoting, [  --enable-remoting],,
+              enable_remoting=no)
+AM_CONDITIONAL(ENABLE_REMOTING, test x$enable_remoting = xyes)
+if test x$enable_remoting = xyes; then
+  if test x$enable_drm_compositor != xyes; then
+    AC_MSG_WARN([The remoting-plugin.so module requires the DRM backend.])
+  fi
+  PKG_CHECK_MODULES(REMOTING_GST, [gstreamer-1.0 gstreamer-allocators-1.0 gstreamer-app-1.0 gstreamer-video-1.0])
+fi
+
 
 PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.8.0])
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
@@ -727,6 +737,7 @@ AC_MSG_RESULT([
 	systemd notify support		${enable_systemd_notify}
 
 	DRM Compositor			${enable_drm_compositor}
+	Remoting			${enable_remoting}
 	X11 Compositor			${enable_x11_compositor}
 	Wayland Compositor		${enable_wayland_compositor}
 	Headless Compositor		${enable_headless_compositor}

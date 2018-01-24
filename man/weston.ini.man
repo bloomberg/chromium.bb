@@ -189,6 +189,19 @@ useful for debugging a crash on start-up when it would be inconvenient to
 launch weston directly from a debugger. Boolean, defaults to
 .BR false .
 There is also a command line option to do the same.
+.TP 7
+.BI "remoting="remoting-plugin.so
+specifies a plugin for remote output to load (string). This can be used to load
+your own implemented remoting plugin or one with Weston as default. Available
+remoting plugins in the
+.IR "__libweston_modules_dir__"
+directroy are:
+.PP
+.RS 10
+.nf
+.BR remoting-plugin.so
+.fi
+.RE
 
 .SH "LIBINPUT SECTION"
 The

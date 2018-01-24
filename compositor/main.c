@@ -61,6 +61,7 @@
 #include "compositor-wayland.h"
 #include "windowed-output-api.h"
 #include "weston-debug.h"
+#include "../remoting/remoting-plugin.h"
 
 #define WINDOW_TITLE "Weston Compositor"
 
@@ -1974,6 +1975,154 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
 }
 
 static int
+drm_backend_remoted_output_configure(struct weston_output *output,
+				     struct weston_config_section *section,
+				     char *modeline,
+				     const struct weston_remoting_api *api)
+{
+	char *gbm_format = NULL;
+	char *seat = NULL;
+	char *host = NULL;
+	int port, ret;
+
+	ret = api->set_mode(output, modeline);
+	if (ret < 0) {
+		weston_log("Cannot configure an output \"%s\" using "
+			   "weston_remoting_api. Invalid mode\n",
+			   output->name);
+		return -1;
+	}
+
+	wet_output_set_scale(output, section, 1, 0);
+	wet_output_set_transform(output, section, WL_OUTPUT_TRANSFORM_NORMAL,
+				 UINT32_MAX);
+
+	weston_config_section_get_string(section, "gbm-format", &gbm_format,
+					 NULL);
+	api->set_gbm_format(output, gbm_format);
+	free(gbm_format);
+
+	weston_config_section_get_string(section, "seat", &seat, "");
+
+	api->set_seat(output, seat);
+	free(seat);
+
+	weston_config_section_get_string(section, "host", &host, NULL);
+	if (!host) {
+		weston_log("Cannot configure an output \"%s\". Invalid host\n",
+			   output->name);
+		return -1;
+	}
+	api->set_host(output, host);
+	free(host);
+
+	weston_config_section_get_int(section, "port", &port, 0);
+	if (port <= 0 || 65533 < port) {
+		weston_log("Cannot configure an output \"%s\". Invalid port\n",
+			   output->name);
+		return -1;
+	}
+	api->set_port(output, port);
+
+	return 0;
+}
+
+static void
+remoted_output_init(struct weston_compositor *c,
+		    struct weston_config_section *section,
+		    const struct weston_remoting_api *api)
+{
+	struct weston_output *output = NULL;
+	char *output_name, *modeline = NULL;
+	int ret;
+
+	weston_config_section_get_string(section, "name", &output_name,
+					 NULL);
+	if (!output_name)
+		return;
+
+	weston_config_section_get_string(section, "mode", &modeline, "off");
+	if (strcmp(modeline, "off") == 0)
+		goto err;
+
+	output = api->create_output(c, output_name);
+	if (!output) {
+		weston_log("Cannot create remoted output \"%s\".\n",
+			   output_name);
+		goto err;
+	}
+
+	ret = drm_backend_remoted_output_configure(output, section, modeline,
+						   api);
+	if (ret < 0) {
+		weston_log("Cannot configure remoted output \"%s\".\n",
+			   output_name);
+		goto err;
+	}
+
+	if (weston_output_enable(output) < 0) {
+		weston_log("Enabling remoted output \"%s\" failed.\n",
+			   output_name);
+		goto err;
+	}
+
+	free(modeline);
+	free(output_name);
+	weston_log("remoted output '%s' enabled\n", output->name);
+	return;
+
+err:
+	free(modeline);
+	free(output_name);
+	if (output)
+		weston_output_destroy(output);
+}
+
+static void
+load_remoting(struct weston_compositor *c, struct weston_config *wc)
+{
+	const struct weston_remoting_api *api = NULL;
+	int (*module_init)(struct weston_compositor *ec);
+	struct weston_config_section *section = NULL;
+	const char *section_name;
+
+	/* read remote-output section in weston.ini */
+	while (weston_config_next_section(wc, &section, &section_name)) {
+		if (strcmp(section_name, "remote-output"))
+			continue;
+
+		if (!api) {
+			char *module_name;
+			struct weston_config_section *core_section =
+				weston_config_get_section(wc, "core", NULL,
+							  NULL);
+
+			weston_config_section_get_string(core_section,
+							 "remoting",
+							 &module_name,
+							 "remoting-plugin.so");
+			module_init = weston_load_module(module_name,
+							 "weston_module_init");
+			free(module_name);
+			if (!module_init) {
+				weston_log("Can't load remoting-plugin\n");
+				return;
+			}
+			if (module_init(c) < 0) {
+				weston_log("Remoting-plugin init failed\n");
+				return;
+			}
+
+			api = weston_remoting_get_api(c);
+			if (!api)
+				return;
+		}
+
+		remoted_output_init(c, section, api);
+	}
+}
+
+static int
 load_drm_backend(struct weston_compositor *c,
 		 int *argc, char **argv, struct weston_config *wc)
 {
@@ -2014,6 +2163,9 @@ load_drm_backend(struct weston_compositor *c,
 
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_DRM,
 					     &config.base);
+
+	/* remoting */
+	load_remoting(c, wc);
 
 	free(config.gbm_format);
 	free(config.seat_id);
