@@ -448,10 +448,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return half_reporting_fraction_encoded_config_;
   }
 
-  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) const {
-    return delegate_->IsTrustedSpdyProxy(proxy_server);
-  }
-
   const std::string& loaded_config() const { return loaded_config_; }
 
   net::TestURLRequestContext* test_url_request_context() const {

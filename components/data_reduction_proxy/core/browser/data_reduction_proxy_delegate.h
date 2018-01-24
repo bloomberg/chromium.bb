@@ -55,7 +55,6 @@ class DataReductionProxyDelegate
                       const net::ProxyRetryInfoMap& proxy_retry_info,
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
-  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override;
 
   void SetTickClockForTesting(base::TickClock* tick_clock);
 

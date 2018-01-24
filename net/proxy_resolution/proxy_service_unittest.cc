@@ -216,9 +216,6 @@ class TestResolveProxyDelegate : public ProxyDelegate {
   }
 
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
-  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
-    return true;
-  }
 
  private:
   bool on_resolve_proxy_called_;
@@ -243,9 +240,6 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
     proxy_server_ = bad_proxy;
     proxy_fallback_net_error_ = net_error;
     on_proxy_fallback_called_ = true;
-  }
-  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
-    return true;
   }
 
   bool on_proxy_fallback_called() const {

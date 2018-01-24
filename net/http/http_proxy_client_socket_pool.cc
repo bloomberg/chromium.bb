@@ -84,6 +84,7 @@ HttpProxySocketParams::HttpProxySocketParams(
     HttpAuthHandlerFactory* http_auth_handler_factory,
     SpdySessionPool* spdy_session_pool,
     QuicStreamFactory* quic_stream_factory,
+    bool is_trusted_proxy,
     bool tunnel)
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
@@ -94,6 +95,7 @@ HttpProxySocketParams::HttpProxySocketParams(
       endpoint_(endpoint),
       http_auth_cache_(tunnel ? http_auth_cache : NULL),
       http_auth_handler_factory_(tunnel ? http_auth_handler_factory : NULL),
+      is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel) {
   // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
   // and |ssl_params| must be valid while |transport_params| is null.
@@ -155,6 +157,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->http_auth_handler_factory(),
           params->spdy_session_pool(),
           params->quic_stream_factory(),
+          params->is_trusted_proxy(),
           params->tunnel(),
           this->net_log())) {}
 

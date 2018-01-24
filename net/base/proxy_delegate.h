@@ -44,10 +44,6 @@ class NET_EXPORT ProxyDelegate {
   virtual void OnFallback(const ProxyServer& bad_proxy,
                           int net_error) = 0;
 
-  // Returns true if |proxy_server| is a trusted SPDY/HTTP2 proxy that is
-  // allowed to push cross-origin resources.
-  virtual bool IsTrustedSpdyProxy(const ProxyServer& proxy_server) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyDelegate);
 };

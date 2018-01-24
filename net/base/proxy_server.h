@@ -41,9 +41,12 @@ class NET_EXPORT ProxyServer {
   // Default copy-constructor and assignment operator are OK!
 
   // Constructs an invalid ProxyServer.
-  ProxyServer() : scheme_(SCHEME_INVALID) {}
+  ProxyServer() {}
 
   ProxyServer(Scheme scheme, const HostPortPair& host_port_pair);
+  ProxyServer(Scheme scheme,
+              const HostPortPair& host_port_pair,
+              bool is_trusted_proxy);
 
   bool is_valid() const { return scheme_ != SCHEME_INVALID; }
 
@@ -66,6 +69,10 @@ class NET_EXPORT ProxyServer {
 
   // Returns true if this ProxyServer is a QUIC proxy.
   bool is_quic() const { return scheme_ == SCHEME_QUIC; }
+
+  // Returns true if the proxy is trusted to push cross-origin resources from
+  // HTTP hosts.
+  bool is_trusted_proxy() const { return is_trusted_proxy_; }
 
   const HostPortPair& host_port_pair() const;
 
@@ -168,8 +175,9 @@ class NET_EXPORT ProxyServer {
       std::string::const_iterator host_and_port_begin,
       std::string::const_iterator host_and_port_end);
 
-  Scheme scheme_;
+  Scheme scheme_ = SCHEME_INVALID;
   HostPortPair host_port_pair_;
+  bool is_trusted_proxy_ = false;
 };
 
 typedef std::pair<HostPortPair, ProxyServer> HostPortProxyPair;

@@ -1231,9 +1231,15 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   if (connection_->socket()->IsConnected())
     connection_->CloseIdleSocketsInGroup();
 
+  // If |spdy_session_direct_| is false, then |proxy_info_| is guaranteed to
+  // have a non-empty proxy list.
+  bool is_trusted_proxy =
+      !spdy_session_direct_ && proxy_info_.proxy_server().is_trusted_proxy();
+
   base::WeakPtr<SpdySession> spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          spdy_session_key_, std::move(connection_), net_log_);
+          spdy_session_key_, is_trusted_proxy, std::move(connection_),
+          net_log_);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
     spdy_session->CloseSessionOnError(

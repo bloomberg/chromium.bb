@@ -31,7 +31,6 @@ class TestProxyDelegate : public ProxyDelegate {
                       const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override;
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override;
-  bool IsTrustedSpdyProxy(const ProxyServer& proxy_server) override;
 
   void set_alternative_proxy_server(
       const ProxyServer& alternative_proxy_server) {

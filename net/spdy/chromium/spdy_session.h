@@ -85,7 +85,6 @@ const SpdyStreamId kLastStreamId = 0x7fffffff;
 
 struct LoadTimingInfo;
 class NetLog;
-class ProxyDelegate;
 class SpdyStream;
 class SSLInfo;
 class TransportSecurityState;
@@ -257,11 +256,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
               bool support_ietf_format_quic_altsvc,
+              bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               const SettingsMap& initial_settings,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
-              ProxyDelegate* proxy_delegate,
               NetLog* net_log);
 
   ~SpdySession() override;
@@ -1046,6 +1045,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // If true, alt-svc headers advertising QUIC in IETF format will be supported.
   bool support_ietf_format_quic_altsvc_;
 
+  // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
+  // allowed to push cross-origin resources.
+  const bool is_trusted_proxy_;
+
   // True if the server has advertised WebSocket support via
   // SETTINGS_ENABLE_CONNECT_PROTOCOL, see
   // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
@@ -1072,11 +1075,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // to build a new connection, and see if that completes before we (finally)
   // get a PING response (http://crbug.com/127812).
   base::TimeDelta hung_interval_;
-
-  // The |proxy_delegate_| verifies that a given proxy is a trusted SPDY proxy,
-  // which is allowed to push resources from origins that are different from
-  // those of their associated streams. May be nullptr.
-  ProxyDelegate* proxy_delegate_;
 
   TimeFunc time_func_;
 

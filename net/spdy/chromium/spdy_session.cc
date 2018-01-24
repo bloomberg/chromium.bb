@@ -27,8 +27,6 @@
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
-#include "net/base/proxy_delegate.h"
-#include "net/base/proxy_server.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
@@ -736,11 +734,11 @@ SpdySession::SpdySession(
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
+    bool is_trusted_proxy,
     size_t session_max_recv_window_size,
     const SettingsMap& initial_settings,
     TimeFunc time_func,
     ServerPushDelegate* push_delegate,
-    ProxyDelegate* proxy_delegate,
     NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
@@ -788,11 +786,11 @@ SpdySession::SpdySession(
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
+      is_trusted_proxy_(is_trusted_proxy),
       support_websocket_(false),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
-      proxy_delegate_(proxy_delegate),
       time_func_(time_func),
       weak_factory_(this) {
   net_log_.BeginEvent(
@@ -1637,9 +1635,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Cross-origin push validation.
   GURL associated_url(associated_it->second->GetUrlFromHeaders());
   if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-    if (proxy_delegate_ &&
-        proxy_delegate_->IsTrustedSpdyProxy(
-            ProxyServer(ProxyServer::SCHEME_HTTPS, host_port_pair()))) {
+    if (is_trusted_proxy_) {
       if (!gurl.SchemeIs(url::kHttpScheme)) {
         EnqueueResetStreamFrame(
             stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,

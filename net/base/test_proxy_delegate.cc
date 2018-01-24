@@ -18,6 +18,19 @@ void TestProxyDelegate::OnResolveProxy(
     const std::string& method,
     const ProxyRetryInfoMap& proxy_retry_info,
     ProxyInfo* result) {
+  if (trusted_spdy_proxy_.is_valid()) {
+    ProxyList new_proxy_list;
+    for (const auto& proxy_server : result->proxy_list().GetAll()) {
+      if (proxy_server == trusted_spdy_proxy_) {
+        new_proxy_list.AddProxyServer(ProxyServer(
+            proxy_server.scheme(), proxy_server.host_port_pair(), true));
+      } else {
+        new_proxy_list.AddProxyServer(proxy_server);
+      }
+    }
+    result->UseProxyList(new_proxy_list);
+  }
+
   // Only set |alternative_proxy_server_| as the alternative proxy if the
   // ProxyService has not marked it as bad.
   ProxyInfo alternative_proxy_info;
@@ -29,9 +42,5 @@ void TestProxyDelegate::OnResolveProxy(
 
 void TestProxyDelegate::OnFallback(const ProxyServer& bad_proxy,
                                    int net_error) {}
-
-bool TestProxyDelegate::IsTrustedSpdyProxy(const ProxyServer& proxy_server) {
-  return proxy_server.is_valid() && trusted_spdy_proxy_ == proxy_server;
-}
 
 }  // namespace net
