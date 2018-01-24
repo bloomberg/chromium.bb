@@ -68,6 +68,8 @@ OfflinePageItem CreateDummyRecentTab(int id, base::Time time) {
   return item;
 }
 
+void GetAllItemsDummyCallback(const std::vector<OfflineItem>& items) {}
+
 }  // namespace
 
 class RecentTabSuggestionsProviderTestNoLoad : public testing::Test {
@@ -89,6 +91,8 @@ class RecentTabSuggestionsProviderTestNoLoad : public testing::Test {
             ui_adapter_);
     provider_ = std::make_unique<RecentTabSuggestionsProvider>(
         &observer_, ui_adapter_, pref_service());
+    // Force adapter to load its cache.
+    ui_adapter_->GetAllItems(base::BindOnce(&GetAllItemsDummyCallback));
   }
 
   Category recent_tabs_category() {
