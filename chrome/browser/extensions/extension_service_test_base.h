@@ -19,6 +19,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -180,6 +181,10 @@ class ExtensionServiceTestBase : public testing::Test {
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
+
+  // An instance of the data decoder service that does not require the
+  // ServiceManager.
+  data_decoder::TestDataDecoderService test_data_decoder_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceTestBase);
 };

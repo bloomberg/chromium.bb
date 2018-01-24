@@ -29,8 +29,6 @@ const char kInstallDirectoryName[] = "Extensions";
 
 const char kTempExtensionName[] = "CRX_INSTALL";
 
-const char kDecodedImagesFilename[] = "DECODED_IMAGES";
-
 const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
 
 const char kGeneratedBackgroundPageFilename[] =

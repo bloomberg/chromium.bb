@@ -17,8 +17,10 @@
 #include "base/time/time.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 #include "extensions/browser/crx_file_info.h"
+#include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/manifest.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 class SkBitmap;
 
@@ -26,6 +28,10 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class SequencedTaskRunner;
+}
+
+namespace service_manager {
+class Connector;
 }
 
 namespace extensions {
@@ -101,6 +107,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // passing the |location| and |creation_flags| to Extension::Create. The
   // |extensions_dir| parameter should specify the directory under which we'll
   // create a subdirectory to write the unpacked extension contents.
+  // |connector| must be a fresh connector (not yet associated to any thread) to
+  // the service manager.
   // Note: Because this requires disk I/O, the task runner passed should use
   // TaskShutdownBehavior::SKIP_ON_SHUTDOWN to ensure that either the task is
   // fully run (if initiated before shutdown) or not run at all (if shutdown is
@@ -110,6 +118,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // TODO(devlin): SKIP_ON_SHUTDOWN is also not quite sufficient for this. We
   // should probably instead be using base::ImportantFileWriter or similar.
   SandboxedUnpacker(
+      std::unique_ptr<service_manager::Connector> connector,
       Manifest::Location location,
       int creation_flags,
       const base::FilePath& extensions_dir,
@@ -236,9 +245,14 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                                 std::unique_ptr<base::ListValue> json_ruleset);
   void UnpackExtensionFailed(const base::string16& error);
 
+  void ImageSanitizationDone(std::unique_ptr<base::DictionaryValue> manifest,
+                             std::unique_ptr<base::ListValue> json_ruleset,
+                             ImageSanitizer::Status status,
+                             const base::FilePath& path);
+  void ImageSanitizerDecodedImage(const base::FilePath& path, SkBitmap image);
+
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
-                     const SkBitmap& install_icon,
                      const base::Optional<int>& dnr_ruleset_checksum);
   void ReportFailure(FailureReason reason, const base::string16& error);
 
@@ -249,7 +263,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Overwrites original files with safe results from utility process.
   // Reports error and returns false if it fails.
-  bool RewriteImageFiles(SkBitmap* install_icon);
   bool RewriteCatalogFiles();
 
   // Cleans up temp directory artifacts.
@@ -262,6 +275,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool IndexAndPersistRulesIfNeeded(
       std::unique_ptr<base::ListValue> json_ruleset,
       base::Optional<int>* dnr_ruleset_checksum);
+
+  // Connector to the ServiceManager required by the Unzip API.
+  std::unique_ptr<service_manager::Connector> connector_;
 
   // If we unpacked a CRX file, we hold on to the path name for use
   // in various histograms.
@@ -306,6 +322,21 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Utility client used for sending tasks to the utility process.
   std::unique_ptr<content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>
       utility_process_mojo_client_;
+
+  // The normalized path of the install icon path, retrieved from the manifest.
+  base::FilePath install_icon_path_;
+
+  // The decoded install icon.
+  SkBitmap install_icon_;
+
+  // The identity used to connect to the data decoder service. It is unique to
+  // this SandboxedUnpacker instance so that data decoder operations for
+  // unpacking this extension share the same process, and so that no unrelated
+  // data decoder operation use that process.
+  service_manager::Identity data_decoder_identity_;
+
+  // The ImageSanitizer used to clean-up images.
+  std::unique_ptr<ImageSanitizer> image_sanitizer_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedUnpacker);
 };

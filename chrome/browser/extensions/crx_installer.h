@@ -37,6 +37,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace extensions {
 class CrxInstallError;
 class ExtensionUpdaterTest;
@@ -237,6 +241,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // invalid if this isn't an update.
   const base::Version& current_version() const { return current_version_; }
 
+  static void set_connector_for_test(service_manager::Connector* connector) {
+    connector_for_test_ = connector;
+  }
+
  private:
   friend class ::ExtensionServiceTest;
   friend class ExtensionUpdaterTest;
@@ -306,6 +314,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Show re-enable prompt if the update is initiated from the settings page
   // and needs additional permissions.
   void ConfirmReEnable();
+
+  // Returns the connector to the ServiceManager.
+  service_manager::Connector* GetConnector() const;
 
   void set_install_flag(int flag, bool val) {
     if (val)
@@ -483,6 +494,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Invoked when the install is completed.
   InstallerResultCallback installer_callback_;
+
+  static service_manager::Connector* connector_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
