@@ -22,12 +22,13 @@ class CC_PAINT_EXPORT DecodedDrawImage {
   DecodedDrawImage(sk_sp<const SkImage> image,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
-                   SkFilterQuality filter_quality);
+                   SkFilterQuality filter_quality,
+                   bool is_budgeted);
   DecodedDrawImage(base::Optional<uint32_t> transfer_cache_entry_id,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
-                   SkFilterQuality filter_quality);
-  DecodedDrawImage(sk_sp<const SkImage> image, SkFilterQuality filter_quality);
+                   SkFilterQuality filter_quality,
+                   bool is_budgeted);
   DecodedDrawImage(const DecodedDrawImage& other);
   DecodedDrawImage();
   ~DecodedDrawImage();
@@ -43,6 +44,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
     return std::abs(scale_adjustment_.width() - 1.f) < FLT_EPSILON &&
            std::abs(scale_adjustment_.height() - 1.f) < FLT_EPSILON;
   }
+  bool is_budgeted() const { return is_budgeted_; }
 
  private:
   sk_sp<const SkImage> image_;
@@ -50,6 +52,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
   SkSize src_rect_offset_;
   SkSize scale_adjustment_;
   SkFilterQuality filter_quality_;
+  bool is_budgeted_;
 };
 
 }  // namespace cc

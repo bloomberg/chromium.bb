@@ -20,8 +20,7 @@ StubDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
 
 DecodedDrawImage StubDecodeCache::GetDecodedImageForDraw(
     const DrawImage& image) {
-  return DecodedDrawImage(nullptr, SkSize::MakeEmpty(),
-                          SkSize::Make(1.0f, 1.0f), kNone_SkFilterQuality);
+  return DecodedDrawImage();
 }
 
 size_t StubDecodeCache::GetMaximumMemoryLimitBytes() const {

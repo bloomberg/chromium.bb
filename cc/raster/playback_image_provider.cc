@@ -72,9 +72,9 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
   }
 
   if (!paint_image.GetSkImage()->isLazyGenerated()) {
-    return ScopedDecodedDrawImage(
-        DecodedDrawImage(paint_image.GetSkImage(), SkSize::Make(0, 0),
-                         SkSize::Make(1.f, 1.f), draw_image.filter_quality()));
+    return ScopedDecodedDrawImage(DecodedDrawImage(
+        paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
+        draw_image.filter_quality(), true /* is_budgeted */));
   }
 
   const auto& it =

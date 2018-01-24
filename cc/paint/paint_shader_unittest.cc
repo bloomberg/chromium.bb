@@ -42,7 +42,7 @@ class MockImageProvider : public ImageProvider {
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     return ScopedDecodedDrawImage(
         DecodedDrawImage(image, SkSize::MakeEmpty(), SkSize::Make(1.0f, 1.0f),
-                         draw_image.filter_quality()));
+                         draw_image.filter_quality(), true));
   }
 
   const DrawImage& draw_image() const { return draw_image_; }

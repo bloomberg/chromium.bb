@@ -44,8 +44,9 @@ class NoOpImageProvider : public ImageProvider {
     bitmap.allocPixelsFlags(SkImageInfo::MakeN32Premul(10, 10),
                             SkBitmap::kZeroPixels_AllocFlag);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    return ScopedDecodedDrawImage(DecodedDrawImage(
-        image, SkSize::Make(10, 10), SkSize::Make(1, 1), kLow_SkFilterQuality));
+    return ScopedDecodedDrawImage(DecodedDrawImage(image, SkSize::Make(10, 10),
+                                                   SkSize::Make(1, 1),
+                                                   kLow_SkFilterQuality, true));
   }
 };
 

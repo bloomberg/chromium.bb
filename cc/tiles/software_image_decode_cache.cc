@@ -494,7 +494,8 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   DecodeImageIfNecessary(key, paint_image, cache_entry);
   auto decoded_draw_image =
       DecodedDrawImage(cache_entry->image(), cache_entry->src_rect_offset(),
-                       GetScaleAdjustment(key), GetDecodedFilterQuality(key));
+                       GetScaleAdjustment(key), GetDecodedFilterQuality(key),
+                       cache_entry->is_budgeted);
   return decoded_draw_image;
 }
 
