@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_TEST_BACKGROUND_PAGE_WATCHER_H_
+#define EXTENSIONS_TEST_BACKGROUND_PAGE_WATCHER_H_
+
 #include <string>
 
 #include "base/callback.h"
@@ -54,3 +57,5 @@ class BackgroundPageWatcher : public ProcessManagerObserver {
 };
 
 }  // namespace extensions
+
+#endif  // EXTENSIONS_TEST_BACKGROUND_PAGE_WATCHER_H_
