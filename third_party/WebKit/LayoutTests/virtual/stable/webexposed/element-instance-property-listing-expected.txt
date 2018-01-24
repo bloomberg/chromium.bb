@@ -835,6 +835,7 @@ html element script
 html element section
 html element select
     property add
+    property autocomplete
     property autofocus
     property checkValidity
     property disabled
@@ -932,6 +933,7 @@ html element td
 html element template
     property content
 html element textarea
+    property autocomplete
     property autofocus
     property checkValidity
     property cols

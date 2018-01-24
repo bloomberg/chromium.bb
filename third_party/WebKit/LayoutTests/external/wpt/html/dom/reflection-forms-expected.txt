@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6725 tests; 6675 PASS, 50 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6725 tests; 6709 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
 PASS form.dir: 62 tests
@@ -105,23 +105,7 @@ PASS select.className (<select class>): 32 tests
 PASS select.hidden: 33 tests
 PASS select.accessKey: 32 tests
 PASS select.tabIndex: 24 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
+PASS select.autocomplete: 17 tests
 PASS select.autofocus: 33 tests
 PASS select.disabled: 33 tests
 PASS select.multiple: 33 tests
@@ -162,23 +146,7 @@ PASS textarea.className (<textarea class>): 32 tests
 PASS textarea.hidden: 33 tests
 PASS textarea.accessKey: 32 tests
 PASS textarea.tabIndex: 24 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
+PASS textarea.autocomplete: 17 tests
 PASS textarea.autofocus: 33 tests
 PASS textarea.cols: 59 tests
 PASS textarea.dirName: 32 tests

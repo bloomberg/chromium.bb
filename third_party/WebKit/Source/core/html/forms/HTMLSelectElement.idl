@@ -22,7 +22,7 @@
 // https://html.spec.whatwg.org/#the-select-element
 
 interface HTMLSelectElement : HTMLElement {
-    // TODO(foolip): attribute DOMString autocomplete;
+    [CEReactions, Reflect] attribute DOMString autocomplete;
     [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;

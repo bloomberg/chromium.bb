@@ -2724,6 +2724,7 @@ interface HTMLScriptElement : HTMLElement
     setter type
 interface HTMLSelectElement : HTMLElement
     attribute @@toStringTag
+    getter autocomplete
     getter autofocus
     getter disabled
     getter form
@@ -2750,6 +2751,7 @@ interface HTMLSelectElement : HTMLElement
     method remove
     method reportValidity
     method setCustomValidity
+    setter autocomplete
     setter autofocus
     setter disabled
     setter length
@@ -2924,6 +2926,7 @@ interface HTMLTemplateElement : HTMLElement
     method constructor
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
+    getter autocomplete
     getter autofocus
     getter cols
     getter defaultValue
@@ -2955,6 +2958,7 @@ interface HTMLTextAreaElement : HTMLElement
     method setCustomValidity
     method setRangeText
     method setSelectionRange
+    setter autocomplete
     setter autofocus
     setter cols
     setter defaultValue
