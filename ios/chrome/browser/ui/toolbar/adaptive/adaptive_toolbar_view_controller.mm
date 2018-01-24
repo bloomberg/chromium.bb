@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tab_grid_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -44,6 +45,12 @@
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateAllButtonsVisibility];
+}
+
+#pragma mark - Public
+
+- (ToolbarToolsMenuButton*)toolsMenuButton {
+  return self.view.toolsMenuButton;
 }
 
 #pragma mark - ToolbarConsumer
