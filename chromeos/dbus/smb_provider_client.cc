@@ -53,14 +53,14 @@ class SmbProviderClientImpl : public SmbProviderClient {
 
   void Mount(const base::FilePath& share_path,
              MountCallback callback) override {
-    smbprovider::MountOptions options;
+    smbprovider::MountOptionsProto options;
     options.set_path(share_path.value());
     CallMethod(smbprovider::kMountMethod, options,
                &SmbProviderClientImpl::HandleMountCallback, &callback);
   }
 
   void Unmount(int32_t mount_id, StatusCallback callback) override {
-    smbprovider::UnmountOptions options;
+    smbprovider::UnmountOptionsProto options;
     options.set_mount_id(mount_id);
     CallMethod(smbprovider::kUnmountMethod, options,
                &SmbProviderClientImpl::HandleUnmountCallback, &callback);
@@ -69,24 +69,24 @@ class SmbProviderClientImpl : public SmbProviderClient {
   void ReadDirectory(int32_t mount_id,
                      const base::FilePath& directory_path,
                      ReadDirectoryCallback callback) override {
-    smbprovider::ReadDirectoryOptions options;
+    smbprovider::ReadDirectoryOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_directory_path(directory_path.value());
     CallMethod(smbprovider::kReadDirectoryMethod, options,
                &SmbProviderClientImpl::HandleProtoCallback<
-                   smbprovider::DirectoryEntryList>,
+                   smbprovider::DirectoryEntryListProto>,
                &callback);
   }
 
   void GetMetadataEntry(int32_t mount_id,
                         const base::FilePath& entry_path,
                         GetMetdataEntryCallback callback) override {
-    smbprovider::GetMetadataEntryOptions options;
+    smbprovider::GetMetadataEntryOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_entry_path(entry_path.value());
     CallMethod(smbprovider::kGetMetadataEntryMethod, options,
                &SmbProviderClientImpl::HandleProtoCallback<
-                   smbprovider::DirectoryEntry>,
+                   smbprovider::DirectoryEntryProto>,
                &callback);
   }
 
@@ -94,7 +94,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                 const base::FilePath& file_path,
                 bool writeable,
                 OpenFileCallback callback) override {
-    smbprovider::OpenFileOptions options;
+    smbprovider::OpenFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_path(file_path.value());
     options.set_writeable(writeable);
@@ -105,7 +105,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
   void CloseFile(int32_t mount_id,
                  int32_t file_id,
                  StatusCallback callback) override {
-    smbprovider::CloseFileOptions options;
+    smbprovider::CloseFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_id(file_id);
     CallMethod(smbprovider::kCloseFileMethod, options,
@@ -117,7 +117,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                 int64_t offset,
                 int32_t length,
                 ReadFileCallback callback) override {
-    smbprovider::ReadFileOptions options;
+    smbprovider::ReadFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_id(file_id);
     options.set_offset(offset);
@@ -130,7 +130,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                    const base::FilePath& entry_path,
                    bool recursive,
                    StatusCallback callback) override {
-    smbprovider::DeleteEntryOptions options;
+    smbprovider::DeleteEntryOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_entry_path(entry_path.value());
     options.set_recursive(recursive);
@@ -141,7 +141,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
   void CreateFile(int32_t mount_id,
                   const base::FilePath& file_path,
                   StatusCallback callback) override {
-    smbprovider::CreateFileOptions options;
+    smbprovider::CreateFileOptionsProto options;
     options.set_mount_id(mount_id);
     options.set_file_path(file_path.value());
     CallMethod(smbprovider::kCreateFileMethod, options,

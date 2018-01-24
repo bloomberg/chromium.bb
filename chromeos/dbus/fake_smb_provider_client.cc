@@ -32,7 +32,7 @@ void FakeSmbProviderClient::Unmount(int32_t mount_id, StatusCallback callback) {
 void FakeSmbProviderClient::ReadDirectory(int32_t mount_id,
                                           const base::FilePath& directory_path,
                                           ReadDirectoryCallback callback) {
-  smbprovider::DirectoryEntryList entry_list;
+  smbprovider::DirectoryEntryListProto entry_list;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry_list));
@@ -41,7 +41,7 @@ void FakeSmbProviderClient::ReadDirectory(int32_t mount_id,
 void FakeSmbProviderClient::GetMetadataEntry(int32_t mount_id,
                                              const base::FilePath& entry_path,
                                              GetMetdataEntryCallback callback) {
-  smbprovider::DirectoryEntry entry;
+  smbprovider::DirectoryEntryProto entry;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry));

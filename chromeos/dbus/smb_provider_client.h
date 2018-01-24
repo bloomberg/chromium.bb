@@ -23,14 +23,14 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
  public:
   using GetMetdataEntryCallback =
       base::OnceCallback<void(smbprovider::ErrorType error,
-                              const smbprovider::DirectoryEntry& entry)>;
+                              const smbprovider::DirectoryEntryProto& entry)>;
   using MountCallback =
       base::OnceCallback<void(smbprovider::ErrorType error, int32_t mount_id)>;
   using OpenFileCallback =
       base::OnceCallback<void(smbprovider::ErrorType error, int32_t file_id)>;
-  using ReadDirectoryCallback =
-      base::OnceCallback<void(smbprovider::ErrorType error,
-                              const smbprovider::DirectoryEntryList& entries)>;
+  using ReadDirectoryCallback = base::OnceCallback<void(
+      smbprovider::ErrorType error,
+      const smbprovider::DirectoryEntryListProto& entries)>;
   using StatusCallback = base::OnceCallback<void(smbprovider::ErrorType error)>;
   using ReadFileCallback = base::OnceCallback<void(smbprovider::ErrorType error,
                                                    const base::ScopedFD& fd)>;
