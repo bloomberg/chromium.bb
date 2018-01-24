@@ -398,10 +398,9 @@ void PrepareTextureCopyOutputResult(
     output_size_in_pixel = dst_size_in_pixel;
 
   std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  if (!bitmap->tryAllocPixels(SkImageInfo::Make(output_size_in_pixel.width(),
-                                                output_size_in_pixel.height(),
-                                                color_type,
-                                                kOpaque_SkAlphaType))) {
+  if (!bitmap->tryAllocPixels(SkImageInfo::Make(
+          output_size_in_pixel.width(), output_size_in_pixel.height(),
+          color_type, kPremul_SkAlphaType))) {
     scoped_callback_runner.ReplaceClosure(
         base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
     return;
