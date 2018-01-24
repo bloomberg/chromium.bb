@@ -347,11 +347,6 @@ group("chromedriver_py_tests") {
   data_deps = [
     "//chrome/test/chromedriver",
   ]
-
-  if (is_win) {
-    # On Windows, the following target produces the final chrome.exe
-    data_deps += [ "//chrome:reorder_imports" ]
-  }
 }
 
 test("chromedriver_unittests") {
