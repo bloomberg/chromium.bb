@@ -115,6 +115,9 @@ class DownloadUIAdapter : public OfflineContentProvider,
 
   Delegate* delegate() { return delegate_.get(); }
 
+  // Test method, to verify the internal cache is not loaded too early.
+  bool IsCacheLoadedForTest() { return (state_ != State::NOT_LOADED); }
+
  private:
   enum class State { NOT_LOADED, LOADING_PAGES, LOADING_REQUESTS, LOADED };
 
@@ -176,6 +179,11 @@ class DownloadUIAdapter : public OfflineContentProvider,
   // during the |ItemDeleted| callback.
   void DeleteItemHelper(const std::string& guid);
 
+  void ReplyWithAllItems(OfflineContentProvider::MultipleItemCallback callback);
+
+  void OpenItemByGuid(const std::string& guid);
+  void RemoveItemByGuid(const std::string& guid);
+
   // A valid offline content aggregator, supplied at construction.
   OfflineContentAggregator* aggregator_;
 
@@ -193,11 +201,18 @@ class DownloadUIAdapter : public OfflineContentProvider,
   // The cache of UI items. The key is OfflineItem.guid.
   OfflineItems items_;
 
+  // The callbacks for GetAllItems waiting for cache initialization.
+  std::vector<OfflineContentProvider::MultipleItemCallback>
+      postponed_callbacks_;
+
+  // The requests for operations with items waiting for cache initialization.
+  // std::vector<base::OnceCallback<const std::string&>> postponed_operations_;
+  std::vector<base::OnceClosure> postponed_operations_;
+
   std::unique_ptr<ItemInfo> deleting_item_;
 
   // The observers.
   base::ObserverList<OfflineContentProvider::Observer> observers_;
-  int observers_count_;
 
   base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;
 
