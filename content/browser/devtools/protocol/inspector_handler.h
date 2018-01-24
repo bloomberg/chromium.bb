@@ -30,6 +30,7 @@ class InspectorHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
 
   void TargetCrashed();
+  void TargetReloadedAfterCrash();
   void TargetDetached(const std::string& reason);
 
   Response Enable() override;

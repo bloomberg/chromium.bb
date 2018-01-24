@@ -2866,6 +2866,9 @@ experimental domain Inspector
   # Fired when debugging target has crashed
   event targetCrashed
 
+  # Fired when debugging target has reloaded after crash
+  event targetReloadedAfterCrash
+
 experimental domain LayerTree
   depends on DOM
 

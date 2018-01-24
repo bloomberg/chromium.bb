@@ -1195,6 +1195,40 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteCrash) {
   // Should not crash at this point.
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
+  set_agent_host_can_close();
+  GURL url = GURL("data:text/html,<body></body>");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
+  Attach();
+  SendCommand("Inspector.enable", nullptr);
+
+  shell()->LoadURL(GURL(content::kChromeUICrashURL));
+  WaitForNotification("Inspector.targetCrashed");
+  ClearNotifications();
+  shell()->LoadURL(url);
+  WaitForNotification("Inspector.targetReloadedAfterCrash", true);
+}
+
+#if defined(OS_ANDROID)
+#define MAYBE_InspectorTargetCrashedReload DISABLED_InspectorTargetCrashedReload
+#else
+#define MAYBE_InspectorTargetCrashedReload InspectorTargetCrashedReload
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       MAYBE_InspectorTargetCrashedReload) {
+  set_agent_host_can_close();
+  GURL url = GURL("data:text/html,<body></body>");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
+  Attach();
+  SendCommand("Inspector.enable", nullptr);
+
+  shell()->LoadURL(GURL(content::kChromeUICrashURL));
+  WaitForNotification("Inspector.targetCrashed");
+  ClearNotifications();
+  SendCommand("Page.reload", nullptr, false);
+  WaitForNotification("Inspector.targetReloadedAfterCrash", true);
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");

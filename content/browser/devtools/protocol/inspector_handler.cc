@@ -39,6 +39,10 @@ void InspectorHandler::TargetCrashed() {
   frontend_->TargetCrashed();
 }
 
+void InspectorHandler::TargetReloadedAfterCrash() {
+  frontend_->TargetReloadedAfterCrash();
+}
+
 void InspectorHandler::TargetDetached(const std::string& reason) {
   frontend_->Detached(reason);
 }
