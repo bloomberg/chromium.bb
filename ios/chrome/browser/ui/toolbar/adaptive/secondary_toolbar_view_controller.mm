@@ -24,8 +24,8 @@
 #pragma mark - UIViewController
 
 - (void)loadView {
-  self.view = [[SecondaryToolbarView alloc] init];
-  self.view.buttonFactory = self.buttonFactory;
+  self.view =
+      [[SecondaryToolbarView alloc] initWithButtonFactory:self.buttonFactory];
 }
 
 - (void)viewDidLoad {

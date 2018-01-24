@@ -9,16 +9,12 @@
 
 @class MDCProgressView;
 @class ToolbarButton;
-@class ToolbarButtonFactory;
 @class ToolbarTabGridButton;
 @class ToolbarToolsMenuButton;
 
 // Protocol defining the interface for interacting with a view of the adaptive
 // toolbar.
 @protocol AdaptiveToolbarView<NSObject>
-
-// Factory used to create the buttons.
-@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 
 // Property to get all the buttons in this view.
 @property(nonatomic, strong, readonly) NSArray<ToolbarButton*>* allButtons;

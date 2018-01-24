@@ -74,8 +74,7 @@
 }
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  // TODO(crbug.com/803373): Implement that.
-  return nil;
+  return self.viewController;
 }
 
 - (id<ActivityServicePositioner>)activityServicePositioner {

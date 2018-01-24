@@ -55,7 +55,8 @@ extern const CGFloat kLeadingLocationBarButtonImageInset;
 // same to prevent conflicting constraints when a layout guide is changing the
 // button to which it is constrained (there might be a short time during which
 // it is constrained to both buttons).
-extern const UILayoutPriority kPrimaryToolbarButtonPriority;
+extern const UILayoutPriority kPrimaryToolbarLeadingButtonPriority;
+extern const UILayoutPriority kPrimaryToolbarTrailingButtonPriority;
 extern const UILayoutPriority kSecondaryToolbarButtonPriority;
 
 // Maximum number of tabs displayed by the button containing the tab count.
