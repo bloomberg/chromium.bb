@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 
@@ -47,7 +46,6 @@ IOSChromeContentSuggestionsServiceFactory::
     : BrowserStateKeyedServiceFactory(
           "ContentSuggestionsService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(IOSChromeLargeIconServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());

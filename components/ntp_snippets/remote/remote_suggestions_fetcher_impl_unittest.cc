@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -27,12 +26,14 @@
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_params_manager.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,7 +59,7 @@ const char kTestChromeContentSuggestionsSignedOutUrl[] =
 const char kTestChromeContentSuggestionsSignedInUrl[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
 
-const char kTestAccount[] = "foo@bar.com";
+const char kTestEmail[] = "foo@bar.com";
 
 // Artificial time delay for JSON parsing.
 const int64_t kTestJsonParsingLatencyMs = 20;
@@ -258,7 +259,9 @@ void ParseJsonDelayed(const std::string& json,
 
 }  // namespace
 
-class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
+class RemoteSuggestionsFetcherImplTestBase
+    : public testing::Test,
+      public OAuth2TokenService::DiagnosticsObserver {
  public:
   explicit RemoteSuggestionsFetcherImplTestBase(const GURL& gurl)
       : default_variation_params_(
@@ -278,6 +281,8 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   }
 
   ~RemoteSuggestionsFetcherImplTestBase() override {
+    if (fake_token_service_)
+      fake_token_service_->RemoveDiagnosticsObserver(this);
   }
 
   void ResetFetcher() { ResetFetcherWithAPIKey(kAPIKey); }
@@ -286,8 +291,16 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
+    if (fake_token_service_)
+      fake_token_service_->RemoveDiagnosticsObserver(this);
+    fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
+        std::make_unique<FakeOAuth2TokenServiceDelegate>(
+            request_context_getter.get()));
+
+    fake_token_service_->AddDiagnosticsObserver(this);
+
     fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
-        identity_test_env_.identity_manager(),
+        utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::BindRepeating(&ParseJsonDelayed),
         GetFetchEndpoint(version_info::Channel::STABLE), api_key,
@@ -298,8 +311,26 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   }
 
   void SignIn() {
-    identity_test_env_.MakePrimaryAccountAvailable(kTestAccount, kTestAccount,
-                                                   "token");
+#if defined(OS_CHROMEOS)
+    utils_.fake_signin_manager()->SignIn(kTestEmail);
+#else
+    utils_.fake_signin_manager()->SignIn(kTestEmail, "user", "password");
+#endif
+  }
+
+  void IssueRefreshToken() {
+    fake_token_service_->GetDelegate()->UpdateCredentials(kTestEmail, "token");
+  }
+
+  void IssueOAuth2Token() {
+    fake_token_service_->IssueAllTokensForAccount(kTestEmail, "access_token",
+                                                  base::Time::Max());
+  }
+
+  void CancelOAuth2TokenRequests() {
+    fake_token_service_->IssueErrorForAllPendingRequestsForAccount(
+        kTestEmail, GoogleServiceAuthError(
+                        GoogleServiceAuthError::State::REQUEST_CANCELED));
   }
 
   RemoteSuggestionsFetcher::SnippetsAvailableCallback
@@ -349,12 +380,23 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     fake_url_fetcher_factory_->SetFakeResponse(test_url_, response_data,
                                                response_code, status);
   }
+  void set_on_access_token_request_callback(base::OnceClosure callback) {
+    on_access_token_request_callback_ = std::move(callback);
+  }
 
  protected:
   std::map<std::string, std::string> default_variation_params_;
-  identity::IdentityTestEnvironment identity_test_env_;
 
  private:
+  // OAuth2TokenService::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override {
+    if (on_access_token_request_callback_)
+      std::move(on_access_token_request_callback_).Run();
+  }
+
   // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
   // instance. http://crbug.com/789079
   std::unique_ptr<base::Clock> clock_;
@@ -365,11 +407,13 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
   std::unique_ptr<RemoteSuggestionsFetcherImpl> fetcher_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
   base::HistogramTester histogram_tester_;
+  base::OnceClosure on_access_token_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImplTestBase);
 };
@@ -445,7 +489,11 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldFetchSuccessfully) {
 }
 
 TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
   SignIn();
+  IssueRefreshToken();
 
   const std::string kJsonStr =
       "{\"categories\" : [{"
@@ -475,9 +523,9 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
 
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
-      "access_token", base::Time::Max());
+  run_loop.Run();
 
+  IssueOAuth2Token();
   // Wait for the fake response.
   FastForwardUntilNoTasksRemain();
 
@@ -492,7 +540,11 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
 }
 
 TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
   SignIn();
+  IssueRefreshToken();
 
   const std::string kJsonStr =
       "{\"categories\" : [{"
@@ -522,15 +574,20 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
 
-  // Cancel the first access token request that's made.
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithError(
-      GoogleServiceAuthError(GoogleServiceAuthError::State::REQUEST_CANCELED));
+  // Wait for the first access token request to be made.
+  run_loop.Run();
 
-  // RemoteSuggestionsFetcher should retry fetching an access token if the first
-  // attempt is cancelled. Respond with a valid access token on the retry.
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
-      "access_token", base::Time::Max());
+  // Before cancelling the outstanding access token request, prepare to wait for
+  // the second access token request to be made in response to the cancellation.
+  base::RunLoop run_loop2;
+  set_on_access_token_request_callback(run_loop2.QuitClosure());
 
+  CancelOAuth2TokenRequests();
+
+  // Wait for the second access token request to be made.
+  run_loop2.Run();
+
+  IssueOAuth2Token();
   // Wait for the fake response.
   FastForwardUntilNoTasksRemain();
 

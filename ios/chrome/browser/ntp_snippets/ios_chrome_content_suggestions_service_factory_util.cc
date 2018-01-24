@@ -45,7 +45,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
@@ -161,8 +161,9 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
   PrefService* prefs = chrome_browser_state->GetPrefs();
   SigninManager* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
+
+  OAuth2TokenService* token_service =
+      OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();
   base::FilePath database_dir(
@@ -177,7 +178,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
                                 : google_apis::GetNonStableAPIKey();
   }
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
-      identity_manager, request_context, prefs, nullptr,
+      signin_manager, token_service, request_context, prefs, nullptr,
       base::BindRepeating(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
 
