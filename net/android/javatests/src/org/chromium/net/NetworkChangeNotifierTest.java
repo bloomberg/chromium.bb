@@ -21,6 +21,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
+import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
@@ -972,5 +973,41 @@ public class NetworkChangeNotifierTest {
         }
         ConnectivityManager.setProcessDefaultNetwork(null);
         Assert.assertFalse(NetworkChangeNotifier.isProcessBoundToNetwork());
+    }
+
+    /**
+     * Regression test for crbug.com/805424 where ConnectivityManagerDelegate.vpnAccessible() was
+     * found to leak.
+     */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    public void testVpnAccessibleDoesNotLeak() {
+        ConnectivityManagerDelegate connectivityManagerDelegate = new ConnectivityManagerDelegate(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        StrictMode.VmPolicy oldPolicy = StrictMode.getVmPolicy();
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                                       .detectLeakedClosableObjects()
+                                       .penaltyDeath()
+                                       .penaltyLog()
+                                       .build());
+        try {
+            // Test non-existent Network (NetIds only go to 65535).
+            connectivityManagerDelegate.vpnAccessible(Helper.netIdToNetwork(65537));
+            // Test existing Networks.
+            for (Network network : connectivityManagerDelegate.getAllNetworksUnfiltered()) {
+                connectivityManagerDelegate.vpnAccessible(network);
+            }
+
+            // Run GC and finalizers a few times to pick up leaked closeables
+            for (int i = 0; i < 10; i++) {
+                System.gc();
+                System.runFinalization();
+            }
+            System.gc();
+            System.runFinalization();
+        } finally {
+            StrictMode.setVmPolicy(oldPolicy);
+        }
     }
 }
