@@ -4826,7 +4826,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   int idx, idy;
   int prune = 0;
   // Get the tx_size 1 level down
-  TX_SIZE min_tx_size = sub_tx_size_map[1][max_txsize_rect_lookup[1][bsize]];
+  const TX_SIZE min_tx_size =
+      sub_tx_size_map[1][max_txsize_rect_lookup[1][bsize]];
   const TxSetType tx_set_type = get_ext_tx_set_type(
       min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
   int within_border = mi_row >= xd->tile.mi_row_start &&
@@ -4888,19 +4889,15 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
     if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
-    (void)prune;
-    // TODO(sarahparker) This speed feature has been temporarily disabled
-    // with ext-tx because it is not compatible with the current
-    // search method. It will be fixed in a followup.
-    /*
-        if (is_inter) {
-          if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
-            if (!do_tx_type_search(tx_type, prune,
-                                   cpi->sf.tx_type_search.prune_mode))
-              continue;
-          }
-        }
-    */
+#if !CONFIG_TXK_SEL
+    if (is_inter) {
+      if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
+        if (!do_tx_type_search(tx_type, prune,
+                               cpi->sf.tx_type_search.prune_mode))
+          continue;
+      }
+    }
+#endif  // CONFIG_TXK_SEL
     if (is_inter && x->use_default_inter_tx_type &&
         tx_type != get_default_tx_type(0, xd, max_tx_size))
       continue;
@@ -4911,12 +4908,25 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     rd = select_tx_size_fix_type(cpi, x, &this_rd_stats, bsize, mi_row, mi_col,
                                  ref_best_rd, tx_type, tx_split_prune_flag,
                                  found_rd_info ? matched_rd_info : NULL);
+#if !CONFIG_TXK_SEL
     // If the current tx_type is not included in the tx_set for the smallest
     // tx size found, then all vartx partitions were actually transformed with
     // DCT_DCT and we should avoid picking it.
     const TxSetType min_tx_set_type = get_ext_tx_set_type(
         mbmi->min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
-    if (!av1_ext_tx_used[min_tx_set_type][tx_type]) continue;
+    if (!av1_ext_tx_used[min_tx_set_type][tx_type]) {
+      mbmi->tx_type = DCT_DCT;
+      if (this_rd_stats.rate != INT_MAX) {
+        const int ext_tx_set = get_ext_tx_set(
+            mbmi->min_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+        const TX_SIZE square_tx_size = txsize_sqr_map[mbmi->min_tx_size];
+        this_rd_stats.rate +=
+            x->inter_tx_type_costs[ext_tx_set][square_tx_size][mbmi->tx_type];
+        this_rd_stats.rate -=
+            x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];
+      }
+    }
+#endif  // CONFIG_TXK_SEL
 
     ref_best_rd = AOMMIN(rd, ref_best_rd);
     if (rd < best_rd) {
