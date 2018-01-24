@@ -1619,6 +1619,13 @@ unsigned short Node::compareDocumentPosition(
         if (!child1->IsShadowRoot())
           return Node::kDocumentPositionPreceding | connection;
 
+        for (const ShadowRoot* child = ToShadowRoot(child2)->OlderShadowRoot();
+             child; child = child->OlderShadowRoot()) {
+          if (child == child1) {
+            return Node::kDocumentPositionFollowing | connection;
+          }
+        }
+
         return Node::kDocumentPositionPreceding | connection;
       }
 
@@ -1744,7 +1751,12 @@ void Node::PrintNodePathTo(std::ostream& stream) const {
   for (unsigned index = chain.size(); index > 0; --index) {
     const Node* node = chain[index - 1];
     if (node->IsShadowRoot()) {
-      stream << "/#shadow-root";
+      int count = 0;
+      for (const ShadowRoot* shadow_root =
+               ToShadowRoot(node)->OlderShadowRoot();
+           shadow_root; shadow_root = shadow_root->OlderShadowRoot())
+        ++count;
+      stream << "/#shadow-root[" << count << "]";
       continue;
     }
 
@@ -1823,7 +1835,12 @@ static void AppendMarkedTree(const String& base_indent,
                          marked_node2, marked_label2, builder);
     }
 
-    if (ShadowRoot* shadow_root = GetShadowRootFor(&node)) {
+    if (node.IsShadowRoot()) {
+      if (ShadowRoot* younger_shadow_root =
+              ToShadowRoot(node).YoungerShadowRoot())
+        AppendMarkedTree(indent.ToString(), younger_shadow_root, marked_node1,
+                         marked_label1, marked_node2, marked_label2, builder);
+    } else if (ShadowRoot* shadow_root = GetShadowRootFor(&node)) {
       AppendMarkedTree(indent.ToString(), shadow_root, marked_node1,
                        marked_label1, marked_node2, marked_label2, builder);
     }
@@ -1904,12 +1921,18 @@ static void PrintSubTreeAcrossFrame(const Node* node,
   if (node == marked_node)
     stream << "*";
   stream << indent.Utf8().data() << *node << "\n";
-  if (node->IsFrameOwnerElement()) {
-    PrintSubTreeAcrossFrame(ToHTMLFrameOwnerElement(node)->contentDocument(),
-                            marked_node, indent + "\t", stream);
+  if (node->IsShadowRoot()) {
+    if (ShadowRoot* younger_shadow_root =
+            ToShadowRoot(node)->YoungerShadowRoot())
+      PrintSubTreeAcrossFrame(younger_shadow_root, marked_node, indent + "\t",
+                              stream);
+  } else {
+    if (node->IsFrameOwnerElement())
+      PrintSubTreeAcrossFrame(ToHTMLFrameOwnerElement(node)->contentDocument(),
+                              marked_node, indent + "\t", stream);
+    if (ShadowRoot* shadow_root = GetShadowRootFor(node))
+      PrintSubTreeAcrossFrame(shadow_root, marked_node, indent + "\t", stream);
   }
-  if (ShadowRoot* shadow_root = GetShadowRootFor(node))
-    PrintSubTreeAcrossFrame(shadow_root, marked_node, indent + "\t", stream);
   for (const Node* child = node->firstChild(); child;
        child = child->nextSibling())
     PrintSubTreeAcrossFrame(child, marked_node, indent + "\t", stream);
