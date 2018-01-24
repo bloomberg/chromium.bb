@@ -84,16 +84,6 @@ TEST_F(UnpackerTest, InvalidDefaultLocale) {
             unpacker_->error_message());
 }
 
-TEST_F(UnpackerTest, InvalidMessagesFile) {
-  SetupUnpacker("invalid_messages_file.crx");
-  EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(base::MatchPattern(
-      unpacker_->error_message(),
-      ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 10,"
-                   " Syntax error.")))
-      << unpacker_->error_message();
-}
-
 TEST_F(UnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
@@ -125,20 +115,6 @@ TEST_F(UnpackerTest, NoLocaleData) {
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
-}
-
-TEST_F(UnpackerTest, GoodL10n) {
-  SetupUnpacker("good_l10n.crx");
-  EXPECT_TRUE(unpacker_->Run());
-  EXPECT_TRUE(unpacker_->error_message().empty());
-  ASSERT_EQ(2U, unpacker_->parsed_catalogs()->size());
-}
-
-TEST_F(UnpackerTest, NoL10n) {
-  SetupUnpacker("no_l10n.crx");
-  EXPECT_TRUE(unpacker_->Run());
-  EXPECT_TRUE(unpacker_->error_message().empty());
-  EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
 }
 
 struct UnzipFileFilterTestCase {
