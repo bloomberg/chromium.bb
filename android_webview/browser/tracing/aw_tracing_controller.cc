@@ -91,6 +91,8 @@ bool AwTracingController::Start(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, jcategories);
   base::trace_event::TraceConfig trace_config(
       categories, static_cast<base::trace_event::TraceRecordMode>(jmode));
+  // Required for filtering out potential PII.
+  trace_config.EnableArgumentFilter();
   return content::TracingController::GetInstance()->StartTracing(
       trace_config, content::TracingController::StartTracingDoneCallback());
 }
