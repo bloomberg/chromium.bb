@@ -32,6 +32,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -408,6 +410,39 @@ TEST_F(SystemTrayTest, DISABLED_SwipingOnSystemTrayBubble) {
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   SendGestureEvent(start, delta, false, 0, -1, true);
   EXPECT_TRUE(system_tray->HasSystemBubble());
+}
+
+// Tests that press the search key can toggle the launcher when all the windows
+// are minimized after open the system tray bubble in tablet mode.
+TEST_F(SystemTrayTest, ToggleAppListAfterOpenSystemTrayBubbleInTabletMode) {
+  EXPECT_FALSE(wm::GetActiveWindow());
+  SystemTray* system_tray = GetPrimarySystemTray();
+
+  // Open the system tray bubble in tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_FALSE(system_tray->clipping_window_for_test());
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
+  ASSERT_FALSE(system_tray->drag_controller());
+  EXPECT_FALSE(system_tray->clipping_window_for_test());
+
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  // Convert from tablet mode to clamshell.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
+
+  // Press the search key should toggle the launcher.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
+
+  // Press the search key again should still toggle the launcher.
+  generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, test_app_list_presenter.toggle_count());
 }
 
 // Verifies only the visible default views are recorded in the
