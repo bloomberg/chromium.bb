@@ -285,6 +285,9 @@ case "$TARGETARCH" in
   mipsel )
     export ARCHITECTURE="mipsel"
     ;;
+  mips64el )
+    export ARCHITECTURE="mips64el"
+    ;;
   * )
     echo
     echo "ERROR: Don't know how to build DEBs for '$TARGETARCH'."
