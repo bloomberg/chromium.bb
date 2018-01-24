@@ -1263,8 +1263,7 @@ const GUI = {
   },
 
   printSummary: function (fullResults) {
-    if (fullResults.builder_name)
-      document.querySelector("#builder_name").innerText = fullResults.builder_name;
+    document.querySelector("#builder_name").innerText = fullResults.builder_name || document.lastModified;
     document.querySelector("#summary_passed").innerText = fullResults.num_passes;
     document.querySelector("#summary_regressions").innerText = fullResults.num_regressions;
     let failures = fullResults["num_failures_by_type"];
