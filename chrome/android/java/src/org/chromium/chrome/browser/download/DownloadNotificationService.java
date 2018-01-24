@@ -30,7 +30,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -75,7 +74,7 @@ import java.util.List;
  * The service will receive a {@link Service#stopForeground(boolean)} call when all active downloads
  * are paused.  The summary notification will be hidden when there are no other notifications in the
  * {@link NotificationConstants#GROUP_DOWNLOADS} group.  This gets checked after every notification
- * gets removed from the {@link NotificationManagerCompat}.
+ * gets removed from the {@link NotificationManager}.
  */
 public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_CONTENTID_ID =
@@ -140,7 +139,6 @@ public class DownloadNotificationService extends Service {
     private final List<ContentId> mDownloadsInProgress = new ArrayList<ContentId>();
 
     private NotificationManager mNotificationManager;
-    private NotificationManagerCompat mNotificationManagerCompat;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
     private int mNextNotificationId;
@@ -170,12 +168,11 @@ public class DownloadNotificationService extends Service {
         if (useForegroundService()) {
             NotificationManager manager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
             // Attempt to update the notification summary icon without starting the service.
             if (ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON.equals(intent.getAction())) {
                 // updateSummaryIcon should be a noop if the notification isn't showing or if the
                 // icon won't change anyway.
-                updateSummaryIcon(context, manager, managerCompat, -1, null);
+                updateSummaryIcon(context, manager, -1, null);
                 return;
             }
 
@@ -194,15 +191,14 @@ public class DownloadNotificationService extends Service {
      *                              place of the existing icons.
      */
     private static void updateSummaryIcon(Context context, NotificationManager manager,
-            NotificationManagerCompat managerCompat, int removedNotificationId,
-            Pair<Integer, Notification> addedNotification) {
+            int removedNotificationId, Pair<Integer, Notification> addedNotification) {
         if (!useForegroundService()) return;
 
         Pair<Boolean, Integer> icon =
                 getSummaryIcon(context, manager, removedNotificationId, addedNotification);
         if (!icon.first || !hasDownloadNotifications(manager, removedNotificationId)) return;
 
-        managerCompat.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
+        manager.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
                 buildSummaryNotificationWithIcon(context, icon.second));
     }
 
@@ -357,7 +353,7 @@ public class DownloadNotificationService extends Service {
      * {@link #startForeground(int, Notification)}, which keeps this service in the foreground.
      * @param context The context used to build the notification and pull specific resources.
      * @return The {@link Notification} to show for the summary.  Meant to be used by
-     *         {@link NotificationManagerCompat#notify(int, Notification)}.
+     *         {@link NotificationManager#notify(int, Notification)}.
      */
     private static Notification buildSummaryNotification(
             Context context, NotificationManager manager) {
@@ -415,7 +411,6 @@ public class DownloadNotificationService extends Service {
         mContext = ContextUtils.getApplicationContext();
         mNotificationManager =
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManagerCompat = NotificationManagerCompat.from(mContext);
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         mNumAutoResumptionAttemptLeft =
                 mSharedPrefs.getInt(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT, MAX_RESUMPTION_ATTEMPT_LEFT);
@@ -617,15 +612,15 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void cancelSummaryNotification() {
-        mNotificationManagerCompat.cancel(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY);
+        mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY);
     }
 
     /**
      * Check all current notifications and hide the summary notification if we have no downloads
      * notifications left.  On Android if the user swipes away the last download notification the
      * summary will be dismissed.  But if the last downloads notification is dismissed via
-     * {@link NotificationManagerCompat#cancel(int)}, the summary will remain, so we need to check
-     * and manually remove it ourselves.
+     * {@link NotificationManager#cancel(int)}, the summary will remain, so we need to check and
+     * manually remove it ourselves.
      * @param notificationIdToIgnore Canceling a notification and querying for the current list of
      *                               active notifications isn't synchronous.  Pass a notification id
      *                               here if there is a notification that should be assumed gone.
@@ -650,8 +645,8 @@ public class DownloadNotificationService extends Service {
                     stopForegroundInternal(true);
                 } else {
                     // If we are not a foreground service, remove the notification via the
-                    // NotificationManagerCompat.  The notification is not bound to this service, so
-                    // any call to stopForeground() won't affect the notification.
+                    // NotificationManager.  The notification is not bound to this service, so any
+                    // call to stopForeground() won't affect the notification.
                     cancelSummaryNotification();
                 }
             } else {
@@ -782,7 +777,7 @@ public class DownloadNotificationService extends Service {
                                       : android.R.drawable.stat_sys_download;
         ChromeNotificationBuilder builder = buildNotification(resId, fileName, contentText);
         builder.setOngoing(true);
-        builder.setPriority(NotificationManagerCompat.IMPORTANCE_HIGH);
+        builder.setPriority(Notification.PRIORITY_HIGH);
 
         // Avoid animations while the download isn't progressing.
         if (!isDownloadPending) {
@@ -836,7 +831,7 @@ public class DownloadNotificationService extends Service {
      * @param id The {@link ContentId} of the download.
      */
     public void cancelNotification(int notificationId, ContentId id) {
-        mNotificationManagerCompat.cancel(NOTIFICATION_NAMESPACE, notificationId);
+        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
         mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(id);
 
         // Since we are about to go through the process of validating whether or not we can shut
@@ -844,8 +839,7 @@ public class DownloadNotificationService extends Service {
         // the summary will take care of that for us.
         stopTrackingInProgressDownload(id, hasDownloadNotificationsInternal(notificationId));
         if (!hideSummaryNotificationIfNecessary(notificationId)) {
-            updateSummaryIcon(mContext, mNotificationManager, mNotificationManagerCompat,
-                    notificationId, null);
+            updateSummaryIcon(mContext, mNotificationManager, notificationId, null);
         }
     }
 
@@ -1127,7 +1121,7 @@ public class DownloadNotificationService extends Service {
         // Process updating the summary notification first.  This has no impact on a specific
         // download.
         if (ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON.equals(intent.getAction())) {
-            updateSummaryIcon(mContext, mNotificationManager, mNotificationManagerCompat, -1, null);
+            updateSummaryIcon(mContext, mNotificationManager, -1, null);
             hideSummaryNotificationIfNecessary(-1);
             return;
         }
@@ -1327,7 +1321,7 @@ public class DownloadNotificationService extends Service {
 
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManagerCompat.notify(NOTIFICATION_NAMESPACE, id, notification);
+        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
     }
 
     private void updateNotification(int notificationId, Notification notification, ContentId id,
@@ -1340,7 +1334,7 @@ public class DownloadNotificationService extends Service {
         } else {
             mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(id);
         }
-        updateSummaryIcon(mContext, mNotificationManager, mNotificationManagerCompat, -1,
+        updateSummaryIcon(mContext, mNotificationManager, -1,
                 new Pair<Integer, Notification>(notificationId, notification));
     }
 
