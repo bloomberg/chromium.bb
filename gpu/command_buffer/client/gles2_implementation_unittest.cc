@@ -4385,21 +4385,22 @@ TEST_F(GLES3ImplementationTest, GetBufferSubDataAsyncCHROMIUM) {
   const GLuint kBufferId = 123;
   void* mem;
 
-  const int TARGET_COUNT = 8;
-  GLenum targets[TARGET_COUNT] = {
-    GL_ARRAY_BUFFER,
-    GL_ELEMENT_ARRAY_BUFFER,
-    GL_COPY_READ_BUFFER,
-    GL_COPY_WRITE_BUFFER,
-    GL_TRANSFORM_FEEDBACK_BUFFER,
-    GL_UNIFORM_BUFFER,
-    GL_PIXEL_PACK_BUFFER,
-    GL_PIXEL_UNPACK_BUFFER,
+  std::vector<GLenum> targets = {
+      GL_ARRAY_BUFFER,      GL_ELEMENT_ARRAY_BUFFER,      GL_COPY_READ_BUFFER,
+      GL_COPY_WRITE_BUFFER, GL_TRANSFORM_FEEDBACK_BUFFER, GL_UNIFORM_BUFFER,
+      GL_PIXEL_PACK_BUFFER, GL_PIXEL_UNPACK_BUFFER,
   };
 
   // Positive tests
-  for (int i = 0; i < TARGET_COUNT; i++) {
+  for (size_t i = 0; i < targets.size(); i++) {
     gl_->BindBuffer(targets[i], kBufferId);
+    if (targets[i] == GL_TRANSFORM_FEEDBACK_BUFFER) {
+      ExpectedMemoryInfo result =
+          GetExpectedResultMemory(sizeof(cmds::GetIntegerv::Result));
+      EXPECT_CALL(*command_buffer(), OnFlush())
+          .WillOnce(SetMemory(result.ptr, SizedResultHelper<GLuint>(1)))
+          .RetiresOnSaturation();
+    }
     mem = gl_->GetBufferSubDataAsyncCHROMIUM(targets[i], 10, 64);
     EXPECT_TRUE(mem != nullptr);
     EXPECT_EQ(GL_NO_ERROR, CheckError());
@@ -4409,9 +4410,16 @@ TEST_F(GLES3ImplementationTest, GetBufferSubDataAsyncCHROMIUM) {
   }
 
   // Negative tests: invalid target
-  for (int i = 0; i < TARGET_COUNT; i++) {
-    GLenum wrong_target = targets[(i + 1) % TARGET_COUNT];
+  for (size_t i = 0; i < targets.size(); i++) {
+    GLenum wrong_target = targets[(i + 1) % targets.size()];
     gl_->BindBuffer(targets[i], kBufferId);
+    if (wrong_target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+      ExpectedMemoryInfo result =
+          GetExpectedResultMemory(sizeof(cmds::GetIntegerv::Result));
+      EXPECT_CALL(*command_buffer(), OnFlush())
+          .WillOnce(SetMemory(result.ptr, SizedResultHelper<GLuint>(0)))
+          .RetiresOnSaturation();
+    }
     mem = gl_->GetBufferSubDataAsyncCHROMIUM(wrong_target, 10, 64);
     EXPECT_TRUE(mem == nullptr);
     EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
