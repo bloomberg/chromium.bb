@@ -57,6 +57,7 @@
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/WebKit/public/platform/WebIntrinsicSizingInfo.h"
 #include "third_party/WebKit/public/platform/WebScrollIntoViewParams.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -133,6 +134,18 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
                           blink::WebTriggeringEventInfo::kLast)
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebIntrinsicSizingInfo)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(aspect_ratio)
+  IPC_STRUCT_TRAITS_MEMBER(has_width)
+  IPC_STRUCT_TRAITS_MEMBER(has_height)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(forward)
@@ -758,6 +771,11 @@ IPC_STRUCT_TRAITS_END()
 
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
+
+// Notifies the embedding frame that the intrinsic sizing info parameters
+// of a child frame have changed.
+IPC_MESSAGE_ROUTED1(FrameMsg_IntrinsicSizingInfoOfChildChanged,
+                    blink::WebIntrinsicSizingInfo)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetChildFrameSurface,
                     viz::SurfaceInfo /* surface_info */)

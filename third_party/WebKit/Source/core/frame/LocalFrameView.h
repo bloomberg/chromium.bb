@@ -206,8 +206,8 @@ class CORE_EXPORT LocalFrameView final
   int InitialViewportWidth() const;
   int InitialViewportHeight() const;
 
-  bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
-  bool HasIntrinsicSizingInfo() const;
+  bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
+  bool HasIntrinsicSizingInfo() const override;
 
   void UpdateAcceleratedCompositingSettings();
 

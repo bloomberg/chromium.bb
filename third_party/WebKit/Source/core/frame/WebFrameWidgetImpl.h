@@ -127,6 +127,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return true; }
   void ScheduleAnimation() override;
+  void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
 
   WebWidgetClient* Client() const override { return client_; }
   void SetRootGraphicsLayer(GraphicsLayer*) override;

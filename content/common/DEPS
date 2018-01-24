@@ -30,6 +30,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h",
   "+third_party/WebKit/public/platform/WebInputEvent.h",
   "+third_party/WebKit/public/platform/WebInsecureRequestPolicy.h",
+  "+third_party/WebKit/public/platform/WebIntrinsicSizingInfo.h",
   "+third_party/WebKit/public/platform/WebKeyboardEvent.h",
   "+third_party/WebKit/public/platform/WebMixedContentContextType.h",
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",

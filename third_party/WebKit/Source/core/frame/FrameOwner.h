@@ -27,6 +27,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
   virtual bool IsLocal() const = 0;
   virtual bool IsRemote() const = 0;
+  virtual bool IsPlugin() { return false; }
 
   virtual Frame* ContentFrame() const = 0;
   virtual void SetContentFrame(Frame&) = 0;
@@ -46,7 +47,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
   // The intrinsic dimensions of the embedded object changed. This is relevant
   // for SVG documents that are embedded via <object> or <embed>.
-  virtual void IntrinsicDimensionsChanged() = 0;
+  virtual void IntrinsicSizingInfoChanged() = 0;
 
   // Returns the 'name' content attribute value of the browsing context
   // container.
@@ -84,7 +85,7 @@ class CORE_EXPORT DummyFrameOwner final
   void DispatchLoad() override {}
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent() override {}
-  void IntrinsicDimensionsChanged() override {}
+  void IntrinsicSizingInfoChanged() override {}
   AtomicString BrowsingContextContainerName() const override {
     return AtomicString();
   }

@@ -1479,6 +1479,11 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   return compositor_.get();
 }
 
+void RenderWidget::IntrinsicSizingInfoChanged(
+    const blink::WebIntrinsicSizingInfo& sizing_info) {
+  Send(new ViewHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
+}
+
 void RenderWidget::WillCloseLayerTreeView() {
   if (host_closing_)
     return;

@@ -21,6 +21,7 @@ class WebLayer;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;
+struct WebIntrinsicSizingInfo;
 struct WebRect;
 struct WebResourceTimingInfo;
 struct WebScrollIntoViewParams;
@@ -119,6 +120,8 @@ class WebRemoteFrame : public WebFrame {
   // used to properly chain the recursive scrolling between the two processes.
   virtual void ScrollRectToVisible(const WebRect&,
                                    const WebScrollIntoViewParams&) = 0;
+
+  virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}

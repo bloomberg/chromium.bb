@@ -220,6 +220,25 @@ bool RemoteFrameView::CanThrottleRendering() const {
   return hidden_for_throttling_;
 }
 
+void RemoteFrameView::SetIntrinsicSizeInfo(
+    const IntrinsicSizingInfo& size_info) {
+  intrinsic_sizing_info_ = size_info;
+  has_intrinsic_sizing_info_ = true;
+}
+
+bool RemoteFrameView::GetIntrinsicSizingInfo(
+    IntrinsicSizingInfo& sizing_info) const {
+  if (!has_intrinsic_sizing_info_)
+    return false;
+
+  sizing_info = intrinsic_sizing_info_;
+  return true;
+}
+
+bool RemoteFrameView::HasIntrinsicSizingInfo() const {
+  return has_intrinsic_sizing_info_;
+}
+
 void RemoteFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_frame_);
   visitor->Trace(visibility_observer_);

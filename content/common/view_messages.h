@@ -48,6 +48,7 @@
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebIntrinsicSizingInfo.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
@@ -731,6 +732,12 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_LockMouse,
                     bool /* user_gesture */,
                     bool /* privileged */)
+
+// Requests to tell the renderer for the containing frame of the current
+// renderer of a change in intrinsic sizing info parameters. This is only
+// used for SVG inside of <object>, and not for iframes.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_IntrinsicSizingInfoChanged,
+                    blink::WebIntrinsicSizingInfo)
 
 // Requests to unlock the mouse. A ViewMsg_MouseLockLost message will be sent
 // whenever the mouse is unlocked (which may or may not be caused by

@@ -187,6 +187,24 @@ void RenderWidgetHostViewChildFrame::SetFrameSinkId(
 }
 #endif  // defined(USE_AURA)
 
+bool RenderWidgetHostViewChildFrame::OnMessageReceived(
+    const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewChildFrame, msg)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IntrinsicSizingInfoChanged,
+                        OnIntrinsicSizingInfoChanged)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+void RenderWidgetHostViewChildFrame::OnIntrinsicSizingInfoChanged(
+    blink::WebIntrinsicSizingInfo sizing_info) {
+  if (frame_connector_)
+    frame_connector_->SendIntrinsicSizingInfoToParent(sizing_info);
+}
+
 void RenderWidgetHostViewChildFrame::OnManagerWillDestroy(
     TouchSelectionControllerClientManager* manager) {
   // We get the manager via the observer callback instead of through the

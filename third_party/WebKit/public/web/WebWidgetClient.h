@@ -34,6 +34,7 @@
 #include "WebNavigationPolicy.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragOperation.h"
+#include "public/platform/WebIntrinsicSizingInfo.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
@@ -73,6 +74,10 @@ class WebWidgetClient {
 
   // Called when a call to WebWidget::animate is required
   virtual void ScheduleAnimation() {}
+
+  // A notification callback for when the intrinsic sizing of the
+  // widget changed. This is only called for SVG within a remote frame.
+  virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}
 
   // Called immediately following the first compositor-driven (frame-generating)
   // layout that happened after an interesting document lifecyle change (see

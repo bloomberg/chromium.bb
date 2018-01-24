@@ -156,13 +156,13 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
 bool LayoutEmbeddedObject::NeedsPreferredWidthsRecalculation() const {
   if (LayoutEmbeddedContent::NeedsPreferredWidthsRecalculation())
     return true;
-  LocalFrameView* frame_view = ChildFrameView();
+  FrameView* frame_view = ChildFrameView();
   return frame_view && frame_view->HasIntrinsicSizingInfo();
 }
 
 bool LayoutEmbeddedObject::GetNestedIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (LocalFrameView* frame_view = ChildFrameView())
+  if (FrameView* frame_view = ChildFrameView())
     return frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info);
   return false;
 }

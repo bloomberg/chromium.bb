@@ -137,12 +137,14 @@ LocalFrame* SubframeForTargetNode(Node* node) {
   if (!layout_object || !layout_object->IsLayoutEmbeddedContent())
     return nullptr;
 
-  LocalFrameView* frame_view =
+  FrameView* frame_view =
       ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
   if (!frame_view)
     return nullptr;
+  if (!frame_view->IsLocalFrameView())
+    return nullptr;
 
-  return &frame_view->GetFrame();
+  return &ToLocalFrameView(frame_view)->GetFrame();
 }
 
 LocalFrame* SubframeForHitTestResult(

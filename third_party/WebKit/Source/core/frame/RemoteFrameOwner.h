@@ -42,7 +42,7 @@ class CORE_EXPORT RemoteFrameOwner final
   // TODO(dcheng): Implement.
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent() override {}
-  void IntrinsicDimensionsChanged() override {}
+  void IntrinsicSizingInfoChanged() override {}
 
   AtomicString BrowsingContextContainerName() const override {
     return browsing_context_container_name_;

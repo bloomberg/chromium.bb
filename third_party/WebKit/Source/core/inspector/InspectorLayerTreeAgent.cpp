@@ -331,11 +331,12 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
     BuildLayerIdToNodeIdMap(child, layer_id_to_node_id_map);
   if (!root->GetLayoutObject().IsLayoutIFrame())
     return;
-  LocalFrameView* child_frame_view =
+  FrameView* child_frame_view =
       ToLayoutEmbeddedContent(root->GetLayoutObject()).ChildFrameView();
-  if (!child_frame_view)
+  if (!child_frame_view || !child_frame_view->IsLocalFrameView())
     return;
-  LayoutView* child_layout_view = child_frame_view->GetLayoutView();
+  LayoutView* child_layout_view =
+      ToLocalFrameView(child_frame_view)->GetLayoutView();
   if (!child_layout_view)
     return;
   PaintLayerCompositor* child_compositor = child_layout_view->Compositor();

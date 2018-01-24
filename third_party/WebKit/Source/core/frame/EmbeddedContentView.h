@@ -21,6 +21,7 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
  public:
   virtual ~EmbeddedContentView() = default;
 
+  virtual bool IsFrameView() const { return false; }
   virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPluginView() const { return false; }
 

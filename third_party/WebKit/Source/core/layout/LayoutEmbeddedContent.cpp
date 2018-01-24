@@ -88,10 +88,12 @@ LayoutEmbeddedContent::~LayoutEmbeddedContent() {
   DCHECK_LE(ref_count_, 0);
 }
 
-LocalFrameView* LayoutEmbeddedContent::ChildFrameView() const {
+FrameView* LayoutEmbeddedContent::ChildFrameView() const {
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-  if (embedded_content_view && embedded_content_view->IsLocalFrameView())
-    return ToLocalFrameView(embedded_content_view);
+
+  if (embedded_content_view && embedded_content_view->IsFrameView())
+    return ToFrameView(embedded_content_view);
+
   return nullptr;
 }
 
@@ -165,15 +167,18 @@ bool LayoutEmbeddedContent::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  LocalFrameView* frame_view = ChildFrameView();
-  if (!frame_view || !result.GetHitTestRequest().AllowsChildFrameContent()) {
+  FrameView* frame_view = ChildFrameView();
+  if (!frame_view || !frame_view->IsLocalFrameView() ||
+      !result.GetHitTestRequest().AllowsChildFrameContent()) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
 
+  LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
+
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (frame_view->ShouldThrottleRendering()) {
+  if (local_frame_view->ShouldThrottleRendering()) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
@@ -182,14 +187,15 @@ bool LayoutEmbeddedContent::NodeAtPoint(
             DocumentLifecycle::kCompositingClean);
 
   if (action == kHitTestForeground) {
-    auto* child_layout_view = frame_view->GetLayoutView();
+    auto* child_layout_view = local_frame_view->GetLayoutView();
 
     if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
         child_layout_view) {
       LayoutPoint adjusted_location = accumulated_offset + Location();
-      LayoutPoint content_offset = LayoutPoint(BorderLeft() + PaddingLeft(),
-                                               BorderTop() + PaddingTop()) -
-                                   LayoutSize(frame_view->ScrollOffsetInt());
+      LayoutPoint content_offset =
+          LayoutPoint(BorderLeft() + PaddingLeft(),
+                      BorderTop() + PaddingTop()) -
+          LayoutSize(local_frame_view->ScrollOffsetInt());
       HitTestLocation new_hit_test_location(
           location_in_container, -adjusted_location - content_offset);
       HitTestRequest new_hit_test_request(result.GetHitTestRequest().GetType() |
@@ -251,8 +257,10 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
     return;
 
   // If the iframe has custom scrollbars, recalculate their style.
-  if (LocalFrameView* frame_view = ChildFrameView())
-    frame_view->RecalculateCustomScrollbarStyle();
+  if (FrameView* frame_view = ChildFrameView()) {
+    if (frame_view->IsLocalFrameView())
+      ToLocalFrameView(frame_view)->RecalculateCustomScrollbarStyle();
+  }
 
   if (Style()->Visibility() != EVisibility::kVisible) {
     embedded_content_view->Hide();
@@ -354,8 +362,9 @@ void LayoutEmbeddedContent::UpdateGeometry(
 }
 
 bool LayoutEmbeddedContent::IsThrottledFrameView() const {
-  if (LocalFrameView* frame_view = ChildFrameView())
-    return frame_view->ShouldThrottleRendering();
+  FrameView* frame_view = ChildFrameView();
+  if (frame_view && frame_view->IsLocalFrameView())
+    return ToLocalFrameView(frame_view)->ShouldThrottleRendering();
   return false;
 }
 

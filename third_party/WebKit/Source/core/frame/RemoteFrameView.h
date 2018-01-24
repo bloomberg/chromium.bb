@@ -53,6 +53,11 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void UpdateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState) override;
 
+  bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
+
+  void SetIntrinsicSizeInfo(const IntrinsicSizingInfo& size_info);
+  bool HasIntrinsicSizingInfo() const override;
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -79,6 +84,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   Member<ElementVisibilityObserver> visibility_observer_;
   bool subtree_throttled_ = false;
   bool hidden_for_throttling_ = false;
+  IntrinsicSizingInfo intrinsic_sizing_info_;
+  bool has_intrinsic_sizing_info_ = false;
 };
 
 }  // namespace blink
