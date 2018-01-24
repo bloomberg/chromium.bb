@@ -269,7 +269,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::
     }
   }
   if (raw_source_id.empty()) {
-    CalculateHMACOnIOThread(std::string());
+    CalculateHMACOnIOThread(base::nullopt);
     return;
   }
   GetAudioSystem()->GetAssociatedOutputDeviceID(
