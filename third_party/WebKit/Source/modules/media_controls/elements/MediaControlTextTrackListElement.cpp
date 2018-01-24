@@ -93,26 +93,6 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
   MediaControlDivElement::DefaultEventHandler(event);
 }
 
-String MediaControlTextTrackListElement::GetTextTrackLabel(TextTrack* track) {
-  if (!track) {
-    return MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksOff);
-  }
-
-  String track_label = track->label();
-
-  if (track_label.IsEmpty())
-    track_label = track->language();
-
-  if (track_label.IsEmpty()) {
-    track_label = String(MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksNoLabel,
-        String::Number(track->TrackIndex() + 1)));
-  }
-
-  return track_label;
-}
-
 // TextTrack parameter when passed in as a nullptr, creates the "Off" list item
 // in the track list.
 Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
@@ -141,7 +121,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   // the other way around.
   if (!MediaControlsImpl::IsModern())
     track_item->AppendChild(track_item_input);
-  String track_label = GetTextTrackLabel(track);
+  String track_label = GetMediaControls().GetTextTrackLabel(track);
   track_item->AppendChild(Text::Create(GetDocument(), track_label));
   if (MediaControlsImpl::IsModern())
     track_item->AppendChild(track_item_input);

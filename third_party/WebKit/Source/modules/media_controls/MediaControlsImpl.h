@@ -63,6 +63,7 @@ class MediaControlToggleClosedCaptionsButtonElement;
 class MediaControlVolumeSliderElement;
 class MediaDownloadInProductHelpManager;
 class ShadowRoot;
+class TextTrack;
 
 // Default implementation of the core/ MediaControls interface used by
 // HTMLMediaElement.
@@ -113,6 +114,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ToggleTextTrackList();
   void ShowTextTrackAtIndex(unsigned);
   void DisableShowingTextTracks();
+
+  // Returns the label for the track when a valid track is passed in and "Off"
+  // when the parameter is null.
+  String GetTextTrackLabel(TextTrack*) const;
 
   // Methods related to the overflow menu.
   void ToggleOverflowMenu();

@@ -28,10 +28,6 @@ class MediaControlTextTrackListElement final : public MediaControlDivElement {
 
   void RefreshTextTrackListMenu();
 
-  // Returns the label for the track when a valid track is passed in and "Off"
-  // when the parameter is null.
-  String GetTextTrackLabel(TextTrack*);
-
   // Creates the track element in the list when a valid track is passed in and
   // the "Off" item when the parameter is null.
   Element* CreateTextTrackListItem(TextTrack*);

@@ -81,6 +81,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/text/PlatformLocale.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebSize.h"
 
@@ -875,6 +876,26 @@ void MediaControlsImpl::DisableShowingTextTracks() {
   }
 }
 
+String MediaControlsImpl::GetTextTrackLabel(TextTrack* track) const {
+  if (!track) {
+    return MediaElement().GetLocale().QueryString(
+        WebLocalizedString::kTextTracksOff);
+  }
+
+  String track_label = track->label();
+
+  if (track_label.IsEmpty())
+    track_label = track->language();
+
+  if (track_label.IsEmpty()) {
+    track_label = String(MediaElement().GetLocale().QueryString(
+        WebLocalizedString::kTextTracksNoLabel,
+        String::Number(track->TrackIndex() + 1)));
+  }
+
+  return track_label;
+}
+
 void MediaControlsImpl::RefreshCastButtonVisibility() {
   RefreshCastButtonVisibilityWithoutUpdate();
   BatchedControlUpdate batch(this);
@@ -1314,6 +1335,7 @@ void MediaControlsImpl::OnPause() {
 }
 
 void MediaControlsImpl::OnTextTracksAddedOrRemoved() {
+  toggle_closed_captions_button_->UpdateDisplayType();
   toggle_closed_captions_button_->SetIsWanted(
       MediaElement().HasClosedCaptions());
   BatchedControlUpdate batch(this);
