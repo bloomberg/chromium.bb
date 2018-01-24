@@ -1741,12 +1741,10 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     if (layer->IsPaintInvalidationContainer())
       continue;
 
-    if (layer->SubtreeIsInvisible())
-      continue;
-
-    // invalidate even if there is an ancestor with a filter that moves pixels.
-    layout_object
-        ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+    // If the layer has no visible content, then we shouldn't invalidate; but
+    // if we're not compositing-inputs-clean, then we can't query
+    // layer->SubtreeIsInvisible() here.
+    layout_object->SetMayNeedPaintInvalidationSubtree();
 
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),

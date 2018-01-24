@@ -19,7 +19,7 @@
         {
           "object": "LayoutBlockFlow DIV class='scroller'",
           "rect": [18, 60, 310, 200],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='back'",
@@ -77,15 +77,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='scroller'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='back'",
-      "reason": "subtree"
     }
   ]
 }

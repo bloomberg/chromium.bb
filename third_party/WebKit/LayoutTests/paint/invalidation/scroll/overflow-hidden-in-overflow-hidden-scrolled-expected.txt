@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV class='innerWrapper'",
           "rect": [8, 18, 100, 190],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV class='red'",
           "rect": [8, 18, 100, 190],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='ucp' class='green'",
           "rect": [8, 18, 100, 190],
-          "reason": "subtree"
+          "reason": "appeared"
         }
       ]
     }
@@ -27,15 +27,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='innerWrapper'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow DIV class='red'",
-      "reason": "subtree"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV id='ucp' class='green'",
-      "reason": "subtree"
+      "reason": "appeared"
     }
   ]
 }

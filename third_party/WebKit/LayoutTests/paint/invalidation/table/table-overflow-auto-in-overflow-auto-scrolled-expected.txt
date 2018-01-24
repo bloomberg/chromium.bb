@@ -9,37 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [8, 8, 769, 300],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 306, 300],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 8, 306, 300],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 8, 306, 300],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [8, 8, 306, 300],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [10, 8, 302, 300],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [10, 8, 302, 300],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
@@ -52,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "VerticalScrollbar",
@@ -60,27 +40,27 @@
     },
     {
       "object": "LayoutTable TABLE",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableSection TBODY",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "subtree"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutTableRow TR",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "subtree"
+      "reason": "appeared"
     }
   ]
 }

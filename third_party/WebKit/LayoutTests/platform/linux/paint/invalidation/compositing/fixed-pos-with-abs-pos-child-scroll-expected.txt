@@ -10,86 +10,78 @@ Hi!
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 980, 360, 90],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='abs'",
           "rect": [425, 480, 360, 90],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 980, 21, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 980, 21, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 480, 21, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
           "rect": [425, 480, 21, 19],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-      "reason": "subtree"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) DIV id='abs'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Hi!'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='abs'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'Hi!'",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }
