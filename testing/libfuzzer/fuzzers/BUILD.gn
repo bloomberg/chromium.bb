@@ -220,6 +220,13 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
   libfuzzer_options = [ "max_len=64" ]
 }
 
+fuzzer_test("v8_regexp_builtins_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:regexp_builtins_fuzzer",
+  ]
+}
+
 fuzzer_test("v8_wasm_code_fuzzer") {
   sources = []
   deps = [
