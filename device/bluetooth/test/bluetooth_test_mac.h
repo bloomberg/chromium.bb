@@ -128,6 +128,10 @@ class BluetoothTestMac : public BluetoothTestBase {
       BluetoothRemoteGattDescriptor* descriptor,
       short value);
 
+  // Sets the power state of the mock controller to |powered|. Used to override
+  // BluetoothAdapterMac's SetControllerPowerStateFunction.
+  void SetMockControllerPowerState(int powered);
+
   // Adds services in MockCBPeripheral.
   void AddServicesToDeviceMac(BluetoothDevice* device,
                               const std::vector<std::string>& uuids);

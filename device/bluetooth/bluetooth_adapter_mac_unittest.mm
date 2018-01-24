@@ -29,6 +29,12 @@
 #import <IOBluetooth/IOBluetooth.h>
 #endif  // defined(OS_IOS)
 
+// List of undocumented IOBluetooth APIs used for BluetoothAdapterMac.
+extern "C" {
+int IOBluetoothPreferenceGetControllerPowerState();
+void IOBluetoothPreferenceSetControllerPowerState(int state);
+}
+
 namespace {
 // |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
 const char kTestNSUUID[] = "00000000-1111-2222-3333-444444444444";
@@ -141,6 +147,15 @@ class BluetoothAdapterMacTest : public testing::Test {
   int callback_count_;
   int error_callback_count_;
 };
+
+// Test if private IOBluetooth APIs are callable on all supported macOS
+// versions.
+TEST_F(BluetoothAdapterMacTest, IOBluetoothPrivateAPIs) {
+  // Obtain current power state, toggle it, and reset it to it's original value.
+  int previous_state = IOBluetoothPreferenceGetControllerPowerState();
+  IOBluetoothPreferenceSetControllerPowerState(!previous_state);
+  IOBluetoothPreferenceSetControllerPowerState(previous_state);
+}
 
 TEST_F(BluetoothAdapterMacTest, Poll) {
   PollAdapter();

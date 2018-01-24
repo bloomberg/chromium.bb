@@ -337,6 +337,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Requests a change to the adapter radio power. Setting |powered| to true
   // will turn on the radio and false will turn it off. On success, |callback|
   // will be called. On failure, |error_callback| will be called.
+  // On macOS this is only supported if low energy is available.
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
