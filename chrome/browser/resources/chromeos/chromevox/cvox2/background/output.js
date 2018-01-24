@@ -1216,8 +1216,9 @@ Output.prototype = {
           var related = node[tree.firstChild.value];
           this.node_(related, related, Output.EventType.NAVIGATE, buff);
         } else if (token == 'nameOrTextContent') {
+          var finalOutput;
           if (node.name) {
-            this.format_(node, '$name', buff);
+            finalOutput = node.name;
           } else {
             var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
               visit: AutomationPredicate.leafOrStaticText,
@@ -1229,9 +1230,9 @@ Output.prototype = {
               if (walker.node.name)
                 outputStrings.push(walker.node.name);
             }
-            var joinedOutput = outputStrings.join(' ');
-            this.append_(buff, joinedOutput, options);
+            finalOutput = outputStrings.join(' ');
           }
+          this.append_(buff, finalOutput, options);
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
           var value = node[token];

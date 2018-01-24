@@ -337,6 +337,9 @@ are declared in build/common.gypi.
         <message name="IDS_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
           No search results found
         </message>
+        <message name="IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION" desc="Message announced to screen reader users when an inactive bubble gets shown.">
+          Press Alt Shift A to show
+        </message>
       </if>
 
        <!-- content area context menus. Android does not use it -->
@@ -10382,7 +10385,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Turn off Smart Lock in Settings.
       </message>
       <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_ABOUT_BUTTON" desc="Label of a button on the new chrome notification to bring user to smart lock settings.">
-         Change settings
+        Change settings
       </message>
       <!-- Strings for the phone changed (aka old Chromebook setup) notification -->
       <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE" desc="Title for notification shown when the paired phone is changed.">
@@ -10408,10 +10411,10 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <!-- Strings for the Easy Unlock setup dialog -->
       <!-- Step 1: Intro -->
       <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
-       Set up Smart Lock for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up Smart Lock for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the first, introductory step. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-       Make sure your phone is nearby. To find your phone, Bluetooth will be turned on for all devices that have your account. &lt;a&gt;Learn more&lt;/a&gt;
+        Make sure your phone is nearby. To find your phone, Bluetooth will be turned on for all devices that have your account. &lt;a&gt;Learn more&lt;/a&gt;
       </message>
       <message name="IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL" desc="The text to show as the 'Find phone' button label in the Easy Unlock dialog. This button is visible during the first, introductory step.">
         Find your phone

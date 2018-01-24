@@ -542,8 +542,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       base::RecordAction(base::UserMetricsAction("Accel_Focus_Bookmarks"));
       FocusBookmarksToolbar(browser_);
       break;
-    case IDC_FOCUS_INFOBARS:
-      FocusInfobars(browser_);
+    case IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY:
+      FocusInactivePopupForAccessibility(browser_);
       break;
     case IDC_FOCUS_NEXT_PANE:
       FocusNextPane(browser_);
@@ -1144,7 +1144,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(
       IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_INFOBARS, main_not_fullscreen);
+      IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY, main_not_fullscreen);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);

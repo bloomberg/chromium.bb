@@ -309,7 +309,7 @@ class BrowserView : public BrowserWindow,
   void ToolbarSizeChanged(bool is_animating) override;
   void FocusAppMenu() override;
   void FocusBookmarksToolbar() override;
-  void FocusInfobars() override;
+  void FocusInactivePopupForAccessibility() override;
   void RotatePaneFocus(bool forwards) override;
   void DestroyBrowser() override;
   bool IsBookmarkBarVisible() const override;
