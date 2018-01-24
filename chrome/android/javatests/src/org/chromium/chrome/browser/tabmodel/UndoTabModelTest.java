@@ -1658,12 +1658,7 @@ public class UndoTabModelTest {
         CallbackHelper closedCallback = new CallbackHelper();
         secondModel.addObserver(new TabClosedObserver(closedCallback));
         closeTabOnUiThread(secondModel, secondModel.getTabAt(1), false);
-
-        try {
-            closedCallback.waitForCallback(0);
-        } catch (TimeoutException | InterruptedException e) {
-            throw new AssertionError("Failed to close the tab on the second window.", e);
-        }
+        closedCallback.waitForCallback(0);
 
         Assert.assertEquals("Window 2 should have 1 tab.", 1, secondModel.getCount());
 
