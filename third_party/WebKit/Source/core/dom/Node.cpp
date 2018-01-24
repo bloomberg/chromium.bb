@@ -785,7 +785,8 @@ void Node::RecalcDistribution() {
       child->RecalcDistribution();
   }
 
-  if (ShadowRoot* root = GetShadowRoot()) {
+  for (ShadowRoot* root = YoungestShadowRoot(); root;
+       root = root->OlderShadowRoot()) {
     if (root->ChildNeedsDistributionRecalc())
       root->RecalcDistribution();
   }
@@ -2051,7 +2052,8 @@ void Node::RemoveAllEventListenersRecursively() {
   ScriptForbiddenScope forbid_script_during_raw_iteration;
   for (Node& node : NodeTraversal::StartsAt(*this)) {
     node.RemoveAllEventListeners();
-    if (ShadowRoot* root = node.GetShadowRoot())
+    for (ShadowRoot* root = node.YoungestShadowRoot(); root;
+         root = root->OlderShadowRoot())
       root->RemoveAllEventListenersRecursively();
   }
 }

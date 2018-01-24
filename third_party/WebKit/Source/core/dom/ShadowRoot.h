@@ -202,6 +202,13 @@ inline Element* ShadowRoot::ActiveElement() const {
   return AdjustedFocusedElement();
 }
 
+inline ShadowRoot* Element::ShadowRootIfV1() const {
+  ShadowRoot* root = GetShadowRoot();
+  if (root && root->IsV1())
+    return root;
+  return nullptr;
+}
+
 inline bool Node::IsInUserAgentShadowRoot() const {
   return ContainingShadowRoot() && ContainingShadowRoot()->IsUserAgent();
 }
