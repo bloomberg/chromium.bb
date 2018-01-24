@@ -47,7 +47,6 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       const base::android::JavaParamRef<jstring>& java_scope_url,
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
-      const base::android::JavaParamRef<jstring>& java_tag,
       const base::android::JavaParamRef<jstring>& java_webapk_package,
       jint action_index,
       const base::android::JavaParamRef<jstring>& java_reply);
@@ -68,7 +67,6 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       const base::android::JavaParamRef<jstring>& java_origin,
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
-      const base::android::JavaParamRef<jstring>& java_tag,
       jboolean by_user);
 
   // NotificationPlatformBridge implementation.
@@ -104,20 +102,11 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   struct RegeneratedNotificationInfo {
     RegeneratedNotificationInfo();
     RegeneratedNotificationInfo(
-        // TODO(https://crbug.com/801221): origin no longer used, can be
-        // removed.
-        const GURL& origin,
         const GURL& service_worker_scope,
-        // TODO(https://crbug.com/801221): tag no longer used, can be removed
-        const std::string& tag,
         const base::Optional<std::string>& webapk_package);
     ~RegeneratedNotificationInfo();
 
-    // TODO(https://crbug.com/801221): origin no longer used, can be removed.
-    GURL origin;
     GURL service_worker_scope;
-    // TODO(https://crbug.com/801221): tag no longer used, can be removed.
-    std::string tag;
     base::Optional<std::string> webapk_package;
   };
 
