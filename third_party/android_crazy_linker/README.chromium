@@ -94,4 +94,4 @@ Local Modifications:
 
 - Allow client disable debugger support.
 
-- Enable unit tests when building with Chromium.
+- Enable integration and unit tests when building with Chromium.

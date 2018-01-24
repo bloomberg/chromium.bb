@@ -18,6 +18,8 @@
 #define PARENT_ADDRESS 0x20000000
 #define CHILD_ADDRESS 0x20134000
 
+#define LIB_NAME "libcrazy_linker_tests_libfoo_with_relro.so"
+
 typedef void (*FunctionPtr)();
 
 int main() {
@@ -36,7 +38,7 @@ int main() {
   if (child == 0) {
     // In the child.
     crazy_context_set_load_address(context, CHILD_ADDRESS);
-    foo.Init("libfoo_with_relro.so", context);
+    foo.Init(LIB_NAME, context);
 
     printf("Child waiting for foo relro fd\n");
 
@@ -64,7 +66,7 @@ int main() {
 
     // Load at fixed address to simplify testing.
     crazy_context_set_load_address(context, PARENT_ADDRESS);
-    foo.Init("libfoo_with_relro.so", context);
+    foo.Init(LIB_NAME, context);
 
     printf("Library loaded\n");
 

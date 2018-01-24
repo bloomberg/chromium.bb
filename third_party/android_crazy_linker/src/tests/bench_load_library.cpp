@@ -61,7 +61,7 @@ class ScopedTimer {
 };
 
 int main(int argc, char** argv) {
-  const char* library_path = "libfoo.so";
+  const char* library_path = "libcrazy_linker_tests_libfoo.so";
   if (argc >= 2)
     library_path = argv[1];
 
@@ -138,10 +138,16 @@ int main(int argc, char** argv) {
       Panic("Could not open library: %s\n", crazy_context_get_error(context));
     }
 
-    if (!crazy_library_enable_relro_sharing(library, context)) {
+    size_t relro_start = 0;
+    size_t relro_size = 0;
+    int relro_fd = -1;
+    if (!crazy_library_create_shared_relro(library, context,
+                                           0 /* load_address */, &relro_start,
+                                           &relro_size, &relro_fd)) {
       Panic("Could not create shared RELRO: %s\n",
             crazy_context_get_error(context));
     }
+    close(relro_fd);
   }
   crazy_library_close(library);
 

@@ -13,6 +13,7 @@
 // strdup()'ed. This is a mild memory leak.
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef __arm__
 extern "C" void __aeabi_atexit(void*);
@@ -45,4 +46,6 @@ class A {
 
 A s_a;
 
-extern "C" int Foo() { return s_a.Get(); }
+extern "C" int Foo() {
+  return s_a.Get();
+}

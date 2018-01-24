@@ -5,6 +5,7 @@
 #include <android/log.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // A variant of bar.cpp that also includes a large RELRO section.
 // Used to test RELRO sharing with two different libraries at the

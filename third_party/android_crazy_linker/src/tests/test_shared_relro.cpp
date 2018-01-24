@@ -23,6 +23,8 @@
 
 typedef void (*FunctionPtr)();
 
+#define LIB_NAME "libcrazy_linker_tests_libfoo_with_relro.so"
+
 int main() {
   crazy_context_t* context = crazy_context_create();
 
@@ -30,7 +32,7 @@ int main() {
 
   // Load at fixed address to simplify testing.
   crazy_context_set_load_address(context, 0x20000000);
-  foo.Init("libfoo_with_relro.so", context);
+  foo.Init(LIB_NAME, context);
 
   printf("Library loaded\n");
 

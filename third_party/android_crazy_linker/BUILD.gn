@@ -15,6 +15,24 @@ config("crazy_config") {
   ]
 }
 
+group("android_crazy_linker_tests") {
+  deps = [
+    ":android_crazy_linker_unittests",
+    ":crazy_linker_bench_load_library",
+    ":crazy_linker_test_constructors_destructors",
+    ":crazy_linker_test_dl_wrappers",
+    ":crazy_linker_test_load_library",
+    ":crazy_linker_test_load_library_callbacks",
+    ":crazy_linker_test_load_library_depends",
+    ":crazy_linker_test_relocated_shared_relro",
+    ":crazy_linker_test_search_path_list",
+    ":crazy_linker_test_shared_relro",
+    ":crazy_linker_test_two_shared_relros",
+    ":run_android_crazy_linker_tests",
+  ]
+  testonly = true
+}
+
 # Template to define a source set for the crazy linker.
 # This takes a single boolean parameter:
 #
@@ -127,4 +145,213 @@ test("android_crazy_linker_unittests") {
   ]
 
   use_raw_android_executable = true
+}
+
+# The following are shared libraries used by the integration tests.
+
+template("crazy_linker_test_library") {
+  shared_library(target_name) {
+    sources = invoker.sources
+    libs = [ "log" ]
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
+
+    # This is not Chromium code.
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    # All libraries expects their symbols to be visible.
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    configs += [ "//build/config/gcc:symbol_visibility_default" ]
+  }
+}
+
+crazy_linker_test_library("crazy_linker_tests_libfoo") {
+  sources = [
+    "src/tests/foo.cpp",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libfoo2") {
+  sources = [
+    "src/tests/foo2.cpp",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libfoo_with_relro") {
+  sources = [
+    "src/tests/foo_with_relro.cpp",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libfoo_with_static_constructor") {
+  sources = [
+    "src/tests/foo_with_static_constructor.cpp",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libbar") {
+  sources = [
+    "src/tests/bar.cpp",
+  ]
+  deps = [
+    ":crazy_linker_tests_libfoo",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libbar_with_relro") {
+  sources = [
+    "src/tests/bar_with_relro.cpp",
+  ]
+  deps = [
+    ":crazy_linker_tests_libfoo_with_relro",
+  ]
+}
+
+crazy_linker_test_library("crazy_linker_tests_libzoo") {
+  sources = [
+    "src/tests/zoo.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libbar",
+  ]
+}
+
+# Integration tests are provided as standalone executables for now.
+
+executable("crazy_linker_bench_load_library") {
+  sources = [
+    "src/tests/bench_load_library.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_load_library") {
+  sources = [
+    "src/tests/test_load_library.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_load_library_depends") {
+  sources = [
+    "src/tests/test_load_library_depends.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libbar",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_load_library_callbacks") {
+  sources = [
+    "src/tests/test_load_library_callbacks.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libbar",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_constructors_destructors") {
+  sources = [
+    "src/tests/test_constructors_destructors.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo_with_static_constructor",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_dl_wrappers") {
+  sources = [
+    "src/tests/test_dl_wrappers.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libzoo",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_search_path_list") {
+  sources = [
+    "src/tests/test_search_path_list.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo",
+    ":crazy_linker_tests_libfoo2",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_relocated_shared_relro") {
+  sources = [
+    "src/tests/test_relocated_shared_relro.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo_with_relro",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_shared_relro") {
+  sources = [
+    "src/tests/test_shared_relro.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo_with_relro",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+executable("crazy_linker_test_two_shared_relros") {
+  sources = [
+    "src/tests/test_two_shared_relros.cpp",
+  ]
+  data_deps = [
+    ":crazy_linker_tests_libfoo_with_relro",
+    ":crazy_linker_tests_libbar_with_relro",
+  ]
+  deps = [
+    ":android_crazy_linker",
+  ]
+}
+
+# Copy the script that runs all integration tests to the right directory.
+copy("run_android_crazy_linker_tests") {
+  sources = [
+    "src/run_tests.sh",
+  ]
+  outputs = [
+    "$root_out_dir/bin/run_android_crazy_linker_tests",
+  ]
 }

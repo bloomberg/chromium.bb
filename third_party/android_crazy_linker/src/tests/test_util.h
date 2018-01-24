@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -134,10 +135,8 @@ class TempDirectory {
  public:
   TempDirectory() {
     snprintf(path_, sizeof path_, "/data/local/tmp/temp-XXXXXX");
-    if (!mktemp(path_))
+    if (!mkdtemp(path_))
       Panic("Could not create temporary directory name: %s\n", strerror(errno));
-    if (mkdir(path_, 0700) < 0)
-      Panic("Could not create temporary directory %s: %s\n", strerror(errno));
   }
 
   ~TempDirectory() {
@@ -280,7 +279,7 @@ inline int SendFd(int socket, int fd) {
   if (ret < 0)
     return -1;
 
-  if (ret != iov.iov_len) {
+  if (ret != (int)iov.iov_len) {
     errno = EIO;
     return -1;
   }
