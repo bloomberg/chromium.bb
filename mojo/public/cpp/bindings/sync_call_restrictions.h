@@ -37,10 +37,6 @@ namespace prefs {
 class PersistentPrefStoreClient;
 }
 
-namespace ui {
-class Gpu;
-}
-
 namespace views {
 class ClipboardMus;
 }
@@ -75,7 +71,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
   friend class content::BrowserTestBase;  // Test-only.
-  friend class ui::Gpu;  // http://crbug.com/620058
   // LevelDBMojoProxy makes same-process sync calls from the DB thread.
   friend class leveldb::LevelDBMojoProxy;
   // Pref service connection is sync at startup.
