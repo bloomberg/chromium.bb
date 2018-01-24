@@ -1737,7 +1737,7 @@ enum WebFeature {
   kDocumentPageShowRegistered = 2228,
   kDocumentPageShowFired = 2229,
   kReplaceCharsetInXHR = 2230,
-  kRespondToSameOriginRequestWithCrossOriginResponse = 2231,
+  kRespondToSameOriginRequestWithCrossOriginResponse = 2231,  // Obsolete.
   kLinkRelModulePreload = 2232,
   kPerformanceMeasurePassedInObject = 2233,
   kPerformanceMeasurePassedInNavigationTiming = 2234,

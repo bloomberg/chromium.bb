@@ -14,8 +14,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/BytesConsumer.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/WebFeature.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -76,6 +74,11 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
       error_message = error_message +
                       "an \"opaqueredirect\" type response was used for a "
                       "request whose redirect mode is not \"manual\".";
+      break;
+    case ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin:
+      error_message = error_message +
+                      "a \"cors\" type response was used for a request whose "
+                      "mode is \"same-origin\".";
       break;
     case ServiceWorkerResponseError::kBodyLocked:
       error_message = error_message +
@@ -175,6 +178,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
       ToIsolate(GetExecutionContext()), value.V8Value());
   // "If one of the following conditions is true, return a network error:
   //   - |response|'s type is |error|.
+  //   - |request|'s mode is |same-origin| and |response|'s type is |cors|.
   //   - |request|'s mode is not |no-cors| and response's type is |opaque|.
   //   - |request| is a client request and |response|'s type is neither
   //     |basic| nor |default|."
@@ -182,6 +186,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
       response->GetResponse()->GetType();
   if (response_type == network::mojom::FetchResponseType::kError) {
     OnResponseRejected(ServiceWorkerResponseError::kResponseTypeError);
+    return;
+  }
+  if (response_type == network::mojom::FetchResponseType::kCORS &&
+      request_mode_ == network::mojom::FetchRequestMode::kSameOrigin) {
+    OnResponseRejected(
+        ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin);
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kOpaque) {
@@ -223,17 +233,6 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
 
   WebServiceWorkerResponse web_response;
   response->PopulateWebServiceWorkerResponse(web_response);
-
-  // UseCounter for cross origin CORS responses to "same-origin" requests.
-  // See https://crbug.com/784018.
-  if (request_mode_ == network::mojom::FetchRequestMode::kSameOrigin &&
-      !web_response.UrlList().empty() &&
-      !SecurityOrigin::AreSameSchemeHostPort(
-          request_url_, *(web_response.UrlList().end() - 1))) {
-    UseCounter::Count(
-        GetExecutionContext(),
-        WebFeature::kRespondToSameOriginRequestWithCrossOriginResponse);
-  }
 
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {

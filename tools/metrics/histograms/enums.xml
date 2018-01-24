@@ -17573,7 +17573,8 @@ Called by update_net_error_codes.py.-->
   <int value="2228" label="DocumentPageShowRegistered"/>
   <int value="2229" label="DocumentPageShowFired"/>
   <int value="2230" label="ReplaceCharsetInXHR"/>
-  <int value="2231" label="RespondToSameOriginRequestWithCrossOriginResponse"/>
+  <int value="2231"
+      label="RespondToSameOriginRequestWithCrossOriginResponse (obsolete)"/>
   <int value="2232" label="LinkRelModulePreload"/>
   <int value="2233" label="PerformanceMeasurePassedInObject"/>
   <int value="2234" label="PerformanceMeasurePassedInNavigationTiming"/>
@@ -38825,6 +38826,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="ForeignFetchMismatchedOrigin"/>
   <int value="14" label="RedirectedResponseForNotFollowRequest"/>
   <int value="15" label="DataPipeCreationFailed (insufficient resources)"/>
+  <int value="16" label="ResponseTypeCORSForRequestModeSameOrigin"/>
 </enum>
 
 <enum name="ServiceWorkerSite">
