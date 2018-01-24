@@ -491,6 +491,7 @@ _VALID_OS_MACROS = (
     # Please keep sorted.
     'OS_AIX',
     'OS_ANDROID',
+    'OS_ASMJS',
     'OS_BSD',
     'OS_CAT',       # For testing.
     'OS_CHROMEOS',
