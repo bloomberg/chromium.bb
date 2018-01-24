@@ -1331,6 +1331,11 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider
         return false;
     }
 
+    public boolean performAction(int action, Bundle arguments) {
+        // TODO(dmazzoni): implement this.
+        return false;
+    }
+
     @TargetApi(Build.VERSION_CODES.M)
     public void onProvideVirtualStructure(
             final ViewStructure structure, final boolean ignoreScrollOffset) {
