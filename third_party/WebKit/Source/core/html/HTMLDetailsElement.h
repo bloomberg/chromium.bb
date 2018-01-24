@@ -45,6 +45,7 @@ class HTMLDetailsElement final : public HTMLElement {
   void DispatchPendingEvent();
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  bool ShouldForceLegacyLayout() const final { return true; }
   void ParseAttribute(const AttributeModificationParams&) override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   bool IsInteractiveContent() const override;

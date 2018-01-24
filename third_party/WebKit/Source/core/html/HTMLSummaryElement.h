@@ -39,6 +39,7 @@ class HTMLSummaryElement final : public HTMLElement {
   explicit HTMLSummaryElement(Document&);
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  bool ShouldForceLegacyLayout() const final { return true; }
   void DefaultEventHandler(Event*) override;
   bool HasActivationBehavior() const override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
