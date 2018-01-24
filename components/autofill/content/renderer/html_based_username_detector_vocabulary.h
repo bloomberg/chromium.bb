@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_VOCABULARY_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_VOCABULARY_H_
+
 namespace autofill {
 
 // Words that certainly point to a non-username field.
@@ -37,3 +40,5 @@ extern const char* const kWeakWords[];
 extern const int kWeakWordsSize;
 
 }  // namespace autofill
+
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_VOCABULARY_H_

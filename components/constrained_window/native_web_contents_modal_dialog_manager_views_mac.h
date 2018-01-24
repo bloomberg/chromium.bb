@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
+#define COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
+
 #include "components/constrained_window/native_web_contents_modal_dialog_manager_views.h"
 
 namespace web_modal {
@@ -31,3 +34,5 @@ class NativeWebContentsModalDialogManagerViewsMac
 };
 
 }  // namespace constrained_window
+
+#endif  // COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
