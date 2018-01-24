@@ -136,11 +136,15 @@ class NetworkTrafficAnnotationChecker():
     """Gets the list of modified files from git. Returns None if any error
     happens."""
 
-    # List of files is extracted the same way as the following test recipe:
-    # https://cs.chromium.org/chromium/tools/depot_tools/recipes/recipe_modules/
-    # tryserver/api.py?l=66
+    # List of files is extracted almost the same way as the following test
+    # recipe: https://cs.chromium.org/chromium/tools/depot_tools/recipes/
+    # recipe_modules/tryserver/api.py
+    # '--no-renames' switch is added so that if a file is renamed, both old and
+    # new name would be given. Old name is needed to discard its data in
+    # annotations.xml and new name is needed for updating the XML and checking
+    # its content for possible changes.
     args = ["git.bat"] if sys.platform == "win32" else ["git"]
-    args += ["diff", "--cached", "--name-only"]
+    args += ["diff", "--cached", "--name-only", "--no-renames"]
 
     original_path = os.getcwd()
 
