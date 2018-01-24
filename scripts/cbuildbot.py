@@ -14,7 +14,6 @@ from __future__ import print_function
 import distutils.version # pylint: disable=import-error,no-name-in-module
 import glob
 import json
-import mock
 import optparse  # pylint: disable=deprecated-module
 import os
 import pickle
@@ -824,6 +823,44 @@ def _SetupConnections(options, build_config):
   return context
 
 
+class _MockMethodWithReturnValue(object):
+  """A method mocker which just returns the specific value."""
+  def __init__(self, return_value):
+    self.return_value = return_value
+
+  def __call__(self, *args, **kwargs):
+    return self.return_value
+
+
+class _ObjectMethodPatcher(object):
+  """A simplified mock.object.patch.
+
+  It is a context manager that patches an object's method with specified
+  return value.
+  """
+  def __init__(self, target, attr, return_value=None):
+    """Constructor.
+
+    Args:
+      target: object to patch.
+      attr: method name of the object to patch.
+      return_value: the return value when calling target.attr
+    """
+    self.target = target
+    self.attr = attr
+    self.return_value = return_value
+    self.original_attr = None
+    self.new_attr = _MockMethodWithReturnValue(self.return_value)
+
+  def __enter__(self):
+    self.original_attr = self.target.__dict__[self.attr]
+    setattr(self.target, self.attr, self.new_attr)
+
+  def __exit__(self, *args):
+    if self.target and self.original_attr:
+      setattr(self.target, self.attr, self.original_attr)
+
+
 # TODO(build): This function is too damn long.
 def main(argv):
   # We get false positives with the options object.
@@ -945,7 +982,7 @@ def main(argv):
           build_config, options)
 
     if options.mock_tree_status is not None:
-      stack.Add(mock.patch.object, tree_status, '_GetStatus',
+      stack.Add(_ObjectMethodPatcher, tree_status, '_GetStatus',
                 return_value=options.mock_tree_status)
 
     if options.mock_slave_status is not None:
@@ -953,7 +990,7 @@ def main(argv):
         mock_statuses = pickle.load(f)
         for key, value in mock_statuses.iteritems():
           mock_statuses[key] = builder_status_lib.BuilderStatus(**value)
-      stack.Add(mock.patch.object,
+      stack.Add(_ObjectMethodPatcher,
                 completion_stages.MasterSlaveSyncCompletionStage,
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)

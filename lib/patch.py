@@ -9,9 +9,6 @@ from __future__ import print_function
 
 import calendar
 import collections
-# We import mock so that we can identify mock.MagicMock instances in tests
-# that use mock.
-import mock
 import os
 import random
 import re
@@ -24,6 +21,15 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import metrics
+
+
+# We import mock so that we can identify mock.MagicMock instances in tests
+# that use mock.
+try:
+  import mock
+except ImportError:
+  mock = None
+
 
 site_config = config_lib.GetConfig()
 
@@ -184,7 +190,7 @@ class PatchException(Exception):
 
   def __init__(self, patch, message=None):
     if (not isinstance(patch, GitRepoPatch) and
-        not isinstance(patch, mock.MagicMock)):
+        not (mock and isinstance(patch, mock.MagicMock))):
       raise TypeError(
           'Patch must be a GitRepoPatch derivative; got type %s: %r'
           % (type(patch), patch))

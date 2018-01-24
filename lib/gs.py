@@ -37,8 +37,7 @@ from chromite.lib import timeout_util
 try:
   from infra_libs import ts_mon
 except (ImportError, RuntimeError):
-  import mock
-  ts_mon = mock.Mock()
+  ts_mon = metrics.MockMetric()
 
 # This bucket has the allAuthenticatedUsers:READER ACL.
 AUTHENTICATION_BUCKET = 'gs://chromeos-authentication-bucket/'
