@@ -61,7 +61,7 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
                                  const FillLayer& fill_layer,
                                  const LayoutSize& positioning_area_size) {
   StyleImage* image = fill_layer.GetImage();
-  EFillSizeType type = fill_layer.Size().type;
+  EFillSizeType type = fill_layer.SizeType();
 
   LayoutSize image_intrinsic_size(image->ImageSize(
       obj.GetDocument(), obj.Style()->EffectiveZoom(), positioning_area_size));
@@ -69,8 +69,8 @@ LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
     case EFillSizeType::kSizeLength: {
       LayoutSize tile_size(positioning_area_size);
 
-      Length layer_width = fill_layer.Size().size.Width();
-      Length layer_height = fill_layer.Size().size.Height();
+      const Length& layer_width = fill_layer.SizeLength().Width();
+      const Length& layer_height = fill_layer.SizeLength().Height();
 
       if (layer_width.IsFixed())
         tile_size.SetWidth(LayoutUnit(layer_width.Value()));
@@ -633,7 +633,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit rounded_width = positioning_area_size.Width() / nr_tiles;
 
     // Maintain aspect ratio if background-size: auto is set
-    if (fill_layer.Size().size.Height().IsAuto() &&
+    if (fill_layer.SizeLength().Height().IsAuto() &&
         background_repeat_y != EFillRepeat::kRoundFill) {
       fill_tile_size.SetHeight(fill_tile_size.Height() * rounded_width /
                                fill_tile_size.Width());
@@ -661,7 +661,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
                                           fill_tile_size.Height()));
     LayoutUnit rounded_height = positioning_area_size.Height() / nr_tiles;
     // Maintain aspect ratio if background-size: auto is set
-    if (fill_layer.Size().size.Width().IsAuto() &&
+    if (fill_layer.SizeLength().Width().IsAuto() &&
         background_repeat_x != EFillRepeat::kRoundFill) {
       fill_tile_size.SetWidth(fill_tile_size.Width() * rounded_height /
                               fill_tile_size.Height());
