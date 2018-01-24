@@ -5,6 +5,8 @@
 source_set("download") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "download_manager_view_controller.h",
+    "download_manager_view_controller.mm",
     "legacy_download_manager_controller.h",
     "legacy_download_manager_controller.mm",
     "pass_kit_coordinator.h",
@@ -28,6 +30,7 @@ source_set("download") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:web_internal",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
@@ -44,6 +47,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "download_manager_view_controller_unittest.mm",
     "legacy_download_manager_controller_unittest.mm",
     "pass_kit_coordinator_unittest.mm",
   ]
