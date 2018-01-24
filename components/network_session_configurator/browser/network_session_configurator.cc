@@ -104,7 +104,19 @@ net::SettingsMap GetHttp2Settings(
   return http2_settings;
 }
 
-void ConfigureHttp2Params(base::StringPiece http2_trial_group,
+bool ConfigureWebsocketOverHttp2(
+    const base::CommandLine& command_line,
+    const VariationParameters& http2_trial_params) {
+  if (command_line.HasSwitch(switches::kEnableWebsocketOverHttp2))
+    return true;
+
+  const std::string websocket_value =
+      GetVariationParam(http2_trial_params, "websocket_over_http2");
+  return websocket_value == "true";
+}
+
+void ConfigureHttp2Params(const base::CommandLine& command_line,
+                          base::StringPiece http2_trial_group,
                           const VariationParameters& http2_trial_params,
                           net::HttpNetworkSession::Params* params) {
   if (http2_trial_group.starts_with(kHttp2FieldTrialDisablePrefix)) {
@@ -112,6 +124,8 @@ void ConfigureHttp2Params(base::StringPiece http2_trial_group,
     return;
   }
   params->http2_settings = GetHttp2Settings(http2_trial_params);
+  params->enable_websocket_over_http2 =
+      ConfigureWebsocketOverHttp2(command_line, http2_trial_params);
 }
 
 bool ShouldEnableQuic(base::StringPiece quic_trial_group,
@@ -493,7 +507,8 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
   if (!variations::GetVariationParams(kHttp2FieldTrialName,
                                       &http2_trial_params))
     http2_trial_params.clear();
-  ConfigureHttp2Params(http2_trial_group, http2_trial_params, params);
+  ConfigureHttp2Params(command_line, http2_trial_group, http2_trial_params,
+                       params);
 
   const std::string tfo_trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);

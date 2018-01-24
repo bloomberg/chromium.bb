@@ -325,6 +325,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       session_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
+      enable_websocket_over_http2(false),
       net_log(nullptr),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
@@ -379,6 +380,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.time_func = session_deps->time_func;
   params.enable_http2_alternative_service =
       session_deps->enable_http2_alternative_service;
+  params.enable_websocket_over_http2 =
+      session_deps->enable_websocket_over_http2;
   params.http_09_on_non_default_ports_enabled =
       session_deps->http_09_on_non_default_ports_enabled;
   params.disable_idle_sockets_close_on_memory_pressure =
