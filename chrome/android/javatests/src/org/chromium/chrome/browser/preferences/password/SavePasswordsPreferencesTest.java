@@ -7,6 +7,12 @@ package org.chromium.chrome.browser.preferences.password;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.intent.Intents.intended;
+import static android.support.test.espresso.intent.Intents.intending;
+import static android.support.test.espresso.intent.matcher.BundleMatchers.hasEntry;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtras;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -16,11 +22,16 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
+import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
@@ -119,6 +130,7 @@ public class SavePasswordsPreferencesTest {
 
         @Override
         public void serializePasswords(Callback<String> callback) {
+            callback.onResult("serialized passwords");
             mSerializePasswordsCalled = true;
         }
     }
@@ -520,6 +532,51 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that the export flow ends up with sending off a share intent with the exported
+     * passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportIntent() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Intents.init();
+
+        Espresso.openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // Before exporting, pretend that the last successful reauthentication just
+        // happened. This will allow the export flow to continue.
+        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
+        // after the test is finished.
+        intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
+                .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+        // Confirm the export warning to fire the sharing intent.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                        allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
+
+        Intents.release();
+    }
+
+    /**
      * Check whether the user is asked to set up a screen lock if attempting to view passwords.
      */
     @Test
@@ -566,7 +623,7 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(containsString("test user"))).perform(click());
 
         // Before tapping the view button, pretend that the last successful reauthentication just
-        // happened. This will allow the export flow to continue.
+        // happened. This will allow showing the password.
         ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
         Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
                 .perform(click());
