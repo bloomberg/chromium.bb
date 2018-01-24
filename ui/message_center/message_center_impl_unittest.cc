@@ -73,8 +73,7 @@ class RemoveObserver : public MessageCenterObserver {
 
 }  // anonymous namespace
 
-class MessageCenterImplTest : public testing::Test,
-                              public MessageCenterObserver {
+class MessageCenterImplTest : public testing::Test {
  public:
   MessageCenterImplTest() {}
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/message_center/popups_only_ui_delegate.h"
 
-#include "chrome/browser/browser_process.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
