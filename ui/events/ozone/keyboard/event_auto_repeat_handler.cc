@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/event_auto_repeat_handler.h"
+#include "ui/events/ozone/keyboard/event_auto_repeat_handler.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/base_event_utils.h"

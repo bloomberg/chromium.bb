@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
-#define UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
+#ifndef UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
+#define UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
 
 #include <linux/input.h>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
-class EVENTS_EXPORT EventAutoRepeatHandler {
+class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
  public:
   class Delegate {
    public:
@@ -68,4 +68,4 @@ class EVENTS_EXPORT EventAutoRepeatHandler {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
+#endif  // UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
