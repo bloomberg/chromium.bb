@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -23,6 +24,10 @@ class Window;
 
 namespace gfx {
 class Rect;
+}
+
+namespace ui {
+class Layer;
 }
 
 namespace views {
@@ -42,7 +47,9 @@ class WindowSelectorItem;
 // class allows transforming the windows with a helper to determine the best
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
-class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
+class ASH_EXPORT ScopedTransformOverviewWindow
+    : public ui::EventHandler,
+      public ui::ImplicitAnimationObserver {
  public:
   class OverviewContentMask;
   using ShapeRects = std::vector<gfx::Rect>;
@@ -152,9 +159,13 @@ class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
  private:
   friend class WindowSelectorTest;
   class LayerCachingAndFilteringObserver;
+  class WindowMask;
 
   // Closes the window managed by |this|.
   void CloseWidget();
@@ -190,6 +201,13 @@ class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
   // the layer has not been destroyed.
   std::vector<std::unique_ptr<LayerCachingAndFilteringObserver>>
       cached_and_filtered_layer_observers_;
+
+  // A mask to be applied on |window_|. This will give |window_| rounded edges
+  // while in overview.
+  std::unique_ptr<WindowMask> mask_;
+
+  // The original mask layer of the window before entering overview mode.
+  ui::Layer* original_mask_layer_ = nullptr;
 
   ::wm::ShadowElevation original_shadow_elevation_;
 
