@@ -4,13 +4,40 @@
 
 #include "crazy_linker_line_reader.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 
 #include "crazy_linker_system_mock.h"
 
 namespace crazy {
 
 static const char kFilePath[] = "/tmp/foo.txt";
+
+static ::testing::AssertionResult AssertMemEqual(const char* expr1,
+                                                 const char* expr2,
+                                                 const char* expr3,
+                                                 const char* expr4,
+                                                 const char* expected_str,
+                                                 size_t expected_len,
+                                                 const char* arg_str,
+                                                 size_t arg_len) {
+  if (arg_len != expected_len) {
+    return ::testing::AssertionFailure()
+           << "Invalid value for '" << expr4 << "': " << arg_len
+           << " (expecting '" << expr2 << "' which is " << expected_len << ")";
+  }
+  for (size_t n = 0; n < arg_len; ++n) {
+    if (arg_str[n] != expected_str[n]) {
+      return ::testing::AssertionFailure()
+             << "Invalid value " << (unsigned)arg_str[n] << " at index " << n
+             << "\nWhen comparing " << expr3 << " with expected " << expr1;
+    }
+  }
+  return ::testing::AssertionSuccess();
+}
+
+#define EXPECT_MEMEQ(expected_str, expected_len, arg_str, arg_len)         \
+  EXPECT_PRED_FORMAT4(AssertMemEqual, expected_str, expected_len, arg_str, \
+                      arg_len)
 
 TEST(LineReader, EmptyConstructor) {
   LineReader reader;

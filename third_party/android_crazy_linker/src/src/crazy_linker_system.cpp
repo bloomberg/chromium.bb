@@ -18,9 +18,9 @@
 
 // Note: unit-testing support files are in crazy_linker_files_mock.cpp
 
-namespace crazy {
-
 #ifndef UNIT_TESTS
+
+namespace crazy {
 
 bool FileDescriptor::OpenReadOnly(const char* path) {
   Close();
@@ -95,8 +95,6 @@ bool PathIsFile(const char* path) {
 
   return S_ISREG(st.st_mode);
 }
-
-#endif  // !UNIT_TESTS
 
 }  // namespace crazy
 
@@ -173,3 +171,5 @@ void operator delete(void* ptr) {
 void operator delete[](void* ptr) {
   ::free(ptr);
 }
+
+#endif  // !UNIT_TESTS

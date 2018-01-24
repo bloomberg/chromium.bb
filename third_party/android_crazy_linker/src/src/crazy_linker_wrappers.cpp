@@ -38,6 +38,7 @@ namespace crazy {
 
 namespace {
 
+#ifndef UNIT_TESTS
 // LLVM's demangler is large, and we have no need of it.  Overriding it with
 // our own stub version here stops a lot of code being pulled in from libc++.
 // This reduces the on-disk footprint of the crazy linker library by more than
@@ -55,6 +56,7 @@ extern "C" char* __cxa_demangle(const char* mangled_name,
     *status = kMemoryAllocFailure;
   return NULL;
 }
+#endif  // UNIT_TESTS
 
 #ifdef __arm__
 extern "C" int __cxa_atexit(void (*)(void*), void*, void*);

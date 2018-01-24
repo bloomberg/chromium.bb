@@ -4,7 +4,7 @@
 
 #include "crazy_linker_search_path_list.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 #include "crazy_linker_system_mock.h"
 
 namespace crazy {

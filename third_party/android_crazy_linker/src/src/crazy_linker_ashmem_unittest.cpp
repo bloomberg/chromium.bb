@@ -6,7 +6,7 @@
 
 #include <sys/mman.h>
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 
 namespace crazy {
 
@@ -28,8 +28,7 @@ TEST(AshmemRegion, Allocate) {
   EXPECT_NE(MAP_FAILED, map);
 
   for (size_t n = 0; n < kSize; ++n) {
-    TEST_TEXT << "Checking region[" << n << "]";
-    EXPECT_EQ(0, ((char*)map)[n]);
+    EXPECT_EQ(0, ((char*)map)[n]) << "Checking region[" << n << "]";
   }
 
   EXPECT_EQ(0, ::munmap(map, kSize));

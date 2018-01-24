@@ -93,3 +93,5 @@ Local Modifications:
   reduce the size of the final binaries (24 kiB on ARM, 64 kiB on AARCH4).
 
 - Allow client disable debugger support.
+
+- Enable unit tests when building with Chromium.

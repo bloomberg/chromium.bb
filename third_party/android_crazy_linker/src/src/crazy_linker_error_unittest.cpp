@@ -4,7 +4,7 @@
 
 #include "crazy_linker_error.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 
 namespace crazy {
 
