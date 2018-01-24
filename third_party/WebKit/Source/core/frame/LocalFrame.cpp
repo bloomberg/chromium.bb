@@ -1173,8 +1173,10 @@ void LocalFrame::ForceSynchronousDocumentInstall(
       });
   GetDocument()->Parser()->Finish();
 
-  // Upon loading of the page, log PageVisits in UseCounter.
-  if (GetPage())
+  // Upon loading of SVGIamges, log PageVisits in UseCounter.
+  // Do not track PageVisits for inspector, web page popups, and validation
+  // message overlays (the other callers of this method).
+  if (GetPage() && GetDocument()->IsSVGDocument())
     GetPage()->GetUseCounter().DidCommitLoad(this);
 }
 
