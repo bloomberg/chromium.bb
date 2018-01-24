@@ -73,6 +73,18 @@ class ZeroSuggestProvider : public BaseSearchProvider,
 
   ~ZeroSuggestProvider() override;
 
+  // ZeroSuggestProvider is processing one of the following type of results
+  // at any time.
+  enum ResultType {
+    NONE,
+    DEFAULT_SERP,          // The default search provider is queried for
+                           // zero-suggest suggestions.
+    DEFAULT_SERP_FOR_URL,  // The default search provider is queried for
+                           // zero-suggest suggestions that are specific
+                           // to the visited URL.
+    MOST_VISITED
+  };
+
   // BaseSearchProvider:
   const TemplateURL* GetTemplateURL(bool is_keyword) const override;
   const AutocompleteInput GetInput(bool is_keyword) const override;
@@ -83,11 +95,18 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Optionally, cache the received |json_data| and return true if we want
-  // to stop processing results at this point. The |parsed_data| is the parsed
-  // version of |json_data| used to determine if we received an empty result.
-  bool StoreSuggestionResponse(const std::string& json_data,
-                               const base::Value& parsed_data);
+  // The function updates |results_| with data parsed from |json_data|.
+  //
+  // * The update is not performed if |json_data| is invalid.
+  // * When the provider is using cached results and |json_data| is non-empty,
+  //   this function updates the cached results.
+  // * When |results_| contains cached results, these are updated only if
+  //   |json_cata| corresponds to an empty list. This is done to ensure that
+  //   the display is cleared, as it may be showing cached results that should
+  //   not be shown.
+  //
+  // The return value is true only when |results_| changed.
+  bool UpdateResults(const std::string& json_data);
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
@@ -121,19 +140,28 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void OnContextualSuggestionsFetcherAvailable(
       std::unique_ptr<net::URLFetcher> fetcher);
 
-  // Whether we can show zero suggest suggestions that are not based on
-  // |current_page_url|. Also checks that other conditions for non-contextual
-  // zero suggest are satisfied.
-  bool ShouldShowNonContextualZeroSuggest(const GURL& current_page_url) const;
+  // Whether zero suggest suggestions are allowed in the given context.
+  bool AllowZeroSuggestSuggestions(const GURL& current_page_url) const;
 
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.
   void MaybeUseCachedSuggestions();
 
+  // Returns the type of results that should be generated for the current
+  // context.
+  // Logs UMA metrics. Should be called exactly once, on Start(), otherwise the
+  // meaning of the data logged would change.
+  ResultType TypeOfResultToRun(const GURL& current_url,
+                               const GURL& suggest_url);
+
   // Used for efficiency when creating the verbatim match.  Can be null.
   HistoryURLProvider* history_url_provider_;
 
   AutocompleteProviderListener* listener_;
+
+  // The result type that is currently being processed by provider.
+  // When the provider is not running, the result type is set to NONE.
+  ResultType result_type_running_;
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;
@@ -158,13 +186,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // the response for the most recent zero suggest input URL.
   SearchSuggestionParser::Results results_;
 
-  // Whether we are currently showing cached zero suggest results.
-  bool results_from_cache_;
-
   history::MostVisitedURLList most_visited_urls_;
-
-  // Whether we are waiting for a most visited visited urls callback to run.
-  bool waiting_for_most_visited_urls_request_;
 
   // For callbacks that may be run after destruction.
   base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_;
