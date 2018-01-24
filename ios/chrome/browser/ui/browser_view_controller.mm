@@ -2194,12 +2194,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   contentFrame.origin.y = marginWithHeader;
   [_contentArea setFrame:contentFrame];
 
-  // Adjust the infobar container to be either at the bottom of the screen
-  // (iPhone) or on the lower toolbar edge (iPad).
-  CGRect infoBarFrame = contentFrame;
-  infoBarFrame.origin.y = CGRectGetMaxY(contentFrame);
-  infoBarFrame.size.height = 0;
-  [infoBarContainerView setFrame:infoBarFrame];
+  if (initialLayout) {
+    // Adjust the infobar container to be either at the bottom of the screen
+    // (iPhone) or on the lower toolbar edge (iPad).
+    CGRect infoBarFrame = contentFrame;
+    infoBarFrame.origin.y = CGRectGetMaxY(contentFrame);
+    infoBarFrame.size.height = 0;
+    [infoBarContainerView setFrame:infoBarFrame];
+  }
 
   // Attach the typing shield to the content area but have it hidden.
   [self.typingShield setFrame:[_contentArea frame]];
