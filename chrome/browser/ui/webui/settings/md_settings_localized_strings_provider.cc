@@ -451,6 +451,19 @@ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
+  int clear_cookies_summary_msg_id =
+      IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC;
+
+#if defined(OS_CHROMEOS)
+  // Mirror account reconciliation behavior is turned on for child accounts on
+  // Chrome OS.
+  if (user_manager::UserManager::Get()->GetPrimaryUser()->GetType() ==
+      user_manager::USER_TYPE_CHILD) {
+    clear_cookies_summary_msg_id =
+        IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_MIRROR_SUMMARY_BASIC;
+  }
+#endif
+
   LocalizedString localized_strings[] = {
       {"clearFollowingItemsFrom", IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM},
       {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
@@ -460,8 +473,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
       {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
       {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
-      {"clearCookiesSummary",
-       IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC},
+      {"clearCookiesSummary", clear_cookies_summary_msg_id},
       {"clearCookiesCounter", IDS_DEL_COOKIES_COUNTER},
       {"clearCookiesFlash", IDS_SETTINGS_CLEAR_COOKIES_FLASH},
       {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
