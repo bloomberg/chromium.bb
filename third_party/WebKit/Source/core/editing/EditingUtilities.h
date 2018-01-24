@@ -157,7 +157,7 @@ inline bool CanHaveChildrenForEditing(const Node* node) {
 
 bool IsAtomicNode(const Node*);
 CORE_EXPORT bool IsEnclosingBlock(const Node*);
-bool IsTabHTMLSpanElement(const Node*);
+CORE_EXPORT bool IsTabHTMLSpanElement(const Node*);
 bool IsTabHTMLSpanElementTextNode(const Node*);
 bool IsMailHTMLBlockquoteElement(const Node*);
 // Returns true if the specified node is visible <table>. We don't want to add

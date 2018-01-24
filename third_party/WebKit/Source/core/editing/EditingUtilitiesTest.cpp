@@ -771,6 +771,12 @@ TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_TextTransform) {
                                PositionMoveType::kBackwardDeletion));
 }
 
+TEST_F(EditingUtilitiesTest, IsTabHTMLSpanElementOnDisplayNone) {
+  SetBodyContent("<span style=\"display:none\">\t</span>");
+  const Node* const node = GetDocument().QuerySelector("span");
+  EXPECT_EQ(false, IsTabHTMLSpanElement(node));
+}
+
 TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_SurrogatePairs) {
   // Supplementary plane characters. Only one code point should be deleted.
   // &#x1F441; is EYE.

@@ -1329,7 +1329,8 @@ bool IsTabHTMLSpanElement(const Node* node) {
   // TODO(editing-dev): Hoist the call of UpdateStyleAndLayoutTree to callers.
   // See crbug.com/590369 for details.
   node->GetDocument().UpdateStyleAndLayoutTree();
-  return node->GetComputedStyle()->WhiteSpace() == EWhiteSpace::kPre;
+  const ComputedStyle* style = node->GetComputedStyle();
+  return style && style->WhiteSpace() == EWhiteSpace::kPre;
 }
 
 bool IsTabHTMLSpanElementTextNode(const Node* node) {
