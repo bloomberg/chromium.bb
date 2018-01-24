@@ -6,7 +6,10 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
-from emulation_server import InvalidTLSHandler, TCPResetHandler, TLSResetHandler
+from emulation_server import BlackHoleHandler
+from emulation_server import InvalidTLSHandler
+from emulation_server import TCPResetHandler
+from emulation_server import TLSResetHandler
 
 class ProxyConnection(IntegrationTest):
 
@@ -78,6 +81,46 @@ class ProxyConnection(IntegrationTest):
       responses = t.GetHTTPResponses()
       # Expect responses with a bypass on a bad proxy. If the test failed, the
       # next assertion will fail because there will be no responses.
+      self.assertEqual(2, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
+
+  @ChromeVersionEqualOrAfterM(66)
+  def testTCPBlackhole(self):
+    port = common.GetOpenPort()
+    with TestDriver() as t:
+      t.UseNetLog()
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.AddChromeArg('--enable-features='
+        'DataReductionProxyRobustConnection<DataReductionProxyRobustConnection')
+      t.AddChromeArg('--force-fieldtrials='
+        'DataReductionProxyRobustConnection/Enabled')
+      t.AddChromeArg('--force-fieldtrial-params='
+        'DataReductionProxyRobustConnection.Enabled:'
+        'warmup_fetch_callback_enabled/true')
+      t.AddChromeArg('--force-effective-connection-type=4G')
+      # The server should be 127.0.0.1, not localhost because the two are
+      # treated differently in Chrome internals. Using localhost invalidates the
+      # test.
+      t.AddChromeArg(
+        '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
+
+      t.UseEmulationServer(BlackHoleHandler, port=port)
+      # Start Chrome and wait for the proxy timeout to fail. At ECT=4G, this
+      # will take about 8 seconds.
+      t.LoadURL('data:,')
+      self.assertTrue(
+        t.SleepUntilHistogramHasEntry('DataReductionProxy.WarmupURL.NetError',
+          sleep_intervals=10))
+
+      # Check the WarmupURL Callback was called.
+      histogram = t.GetHistogram('DataReductionProxy.WarmupURLFetcherCallback.'
+        'SuccessfulFetch.InsecureProxy.NonCore')
+      self.assertEqual(1, histogram['count'])
+
+      # Verify DRP was not used.
+      t.LoadURL('http://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
       self.assertEqual(2, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)

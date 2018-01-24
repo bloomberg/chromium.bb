@@ -12,6 +12,16 @@ import threading
 
 from OpenSSL import crypto
 
+class BlackHoleHandler(SocketServer.BaseRequestHandler):
+  """This handler consumes all request input and makes no responses.
+  """
+  def handle(self):
+    """Consume the request and then do nothing.
+    """
+    data = self.request.recv(4096)
+    while len(data) > 0:
+      data = self.request.recv(4096)
+
 class InvalidTLSHandler(SocketServer.BaseRequestHandler):
   """This handler injects unencrypted TCP after a TLS handshake.
   """
