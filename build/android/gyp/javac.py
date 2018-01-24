@@ -65,6 +65,8 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   # Alias of ParameterName warning.
   'NamedParameters',
   # Low priority corner cases with String.split.
+  # Linking Guava and using Splitter was rejected
+  # in the https://chromium-review.googlesource.com/c/chromium/src/+/871630.
   'StringSplitter',
   # Preferred to use another method since it propagates exceptions better.
   'ClassNewInstance',
