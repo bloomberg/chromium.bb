@@ -231,7 +231,7 @@ gfx::Rect AppsContainerView::GetSearchBoxBounds() const {
 }
 
 gfx::Rect AppsContainerView::GetSearchBoxBoundsForState(
-    AppListModel::State state) const {
+    ash::AppListState state) const {
   gfx::Rect search_box_bounds(contents_view()->GetDefaultSearchBoxBounds());
   bool is_in_drag = false;
   if (contents_view()->app_list_view())
@@ -239,7 +239,7 @@ gfx::Rect AppsContainerView::GetSearchBoxBoundsForState(
   if (is_in_drag) {
     search_box_bounds.set_y(GetSearchBoxTopPaddingDuringDragging());
   } else {
-    if (state == AppListModel::STATE_START)
+    if (state == ash::AppListState::kStateStart)
       search_box_bounds.set_y(kSearchBoxPeekingTopPadding);
     else
       search_box_bounds.set_y(GetSearchBoxFinalTopPadding());
@@ -249,13 +249,14 @@ gfx::Rect AppsContainerView::GetSearchBoxBoundsForState(
 }
 
 gfx::Rect AppsContainerView::GetPageBoundsForState(
-    AppListModel::State state) const {
+    ash::AppListState state) const {
   gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
 
   // Both STATE_START and STATE_APPS are AppsContainerView page.
-  if (state == AppListModel::STATE_APPS || state == AppListModel::STATE_START) {
+  if (state == ash::AppListState::kStateApps ||
+      state == ash::AppListState::kStateStart) {
     int y = GetSearchBoxBoundsForState(state).bottom();
-    if (state == AppListModel::STATE_START)
+    if (state == ash::AppListState::kStateStart)
       y -= (kSearchBoxBottomPadding - kSearchBoxPeekingBottomPadding);
     onscreen_bounds.set_y(y);
     return onscreen_bounds;
@@ -265,7 +266,7 @@ gfx::Rect AppsContainerView::GetPageBoundsForState(
 }
 
 gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
-    AppListModel::State state) const {
+    ash::AppListState state) const {
   float app_list_y_position_in_screen =
       contents_view()->app_list_view()->app_list_y_position_in_screen();
   float drag_amount =
@@ -301,7 +302,8 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
 
   gfx::Rect onscreen_bounds = GetPageBoundsForState(state);
   // Both STATE_START and STATE_APPS are AppsContainerView page.
-  if (state == AppListModel::STATE_APPS || state == AppListModel::STATE_START)
+  if (state == ash::AppListState::kStateApps ||
+      state == ash::AppListState::kStateStart)
     onscreen_bounds.set_y(y);
 
   return onscreen_bounds;

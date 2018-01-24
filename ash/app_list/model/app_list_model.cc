@@ -39,7 +39,7 @@ void AppListModel::SetStatus(Status status) {
     observer.OnAppListModelStatusChanged();
 }
 
-void AppListModel::SetState(State state) {
+void AppListModel::SetState(ash::AppListState state) {
   state_ = state;
 }
 

@@ -19,3 +19,9 @@ struct AppListItemMetadata {
   bool is_folder;   // Whether this item is a folder.
 };
 
+// All possible states of the app list.
+enum AppListState {
+  kStateApps = 0,
+  kStateSearchResults,
+  kStateStart,
+};

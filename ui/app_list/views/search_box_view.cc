@@ -79,8 +79,8 @@ constexpr SkColor kZeroQuerySearchboxColor =
     SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
 
 // Gets the box layout inset horizontal padding for the state of AppListModel.
-int GetBoxLayoutPaddingForState(AppListModel::State state) {
-  if (state == AppListModel::STATE_SEARCH_RESULTS)
+int GetBoxLayoutPaddingForState(ash::AppListState state) {
+  if (state == ash::AppListState::kStateSearchResults)
     return kPaddingSearchResult;
   return kPadding;
 }
@@ -470,8 +470,8 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 }
 
 void SearchBoxView::UpdateBackground(double progress,
-                                     AppListModel::State current_state,
-                                     AppListModel::State target_state) {
+                                     ash::AppListState current_state,
+                                     ash::AppListState target_state) {
   GetSearchBoxBackground()->set_corner_radius(gfx::Tween::LinearIntValueBetween(
       progress, GetSearchBoxBorderCornerRadiusForState(current_state),
       GetSearchBoxBorderCornerRadiusForState(target_state)));
@@ -482,8 +482,8 @@ void SearchBoxView::UpdateBackground(double progress,
 }
 
 void SearchBoxView::UpdateLayout(double progress,
-                                 AppListModel::State current_state,
-                                 AppListModel::State target_state) {
+                                 ash::AppListState current_state,
+                                 ash::AppListState target_state) {
   box_layout_->set_inside_border_insets(
       gfx::Insets(0, gfx::Tween::LinearIntValueBetween(
                          progress, GetBoxLayoutPaddingForState(current_state),
@@ -497,8 +497,8 @@ void SearchBoxView::OnTabletModeChanged(bool started) {
 }
 
 int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
-    AppListModel::State state) const {
-  if (state == AppListModel::STATE_SEARCH_RESULTS &&
+    ash::AppListState state) const {
+  if (state == ash::AppListState::kStateSearchResults &&
       !app_list_view_->is_in_drag()) {
     return kSearchBoxBorderCornerRadiusSearchResult;
   }
@@ -506,8 +506,8 @@ int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
 }
 
 SkColor SearchBoxView::GetBackgroundColorForState(
-    AppListModel::State state) const {
-  if (state == AppListModel::STATE_SEARCH_RESULTS)
+    ash::AppListState state) const {
+  if (state == ash::AppListState::kStateSearchResults)
     return kCardBackgroundColor;
   return background_color_;
 }

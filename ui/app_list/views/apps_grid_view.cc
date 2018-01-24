@@ -957,7 +957,7 @@ void AppsGridView::ViewHierarchyChanged(
 
 void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == AppListModel::STATE_START ||
+  if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
     return;
   }
@@ -1065,7 +1065,7 @@ bool AppsGridView::HandleScroll(int offset, ui::EventType type) {
     return false;
 
   // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == AppListModel::STATE_START ||
+  if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
     return false;
   }

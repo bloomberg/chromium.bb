@@ -117,8 +117,7 @@ void AppListServiceAsh::Init(Profile* initial_profile) {
 void AppListServiceAsh::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {}
 
-void AppListServiceAsh::ShowAndSwitchToState(
-    app_list::AppListModel::State state) {
+void AppListServiceAsh::ShowAndSwitchToState(ash::AppListState state) {
   bool app_list_was_open = true;
   app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (!app_list_view) {
@@ -131,7 +130,7 @@ void AppListServiceAsh::ShowAndSwitchToState(
     DCHECK(app_list_view);
   }
 
-  if (state == app_list::AppListModel::INVALID_STATE)
+  if (state == ash::AppListState::kInvalidState)
     return;
 
   app_list::ContentsView* contents_view =
@@ -155,7 +154,7 @@ void AppListServiceAsh::ShowForAppInstall(Profile* profile,
                                           bool start_discovery_tracking) {
   if (app_list::features::IsFullscreenAppListEnabled())
     return;
-  ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
+  ShowAndSwitchToState(ash::AppListState::kStateApps);
   AppListServiceImpl::ShowForAppInstall(profile, extension_id,
                                         start_discovery_tracking);
 }

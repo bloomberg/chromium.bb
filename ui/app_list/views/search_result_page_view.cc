@@ -295,8 +295,8 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
-    AppListModel::State state) const {
-  if (state != AppListModel::STATE_SEARCH_RESULTS) {
+    ash::AppListState state) const {
+  if (state != ash::AppListState::kStateSearchResults) {
     // Hides this view behind the search box by using the same bounds.
     return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   }
@@ -308,10 +308,10 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
 }
 
 void SearchResultPageView::OnAnimationUpdated(double progress,
-                                              AppListModel::State from_state,
-                                              AppListModel::State to_state) {
-  if (from_state != AppListModel::STATE_SEARCH_RESULTS &&
-      to_state != AppListModel::STATE_SEARCH_RESULTS) {
+                                              ash::AppListState from_state,
+                                              ash::AppListState to_state) {
+  if (from_state != ash::AppListState::kStateSearchResults &&
+      to_state != ash::AppListState::kStateSearchResults) {
     return;
   }
   const SearchBoxView* search_box =
@@ -330,7 +330,7 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
           search_box->GetSearchBoxBorderCornerRadiusForState(to_state))));
 
   gfx::Rect onscreen_bounds(
-      GetPageBoundsForState(AppListModel::STATE_SEARCH_RESULTS));
+      GetPageBoundsForState(ash::AppListState::kStateSearchResults));
   onscreen_bounds -= bounds().OffsetFromOrigin();
   gfx::Path path;
   path.addRect(gfx::RectToSkRect(onscreen_bounds));

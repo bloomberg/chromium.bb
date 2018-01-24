@@ -72,25 +72,25 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void ShowFolderContent(AppListFolderItem* folder);
 
   // Sets the active launcher page and animates the pages into place.
-  void SetActiveState(AppListModel::State state);
-  void SetActiveState(AppListModel::State state, bool animate);
+  void SetActiveState(ash::AppListState state);
+  void SetActiveState(ash::AppListState state, bool animate);
 
   // The index of the currently active launcher page.
   int GetActivePageIndex() const;
 
   // The currently active state.
-  AppListModel::State GetActiveState() const;
+  ash::AppListState GetActiveState() const;
 
   // True if |state| is the current active laucher page.
-  bool IsStateActive(AppListModel::State state) const;
+  bool IsStateActive(ash::AppListState state) const;
 
   // Gets the index of a launcher page in |view_model_|, by State. Returns
   // -1 if there is no view for |state|.
-  int GetPageIndexForState(AppListModel::State state) const;
+  int GetPageIndexForState(ash::AppListState state) const;
 
   // Gets the state of a launcher page in |view_model_|, by index. Returns
   // INVALID_STATE if there is no state for |index|.
-  AppListModel::State GetStateForPageIndex(int index) const;
+  ash::AppListState GetStateForPageIndex(int index) const;
 
   int NumLauncherPages() const;
 
@@ -126,7 +126,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   gfx::Rect GetDefaultSearchBoxBounds() const;
 
   // Returns search box bounds to use for a given state.
-  gfx::Rect GetSearchBoxBoundsForState(AppListModel::State state) const;
+  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
 
   // Returns the content area bounds to use for content views that do not
   // specify their own custom layout.
@@ -181,8 +181,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void UpdatePageBounds();
 
   void UpdateSearchBox(double progress,
-                       AppListModel::State current_state,
-                       AppListModel::State target_state);
+                       ash::AppListState current_state,
+                       ash::AppListState target_state);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
   // view is inserted as a child of the ContentsView. There is no name
@@ -192,7 +192,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Adds |view| as a new page to the end of the list of launcher pages. The
   // view is inserted as a child of the ContentsView. The page is associated
   // with the name |state|. Returns the index of the new page.
-  int AddLauncherPage(AppListPage* view, AppListModel::State state);
+  int AddLauncherPage(AppListPage* view, ash::AppListState state);
 
   // Gets the PaginationModel owned by the AppsGridView.
   // Note: This is different to |pagination_model_|, which manages top-level
@@ -219,10 +219,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   AppListView* const app_list_view_;
 
   // Maps State onto |view_model_| indices.
-  std::map<AppListModel::State, int> state_to_view_;
+  std::map<ash::AppListState, int> state_to_view_;
 
   // Maps |view_model_| indices onto State.
-  std::map<int, AppListModel::State> view_to_state_;
+  std::map<int, ash::AppListState> view_to_state_;
 
   // The page that was showing before ShowSearchResults(true) was invoked.
   int page_before_search_ = 0;

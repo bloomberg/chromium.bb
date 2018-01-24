@@ -15,6 +15,7 @@
 #include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -37,18 +38,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
     STATUS_SYNCING,  // Syncing apps or installing synced apps.
   };
 
-  // Do not change the order of these as they are used for metrics.
-  enum State {
-    STATE_APPS = 0,
-    STATE_SEARCH_RESULTS,
-    STATE_START,
-    STATE_CUSTOM_LAUNCHER_PAGE_DEPRECATED,
-    // Add new values here.
-
-    INVALID_STATE,
-    STATE_LAST = INVALID_STATE,
-  };
-
   AppListModel();
   ~AppListModel() override;
 
@@ -57,8 +46,8 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
 
   void SetStatus(Status status);
 
-  void SetState(State state);
-  State state() const { return state_; }
+  void SetState(ash::AppListState state);
+  ash::AppListState state() const { return state_; }
 
   // The current state of the AppListView. Controlled by AppListView.
   void SetStateFullscreen(AppListViewState state);
@@ -171,7 +160,7 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   std::unique_ptr<AppListItemList> top_level_item_list_;
 
   Status status_ = STATUS_NORMAL;
-  State state_ = INVALID_STATE;
+  ash::AppListState state_ = ash::AppListState::kInvalidState;
   // The AppListView state. Controlled by the AppListView.
   AppListViewState state_fullscreen_ = AppListViewState::CLOSED;
   base::ObserverList<AppListModelObserver, true> observers_;

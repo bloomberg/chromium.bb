@@ -4,6 +4,9 @@
 
 #include "ui/app_list/views/expand_arrow_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -251,11 +254,11 @@ void ExpandArrowView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void ExpandArrowView::TransitToFullscreenAllAppsState() {
-  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram, AppListModel::STATE_APPS,
-                            AppListModel::STATE_LAST);
+  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram, ash::AppListState::kStateApps,
+                            ash::AppListState::kStateLast);
   UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, kExpandArrow,
                             kMaxPeekingToFullscreen);
-  contents_view_->SetActiveState(AppListModel::STATE_APPS);
+  contents_view_->SetActiveState(ash::AppListState::kStateApps);
   app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
 }
 
