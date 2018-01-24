@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "build/build_config.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -417,8 +418,8 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              callback_, nullptr, nullptr));
   } else {
-    Blob* result_blob = nullptr;
-    script_promise_resolver_->Resolve(result_blob);
+    script_promise_resolver_->Reject(DOMException::Create(
+        kEncodingError, "Encoding of the source image has failed."));
   }
   // Avoid unwanted retention, see dispose().
   Dispose();

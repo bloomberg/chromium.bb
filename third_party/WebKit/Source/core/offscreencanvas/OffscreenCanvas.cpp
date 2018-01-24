@@ -375,34 +375,36 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
     return exception_state.Reject(script_state);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
+  if (!this->IsPaintable() || size_.IsEmpty()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The size of the OffscreenCanvas is zero.");
+    return exception_state.Reject(script_state);
+  }
 
-  if (!IsPaintable() || size_.IsEmpty()) {
-    Blob* blob = nullptr;
-    resolver->Resolve(blob);
-    return promise;
+  if (!this->context_) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "OffscreenCanvas object has no rendering contexts");
+    return exception_state.Reject(script_state);
   }
 
   double start_time = WTF::CurrentTimeTicksInSeconds();
-
-  CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> snapshot =
-      context_ ? context_->GetImage(kPreferNoAcceleration)
-               : CreateTransparentImage(size_);
+      context_->GetImage(kPreferNoAcceleration);
   if (snapshot) {
+    ScriptPromiseResolver* resolver =
+        ScriptPromiseResolver::Create(script_state);
     String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
         options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
-    async_creator = CanvasAsyncBlobCreator::Create(
+    CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
         snapshot, encoding_mime_type, start_time,
         ExecutionContext::From(script_state), resolver);
     async_creator->ScheduleAsyncBlobCreation(options.quality());
+    return resolver->Promise();
   } else {
-    Blob* blob = nullptr;
-    resolver->Resolve(blob);
+    exception_state.ThrowDOMException(
+        kNotReadableError, "Readback of the source image has failed.");
+    return exception_state.Reject(script_state);
   }
-
-  return promise;
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {
