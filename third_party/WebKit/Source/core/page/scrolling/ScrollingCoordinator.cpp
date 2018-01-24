@@ -171,12 +171,6 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   LocalFrame* frame = &frame_view->GetFrame();
   DCHECK(frame->IsLocalRoot());
 
-  if (!(frame_view->ScrollGestureRegionIsDirty() ||
-        touch_event_target_rects_are_dirty_ ||
-        should_scroll_on_main_thread_dirty_ || FrameScrollerIsDirty())) {
-    return;
-  }
-
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateAfterCompositingChangeIfNeeded");
 
@@ -201,6 +195,11 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   // https://crbug.com/680606
   if (frame != frame_view->GetPage()->MainFrame())
     return;
+
+  if (!(touch_event_target_rects_are_dirty_ ||
+        should_scroll_on_main_thread_dirty_ || FrameScrollerIsDirty())) {
+    return;
+  }
 
   if (touch_event_target_rects_are_dirty_) {
     UpdateTouchEventTargetRectsIfNeeded();
