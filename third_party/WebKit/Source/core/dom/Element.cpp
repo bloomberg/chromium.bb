@@ -240,7 +240,7 @@ int Element::tabIndex() const {
              : 0;
 }
 
-bool Element::LayoutObjectIsFocusable() const {
+bool Element::IsFocusableStyle() const {
   // Elements in canvas fallback content are not rendered, but they are allowed
   // to be focusable as long as their canvas is displayed and visible.
   if (IsInCanvasSubtree()) {
@@ -3035,8 +3035,7 @@ bool Element::IsFocusable() const {
   // needsLayoutTreeUpdateForNode check is invalid.
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
-  return isConnected() && SupportsFocus() && !IsInert() &&
-         LayoutObjectIsFocusable();
+  return isConnected() && SupportsFocus() && !IsInert() && IsFocusableStyle();
 }
 
 bool Element::IsKeyboardFocusable() const {
