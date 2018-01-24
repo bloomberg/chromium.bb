@@ -1088,7 +1088,7 @@ public class ContentViewCoreImpl
 
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
-        return mWebContentsAccessibility.performAction(View.NO_ID, action, arguments);
+        return mWebContentsAccessibility.performAction(action, arguments);
     }
 
     @Override
