@@ -77,6 +77,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView() override;
   void RenderProcessGone() override;
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) override;
+  void SendIntrinsicSizingInfoToParent(
+      const blink::WebIntrinsicSizingInfo&) override;
+
   void UpdateCursor(const WebCursor& cursor) override;
   gfx::PointF TransformPointToRootCoordSpace(
       const gfx::PointF& point,

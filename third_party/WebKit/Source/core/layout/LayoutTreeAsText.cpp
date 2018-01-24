@@ -537,9 +537,9 @@ void Write(TextStream& ts,
   }
 
   if (o.IsLayoutEmbeddedContent()) {
-    LocalFrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
-    if (frame_view) {
-      if (auto* layout_view = frame_view->GetLayoutView()) {
+    FrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
+    if (frame_view && frame_view->IsLocalFrameView()) {
+      if (auto* layout_view = ToLocalFrameView(frame_view)->GetLayoutView()) {
         layout_view->GetDocument().UpdateStyleAndLayout();
         if (auto* layer = layout_view->Layer()) {
           LayoutTreeAsText::WriteLayers(

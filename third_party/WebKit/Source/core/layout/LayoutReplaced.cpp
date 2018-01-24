@@ -924,10 +924,4 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
                     Size().Height());
 }
 
-void IntrinsicSizingInfo::Transpose() {
-  size = size.TransposedSize();
-  aspect_ratio = aspect_ratio.TransposedSize();
-  std::swap(has_width, has_height);
-}
-
 }  // namespace blink

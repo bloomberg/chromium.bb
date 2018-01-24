@@ -293,6 +293,8 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   blink::WebLayerTreeView* InitializeLayerTreeView() override;
+  void IntrinsicSizingInfoChanged(
+      const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void DidChangeCursor(const blink::WebCursorInfo&) override;
   void AutoscrollStart(const blink::WebFloatPoint& point) override;

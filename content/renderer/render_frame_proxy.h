@@ -208,6 +208,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnCompositorFrameSwapped(const IPC::Message& message);
   // TODO(fsamuel): Rename OnFirstSurfaceActivation().
   void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info);
+  void OnIntrinsicSizingInfoOfChildChanged(
+      blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const viz::FrameSinkId& frame_sink_id);
   void OnDidStopLoading();

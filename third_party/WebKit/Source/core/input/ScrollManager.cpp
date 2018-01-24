@@ -540,14 +540,16 @@ WebInputEventResult ScrollManager::PassScrollGestureEvent(
       !layout_object->IsLayoutEmbeddedContent())
     return WebInputEventResult::kNotHandled;
 
-  LocalFrameView* frame_view =
+  FrameView* frame_view =
       ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
 
-  if (!frame_view)
+  if (!frame_view || !frame_view->IsLocalFrameView())
     return WebInputEventResult::kNotHandled;
 
-  return frame_view->GetFrame().GetEventHandler().HandleGestureScrollEvent(
-      gesture_event);
+  return ToLocalFrameView(frame_view)
+      ->GetFrame()
+      .GetEventHandler()
+      .HandleGestureScrollEvent(gesture_event);
 }
 
 bool ScrollManager::IsViewportScrollingElement(const Element& element) const {

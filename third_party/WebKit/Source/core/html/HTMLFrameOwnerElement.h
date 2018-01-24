@@ -98,7 +98,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   SandboxFlags GetSandboxFlags() const final { return sandbox_flags_; }
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent() override {}
-  void IntrinsicDimensionsChanged() override { NOTREACHED(); }
+  void IntrinsicSizingInfoChanged() override {}
   AtomicString BrowsingContextContainerName() const override {
     return getAttribute(HTMLNames::nameAttr);
   }

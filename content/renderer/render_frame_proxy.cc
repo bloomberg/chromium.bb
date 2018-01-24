@@ -370,6 +370,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
     IPC_MESSAGE_HANDLER(FrameMsg_SetChildFrameSurface, OnSetChildFrameSurface)
+    IPC_MESSAGE_HANDLER(FrameMsg_IntrinsicSizingInfoOfChildChanged,
+                        OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
@@ -425,6 +427,11 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 void RenderFrameProxy::OnSetChildFrameSurface(
     const viz::SurfaceInfo& surface_info) {
   SetChildFrameSurface(surface_info);
+}
+
+void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
+    blink::WebIntrinsicSizingInfo sizing_info) {
+  web_frame()->IntrinsicSizingInfoChanged(sizing_info);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {

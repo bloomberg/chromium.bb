@@ -51,6 +51,8 @@ class CORE_EXPORT HTMLPlugInElement
   ~HTMLPlugInElement() override;
   virtual void Trace(blink::Visitor*);
 
+  bool IsPlugin() override { return true; }
+
   bool HasPendingActivity() const final;
 
   void SetFocused(bool, WebFocusType) override;
@@ -152,7 +154,7 @@ class CORE_EXPORT HTMLPlugInElement
 
   // HTMLFrameOwnerElement overrides:
   void DisconnectContentFrame() override;
-  void IntrinsicDimensionsChanged() final;
+  void IntrinsicSizingInfoChanged() final;
 
   // Return any existing LayoutEmbeddedContent without triggering relayout, or 0
   // if it doesn't yet exist.

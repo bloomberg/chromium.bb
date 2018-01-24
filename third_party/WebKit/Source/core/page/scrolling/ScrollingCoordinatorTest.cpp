@@ -747,7 +747,8 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
       ToLayoutEmbeddedContent(layout_object);
   ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
+  LocalFrameView* inner_frame_view =
+      ToLocalFrameView(layout_embedded_content->ChildFrameView());
   ASSERT_TRUE(inner_frame_view);
 
   auto* inner_layout_view = inner_frame_view->GetLayoutView();
@@ -800,7 +801,8 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
       ToLayoutEmbeddedContent(layout_object);
   ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
+  LocalFrameView* inner_frame_view =
+      ToLocalFrameView(layout_embedded_content->ChildFrameView());
   ASSERT_TRUE(inner_frame_view);
 
   auto* inner_layout_view = inner_frame_view->GetLayoutView();
@@ -979,7 +981,8 @@ TEST_P(ScrollingCoordinatorTest,
       ToLayoutEmbeddedContent(layout_object);
   ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
+  LocalFrameView* inner_frame_view =
+      ToLocalFrameView(layout_embedded_content->ChildFrameView());
   ASSERT_TRUE(inner_frame_view);
 
   auto* inner_layout_view = inner_frame_view->GetLayoutView();

@@ -101,6 +101,9 @@ bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
   if (!frame || !frame->GetDocument()->IsSVGDocument())
     return false;
 
+  if (frame->Owner() && frame->Owner()->IsRemote())
+    return true;
+
   // If our frame has an owner layoutObject, we're embedded through eg.
   // object/embed/iframe, but we only negotiate if we're in an SVG document
   // inside a embedded object (object/embed).
@@ -272,14 +275,15 @@ bool LayoutSVGRoot::StyleChangeAffectsIntrinsicSize(
   return false;
 }
 
-void LayoutSVGRoot::IntrinsicDimensionsChanged() const {
+void LayoutSVGRoot::IntrinsicSizingInfoChanged() const {
   // TODO(fs): Merge with IntrinsicSizeChanged()? (from LayoutReplaced)
   // Ignore changes to intrinsic dimensions if the <svg> is not in an SVG
   // document, or not embedded in a way that supports/allows size negotiation.
   if (!IsEmbeddedThroughFrameContainingSVGDocument())
     return;
-  if (FrameOwner* frame_owner = GetFrame()->Owner())
-    frame_owner->IntrinsicDimensionsChanged();
+  IntrinsicSizingInfo sizing_info;
+  ComputeIntrinsicSizingInfo(sizing_info);
+  GetFrame()->IntrinsicSizingInfoChanged(sizing_info);
 }
 
 void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
@@ -295,7 +299,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
   // able to determine our intrinsic dimensions, so in that case always
   // initiate a size negotiation.
   if (!old_style || StyleChangeAffectsIntrinsicSize(*old_style))
-    IntrinsicDimensionsChanged();
+    IntrinsicSizingInfoChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
   SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());

@@ -27,17 +27,7 @@
 
 namespace blink {
 
-struct IntrinsicSizingInfo {
-  STACK_ALLOCATED();
-  IntrinsicSizingInfo() : has_width(true), has_height(true) {}
-
-  FloatSize size;
-  FloatSize aspect_ratio;
-  bool has_width;
-  bool has_height;
-
-  void Transpose();
-};
+struct IntrinsicSizingInfo;
 
 // LayoutReplaced is the base class for a replaced element as defined by CSS:
 //

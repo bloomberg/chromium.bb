@@ -480,10 +480,9 @@ class PaintPropertyTreeGraphBuilder {
          child = child->NextSibling())
       WriteLayoutObjectNode(*child);
     if (object.IsLayoutEmbeddedContent()) {
-      LocalFrameView* frame_view =
-          ToLayoutEmbeddedContent(object).ChildFrameView();
-      if (frame_view)
-        WriteFrameViewNode(*frame_view, &object);
+      FrameView* frame_view = ToLayoutEmbeddedContent(object).ChildFrameView();
+      if (frame_view && frame_view->IsLocalFrameView())
+        WriteFrameViewNode(*ToLocalFrameView(frame_view), &object);
     }
   }
 

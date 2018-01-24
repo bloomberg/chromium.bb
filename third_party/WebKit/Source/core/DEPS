@@ -41,5 +41,9 @@ specific_include_rules = {
     ".*Test\.cpp" : [
         "+core/frame/WebLocalFrameImpl.h",
         "+core/frame/WebRemoteFrameImpl.h",
+    ],
+    # Allow LocalFrame.cpp to use WebLocalFrameImpl.h
+    "LocalFrame.cpp" : [
+        "+core/frame/WebLocalFrameImpl.h",
     ]
 }

@@ -227,6 +227,7 @@ source_set("blink_headers") {
     "platform/WebInputEvent.h",
     "platform/WebInputEventResult.h",
     "platform/WebInsecureRequestPolicy.h",
+    "platform/WebIntrinsicSizingInfo.h",
     "platform/WebIsolatedWorldIds.h",
     "platform/WebKeyboardEvent.h",
     "platform/WebLayer.h",

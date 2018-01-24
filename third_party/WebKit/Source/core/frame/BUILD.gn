@@ -59,6 +59,7 @@ blink_core_sources("frame") {
     "Intervention.cpp",
     "Intervention.h",
     "InterventionReport.h",
+    "IntrinsicSizingInfo.h",
     "LayoutSubtreeRootList.cpp",
     "LayoutSubtreeRootList.h",
     "LocalDOMWindow.cpp",

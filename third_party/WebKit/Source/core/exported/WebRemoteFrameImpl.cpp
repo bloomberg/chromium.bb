@@ -28,6 +28,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebIntrinsicSizingInfo.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollIntoViewParams.h"
 #include "public/web/WebDocument.h"
@@ -359,6 +360,24 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   owner_object->EnclosingBox()->ScrollRectToVisibleRecursive(
       LayoutRect(new_rect_to_scroll), params);
   scroll_sequencer->RunQueuedAnimations();
+}
+
+void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(
+    const WebIntrinsicSizingInfo& web_sizing_info) {
+  FrameOwner* owner = GetFrame()->Owner();
+  // Only communication from HTMLPluginElement-owned subframes is allowed
+  // at present. This includes <embed> and <object> tags.
+  if (!owner || !owner->IsPlugin())
+    return;
+
+  IntrinsicSizingInfo sizing_info;
+  sizing_info.size = web_sizing_info.size;
+  sizing_info.aspect_ratio = web_sizing_info.aspect_ratio;
+  sizing_info.has_width = web_sizing_info.has_width;
+  sizing_info.has_height = web_sizing_info.has_height;
+  frame_->View()->SetIntrinsicSizeInfo(sizing_info);
+
+  owner->IntrinsicSizingInfoChanged();
 }
 
 void WebRemoteFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {

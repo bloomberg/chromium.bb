@@ -251,17 +251,18 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
   if (object.IsLayoutEmbeddedContent()) {
     const LayoutEmbeddedContent& layout_embedded_content =
         ToLayoutEmbeddedContent(object);
-    LocalFrameView* frame_view = layout_embedded_content.ChildFrameView();
-    if (frame_view) {
+    FrameView* frame_view = layout_embedded_content.ChildFrameView();
+    if (frame_view && frame_view->IsLocalFrameView()) {
+      LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
       if (context.tree_builder_context) {
         context.tree_builder_context->fragments[0].current.paint_offset +=
             layout_embedded_content.ReplacedContentRect().Location() -
-            frame_view->FrameRect().Location();
+            local_frame_view->FrameRect().Location();
         context.tree_builder_context->fragments[0].current.paint_offset =
             RoundedIntPoint(context.tree_builder_context->fragments[0]
                                 .current.paint_offset);
       }
-      Walk(*frame_view, context);
+      Walk(*local_frame_view, context);
     }
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }

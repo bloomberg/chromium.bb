@@ -110,6 +110,13 @@ void CrossProcessFrameConnector::SetChildFrameSurface(
       frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
 }
 
+void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
+    const blink::WebIntrinsicSizingInfo& sizing_info) {
+  frame_proxy_in_parent_renderer_->Send(
+      new FrameMsg_IntrinsicSizingInfoOfChildChanged(
+          frame_proxy_in_parent_renderer_->GetRoutingID(), sizing_info));
+}
+
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   // UpdateCursor messages are ignored if the root view does not support

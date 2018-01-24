@@ -52,7 +52,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   // with the current Node, if Node is HTMLFrameOwnerElement. This is different
   // to LayoutObject::GetFrameView which returns the LocalFrameView associated
   // with the root Document Frame.
-  LocalFrameView* ChildFrameView() const;
+  FrameView* ChildFrameView() const;
   WebPluginContainerImpl* Plugin() const;
   EmbeddedContentView* GetEmbeddedContentView() const;
 

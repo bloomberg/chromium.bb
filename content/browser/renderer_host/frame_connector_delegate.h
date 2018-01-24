@@ -18,6 +18,7 @@
 
 namespace blink {
 class WebGestureEvent;
+struct WebIntrinsicSizingInfo;
 }
 
 namespace viz {
@@ -64,6 +65,11 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // current view's Surface that is included in higher-level compositor
   // frames.
   virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info) {}
+
+  // Sends the given intrinsic sizing information from a sub-frame to
+  // its corresponding remote frame in the parent frame's renderer.
+  virtual void SendIntrinsicSizingInfoToParent(
+      const blink::WebIntrinsicSizingInfo&) {}
 
   // Return the rect in DIP that the RenderWidgetHostViewChildFrame's content
   // will render into.

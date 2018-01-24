@@ -159,6 +159,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   SpellChecker& GetSpellChecker() const;
   FrameConsole& Console() const;
 
+  void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&);
+
   // This method is used to get the highest level LocalFrame in this
   // frame's in-process subtree.
   // FIXME: This is a temporary hack to support RemoteFrames, and callers

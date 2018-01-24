@@ -533,6 +533,16 @@ void WebFrameWidgetImpl::ScheduleAnimation() {
   client_->ScheduleAnimation();
 }
 
+void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
+    const IntrinsicSizingInfo& sizing_info) {
+  WebIntrinsicSizingInfo web_sizing_info;
+  web_sizing_info.size = sizing_info.size;
+  web_sizing_info.aspect_ratio = sizing_info.aspect_ratio;
+  web_sizing_info.has_width = sizing_info.has_width;
+  web_sizing_info.has_height = sizing_info.has_height;
+  client_->IntrinsicSizingInfoChanged(web_sizing_info);
+}
+
 CompositorMutatorImpl& WebFrameWidgetImpl::Mutator() {
   return *CompositorMutator();
 }
