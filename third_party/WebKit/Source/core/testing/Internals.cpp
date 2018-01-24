@@ -1393,13 +1393,13 @@ void Internals::setAutofilledValue(Element* element,
 
   if (auto* input = ToHTMLInputElementOrNull(*element)) {
     input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
-    input->setValue(value, kDispatchInputAndChangeEvent);
+    input->SetAutofillValue(value);
     input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
   }
 
   if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
     textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
-    textarea->setValue(value, kDispatchInputAndChangeEvent);
+    textarea->SetAutofillValue(value);
     textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
   }
 

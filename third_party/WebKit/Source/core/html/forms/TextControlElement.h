@@ -138,6 +138,10 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   String DirectionForFormData() const;
 
+  // Set the value trimmed to the max length of the field and dispatch the input
+  // and change events.
+  void SetAutofillValue(const String& value);
+
   virtual void SetSuggestedValue(const String& value);
   const String& SuggestedValue() const;
 

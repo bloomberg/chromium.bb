@@ -944,9 +944,15 @@ String TextControlElement::DirectionForFormData() const {
   return "ltr";
 }
 
+void TextControlElement::SetAutofillValue(const String& value) {
+  // Set the value trimmed to the max length of the field and dispatch the input
+  // and change events.
+  setValue(value.Substring(0, maxLength()), kDispatchInputAndChangeEvent);
+}
+
 // TODO(crbug.com/772433): Create and use a new suggested-value element instead.
 void TextControlElement::SetSuggestedValue(const String& value) {
-  suggested_value_ = value;
+  suggested_value_ = value.Substring(0, maxLength());
   if (!suggested_value_.IsEmpty() && !InnerEditorValue().IsEmpty()) {
     // If there is an inner editor value, hide it so the suggested value can be
     // shown to the user.
