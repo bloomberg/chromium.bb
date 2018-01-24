@@ -71,7 +71,7 @@ from idl_types import IdlSequenceType
 from idl_types import IdlType
 from idl_types import IdlUnionType
 
-SPECIAL_KEYWORD_LIST = ['LEGACYCALLER', 'GETTER', 'SETTER', 'DELETER']
+SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 
 
 ################################################################################

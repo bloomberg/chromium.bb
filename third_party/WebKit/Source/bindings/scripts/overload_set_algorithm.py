@@ -32,7 +32,7 @@ def effective_overload_set(F):  # pylint: disable=invalid-name
     Formally:
     An effective overload set represents the allowable invocations for a
     particular operation, constructor (specified with [Constructor] or
-    [NamedConstructor]), legacy caller or callback function.
+    [NamedConstructor]), or callback function.
 
     An additional argument N (argument count) is needed when overloading
     variadics, but we don't use that currently.
