@@ -95,6 +95,8 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;
 
   // View:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnFocus() override;
