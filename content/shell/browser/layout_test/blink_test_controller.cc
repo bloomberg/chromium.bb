@@ -775,7 +775,8 @@ void BlinkTestController::OnTestFinished() {
   test_phase_ = CLEAN_UP;
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
-  main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
+  if (main_window_)
+    main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
   devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
 
@@ -925,6 +926,13 @@ void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
   DCHECK_LE(0, pending_layout_dumps_);
   if (pending_layout_dumps_ > 0)
     return;
+
+  // If the main test window was destroyed while waiting for the responses, then
+  // there is nobody to receive the |stitched_layout_dump| and finish the test.
+  if (!web_contents()) {
+    OnTestFinished();
+    return;
+  }
 
   // Stitch the frame-specific results in the right order.
   std::string stitched_layout_dump;
