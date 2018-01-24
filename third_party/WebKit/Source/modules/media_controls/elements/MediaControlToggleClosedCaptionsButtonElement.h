@@ -5,6 +5,7 @@
 #ifndef MediaControlToggleClosedCaptionsButtonElement_h
 #define MediaControlToggleClosedCaptionsButtonElement_h
 
+#include "modules/ModulesExport.h"
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
@@ -12,7 +13,7 @@ namespace blink {
 class Event;
 class MediaControlsImpl;
 
-class MediaControlToggleClosedCaptionsButtonElement final
+class MODULES_EXPORT MediaControlToggleClosedCaptionsButtonElement final
     : public MediaControlInputElement {
  public:
   explicit MediaControlToggleClosedCaptionsButtonElement(MediaControlsImpl&);
@@ -22,6 +23,7 @@ class MediaControlToggleClosedCaptionsButtonElement final
   void UpdateDisplayType() override;
   WebLocalizedString::Name GetOverflowStringName() const override;
   bool HasOverflowButton() const override;
+  String GetOverflowMenuSubtitleString() const override;
 
  protected:
   const char* GetNameForHistograms() const override;
