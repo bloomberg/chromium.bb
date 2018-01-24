@@ -150,11 +150,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
         base::BindOnce(
             &BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout,
             this));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO,
-            this));
+    EstablishOnIO();
     return;
   }
 
