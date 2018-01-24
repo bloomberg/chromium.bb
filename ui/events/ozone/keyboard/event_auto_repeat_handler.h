@@ -36,6 +36,7 @@ class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
                        bool down,
                        bool suppress_auto_repeat,
                        int device_id);
+  void StopKeyRepeat();
 
   // Configuration for key repeat.
   bool IsAutoRepeatEnabled();
@@ -46,7 +47,6 @@ class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
 
  private:
   void StartKeyRepeat(unsigned int key, int device_id);
-  void StopKeyRepeat();
   void ScheduleKeyRepeat(const base::TimeDelta& delay);
   void OnRepeatTimeout(unsigned int sequence);
   void OnRepeatCommit(unsigned int sequence);

@@ -37,6 +37,10 @@ void delete_seat(wl_seat* seat) {
 const wl_interface* ObjectTraits<wl_buffer>::interface = &wl_buffer_interface;
 void (*ObjectTraits<wl_buffer>::deleter)(wl_buffer*) = &wl_buffer_destroy;
 
+const wl_interface* ObjectTraits<wl_callback>::interface =
+    &wl_callback_interface;
+void (*ObjectTraits<wl_callback>::deleter)(wl_callback*) = &wl_callback_destroy;
+
 const wl_interface* ObjectTraits<wl_compositor>::interface =
     &wl_compositor_interface;
 void (*ObjectTraits<wl_compositor>::deleter)(wl_compositor*) =
