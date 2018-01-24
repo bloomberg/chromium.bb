@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_TEST_MEDIA_ROUTER_TEST_MEDIA_SINKS_OBSERVER_H_
+#define CHROME_TEST_MEDIA_ROUTER_TEST_MEDIA_SINKS_OBSERVER_H_
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/media/router/media_sinks_observer.h"
-
-#ifndef CHROME_TEST_MEDIA_ROUTER_TEST_MEDIA_SINKS_OBSERVER_H_
-#define CHROME_TEST_MEDIA_ROUTER_TEST_MEDIA_SINKS_OBSERVER_H_
 
 namespace media_router {
 
