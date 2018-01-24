@@ -327,18 +327,6 @@
     },
   },
 
-  'chromedriver_py_tests_isolated_scripts': {
-    'chromedriver_py_tests': {
-      "args": [
-        # TODO(johnchen@chromium.org): As the initial step of adding
-        # ChromeDriver tests to commit queue, the following filter is used to
-        # enable a single test case as a smoke test. Many more test cases will
-        # be enabled in the future.
-        "--filter=__main__.ChromeDriverTest.testLoadUrl",
-      ],
-    },
-  },
-
   'chromium_android_asan_gtests': {
     # TODO(kbr): reduce duplication among these tests, and with other
     # test suites.
@@ -757,6 +745,15 @@
   },
 
   'desktop_chromium_isolated_scripts': {
+    'chromedriver_py_tests': {
+      "args": [
+        # TODO(johnchen@chromium.org): As the initial step of adding
+        # ChromeDriver tests to commit queue, the following filter is used to
+        # enable a single test case as a smoke test. Many more test cases will
+        # be enabled in the future.
+        "--filter=__main__.ChromeDriverTest.testLoadUrl",
+      ],
+    },
     'content_shell_crash_test': {},
     'metrics_python_tests': {},
     'telemetry_gpu_unittests': {},
@@ -1952,7 +1949,6 @@
   ],
 
   'chromium_linux_isolated_scripts': [
-    'chromedriver_py_tests_isolated_scripts',
     'desktop_chromium_isolated_scripts',
     'linux_specific_chromium_isolated_scripts',
     'telemetry_perf_unittests_isolated_scripts',
