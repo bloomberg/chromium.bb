@@ -776,6 +776,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public void insertVisualStateCallback(
             final long requestId, final VisualStateCallback callback) {
         if (checkNeedsPost()) {
