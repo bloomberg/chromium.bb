@@ -145,16 +145,14 @@ NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
 // parsing window features.
 static bool IsWindowFeaturesSeparator(UChar c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' ||
-         c == ',' || c == '\0';
+         c == ',' || c == '\f';
 }
 
 WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   WebWindowFeatures window_features;
 
-  // The IE rule is: all features except for channelmode default
-  // to YES, but if the user specifies a feature string, all features default to
-  // NO. (There is no public standard that applies to this method.)
-  // <http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/open_0.asp>
+  // This code follows the HTML spec, specifically
+  // https://html.spec.whatwg.org/#concept-window-open-features-tokenize
   if (feature_string.IsEmpty())
     return window_features;
 
@@ -163,55 +161,66 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   window_features.tool_bar_visible = false;
   window_features.scrollbars_visible = false;
 
-  // Tread lightly in this code -- it was specifically designed to mimic Win
-  // IE's parsing behavior.
   unsigned key_begin, key_end;
   unsigned value_begin, value_end;
 
   String buffer = feature_string.DeprecatedLower();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length;) {
-    // skip to first non-separator, but don't skip past the end of the string
+    // skip to first non-separator (start of key name), but don't skip
+    // past the end of the string
     while (i < length && IsWindowFeaturesSeparator(buffer[i]))
       i++;
     key_begin = i;
 
-    // skip to first separator
+    // skip to first separator (end of key name), but don't skip past
+    // the end of the string
     while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
       i++;
     key_end = i;
 
     SECURITY_DCHECK(i <= length);
 
-    // skip to first '=', but don't skip past a ',' or the end of the string
+    // skip separators past the key name, except '=', and don't skip past
+    // the end of the string
     while (i < length && buffer[i] != '=') {
-      if (buffer[i] == ',')
+      if (buffer[i] == ',' || !IsWindowFeaturesSeparator(buffer[i]))
         break;
+
       i++;
     }
 
-    SECURITY_DCHECK(i <= length);
+    if (i < length && IsWindowFeaturesSeparator(buffer[i])) {
+      // skip to first non-separator (start of value), but don't skip
+      // past a ',' or the end of the string.
+      while (i < length && IsWindowFeaturesSeparator(buffer[i])) {
+        if (buffer[i] == ',')
+          break;
 
-    // Skip to first non-separator, but don't skip past a ',' or the end of the
-    // string.
-    while (i < length && IsWindowFeaturesSeparator(buffer[i])) {
-      if (buffer[i] == ',')
-        break;
-      i++;
+        i++;
+      }
+
+      value_begin = i;
+
+      SECURITY_DCHECK(i <= length);
+
+      // skip to first separator (end of value)
+      while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
+        i++;
+
+      value_end = i;
+
+      SECURITY_DCHECK(i <= length);
+    } else {
+      // No value given.
+      value_begin = i;
+      value_end = i;
     }
-    value_begin = i;
 
-    SECURITY_DCHECK(i <= length);
-
-    // skip to first separator
-    while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
-      i++;
-    value_end = i;
-
-    SECURITY_DCHECK(i <= length);
-
-    String key_string(buffer.Substring(key_begin, key_end - key_begin));
-    String value_string(buffer.Substring(value_begin, value_end - value_begin));
+    String key_string(
+        buffer.Substring(key_begin, key_end - key_begin).LowerASCII());
+    String value_string(
+        buffer.Substring(value_begin, value_end - value_begin).LowerASCII());
 
     // Listing a key with no value is shorthand for key=yes
     int value;
@@ -219,6 +228,9 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
       value = 1;
     else
       value = value_string.ToInt();
+
+    if (key_string.IsEmpty())
+      continue;
 
     if (key_string == "left" || key_string == "screenx") {
       window_features.x_set = true;
