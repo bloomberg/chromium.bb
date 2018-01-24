@@ -149,7 +149,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS) && (defined(CHROME_MULTIPLE_DLL_CHILD) || \
     !defined(CHROME_MULTIPLE_DLL_BROWSER))
-#include "pdf/pdf_ppapi.h"
+#include "pdf/pdf.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)

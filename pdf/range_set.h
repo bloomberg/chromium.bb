@@ -11,12 +11,11 @@
 #include <set>
 #include <string>
 
-#include "pdf/pdf_export.h"
 #include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
 
-class PDF_EXPORT RangeSet {
+class RangeSet {
  public:
   RangeSet();
   explicit RangeSet(const gfx::Range& range);
@@ -72,7 +71,7 @@ class PDF_EXPORT RangeSet {
 
 }  // namespace chrome_pdf
 
-PDF_EXPORT std::ostream& operator<<(std::ostream& os,
-                                    const chrome_pdf::RangeSet& range_set);
+std::ostream& operator<<(std::ostream& os,
+                         const chrome_pdf::RangeSet& range_set);
 
 #endif  // PDF_RANGE_SET_H_
