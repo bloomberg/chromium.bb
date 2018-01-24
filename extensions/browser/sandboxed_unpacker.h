@@ -19,6 +19,7 @@
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
 #include "services/service_manager/public/cpp/identity.h"
 
@@ -177,8 +178,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
     ERROR_SAVING_MANIFEST_JSON,
 
     // SandboxedUnpacker::RewriteImageFiles()
-    COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
-    DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
+    COULD_NOT_READ_IMAGE_DATA_FROM_DISK_UNUSED,
+    DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST_UNUSED,
     INVALID_PATH_FOR_BROWSER_IMAGE,
     ERROR_REMOVING_OLD_IMAGE_FILE,
     INVALID_PATH_FOR_BITMAP_IMAGE,
@@ -187,9 +188,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
     DEPRECATED_ABORTED_DUE_TO_SHUTDOWN,  // No longer used; kept for UMA.
 
     // SandboxedUnpacker::RewriteCatalogFiles()
-    COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
+    COULD_NOT_READ_CATALOG_DATA_FROM_DISK_UNUSED,
     INVALID_CATALOG_DATA,
-    INVALID_PATH_FOR_CATALOG,
+    INVALID_PATH_FOR_CATALOG_UNUSED,
     ERROR_SERIALIZING_CATALOG,
     ERROR_SAVING_CATALOG,
 
@@ -251,6 +252,19 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                              const base::FilePath& path);
   void ImageSanitizerDecodedImage(const base::FilePath& path, SkBitmap image);
 
+  void ReadMessageCatalogs(std::unique_ptr<base::DictionaryValue> manifest,
+                           std::unique_ptr<base::ListValue> json_ruleset);
+
+  void SanitizeMessageCatalogs(
+      std::unique_ptr<base::DictionaryValue> manifest,
+      std::unique_ptr<base::ListValue> json_ruleset,
+      const std::set<base::FilePath>& message_catalog_paths);
+
+  void MessageCatalogsSanitized(std::unique_ptr<base::DictionaryValue> manifest,
+                                std::unique_ptr<base::ListValue> json_ruleset,
+                                JsonFileSanitizer::Status status,
+                                const std::string& error_msg);
+
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
                      const base::Optional<int>& dnr_ruleset_checksum);
@@ -260,10 +274,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Returns NULL on error. Caller owns the returned object.
   base::DictionaryValue* RewriteManifestFile(
       const base::DictionaryValue& manifest);
-
-  // Overwrites original files with safe results from utility process.
-  // Reports error and returns false if it fails.
-  bool RewriteCatalogFiles();
 
   // Cleans up temp directory artifacts.
   void Cleanup();
@@ -337,6 +347,10 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // The ImageSanitizer used to clean-up images.
   std::unique_ptr<ImageSanitizer> image_sanitizer_;
+
+  // Used during the message catalog rewriting phase to sanitize the extension
+  // provided message catalogs.
+  std::unique_ptr<JsonFileSanitizer> json_file_sanitizer_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedUnpacker);
 };

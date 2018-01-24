@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,6 +24,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/test_extensions_client.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
@@ -249,6 +251,18 @@ TEST_F(SandboxedUnpackerTest, FailHashCheck) {
   SetupUnpacker("good_l10n.crx", std::string(64, '0'));
   // Check that there is an error message.
   EXPECT_NE(base::string16(), GetInstallError());
+}
+
+TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
+  SetupUnpackerWithDirectory("invalid_messages_file.crx");
+  // Check that there is no _locales folder.
+  base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
+  EXPECT_FALSE(base::PathExists(install_path));
+  EXPECT_TRUE(base::MatchPattern(
+      GetInstallError(),
+      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 2, column: 10,"
+                         " Syntax error.'.")))
+      << GetInstallError();
 }
 
 TEST_F(SandboxedUnpackerTest, PassHashCheck) {

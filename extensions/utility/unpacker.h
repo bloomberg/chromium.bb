@@ -52,7 +52,6 @@ class Unpacker {
 
   const base::string16& error_message() { return error_message_; }
   base::DictionaryValue* parsed_manifest() { return parsed_manifest_.get(); }
-  base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
   std::unique_ptr<base::DictionaryValue> TakeParsedManifest() {
     return std::move(parsed_manifest_);
@@ -109,10 +108,6 @@ class Unpacker {
   // The parsed version of the Declarative Net Request API ruleset. Null if the
   // extension did not provide one.
   std::unique_ptr<base::ListValue> parsed_json_ruleset_;
-
-  // Dictionary of relative paths and catalogs per path. Paths are in the form
-  // of _locales/locale, without messages.json base part.
-  std::unique_ptr<base::DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
   base::string16 error_message_;

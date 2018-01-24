@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_string_value_serializer.h"
@@ -27,6 +28,7 @@
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -39,6 +41,7 @@
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -185,20 +188,23 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
   return false;
 }
 
-// Read the decoded message catalogs back from the file we saved them to.
-// |extension_path| is the path to the extension we unpacked that wrote the
-// data. Returns true on success.
-bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
-                                 base::DictionaryValue* catalogs) {
-  base::FilePath path =
-      extension_path.AppendASCII(kDecodedMessageCatalogsFilename);
-  std::string file_str;
-  if (!base::ReadFileToString(path, &file_str))
-    return false;
+std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
+    const base::FilePath& locales_path) {
+  // Not all folders under _locales have to be valid locales.
+  base::FileEnumerator locales(locales_path, /*recursive=*/false,
+                               base::FileEnumerator::DIRECTORIES);
 
-  IPC::Message pickle(file_str.data(), file_str.size());
-  base::PickleIterator iter(pickle);
-  return IPC::ReadParam(&pickle, &iter, catalogs);
+  std::set<base::FilePath> message_catalog_paths;
+  std::set<std::string> all_locales;
+  extension_l10n_util::GetAllLocales(&all_locales);
+  base::FilePath locale_path;
+  while (!(locale_path = locales.Next()).empty()) {
+    if (!extension_l10n_util::ShouldSkipValidation(locales_path, locale_path,
+                                                   all_locales)) {
+      message_catalog_paths.insert(locale_path.Append(kMessagesFilename));
+    }
+  }
+  return message_catalog_paths;
 }
 
 }  // namespace
@@ -236,7 +242,7 @@ SandboxedUnpacker::SandboxedUnpacker(
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
-  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   base::FilePath temp_dir;
   if (!FindWritableTempLocation(extensions_dir_, &temp_dir)) {
@@ -261,7 +267,7 @@ bool SandboxedUnpacker::CreateTempDirectory() {
 void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // We assume that we are started on the thread that the client wants us
   // to do file IO on.
-  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   crx_unpack_start_time_ = base::TimeTicks::Now();
   std::string expected_hash;
@@ -354,6 +360,18 @@ SandboxedUnpacker::~SandboxedUnpacker() {
   // This is OK because ExtensionGarbageCollector will take care of the leaked
   // |temp_dir_| eventually.
   temp_dir_.Take();
+
+  // Make sure that members get deleted on the thread they were created.
+  if (image_sanitizer_) {
+    unpacker_io_task_runner_->DeleteSoon(FROM_HERE,
+                                         std::move(image_sanitizer_));
+  }
+  if (json_file_sanitizer_) {
+    unpacker_io_task_runner_->DeleteSoon(FROM_HERE,
+                                         std::move(json_file_sanitizer_));
+  }
+  if (connector_)
+    unpacker_io_task_runner_->DeleteSoon(FROM_HERE, std::move(connector_));
 }
 
 void SandboxedUnpacker::StartUtilityProcessIfNeeded() {
@@ -461,7 +479,7 @@ void SandboxedUnpacker::UnpackDone(
 void SandboxedUnpacker::UnpackExtensionSucceeded(
     std::unique_ptr<base::DictionaryValue> manifest,
     std::unique_ptr<base::ListValue> json_ruleset) {
-  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   std::unique_ptr<base::DictionaryValue> final_manifest(
       RewriteManifestFile(*manifest));
@@ -515,6 +533,7 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
     return;
   }
 
+  DCHECK(!image_sanitizer_);
   std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
   image_sanitizer_ = ImageSanitizer::CreateAndStart(
@@ -522,6 +541,12 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
       base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
       base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this,
                      std::move(manifest), std::move(json_ruleset)));
+}
+
+void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
+                                                   SkBitmap image) {
+  if (path == install_icon_path_)
+    install_icon_ = image;
 }
 
 void SandboxedUnpacker::ImageSanitizationDone(
@@ -536,17 +561,8 @@ void SandboxedUnpacker::ImageSanitizationDone(
   image_sanitizer_ = nullptr;
 
   if (status == ImageSanitizer::Status::kSuccess) {
-    if (!RewriteCatalogFiles())
-      return;
-
-    // Index and persist ruleset for the Declarative Net Request API.
-    base::Optional<int> dnr_ruleset_checksum;
-    if (!IndexAndPersistRulesIfNeeded(std::move(json_ruleset),
-                                      &dnr_ruleset_checksum)) {
-      return;  // Failure was already reported.
-    }
-
-    ReportSuccess(std::move(manifest), dnr_ruleset_checksum);
+    // Next step is to sanitize the message catalogs.
+    ReadMessageCatalogs(std::move(manifest), std::move(json_ruleset));
     return;
   }
 
@@ -592,10 +608,82 @@ void SandboxedUnpacker::ImageSanitizationDone(
   ReportFailure(failure_reason, error);
 }
 
-void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
-                                                   SkBitmap image) {
-  if (path == install_icon_path_)
-    install_icon_ = image;
+void SandboxedUnpacker::ReadMessageCatalogs(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    std::unique_ptr<base::ListValue> json_ruleset) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  if (LocaleInfo::GetDefaultLocale(extension_.get()).empty()) {
+    MessageCatalogsSanitized(std::move(manifest), std::move(json_ruleset),
+                             JsonFileSanitizer::Status::kSuccess,
+                             std::string());
+    return;
+  }
+
+  // Get the paths to the message catalogs we should sanitize on the file task
+  // runner.
+  base::FilePath locales_path = extension_root_.Append(kLocaleFolder);
+
+  base::PostTaskAndReplyWithResult(
+      extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&GetMessageCatalogPathsToBeSanitized, locales_path),
+      base::BindOnce(&SandboxedUnpacker::SanitizeMessageCatalogs, this,
+                     std::move(manifest), std::move(json_ruleset)));
+}
+
+void SandboxedUnpacker::SanitizeMessageCatalogs(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    std::unique_ptr<base::ListValue> json_ruleset,
+    const std::set<base::FilePath>& message_catalog_paths) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  json_file_sanitizer_ = JsonFileSanitizer::CreateAndStart(
+      connector_.get(), data_decoder_identity_, message_catalog_paths,
+      base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this,
+                     std::move(manifest), std::move(json_ruleset)));
+}
+
+void SandboxedUnpacker::MessageCatalogsSanitized(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    std::unique_ptr<base::ListValue> json_ruleset,
+    JsonFileSanitizer::Status status,
+    const std::string& error_msg) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  if (status == JsonFileSanitizer::Status::kSuccess) {
+    // Index and persist ruleset for the Declarative Net Request API.
+    base::Optional<int> dnr_ruleset_checksum;
+    if (!IndexAndPersistRulesIfNeeded(std::move(json_ruleset),
+                                      &dnr_ruleset_checksum)) {
+      return;  // Failure was already reported.
+    }
+
+    ReportSuccess(std::move(manifest), dnr_ruleset_checksum);
+    return;
+  }
+
+  FailureReason failure_reason = UNPACKER_CLIENT_FAILED;
+  base::string16 error;
+  switch (status) {
+    case JsonFileSanitizer::Status::kFileReadError:
+    case JsonFileSanitizer::Status::kDecodingError:
+      failure_reason = INVALID_CATALOG_DATA;
+      error = l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                                         ASCIIToUTF16("INVALID_CATALOG_DATA"));
+      break;
+    case JsonFileSanitizer::Status::kSerializingError:
+      failure_reason = ERROR_SERIALIZING_CATALOG;
+      error =
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                                     ASCIIToUTF16("ERROR_SERIALIZING_CATALOG"));
+    case JsonFileSanitizer::Status::kFileDeleteError:
+    case JsonFileSanitizer::Status::kFileWriteError:
+      failure_reason = ERROR_SAVING_CATALOG;
+      error = l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                                         ASCIIToUTF16("ERROR_SAVING_CATALOG"));
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  ReportFailure(failure_reason, error);
 }
 
 bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
@@ -645,7 +733,7 @@ bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
 }
 
 void SandboxedUnpacker::UnpackExtensionFailed(const base::string16& error) {
-  CHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
@@ -704,10 +792,6 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
     case ERROR_SAVING_MANIFEST_JSON:
       return ASCIIToUTF16("ERROR_SAVING_MANIFEST_JSON");
 
-    case COULD_NOT_READ_IMAGE_DATA_FROM_DISK:
-      return ASCIIToUTF16("COULD_NOT_READ_IMAGE_DATA_FROM_DISK");
-    case DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST:
-      return ASCIIToUTF16("DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST");
     case INVALID_PATH_FOR_BROWSER_IMAGE:
       return ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE");
     case ERROR_REMOVING_OLD_IMAGE_FILE:
@@ -719,12 +803,8 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
     case ERROR_SAVING_THEME_IMAGE:
       return ASCIIToUTF16("ERROR_SAVING_THEME_IMAGE");
 
-    case COULD_NOT_READ_CATALOG_DATA_FROM_DISK:
-      return ASCIIToUTF16("COULD_NOT_READ_CATALOG_DATA_FROM_DISK");
     case INVALID_CATALOG_DATA:
       return ASCIIToUTF16("INVALID_CATALOG_DATA");
-    case INVALID_PATH_FOR_CATALOG:
-      return ASCIIToUTF16("INVALID_PATH_FOR_CATALOG");
     case ERROR_SERIALIZING_CATALOG:
       return ASCIIToUTF16("ERROR_SERIALIZING_CATALOG");
     case ERROR_SAVING_CATALOG:
@@ -745,6 +825,7 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
 
     case DEPRECATED_ABORTED_DUE_TO_SHUTDOWN:
     case NUM_FAILURE_REASONS:
+    default:
       NOTREACHED();
       return base::string16();
   }
@@ -885,70 +966,6 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   return final_manifest.release();
 }
 
-bool SandboxedUnpacker::RewriteCatalogFiles() {
-  base::DictionaryValue catalogs;
-  if (!ReadMessageCatalogsFromFile(temp_dir_.GetPath(), &catalogs)) {
-    // Could not read catalog data from disk.
-    ReportFailure(COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
-                  l10n_util::GetStringFUTF16(
-                      IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                      ASCIIToUTF16("COULD_NOT_READ_CATALOG_DATA_FROM_DISK")));
-    return false;
-  }
-
-  // Write our parsed catalogs back to disk.
-  for (base::DictionaryValue::Iterator it(catalogs); !it.IsAtEnd();
-       it.Advance()) {
-    const base::DictionaryValue* catalog = NULL;
-    if (!it.value().GetAsDictionary(&catalog)) {
-      // Invalid catalog data.
-      ReportFailure(
-          INVALID_CATALOG_DATA,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                     ASCIIToUTF16("INVALID_CATALOG_DATA")));
-      return false;
-    }
-
-    base::FilePath relative_path = base::FilePath::FromUTF8Unsafe(it.key());
-    relative_path = relative_path.Append(kMessagesFilename);
-    if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
-      // Invalid path for catalog.
-      ReportFailure(
-          INVALID_PATH_FOR_CATALOG,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                     ASCIIToUTF16("INVALID_PATH_FOR_CATALOG")));
-      return false;
-    }
-
-    base::FilePath path = extension_root_.Append(relative_path);
-
-    std::string catalog_json;
-    JSONStringValueSerializer serializer(&catalog_json);
-    serializer.set_pretty_print(true);
-    if (!serializer.Serialize(*catalog)) {
-      // Error serializing catalog.
-      ReportFailure(ERROR_SERIALIZING_CATALOG,
-                    l10n_util::GetStringFUTF16(
-                        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                        ASCIIToUTF16("ERROR_SERIALIZING_CATALOG")));
-      return false;
-    }
-
-    // Note: we're overwriting existing files that the utility process read,
-    // so we can be sure the directory exists.
-    int size = base::checked_cast<int>(catalog_json.size());
-    if (base::WriteFile(path, catalog_json.c_str(), size) != size) {
-      // Error saving catalog.
-      ReportFailure(
-          ERROR_SAVING_CATALOG,
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                     ASCIIToUTF16("ERROR_SAVING_CATALOG")));
-      return false;
-    }
-  }
-
-  return true;
-}
 
 void SandboxedUnpacker::Cleanup() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
@@ -956,6 +973,9 @@ void SandboxedUnpacker::Cleanup() {
     LOG(WARNING) << "Can not delete temp directory at "
                  << temp_dir_.GetPath().value();
   }
+  connector_.reset();
+  image_sanitizer_.reset();
+  json_file_sanitizer_.reset();
 }
 
 }  // namespace extensions
