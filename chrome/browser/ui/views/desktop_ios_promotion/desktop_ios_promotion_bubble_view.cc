@@ -10,12 +10,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 // Returns the appropriate size for the promotion text label on the bubble.

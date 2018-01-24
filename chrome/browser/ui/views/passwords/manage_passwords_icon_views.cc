@@ -8,7 +8,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,7 +32,7 @@ void ManagePasswordsIconViews::SetState(password_manager::ui::State state) {
   if (state_ == state)
     return;
   // If there is an opened bubble for the current icon it should go away.
-  ManagePasswordsBubbleView::CloseCurrentBubble();
+  ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble();
   state_ = state;
   UpdateUiForState();
 }
@@ -50,7 +50,7 @@ void ManagePasswordsIconViews::UpdateUiForState() {
 
   SetVisible(true);
 
-  // We may be about to automatically pop up a ManagePasswordsBubbleView.
+  // We may be about to automatically pop up a passwords bubble.
   // Force layout of the icon's parent now; the bubble will be incorrectly
   // positioned otherwise, as the icon won't have been drawn into position.
   parent()->Layout();
@@ -61,7 +61,7 @@ void ManagePasswordsIconViews::OnExecuting(
 
 bool ManagePasswordsIconViews::OnMousePressed(const ui::MouseEvent& event) {
   bool result = BubbleIconView::OnMousePressed(event);
-  ManagePasswordsBubbleView::CloseCurrentBubble();
+  ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble();
   return result;
 }
 
@@ -80,7 +80,7 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
-  return ManagePasswordsBubbleView::manage_password_bubble();
+  return ManagePasswordsBubbleDelegateViewBase::manage_password_bubble();
 }
 
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
@@ -90,5 +90,5 @@ const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
 void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
   if (IsBubbleShowing())
-    ManagePasswordsBubbleView::ActivateBubble();
+    ManagePasswordsBubbleDelegateViewBase::ActivateBubble();
 }
