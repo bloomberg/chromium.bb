@@ -4660,7 +4660,13 @@ void GLES2Implementation::DeleteTexturesHelper(
   }
   for (GLsizei ii = 0; ii < n; ++ii) {
     share_group_->discardable_texture_manager()->FreeTexture(textures[ii]);
+  }
+  UnbindTexturesHelper(n, textures);
+}
 
+void GLES2Implementation::UnbindTexturesHelper(GLsizei n,
+                                               const GLuint* textures) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
     for (GLint tt = 0; tt < capabilities_.max_combined_texture_image_units;
          ++tt) {
       TextureUnit& unit = texture_units_[tt];
@@ -7147,6 +7153,14 @@ void GLES2Implementation::UnlockDiscardableTextureCHROMIUM(GLuint texture_id) {
                "Texture ID not initialized");
     return;
   }
+
+  // |should_unbind_texture| will be set to true if the texture has been fully
+  // unlocked. In this case, ensure the texture is unbound.
+  bool should_unbind_texture = false;
+  manager->UnlockTexture(texture_id, &should_unbind_texture);
+  if (should_unbind_texture)
+    UnbindTexturesHelper(1, &texture_id);
+
   helper_->UnlockDiscardableTextureCHROMIUM(texture_id);
 }
 
