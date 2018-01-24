@@ -54,6 +54,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
  public:
   TreeScope* ParentTreeScope() const { return parent_tree_scope_; }
 
+  TreeScope* OlderShadowRootOrParentTreeScope() const;
   bool IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
       const TreeScope&) const;
 

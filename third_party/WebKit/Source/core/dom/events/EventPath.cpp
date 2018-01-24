@@ -145,8 +145,12 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
   //   - The root tree must be included.
   TreeScopeEventContext* root_tree = nullptr;
   for (const auto& tree_scope_event_context : tree_scope_event_contexts_) {
-    TreeScope* parent =
-        tree_scope_event_context.Get()->GetTreeScope().ParentTreeScope();
+    // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
+    // See the definition of trees of trees in the Shadow DOM spec:
+    // http://w3c.github.io/webcomponents/spec/shadow/
+    TreeScope* parent = tree_scope_event_context.Get()
+                            ->GetTreeScope()
+                            .OlderShadowRootOrParentTreeScope();
     if (!parent) {
       DCHECK(!root_tree);
       root_tree = tree_scope_event_context.Get();
@@ -185,7 +189,8 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
     tree_scope_event_contexts_.push_back(tree_scope_event_context);
 
     TreeScopeEventContext* parent_tree_scope_event_context =
-        EnsureTreeScopeEventContext(nullptr, tree_scope->ParentTreeScope());
+        EnsureTreeScopeEventContext(
+            nullptr, tree_scope->OlderShadowRootOrParentTreeScope());
     if (parent_tree_scope_event_context &&
         parent_tree_scope_event_context->Target()) {
       tree_scope_event_context->SetTarget(
@@ -237,7 +242,7 @@ EventTarget* EventPath::FindRelatedNode(TreeScope& scope,
   HeapVector<Member<TreeScope>, 32> parent_tree_scopes;
   EventTarget* related_node = nullptr;
   for (TreeScope* current = &scope; current;
-       current = current->ParentTreeScope()) {
+       current = current->OlderShadowRootOrParentTreeScope()) {
     parent_tree_scopes.push_back(current);
     RelatedTargetMap::const_iterator iter = related_target_map.find(current);
     if (iter != related_target_map.end() && iter->value) {
