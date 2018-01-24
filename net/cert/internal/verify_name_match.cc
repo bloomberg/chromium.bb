@@ -4,9 +4,6 @@
 
 #include "net/cert/internal/verify_name_match.h"
 
-#include <algorithm>
-#include <vector>
-
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/cert/internal/cert_error_params.h"
@@ -16,7 +13,6 @@
 #include "net/der/parser.h"
 #include "net/der/tag.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
-#include "third_party/boringssl/src/include/openssl/mem.h"
 
 namespace net {
 
@@ -337,31 +333,17 @@ bool NormalizeName(const der::Input& name_rdn_sequence,
     if (!ReadRdn(&rdn_parser, &type_and_values))
       return false;
 
-    // The AttributeTypeAndValue objects in the SET OF need to be sorted on
-    // their DER encodings. Encode each individually and save the encoded values
-    // in |encoded_attribute_type_and_values| so that it can be sorted before
-    // being added to |rdn_cbb|. |scoped_encoded_attribute_type_and_values|
-    // owns the |OPENSSL_malloc|ed memory referred to by
-    // |encoded_attribute_type_and_values|.
     CBB rdn_cbb;
     if (!CBB_add_asn1(cbb.get(), &rdn_cbb, CBS_ASN1_SET))
       return false;
-    std::vector<bssl::UniquePtr<uint8_t>>
-        scoped_encoded_attribute_type_and_values;
-    std::vector<der::Input> encoded_attribute_type_and_values;
 
     for (const auto& type_and_value : type_and_values) {
-      // A top-level CBB for encoding each individual AttributeTypeAndValue.
-      bssl::ScopedCBB type_and_value_encoder_cbb;
-      if (!CBB_init(type_and_value_encoder_cbb.get(), 0))
-        return false;
-
       // AttributeTypeAndValue ::= SEQUENCE {
       //   type     AttributeType,
       //   value    AttributeValue }
       CBB attribute_type_and_value_cbb, type_cbb, value_cbb;
-      if (!CBB_add_asn1(type_and_value_encoder_cbb.get(),
-                        &attribute_type_and_value_cbb, CBS_ASN1_SEQUENCE)) {
+      if (!CBB_add_asn1(&rdn_cbb, &attribute_type_and_value_cbb,
+                        CBS_ASN1_SEQUENCE)) {
         return false;
       }
 
@@ -392,36 +374,17 @@ bool NormalizeName(const der::Input& name_rdn_sequence,
           return false;
       }
 
-      uint8_t* bytes;
-      size_t len;
-      if (!CBB_finish(type_and_value_encoder_cbb.get(), &bytes, &len))
+      if (!CBB_flush(&rdn_cbb))
         return false;
-      scoped_encoded_attribute_type_and_values.push_back(
-          bssl::UniquePtr<uint8_t>(bytes));
-      encoded_attribute_type_and_values.push_back(der::Input(bytes, len));
     }
 
-    std::sort(encoded_attribute_type_and_values.begin(),
-              encoded_attribute_type_and_values.end());
-    for (const auto& encoded_attribute_type_and_value :
-         encoded_attribute_type_and_values) {
-      if (!CBB_add_bytes(&rdn_cbb,
-                         encoded_attribute_type_and_value.UnsafeData(),
-                         encoded_attribute_type_and_value.Length())) {
-        return false;
-      }
-    }
-
-    if (!CBB_flush(cbb.get()))
+    // Ensure the encoded AttributeTypeAndValue values in the SET OF are sorted.
+    if (!CBB_flush_asn1_set_of(&rdn_cbb) || !CBB_flush(cbb.get()))
       return false;
   }
 
-  uint8_t* der;
-  size_t der_len;
-  if (!CBB_finish(cbb.get(), &der, &der_len))
-    return false;
-  normalized_rdn_sequence->assign(der, der + der_len);
-  OPENSSL_free(der);
+  normalized_rdn_sequence->assign(CBB_data(cbb.get()),
+                                  CBB_data(cbb.get()) + CBB_len(cbb.get()));
   return true;
 }
 
