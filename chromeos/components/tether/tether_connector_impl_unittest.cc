@@ -473,6 +473,26 @@ TEST_F(TetherConnectorImplTest, TestConnectTetheringOperationFails_NoCellData) {
 }
 
 TEST_F(TetherConnectorImplTest,
+       TestConnectTetheringOperationFails_EnableHotspotFailed) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringResponse_ResponseCode::
+          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_FAILED,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED);
+}
+
+TEST_F(TetherConnectorImplTest,
+       TestConnectTetheringOperationFails_EnableHotspotTimeout) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringResponse_ResponseCode::
+          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_TIMEOUT,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT);
+}
+
+TEST_F(TetherConnectorImplTest,
        ConnectionToHostFailedNotificationRemovedWhenConnectionStarts) {
   // Start with the "connection to host failed" notification showing.
   fake_notification_presenter_->NotifyConnectionToHostFailed();

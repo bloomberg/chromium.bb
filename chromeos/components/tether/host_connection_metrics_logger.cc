@@ -68,6 +68,16 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
       RecordConnectionResultFailure(
           ConnectionToHostResult_FailureEventType::NO_CELL_DATA);
       break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::ENABLING_HOTSPOT_FAILED);
+      break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::ENABLING_HOTSPOT_TIMEOUT);
+      break;
     default:
       NOTREACHED();
   };
