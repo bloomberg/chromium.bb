@@ -89,6 +89,16 @@ if (CONFIG_AV1_ENCODER)
       "Simplified encoder loop."
       "Two-pass encoder loop.")
 
+  if (CONFIG_SCALABILITY)
+    set(AOM_DOXYGEN_EXAMPLE_SOURCES
+        ${AOM_DOXYGEN_EXAMPLE_SOURCES}
+        "${AOM_ROOT}/examples/scalable_encoder.c")
+
+    set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS
+        ${AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS}
+        "Scalable encoder loop.")
+  endif ()
+
   set(AOM_DOXYGEN_SECTIONS ${AOM_DOXYGEN_SECTIONS} "av1_encoder encoder")
 
   set(AOM_DOXYGEN_SOURCES

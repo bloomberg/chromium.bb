@@ -20,7 +20,11 @@ extern "C" {
 int file_is_obu(struct AvxInputContext *input_ctx);
 
 int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
+#if CONFIG_SCALABILITY
+                           size_t *buffer_size, int last_layer_id);
+#else
                            size_t *buffer_size);
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -20,6 +20,9 @@
 #include "aom/aom_decoder.h"
 #include "aom_dsp/bitreader_buffer.h"
 #include "aom_dsp/aom_dsp_common.h"
+#if CONFIG_OBU
+#include "aom_ports/mem_ops.h"
+#endif
 #include "aom_util/aom_thread.h"
 
 #include "av1/common/alloccommon.h"
@@ -327,10 +330,33 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
   {
 #if CONFIG_OBU
-    // Proper fix needed
     si->is_kf = 1;
     intra_only_flag = 1;
     si->h = 1;
+
+    struct aom_read_bit_buffer rb = { data + PRE_OBU_SIZE_BYTES, data + data_sz,
+                                      0, NULL, NULL };
+    mem_get_le32(data);
+    aom_rb_read_literal(&rb, 8);  // obu_header
+    av1_read_profile(&rb);        // profile
+    aom_rb_read_literal(&rb, 4);  // level
+#if CONFIG_SCALABILITY
+    int i;
+    si->enhancement_layers_cnt = aom_rb_read_literal(&rb, 2);
+    for (i = 1; i <= (int)si->enhancement_layers_cnt; i++) {
+      aom_rb_read_literal(&rb, 4);  // level for each enhancement layer
+    }
+#endif  // CONFIG_SCALABILITY
+
+#if CONFIG_FRAME_SIZE
+    int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
+    int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
+    int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
+    int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
+    si->w = max_frame_width;
+    si->h = max_frame_height;
+#endif  // CONFIG_FRAME_SIZE
+
 #else
     int show_frame;
     int error_resilient;
@@ -989,6 +1015,10 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
 
           ctx->img.fb_priv = frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
           img = &ctx->img;
+#if CONFIG_SCALABILITY
+          img->temporal_id = cm->temporal_layer_id;
+          img->enhancement_id = cm->enhancement_layer_id;
+#endif
 #if CONFIG_FILM_GRAIN
           return add_grain_if_needed(
               img, ctx->image_with_grain,
