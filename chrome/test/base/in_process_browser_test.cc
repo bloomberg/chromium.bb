@@ -461,10 +461,13 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   return browser;
 }
 
-Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
+Browser* InProcessBrowserTest::CreateIncognitoBrowser(Profile* profile) {
+  // Use active profile if default nullptr was passed.
+  if (!profile)
+    profile = browser()->profile();
   // Create a new browser with using the incognito profile.
-  Browser* incognito = new Browser(Browser::CreateParams(
-      browser()->profile()->GetOffTheRecordProfile(), true));
+  Browser* incognito = new Browser(
+      Browser::CreateParams(profile->GetOffTheRecordProfile(), true));
   AddBlankTabAndShow(incognito);
   return incognito;
 }
