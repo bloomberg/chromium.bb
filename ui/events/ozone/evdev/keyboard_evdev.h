@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/events/ozone/evdev/event_auto_repeat_handler.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/keyboard/event_auto_repeat_handler.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 
 namespace ui {
