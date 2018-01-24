@@ -4,7 +4,9 @@
 
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
@@ -119,10 +121,12 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
   if (authStatus == ChildAccountService::AuthState::PENDING)
     return content::NavigationThrottle::DEFER;
 
-#if !defined(OS_ANDROID)
-  // TODO(bauerb): Show a reauthentication dialog.
-  return content::NavigationThrottle::CANCEL_AND_IGNORE;
-#else
+#if defined(OS_CHROMEOS)
+  // A credentials re-mint is already underway when we reach here (Mirror
+  // account reconciliation). Nothing to do here except block the navigation
+  // while re-minting is underway.
+  return content::NavigationThrottle::DEFER;
+#elif defined(OS_ANDROID)
   if (!has_shown_reauth_) {
     has_shown_reauth_ = true;
 
@@ -139,6 +143,12 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
                    weak_ptr_factory_.GetWeakPtr()));
   }
   return content::NavigationThrottle::DEFER;
+#else
+  NOTREACHED();
+
+  // This should never happen but needs to be included to avoid compilation
+  // error on debug builds.
+  return content::NavigationThrottle::CANCEL_AND_IGNORE;
 #endif
 }
 
