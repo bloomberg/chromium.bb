@@ -39,16 +39,12 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DefaultSearchEnginePromoDialogTest {
     @Before
-    public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+    public void setUp() throws ExecutionException, ProcessInitException {
+        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                            .handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    throw new AssertionError("Failed to initialize Chrome process.", e);
-                }
+            public Void call() throws ProcessInitException {
+                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                        .handleSynchronousStartup();
 
                 LocaleManager mockManager = new LocaleManager() {
                     @Override
@@ -57,6 +53,7 @@ public class DefaultSearchEnginePromoDialogTest {
                     }
                 };
                 LocaleManager.setInstanceForTest(mockManager);
+                return null;
             }
         });
     }

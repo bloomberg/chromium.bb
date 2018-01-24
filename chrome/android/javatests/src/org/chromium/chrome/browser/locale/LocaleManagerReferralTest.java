@@ -25,6 +25,8 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.test.util.ApplicationData;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -36,7 +38,7 @@ public class LocaleManagerReferralTest {
     private String mYandexReferralId = "";
 
     @Before
-    public void setUp() {
+    public void setUp() throws ExecutionException, ProcessInitException {
         mDefaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("ru", "RU"));
 
@@ -49,15 +51,12 @@ public class LocaleManagerReferralTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                            .handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    throw new AssertionError("Failed to load browser.", e);
-                }
+            public Void call() throws ProcessInitException {
+                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                        .handleSynchronousStartup();
+                return null;
             }
         });
     }
