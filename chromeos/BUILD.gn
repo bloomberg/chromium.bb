@@ -41,7 +41,6 @@ component("chromeos") {
     "//components/signin/core/account_id",
     "//components/url_formatter",
     "//components/user_manager",
-    "//crypto",
     "//crypto:platform",
     "//google_apis",
     "//media/base:video_facing",
@@ -198,6 +197,8 @@ component("chromeos") {
     "dbus/fake_permission_broker_client.h",
     "dbus/fake_power_manager_client.cc",
     "dbus/fake_power_manager_client.h",
+    "dbus/fake_session_manager_client.cc",
+    "dbus/fake_session_manager_client.h",
     "dbus/fake_shill_device_client.cc",
     "dbus/fake_shill_device_client.h",
     "dbus/fake_shill_ipconfig_client.cc",
@@ -612,6 +613,8 @@ static_library("test_support_without_gmock") {
   sources = [
     "dbus/fake_cros_disks_client.cc",
     "dbus/fake_cros_disks_client.h",
+
+    # TODO(crbug.com/799071) remove fake_session_manager_client and fix build rules.
     "dbus/fake_session_manager_client.cc",
     "dbus/fake_session_manager_client.h",
     "dbus/fake_shill_manager_client.cc",
