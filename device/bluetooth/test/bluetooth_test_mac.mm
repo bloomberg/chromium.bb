@@ -7,6 +7,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -137,6 +138,9 @@ void BluetoothTestMac::InitWithFakeAdapter() {
     mock_central_manager_->get().bluetoothTestMac = this;
     [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOn];
     adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
+    adapter_mac_->SetPowerStateFunctionForTesting(
+        base::BindRepeating(&BluetoothTestMac::SetMockControllerPowerState,
+                            base::Unretained(this)));
   }
 }
 
@@ -560,6 +564,33 @@ void BluetoothTestMac::SimulateGattDescriptorReadNSNumberMac(
     short value) {
   NSNumber* number = [NSNumber numberWithShort:value];
   [GetCBMockDescriptor(descriptor) simulateReadWithValue:number error:nil];
+}
+
+void BluetoothTestMac::SetMockControllerPowerState(int powered) {
+  // We are posting a task so that the state only gets updated in the next cycle
+  // and pending callbacks are not executed immediately.
+  adapter_mac_->ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::WeakPtr<BluetoothAdapterMac> adapter_mac, int powered) {
+            // Guard against deletion of the adapter.
+            if (!adapter_mac)
+              return;
+
+            auto* mock_central_manager =
+                base::mac::ObjCCastStrict<MockCentralManager>(
+                    adapter_mac->GetCentralManager());
+            [mock_central_manager
+                setState:powered ? CBCentralManagerStatePoweredOn
+                                 : CBCentralManagerStatePoweredOff];
+            [mock_central_manager.delegate
+                centralManagerDidUpdateState:adapter_mac->GetCentralManager()];
+            // On real devices, the Bluetooth classic code will dispatch the
+            // AdapterPoweredChanged event. Test code does not fake Bluetooth
+            // classic behavior so we dispatch the event directly.
+            adapter_mac->NotifyAdapterPoweredChanged(powered);
+          },
+          adapter_mac_->weak_ptr_factory_.GetWeakPtr(), powered));
 }
 
 void BluetoothTest::AddServicesToDeviceMac(
