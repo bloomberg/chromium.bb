@@ -99,11 +99,25 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
 }
 
 // Wrapper around channel checking, used to enable channel mocking for
-// testing. If the current browser channel is not UNKNOWN, this will return
-// that channel value. Otherwise, if the fake channel flag is provided, this
-// will return the fake channel. Failing that, this will return the UNKNOWN
-// channel.
+// testing. If a fake channel flag is provided, it will take precedence.
+// Otherwise, this will return the current browser channel (which could be
+// UNKNOWN).
 Study::Channel GetChannelForVariations(version_info::Channel product_channel) {
+  const std::string forced_channel =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kFakeVariationsChannel);
+  if (!forced_channel.empty()) {
+    if (forced_channel == "stable")
+      return Study::STABLE;
+    if (forced_channel == "beta")
+      return Study::BETA;
+    if (forced_channel == "dev")
+      return Study::DEV;
+    if (forced_channel == "canary")
+      return Study::CANARY;
+    DVLOG(1) << "Invalid channel provided: " << forced_channel;
+  }
+
   switch (product_channel) {
     case version_info::Channel::CANARY:
       return Study::CANARY;
@@ -114,20 +128,9 @@ Study::Channel GetChannelForVariations(version_info::Channel product_channel) {
     case version_info::Channel::STABLE:
       return Study::STABLE;
     case version_info::Channel::UNKNOWN:
-      break;
+      return Study::UNKNOWN;
   }
-  const std::string forced_channel =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kFakeVariationsChannel);
-  if (forced_channel == "stable")
-    return Study::STABLE;
-  if (forced_channel == "beta")
-    return Study::BETA;
-  if (forced_channel == "dev")
-    return Study::DEV;
-  if (forced_channel == "canary")
-    return Study::CANARY;
-  DVLOG(1) << "Invalid channel provided: " << forced_channel;
+  NOTREACHED();
   return Study::UNKNOWN;
 }
 
