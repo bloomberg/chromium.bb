@@ -5,12 +5,14 @@
 #include "ui/app_list/views/search_result_list_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "ui/app_list/app_list_metrics.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_view.h"
@@ -163,8 +165,11 @@ int SearchResultListView::GetHeightForWidth(int w) const {
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                                  int event_flags) {
-  if (view_delegate_ && view->result())
+  if (view_delegate_ && view->result()) {
+    RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
+                                 view_delegate_->GetSearchModel());
     view_delegate_->OpenSearchResult(view->result(), event_flags);
+  }
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,

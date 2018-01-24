@@ -88,14 +88,6 @@ app_list::AppListFolderItem* FakeAppListModelUpdater::FindFolderItem(
   return nullptr;
 }
 
-bool FakeAppListModelUpdater::TabletMode() {
-  return false;
-}
-
-app_list::AppListViewState FakeAppListModelUpdater::StateFullscreen() {
-  return app_list::AppListViewState::CLOSED;
-}
-
 std::map<std::string, size_t>
 FakeAppListModelUpdater::GetIdToAppListIndexMap() {
   std::map<std::string, size_t> id_to_app_list_index;
