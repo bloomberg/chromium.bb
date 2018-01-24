@@ -94,11 +94,19 @@ class AudioSinkAudioTrackImpl {
     private static final long TIMESTAMP_UPDATE_PERIOD = 250 * MSEC_IN_NSEC;
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
 
-    // Maximum amount a timestamp may deviate from the previous one to be considered stable.
-    private static final long MAX_TIMESTAMP_DEVIATION_NSEC = 150 * USEC_IN_NSEC;
-    // Number of consecutive stable timestamps needed to make it a valid reference point.
+    // Maximum amount a timestamp may deviate from the previous one to be considered stable at
+    // startup or after an underrun event.
+    private static final long MAX_STABLE_TIMESTAMP_DEVIATION_NSEC = 150 * USEC_IN_NSEC;
+    // Number of consecutive stable timestamps needed to make it a valid reference point at startup
+    // or after an underrun event.
     private static final int MIN_TIMESTAMP_STABILITY_CNT = 3;
+    // Minimum time timestamps need to be stable to make it a valid reference point at startup or
+    // after an underrun event. This is an additional safeguard.
     private static final long MIN_TIMESTAMP_STABILITY_TIME_NSEC = SEC_IN_NSEC;
+    // After startup, any timestamp deviating more than this amount is ignored.
+    private static final long TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC = 500 * USEC_IN_NSEC;
+    // Don't ignore timestamps for longer than this amount of time.
+    private static final long MAX_TIME_IGNORING_TSTAMPS_NSECS = SEC_IN_NSEC;
 
     // Additional padding for minimum buffer time, determined experimentally.
     private static final long MIN_BUFFERED_TIME_PADDING_US = 20000;
@@ -586,7 +594,7 @@ class AudioSinkAudioTrackImpl {
         }
 
         long deviation = mRefNanoTimeAtFramePos0Candidate - newNanoTimeAtFramePos0;
-        if (Math.abs(deviation) > MAX_TIMESTAMP_DEVIATION_NSEC) {
+        if (Math.abs(deviation) > MAX_STABLE_TIMESTAMP_DEVIATION_NSEC) {
             // not stable
             Log.i(TAG,
                     "Timestamp [" + mTimestampStabilityCounter + "/"
@@ -651,7 +659,7 @@ class AudioSinkAudioTrackImpl {
                 //
                 // At this point we just do the same as when in STARTING_UP, but eventually there
                 // should be a more refined way to figure out when the timestamps returned from the
-                // AudioTrack are usuable again.
+                // AudioTrack are usable again.
                 if (!isTimestampStable(newNanoTimeAtFramePos0)) {
                     return;
                 }
@@ -665,10 +673,24 @@ class AudioSinkAudioTrackImpl {
 
             case STABLE:
                 // Timestamps can be jittery, and on some systems they are occasionally off by
-                // hundreds of usecs. Use a low-pass filter to handle this: 0.05*New + 0.95*Ref. Do
-                // integer math with proper rounding.
+                // hundreds of usecs. Filter out timestamps that are too jittery and use a low-pass
+                // filter on the smaller ones.
+                // Note that the low-pass filter approach does not work well when the media clock
+                // rate does not match the system clock rate, and the timestamp drifts as a result.
+                // Currently none of the devices using this code do this.
+                long devNsec = mRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0;
+                if (Math.abs(devNsec) > TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC) {
+                    Log.i(TAG, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
+                    long timeSinceLastGoodTstamp = elapsedNsec(mLastTimestampUpdateNsec);
+                    if (timeSinceLastGoodTstamp <= MAX_TIME_IGNORING_TSTAMPS_NSECS) {
+                        return; // Ignore this one.
+                    }
+                    // We ignored jittery timestamps for too long, let this one pass.
+                    Log.i(TAG, "Too many jittery timestamps ignored!");
+                }
+                // Low-pass filter: 0.10*New + 0.90*Ref. Do integer math with proper rounding.
                 mRefNanoTimeAtFramePos0 =
-                        (5 * newNanoTimeAtFramePos0 + 95 * mRefNanoTimeAtFramePos0 + 50) / 100;
+                        (10 * newNanoTimeAtFramePos0 + 90 * mRefNanoTimeAtFramePos0 + 50) / 100;
                 break;
         }
 
