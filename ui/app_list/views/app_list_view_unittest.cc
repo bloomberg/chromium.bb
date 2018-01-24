@@ -1500,9 +1500,9 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Send SCROLL_START and SCROLL_UPDATE events, simulating dragging the
   // launcher.
   base::TimeTicks timestamp = base::TimeTicks::Now();
-  const gfx::Point start = view_->get_fullscreen_widget_for_test()
-                               ->GetWindowBoundsInScreen()
-                               .top_right();
+  gfx::Point start = view_->get_fullscreen_widget_for_test()
+                         ->GetWindowBoundsInScreen()
+                         .top_right();
   int delta_y = 0;
   ui::GestureEvent start_event = ui::GestureEvent(
       start.x(), start.y(), ui::EF_NONE, timestamp,
@@ -1512,6 +1512,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Drag down the launcher.
   timestamp += base::TimeDelta::FromMilliseconds(25);
   delta_y += 10;
+  start.Offset(0, 1);
   ui::GestureEvent update_event = ui::GestureEvent(
       start.x(), start.y(), ui::EF_NONE, timestamp,
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
@@ -1533,6 +1534,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Ends to drag the launcher.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
   timestamp += base::TimeDelta::FromMilliseconds(25);
+  start.Offset(0, 1);
   ui::GestureEvent end_event =
       ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
                        ui::GestureEventDetails(ui::ET_GESTURE_END));
