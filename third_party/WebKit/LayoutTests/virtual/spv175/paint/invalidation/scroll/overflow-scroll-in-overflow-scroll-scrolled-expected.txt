@@ -32,19 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
     }
   ]
 }

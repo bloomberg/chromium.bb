@@ -9,22 +9,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [79, 129, 142, 142],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [79, 129, 142, 142],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
           "rect": [79, 129, 142, 142],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [114, 129, 107, 36],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ]
     }
@@ -32,15 +32,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }

@@ -100,3 +100,6 @@ crbug.com/771643 svg/zoom/page/zoom-mask-with-percentages.svg [ Failure ]
 crbug.com/771643 tables/table-transform-absolute-position-child.html [ Failure ]
 # Others.
 crbug.com/771643 virtual/threaded/printing/fixed-positioned-scrolled.html [ Failure ]
+
+crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
+crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]

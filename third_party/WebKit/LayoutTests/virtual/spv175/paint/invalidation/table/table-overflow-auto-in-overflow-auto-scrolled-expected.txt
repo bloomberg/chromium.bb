@@ -32,35 +32,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "subtree"
     }
   ]
 }

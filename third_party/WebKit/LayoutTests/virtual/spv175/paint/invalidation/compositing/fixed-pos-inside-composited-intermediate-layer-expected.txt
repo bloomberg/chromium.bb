@@ -33,18 +33,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
       "position": [20, 20],
       "bounds": [100, 30000],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-          "rect": [25, 125, 50, 50],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-          "rect": [25, 25, 50, 50],
-          "reason": "paint property change"
-        }
-      ],
       "transform": 1
     }
   ],
@@ -69,12 +57,6 @@
         [8, 8, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "subtree"
     }
   ]
 }

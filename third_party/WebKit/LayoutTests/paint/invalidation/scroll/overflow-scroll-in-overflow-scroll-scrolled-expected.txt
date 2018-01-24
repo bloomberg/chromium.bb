@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [8, 8, 769, 300],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
@@ -32,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='innerDiv'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "VerticalScrollbar",
@@ -40,11 +40,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "subtree"
+      "reason": "appeared"
     }
   ]
 }

@@ -19,22 +19,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 110, 100, 100],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 18, 100, 100],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -58,11 +58,11 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }

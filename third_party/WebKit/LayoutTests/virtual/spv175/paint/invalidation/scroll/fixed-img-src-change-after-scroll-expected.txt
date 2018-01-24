@@ -15,18 +15,6 @@
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutImage (positioned) IMG id='img'",
-          "rect": [0, 1050, 100, 100],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutImage (positioned) IMG id='img'",
-          "rect": [0, 50, 100, 100],
-          "reason": "paint property change"
-        }
-      ],
       "transform": 1
     }
   ],
@@ -40,12 +28,6 @@
         [0, -1000, 0, 1]
       ],
       "flattenInheritedTransform": false
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutImage (positioned) IMG id='img'",
-      "reason": "subtree"
     }
   ]
 }

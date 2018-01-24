@@ -9,17 +9,17 @@
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
           "rect": [312, 112, 454, 469],
-          "reason": "subtree"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [314, 114, 435, 450],
-          "reason": "subtree"
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [314, 114, 435, 450],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
@@ -32,7 +32,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-      "reason": "subtree"
+      "reason": "full"
     },
     {
       "object": "HorizontalScrollbar",
@@ -40,11 +40,11 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
-      "reason": "subtree"
+      "reason": "disappeared"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "subtree"
+      "reason": "appeared"
     }
   ]
 }
