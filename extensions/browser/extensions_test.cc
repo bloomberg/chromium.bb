@@ -70,8 +70,6 @@ void ExtensionsTest::SetUp() {
   }
   extensions_browser_client_->SetMainContext(browser_context_.get());
 
-  BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(
-      browser_context_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
   content::SetUtilityClientForTesting(content_utility_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
@@ -102,6 +100,8 @@ void ExtensionsTest::SetUp() {
   // Crashing here? Don't use this class in Chrome's unit_tests. See header.
   BrowserContextDependencyManager::GetInstance()
       ->CreateBrowserContextServicesForTest(browser_context_.get());
+  BrowserContextDependencyManager::GetInstance()
+      ->CreateBrowserContextServicesForTest(incognito_context_.get());
 }
 
 void ExtensionsTest::TearDown() {
@@ -110,6 +110,8 @@ void ExtensionsTest::TearDown() {
   // cleaned up before the factories are destroyed.
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      incognito_context_.get());
 
   extensions_browser_client_.reset();
   ExtensionsBrowserClient::Set(nullptr);
