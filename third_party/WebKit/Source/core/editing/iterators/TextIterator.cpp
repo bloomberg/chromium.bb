@@ -414,23 +414,12 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           const ShadowRoot* shadow_root = ToShadowRoot(node_);
           if (shadow_root->GetType() == ShadowRootType::V0 ||
               shadow_root->GetType() == ShadowRootType::kOpen) {
-            ShadowRoot* next_shadow_root = shadow_root->OlderShadowRoot();
-            if (next_shadow_root &&
-                next_shadow_root->GetType() == ShadowRootType::V0) {
-              fully_clipped_stack_.Pop();
-              node_ = next_shadow_root;
-              iteration_progress_ = kHandledNone;
-              // m_shadowDepth is unchanged since we exit from a shadow root and
-              // enter another.
-              fully_clipped_stack_.PushFullyClippedState(node_);
-            } else {
-              // We are the last shadow root; exit from here and go back to
-              // where we were.
-              node_ = &shadow_root->host();
-              iteration_progress_ = kHandledOpenShadowRoots;
-              --shadow_depth_;
-              fully_clipped_stack_.Pop();
-            }
+            // We are the shadow root; exit from here and go back to
+            // where we were.
+            node_ = &shadow_root->host();
+            iteration_progress_ = kHandledOpenShadowRoots;
+            --shadow_depth_;
+            fully_clipped_stack_.Pop();
           } else {
             // If we are in a closed or user-agent shadow root, then go back to
             // the host.

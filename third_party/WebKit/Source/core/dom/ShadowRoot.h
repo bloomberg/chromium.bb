@@ -42,7 +42,6 @@ namespace blink {
 class Document;
 class ElementShadow;
 class ExceptionState;
-class HTMLShadowElement;
 class ShadowRootRareDataV0;
 class SlotAssignment;
 class StringOrTrustedHTML;
@@ -107,17 +106,12 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void SetNeedsAssignmentRecalc();
 
   // For V0
-  ShadowRoot* YoungerShadowRoot() const { return nullptr; }
-  ShadowRoot* OlderShadowRoot() const { return nullptr; }
   bool ContainsShadowElements() const;
   bool ContainsContentElements() const;
   bool ContainsInsertionPoints() const {
     return ContainsShadowElements() || ContainsContentElements();
   }
   unsigned DescendantShadowElementCount() const;
-  HTMLShadowElement* ShadowInsertionPointOfYoungerShadowRoot() const {
-    return nullptr;
-  }
   void DidAddInsertionPoint(V0InsertionPoint*);
   void DidRemoveInsertionPoint(V0InsertionPoint*);
   const HeapVector<Member<V0InsertionPoint>>& DescendantInsertionPoints();
