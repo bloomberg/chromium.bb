@@ -52,8 +52,11 @@ camera.util.TooltipManager.prototype = {
 camera.util.TooltipManager.prototype.initialize = function() {
   var selectors = document.querySelectorAll('*[i18n-label]');
   for (var index = 0; index < selectors.length; index++) {
-    selectors[index].addEventListener(
-        'mouseover', this.showTooltip_.bind(this, selectors[index]));
+    var element = selectors[index];
+    element.addEventListener(
+        'mouseover', this.showTooltip_.bind(this, element));
+    element.addEventListener(
+        'focus', this.showTooltip_.bind(this, element));
   }
 };
 
@@ -122,10 +125,12 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
     }, function() {});
     element.removeEventListener('mouseout', hideTooltip);
     element.removeEventListener('click', hideTooltip);
+    element.removeEventListener('blur', hideTooltip);
   }.bind(this);
 
   element.addEventListener('mouseout', hideTooltip);
   element.addEventListener('click', hideTooltip);
+  element.addEventListener('blur', hideTooltip);
 
   // Show the tooltip after 500ms.
   this.effect_.invoke({
