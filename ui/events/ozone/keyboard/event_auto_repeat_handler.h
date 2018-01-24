@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
-#define UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
+#ifndef UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
+#define UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
 
 #include <linux/input.h>
 
@@ -68,4 +68,4 @@ class EVENTS_EXPORT EventAutoRepeatHandler {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_EVENT_AUTO_REPEAT_HANDLER_H
+#endif  // UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
