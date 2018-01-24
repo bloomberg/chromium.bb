@@ -249,9 +249,13 @@ void TaskTracker::Shutdown() {
   PerformShutdown();
   DCHECK(IsShutdownComplete());
 
-  // Unblock Flush() when shutdown completes.
-  AutoSchedulerLock auto_lock(flush_lock_);
-  flush_cv_->Signal();
+  // Unblock Flush() and perform the FlushAsyncForTesting callback when
+  // shutdown completes.
+  {
+    AutoSchedulerLock auto_lock(flush_lock_);
+    flush_cv_->Signal();
+  }
+  CallFlushCallbackForTesting();
 }
 
 void TaskTracker::Flush() {
@@ -259,6 +263,21 @@ void TaskTracker::Flush() {
   while (subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0 &&
          !IsShutdownComplete()) {
     flush_cv_->Wait();
+  }
+}
+
+void TaskTracker::FlushAsyncForTesting(OnceClosure flush_callback) {
+  DCHECK(flush_callback);
+  {
+    AutoSchedulerLock auto_lock(flush_lock_);
+    DCHECK(!flush_callback_for_testing_)
+        << "Only one FlushAsyncForTesting() may be pending at any time.";
+    flush_callback_for_testing_ = std::move(flush_callback);
+  }
+
+  if (subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) == 0 ||
+      IsShutdownComplete()) {
+    CallFlushCallbackForTesting();
   }
 }
 
@@ -611,8 +630,11 @@ void TaskTracker::DecrementNumIncompleteUndelayedTasks() {
       subtle::Barrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, -1);
   DCHECK_GE(new_num_incomplete_undelayed_tasks, 0);
   if (new_num_incomplete_undelayed_tasks == 0) {
-    AutoSchedulerLock auto_lock(flush_lock_);
-    flush_cv_->Signal();
+    {
+      AutoSchedulerLock auto_lock(flush_lock_);
+      flush_cv_->Signal();
+    }
+    CallFlushCallbackForTesting();
   }
 }
 
@@ -682,6 +704,16 @@ void TaskTracker::RecordTaskLatencyHistogram(const Task& task) {
                                ? 1
                                : 0]
                               ->Add(task_latency.InMicroseconds());
+}
+
+void TaskTracker::CallFlushCallbackForTesting() {
+  OnceClosure flush_callback;
+  {
+    AutoSchedulerLock auto_lock(flush_lock_);
+    flush_callback = std::move(flush_callback_for_testing_);
+  }
+  if (flush_callback)
+    std::move(flush_callback).Run();
 }
 
 }  // namespace internal
