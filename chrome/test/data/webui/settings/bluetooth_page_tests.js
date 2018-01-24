@@ -119,7 +119,7 @@ suite('Bluetooth', function() {
         subpage.listUpdateFrequencyMs = 0;
         assertTrue(!!subpage);
         assertTrue(subpage.bluetoothToggleState);
-        assertFalse(subpage.bluetoothToggleDisabled);
+        assertFalse(subpage.stateChangeInProgress);
         assertEquals(0, subpage.listUpdateFrequencyMs);
       });
     });

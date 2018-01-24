@@ -46,7 +46,7 @@
       </div>
       <paper-toggle-button id="enableBluetooth"
           checked="{{bluetoothToggleState}}"
-          disabled$="[[bluetoothToggleDisabled]]"
+          disabled$="[[!isToggleEnabled_(adapterState, stateChangeInProgress)]]"
           aria-label="$i18n{bluetoothToggleA11yLabel}"
           on-tap="stopTap_">
       </paper-toggle-button>
