@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_LOADER_CORS_URL_LOADER_H_
-#define CONTENT_RENDERER_LOADER_CORS_URL_LOADER_H_
+#ifndef CONTENT_NETWORK_CORS_CORS_URL_LOADER_H_
+#define CONTENT_NETWORK_CORS_CORS_URL_LOADER_H_
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -100,4 +100,4 @@ class CONTENT_EXPORT CORSURLLoader : public network::mojom::URLLoader,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_LOADER_CORS_URL_LOADER_H_
+#endif  // CONTENT_NETWORK_CORS_CORS_URL_LOADER_H_

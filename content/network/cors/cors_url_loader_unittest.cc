@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/loader/cors_url_loader.h"
+#include "content/network/cors/cors_url_loader.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "content/network/cors/cors_url_loader_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_url_loader_client.h"
-#include "content/renderer/loader/cors_url_loader_factory.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
@@ -25,8 +28,12 @@ namespace {
 
 class TestURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
-  TestURLLoaderFactory() = default;
+  TestURLLoaderFactory() : weak_factory_(this) {}
   ~TestURLLoaderFactory() override = default;
+
+  base::WeakPtr<TestURLLoaderFactory> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   void NotifyClientOnReceiveResponse(const std::string& extra_header) {
     DCHECK(client_ptr_);
@@ -68,25 +75,30 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   network::mojom::URLLoaderClientPtr client_ptr_;
 
+  base::WeakPtrFactory<TestURLLoaderFactory> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
 
 class CORSURLLoaderTest : public testing::Test {
  public:
-  CORSURLLoaderTest()
-      : test_network_factory_binding_(&test_network_loader_factory_) {}
+  CORSURLLoaderTest() {
+    std::unique_ptr<TestURLLoaderFactory> factory =
+        std::make_unique<TestURLLoaderFactory>();
+    test_url_loader_factory_ = factory->GetWeakPtr();
+    cors_url_loader_factory_ =
+        std::make_unique<CORSURLLoaderFactory>(std::move(factory));
+  }
 
  protected:
+  // testing::Test implementation.
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kOutOfBlinkCORS);
+  }
+
   void CreateLoaderAndStart(const GURL& origin,
                             const GURL& url,
                             FetchRequestMode fetch_request_mode) {
-    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
-    test_network_factory_binding_.Bind(mojo::MakeRequest(&network_factory_ptr));
-
-    network::mojom::URLLoaderFactoryPtr loader_factory_ptr;
-    CORSURLLoaderFactory::CreateAndBind(network_factory_ptr.PassInterface(),
-                                        mojo::MakeRequest(&loader_factory_ptr));
-
     network::ResourceRequest request;
     request.resource_type = RESOURCE_TYPE_IMAGE;
     request.fetch_request_context_type = REQUEST_CONTEXT_TYPE_IMAGE;
@@ -95,28 +107,27 @@ class CORSURLLoaderTest : public testing::Test {
     request.url = url;
     request.request_initiator = url::Origin::Create(origin);
 
-    loader_factory_ptr->CreateLoaderAndStart(
+    cors_url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
         network::mojom::kURLLoadOptionNone, request,
         test_cors_loader_client_.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    // Flushes to ensure that the request is handled and
-    // TestURLLoaderFactory::CreateLoaderAndStart() runs internally.
-    loader_factory_ptr.FlushForTesting();
   }
 
   bool IsNetworkLoaderStarted() {
-    return test_network_loader_factory_.IsCreateLoaderAndStartCalled();
+    DCHECK(test_url_loader_factory_);
+    return test_url_loader_factory_->IsCreateLoaderAndStartCalled();
   }
 
   void NotifyLoaderClientOnReceiveResponse(
       const std::string& extra_header = std::string()) {
-    test_network_loader_factory_.NotifyClientOnReceiveResponse(extra_header);
+    DCHECK(test_url_loader_factory_);
+    test_url_loader_factory_->NotifyClientOnReceiveResponse(extra_header);
   }
 
   void NotifyLoaderClientOnComplete(int error_code) {
-    test_network_loader_factory_.NotifyClientOnComplete(error_code);
+    DCHECK(test_url_loader_factory_);
+    test_url_loader_factory_->NotifyClientOnComplete(error_code);
   }
 
   const TestURLLoaderClient& client() const { return test_cors_loader_client_; }
@@ -127,9 +138,14 @@ class CORSURLLoaderTest : public testing::Test {
   // Be the first member so it is destroyed last.
   base::MessageLoop message_loop_;
 
-  // TestURLLoaderFactory instance and mojo binding.
-  TestURLLoaderFactory test_network_loader_factory_;
-  mojo::Binding<network::mojom::URLLoaderFactory> test_network_factory_binding_;
+  // Testing instance to enable kOutOfBlinkCORS feature.
+  base::test::ScopedFeatureList feature_list_;
+
+  // CORSURLLoaderFactory instance under tests.
+  std::unique_ptr<network::mojom::URLLoaderFactory> cors_url_loader_factory_;
+
+  // TestURLLoaderFactory instance owned by CORSURLLoaderFactory.
+  base::WeakPtr<TestURLLoaderFactory> test_url_loader_factory_;
 
   // Holds URLLoaderPtr that CreateLoaderAndStart() creates.
   network::mojom::URLLoaderPtr url_loader_;
@@ -176,8 +192,7 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSMode) {
 TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
-  CreateLoaderAndStart(origin, url,
-                       network::mojom::FetchRequestMode::kSameOrigin);
+  CreateLoaderAndStart(origin, url, FetchRequestMode::kSameOrigin);
 
   RunUntilComplete();
 

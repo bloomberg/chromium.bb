@@ -45,7 +45,7 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
 
 void URLLoaderFactoryImpl::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
-  // The cloned factories stopped working when this factory is destructed.
+  // The cloned factories stop working when this factory is destructed.
   bindings_.AddBinding(this, std::move(request));
 }
 
