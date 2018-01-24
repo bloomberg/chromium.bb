@@ -137,12 +137,12 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
 
   void CheckIsHidden() {
     EXPECT_FALSE(loading_element_->IsWanted());
-    EXPECT_FALSE(loading_element_->YoungestShadowRoot()->HasChildren());
+    EXPECT_FALSE(loading_element_->GetShadowRoot()->HasChildren());
   }
 
   void CheckIsShown() {
     EXPECT_TRUE(loading_element_->IsWanted());
-    EXPECT_TRUE(loading_element_->YoungestShadowRoot()->HasChildren());
+    EXPECT_TRUE(loading_element_->GetShadowRoot()->HasChildren());
   }
 
   void ExpectAnimationIterationCount(Element* element, const String& value) {
