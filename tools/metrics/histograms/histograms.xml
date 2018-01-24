@@ -2260,7 +2260,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram base="true" name="Apps.ContextMenuExecuteCommand"
     enum="ChromeOSUICommands">
 <!-- Name completed by histogram_suffixes
-     name="ContextMenuForApp" -->
+     name="ContextMenuFromApp" -->
 
   <owner>=newcomer@chromium.org</owner>
   <summary>
@@ -102870,9 +102870,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="NewTabPage.ContentSuggestions.VisitDuration"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ContextMenuForApp" separator=".">
-  <suffix name="ForApp" label="The source of the context menu was an app."/>
-  <suffix name="NotForApp"
+<histogram_suffixes name="ContextMenuFromApp" separator=".">
+  <suffix name="FromApp" label="The source of the context menu was an app."/>
+  <suffix name="NotFromApp"
       label="The source of the context menu was shelf or wallpaper."/>
   <affected-histogram name="Apps.ContextMenuExecuteCommand"/>
 </histogram_suffixes>
