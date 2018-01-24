@@ -353,7 +353,7 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
   const ElementShadow* shadow = element.Shadow();
   if (!shadow)
     return std::pair<Node*, Element*>();
-  ShadowRoot& shadow_root = shadow->OldestShadowRoot();
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
 
   String shadow_mode;
   switch (shadow_root.GetType()) {

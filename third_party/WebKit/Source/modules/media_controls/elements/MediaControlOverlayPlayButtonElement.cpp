@@ -116,7 +116,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
   if (MediaControlsImpl::IsModern()) {
-    ShadowRoot& shadow_root = Shadow()->OldestShadowRoot();
+    ShadowRoot& shadow_root = Shadow()->GetShadowRoot();
 
     // This stylesheet element and will contain rules that are specific to the
     // loading panel. The shadow DOM protects these rules from the parent DOM

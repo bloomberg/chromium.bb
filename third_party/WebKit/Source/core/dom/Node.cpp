@@ -701,11 +701,11 @@ LayoutRect Node::BoundingBox() const {
 }
 
 #ifndef NDEBUG
-inline static ShadowRoot* OldestShadowRootFor(const Node* node) {
+inline static ShadowRoot* GetShadowRootFor(const Node* node) {
   if (!node->IsElementNode())
     return nullptr;
   if (ElementShadow* shadow = ToElement(node)->Shadow())
-    return &shadow->OldestShadowRoot();
+    return &shadow->GetShadowRoot();
   return nullptr;
 }
 #endif
@@ -1841,8 +1841,8 @@ static void AppendMarkedTree(const String& base_indent,
               ToShadowRoot(node).YoungerShadowRoot())
         AppendMarkedTree(indent.ToString(), younger_shadow_root, marked_node1,
                          marked_label1, marked_node2, marked_label2, builder);
-    } else if (ShadowRoot* oldest_shadow_root = OldestShadowRootFor(&node)) {
-      AppendMarkedTree(indent.ToString(), oldest_shadow_root, marked_node1,
+    } else if (ShadowRoot* shadow_root = GetShadowRootFor(&node)) {
+      AppendMarkedTree(indent.ToString(), shadow_root, marked_node1,
                        marked_label1, marked_node2, marked_label2, builder);
     }
   }
@@ -1931,9 +1931,8 @@ static void PrintSubTreeAcrossFrame(const Node* node,
     if (node->IsFrameOwnerElement())
       PrintSubTreeAcrossFrame(ToHTMLFrameOwnerElement(node)->contentDocument(),
                               marked_node, indent + "\t", stream);
-    if (ShadowRoot* oldest_shadow_root = OldestShadowRootFor(node))
-      PrintSubTreeAcrossFrame(oldest_shadow_root, marked_node, indent + "\t",
-                              stream);
+    if (ShadowRoot* shadow_root = GetShadowRootFor(node))
+      PrintSubTreeAcrossFrame(shadow_root, marked_node, indent + "\t", stream);
   }
   for (const Node* child = node->firstChild(); child;
        child = child->nextSibling())

@@ -137,11 +137,9 @@ static void CollectScopedResolversForHostedShadowTrees(
     return;
 
   // Adding scoped resolver for active shadow roots for shadow host styling.
-  for (ShadowRoot* shadow_root = &shadow->YoungestShadowRoot(); shadow_root;
-       shadow_root = shadow_root->OlderShadowRoot()) {
-    if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver())
-      resolvers.push_back(resolver);
-  }
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
+  if (ScopedStyleResolver* resolver = shadow_root.GetScopedStyleResolver())
+    resolvers.push_back(resolver);
 }
 
 StyleResolver::StyleResolver(Document& document) : document_(document) {
@@ -196,14 +194,12 @@ static void MatchHostRules(const Element& element,
   if (!shadow)
     return;
 
-  for (ShadowRoot* shadow_root = &shadow->OldestShadowRoot(); shadow_root;
-       shadow_root = shadow_root->YoungerShadowRoot()) {
-    if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver()) {
-      collector.ClearMatchedRules();
-      resolver->CollectMatchingShadowHostRules(collector);
-      collector.SortAndTransferMatchedRules();
-      collector.FinishAddingAuthorRulesForTreeScope();
-    }
+  ShadowRoot& shadow_root = shadow->GetShadowRoot();
+  if (ScopedStyleResolver* resolver = shadow_root.GetScopedStyleResolver()) {
+    collector.ClearMatchedRules();
+    resolver->CollectMatchingShadowHostRules(collector);
+    collector.SortAndTransferMatchedRules();
+    collector.FinishAddingAuthorRulesForTreeScope();
   }
 }
 
