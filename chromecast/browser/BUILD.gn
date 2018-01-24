@@ -134,8 +134,8 @@ cast_source_set("browser") {
       "android/cast_content_window_android.cc",
       "android/cast_content_window_android.h",
       "android/cast_metrics_helper_android.cc",
-      "android/cast_web_contents_activity.cc",
-      "android/cast_web_contents_activity.h",
+      "android/cast_web_contents_surface_helper.cc",
+      "android/cast_web_contents_surface_helper.h",
     ]
     deps += [
       ":jni_headers",
@@ -361,7 +361,7 @@ if (is_android) {
       "android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java",
       "android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java",
       "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
-      "android/apk/src/org/chromium/chromecast/shell/CastWebContentsActivity.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
     ]
 
     jni_package = "chromecast"

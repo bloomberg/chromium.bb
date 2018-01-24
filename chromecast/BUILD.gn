@@ -562,6 +562,7 @@ buildflag_header("chromecast_features") {
     "SUPPORTS_MULTIZONE=$supports_multizone",
     "ENABLE_HEADLESS_MUSIC_MODE=$enable_headless_music_mode",
     "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
+    "ENABLE_CAST_FRAGMENT=$enable_cast_fragment",
   ]
 }
 
