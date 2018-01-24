@@ -111,7 +111,7 @@ void WebFormControlElement::SetAutofillValue(const WebString& value) {
     }
     Unwrap<Element>()->DispatchScopedEvent(
         Event::CreateBubble(EventTypeNames::keydown));
-    Unwrap<TextControlElement>()->setValue(value, kDispatchInputAndChangeEvent);
+    Unwrap<TextControlElement>()->SetAutofillValue(value);
     Unwrap<Element>()->DispatchScopedEvent(
         Event::CreateBubble(EventTypeNames::keyup));
     if (!Focused()) {
@@ -142,11 +142,11 @@ WebString WebFormControlElement::Value() const {
 }
 
 void WebFormControlElement::SetSuggestedValue(const WebString& value) {
-  if (auto* input = ToHTMLInputElementOrNull(*private_))
+  if (auto* input = ToHTMLInputElementOrNull(*private_)) {
     input->SetSuggestedValue(value);
-  else if (auto* textarea = ToHTMLTextAreaElementOrNull(*private_))
+  } else if (auto* textarea = ToHTMLTextAreaElementOrNull(*private_)) {
     textarea->SetSuggestedValue(value);
-  else if (auto* select = ToHTMLSelectElementOrNull(*private_))
+  } else if (auto* select = ToHTMLSelectElementOrNull(*private_))
     select->SetSuggestedValue(value);
 }
 

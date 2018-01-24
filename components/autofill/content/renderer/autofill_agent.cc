@@ -686,8 +686,7 @@ void AutofillAgent::QueryAutofillSuggestions(
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
                                          WebInputElement* node) {
   form_tracker_.set_ignore_text_changes(true);
-  node->SetAutofillValue(
-      blink::WebString::FromUTF16(value.substr(0, node->MaxLength())));
+  node->SetAutofillValue(blink::WebString::FromUTF16(value));
   password_autofill_agent_->UpdateStateForTextChange(*node);
   form_tracker_.set_ignore_text_changes(false);
 }
@@ -695,8 +694,7 @@ void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
                                             WebInputElement* node) {
   was_query_node_autofilled_ = element_.IsAutofilled();
-  node->SetSuggestedValue(
-      blink::WebString::FromUTF16(value.substr(0, node->MaxLength())));
+  node->SetSuggestedValue(blink::WebString::FromUTF16(value));
   node->SetAutofilled(true);
   form_util::PreviewSuggestion(node->SuggestedValue().Utf16(),
                                node->Value().Utf16(), node);
