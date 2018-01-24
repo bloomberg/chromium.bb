@@ -19,6 +19,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
 import org.chromium.blink.mojom.RemoteInvocationArgument;
+import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
 
@@ -177,8 +178,34 @@ public final class RemoteObjectImplTest {
         verify(response, times(2)).call(resultIsOk());
     }
 
+    @Test
+    public void testInvokeMethodNotFound() {
+        Object target = new Object() {
+            public void unexposedMethod() {
+                Assert.fail("Unexposed method should not be called.");
+            }
+
+            @TestJavascriptInterface
+            public void exposedMethodWithWrongArity(Object argument) {
+                Assert.fail("Exposed method should only be called with the correct arity.");
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("nonexistentMethod", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod("unexposedMethod", new RemoteInvocationArgument[] {}, response);
+        remoteObject.invokeMethod(
+                "exposedMethodWithWrongArity", new RemoteInvocationArgument[] {}, response);
+
+        verify(response, times(3)).call(resultHasError(RemoteInvocationError.METHOD_NOT_FOUND));
+    }
+
+    private RemoteInvocationResult resultHasError(final int error) {
+        return ArgumentMatchers.argThat(result -> result.error == error);
+    }
+
     private RemoteInvocationResult resultIsOk() {
-        // TODO(jbroman): Check the error code once there is one.
-        return ArgumentMatchers.<RemoteInvocationResult>any();
+        return resultHasError(RemoteInvocationError.OK);
     }
 }

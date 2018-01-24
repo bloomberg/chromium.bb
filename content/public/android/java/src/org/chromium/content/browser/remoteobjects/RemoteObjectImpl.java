@@ -5,6 +5,7 @@
 package org.chromium.content.browser.remoteobjects;
 
 import org.chromium.blink.mojom.RemoteInvocationArgument;
+import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
 import org.chromium.mojo.system.MojoException;
@@ -76,7 +77,7 @@ class RemoteObjectImpl implements RemoteObject {
         int numArguments = arguments.length;
         Method method = findMethod(name, numArguments);
         if (method == null) {
-            // TODO(jbroman): Handle this.
+            callback.call(makeErrorResult(RemoteInvocationError.METHOD_NOT_FOUND));
             return;
         }
 
@@ -130,6 +131,13 @@ class RemoteObjectImpl implements RemoteObject {
 
     private RemoteInvocationResult convertResult(Object result) {
         // TODO(jbroman): Convert result.
-        return null;
+        return new RemoteInvocationResult();
+    }
+
+    private static RemoteInvocationResult makeErrorResult(int error) {
+        assert error != RemoteInvocationError.OK;
+        RemoteInvocationResult result = new RemoteInvocationResult();
+        result.error = error;
+        return result;
     }
 }
