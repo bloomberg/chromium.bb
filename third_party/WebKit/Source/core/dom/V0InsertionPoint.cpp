@@ -183,10 +183,6 @@ bool V0InsertionPoint::IsActive() const {
   return true;
 }
 
-bool V0InsertionPoint::IsShadowInsertionPoint() const {
-  return IsHTMLShadowElement(*this) && IsActive();
-}
-
 bool V0InsertionPoint::IsContentInsertionPoint() const {
   return IsHTMLContentElement(*this) && IsActive();
 }

@@ -69,28 +69,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
 
 ShadowRoot::~ShadowRoot() = default;
 
-ShadowRoot* ShadowRoot::YoungerShadowRoot() const {
-  if (GetType() == ShadowRootType::V0 && shadow_root_rare_data_v0_)
-    return shadow_root_rare_data_v0_->YoungerShadowRoot();
-  return nullptr;
-}
-
-ShadowRoot* ShadowRoot::OlderShadowRoot() const {
-  if (GetType() == ShadowRootType::V0 && shadow_root_rare_data_v0_)
-    return shadow_root_rare_data_v0_->OlderShadowRoot();
-  return nullptr;
-}
-
-void ShadowRoot::SetYoungerShadowRoot(ShadowRoot& root) {
-  DCHECK_EQ(GetType(), ShadowRootType::V0);
-  EnsureShadowRootRareDataV0().SetYoungerShadowRoot(root);
-}
-
-void ShadowRoot::SetOlderShadowRoot(ShadowRoot& root) {
-  DCHECK_EQ(GetType(), ShadowRootType::V0);
-  EnsureShadowRootRareDataV0().SetOlderShadowRoot(root);
-}
-
 SlotAssignment& ShadowRoot::EnsureSlotAssignment() {
   if (!slot_assignment_)
     slot_assignment_ = SlotAssignment::Create(*this);
@@ -201,7 +179,7 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
     ContainerNode* insertion_point) {
   DocumentFragment::InsertedInto(insertion_point);
 
-  if (!insertion_point->isConnected() || !IsOldest())
+  if (!insertion_point->isConnected())
     return kInsertionDone;
 
   // FIXME: When parsing <video controls>, insertedInto() is called many times
@@ -258,11 +236,6 @@ void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
         ToElement(change.sibling_changed), change.sibling_before_change,
         change.sibling_after_change);
   }
-
-  if (V0InsertionPoint* point = ShadowInsertionPointOfYoungerShadowRoot()) {
-    if (ShadowRoot* root = point->ContainingShadowRoot())
-      root->Owner()->SetNeedsDistributionRecalc();
-  }
 }
 
 ShadowRootRareDataV0& ShadowRoot::EnsureShadowRootRareDataV0() {
@@ -289,21 +262,6 @@ unsigned ShadowRoot::DescendantShadowElementCount() const {
   return shadow_root_rare_data_v0_
              ? shadow_root_rare_data_v0_->DescendantShadowElementCount()
              : 0;
-}
-
-HTMLShadowElement* ShadowRoot::ShadowInsertionPointOfYoungerShadowRoot() const {
-  return shadow_root_rare_data_v0_
-             ? shadow_root_rare_data_v0_
-                   ->ShadowInsertionPointOfYoungerShadowRoot()
-             : nullptr;
-}
-
-void ShadowRoot::SetShadowInsertionPointOfYoungerShadowRoot(
-    HTMLShadowElement* shadow_insertion_point) {
-  if (!shadow_root_rare_data_v0_ && !shadow_insertion_point)
-    return;
-  EnsureShadowRootRareDataV0().SetShadowInsertionPointOfYoungerShadowRoot(
-      shadow_insertion_point);
 }
 
 void ShadowRoot::DidAddInsertionPoint(V0InsertionPoint* insertion_point) {

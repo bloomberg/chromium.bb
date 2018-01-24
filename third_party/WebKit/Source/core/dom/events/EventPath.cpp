@@ -106,16 +106,8 @@ void EventPath::CalculatePath() {
     HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
     CollectDestinationInsertionPoints(*current, insertion_points);
     if (!insertion_points.IsEmpty()) {
-      for (const auto& insertion_point : insertion_points) {
-        if (insertion_point->IsShadowInsertionPoint()) {
-          ShadowRoot* containing_shadow_root =
-              insertion_point->ContainingShadowRoot();
-          DCHECK(containing_shadow_root);
-          if (!containing_shadow_root->IsOldest())
-            nodes_in_path.push_back(containing_shadow_root->OlderShadowRoot());
-        }
+      for (const auto& insertion_point : insertion_points)
         nodes_in_path.push_back(insertion_point);
-      }
       current = insertion_points.back();
       continue;
     }

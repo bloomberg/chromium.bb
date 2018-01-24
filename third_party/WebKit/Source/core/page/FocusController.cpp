@@ -45,7 +45,6 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLPlugInElement.h"
-#include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html/forms/TextControlElement.h"
@@ -67,11 +66,6 @@ namespace blink {
 using namespace HTMLNames;
 
 namespace {
-
-inline bool IsShadowInsertionPointFocusScopeOwner(Element& element) {
-  return IsActiveShadowInsertionPoint(element) &&
-         ToHTMLShadowElement(element).OlderShadowRoot();
-}
 
 // This class defines the navigation order.
 class FocusNavigation : public GarbageCollected<FocusNavigation> {
@@ -127,11 +121,8 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
 
  private:
   Element* TreeOwner(ContainerNode* node) {
-    if (ShadowRoot* shadow_root = ToShadowRootOrNull(node)) {
-      return shadow_root->IsYoungest()
-                 ? &shadow_root->host()
-                 : shadow_root->ShadowInsertionPointOfYoungerShadowRoot();
-    }
+    if (ShadowRoot* shadow_root = ToShadowRootOrNull(node))
+      return &shadow_root->host();
     // FIXME: Figure out the right thing for OOPI here.
     if (Frame* frame = node->GetDocument().GetFrame())
       return frame->DeprecatedLocalOwner();
@@ -206,9 +197,6 @@ class ScopedFocusNavigation {
       FocusController::OwnerMap&);
   static ScopedFocusNavigation OwnedByShadowHost(const Element&,
                                                  FocusController::OwnerMap&);
-  static ScopedFocusNavigation OwnedByShadowInsertionPoint(
-      HTMLShadowElement&,
-      FocusController::OwnerMap&);
   static ScopedFocusNavigation OwnedByHTMLSlotElement(
       const HTMLSlotElement&,
       FocusController::OwnerMap&);
@@ -307,10 +295,6 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(
     FocusController::OwnerMap& owner_map) {
   if (IsShadowHost(element))
     return ScopedFocusNavigation::OwnedByShadowHost(element, owner_map);
-  if (IsShadowInsertionPointFocusScopeOwner(element)) {
-    return ScopedFocusNavigation::OwnedByShadowInsertionPoint(
-        ToHTMLShadowElement(element), owner_map);
-  }
   return ScopedFocusNavigation::OwnedByHTMLSlotElement(
       ToHTMLSlotElement(element), owner_map);
 }
@@ -331,14 +315,6 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByIFrame(
   ToLocalFrame(frame.ContentFrame())->GetDocument()->UpdateDistribution();
   return ScopedFocusNavigation(
       *ToLocalFrame(frame.ContentFrame())->GetDocument(), nullptr, owner_map);
-}
-
-ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowInsertionPoint(
-    HTMLShadowElement& shadow_insertion_point,
-    FocusController::OwnerMap& owner_map) {
-  DCHECK(IsShadowInsertionPointFocusScopeOwner(shadow_insertion_point));
-  return ScopedFocusNavigation(*shadow_insertion_point.OlderShadowRoot(),
-                               nullptr, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByHTMLSlotElement(
@@ -457,7 +433,6 @@ inline bool IsKeyboardFocusableShadowHost(const Element& element) {
 
 inline bool IsNonFocusableFocusScopeOwner(Element& element) {
   return IsNonKeyboardFocusableShadowHost(element) ||
-         IsShadowInsertionPointFocusScopeOwner(element) ||
          IsHTMLSlotElement(element);
 }
 
@@ -467,10 +442,7 @@ inline bool IsShadowHostDelegatesFocus(const Element& element) {
 }
 
 inline int AdjustedTabIndex(Element& element) {
-  return (IsNonKeyboardFocusableShadowHost(element) ||
-          IsShadowInsertionPointFocusScopeOwner(element))
-             ? 0
-             : element.tabIndex();
+  return IsNonKeyboardFocusableShadowHost(element) ? 0 : element.tabIndex();
 }
 
 inline bool ShouldVisit(Element& element) {

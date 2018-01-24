@@ -122,19 +122,6 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
       return TraverseSiblings(*slot, direction);
   }
 
-  if (!node.IsInV0ShadowTree())
-    return nullptr;
-
-  // For v0 older shadow tree
-  if (node.parentNode() && node.parentNode()->IsShadowRoot()) {
-    ShadowRoot* parent_shadow_root = ToShadowRoot(node.parentNode());
-    if (!parent_shadow_root->IsYoungest()) {
-      HTMLShadowElement* assigned_insertion_point =
-          parent_shadow_root->ShadowInsertionPointOfYoungerShadowRoot();
-      DCHECK(assigned_insertion_point);
-      return TraverseSiblings(*assigned_insertion_point, direction);
-    }
-  }
   return nullptr;
 }
 
@@ -223,9 +210,6 @@ ContainerNode* FlatTreeTraversal::TraverseParentOrHost(const Node& node) {
   if (!parent->IsShadowRoot())
     return parent;
   ShadowRoot* shadow_root = ToShadowRoot(parent);
-  DCHECK(!shadow_root->ShadowInsertionPointOfYoungerShadowRoot());
-  if (!shadow_root->IsYoungest())
-    return nullptr;
   return &shadow_root->host();
 }
 
