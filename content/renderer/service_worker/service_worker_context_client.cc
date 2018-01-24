@@ -238,6 +238,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
       ui::PAGE_TRANSITION_RELOAD));
   web_request->SetIntegrity(
       blink::WebString::FromUTF8(request.fetch_integrity));
+  web_request->SetKeepalive(request.keepalive);
 }
 
 // Converts the |request| to its equivalent type in the Blink API.
