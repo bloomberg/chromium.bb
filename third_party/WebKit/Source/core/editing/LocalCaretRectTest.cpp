@@ -200,7 +200,6 @@ TEST_F(LocalCaretRectTest, CaretRectAtRtlBR) {
 TEST_F(LocalCaretRectTest, Images) {
   // This test only records the current behavior. Future changes are allowed.
 
-  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   LoadAhem();
   SetBodyContent(
       "<div id=div style='font: 10px/10px Ahem; width: 30px'>"
@@ -210,10 +209,10 @@ TEST_F(LocalCaretRectTest, Images) {
 
   const Element& img1 = *GetElementById("img1");
 
-  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::BeforeNode(img1), TextAffinity::kDownstream}));
-  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 10)),
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::AfterNode(img1), TextAffinity::kDownstream}));
 
@@ -221,10 +220,10 @@ TEST_F(LocalCaretRectTest, Images) {
 
   // Box-anchored LocalCaretRect is local to the box itself, instead of its
   // containing block.
-  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::BeforeNode(img2), TextAffinity::kDownstream}));
-  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 10)),
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::AfterNode(img2), TextAffinity::kDownstream}));
 }
