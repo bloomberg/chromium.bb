@@ -23,12 +23,14 @@ class VIEWS_EXPORT ImageButton : public Button {
  public:
   static const char kViewClassName[];
 
+  // An enum describing the horizontal alignment of images on Buttons.
   enum HorizontalAlignment {
     ALIGN_LEFT = 0,
     ALIGN_CENTER,
     ALIGN_RIGHT
   };
 
+  // An enum describing the vertical alignment of images on Buttons.
   enum VerticalAlignment {
     ALIGN_TOP = 0,
     ALIGN_MIDDLE,
