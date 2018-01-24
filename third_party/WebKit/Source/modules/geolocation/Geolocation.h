@@ -31,7 +31,6 @@
 #include "bindings/modules/v8/v8_position_error_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
-#include "device/geolocation/public/interfaces/geolocation.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/GeolocationWatchers.h"
@@ -42,6 +41,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
+#include "services/device/public/interfaces/geolocation.mojom-blink.h"
 
 namespace blink {
 

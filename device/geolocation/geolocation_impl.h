@@ -6,8 +6,8 @@
 
 #include "base/macros.h"
 #include "device/geolocation/geolocation_provider_impl.h"
-#include "device/geolocation/public/interfaces/geolocation.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/geolocation.mojom.h"
 
 #ifndef DEVICE_GEOLOCATION_GEOLOCATION_IMPL_H_
 #define DEVICE_GEOLOCATION_GEOLOCATION_IMPL_H_
