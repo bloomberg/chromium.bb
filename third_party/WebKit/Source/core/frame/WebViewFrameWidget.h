@@ -56,6 +56,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
       WebCompositeAndReadbackAsyncCallback*) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
+  WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
   void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
                            const WebFloatSize& layout_viewport_delta,

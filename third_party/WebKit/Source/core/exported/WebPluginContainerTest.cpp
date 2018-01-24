@@ -60,8 +60,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebMouseWheelEvent.h"
+#include "public/platform/WebPointerEvent.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTouchEvent.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
@@ -848,15 +848,18 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
-  event.touches_length = 1;
   WebRect rect = plugin_container_one_element.BoundsInViewport();
-  event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
-                                       rect.y + rect.height / 2);
+  WebPointerEvent event(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(
+          1, WebPointerProperties::PointerType::kTouch,
+          WebPointerProperties::Button::kLeft,
+          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
+          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+      1.0f, 1.0f);
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->DispatchBufferedTouchEvents();
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
@@ -887,17 +890,20 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
   {
-    WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
     WebRect rect = plugin_container_one_element.BoundsInViewport();
-    event.touches_length = 1;
-    event.touches[0].state = WebTouchPoint::kStatePressed;
-    event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
-                                         rect.y + rect.height / 2);
+    WebPointerEvent event(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(
+            1, WebPointerProperties::PointerType::kTouch,
+            WebPointerProperties::Button::kLeft,
+            WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
+            WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+        1.0f, 1.0f);
 
     WebCoalescedInputEvent coalesced_event(event);
 
     web_view->HandleInputEvent(coalesced_event);
+    web_view->DispatchBufferedTouchEvents();
     RunPendingTasks();
 
     EXPECT_EQ(static_cast<const size_t>(1),
@@ -908,30 +914,43 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   }
 
   {
-    WebTouchEvent event(WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
     WebRect rect = plugin_container_one_element.BoundsInViewport();
-    event.touches_length = 1;
-    event.touches[0].state = WebTouchPoint::kStateMoved;
-    event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 1,
-                                         rect.y + rect.height / 2 + 1);
+    WebPointerEvent event1(
+        WebInputEvent::kPointerMove,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(rect.x + rect.width / 2 + 1,
+                                           rect.y + rect.height / 2 + 1),
+                             WebFloatPoint(rect.x + rect.width / 2 + 1,
+                                           rect.y + rect.height / 2 + 1)),
+        1.0f, 1.0f);
 
-    WebCoalescedInputEvent coalesced_event(event);
+    WebCoalescedInputEvent coalesced_event(event1);
 
-    WebTouchEvent c_event(WebInputEvent::kTouchMove,
-                          WebInputEvent::kNoModifiers,
-                          WebInputEvent::kTimeStampForTesting);
-    c_event.touches_length = 1;
-    c_event.touches[0].state = WebTouchPoint::kStateMoved;
-    c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 2,
-                                           rect.y + rect.height / 2 + 2);
+    WebPointerEvent event2(
+        WebInputEvent::kPointerMove,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(rect.x + rect.width / 2 + 2,
+                                           rect.y + rect.height / 2 + 2),
+                             WebFloatPoint(rect.x + rect.width / 2 + 2,
+                                           rect.y + rect.height / 2 + 2)),
+        1.0f, 1.0f);
+    WebPointerEvent event3(
+        WebInputEvent::kPointerMove,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(rect.x + rect.width / 2 + 3,
+                                           rect.y + rect.height / 2 + 3),
+                             WebFloatPoint(rect.x + rect.width / 2 + 3,
+                                           rect.y + rect.height / 2 + 3)),
+        1.0f, 1.0f);
 
-    coalesced_event.AddCoalescedEvent(c_event);
-    c_event.touches[0].SetPositionInWidget(rect.x + rect.width / 2 + 3,
-                                           rect.y + rect.height / 2 + 3);
-    coalesced_event.AddCoalescedEvent(c_event);
+    coalesced_event.AddCoalescedEvent(event2);
+    coalesced_event.AddCoalescedEvent(event3);
 
     web_view->HandleInputEvent(coalesced_event);
+    web_view->DispatchBufferedTouchEvents();
     RunPendingTasks();
 
     EXPECT_EQ(static_cast<const size_t>(3),
@@ -1123,16 +1142,18 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
                           ->Plugin();
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebTouchEvent event(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
-  event.touches_length = 1;
   WebRect rect = plugin_container_one_element.BoundsInViewport();
-
-  event.touches[0].state = WebTouchPoint::kStatePressed;
-  event.touches[0].SetPositionInWidget(rect.x + rect.width / 2,
-                                       rect.y + rect.height / 2);
+  WebPointerEvent event(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(
+          1, WebPointerProperties::PointerType::kTouch,
+          WebPointerProperties::Button::kLeft,
+          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
+          WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
+      1.0f, 1.0f);
 
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->DispatchBufferedTouchEvents();
   RunPendingTasks();
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and

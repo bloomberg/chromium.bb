@@ -157,9 +157,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
 
-  WebInputEventResult HandleInputEventInternal(
-      const WebCoalescedInputEvent&) override;
-
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
       const LayoutPoint& pos_in_root_frame);

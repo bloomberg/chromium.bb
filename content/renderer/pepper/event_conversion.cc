@@ -25,6 +25,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "third_party/WebKit/public/platform/WebPointerEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -38,6 +39,7 @@ using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
+using blink::WebPointerEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using blink::WebUChar;
@@ -679,13 +681,22 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      events.push_back(std::move(original_event));
+      break;
     case PP_INPUTEVENT_TYPE_TOUCHSTART:
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
     case PP_INPUTEVENT_TYPE_TOUCHEND:
-    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
-      events.push_back(std::move(original_event));
-      break;
-
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL: {
+      blink::WebTouchEvent* touch_event =
+          static_cast<blink::WebTouchEvent*>(original_event.get());
+      for (unsigned i = 0; i < touch_event->touches_length; ++i) {
+        const blink::WebTouchPoint& touch_point = touch_event->touches[i];
+        if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
+          events.push_back(
+              std::make_unique<WebPointerEvent>(*touch_event, touch_point));
+        }
+      }
+    } break;
     case PP_INPUTEVENT_TYPE_WHEEL: {
       WebMouseWheelEvent* web_mouse_wheel_event =
           static_cast<WebMouseWheelEvent*>(original_event.get());

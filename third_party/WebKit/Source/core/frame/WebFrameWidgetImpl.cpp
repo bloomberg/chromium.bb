@@ -402,11 +402,6 @@ WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
 
 WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     const WebCoalescedInputEvent& coalesced_event) {
-  return HandleInputEventIncludingTouch(coalesced_event);
-}
-
-WebInputEventResult WebFrameWidgetImpl::HandleInputEventInternal(
-    const WebCoalescedInputEvent& coalesced_event) {
   const WebInputEvent& input_event = coalesced_event.Event();
   TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type",
                WebInputEvent::GetName(input_event.GetType()));

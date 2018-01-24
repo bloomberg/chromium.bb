@@ -106,10 +106,6 @@ Vector<WebPointerEvent> CORE_EXPORT
 TransformWebPointerEventVector(LocalFrameView*,
                                const std::vector<const WebInputEvent*>&);
 
-WebCoalescedInputEvent CORE_EXPORT
-GetCoalescedWebPointerEventForTouch(const WebPointerEvent&,
-                                    std::vector<const WebInputEvent*>);
-
 }  // namespace blink
 
 #endif

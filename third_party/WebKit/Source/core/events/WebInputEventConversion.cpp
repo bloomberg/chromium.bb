@@ -361,23 +361,4 @@ Vector<WebPointerEvent> TransformWebPointerEventVector(
   return result;
 }
 
-WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
-    const WebPointerEvent& pointer_event,
-    std::vector<const WebInputEvent*> coalesced_events) {
-  std::vector<WebPointerEvent> related_pointer_events;
-  for (const auto& event : coalesced_events) {
-    DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
-    const WebTouchEvent& touch_event =
-        static_cast<const WebTouchEvent&>(*event);
-    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].id == pointer_event.id &&
-          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        related_pointer_events.push_back(
-            WebPointerEvent(touch_event, touch_event.touches[i]));
-      }
-    }
-  }
-  return WebCoalescedInputEvent(pointer_event, related_pointer_events);
-}
-
 }  // namespace blink

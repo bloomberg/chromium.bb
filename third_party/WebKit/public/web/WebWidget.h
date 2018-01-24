@@ -137,6 +137,13 @@ class WebWidget {
     return WebInputEventResult::kNotHandled;
   }
 
+  // Send any outstanding touch events. Touch events need to be grouped together
+  // and any changes since the last time a touch event is going to be sent in
+  // the new touch event.
+  virtual WebInputEventResult DispatchBufferedTouchEvents() {
+    return WebInputEventResult::kNotHandled;
+  }
+
   // Called to inform the WebWidget of the mouse cursor's visibility.
   virtual void SetCursorVisibilityState(bool is_visible) {}
 
