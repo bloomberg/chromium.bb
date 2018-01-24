@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_THREAD_SAFE_SCRIPT_CONTAINER_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_THREAD_SAFE_SCRIPT_CONTAINER_H_
+
 #include <map>
 #include <memory>
 
@@ -10,9 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
-
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_THREAD_SAFE_SCRIPT_CONTAINER_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_THREAD_SAFE_SCRIPT_CONTAINER_H_
 
 namespace content {
 
