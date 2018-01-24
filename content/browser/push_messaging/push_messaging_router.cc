@@ -23,10 +23,6 @@ namespace content {
 
 namespace {
 
-// The number of seconds for which the event triggered by a push message should
-// be allowed to run.
-const int kPushMessageTimeoutSeconds = 90;
-
 void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
     mojom::PushDeliveryStatus delivery_status) {
@@ -128,7 +124,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
       ServiceWorkerMetrics::EventType::PUSH,
       base::BindOnce(&PushMessagingRouter::DeliverMessageEnd,
                      deliver_message_callback, service_worker_registration),
-      base::TimeDelta::FromSeconds(kPushMessageTimeoutSeconds),
+      base::TimeDelta::FromSeconds(mojom::kPushEventTimeoutSeconds),
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   service_worker->event_dispatcher()->DispatchPushEvent(

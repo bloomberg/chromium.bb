@@ -283,6 +283,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
 
   void DispatchSyncEvent(const std::string& tag,
                          bool last_chance,
+                         base::TimeDelta timeout,
                          DispatchSyncEventCallback callback) override {
     NOTIMPLEMENTED();
   }
