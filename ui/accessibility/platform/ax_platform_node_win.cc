@@ -2706,7 +2706,7 @@ int AXPlatformNodeWin::MSAARole() {
       // used to indicate a real native window object. It is automatically
       // created by oleacc.dll as a parent of the root of our hierarchy,
       // matching the HWND.
-      return ROLE_SYSTEM_APPLICATION;
+      return ROLE_SYSTEM_PANE;
 
     // TODO(dmazzoni): figure out the proper MSAA role for roles listed below.
     case AX_ROLE_BLOCKQUOTE:
