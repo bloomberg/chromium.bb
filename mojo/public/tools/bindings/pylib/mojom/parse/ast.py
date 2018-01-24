@@ -117,18 +117,21 @@ class AttributeList(NodeListBase):
 class Const(Definition):
   """Represents a const definition."""
 
-  def __init__(self, mojom_name, typename, value, **kwargs):
+  def __init__(self, mojom_name, attribute_list, typename, value, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
     # The typename is currently passed through as a string.
     assert isinstance(typename, str)
     # The value is either a literal (currently passed through as a string) or a
     # "wrapped identifier".
     assert isinstance(value, str) or isinstance(value, tuple)
     super(Const, self).__init__(mojom_name, **kwargs)
+    self.attribute_list = attribute_list
     self.typename = typename
     self.value = value
 
   def __eq__(self, other):
     return super(Const, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
            self.typename == other.typename and \
            self.value == other.value
 
