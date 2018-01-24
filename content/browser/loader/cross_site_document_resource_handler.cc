@@ -529,8 +529,8 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   if (request()->initiator().has_value())
     initiator = request()->initiator().value();
 
-  // Don't block same-site documents.
-  if (CrossSiteDocumentClassifier::IsSameSite(initiator, url))
+  // Don't block same-origin documents.
+  if (CrossSiteDocumentClassifier::IsSameOrigin(initiator, url))
     return false;
 
   // Only block documents from HTTP(S) schemes.

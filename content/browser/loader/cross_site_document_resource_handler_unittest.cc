@@ -204,11 +204,11 @@ const TestScenario kScenarios[] = {
         -1,                                         // verdict_packet
     },
     {
-        "Allowed: Same-site JSON with parser breaker and HTML mime type",
+        "Allowed: Same-origin JSON with parser breaker and HTML mime type",
         __LINE__,
         "http://www.a.com/resource.html",       // target_url
         RESOURCE_TYPE_XHR,                      // resource_type
-        "http://a.com/",                        // initiator_origin
+        "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
         "text/html",                            // response_mime_type
         CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,     // canonical_mime_type
@@ -219,9 +219,9 @@ const TestScenario kScenarios[] = {
         -1,  // verdict_packet
     },
     {
-        "Allowed: Same-site JSON with parser breaker and JSON mime type",
+        "Allowed: Same-origin JSON with parser breaker and JSON mime type",
         __LINE__,
-        "http://a.com/resource.html",           // target_url
+        "http://www.a.com/resource.html",       // target_url
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
@@ -613,6 +613,38 @@ const TestScenario kScenarios[] = {
         {"Wouldn't sniff as HTML"},             // packets
         Verdict::kBlock,                        // verdict
         -1,                                     // verdict_packet
+    },
+    {
+        "Blocked: Cross-origin, same-site XHR to nosniff HTML without CORS",
+        __LINE__,
+        "https://foo.site.com/resource.html",       // target_url
+        RESOURCE_TYPE_XHR,                          // resource_type
+        "https://bar.site.com/",                    // initiator_origin
+        OriginHeader::kOmit,                        // cors_request
+        "text/html",                                // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        true,                                       // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,      // cors_response
+        {"<html><head>this should sniff as HTML"},  // packets
+        Verdict::kBlock,                            // verdict
+        -1,                                         // verdict_packet
+    },
+    {
+        "Blocked: Cross-origin XHR to HTML with wrong CORS (okay same-site)",
+        // Note that initiator_origin is cross-origin, but same-site in relation
+        // to the CORS response.
+        __LINE__,
+        "http://www.b.com/resource.html",    // target_url
+        RESOURCE_TYPE_XHR,                   // resource_type
+        "http://foo.example.com/",           // initiator_origin
+        OriginHeader::kInclude,              // cors_request
+        "text/html",                         // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,  // canonical_mime_type
+        false,                               // include_no_sniff_header
+        AccessControlAllowOriginHeader::kAllowExampleDotCom,  // cors_response
+        {"<hTmL><head>this should sniff as HTML"},            // packets
+        Verdict::kBlock,                                      // verdict
+        0,                                                    // verdict_packet
     },
 
     {

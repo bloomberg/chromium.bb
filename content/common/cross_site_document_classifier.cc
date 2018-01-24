@@ -153,19 +153,9 @@ bool CrossSiteDocumentClassifier::IsBlockableScheme(const GURL& url) {
   return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
 
-bool CrossSiteDocumentClassifier::IsSameSite(const url::Origin& frame_origin,
-                                             const GURL& response_url) {
-  if (frame_origin.unique() || !response_url.is_valid())
-    return false;
-
-  if (frame_origin.scheme() != response_url.scheme())
-    return false;
-
-  // SameDomainOrHost() extracts the effective domains (public suffix plus one)
-  // from the two URLs and compare them.
-  return net::registry_controlled_domains::SameDomainOrHost(
-      response_url, frame_origin,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+bool CrossSiteDocumentClassifier::IsSameOrigin(const url::Origin& frame_origin,
+                                               const GURL& response_url) {
+  return frame_origin.IsSameOriginWith(url::Origin::Create(response_url));
 }
 
 // We don't use Webkit's existing CORS policy implementation since
@@ -192,7 +182,7 @@ bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
   if (access_control_origin == "*" || access_control_origin == "null")
     return true;
 
-  return IsSameSite(frame_origin, GURL(access_control_origin));
+  return IsSameOrigin(frame_origin, GURL(access_control_origin));
 }
 
 // This function is a slight modification of |net::SniffForHTML|.
