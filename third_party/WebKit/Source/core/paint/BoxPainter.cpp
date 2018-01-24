@@ -225,8 +225,10 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
 
 void BoxPainter::PaintMask(const PaintInfo& paint_info,
                            const LayoutPoint& paint_offset) {
-  if (layout_box_.Style()->Visibility() != EVisibility::kVisible ||
-      paint_info.phase != PaintPhase::kMask)
+  DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
+
+  if (!layout_box_.HasMask() ||
+      layout_box_.Style()->Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -242,16 +244,14 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
                                  const LayoutRect& paint_rect) {
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
-  bool flatten_compositing_layers =
-      paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
-  bool mask_blending_applied_by_compositor =
-      !flatten_compositing_layers && layout_box_.HasLayer() &&
-      layout_box_.Layer()->MaskBlendingAppliedByCompositor();
-
   bool all_mask_images_loaded = true;
 
-  if (!mask_blending_applied_by_compositor &&
-      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+  if (!layout_box_.HasMask() ||
+      layout_box_.Style()->Visibility() != EVisibility::kVisible)
+    return;
+
+  DCHECK(layout_box_.HasLayer());
+  if (!layout_box_.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
     push_transparency_layer = true;
     StyleImage* mask_box_image = layout_box_.Style()->MaskBoxImage().GetImage();
     const FillLayer& mask_layers = layout_box_.Style()->MaskLayers();

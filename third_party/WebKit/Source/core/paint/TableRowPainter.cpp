@@ -21,6 +21,10 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
                             const LayoutPoint& paint_offset) {
   DCHECK(layout_table_row_.HasSelfPaintingLayer());
 
+  // TODO(crbug.com/805514): Paint mask for table row.
+  if (paint_info.phase == PaintPhase::kMask)
+    return;
+
   // TODO(crbug.com/577282): This painting order is inconsistent with other
   // outlines.
   if (ShouldPaintSelfOutline(paint_info.phase))

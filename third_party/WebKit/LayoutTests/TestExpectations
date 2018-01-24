@@ -81,9 +81,7 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/mask-clip-target-transfor
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/resource-invalidate-on-target-update.svg [ Failure ]
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset.html [ Failure ]
-crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image.html [ Failure ]
+crbug.com/768691 virtual/spv175/fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/multicol/border-radius-clipped-layer.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]

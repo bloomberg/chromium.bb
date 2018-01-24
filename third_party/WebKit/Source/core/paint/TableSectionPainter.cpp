@@ -177,6 +177,10 @@ void TableSectionPainter::PaintRepeatingFooterGroup(
 
 void TableSectionPainter::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
+  // TODO(crbug.com/805514): Paint mask for table section.
+  if (paint_info.phase == PaintPhase::kMask)
+    return;
+
   PaintSection(paint_info, paint_offset);
   LayoutTable* table = layout_table_section_.Table();
   if (table->Header() == layout_table_section_) {
