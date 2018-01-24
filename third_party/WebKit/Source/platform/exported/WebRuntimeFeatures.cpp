@@ -382,6 +382,10 @@ void WebRuntimeFeatures::EnableScrollAnchoring(bool enable) {
   RuntimeEnabledFeatures::SetScrollAnchoringEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableScrollAnchorSerialization(bool enable) {
+  RuntimeEnabledFeatures::SetScrollAnchorSerializationEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(bool enable) {
   RuntimeEnabledFeatures::SetServiceWorkerScriptStreamingEnabled(enable);
 }

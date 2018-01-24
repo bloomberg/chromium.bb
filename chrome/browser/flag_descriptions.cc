@@ -572,6 +572,12 @@ const char kEnableScrollAnchoringDescription[] =
     "Adjusts scroll position to prevent visible jumps when offscreen content "
     "changes.";
 
+const char kEnableScrollAnchorSerializationName[] =
+    "Scroll Anchor Serialization";
+const char kEnableScrollAnchorSerializationDescription[] =
+    "Save the scroll anchor and use it to restore the scroll position when "
+    "navigating.";
+
 const char kEnableSharedArrayBufferName[] =
     "Experimental enabled SharedArrayBuffer support in JavaScript.";
 const char kEnableSharedArrayBufferDescription[] =

@@ -76,6 +76,7 @@ CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
 CONTENT_EXPORT extern const base::Feature kRequireCSSExtensionForFile;
 CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
+CONTENT_EXPORT extern const base::Feature kScrollAnchorSerialization;
 CONTENT_EXPORT
 extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
