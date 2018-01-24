@@ -134,6 +134,33 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
   EXPECT_TRUE(event2.has_aborted());
 }
 
+TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
+  EnableServicification();
+
+  ServiceWorkerTimeoutTimer timer(base::BindRepeating(&base::DoNothing),
+                                  task_runner()->GetMockTickClock());
+  MockEvent event1, event2;
+  int event_id1 = timer.StartEventWithCustomTimeout(
+      event1.CreateAbortCallback(), ServiceWorkerTimeoutTimer::kUpdateInterval -
+                                        base::TimeDelta::FromSeconds(1));
+  int event_id2 = timer.StartEventWithCustomTimeout(
+      event2.CreateAbortCallback(),
+      ServiceWorkerTimeoutTimer::kUpdateInterval * 2 -
+          base::TimeDelta::FromSeconds(1));
+  event1.set_event_id(event_id1);
+  event2.set_event_id(event_id2);
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+
+  EXPECT_TRUE(event1.has_aborted());
+  EXPECT_FALSE(event2.has_aborted());
+  task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
+                               base::TimeDelta::FromSeconds(1));
+
+  EXPECT_TRUE(event1.has_aborted());
+  EXPECT_TRUE(event2.has_aborted());
+}
+
 TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
   EnableServicification();
 

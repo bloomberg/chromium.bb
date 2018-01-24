@@ -792,7 +792,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   active_version->event_dispatcher()->DispatchSyncEvent(
-      tag, last_chance,
+      tag, last_chance, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, std::move(active_version),
                      request_id, repeating_callback));
 }

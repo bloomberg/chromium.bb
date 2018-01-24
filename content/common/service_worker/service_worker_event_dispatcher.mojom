@@ -53,6 +53,12 @@ struct ExtendableMessageEvent {
   blink.mojom.ServiceWorkerObjectInfo? source_info_for_service_worker;
 };
 
+// The number of seconds for which a 'push' event should be allowed to run.
+// This is not in the spec but for Chromium specific internal timeouts. Each
+// event dispatched to service workers has 5 minutes timeout in the Chrome
+// implementation, but this makes the timeout for push events shorter.
+const int32 kPushEventTimeoutSeconds = 90;
+
 // An interface for dispatching events to a ServiceWorker. This interface is
 // implemented by ServiceWorkerContextClient that lives in the renderer-side
 // to dispatch events from the browser-side.
@@ -127,7 +133,12 @@ interface ServiceWorkerEventDispatcher {
           mojo.common.mojom.Time dispatch_event_time);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
-  DispatchSyncEvent(string id, bool last_chance)
+  // S13nServiceWorker: |timeout| is the amount of time to allow this event to
+  // finish.
+  // Non-S13nServiceWorker: |timeout| is just ignored.
+  DispatchSyncEvent(string id,
+                    bool last_chance,
+                    mojo.common.mojom.TimeDelta timeout)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchAbortPaymentEvent(

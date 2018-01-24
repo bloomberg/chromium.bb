@@ -1353,11 +1353,12 @@ void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
 void ServiceWorkerContextClient::DispatchSyncEvent(
     const std::string& tag,
     bool last_chance,
+    base::TimeDelta timeout,
     DispatchSyncEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
-  int request_id = context_->timeout_timer->StartEvent(
-      CreateAbortCallback(&context_->sync_event_callbacks));
+  int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
+      CreateAbortCallback(&context_->sync_event_callbacks), timeout);
   context_->sync_event_callbacks.emplace(request_id, std::move(callback));
 
   // TODO(jkarlin): Make this blink::WebString::FromUTF8Lenient once
@@ -1680,8 +1681,9 @@ void ServiceWorkerContextClient::DispatchPushEvent(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchPushEvent");
 
-  int request_id = context_->timeout_timer->StartEvent(
-      CreateAbortCallback(&context_->push_event_callbacks));
+  int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
+      CreateAbortCallback(&context_->push_event_callbacks),
+      base::TimeDelta::FromSeconds(mojom::kPushEventTimeoutSeconds));
   context_->push_event_callbacks.emplace(request_id, std::move(callback));
 
   // Only set data to be a valid string if the payload had decrypted data.

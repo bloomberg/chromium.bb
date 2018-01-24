@@ -53,6 +53,12 @@ ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
 
 int ServiceWorkerTimeoutTimer::StartEvent(
     base::OnceCallback<void(int /* event_id */)> abort_callback) {
+  return StartEventWithCustomTimeout(std::move(abort_callback), kEventTimeout);
+}
+
+int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
+    base::OnceCallback<void(int /* event_id */)> abort_callback,
+    base::TimeDelta timeout) {
   if (did_idle_timeout()) {
     idle_time_ = base::TimeTicks();
     did_idle_timeout_ = false;
@@ -67,7 +73,7 @@ int ServiceWorkerTimeoutTimer::StartEvent(
   std::set<EventInfo>::iterator iter;
   bool is_inserted;
   std::tie(iter, is_inserted) = inflight_events_.emplace(
-      event_id, tick_clock_->NowTicks() + kEventTimeout,
+      event_id, tick_clock_->NowTicks() + timeout,
       base::BindOnce(std::move(abort_callback), event_id));
   DCHECK(is_inserted);
   id_event_map_.emplace(event_id, iter);

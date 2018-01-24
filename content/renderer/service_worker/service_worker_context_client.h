@@ -329,6 +329,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                          DispatchPushEventCallback callback) override;
   void DispatchSyncEvent(const std::string& tag,
                          bool last_chance,
+                         base::TimeDelta timeout,
                          DispatchSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
       int payment_request_id,
