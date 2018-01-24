@@ -129,10 +129,8 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->AddState(ui::AX_STATE_HASPOPUP);
-  if (enabled()) {
-    node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
-                               ui::AX_DEFAULT_ACTION_VERB_PRESS);
-  }
+  if (enabled())
+    node_data->SetDefaultActionVerb(ui::AX_DEFAULT_ACTION_VERB_PRESS);
 }
 
 void ToolbarButton::ShowContextMenuForView(View* source,

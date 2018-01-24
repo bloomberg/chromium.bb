@@ -287,7 +287,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
   ui::AXNodeData* node = new ui::AXNodeData();
   node->id = render_accessibility->GenerateAXID();
   node->role = role;
-  node->AddIntAttribute(ui::AX_ATTR_RESTRICTION, ui::AX_RESTRICTION_READ_ONLY);
+  node->SetRestriction(ui::AX_RESTRICTION_READ_ONLY);
 
   // All nodes other than the first one have coordinates relative to
   // the first node.

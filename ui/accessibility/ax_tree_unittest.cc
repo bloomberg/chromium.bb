@@ -743,8 +743,7 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_BUTTON;
-  initial_state.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                                         ui::AX_CHECKED_STATE_TRUE);
+  initial_state.nodes[0].SetCheckedState(AX_CHECKED_STATE_TRUE);
   initial_state.nodes[0].AddState(AX_STATE_FOCUSABLE);
   AXTree tree(initial_state);
 
@@ -757,8 +756,7 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   update.nodes.resize(1);
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_CHECK_BOX;
-  update.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
-                                  ui::AX_CHECKED_STATE_FALSE);
+  update.nodes[0].SetCheckedState(AX_CHECKED_STATE_FALSE);
   update.nodes[0].AddState(AX_STATE_FOCUSABLE);
   update.nodes[0].AddState(AX_STATE_VISITED);
   EXPECT_TRUE(tree.Unserialize(update));

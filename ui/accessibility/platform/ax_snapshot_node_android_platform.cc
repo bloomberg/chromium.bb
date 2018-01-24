@@ -150,9 +150,10 @@ base::string16 GetText(const AXNode* node, bool show_password) {
     return base::string16();
   }
 
+  ui::AXNameFrom name_from = static_cast<ui::AXNameFrom>(
+      node->data().GetIntAttribute(AX_ATTR_NAME_FROM));
   if (node->data().role == AX_ROLE_LIST_ITEM &&
-      node->data().GetIntAttribute(AX_ATTR_NAME_FROM) ==
-          AX_NAME_FROM_CONTENTS) {
+      name_from == AX_NAME_FROM_CONTENTS) {
     if (node->child_count() > 0 && !HasOnlyTextChildren(node))
       return base::string16();
   }
@@ -395,13 +396,16 @@ AXSnapshotNodeAndroid::WalkAXTreeDepthFirst(
         gfx::ToEnclosingRect(tree->RelativeToTreeBounds(node, text_size_rect));
     result->text_size = scaled_text_size_rect.height();
 
-    const int text_style = node->data().GetIntAttribute(AX_ATTR_TEXT_STYLE);
+    const int32_t text_style = node->data().GetIntAttribute(AX_ATTR_TEXT_STYLE);
     result->color = node->data().GetIntAttribute(AX_ATTR_COLOR);
     result->bgcolor = node->data().GetIntAttribute(AX_ATTR_BACKGROUND_COLOR);
-    result->bold = (text_style & AX_TEXT_STYLE_BOLD) != 0;
-    result->italic = (text_style & AX_TEXT_STYLE_ITALIC) != 0;
-    result->line_through = (text_style & AX_TEXT_STYLE_LINE_THROUGH) != 0;
-    result->underline = (text_style & AX_TEXT_STYLE_UNDERLINE) != 0;
+    result->bold = (text_style & static_cast<int32_t>(AX_TEXT_STYLE_BOLD)) != 0;
+    result->italic =
+        (text_style & static_cast<int32_t>(AX_TEXT_STYLE_ITALIC)) != 0;
+    result->line_through =
+        (text_style & static_cast<int32_t>(AX_TEXT_STYLE_LINE_THROUGH)) != 0;
+    result->underline =
+        (text_style & static_cast<int32_t>(AX_TEXT_STYLE_UNDERLINE)) != 0;
   }
 
   const gfx::Rect& absolute_rect =

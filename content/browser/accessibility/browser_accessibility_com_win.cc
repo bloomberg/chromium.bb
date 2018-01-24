@@ -1978,28 +1978,26 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
                          L"pt");
   }
 
-  auto text_style = static_cast<ui::AXTextStyle>(
-      owner()->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE));
-  if (text_style == ui::AX_TEXT_STYLE_NONE) {
+  int32_t text_style = owner()->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
+  if (text_style == static_cast<int32_t>(ui::AX_TEXT_STYLE_NONE)) {
     attributes.push_back(L"font-style:normal");
     attributes.push_back(L"font-weight:normal");
   } else {
-    if (text_style & ui::AX_TEXT_STYLE_ITALIC) {
+    if (text_style & static_cast<int32_t>(ui::AX_TEXT_STYLE_ITALIC)) {
       attributes.push_back(L"font-style:italic");
     } else {
       attributes.push_back(L"font-style:normal");
     }
 
-    if (text_style & ui::AX_TEXT_STYLE_BOLD) {
+    if (text_style & static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD)) {
       attributes.push_back(L"font-weight:bold");
     } else {
       attributes.push_back(L"font-weight:normal");
     }
   }
 
-  auto invalid_state = static_cast<ui::AXInvalidState>(
-      owner()->GetIntAttribute(ui::AX_ATTR_INVALID_STATE));
-  switch (invalid_state) {
+  int32_t invalid_state = owner()->GetIntAttribute(ui::AX_ATTR_INVALID_STATE);
+  switch (static_cast<ui::AXInvalidState>(invalid_state)) {
     case ui::AX_INVALID_STATE_NONE:
     case ui::AX_INVALID_STATE_FALSE:
       attributes.push_back(L"invalid:false");
@@ -2010,9 +2008,10 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     case ui::AX_INVALID_STATE_SPELLING:
     case ui::AX_INVALID_STATE_GRAMMAR: {
       base::string16 spelling_grammar_value;
-      if (invalid_state & ui::AX_INVALID_STATE_SPELLING)
+      if (invalid_state & static_cast<int32_t>(ui::AX_INVALID_STATE_SPELLING))
         spelling_grammar_value = L"spelling";
-      else if (invalid_state & ui::AX_INVALID_STATE_GRAMMAR)
+      else if (invalid_state &
+               static_cast<int32_t>(ui::AX_INVALID_STATE_GRAMMAR))
         spelling_grammar_value = L"grammar";
       else
         spelling_grammar_value = L"spelling,grammar";
@@ -2046,7 +2045,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   // TODO(nektar): Add Blink support for the following attributes.
   // Currently set to their default values as dictated by the IA2 Spec.
   attributes.push_back(L"text-line-through-mode:continuous");
-  if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH) {
+  if (text_style & static_cast<int32_t>(ui::AX_TEXT_STYLE_LINE_THROUGH)) {
     // TODO(nektar): Figure out a more specific value.
     attributes.push_back(L"text-line-through-style:solid");
   } else {
@@ -2054,7 +2053,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   }
   // Default value must be the empty string.
   attributes.push_back(L"text-line-through-text:");
-  if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH) {
+  if (text_style & static_cast<int32_t>(ui::AX_TEXT_STYLE_LINE_THROUGH)) {
     // TODO(nektar): Figure out a more specific value.
     attributes.push_back(L"text-line-through-type:single");
   } else {
@@ -2065,7 +2064,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   attributes.push_back(L"text-position:baseline");
   attributes.push_back(L"text-shadow:none");
   attributes.push_back(L"text-underline-mode:continuous");
-  if (text_style & ui::AX_TEXT_STYLE_UNDERLINE) {
+  if (text_style & static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE)) {
     // TODO(nektar): Figure out a more specific value.
     attributes.push_back(L"text-underline-style:solid");
     attributes.push_back(L"text-underline-type:single");
@@ -2113,8 +2112,8 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
     const std::vector<int>& marker_ends =
         owner()->GetIntListAttribute(ui::AX_ATTR_MARKER_ENDS);
     for (size_t i = 0; i < marker_types.size(); ++i) {
-      if (!(static_cast<ui::AXMarkerType>(marker_types[i]) &
-            ui::AX_MARKER_TYPE_SPELLING))
+      if (!(marker_types[i] &
+            static_cast<int32_t>(ui::AX_MARKER_TYPE_SPELLING)))
         continue;
       int start_offset = marker_starts[i];
       int end_offset = marker_ends[i];
@@ -2350,8 +2349,8 @@ bool BrowserAccessibilityComWin::IsListBoxOptionOrMenuListOption() {
   if (!owner()->PlatformGetParent())
     return false;
 
-  int32_t role = owner()->GetRole();
-  int32_t parent_role = owner()->PlatformGetParent()->GetRole();
+  ui::AXRole role = owner()->GetRole();
+  ui::AXRole parent_role = owner()->PlatformGetParent()->GetRole();
 
   if (role == ui::AX_ROLE_LIST_BOX_OPTION &&
       parent_role == ui::AX_ROLE_LIST_BOX) {

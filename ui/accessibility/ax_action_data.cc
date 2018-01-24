@@ -19,6 +19,14 @@ AXActionData::AXActionData() = default;
 AXActionData::AXActionData(const AXActionData& other) = default;
 AXActionData::~AXActionData() = default;
 
+namespace {
+
+bool IsFlagSet(uint32_t bitfield, AXActionFlags flag) {
+  return 0 != (bitfield & (1 << static_cast<uint32_t>(flag)));
+}
+
+}  // namespace
+
 // Note that this includes an initial space character if nonempty, but
 // that works fine because this is normally printed by AXAction::ToString.
 std::string AXActionData::ToString() const {
@@ -27,10 +35,10 @@ std::string AXActionData::ToString() const {
   if (target_node_id != -1)
     result += " target_node_id=" + IntToString(target_node_id);
 
-  if (flags & (1 << ui::AX_ACTION_FLAGS_REQUEST_IMAGES))
+  if (IsFlagSet(flags, AX_ACTION_FLAGS_REQUEST_IMAGES))
     result += " flag_request_images";
 
-  if (flags & (1 << ui::AX_ACTION_FLAGS_REQUEST_INLINE_TEXT_BOXES))
+  if (IsFlagSet(flags, AX_ACTION_FLAGS_REQUEST_INLINE_TEXT_BOXES))
     result += " flag_request_inline_text_boxes";
 
   if (anchor_node_id != -1) {

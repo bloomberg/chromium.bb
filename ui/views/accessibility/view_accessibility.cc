@@ -52,7 +52,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   // rather than possibly crashing.
   if (!owner_view_->GetWidget() || owner_view_->GetWidget()->IsClosed()) {
     data->role = ui::AX_ROLE_UNKNOWN;
-    data->AddIntAttribute(ui::AX_ATTR_RESTRICTION, ui::AX_RESTRICTION_DISABLED);
+    data->SetRestriction(ui::AX_RESTRICTION_DISABLED);
     return;
   }
 
@@ -81,7 +81,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     data->AddState(ui::AX_STATE_FOCUSABLE);
 
   if (!owner_view_->enabled())
-    data->AddIntAttribute(ui::AX_ATTR_RESTRICTION, ui::AX_RESTRICTION_DISABLED);
+    data->SetRestriction(ui::AX_RESTRICTION_DISABLED);
 
   if (!owner_view_->visible())
     data->AddState(ui::AX_STATE_INVISIBLE);

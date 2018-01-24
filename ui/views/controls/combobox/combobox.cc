@@ -774,8 +774,7 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
   node_data->SetValue(model_->GetItemAt(selected_index_));
   if (enabled()) {
-    node_data->AddIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB,
-                               ui::AX_DEFAULT_ACTION_VERB_OPEN);
+    node_data->SetDefaultActionVerb(ui::AX_DEFAULT_ACTION_VERB_OPEN);
   }
   node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, selected_index_);
   node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, model_->GetItemCount());

@@ -426,8 +426,7 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
 
 void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TREE;
-  node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
-                             ui::AX_RESTRICTION_READ_ONLY);
+  node_data->SetRestriction(ui::AX_RESTRICTION_READ_ONLY);
   if (!selected_node_)
     return;
 
