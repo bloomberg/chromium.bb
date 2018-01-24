@@ -100,3 +100,6 @@
 # Tests failures related to surface sync. http://crbug.com/793302
 -RenderWidgetInitialSizeTest.InitialSize
 -RenderWidgetTest.OnResize
+
+# Flaky Result on Windows-7 http://crbug.com/883463
+-MainThreadEventQueueBrowserTest.MouseMove
