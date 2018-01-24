@@ -247,6 +247,13 @@ class NET_EXPORT UDPSocketPosix {
   // Apply |tag| to this socket.
   void ApplySocketTag(const SocketTag& tag);
 
+  // Enables experimental optimization. This method should be called
+  // before the socket is used to read data for the first time.
+  void enable_experimental_recv_optimization() {
+    DCHECK_EQ(kInvalidSocket, socket_);
+    experimental_recv_optimization_enabled_ = true;
+  };
+
  private:
   enum SocketOptions {
     SOCKET_OPTION_MULTICAST_LOOP = 1 << 0
@@ -308,7 +315,27 @@ class NET_EXPORT UDPSocketPosix {
                     const CompletionCallback& callback);
 
   int InternalConnect(const IPEndPoint& address);
+
+  // Reads data from a UDP socket. Depending whether the socket is connected or
+  // not, the method delegates the call to InternalRecvFromConnectedSocket()
+  // or InternalRecvFromNonConnectedSocket() respectively.
+  // For proper detection of truncated reads, the |buf_len| should always be
+  // one byte longer than the expected maximum packet length.
   int InternalRecvFrom(IOBuffer* buf, int buf_len, IPEndPoint* address);
+
+  // A more efficient implementation of the InternalRecvFrom() method for
+  // reading data from connected sockets. Internally the method uses the read()
+  // system call.
+  int InternalRecvFromConnectedSocket(IOBuffer* buf,
+                                      int buf_len,
+                                      IPEndPoint* address);
+
+  // An implementation of the InternalRecvFrom() method for reading data
+  // from non-connected sockets. Internally the method uses the recvmsg()
+  // system call.
+  int InternalRecvFromNonConnectedSocket(IOBuffer* buf,
+                                         int buf_len,
+                                         IPEndPoint* address);
   int InternalSendTo(IOBuffer* buf, int buf_len, const IPEndPoint* address);
 
   // Applies |socket_options_| to |socket_|. Should be called before
@@ -382,6 +409,12 @@ class NET_EXPORT UDPSocketPosix {
   // Current socket tag if |socket_| is valid, otherwise the tag to apply when
   // |socket_| is opened.
   SocketTag tag_;
+
+  // If set to true, the socket will use an optimized experimental code path.
+  // By default, the value is set to false. To use the optimization, the
+  // client of the socket has to opt-in by calling the
+  // enable_experimental_recv_optimization() method.
+  bool experimental_recv_optimization_enabled_;
 
   THREAD_CHECKER(thread_checker_);
 

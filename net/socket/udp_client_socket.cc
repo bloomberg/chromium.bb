@@ -4,6 +4,7 @@
 
 #include "net/socket/udp_client_socket.h"
 
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -125,6 +126,12 @@ const NetLogWithSource& UDPClientSocket::NetLog() const {
 void UDPClientSocket::UseNonBlockingIO() {
 #if defined(OS_WIN)
   socket_.UseNonBlockingIO();
+#endif
+}
+
+void UDPClientSocket::EnableRecvOptimization() {
+#if defined(OS_POSIX)
+  socket_.enable_experimental_recv_optimization();
 #endif
 }
 
