@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROMECAST_NET_FAKE_CONNECTIVITY_CHECKER_H_
+#define CHROMECAST_NET_FAKE_CONNECTIVITY_CHECKER_H_
+
 #include "base/macros.h"
 #include "chromecast/net/connectivity_checker.h"
 
@@ -31,3 +34,5 @@ class FakeConnectivityChecker : public ConnectivityChecker {
 };
 
 }  // namespace chromecast
+
+#endif  // CHROMECAST_NET_FAKE_CONNECTIVITY_CHECKER_H_
