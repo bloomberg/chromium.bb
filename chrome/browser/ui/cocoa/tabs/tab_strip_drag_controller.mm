@@ -561,6 +561,11 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
       continue;
     TabWindowController* controller =
         [TabWindowController tabWindowControllerForWindow:window];
+    // +tabWindowControllerForWindow: moves from a window to its parent
+    // looking for a TabWindowController. This means in some cases
+    // window != dragWindow but the returned controller == dragController.
+    if (dragController == controller)
+      continue;
     if ([controller canReceiveFrom:dragController])
       [targets addObject:controller];
   }
