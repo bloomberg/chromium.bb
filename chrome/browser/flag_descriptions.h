@@ -766,6 +766,9 @@ extern const char kServiceWorkerNavigationPreloadDescription[];
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 
+extern const char kServiceWorkerServicificationName[];
+extern const char kServiceWorkerServicificationDescription[];
+
 extern const char kServiceWorkerScriptStreamingName[];
 extern const char kServiceWorkerScriptStreamingDescription[];
 
