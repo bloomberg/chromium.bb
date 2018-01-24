@@ -22,21 +22,21 @@ class TabStatsDataStore {
     // Constructor, initializes everything to zero.
     TabsStats();
 
-    // The total number of tabs opened across all the windows.
+    // The total number of tabs existing across all the windows.
     size_t total_tab_count;
 
-    // The maximum total number of tabs that has been opened across all the
+    // The maximum total number of tabs that have existed across all the
     // windows at the same time.
     size_t total_tab_count_max;
 
-    // The maximum total number of tabs that has been opened at the same time in
+    // The maximum total number of tabs that have existed at the same time in
     // a single window.
     size_t max_tab_per_window;
 
-    // The total number of windows opened.
+    // The total number of windows currently existing.
     size_t window_count;
 
-    // The maximum total number of windows opened at the same time.
+    // The maximum total number of windows existing at the same time.
     size_t window_count_max;
   };
 

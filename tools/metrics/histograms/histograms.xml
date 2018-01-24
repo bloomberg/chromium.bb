@@ -90566,7 +90566,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Tabs.MaxWindowsInADay" units="tabs">
   <owner>sebmarchand@chromium.org</owner>
   <summary>
-    The maximum number of windows opened at the same time over the course of a
+    The maximum number of windows existing at the same time over the course of a
     day.
   </summary>
 </histogram>
