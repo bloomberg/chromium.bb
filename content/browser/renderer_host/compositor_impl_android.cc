@@ -557,7 +557,6 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   }
   if (root_window_->GetLayer()) {
     subroot_layer_ = root_window_->GetLayer();
-    subroot_layer_->RemoveAllChildren();
     subroot_layer_->AddChild(root_layer);
   }
 }
