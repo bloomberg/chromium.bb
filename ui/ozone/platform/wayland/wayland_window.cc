@@ -148,10 +148,19 @@ void WaylandWindow::ToggleFullscreen() {
   // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
   // if xdg_surface_set_fullscreen() is not provided with wl_output, it's up to
   // the compositor to choose which display will be used to map this surface.
-  if (!IsFullscreen())
+  if (!IsFullscreen()) {
+    // Client might have requested a fullscreen state while the window was in
+    // a maximized state. Thus, |restored_bounds_| can contain the bounds of a
+    // "normal" state before the window was maximized. We don't override them
+    // unless they are empty, because |bounds_| can contain bounds of a
+    // maximized window instead.
+    if (restored_bounds_.IsEmpty())
+      restored_bounds_ = bounds_;
     xdg_surface_->SetFullscreen();
-  else
+  } else {
     xdg_surface_->UnSetFullscreen();
+  }
+
   connection_->ScheduleFlush();
 }
 
@@ -161,6 +170,15 @@ void WaylandWindow::Maximize() {
 
   if (IsFullscreen())
     ToggleFullscreen();
+
+  // Keeps track of the previous bounds, which are used to restore a window
+  // after unmaximize call. We don't override |restored_bounds_| if they have
+  // already had value, which means the previous state has been a fullscreen
+  // state. That is, the bounds can be stored during a change from a normal
+  // state to a maximize state, and then preserved to be the same, when changing
+  // from maximized to fullscreen and back to a maximized state.
+  if (restored_bounds_.IsEmpty())
+    restored_bounds_ = bounds_;
 
   xdg_surface_->SetMaximized();
   connection_->ScheduleFlush();
@@ -256,18 +274,11 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
       delegate_->OnWindowStateChanged(state_);
   }
 
-  // Width or height set 0 means that we should decide on width and height by
-  // ourselves, but we don't want to set to anything else. Use previous size.
-  if (width == 0 || height == 0) {
-    width = GetBounds().width();
-    height = GetBounds().height();
-  }
-
   // Rather than call SetBounds here for every configure event, just save the
   // most recent bounds, and have WaylandConnection call ApplyPendingBounds
   // when it has finished processing events. We may get many configure events
   // in a row during an interactive resize, and only the last one matters.
-  pending_bounds_ = gfx::Rect(0, 0, width, height);
+  SetPendingBounds(width, height);
 }
 
 void WaylandWindow::OnCloseRequest() {
@@ -284,6 +295,27 @@ bool WaylandWindow::IsMaximized() const {
 
 bool WaylandWindow::IsFullscreen() const {
   return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+}
+
+void WaylandWindow::SetPendingBounds(int32_t width, int32_t height) {
+  // Width or height set to 0 means that we should decide on width and height by
+  // ourselves, but we don't want to set them to anything else. Use restored
+  // bounds size or the current bounds.
+  //
+  // Note: if the browser was started with --start-fullscreen and a user exits
+  // the fullscreen mode, wayland may set the width and height to be 1. Instead,
+  // explicitly set the bounds to the current desired ones or the previous
+  // bounds.
+  if (width <= 1 || height <= 1) {
+    pending_bounds_.set_size(restored_bounds_.IsEmpty()
+                                 ? GetBounds().size()
+                                 : restored_bounds_.size());
+  } else {
+    pending_bounds_ = gfx::Rect(0, 0, width, height);
+  }
+
+  if (!IsFullscreen() && !IsMaximized())
+    restored_bounds_ = gfx::Rect();
 }
 
 }  // namespace ui
