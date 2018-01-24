@@ -128,14 +128,14 @@ const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
 // interstitial error pages (e.g. certificate errors).
 const char kCommittedInterstitials[] = "committed-interstitials";
 
-// Comma-separated list of BrowserThreads that cause browser process to crash
-// if the given browser thread is not responsive. UI,IO,DB,FILE,CACHE are the
-// list of BrowserThreads that are supported.
+// Comma-separated list of BrowserThreads that cause browser process to crash if
+// the given browser thread is not responsive. UI/IO are the BrowserThreads that
+// are supported.
 //
 // For example:
-//    --crash-on-hang-threads=UI:3:18,IO:3:18 --> Crash the browser if UI or IO
-//      is not responsive for 18 seconds and the number of browser threads that
-//      are responding is less than or equal to 3.
+//    --crash-on-hang-threads=UI:18,IO:18 --> Crash the browser if UI or IO is
+//    not responsive for 18 seconds while the other browser thread is
+//    responsive.
 const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 
 // Some platforms like ChromeOS default to empty desktop.

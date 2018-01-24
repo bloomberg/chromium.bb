@@ -49,7 +49,6 @@ ThreadWatcher::ThreadWatcher(const WatchingParams& params)
       hung_processing_complete_(false),
       unresponsive_threshold_(params.unresponsive_threshold),
       crash_on_hang_(params.crash_on_hang),
-      live_threads_threshold_(params.live_threads_threshold),
       weak_ptr_factory_(this) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   Initialize();
@@ -301,12 +300,9 @@ void ThreadWatcher::GotNoResponse() {
   // Record how many watched threads are not responding.
   unresponsive_count_histogram_->Add(unresponding_thread_count);
 
-  // Crash the browser if the watched thread is to be crashed on hang and if the
-  // number of other threads responding is less than or equal to
-  // live_threads_threshold_ and at least one other thread is responding.
-  if (crash_on_hang_ &&
-      responding_thread_count > 0 &&
-      responding_thread_count <= live_threads_threshold_) {
+  // Crash the browser if the watched thread is to be crashed on hang and at
+  // least one other thread is responding.
+  if (crash_on_hang_ && responding_thread_count > 0) {
     static bool crashed_once = false;
     if (!crashed_once) {
       crashed_once = true;
@@ -334,22 +330,8 @@ const int ThreadWatcherList::kSleepSeconds = 1;
 const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
 const int ThreadWatcherList::kUnresponsiveCount = 9;
-// static, configured high to catch single thread hangs
-// TODO(gab): Clean this up, https://crbug.com/804345
-const int ThreadWatcherList::kLiveThreadsThreshold = BrowserThread::ID_COUNT;
 // static, non-const for tests.
 int ThreadWatcherList::g_initialize_delay_seconds = 120;
-
-ThreadWatcherList::CrashDataThresholds::CrashDataThresholds(
-    uint32_t live_threads_threshold,
-    uint32_t unresponsive_threshold)
-    : live_threads_threshold(live_threads_threshold),
-      unresponsive_threshold(unresponsive_threshold) {}
-
-ThreadWatcherList::CrashDataThresholds::CrashDataThresholds()
-    : live_threads_threshold(kLiveThreadsThreshold),
-      unresponsive_threshold(kUnresponsiveCount) {
-}
 
 // static
 void ThreadWatcherList::StartWatchingAll(
@@ -470,12 +452,10 @@ void ThreadWatcherList::ParseCommandLine(
     // Default to crashing the browser if UI or IO threads are not responsive
     // except in stable channel.
     crash_on_hang_thread_names =
-        base::StringPrintf("UI:%d:%d,IO:%d:%d", kLiveThreadsThreshold,
-                           crash_seconds, kLiveThreadsThreshold, crash_seconds);
+        base::StringPrintf("UI:%d,IO:%d", crash_seconds, crash_seconds);
   }
 
   ParseCommandLineCrashOnHangThreads(crash_on_hang_thread_names,
-                                     kLiveThreadsThreshold,
                                      crash_seconds,
                                      crash_on_hang_threads);
 }
@@ -483,32 +463,32 @@ void ThreadWatcherList::ParseCommandLine(
 // static
 void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
     const std::string& crash_on_hang_thread_names,
-    uint32_t default_live_threads_threshold,
     uint32_t default_crash_seconds,
     CrashOnHangThreadMap* crash_on_hang_threads) {
   base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
   while (tokens.GetNext()) {
     std::vector<base::StringPiece> values = base::SplitStringPiece(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    // Accepted format for each thread is "THREADNAME" or "THREADNAME:18". The
+    // optional integer is the number of seconds a thread must remain
+    // unresponsive before considering it as hung.
+    CHECK_LE(values.size(), 2U);
+
     std::string thread_name = values[0].as_string();
 
-    uint32_t live_threads_threshold = default_live_threads_threshold;
     uint32_t crash_seconds = default_crash_seconds;
     if (values.size() >= 2 &&
-        (!base::StringToUint(values[1], &live_threads_threshold))) {
+        (!base::StringToUint(values[1], &crash_seconds))) {
       continue;
     }
-    if (values.size() >= 3 &&
-        (!base::StringToUint(values[2], &crash_seconds))) {
-      continue;
-    }
-    uint32_t unresponsive_threshold = static_cast<uint32_t>(
-        ceil(static_cast<float>(crash_seconds) / kUnresponsiveSeconds));
 
-    CrashDataThresholds crash_data(live_threads_threshold,
-                                   unresponsive_threshold);
+    const UnresponsiveCountThreshold unresponsive_threshold =
+        static_cast<UnresponsiveCountThreshold>(
+            ceil(static_cast<float>(crash_seconds) / kUnresponsiveSeconds));
+
     // Use the last specifier.
-    (*crash_on_hang_threads)[thread_name] = crash_data;
+    (*crash_on_hang_threads)[thread_name] = unresponsive_threshold;
   }
 }
 
@@ -566,28 +546,21 @@ void ThreadWatcherList::StartWatching(
     const std::string& thread_name,
     const base::TimeDelta& sleep_time,
     const base::TimeDelta& unresponsive_time,
-    uint32_t unresponsive_threshold,
+    UnresponsiveCountThreshold unresponsive_threshold,
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   CrashOnHangThreadMap::const_iterator it =
       crash_on_hang_threads.find(thread_name);
   bool crash_on_hang = false;
-  uint32_t live_threads_threshold = 0;
   if (it != crash_on_hang_threads.end()) {
     crash_on_hang = true;
-    live_threads_threshold = it->second.live_threads_threshold;
-    unresponsive_threshold = it->second.unresponsive_threshold;
+    unresponsive_threshold = it->second;
   }
 
-  ThreadWatcher::StartWatching(
-      ThreadWatcher::WatchingParams(thread_id,
-                                    thread_name,
-                                    sleep_time,
-                                    unresponsive_time,
-                                    unresponsive_threshold,
-                                    crash_on_hang,
-                                    live_threads_threshold));
+  ThreadWatcher::StartWatching(ThreadWatcher::WatchingParams(
+      thread_id, thread_name, sleep_time, unresponsive_time,
+      unresponsive_threshold, crash_on_hang));
 }
 
 // static
