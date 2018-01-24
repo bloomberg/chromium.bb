@@ -25,44 +25,6 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-class TextureIdAllocator {
- public:
-  TextureIdAllocator(GLES2Interface* gl,
-                     size_t texture_id_allocation_chunk_size)
-      : gl_(gl),
-        id_allocation_chunk_size_(texture_id_allocation_chunk_size),
-        ids_(new GLuint[texture_id_allocation_chunk_size]),
-        next_id_index_(texture_id_allocation_chunk_size) {
-    DCHECK(id_allocation_chunk_size_);
-    DCHECK_LE(id_allocation_chunk_size_,
-              static_cast<size_t>(std::numeric_limits<int>::max()));
-  }
-
-  ~TextureIdAllocator() {
-    if (gl_)
-      gl_->DeleteTextures(
-          static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
-          ids_.get() + next_id_index_);
-  }
-
-  GLuint NextId() {
-    if (next_id_index_ == id_allocation_chunk_size_) {
-      gl_->GenTextures(static_cast<int>(id_allocation_chunk_size_), ids_.get());
-      next_id_index_ = 0;
-    }
-
-    return ids_[next_id_index_++];
-  }
-
- private:
-  GLES2Interface* gl_;
-  const size_t id_allocation_chunk_size_;
-  std::unique_ptr<GLuint[]> ids_;
-  size_t next_id_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureIdAllocator);
-};
-
 LayerTreeResourceProvider::Settings::Settings(
     viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
@@ -73,7 +35,6 @@ LayerTreeResourceProvider::Settings::Settings(
       use_gpu_memory_buffer_resources(
           resource_settings.use_gpu_memory_buffer_resources),
       delegated_sync_points_required(delegated_sync_points_required) {
-  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   if (!compositor_context_provider) {
     // Pick an arbitrary limit here similar to what hardware might.
     max_texture_size = 16 * 1024;
@@ -150,9 +111,6 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
-  GLES2Interface* gl = ContextGL();
-  texture_id_allocator_ = std::make_unique<TextureIdAllocator>(
-      gl, resource_settings.texture_id_allocation_chunk_size);
 }
 
 LayerTreeResourceProvider::~LayerTreeResourceProvider() {
@@ -163,7 +121,6 @@ LayerTreeResourceProvider::~LayerTreeResourceProvider() {
     bool is_lost = imported.exported_count || imported.returned_lost;
     imported.release_callback->Run(imported.returned_sync_token, is_lost);
   }
-  texture_id_allocator_ = nullptr;
   GLES2Interface* gl = ContextGL();
   if (gl)
     gl->Finish();
@@ -569,13 +526,12 @@ void LayerTreeResourceProvider::CreateTexture(
   DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
   DCHECK(resource->mailbox.IsZero());
 
-  resource->gl_id = texture_id_allocator_->NextId();
-  DCHECK(resource->gl_id);
-
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
 
-  // Create and set texture properties. Allocation is delayed until needed.
+  // Create and set texture properties. Allocation of the texture backing is
+  // delayed until needed.
+  gl->GenTextures(1, &resource->gl_id);
   gl->BindTexture(resource->target, resource->gl_id);
   gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER,
                     resource->original_filter);

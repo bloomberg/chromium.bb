@@ -883,11 +883,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestDeleteTexture);
 class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // Always allocate only a single texture at a time through ResourceProvider.
-    settings->resource_settings.texture_id_allocation_chunk_size = 1;
-  }
-
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {

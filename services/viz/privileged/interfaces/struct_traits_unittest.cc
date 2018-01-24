@@ -18,12 +18,10 @@ namespace {
 
 using StructTraitsTest = testing::Test;
 
-constexpr size_t kArbitrarySize = 32;
 constexpr bool kArbitraryBool = true;
 
 TEST_F(StructTraitsTest, RendererSettings) {
   ResourceSettings arbitrary_resource_settings;
-  arbitrary_resource_settings.texture_id_allocation_chunk_size = kArbitrarySize;
   arbitrary_resource_settings.use_gpu_memory_buffer_resources = kArbitraryBool;
 
   RendererSettings input;
@@ -45,8 +43,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   RendererSettings output;
   mojom::RendererSettings::Deserialize(
       mojom::RendererSettings::Serialize(&input), &output);
-  EXPECT_EQ(input.resource_settings.texture_id_allocation_chunk_size,
-            output.resource_settings.texture_id_allocation_chunk_size);
   EXPECT_EQ(input.resource_settings.use_gpu_memory_buffer_resources,
             output.resource_settings.use_gpu_memory_buffer_resources);
   EXPECT_EQ(input.allow_antialiasing, output.allow_antialiasing);

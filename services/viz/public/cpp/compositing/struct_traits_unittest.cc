@@ -385,17 +385,13 @@ TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
 }
 
 TEST_F(StructTraitsTest, ResourceSettings) {
-  constexpr size_t kArbitrarySize = 32;
   constexpr bool kArbitraryBool = true;
   ResourceSettings input;
-  input.texture_id_allocation_chunk_size = kArbitrarySize;
   input.use_gpu_memory_buffer_resources = kArbitraryBool;
 
   ResourceSettings output;
   SerializeAndDeserialize<mojom::ResourceSettings>(input, &output);
 
-  EXPECT_EQ(input.texture_id_allocation_chunk_size,
-            output.texture_id_allocation_chunk_size);
   EXPECT_EQ(input.use_gpu_memory_buffer_resources,
             output.use_gpu_memory_buffer_resources);
 }

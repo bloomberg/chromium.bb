@@ -134,7 +134,6 @@ class LayerTreeHostImplTest : public testing::Test,
     LayerTreeSettings settings;
     settings.enable_surface_synchronization = true;
     settings.minimum_occlusion_tracking_size = gfx::Size();
-    settings.resource_settings.texture_id_allocation_chunk_size = 1;
     return settings;
   }
 

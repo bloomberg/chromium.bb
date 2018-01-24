@@ -10,8 +10,6 @@ namespace mojo {
 bool StructTraits<viz::mojom::ResourceSettingsDataView, viz::ResourceSettings>::
     Read(viz::mojom::ResourceSettingsDataView data,
          viz::ResourceSettings* out) {
-  out->texture_id_allocation_chunk_size =
-      data.texture_id_allocation_chunk_size();
   out->use_gpu_memory_buffer_resources = data.use_gpu_memory_buffer_resources();
 
   return true;

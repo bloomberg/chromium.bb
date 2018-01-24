@@ -93,11 +93,8 @@ static std::unique_ptr<viz::SharedBitmap> CreateAndFillSharedBitmap(
   return shared_bitmap;
 }
 
-static viz::ResourceSettings CreateResourceSettings(
-    size_t texture_id_allocation_chunk_size = 1) {
+static viz::ResourceSettings CreateResourceSettings() {
   viz::ResourceSettings resource_settings;
-  resource_settings.texture_id_allocation_chunk_size =
-      texture_id_allocation_chunk_size;
   resource_settings.use_gpu_memory_buffer_resources =
       kUseGpuMemoryBufferResources;
   return resource_settings;
@@ -3378,49 +3375,6 @@ class TextureIdAllocationTrackingContext : public TestWebGraphicsContext3D {
     return namespace_->next_texture_id;
   }
 };
-
-TEST(ResourceProviderTest, TextureAllocationChunkSize) {
-  auto context_owned(std::make_unique<TextureIdAllocationTrackingContext>());
-  TextureIdAllocationTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
-  context_provider->BindToCurrentThread();
-  auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
-
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
-
-  {
-    size_t kTextureAllocationChunkSize = 1;
-    auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
-        context_provider.get(), shared_bitmap_manager.get(), nullptr,
-        kDelegatedSyncPointsRequired,
-        CreateResourceSettings(kTextureAllocationChunkSize)));
-
-    viz::ResourceId id = resource_provider->CreateGpuTextureResource(
-        size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
-    resource_provider->AllocateForTesting(id);
-    Mock::VerifyAndClearExpectations(context);
-
-    DCHECK_EQ(2u, context->PeekTextureId());
-    resource_provider->DeleteResource(id);
-  }
-
-  {
-    size_t kTextureAllocationChunkSize = 8;
-    auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
-        context_provider.get(), shared_bitmap_manager.get(), nullptr,
-        kDelegatedSyncPointsRequired,
-        CreateResourceSettings(kTextureAllocationChunkSize)));
-
-    viz::ResourceId id = resource_provider->CreateGpuTextureResource(
-        size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
-    resource_provider->AllocateForTesting(id);
-    Mock::VerifyAndClearExpectations(context);
-
-    DCHECK_EQ(10u, context->PeekTextureId());
-    resource_provider->DeleteResource(id);
-  }
-}
 
 TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
   if (!use_gpu())
