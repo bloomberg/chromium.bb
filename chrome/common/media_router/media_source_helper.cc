@@ -80,8 +80,7 @@ bool IsMirroringMediaSource(const MediaSource& source) {
          IsTabMirroringMediaSource(source);
 }
 
-bool CanConnectToMediaSource(const MediaSource& source) {
-  // Compare host, port, scheme, and path prefix for source.url().
+bool IsCastPresentationUrl(const MediaSource& source) {
   const GURL& url = source.url();
   return url.SchemeIs(kCastPresentationUrlScheme) ||
          IsLegacyCastPresentationUrl(url);
