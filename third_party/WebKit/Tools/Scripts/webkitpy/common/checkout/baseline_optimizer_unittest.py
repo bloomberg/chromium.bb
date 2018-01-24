@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-import sys
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.common.host_mock import MockHost
@@ -304,6 +303,14 @@ class BaselineOptimizerTest(unittest.TestCase):
         self._assert_optimization(
             {'platform/linux': ALL_PASS_TESTHARNESS_RESULT},
             {'platform/linux': None})
+
+    def test_all_pass_testharness_at_linux_and_win(self):
+        # https://crbug.com/805008
+        self._assert_optimization(
+            {'platform/linux': ALL_PASS_TESTHARNESS_RESULT,
+             'platform/win': ALL_PASS_TESTHARNESS_RESULT},
+            {'platform/linux': None,
+             'platform/win': None})
 
     def test_all_pass_testharness_at_virtual_root(self):
         self._assert_optimization(
