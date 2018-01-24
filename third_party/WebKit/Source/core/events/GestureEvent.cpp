@@ -83,7 +83,7 @@ GestureEvent::GestureEvent(const AtomicString& event_type,
           view,
           0,
           static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-          TimeTicks::FromSeconds(event.TimeStampSeconds()),
+          TimeTicksFromSeconds(event.TimeStampSeconds()),
           nullptr),
       native_event_(event) {}
 

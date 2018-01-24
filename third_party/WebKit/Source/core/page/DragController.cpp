@@ -130,7 +130,7 @@ static WebMouseEvent CreateMouseEvent(DragData* drag_data) {
                     drag_data->GlobalPosition().Y()),
       WebPointerProperties::Button::kLeft, 0,
       static_cast<WebInputEvent::Modifiers>(drag_data->GetModifiers()),
-      CurrentTimeTicks().InSeconds());
+      CurrentTimeTicksInSeconds());
   // TODO(dtapuska): Really we should chnage DragData to store the viewport
   // coordinates and scale.
   result.SetFrameScale(1);

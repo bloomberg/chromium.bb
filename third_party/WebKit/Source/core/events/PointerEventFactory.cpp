@@ -291,7 +291,7 @@ PointerEvent* PointerEventFactory::Create(
                                   &coalesced_event_init);
       PointerEvent* event = PointerEvent::Create(
           pointer_event_name, coalesced_event_init,
-          TimeTicks::FromSeconds(coalesced_mouse_event.TimeStampSeconds()));
+          TimeTicksFromSeconds(coalesced_mouse_event.TimeStampSeconds()));
       // Set the trusted flag for the coalesced events at the creation time
       // as oppose to the normal events which is done at the dispatch time. This
       // is because we don't want to go over all the coalesced events at every
@@ -305,7 +305,7 @@ PointerEvent* PointerEventFactory::Create(
 
   return PointerEvent::Create(
       pointer_event_name, pointer_event_init,
-      TimeTicks::FromSeconds(mouse_event.TimeStampSeconds()));
+      TimeTicksFromSeconds(mouse_event.TimeStampSeconds()));
 }
 
 PointerEvent* PointerEventFactory::Create(
@@ -351,7 +351,7 @@ PointerEvent* PointerEventFactory::Create(
       UpdateTouchPointerEventInit(coalesced_event, view, &coalesced_event_init);
       PointerEvent* event = PointerEvent::Create(
           type, coalesced_event_init,
-          TimeTicks::FromSeconds(coalesced_event.TimeStampSeconds()));
+          TimeTicksFromSeconds(coalesced_event.TimeStampSeconds()));
       // Set the trusted flag for the coalesced events at the creation time
       // as oppose to the normal events which is done at the dispatch time. This
       // is because we don't want to go over all the coalesced events at every
@@ -365,7 +365,7 @@ PointerEvent* PointerEventFactory::Create(
 
   return PointerEvent::Create(
       type, pointer_event_init,
-      TimeTicks::FromSeconds(web_pointer_event.TimeStampSeconds()));
+      TimeTicksFromSeconds(web_pointer_event.TimeStampSeconds()));
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
