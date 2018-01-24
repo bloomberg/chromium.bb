@@ -2799,7 +2799,8 @@ void TextureManager::ValidateAndDoTexImage(
     }
   }
 
-  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
+  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer &&
+      args.width && args.height && args.depth) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
       // In ValidateTexImage(), we already made sure buffer size is no less
@@ -3028,7 +3029,8 @@ void TextureManager::ValidateAndDoTexSubImage(
     }
   }
 
-  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
+  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer &&
+      args.width && args.height && args.depth) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
       DoTexSubImageWithAlignmentWorkaround(texture_state, state, args);
