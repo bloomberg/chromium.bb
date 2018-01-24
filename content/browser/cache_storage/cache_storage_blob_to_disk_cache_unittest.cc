@@ -26,6 +26,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -166,12 +167,13 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   }
 
   bool Stream() {
-    std::unique_ptr<storage::BlobDataHandle> new_data_handle(
-        blob_storage_context_->GetBlobDataFromUUID(blob_handle_->uuid()));
+    blink::mojom::BlobPtr blob_ptr;
+    storage::BlobImpl::Create(
+        std::make_unique<storage::BlobDataHandle>(*blob_handle_),
+        MakeRequest(&blob_ptr));
 
     cache_storage_blob_to_disk_cache_->StreamBlobToCache(
-        std::move(disk_cache_entry_), kCacheEntryIndex,
-        url_request_context_getter_.get(), std::move(new_data_handle),
+        std::move(disk_cache_entry_), kCacheEntryIndex, std::move(blob_ptr),
         base::BindOnce(&CacheStorageBlobToDiskCacheTest::StreamCallback,
                        base::Unretained(this)));
 
@@ -243,29 +245,6 @@ TEST_F(CacheStorageBlobToDiskCacheTest, DeleteMidStream) {
   cache_storage_blob_to_disk_cache_.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_called_);
-}
-
-TEST_F(CacheStorageBlobToDiskCacheTest,
-       ShutdownGetterMidStreamDeletesURLRequest) {
-  cache_storage_blob_to_disk_cache_->set_delay_blob_reads(true);
-
-  // The operation should stall while reading from the blob.
-  EXPECT_FALSE(Stream());
-
-  // Shutting down the URLRequestContext mid-stream should result in a canceled
-  // operation.
-  cache_storage_blob_to_disk_cache_->OnContextShuttingDown();
-  url_request_context_getter_->GetURLRequestContext()->AssertNoURLRequests();
-
-  browser_context_.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_FALSE(callback_success_);
-}
-
-TEST_F(CacheStorageBlobToDiskCacheTest, StreamWithNullContextRequest) {
-  url_request_context_getter_ = new NullURLRequestContextGetter();
-  EXPECT_FALSE(Stream());
 }
 
 }  // namespace
