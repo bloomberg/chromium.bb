@@ -1945,6 +1945,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/inline/ng_inline_node_test.cc",
     "layout/ng/inline/ng_line_breaker_test.cc",
     "layout/ng/inline/ng_offset_mapping_test.cc",
+    "layout/ng/inline/ng_physical_line_box_fragment_test.cc",
     "layout/ng/inline/ng_physical_text_fragment_test.cc",
     "layout/ng/ng_absolute_utils_test.cc",
     "layout/ng/ng_base_layout_algorithm_test.cc",

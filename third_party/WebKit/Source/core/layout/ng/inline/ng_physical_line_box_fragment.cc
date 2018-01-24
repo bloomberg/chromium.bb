@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 
+#include "core/style/ComputedStyle.h"
+
 namespace blink {
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
@@ -31,6 +33,46 @@ LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
 
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::VisualRectWithContents() const {
   return ContentsVisualRect();
+}
+
+const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
+  if (Children().IsEmpty())
+    return nullptr;
+  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
+  // should compute and store it during layout.
+  const TextDirection direction = Style().Direction();
+  const NGPhysicalFragment* runner = this;
+  while (runner->IsContainer() && !runner->IsBlockLayoutRoot()) {
+    const NGPhysicalContainerFragment* runner_as_container =
+        ToNGPhysicalContainerFragment(runner);
+    if (runner_as_container->Children().IsEmpty())
+      break;
+    runner = direction == TextDirection::kLtr
+                 ? runner_as_container->Children().front().get()
+                 : runner_as_container->Children().back().get();
+  }
+  DCHECK_NE(runner, this);
+  return runner;
+}
+
+const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
+  if (Children().IsEmpty())
+    return nullptr;
+  // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
+  // should compute and store it during layout.
+  const TextDirection direction = Style().Direction();
+  const NGPhysicalFragment* runner = this;
+  while (runner->IsContainer() && !runner->IsBlockLayoutRoot()) {
+    const NGPhysicalContainerFragment* runner_as_container =
+        ToNGPhysicalContainerFragment(runner);
+    if (runner_as_container->Children().IsEmpty())
+      break;
+    runner = direction == TextDirection::kLtr
+                 ? runner_as_container->Children().back().get()
+                 : runner_as_container->Children().front().get();
+  }
+  DCHECK_NE(runner, this);
+  return runner;
 }
 
 }  // namespace blink
