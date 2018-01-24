@@ -93,8 +93,8 @@ public class FirstRunTest {
             } catch (TimeoutException e) {
                 Assert.fail();
             }
-
-            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+            CriteriaHelper.pollUiThread((() -> mActivity.isNativeSideIsInitializedForTest()),
+                    "native never initialized.");
         }
     };
 
