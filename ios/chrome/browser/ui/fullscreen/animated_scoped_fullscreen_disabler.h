@@ -15,6 +15,7 @@ class FullscreenController;
 class AnimatedScopedFullscreenDisabler {
  public:
   explicit AnimatedScopedFullscreenDisabler(FullscreenController* controller);
+  ~AnimatedScopedFullscreenDisabler();
 
  private:
   // The FullscreenController being disabled by this object.
