@@ -31,7 +31,7 @@ Polymer({
     },
 
     /** Reflects the bluetooth-page property. */
-    bluetoothToggleDisabled: Boolean,
+    stateChangeInProgress: Boolean,
 
     /**
      * The bluetooth adapter state, cached by bluetooth-page.
@@ -379,7 +379,8 @@ Polymer({
    * @private
    */
   onEnableTap_: function(event) {
-    this.bluetoothToggleState = !this.bluetoothToggleState;
+    if (this.isToggleEnabled_())
+      this.bluetoothToggleState = !this.bluetoothToggleState;
     event.stopPropagation();
   },
 
@@ -392,6 +393,15 @@ Polymer({
    */
   getOnOffString_: function(enabled, onstr, offstr) {
     return enabled ? onstr : offstr;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isToggleEnabled_: function() {
+    return this.adapterState !== undefined && this.adapterState.available &&
+        !this.stateChangeInProgress;
   },
 
   /**

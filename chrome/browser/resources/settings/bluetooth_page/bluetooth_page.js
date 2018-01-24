@@ -46,15 +46,14 @@ Polymer({
     },
 
     /**
-     * Set to true before the adapter state is received, when the adapter is
-     * unavailable, and while an adapter state change is requested. This
-     * prevents user changes while a change is in progress or when the adapter
-     * is not available.
+     * Set to true while an adapter state change is requested and the callback
+     * hasn't fired yet. One of the factor that determines whether to disable
+     * the toggle button.
      * @private
      */
-    bluetoothToggleDisabled_: {
+    stateChangeInProgress_: {
       type: Boolean,
-      value: true,
+      value: false,
     },
 
     /**
@@ -160,19 +159,28 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  isToggleEnabled_: function() {
+    return this.adapterState_ !== undefined && this.adapterState_.available &&
+        !this.stateChangeInProgress_;
+  },
+
+  /**
    * Process bluetooth.onAdapterStateChanged events.
    * @param {!chrome.bluetooth.AdapterState} state
    * @private
    */
   onBluetoothAdapterStateChanged_: function(state) {
     this.adapterState_ = state;
-    this.bluetoothToggleState_ = state.powered;
-    this.bluetoothToggleDisabled_ = !state.available;
+    if (this.isToggleEnabled_())
+      this.bluetoothToggleState_ = state.powered;
   },
 
   /** @private */
   onTap_: function() {
-    if (this.adapterState_.available === false)
+    if (!this.isToggleEnabled_())
       return;
     if (!this.bluetoothToggleState_)
       this.bluetoothToggleState_ = true;
@@ -199,13 +207,17 @@ Polymer({
 
   /** @private */
   bluetoothToggleStateChanged_: function() {
-    if (!this.adapterState_ || this.bluetoothToggleDisabled_ ||
+    if (!this.adapterState_ || !this.isToggleEnabled_() ||
         this.bluetoothToggleState_ == this.adapterState_.powered) {
       return;
     }
-    this.bluetoothToggleDisabled_ = true;
+    this.stateChangeInProgress_ = true;
     this.bluetoothPrivate.setAdapterState(
         {powered: this.bluetoothToggleState_}, () => {
+          // Restore the in-progress mark when the callback is called regardless
+          // of error or success.
+          this.stateChangeInProgress_ = false;
+
           const error = chrome.runtime.lastError;
           if (error && error != 'Error setting adapter properties: powered') {
             console.error('Error enabling bluetooth: ' + error.message);

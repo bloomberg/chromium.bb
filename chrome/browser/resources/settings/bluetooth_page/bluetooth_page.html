@@ -44,7 +44,9 @@
           <div class="separator"></div>
           <paper-toggle-button id="enableBluetooth"
               checked="{{bluetoothToggleState_}}"
-              disabled$="[[bluetoothToggleDisabled_]]" on-tap="stopTap_"
+              disabled$=
+                  "[[!isToggleEnabled_(adapterState_, stateChangeInProgress_)]]"
+              on-tap="stopTap_"
               aria-label="$i18n{bluetoothToggleA11yLabel}">
           </paper-toggle-button>
         </div>
@@ -56,7 +58,7 @@
           <settings-bluetooth-subpage
               adapter-state="[[adapterState_]]"
               bluetooth-toggle-state="{{bluetoothToggleState_}}"
-              bluetooth-toggle-disabled="[[bluetoothToggleDisabled_]]"
+              state-change-in-progress="[[stateChangeInProgress_]]"
               bluetooth="[[bluetooth]]"
               bluetooth-private="[[bluetoothPrivate]]">
           </settings-bluetooth-subpage>

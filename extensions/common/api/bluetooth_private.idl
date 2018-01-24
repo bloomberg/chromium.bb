@@ -123,7 +123,8 @@ namespace bluetoothPrivate {
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
     // Changes the state of the Bluetooth adapter.
-    // |adapterState|:
+    // |adapterState|: The new state of the adapter.
+    // |callback|: Called when all the state changes have been completed.
     static void setAdapterState(NewAdapterState adapterState,
                                 optional VoidCallback callback);
 
