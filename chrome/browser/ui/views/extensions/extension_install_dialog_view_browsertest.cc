@@ -35,6 +35,7 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -346,10 +347,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
                        InvokeUi_DetailedPermission) {
-  AddPermissionWithDetails("Example header permission",
-                           {base::ASCIIToUTF16("Detailed permission 1"),
-                            base::ASCIIToUTF16("Detailed permission 2"),
-                            base::ASCIIToUTF16("Detailed permission 3")});
+  AddPermissionWithDetails(
+      "Example header permission",
+      {base::ASCIIToUTF16("Detailed permission 1"),
+       base::ASCIIToUTF16("Detailed permission 2"),
+       base::ASCIIToUTF16("Very very very very very very long detailed "
+                          "permission that wraps to a new line")});
   ShowAndVerifyUi();
 }
 
@@ -371,6 +374,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
   AddRetainedDevice(
       "Another USB Device With A Very Very Very Very Very Very "
       "Long Name So That It Hopefully Wraps to A New Line");
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeUi_AllInfoTypes) {
+  AddPermission("Example permission");
+  AddPermissionWithDetails("This permission has details",
+                           {base::ASCIIToUTF16("Detailed permission 1"),
+                            base::ASCIIToUTF16("Detailed permission 2")});
+  AddRetainedDevice("USB Device");
+  AddRetainedFile(base::FilePath(FILE_PATH_LITERAL("/dev/null")));
   ShowAndVerifyUi();
 }
 
@@ -408,8 +422,8 @@ void ExtensionInstallDialogRatingsSectionTest::TestRatingsSectionA11y(
       platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()));
   modal_dialog->Show();
 
-  views::View* rating_view =
-      dialog->GetViewByID(ExtensionInstallDialogView::kRatingsViewId);
+  views::View* rating_view = modal_dialog->non_client_view()->GetViewByID(
+      ExtensionInstallDialogView::kRatingsViewId);
   ASSERT_TRUE(rating_view);
   {
     ui::AXNodeData node_data;
