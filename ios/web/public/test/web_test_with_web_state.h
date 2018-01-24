@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/public/test/web_test.h"
@@ -42,7 +43,7 @@ class WebTestWithWebState : public WebTest,
   // Loads the specified HTML content into the WebState, using test url name.
   void LoadHtml(NSString* html);
   // Loads the specified HTML content into the WebState, using test url name.
-  void LoadHtml(const std::string& html);
+  bool LoadHtml(const std::string& html) WARN_UNUSED_RESULT;
   // Blocks until both known NSRunLoop-based and known message-loop-based
   // background tasks have completed
   void WaitForBackgroundTasks();

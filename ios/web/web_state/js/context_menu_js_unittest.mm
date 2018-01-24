@@ -165,7 +165,7 @@ TEST_F(ContextMenuJsTest, LinkOfImage) {
       "<a href='%s'><img width=400 height=400 src='foo'></img></a>";
 
   // A page with a link to a destination URL.
-  LoadHtml(base::StringPrintf(image, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(image, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(20, 20);
@@ -178,7 +178,8 @@ TEST_F(ContextMenuJsTest, LinkOfImage) {
   EXPECT_NSEQ(expected_result, result);
 
   // A page with a link with some JavaScript that does not result in a NOP.
-  LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
+  ASSERT_TRUE(LoadHtml(
+      base::StringPrintf(image, "javascript:console.log('whatever')")));
   result = ExecuteGetElementFromPointJavaScript(20, 20);
   expected_result = @{
     kContextMenuElementSource :
@@ -197,7 +198,7 @@ TEST_F(ContextMenuJsTest, LinkOfImage) {
   for (auto js : nop_javascripts) {
     // A page with a link with some JavaScript that results in a NOP.
     const std::string javascript = std::string("javascript:") + js;
-    LoadHtml(base::StringPrintf(image, javascript.c_str()));
+    ASSERT_TRUE(LoadHtml(base::StringPrintf(image, javascript.c_str())));
     result = ExecuteGetElementFromPointJavaScript(20, 20);
     expected_result = @{
       kContextMenuElementSource :
@@ -219,7 +220,7 @@ TEST_F(ContextMenuJsTest, LinkOfImageWithCalloutNone) {
       "</a>";
 
   // A page with a link to a destination URL.
-  LoadHtml(base::StringPrintf(image_html, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(image_html, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout.
   id result = ExecuteGetElementFromPointJavaScript(5, 5);
   NSDictionary* expected_result = @{
@@ -239,7 +240,7 @@ TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
       "<img width=400 height=400 src='foo'></img>";
 
   // Load the invalid meta tag
-  LoadHtml(kInvalidReferrerTag);
+  ASSERT_TRUE(LoadHtml(kInvalidReferrerTag));
   ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout
   id result = ExecuteGetElementFromPointJavaScript(20, 20);
   ASSERT_TRUE([result isKindOfClass:[NSDictionary class]]);
@@ -260,7 +261,7 @@ TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextFromTallPage) {
       " <div style='height:4000px'></div>"
       " <div><a href='http://destination'>link</a></div>"
       "</body></html>";
-  LoadHtml(kHtml);
+  ASSERT_TRUE(LoadHtml(kHtml));
 
   // Scroll the webView to the bottom to make the link accessible.
   CGFloat content_height = GetWebViewContentSize().height;
@@ -288,7 +289,7 @@ TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextFromTallPage) {
 TEST_F(ContextMenuJsTest, LinkOfTextWithoutCalloutProperty) {
   const char kLinkHtml[] = "<a href='%s'>link</a>";
 
-  LoadHtml(base::StringPrintf(kLinkHtml, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(kLinkHtml, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(1, 1);
@@ -313,7 +314,7 @@ TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextWithCalloutDefault) {
   const char kLinkHtml[] =
       "<a href='%s' style='-webkit-touch-callout:default;'>link</a>";
 
-  LoadHtml(base::StringPrintf(kLinkHtml, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(kLinkHtml, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(1, 1);
@@ -332,7 +333,7 @@ TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutNone) {
   const char kLinkHtml[] =
       "<a href='%s' style='-webkit-touch-callout:none;'>link</a>";
 
-  LoadHtml(base::StringPrintf(kLinkHtml, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(kLinkHtml, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(1, 1);
@@ -348,7 +349,7 @@ TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutFromAncester) {
       " <a href='%s'>link</a>"
       "</body>";
 
-  LoadHtml(base::StringPrintf(kLinkHtml, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(kLinkHtml, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(1, 1);
@@ -364,7 +365,7 @@ TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutOverride) {
       " <a href='%s' style='-webkit-touch-callout: default'>link</a>"
       "</body>";
 
-  LoadHtml(base::StringPrintf(kLinkHtml, "http://destination"));
+  ASSERT_TRUE(LoadHtml(base::StringPrintf(kLinkHtml, "http://destination")));
   ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
 
   id result = ExecuteGetElementFromPointJavaScript(1, 1);

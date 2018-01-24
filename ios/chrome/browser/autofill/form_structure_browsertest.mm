@@ -159,7 +159,7 @@ void FormStructureBrowserTest::TearDown() {
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
-  LoadHtml(input);
+  ASSERT_TRUE(LoadHtml(input));
   base::TaskScheduler::GetInstance()->FlushForTesting();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();

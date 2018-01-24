@@ -136,8 +136,10 @@ void WebTestWithWebState::LoadHtml(NSString* html) {
   LoadHtml(html, url);
 }
 
-void WebTestWithWebState::LoadHtml(const std::string& html) {
+bool WebTestWithWebState::LoadHtml(const std::string& html) {
   LoadHtml(base::SysUTF8ToNSString(html));
+  // TODO(crbug.com/780062): LoadHtml(NSString*) should return bool.
+  return true;
 }
 
 void WebTestWithWebState::WaitForBackgroundTasks() {
