@@ -291,7 +291,8 @@ class GpuImageDecodeCacheTest
                                  ->image();
       DecodedDrawImage new_draw_image(
           std::move(image), draw_image.src_rect_offset(),
-          draw_image.scale_adjustment(), draw_image.filter_quality());
+          draw_image.scale_adjustment(), draw_image.filter_quality(),
+          draw_image.is_budgeted());
       return new_draw_image;
     }
 
@@ -832,6 +833,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -862,6 +864,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   ExpectIfNotUsingTransferCache(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -895,7 +898,9 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -940,6 +945,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
@@ -947,6 +953,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   DecodedDrawImage larger_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(larger_draw_image));
   EXPECT_TRUE(larger_decoded_draw_image.image());
+  EXPECT_TRUE(larger_decoded_draw_image.is_budgeted());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
@@ -993,6 +1000,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
@@ -1035,6 +1043,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_EQ(decoded_draw_image.image()->width(), 50);
   EXPECT_EQ(decoded_draw_image.image()->height(), 50);
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
@@ -1068,6 +1077,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
   // The mip level scale should never go below 0 in any dimension.
   EXPECT_EQ(1, decoded_draw_image.image()->width());
   EXPECT_EQ(24000, decoded_draw_image.image()->height());
@@ -1106,6 +1116,7 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 
@@ -1140,10 +1151,12 @@ TEST_P(GpuImageDecodeCacheTest,
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage another_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_FALSE(another_decoded_draw_image.is_budgeted());
   EXPECT_EQ(decoded_draw_image.image()->uniqueID(),
             another_decoded_draw_image.image()->uniqueID());
 
@@ -1161,6 +1174,7 @@ TEST_P(GpuImageDecodeCacheTest,
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
+  cache->SetWorkingSetLimitForTesting(0);
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(1, 24000));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
@@ -1173,6 +1187,7 @@ TEST_P(GpuImageDecodeCacheTest,
   DecodedDrawImage decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   ExpectIfNotUsingTransferCache(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -1183,6 +1198,7 @@ TEST_P(GpuImageDecodeCacheTest,
   DecodedDrawImage second_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
   ExpectIfNotUsingTransferCache(
       cache->DiscardableIsLockedForTesting(draw_image));
@@ -2054,6 +2070,78 @@ TEST_P(GpuImageDecodeCacheTest, EvictDueToCachedItemsLimit) {
   }
 
   EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 100u);
+}
+
+TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Allow a single 10x10 image and lock it.
+  cache->SetWorkingSetLimitForTesting(
+      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10);
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(10, 10));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  // Try locking the same image again, its already budgeted so it shouldn't be
+  // at-raster.
+  result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, ImagesUsedDuringDrawAreBudgeted) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Allow a single 10x10 image.
+  cache->SetWorkingSetLimitForTesting(
+      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10);
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(10, 10));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  // The image counts against our budget.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+
+  // Try another image, it shouldn't be budgeted.
+  DrawImage second_draw_image(
+      CreateDiscardablePaintImage(gfx::Size(100, 100)),
+      SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage second_decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(second_draw_image));
+  EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(second_decoded_draw_image.is_budgeted());
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->DrawWithImageFinished(second_draw_image, second_decoded_draw_image);
 }
 
 INSTANTIATE_TEST_CASE_P(

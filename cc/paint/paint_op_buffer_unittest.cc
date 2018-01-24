@@ -116,9 +116,9 @@ class TestOptionsProvider : public ImageProvider,
         SkBitmap::kZeroPixels_AllocFlag);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     entry.set_image_for_testing(image);
-    return ScopedDecodedDrawImage(
-        DecodedDrawImage(transfer_cache_entry_id_, SkSize::MakeEmpty(),
-                         SkSize::Make(1u, 1u), draw_image.filter_quality()));
+    return ScopedDecodedDrawImage(DecodedDrawImage(
+        transfer_cache_entry_id_, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
+        draw_image.filter_quality(), true));
   }
 
   ServiceTransferCacheEntry* GetEntryInternal(TransferCacheEntryType entry_type,
@@ -2703,8 +2703,8 @@ class MockImageProvider : public ImageProvider {
                             SkBitmap::kZeroPixels_AllocFlag);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     size_t i = index_++;
-    return ScopedDecodedDrawImage(
-        DecodedDrawImage(image, src_rect_offset_[i], scale_[i], quality_[i]));
+    return ScopedDecodedDrawImage(DecodedDrawImage(
+        image, src_rect_offset_[i], scale_[i], quality_[i], true));
   }
 
  private:
