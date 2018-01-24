@@ -7514,10 +7514,8 @@ static int64_t motion_mode_rd(
     RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
     int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
     int mi_col, HandleInterModeArgs *const args, const int64_t ref_best_rd,
-    const int *refs, int rate_mv,
-    // only used when WARPED_MOTION is on?
-    int rate2_bmc_nocoeff, MB_MODE_INFO *best_bmc_mbmi, int rate_mv_bmc, int rs,
-    int *skip_txfm_sb, int64_t *skip_sse_sb, BUFFER_SET *orig_dst) {
+    const int *refs, int rate_mv, int *skip_txfm_sb, int64_t *skip_sse_sb,
+    BUFFER_SET *orig_dst) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -7542,7 +7540,6 @@ static int64_t motion_mode_rd(
 
   av1_invalid_rd_stats(&best_rd_stats);
 
-  if (cm->interp_filter == SWITCHABLE) rd_stats->rate += rs;
   aom_clear_system_state();
 #if CONFIG_EXT_WARPED_MOTION
   mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts0, pts_inref0);
@@ -7550,7 +7547,6 @@ static int64_t motion_mode_rd(
 #else
   mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
 #endif  // CONFIG_EXT_WARPED_MOTION
-  best_bmc_mbmi->num_proj_ref[0] = mbmi->num_proj_ref[0];
   rate2_nocoeff = rd_stats->rate;
   base_mbmi = *mbmi;
   MOTION_MODE last_motion_mode_allowed =
@@ -7564,10 +7560,7 @@ static int64_t motion_mode_rd(
     int64_t tmp_rd = INT64_MAX;
     int tmp_rate;
     int64_t tmp_dist;
-    int tmp_rate2 = mode_index != (int)SIMPLE_TRANSLATION &&
-                            mode_index <= (int)last_motion_mode_allowed
-                        ? rate2_bmc_nocoeff
-                        : rate2_nocoeff;
+    int tmp_rate2 = rate2_nocoeff;
     int is_interintra_mode = mode_index > (int)last_motion_mode_allowed;
 
     *skip_txfm_sb = 0;
@@ -7581,7 +7574,6 @@ static int64_t motion_mode_rd(
 
     // OBMC mode
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      *mbmi = *best_bmc_mbmi;
       mbmi->motion_mode = OBMC_CAUSAL;
       if (!is_comp_pred && have_newmv_in_inter_mode(this_mode)) {
         int tmp_rate_mv = 0;
@@ -7592,7 +7584,7 @@ static int64_t motion_mode_rd(
                                 refs[0])) {
           tmp_rate_mv = AOMMAX((tmp_rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
         }
-        tmp_rate2 = rate2_bmc_nocoeff - rate_mv_bmc + tmp_rate_mv;
+        tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
 #if CONFIG_DUAL_FILTER
         mbmi->interp_filters =
             condition_interp_filters_on_mv(mbmi->interp_filters, xd);
@@ -7613,7 +7605,6 @@ static int64_t motion_mode_rd(
 #if CONFIG_EXT_WARPED_MOTION
       int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #endif  // CONFIG_EXT_WARPED_MOTION
-      *mbmi = *best_bmc_mbmi;
       mbmi->motion_mode = WARPED_CAUSAL;
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
       mbmi->interp_filters = av1_broadcast_interp_filter(
@@ -7626,7 +7617,6 @@ static int64_t motion_mode_rd(
       if (mbmi->num_proj_ref[0] > 1) {
         mbmi->num_proj_ref[0] = selectSamples(
             &mbmi->mv[0].as_mv, pts, pts_inref, mbmi->num_proj_ref[0], bsize);
-        best_bmc_mbmi->num_proj_ref[0] = mbmi->num_proj_ref[0];
       }
 #endif  // CONFIG_EXT_WARPED_MOTION
 
@@ -7665,10 +7655,7 @@ static int64_t motion_mode_rd(
                                     refs[0])) {
               tmp_rate_mv = AOMMAX((tmp_rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
             }
-#if CONFIG_EXT_WARPED_MOTION
-            best_bmc_mbmi->num_proj_ref[0] = mbmi->num_proj_ref[0];
-#endif  // CONFIG_EXT_WARPED_MOTION
-            tmp_rate2 = rate2_bmc_nocoeff - rate_mv_bmc + tmp_rate_mv;
+            tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
 #if CONFIG_DUAL_FILTER
             mbmi->interp_filters =
                 condition_interp_filters_on_mv(mbmi->interp_filters, xd);
@@ -7824,7 +7811,6 @@ static int64_t motion_mode_rd(
             mbmi->use_wedge_interintra = 1;
             mbmi->mv[0].as_int = tmp_mv.as_int;
             tmp_rate2 += tmp_rate_mv - rate_mv;
-            rate_mv = tmp_rate_mv;
           } else {
             mbmi->use_wedge_interintra = 0;
             mbmi->mv[0].as_int = mv0.as_int;
@@ -7848,6 +7834,8 @@ static int64_t motion_mode_rd(
     rd_stats->sse = 0;
     rd_stats->skip = 1;
     rd_stats->rate = tmp_rate2;
+    if (av1_is_interp_needed(xd))
+      rd_stats->rate += av1_get_switchable_rate(cm, x, xd);
     if (interintra_allowed) {
       rd_stats->rate += x->interintra_cost[size_group_lookup[bsize]]
                                           [mbmi->ref_frame[1] == INTRA_FRAME];
@@ -7871,9 +7859,6 @@ static int64_t motion_mode_rd(
       } else {
         rd_stats->rate += x->motion_mode_cost1[bsize][mbmi->motion_mode];
       }
-    }
-    if (mbmi->motion_mode == WARPED_CAUSAL) {
-      rd_stats->rate -= rs;
     }
     if (!*skip_txfm_sb) {
       int64_t rdcosty = INT64_MAX;
@@ -7975,7 +7960,6 @@ static int64_t motion_mode_rd(
 
     if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
       if (is_nontrans_global_motion(xd)) {
-        rd_stats->rate -= rs;
         mbmi->interp_filters = av1_broadcast_interp_filter(
             av1_unswitchable_filter(cm->interp_filter));
       }
@@ -8084,10 +8068,6 @@ static int64_t handle_inter_mode(
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *tmp_buf;
-
-  int rate2_bmc_nocoeff;
-  MB_MODE_INFO best_bmc_mbmi;
-  int rate_mv_bmc;
   int64_t rd = INT64_MAX;
   BUFFER_SET orig_dst, tmp_dst;
   int rs = 0;
@@ -8368,11 +8348,6 @@ static int64_t handle_inter_mode(
   if (ret_val != 0) return ret_val;
 #endif  // CONFIG_JNT_COMP
 
-    best_bmc_mbmi = *mbmi;
-    rate2_bmc_nocoeff = rd_stats->rate;
-    if (cm->interp_filter == SWITCHABLE) rate2_bmc_nocoeff += rs;
-    rate_mv_bmc = rate_mv;
-
 #if CONFIG_JNT_COMP
     if (is_comp_pred && comp_idx)
 #else
@@ -8601,8 +8576,7 @@ static int64_t handle_inter_mode(
     ret_val =
         motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
                        disable_skip, mode_mv, mi_row, mi_col, args, ref_best_rd,
-                       refs, rate_mv, rate2_bmc_nocoeff, &best_bmc_mbmi,
-                       rate_mv_bmc, rs, &skip_txfm_sb, &skip_sse_sb, &orig_dst);
+                       refs, rate_mv, &skip_txfm_sb, &skip_sse_sb, &orig_dst);
 #if CONFIG_JNT_COMP
     if (is_comp_pred && ret_val != INT64_MAX) {
       int64_t tmp_rd;
