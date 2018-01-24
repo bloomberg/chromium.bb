@@ -36,11 +36,9 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.browseractions.BrowserActionsContextMenuHelper.BrowserActionsTestDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem;
@@ -73,7 +71,6 @@ import java.util.concurrent.Callable;
  * Instrumentation tests for context menu of a {@link BrowserActionActivity}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BrowserActionActivityTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
@@ -182,7 +179,7 @@ public class BrowserActionActivityTest {
      * TODO(ltian): move this to a separate test class only for {@link
      * BrowserActionsContextMenuHelper}.
      */
-    public void testMenuShownCorrectly() throws Exception {
+    public void testMenuShownCorrectlyWithFREComplete() throws Exception {
         List<BrowserActionItem> items = createCustomItems();
         BrowserActionActivity activity = startBrowserActionActivity(mTestPage, items, 0);
 
@@ -222,6 +219,50 @@ public class BrowserActionActivityTest {
         Assert.assertNotNull(contextMenuItems.get(6).getDrawable(context));
         Assert.assertNull(contextMenuItems.get(7).getDrawable(context));
         Assert.assertNull(contextMenuItems.get(8).getDrawable(context));
+    }
+
+    @Test
+    @SmallTest
+    public void testMenuShownCorrectlyWithFRENotComplete() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
+        List<BrowserActionItem> items = createCustomItems();
+        BrowserActionActivity activity = startBrowserActionActivity(mTestPage, items, 0);
+
+        // Menu should be shown before native finish loading.
+        Assert.assertTrue(activity.isStartupDelayed());
+        mOnBrowserActionsMenuShownCallback.waitForCallback(0);
+        Assert.assertEquals(1, mOnBrowserActionsMenuShownCallback.getCallCount());
+        // startupDelayed should still be true because native initalized is skipped.
+        Assert.assertTrue(activity.isStartupDelayed());
+        Assert.assertEquals(0, mOnFinishNativeInitializationCallback.getCallCount());
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        Assert.assertEquals(context.getPackageName(), activity.mCreatorPackageName);
+
+        // Check menu populated correctly that only copy, share and custom items are shown.
+        List<Pair<Integer, List<ContextMenuItem>>> menus = mItems;
+        Assert.assertEquals(1, menus.size());
+        List<ContextMenuItem> contextMenuItems = menus.get(0).second;
+        Assert.assertEquals(2 + items.size(), contextMenuItems.size());
+        Assert.assertTrue(contextMenuItems.get(0) instanceof ChromeContextMenuItem);
+        Assert.assertTrue(contextMenuItems.get(1) instanceof ShareContextMenuItem);
+        for (int i = 0; i < items.size(); i++) {
+            Assert.assertEquals(
+                    items.get(i).getTitle(), contextMenuItems.get(2 + i).getTitle(context));
+            Assert.assertEquals(items.get(i).getAction(),
+                    mCustomActions.get(
+                            BrowserActionsContextMenuHelper.CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(
+                                    i)));
+        }
+        Assert.assertNotNull(contextMenuItems.get(2).getDrawable(context));
+        Assert.assertNotNull(contextMenuItems.get(3).getDrawable(context));
+        Assert.assertNull(contextMenuItems.get(4).getDrawable(context));
+        Assert.assertNull(contextMenuItems.get(5).getDrawable(context));
     }
 
     @Test
