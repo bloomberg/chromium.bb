@@ -122,6 +122,7 @@ crbug.com/721408 http/tests/inspector-protocol/network/response-interception-req
 crbug.com/721408 http/tests/inspector-protocol/network/response-interception-with-data-url.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception.js [ Timeout ]
+crbug.com/721408 http/tests/inspector-protocol/network/request-interception-referer.js [ Timeout ]
 crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sdk/network-interception-wildcard-pattern-matching.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs.js [ Failure Timeout ]
@@ -166,6 +167,9 @@ Bug(none) http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Failure ]
 Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 Bug(none) virtual/mouseevent_fractional/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml [ Timeout ]
+
+# The parent or opener frame might be out-of-process:
+crbug.com/805310 http/tests/devtools/network/oopif-content.js [ Crash Failure ]
 
 # Plugin throttle is not implemented.
 crbug.com/764474 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html [ Failure ]
