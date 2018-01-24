@@ -33,8 +33,6 @@ namespace blink {
 const WrapperTypeInfo V8TestIntegerIndexedPrimaryGlobal::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestIntegerIndexedPrimaryGlobal::domTemplate,
-    V8TestIntegerIndexedPrimaryGlobal::Trace,
-    V8TestIntegerIndexedPrimaryGlobal::TraceWrappers,
     nullptr,
     "TestIntegerIndexedPrimaryGlobal",
     nullptr,

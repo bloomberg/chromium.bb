@@ -31,8 +31,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInheritedLegacyUnenumerableNamedProperties::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInheritedLegacyUnenumerableNamedProperties::domTemplate,
-    V8TestInheritedLegacyUnenumerableNamedProperties::Trace,
-    V8TestInheritedLegacyUnenumerableNamedProperties::TraceWrappers,
     nullptr,
     "TestInheritedLegacyUnenumerableNamedProperties",
     &V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo,

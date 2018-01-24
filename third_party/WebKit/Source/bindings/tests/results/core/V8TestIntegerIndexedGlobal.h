@@ -36,12 +36,6 @@ class V8TestIntegerIndexedGlobal {
   }
   CORE_EXPORT static TestIntegerIndexedGlobal* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestIntegerIndexedGlobal>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestIntegerIndexedGlobal>());
-  }
   static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);

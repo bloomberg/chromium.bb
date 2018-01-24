@@ -30,8 +30,6 @@ namespace blink {
 const WrapperTypeInfo V8TestNotEnumerableNamedGetter::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestNotEnumerableNamedGetter::domTemplate,
-    V8TestNotEnumerableNamedGetter::Trace,
-    V8TestNotEnumerableNamedGetter::TraceWrappers,
     nullptr,
     "TestNotEnumerableNamedGetter",
     nullptr,

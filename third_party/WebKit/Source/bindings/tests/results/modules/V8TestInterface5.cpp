@@ -35,8 +35,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterface5::domTemplate,
-    V8TestInterface5::Trace,
-    V8TestInterface5::TraceWrappers,
     V8TestInterface5::InstallConditionalFeatures,
     "TestInterface5",
     &V8TestInterfaceEmpty::wrapperTypeInfo,

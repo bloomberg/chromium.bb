@@ -34,8 +34,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceDocument::domTemplate,
-    V8TestInterfaceDocument::Trace,
-    V8TestInterfaceDocument::TraceWrappers,
     nullptr,
     "TestInterfaceDocument",
     &V8Document::wrapperTypeInfo,

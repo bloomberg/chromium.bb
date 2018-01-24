@@ -33,8 +33,6 @@ namespace blink {
 const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     nullptr,
-    V8ArrayBuffer::Trace,
-    V8ArrayBuffer::TraceWrappers,
     nullptr,
     "ArrayBuffer",
     nullptr,

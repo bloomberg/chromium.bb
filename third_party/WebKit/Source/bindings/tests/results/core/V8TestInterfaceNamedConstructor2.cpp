@@ -32,8 +32,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceNamedConstructor2::domTemplate,
-    V8TestInterfaceNamedConstructor2::Trace,
-    V8TestInterfaceNamedConstructor2::TraceWrappers,
     nullptr,
     "TestInterfaceNamedConstructor2",
     nullptr,
@@ -76,8 +74,6 @@ namespace TestInterfaceNamedConstructor2V8Internal {
 const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceNamedConstructor2Constructor::domTemplate,
-    V8TestInterfaceNamedConstructor2::Trace,
-    V8TestInterfaceNamedConstructor2::TraceWrappers,
     nullptr,
     "TestInterfaceNamedConstructor2",
     nullptr,

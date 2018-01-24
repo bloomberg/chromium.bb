@@ -35,12 +35,6 @@ class V8TestInterfaceConstructor4 {
   }
   CORE_EXPORT static TestInterfaceConstructor4* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceConstructor4>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceConstructor4>());
-  }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

@@ -50,12 +50,6 @@ class V8TestObject {
   }
   CORE_EXPORT static TestObject* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestObject>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestObject>());
-  }
   static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void customCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
   static void customCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);

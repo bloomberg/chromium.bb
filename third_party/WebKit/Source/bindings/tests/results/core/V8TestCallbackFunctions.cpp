@@ -35,8 +35,6 @@ namespace blink {
 const WrapperTypeInfo V8TestCallbackFunctions::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestCallbackFunctions::domTemplate,
-    V8TestCallbackFunctions::Trace,
-    V8TestCallbackFunctions::TraceWrappers,
     nullptr,
     "TestCallbackFunctions",
     nullptr,

@@ -38,12 +38,6 @@ class V8TestInterface {
   }
   CORE_EXPORT static TestInterfaceImplementation* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceImplementation>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceImplementation>());
-  }
   static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
