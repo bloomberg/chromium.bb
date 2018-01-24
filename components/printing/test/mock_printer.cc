@@ -205,18 +205,19 @@ void MockPrinter::PrintPage(
   // Load the data sent from a RenderView object and create a PageData object.
   // We duplicate the given file handle when creating a base::SharedMemory
   // instance so that its destructor closes the copy.
-  EXPECT_GT(params.data_size, 0U);
-  base::SharedMemory metafile_data(params.metafile_data_handle, true);
-  metafile_data.Map(params.data_size);
+  auto& content = params.content;
+  EXPECT_GT(content.data_size, 0U);
+  base::SharedMemory metafile_data(content.metafile_data_handle, true);
+  metafile_data.Map(content.data_size);
 #if defined(OS_MACOSX)
   printing::PdfMetafileCg metafile;
 #else
   printing::PdfMetafileSkia metafile(printing::SkiaDocumentType::PDF);
 #endif
-  metafile.InitFromData(metafile_data.memory(), params.data_size);
+  metafile.InitFromData(metafile_data.memory(), content.data_size);
   printing::Image image(metafile);
   MockPrinterPage* page_data =
-      new MockPrinterPage(metafile_data.memory(), params.data_size, image);
+      new MockPrinterPage(metafile_data.memory(), content.data_size, image);
   scoped_refptr<MockPrinterPage> page(page_data);
   pages_.push_back(page);
 #endif

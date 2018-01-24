@@ -132,7 +132,8 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_DidPreviewPage_Params& params) {
   int page_number = params.page_number;
-  if (page_number < FIRST_PAGE_INDEX || !params.data_size)
+  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  if (page_number < FIRST_PAGE_INDEX || !content.data_size)
     return;
 
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
@@ -148,7 +149,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
         params.document_cookie,
         GenFrameGuid(render_frame_host->GetProcess()->GetID(),
                      render_frame_host->GetRoutingID()),
-        params.page_number, params.metafile_data_handle, params.data_size,
+        params.page_number, content.metafile_data_handle, content.data_size,
         ContentToFrameMap(),
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), params.page_number,
@@ -156,7 +157,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   } else {
     NotifyUIPreviewPageReady(
         page_number, params.preview_request_id,
-        GetDataFromHandle(params.metafile_data_handle, params.data_size));
+        GetDataFromHandle(content.metafile_data_handle, content.data_size));
   }
 }
 
@@ -175,6 +176,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   if (!print_preview_ui)
     return;
 
+  const PrintHostMsg_DidPrintContent_Params& content = params.content;
   if (IsOopifEnabled() && print_preview_ui->source_is_modifiable()) {
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
     DCHECK(client);
@@ -183,14 +185,14 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
         params.document_cookie,
         GenFrameGuid(render_frame_host->GetProcess()->GetID(),
                      render_frame_host->GetRoutingID()),
-        params.metafile_data_handle, params.data_size, ContentToFrameMap(),
+        content.metafile_data_handle, content.data_size, ContentToFrameMap(),
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        params.expected_pages_count, params.preview_request_id));
   } else {
     NotifyUIPreviewDocumentReady(
         params.expected_pages_count, params.preview_request_id,
-        GetDataFromHandle(params.metafile_data_handle, params.data_size));
+        GetDataFromHandle(content.metafile_data_handle, content.data_size));
   }
 }
 
