@@ -22,8 +22,7 @@
         "directory"
       ]
     },
-    "notifications",
-    "storage"
+    "notifications"
   ],
   "file_system_provider_capabilities": {
     "multipleMounts": true,
