@@ -219,6 +219,7 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool enable_http2_alternative_service;
+  bool enable_websocket_over_http2;
   NetLog* net_log;
   bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;

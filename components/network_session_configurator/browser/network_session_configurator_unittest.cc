@@ -65,6 +65,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
 
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_TRUE(params_.http2_settings.empty());
+  EXPECT_FALSE(params_.enable_websocket_over_http2);
 
   EXPECT_FALSE(params_.enable_quic);
   EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", params_.quic_user_agent_id);
@@ -772,6 +773,28 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_headers_include_h2_stream_dependency);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       WebsocketOverHttp2EnabledFromCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableWebsocketOverHttp2);
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  EXPECT_TRUE(params_.enable_websocket_over_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       WebsocketOverHttp2EnabledFromFieldTrial) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["websocket_over_http2"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_websocket_over_http2);
 }
 
 }  // namespace network_session_configurator
