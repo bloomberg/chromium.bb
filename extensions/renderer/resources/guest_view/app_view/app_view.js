@@ -7,7 +7,7 @@ var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var IdGenerator = requireNative('id_generator');
 
 function AppViewImpl(appviewElement) {
-  GuestViewContainer.call(this, appviewElement, 'appview');
+  $Function.call(GuestViewContainer, this, appviewElement, 'appview');
 
   this.app = '';
   this.data = '';

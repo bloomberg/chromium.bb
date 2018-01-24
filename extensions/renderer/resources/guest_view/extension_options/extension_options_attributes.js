@@ -14,8 +14,9 @@ var ExtensionOptionsImpl = require('extensionOptions').ExtensionOptionsImpl;
 
 // Attribute that handles extension binded to the extensionoptions.
 function ExtensionAttribute(view) {
-  GuestViewAttributes.Attribute.call(
-      this, ExtensionOptionsConstants.ATTRIBUTE_EXTENSION, view);
+  $Function.call(
+      GuestViewAttributes.Attribute, this,
+      ExtensionOptionsConstants.ATTRIBUTE_EXTENSION, view);
 }
 
 ExtensionAttribute.prototype.__proto__ =

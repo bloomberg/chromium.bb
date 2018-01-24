@@ -85,7 +85,7 @@ Attribute.prototype.detach = function() {};
 
 // An attribute that is treated as a Boolean.
 function BooleanAttribute(name, view) {
-  Attribute.call(this, name, view);
+  $Function.call(Attribute, this, name, view);
 }
 
 BooleanAttribute.prototype.__proto__ = Attribute.prototype;
@@ -107,7 +107,7 @@ BooleanAttribute.prototype.setValue = function(value) {
 
 // An attribute that is treated as an integer.
 function IntegerAttribute(name, view) {
-  Attribute.call(this, name, view);
+  $Function.call(Attribute, this, name, view);
 }
 
 IntegerAttribute.prototype.__proto__ = Attribute.prototype;
@@ -126,7 +126,7 @@ IntegerAttribute.prototype.setValue = function(value) {
 // An attribute that cannot be changed (externally). The only way to set it
 // internally is via |setValueIgnoreMutation|.
 function ReadOnlyAttribute(name, view) {
-  Attribute.call(this, name, view);
+  $Function.call(Attribute, this, name, view);
 }
 
 ReadOnlyAttribute.prototype.__proto__ = Attribute.prototype;

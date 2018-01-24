@@ -18,7 +18,7 @@ var WebViewInternal = getInternalApi ?
 
 // Represents the internal state of <webview>.
 function WebViewImpl(webviewElement) {
-  GuestViewContainer.call(this, webviewElement, 'webview');
+  $Function.call(GuestViewContainer, this, webviewElement, 'webview');
   this.cachedZoom = 1;
   this.setupElementProperties();
   new WebViewEvents(this, this.viewInstanceId);
@@ -187,7 +187,7 @@ WebViewImpl.prototype.attachWindow$ = function(opt_guestInstanceId) {
     this.guest = new GuestView('webview', opt_guestInstanceId);
   }
 
-  return GuestViewContainer.prototype.attachWindow$.call(this);
+  return $Function.call(GuestViewContainer.prototype.attachWindow$, this);
 };
 
 // Shared implementation of executeScript() and insertCSS().

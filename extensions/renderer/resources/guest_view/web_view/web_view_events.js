@@ -20,7 +20,7 @@ var WebViewActionRequests =
 var WebRequestMessageEvent = CreateEvent('webViewInternal.onMessage');
 
 function WebViewEvents(webViewImpl) {
-  GuestViewEvents.call(this, webViewImpl);
+  $Function.call(GuestViewEvents, this, webViewImpl);
 
   this.setupWebRequestEvents();
   this.view.maybeSetupContextMenus();
