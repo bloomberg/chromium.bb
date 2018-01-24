@@ -15,6 +15,8 @@ issues]].
 ** Braille table improvements
 - Improvements to Unified French Grade 2 thanks to André-Abush Clause
 - Fix braille number input for Greek Braille thanks to Dave Mielke
+- Add a fix for "phad" according to UEB Rule 10.7.3 thanks to Anthony
+  Tibbs
 
 ** Other changes
 *** Improved documentation
