@@ -170,6 +170,68 @@ TEST_F(LocalCaretRectTest, TwoLinesOfTextWithSoftWrap) {
       LocalCaretRectOfPosition({Position(foo, 6), TextAffinity::kDownstream}));
 }
 
+TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodes) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  LoadAhem();
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem; width: 30px; word-break: break-all'>"
+      "<span>A</span>"
+      "<span>B</span>"
+      "<span id=span-c>C</span>"
+      "<span id=span-d>D</span>"
+      "<span>E</span>"
+      "<span>F</span>"
+      "</div>");
+  const Node* text_c = GetElementById("span-c")->firstChild();
+  const Node* text_d = GetElementById("span-d")->firstChild();
+
+  const Position after_c(text_c, 1);
+  EXPECT_EQ(LocalCaretRect(text_c->GetLayoutObject(), LayoutRect(29, 0, 1, 10)),
+            LocalCaretRectOfPosition({after_c, TextAffinity::kUpstream}));
+  EXPECT_EQ(LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+            LocalCaretRectOfPosition({after_c, TextAffinity::kDownstream}));
+
+  const Position before_d(text_d, 0);
+  EXPECT_EQ(LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+            LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
+  EXPECT_EQ(LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+            LocalCaretRectOfPosition({before_d, TextAffinity::kDownstream}));
+}
+
+TEST_F(LocalCaretRectTest, SoftLineWrapBetweenMultipleTextNodesRtl) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  LoadAhem();
+  SetBodyContent(
+      "<bdo dir=rtl style='font: 10px/10px Ahem; width: 30px; "
+      "word-break: break-all; display: block'>"
+      "<span>A</span>"
+      "<span>B</span>"
+      "<span id=span-c>C</span>"
+      "<span id=span-d>D</span>"
+      "<span>E</span>"
+      "<span>F</span>"
+      "</bdo>");
+  const Node* text_c = GetElementById("span-c")->firstChild();
+  const Node* text_d = GetElementById("span-d")->firstChild();
+
+  const Position after_c(text_c, 1);
+  EXPECT_EQ(LocalCaretRect(text_c->GetLayoutObject(), LayoutRect(0, 0, 1, 10)),
+            LocalCaretRectOfPosition({after_c, TextAffinity::kUpstream}));
+  EXPECT_EQ(
+      LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
+      LocalCaretRectOfPosition({after_c, TextAffinity::kDownstream}));
+
+  const Position before_d(text_d, 0);
+  EXPECT_EQ(
+      LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
+      LocalCaretRectOfPosition({before_d, TextAffinity::kUpstream}));
+  EXPECT_EQ(
+      LocalCaretRect(text_d->GetLayoutObject(), LayoutRect(29, 10, 1, 10)),
+      LocalCaretRectOfPosition({before_d, TextAffinity::kDownstream}));
+}
+
 TEST_F(LocalCaretRectTest, CaretRectAtBR) {
   // This test only records the current behavior. Future changes are allowed.
 
@@ -226,6 +288,60 @@ TEST_F(LocalCaretRectTest, Images) {
   EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
             LocalCaretRectOfPosition(
                 {Position::AfterNode(img2), TextAffinity::kDownstream}));
+}
+
+TEST_F(LocalCaretRectTest, RtlImages) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  LoadAhem();
+  SetBodyContent(
+      "<bdo dir=rtl style='font: 10px/10px Ahem; width: 30px; display: block'>"
+      "<img id=img1 width=10px height=10px>"
+      "<img id=img2 width=10px height=10px>"
+      "</bdo>");
+
+  const Element& img1 = *GetElementById("img1");
+
+  // Box-anchored LocalCaretRect is local to the box itself, instead of its
+  // containing block.
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(img1), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(img1.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(img1), TextAffinity::kDownstream}));
+
+  const Element& img2 = *GetElementById("img2");
+
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(9, 0, 1, 12)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(img2), TextAffinity::kDownstream}));
+  EXPECT_EQ(LocalCaretRect(img2.GetLayoutObject(), LayoutRect(0, 0, 1, 12)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(img2), TextAffinity::kDownstream}));
+}
+
+TEST_F(LocalCaretRectTest, VerticalImage) {
+  // This test only records the current behavior. Future changes are allowed.
+
+  SetBodyContent(
+      "<div style='writing-mode: vertical-rl'>"
+      "<img id=img width=10px height=20px>"
+      "</div>");
+
+  const Element& img = *GetElementById("img");
+
+  // Box-anchored LocalCaretRect is local to the box itself, instead of its
+  // containing block.
+  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, 0, 10, 1)),
+            LocalCaretRectOfPosition(
+                {Position::BeforeNode(img), TextAffinity::kDownstream}));
+
+  // TODO(crbug.com/805064): The current behavior is wrong.
+  // Should be LayoutRect(0, 19, 10, 1).
+  EXPECT_EQ(LocalCaretRect(img.GetLayoutObject(), LayoutRect(0, 9, 10, 1)),
+            LocalCaretRectOfPosition(
+                {Position::AfterNode(img), TextAffinity::kDownstream}));
 }
 
 TEST_F(LocalCaretRectTest, TextAndImageMixedHeight) {
