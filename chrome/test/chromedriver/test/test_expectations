@@ -270,13 +270,12 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
+        'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
         'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
         'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
-        'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
     ]
 )
 
@@ -290,7 +289,7 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
         'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
-	 # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
         'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
     ]
 )
