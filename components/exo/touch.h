@@ -27,6 +27,8 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
   explicit Touch(TouchDelegate* delegate);
   ~Touch() override;
 
+  TouchDelegate* delegate() const { return delegate_; }
+
   // Set delegate for stylus events.
   void SetStylusDelegate(TouchStylusDelegate* delegate);
   bool HasStylusDelegate() const;

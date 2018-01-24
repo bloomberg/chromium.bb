@@ -48,6 +48,8 @@ class Pointer : public SurfaceTreeHost,
   explicit Pointer(PointerDelegate* delegate);
   ~Pointer() override;
 
+  PointerDelegate* delegate() const { return delegate_; }
+
   // Set the pointer surface, i.e., the surface that contains the pointer image
   // (cursor). The |hotspot| argument defines the position of the pointer
   // surface relative to the pointer location. Its top-left corner is always at

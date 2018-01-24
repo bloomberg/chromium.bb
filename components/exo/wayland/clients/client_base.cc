@@ -112,6 +112,10 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "wl_subcompositor") == 0) {
     globals->subcompositor.reset(static_cast<wl_subcompositor*>(
         wl_registry_bind(registry, id, &wl_subcompositor_interface, 1)));
+  } else if (strcmp(interface, "zwp_input_timestamps_manager_v1") == 0) {
+    globals->input_timestamps_manager.reset(
+        static_cast<zwp_input_timestamps_manager_v1*>(wl_registry_bind(
+            registry, id, &zwp_input_timestamps_manager_v1_interface, 1)));
   }
 }
 
