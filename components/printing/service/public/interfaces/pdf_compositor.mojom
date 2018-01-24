@@ -6,9 +6,8 @@ module printing.mojom;
 
 const string kServiceName = "pdf_compositor";
 
-// TODO(weili): Add support for printing frames from different processes.
 interface PdfCompositor {
-  // The status of CompositePdf execution.
+  // The status of composition and conversion execution.
   enum Status {
     SUCCESS,
     HANDLE_MAP_ERROR,
@@ -16,10 +15,31 @@ interface PdfCompositor {
     COMPOSTING_FAILURE,
   };
 
-  // Currently directly convert passed in page data to a PDF file.
-  // |sk_handle| points to a buffer of a Skia MultiPictureDocument.
-  // |status| records the function execution status.
-  // |pdf_handle| points to the generated PDF file buffer upon success.
-  CompositePdf(handle<shared_buffer> sk_handle)
+  // Add the content of a subframe for composition.
+  // |frame_guid| is this subframe's global unique id.
+  // |serialized_content| points to a buffer of a serialized Skia picture which
+  //                      has the painted content of this frame.
+  // |subframe_content_map| records content id and its corresponding frame's
+  //                        global unique id.
+  AddSubframeContent(uint64 frame_guid, handle<shared_buffer> serialized_content,
+                     map<uint32, uint64> subframe_content_info);
+
+  // Request to composite a page and convert it into a PDF file.
+  // |frame_guid| is the global unique id of the frame to be composited.
+  // |page_num| is zero-based sequence number of page.
+  // |sk_handle| points to a buffer of a Skia MultiPictureDocument which has
+  //             the drawing content of this frame or a page of this frame.
+  // |subframe_content_map| records content id and its corresponding frame's
+  //                        global unique id.
+  CompositePageToPdf(uint64 frame_guid, uint32 page_num,
+                     handle<shared_buffer> sk_handle,
+                     map<uint32, uint64> subframe_content_info)
+      => (Status status, handle<shared_buffer>? pdf_handle);
+
+  // Request to composite the entire document and convert it into a PDF file.
+  // All the arguments carry the same meaning as CompositePageToPdf() above,
+  // except this call doesn't have |page_num|.
+  CompositeDocumentToPdf(uint64 frame_guid, handle<shared_buffer> sk_handle,
+                         map<uint32, uint64> subframe_content_info)
       => (Status status, handle<shared_buffer>? pdf_handle);
 };

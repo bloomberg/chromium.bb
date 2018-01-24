@@ -2104,6 +2104,8 @@ bool PrintRenderFrameHelper::PreviewPageRendered(int page_number,
   preview_page_params.page_number = page_number;
   preview_page_params.preview_request_id =
       print_pages_params_->params.preview_request_id;
+  preview_page_params.document_cookie =
+      print_pages_params_->params.document_cookie;
 
   Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params));
   return true;

@@ -19,7 +19,7 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/printing/common",
-    "//components/printing/service/public/cpp:client",
+    "//components/printing/service/public/interfaces",
     "//printing",
     "//services/service_manager/public/cpp",
   ]

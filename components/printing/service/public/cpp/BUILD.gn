@@ -4,18 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-source_set("client") {
-  sources = [
-    "pdf_compositor_client.cc",
-    "pdf_compositor_client.h",
-  ]
-
-  public_deps = [
-    "//components/printing/service/public/interfaces",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("factory") {
   sources = [
     "pdf_compositor_service_factory.cc",

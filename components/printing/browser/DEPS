@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/printing/service/public/cpp",
+  "+components/printing/service/public/interfaces",
   "+content/public/browser",
   "+mojo/public/cpp/system",
   "+services/service_manager/public/cpp",

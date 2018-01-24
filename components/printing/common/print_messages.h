@@ -265,6 +265,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
 
   // The id of the preview request.
   IPC_STRUCT_MEMBER(int, preview_request_id)
+
+  // Cookie for the document to ensure correctness.
+  IPC_STRUCT_MEMBER(int, document_cookie)
 IPC_STRUCT_END()
 
 // Parameters sent along with the page count.
