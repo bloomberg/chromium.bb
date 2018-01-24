@@ -129,26 +129,6 @@ void MessagePopupCollection::UpdateWidgets() {
       alignment_delegate_->IsPrimaryDisplayForNotification();
 #endif
 
-  // Check if the popups contain a new notification.
-  bool has_new_toasts = false;
-  for (auto* popup : popups) {
-    if (!FindToast(popup->id())) {
-      has_new_toasts = true;
-      break;
-    }
-  }
-
-  // If a new notification is found, collapse all existing notifications
-  // beforehand.
-  if (has_new_toasts) {
-    for (auto* toast : toasts_) {
-      if (toast->message_view()->IsMouseHovered() ||
-          toast->message_view()->manually_expanded_or_collapsed())
-        continue;
-      toast->message_view()->SetExpanded(false);
-    }
-  }
-
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
