@@ -56,7 +56,10 @@ source_set("motion_animator_objc") {
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]
-  public_configs = [ ":config" ]
+  public_configs = [
+    ":config",
+    "//build/config/compiler:default_include_dirs",
+  ]
 
   public_deps = [
     "//ios/third_party/motion_interchange_objc",
