@@ -34,13 +34,13 @@
 namespace blink {
 
 struct WebWindowFeatures {
-  float x = 0;
+  int x = 0;
   bool x_set = false;
-  float y = 0;
+  int y = 0;
   bool y_set = false;
-  float width = 0;
+  int width = 0;
   bool width_set = false;
-  float height = 0;
+  int height = 0;
   bool height_set = false;
 
   bool menu_bar_visible = true;
