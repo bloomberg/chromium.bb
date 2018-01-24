@@ -145,6 +145,8 @@ cast_source_set("browser") {
     sources += [
       "cast_display_configurator.cc",
       "cast_display_configurator.h",
+      "cast_touch_device_manager.cc",
+      "cast_touch_device_manager.h",
     ]
 
     deps += [
