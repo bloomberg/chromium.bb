@@ -7,13 +7,13 @@ ADDRESS_HOME_LINE2 | address2Field | 1. SHIPPING |  | selectAddressType_1-defaul
 ADDRESS_HOME_CITY | city | City * |  | selectAddressType_1-default
 ADDRESS_HOME_STATE | singleState | State * |  | selectAddressType_1-default
 ADDRESS_HOME_ZIP | postalCodeField | ZIP Code * |  | selectAddressType_1-default
-NAME_FIRST | fname | First Name * |  | selectAddressType_1-default
-NAME_LAST | lname | Last Name * |  | selectAddressType_1-default
-ADDRESS_HOME_LINE1 | address1Field | Address * |  | selectAddressType_1-default
-ADDRESS_HOME_LINE2 | address2Field | Enter the military command or organization name if applicable |  | selectAddressType_1-default
-ADDRESS_HOME_CITY | apoCity | APO/FPO * | APO | selectAddressType_1-default
-ADDRESS_HOME_STATE | apoState | Region * | AA | selectAddressType_1-default
-ADDRESS_HOME_ZIP | postalCodeField | ZIP Code * |  | selectAddressType_1-default
+NAME_FIRST | fname | First Name * |  | fname_2-default
+NAME_LAST | lname | Last Name * |  | fname_2-default
+ADDRESS_HOME_LINE1 | address1Field | Address * |  | fname_2-default
+ADDRESS_HOME_LINE2 | address2Field | Enter the military command or organization name if applicable |  | fname_2-default
+ADDRESS_HOME_CITY | apoCity | APO/FPO * | APO | fname_2-default
+ADDRESS_HOME_STATE | apoState | Region * | AA | fname_2-default
+ADDRESS_HOME_ZIP | postalCodeField | ZIP Code * |  | fname_2-default
 UNKNOWN_TYPE | shippingMethod_single | Standard (Arrives 2-4 Days) FREE | Ground Service | selectAddressType_1-default
 UNKNOWN_TYPE | shippingMethod_single | Standard (Arrives 2-4 Days) FREE | Two Day Air | selectAddressType_1-default
 UNKNOWN_TYPE | shippingMethod_single | Standard (Arrives 2-4 Days) FREE | Next Day Air | selectAddressType_1-default
