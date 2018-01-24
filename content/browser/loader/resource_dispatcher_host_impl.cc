@@ -588,7 +588,7 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
   // Make sure we have the load state monitors running.
   if (!update_load_states_timer_->IsRunning() &&
-      scheduler_->HasLoadingClients()) {
+      scheduler_->DeprecatedHasLoadingClients()) {
     update_load_states_timer_->Start(
         FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHostImpl::UpdateLoadInfo);
@@ -1533,7 +1533,7 @@ void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(int child_id,
 void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
                                                               int route_id,
                                                               bool is_loading) {
-  scheduler_->OnLoadingStateChanged(child_id, route_id, !is_loading);
+  scheduler_->DeprecatedOnLoadingStateChanged(child_id, route_id, !is_loading);
 }
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
@@ -2323,7 +2323,7 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // will restart it as necessary.
   // Also stop the timer if there are no loading clients, to avoid waking up
   // unnecessarily when there is a long running (hanging get) request.
-  if (infos->empty() || !scheduler_->HasLoadingClients()) {
+  if (infos->empty() || !scheduler_->DeprecatedHasLoadingClients()) {
     update_load_states_timer_->Stop();
     return;
   }
