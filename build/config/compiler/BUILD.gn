@@ -834,11 +834,18 @@ config("compiler_cpu_abi") {
           ]
         }
       } else if (mips_arch_variant == "r2") {
-        cflags += [
-          "-mips64r2",
-          "-Wa,-mips64r2",
-        ]
         ldflags += [ "-mips64r2" ]
+        if (is_clang) {
+          cflags += [
+            "-march=mips64el",
+            "-mcpu=mips64r2",
+          ]
+        } else {
+          cflags += [
+            "-mips64r2",
+            "-Wa,-mips64r2",
+          ]
+        }
       } else if (mips_arch_variant == "loongson3") {
         defines += [ "_MIPS_ARCH_LOONGSON" ]
         cflags += [

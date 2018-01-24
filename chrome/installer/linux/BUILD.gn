@@ -406,6 +406,8 @@ template("linux_package") {
       deb_arch = "arm"
     } else if (current_cpu == "mipsel") {
       deb_arch = "mipsel"
+    } else if (current_cpu == "mips64el") {
+      deb_arch = "mips64el"
     } else {
       assert(false, "Linux installer not configured for this architecture.")
     }
@@ -460,6 +462,8 @@ template("linux_package") {
         rpm_arch = "arm"
       } else if (current_cpu == "mipsel") {
         rpm_arch = "mipsel"
+      } else if (current_cpu == "mips64el") {
+        rpm_arch = "mips64el"
       } else {
         assert(false, "Linux installer not configured for this architecture.")
       }

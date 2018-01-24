@@ -265,6 +265,10 @@ case "$TARGETARCH" in
     export ARCHITECTURE="mipsel"
     stage_install_rpm
     ;;
+  mips64el )
+    export ARCHITECTURE="mips64el"
+    stage_install_rpm
+    ;;
   * )
     echo
     echo "ERROR: Don't know how to build RPMs for '$TARGETARCH'."
