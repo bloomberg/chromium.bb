@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -561,7 +562,10 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
 
 void ArcSettingsServiceImpl::SyncReportingConsent() const {
   bool consent = false;
-  CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
+  // Public session user never saw the consent even if the admin forced
+  // the pref by a policy.
+  if (!profiles::IsPublicSession())
+    CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
   base::DictionaryValue extras;
   extras.SetBoolean("reportingConsent", consent);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
