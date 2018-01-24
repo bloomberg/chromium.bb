@@ -342,10 +342,11 @@ bool StyleInvalidator::InvalidateShadowRootChildren(
     Element& element,
     RecursionData& recursion_data) {
   bool some_children_need_style_recalc = false;
-  if (ShadowRoot* root = element.GetShadowRoot()) {
+  for (ShadowRoot* root = element.YoungestShadowRoot(); root;
+       root = root->OlderShadowRoot()) {
     if (!recursion_data.TreeBoundaryCrossing() &&
         !root->ChildNeedsStyleInvalidation() && !root->NeedsStyleInvalidation())
-      return false;
+      continue;
     RecursionCheckpoint checkpoint(&recursion_data);
     SiblingData sibling_data;
     if (UNLIKELY(root->NeedsStyleInvalidation()))
@@ -366,7 +367,7 @@ bool StyleInvalidator::InvalidateChildren(Element& element,
                                           RecursionData& recursion_data) {
   SiblingData sibling_data;
   bool some_children_need_style_recalc = false;
-  if (UNLIKELY(!!element.GetShadowRoot())) {
+  if (UNLIKELY(!!element.YoungestShadowRoot())) {
     some_children_need_style_recalc =
         InvalidateShadowRootChildren(element, recursion_data);
   }

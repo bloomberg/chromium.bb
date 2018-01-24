@@ -79,7 +79,8 @@ void TreeScopeAdopter::MoveTreeToNewScope(Node& root) const {
         MoveTreeToNewScope(*attr);
     }
 
-    if (ShadowRoot* shadow = element.GetShadowRoot()) {
+    for (ShadowRoot* shadow = element.YoungestShadowRoot(); shadow;
+         shadow = shadow->OlderShadowRoot()) {
       shadow->SetParentTreeScope(NewScope());
       if (will_move_to_new_document) {
         if (shadow->GetType() == ShadowRootType::V0) {
@@ -112,7 +113,8 @@ void TreeScopeAdopter::MoveTreeToNewDocument(Node& root,
         MoveTreeToNewDocument(*attr, old_document, new_document);
     }
 
-    if (ShadowRoot* shadow = element.GetShadowRoot())
+    for (ShadowRoot* shadow = element.YoungestShadowRoot(); shadow;
+         shadow = shadow->OlderShadowRoot())
       MoveTreeToNewDocument(*shadow, old_document, new_document);
   }
 }

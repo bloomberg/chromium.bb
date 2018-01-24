@@ -515,7 +515,8 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
     if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(accesskeyAttr),
                                     key))
       result = &element;
-    if (ShadowRoot* shadow_root = element.GetShadowRoot()) {
+    for (ShadowRoot* shadow_root = element.YoungestShadowRoot(); shadow_root;
+         shadow_root = shadow_root->OlderShadowRoot()) {
       if (Element* shadow_result = shadow_root->GetElementByAccessKey(key))
         result = shadow_result;
     }
@@ -526,7 +527,8 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
 void TreeScope::SetNeedsStyleRecalcForViewportUnits() {
   for (Element* element = ElementTraversal::FirstWithin(RootNode()); element;
        element = ElementTraversal::NextIncludingPseudo(*element)) {
-    if (ShadowRoot* root = element->GetShadowRoot())
+    for (ShadowRoot* root = element->YoungestShadowRoot(); root;
+         root = root->OlderShadowRoot())
       root->SetNeedsStyleRecalcForViewportUnits();
     const ComputedStyle* style = element->GetComputedStyle();
     if (style && style->HasViewportUnits())
