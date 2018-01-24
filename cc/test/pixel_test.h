@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CC_TEST_PIXEL_TEST_H_
+#define CC_TEST_PIXEL_TEST_H_
+
 #include "base/files/file_util.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -12,9 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
-
-#ifndef CC_TEST_PIXEL_TEST_H_
-#define CC_TEST_PIXEL_TEST_H_
 
 namespace viz {
 class CopyOutputResult;
