@@ -675,7 +675,7 @@ gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
                GetSize().width(), "height", GetSize().height());
   presentation_helper_->PreSwapBuffers(callback);
   glXSwapBuffers(g_display, GetDrawableHandle());
-  presentation_helper_->PostSwapBuffers(gfx::SwapResult::SWAP_ACK);
+  presentation_helper_->PostSwapBuffers();
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -718,7 +718,7 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
   DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
   presentation_helper_->PreSwapBuffers(callback);
   glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
-  presentation_helper_->PostSwapBuffers(gfx::SwapResult::SWAP_ACK);
+  presentation_helper_->PostSwapBuffers();
   return gfx::SwapResult::SWAP_ACK;
 }
 

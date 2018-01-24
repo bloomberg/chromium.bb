@@ -29,7 +29,6 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_make_current.h"
@@ -985,9 +984,6 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
         std::make_unique<EGLSyncControlVSyncProvider>(surface_);
   }
 
-  presentation_helper_ =
-      std::make_unique<GLSurfacePresentationHelper>(GetVSyncProvider());
-
   return true;
 }
 
@@ -1040,16 +1036,11 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
   use_egl_timestamps_ = !supported_egl_timestamps_.empty();
 }
 
-bool NativeViewGLSurfaceEGL::SupportsPresentationCallback() {
-  return true;
-}
-
 bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
   return true;
 }
 
 void NativeViewGLSurfaceEGL::Destroy() {
-  presentation_helper_ = nullptr;
   vsync_provider_internal_ = nullptr;
 
   if (surface_) {
@@ -1084,17 +1075,17 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
         !!eglGetNextFrameIdANDROID(GetDisplay(), surface_, &newFrameId);
   }
 
-  presentation_helper_->PreSwapBuffers(callback);
-  gfx::SwapResult swap_result = gfx::SwapResult::SWAP_ACK;
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
-    swap_result = gfx::SwapResult::SWAP_FAILED;
-  } else if (use_egl_timestamps_) {
+    return gfx::SwapResult::SWAP_FAILED;
+  }
+
+  if (use_egl_timestamps_) {
     UpdateSwapEvents(newFrameId, newFrameIdIsValid);
   }
-  presentation_helper_->PostSwapBuffers(swap_result);
-  return swap_result;
+
+  return gfx::SwapResult::SWAP_ACK;
 }
 
 void NativeViewGLSurfaceEGL::UpdateSwapEvents(EGLuint64KHR newFrameId,
@@ -1289,17 +1280,14 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
     return gfx::SwapResult::SWAP_FAILED;
   }
 
-  presentation_helper_->PreSwapBuffers(callback);
-  gfx::SwapResult swap_result = gfx::SwapResult::SWAP_ACK;
   if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_,
                                    const_cast<EGLint*>(rects.data()),
                                    static_cast<EGLint>(rects.size() / 4))) {
     DVLOG(1) << "eglSwapBuffersWithDamageKHR failed with error "
              << GetLastEGLErrorString();
-    swap_result = gfx::SwapResult::SWAP_FAILED;
+    return gfx::SwapResult::SWAP_FAILED;
   }
-  presentation_helper_->PostSwapBuffers(swap_result);
-  return swap_result;
+  return gfx::SwapResult::SWAP_ACK;
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
@@ -1320,15 +1308,12 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     // bottom left.
     y = GetSize().height() - y - height;
   }
-  presentation_helper_->PreSwapBuffers(callback);
-  gfx::SwapResult swap_result = gfx::SwapResult::SWAP_ACK;
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "
              << GetLastEGLErrorString();
-    swap_result = gfx::SwapResult::SWAP_FAILED;
+    return gfx::SwapResult::SWAP_FAILED;
   }
-  presentation_helper_->PostSwapBuffers(swap_result);
-  return swap_result;
+  return gfx::SwapResult::SWAP_ACK;
 }
 
 bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
@@ -1348,11 +1333,6 @@ gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes(
   // rather than being queued and waiting for a "swap" signal.
   return CommitAndClearPendingOverlays() ? gfx::SwapResult::SWAP_ACK
                                          : gfx::SwapResult::SWAP_FAILED;
-}
-
-bool NativeViewGLSurfaceEGL::OnMakeCurrent(GLContext* context) {
-  presentation_helper_->OnMakeCurrent(context, this);
-  return GLSurfaceEGL::OnMakeCurrent(context);
 }
 
 gfx::VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {

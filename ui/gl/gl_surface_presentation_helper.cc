@@ -25,7 +25,9 @@ operator=(Frame&& other) = default;
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     gfx::VSyncProvider* vsync_provider)
-    : vsync_provider_(vsync_provider), weak_ptr_factory_(this) {}
+    : vsync_provider_(vsync_provider), weak_ptr_factory_(this) {
+  DCHECK(vsync_provider_);
+}
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     base::TimeTicks timebase,
@@ -82,19 +84,9 @@ void GLSurfacePresentationHelper::PreSwapBuffers(
   pending_frames_.push_back(Frame(std::move(timer), callback));
 }
 
-void GLSurfacePresentationHelper::PostSwapBuffers(gfx::SwapResult result) {
-  DCHECK(!pending_frames_.empty());
-  if (result != gfx::SwapResult::SWAP_ACK) {
-    auto frame = std::move(pending_frames_.back());
-    pending_frames_.pop_back();
-    if (frame.timer) {
-      bool has_context = gl_context_ && gl_context_->IsCurrent(surface_);
-      frame.timer->Destroy(has_context);
-    }
-    frame.callback.Run(gfx::PresentationFeedback());
-  } else if (!waiting_for_vsync_parameters_) {
+void GLSurfacePresentationHelper::PostSwapBuffers() {
+  if (!waiting_for_vsync_parameters_)
     CheckPendingFrames();
-  }
 }
 
 void GLSurfacePresentationHelper::CheckPendingFrames() {
@@ -117,8 +109,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   if (gl_context_ && !gl_context_->IsCurrent(surface_)) {
     gpu_timing_client_ = nullptr;
     for (auto& frame : pending_frames_) {
-      if (frame.timer)
-        frame.timer->Destroy(false /* has_context */);
+      frame.timer->Destroy(false /* has_context */);
       frame.callback.Run(gfx::PresentationFeedback());
     }
     pending_frames_.clear();
