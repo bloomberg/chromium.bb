@@ -28,8 +28,6 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         moblab_vm, '_CreateVMImage', autospec=True)
     self._mock_create_moblab_disk = self.PatchObject(
         moblab_vm, '_CreateMoblabDisk', autospec=True)
-    self._mock_write_to_disk_image = self.PatchObject(
-        moblab_vm, '_WriteToDiskImage', autospec=True)
     self._mock_try_create_bridge_device = self.PatchObject(
         moblab_vm, '_TryCreateBridgeDevice', autospec=True)
     self._mock_create_tap_device = self.PatchObject(
@@ -46,6 +44,10 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         moblab_vm, '_RemoveTapDeviceIgnoringErrors', autospec=True)
     self._mock_stop_kvm = self.PatchObject(
         moblab_vm, '_StopKvmIgnoringErrors', autospec=True)
+
+    self._mock_mount = self.PatchObject(osutils, 'MountDir', autospec=True)
+    self._mock_umount = self.PatchObject(osutils, 'UmountDir', autospec=True)
+
     self._InitializeCommonAttributes()
 
   def _InitializeCommonAttributes(self):
@@ -296,6 +298,28 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     shutil.move(self.workspace, new_workspace)
     self._InitializeWorkspaceAttributes(new_workspace)
     self._testSuccessfulStartAfterCreate(False)
+
+  def testMountMoblabDiskContextInUninitilizedWorkspaceRaises(self):
+    """Cannot mount a disk if the workspace isn't even initialized."""
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    with self.assertRaises(moblab_vm.MoblabVmError):
+      with vmsetup.MountedMoblabDiskContext():
+        pass
+
+  def testMountMoblabDiskContextAfterStartRaises(self):
+    """Cannot mount a disk if the workspace isn't even initialized."""
+    self.testSuccessfulStartAfterCreateWithoutDut()
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    with self.assertRaises(moblab_vm.MoblabVmError):
+      with vmsetup.MountedMoblabDiskContext():
+        pass
+
+  def testSuccessfulMountMoblabDiskContextAfter(self):
+    """MountMoblabDiskContext works OK for initialized, non-running VM."""
+    self.testSuccessfulCreateNoDutDir()
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    with vmsetup.MountedMoblabDiskContext() as mounted_path:
+      self.assertStartsWith(mounted_path, self.tempdir)
 
 
 class HelperFunctionsTestCase(unittest.TestCase):

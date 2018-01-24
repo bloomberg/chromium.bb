@@ -242,6 +242,37 @@ class MoblabVm(object):
     self._config = collections.defaultdict(str)
     # Don't self._Persist since the workspace is now clean.
 
+  @contextlib.contextmanager
+  def MountedMoblabDiskContext(self):
+    """A contextmanager to mount the already prepared moblab disk.
+
+    This can be used to modify the external disk mounted by the moblab VM, while
+    the VMs are not running. It is often much more performance to modify the
+    disk on the host than SCP'ing large files into the VM.
+
+    vms = moblab_vm.MoblabVm(workspace_dir)
+    vms.Create(...)
+    with vms.MountedMoblabDiskContext() as moblab_disk_dir:
+      # Copy stuff into the directory at moblab_disk_dir
+    vms.Start()
+    ...
+    """
+    if not self.initialized:
+      raise MoblabVmError('Uninitialized workspace %s. Can not mount disk.'
+                          % self.workspace)
+    if self.running:
+      raise MoblabVmError(
+          'VM at %s is already running. Stop() before mounting disk.'
+          % self.workspace)
+
+    with osutils.TempDir() as tempdir:
+      osutils.MountDir(self._config[_CONFIG_MOBLAB_DISK], tempdir, 'ext4',
+                       skip_mtab=True)
+      try:
+        yield tempdir
+      finally:
+        osutils.UmountDir(tempdir)
+
   def _LoadConfig(self):
     """Attempts to load the config from workspace, or sets up defaults."""
     config = collections.defaultdict(str)
@@ -335,8 +366,8 @@ class MoblabVm(object):
     # We want a unicast, locally configured address with an obviously bogus
     # organisation id.
     tap_mac_addr = '02:00:00:99:99:01'
+    self._WriteToMoblabDiskImage('private-network-macaddr.conf', [tap_mac_addr])
     disk_path = self._config[_CONFIG_MOBLAB_DISK]
-    _WriteToDiskImage(disk_path, 'private-network-macaddr.conf', [tap_mac_addr])
     qemu_args = ['-usb', '-drive', 'id=usb_disk,if=none,file=%s' % disk_path,
                  '-device', 'usb-storage,drive=usb_disk']
     # moblab grabs some extra consecutive ports for forwarding AFE and devserver
@@ -386,6 +417,17 @@ class MoblabVm(object):
     self._config[_CONFIG_DUT_SSH_PORT] = ssh_port
     self._config[_CONFIG_DUT_TAP_MAC] = tap_mac_addr
     return next_num
+
+  def _WriteToMoblabDiskImage(self, target_path, lines):
+    """Write a file in the moblab external disk.
+
+    Args:
+      target_path: Path within the mounted disk to write. This path will be
+          overwritten.
+      lines: An iterator of lines to write.
+    """
+    with self.MountedMoblabDiskContext() as disk_dir:
+      osutils.WriteFile(os.path.join(disk_dir, target_path), lines, sudo=True)
 
 
 def _CreateVMImage(src_dir, dest_dir):
@@ -445,23 +487,6 @@ def _CreateMoblabDisk(dest_dir):
   cros_build_lib.RunCommand(['mkfs.ext4', '-F', dest_path])
   cros_build_lib.RunCommand(['e2label', dest_path, 'MOBLAB-STORAGE'])
   return dest_path
-
-
-def _WriteToDiskImage(disk_image_path, target_path, lines):
-  """Write a file into an image file.
-
-  Args:
-    disk_image_path: The path to the disk image to modify.
-    target_path: Path within the mounted disk to write. This path will be
-        overwritten.
-    lines: An iterator of lines to write.
-  """
-  with osutils.TempDir() as tempdir:
-    osutils.MountDir(disk_image_path, tempdir, 'ext4', skip_mtab=True)
-    try:
-      osutils.WriteFile(os.path.join(tempdir, target_path), lines, sudo=True)
-    finally:
-      osutils.UmountDir(tempdir)
 
 
 def _TryCreateBridgeDevice():
