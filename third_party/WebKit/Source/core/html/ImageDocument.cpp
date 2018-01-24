@@ -223,6 +223,13 @@ void ImageDocument::CreateDocumentStructure() {
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*this);
 
+  WillInsertBody();
+
+  image_element_ = HTMLImageElement::Create(*this);
+  UpdateImageStyle();
+  image_element_->SetLoadingImageDocument();
+  image_element_->SetSrc(Url().GetString());
+
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
     body->setAttribute(styleAttr, "margin: 0px; background: #0e0e0e;");
@@ -239,22 +246,13 @@ void ImageDocument::CreateDocumentStructure() {
                                "min-width: min-content;"
                                "height: 100%;"
                                "width: 100%;");
-    HTMLSlotElement* slot = HTMLSlotElement::CreateUserAgentDefaultSlot(*this);
-    div_element_->AppendChild(slot);
-
-    ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
-    shadow_root.AppendChild(div_element_);
+    div_element_->AppendChild(image_element_.Get());
+    body->AppendChild(div_element_);
   } else {
     body->setAttribute(styleAttr, "margin: 0px;");
+    body->AppendChild(image_element_.Get());
   }
 
-  WillInsertBody();
-
-  image_element_ = HTMLImageElement::Create(*this);
-  UpdateImageStyle();
-  image_element_->SetLoadingImageDocument();
-  image_element_->SetSrc(Url().GetString());
-  body->AppendChild(image_element_.Get());
   if (Loader() && image_element_->CachedImageResourceForImageDocument()) {
     image_element_->CachedImageResourceForImageDocument()->ResponseReceived(
         Loader()->GetResponse(), nullptr);
