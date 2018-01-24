@@ -12,25 +12,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter_observer.h"
-
-namespace net {
-class IOBufferWithSize;
-class URLRequestContextGetter;
-}
-
-namespace storage {
-class BlobDataHandle;
-}
+#include "services/network/public/cpp/net_adapters.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
 
 namespace content {
 
 // Streams data from a blob and writes it to a given disk_cache::Entry.
 class CONTENT_EXPORT CacheStorageBlobToDiskCache
-    : public net::URLRequest::Delegate,
-      public net::URLRequestContextGetterObserver {
+    : public blink::mojom::BlobReaderClient {
  public:
   using EntryAndBoolCallback =
       base::OnceCallback<void(disk_cache::ScopedEntryPtr, bool)>;
@@ -41,34 +32,18 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   CacheStorageBlobToDiskCache();
   ~CacheStorageBlobToDiskCache() override;
 
-  // Writes the body of |blob_data_handle| to |entry| with index
+  // Writes the body of |blob| to |entry| with index
   // |disk_cache_body_index|. |entry| is passed to the callback once complete.
   // Only call this once per instantiation of CacheStorageBlobToDiskCache.
-  void StreamBlobToCache(
-      disk_cache::ScopedEntryPtr entry,
-      int disk_cache_body_index,
-      net::URLRequestContextGetter* request_context_getter,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-      EntryAndBoolCallback callback);
+  void StreamBlobToCache(disk_cache::ScopedEntryPtr entry,
+                         int disk_cache_body_index,
+                         blink::mojom::BlobPtr blob,
+                         EntryAndBoolCallback callback);
 
-  // net::URLRequest::Delegate overrides for reading blobs.
-  void OnResponseStarted(net::URLRequest* request, int net_error) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override;
-  void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
-  void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) override;
-  void OnSSLCertificateError(net::URLRequest* request,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal) override;
-
-  // URLRequestContextGetterObserver override for canceling requests just
-  // before the URLRequestContext is destroyed.
-  void OnContextShuttingDown() override;
+  // BlobReaderClient:
+  void OnCalculatedSize(uint64_t total_size,
+                        uint64_t expected_content_size) override {}
+  void OnComplete(int32_t status, uint64_t data_length) override;
 
  protected:
   // Virtual for testing.
@@ -76,18 +51,24 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
 
  private:
   void DidWriteDataToEntry(int expected_bytes, int rv);
-  void RunCallbackAndRemoveObserver(bool success);
+  void RunCallback(bool success);
 
-  int cache_entry_offset_;
+  void OnDataPipeReadable(MojoResult result);
+
+  int cache_entry_offset_ = 0;
   disk_cache::ScopedEntryPtr entry_;
 
-  // Owned by CacheStorageCache which owns this.
-  net::URLRequestContextGetter* request_context_getter_;
-
-  int disk_cache_body_index_;
-  std::unique_ptr<net::URLRequest> blob_request_;
+  int disk_cache_body_index_ = 0;
   EntryAndBoolCallback callback_;
-  scoped_refptr<net::IOBufferWithSize> buffer_;
+
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+  scoped_refptr<network::MojoToNetPendingBuffer> pending_read_;
+  mojo::SimpleWatcher handle_watcher_;
+  mojo::Binding<BlobReaderClient> client_binding_;
+
+  bool received_on_complete_ = false;
+  uint64_t expected_total_size_ = 0;
+  bool data_pipe_closed_ = false;
 
   base::WeakPtrFactory<CacheStorageBlobToDiskCache> weak_ptr_factory_;
 
