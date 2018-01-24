@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/process/process.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
@@ -128,10 +127,6 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(ENABLE_MUS)
 
   int rv = content::ContentMain(params);
-
-  // Terminate process / all threads at once; avoiding static uninitialization
-  // problems (https://crbug.com/800808).
-  base::Process::TerminateCurrentProcessImmediately(rv);
 
   return rv;
 }
