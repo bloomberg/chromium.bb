@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/UUID.h"
 #include "platform/blob/BlobBytesProvider.h"
+#include "platform/blob/testing/FakeBlobRegistry.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/FilePathConversion.h"
@@ -36,77 +37,6 @@ using mojom::blink::DataElementFilesystemURL;
 using mojom::blink::DataElementPtr;
 
 namespace {
-
-class MockBlob : public Blob {
- public:
-  explicit MockBlob(const String& uuid) : uuid_(uuid) {}
-
-  void Clone(BlobRequest request) override {
-    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid_),
-                            std::move(request));
-  }
-
-  void ReadRange(uint64_t offset,
-                 uint64_t length,
-                 mojo::ScopedDataPipeProducerHandle,
-                 mojom::blink::BlobReaderClientPtr) override {
-    NOTREACHED();
-  }
-
-  void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               mojom::blink::BlobReaderClientPtr) override {
-    NOTREACHED();
-  }
-
-  void GetInternalUUID(GetInternalUUIDCallback callback) override {
-    std::move(callback).Run(uuid_);
-  }
-
- private:
-  String uuid_;
-};
-
-class MockBlobRegistry : public BlobRegistry {
- public:
-  void Register(BlobRequest blob,
-                const String& uuid,
-                const String& content_type,
-                const String& content_disposition,
-                Vector<DataElementPtr> elements,
-                RegisterCallback callback) override {
-    registrations.push_back(Registration{
-        uuid, content_type, content_disposition, std::move(elements)});
-    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid), std::move(blob));
-    std::move(callback).Run();
-  }
-
-  void GetBlobFromUUID(BlobRequest blob,
-                       const String& uuid,
-                       GetBlobFromUUIDCallback callback) override {
-    binding_requests.push_back(BindingRequest{uuid});
-    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid), std::move(blob));
-    std::move(callback).Run();
-  }
-
-  void URLStoreForOrigin(
-      const scoped_refptr<const SecurityOrigin>& origin,
-      mojom::blink::BlobURLStoreAssociatedRequest request) override {
-    NOTREACHED();
-  }
-
-  struct Registration {
-    String uuid;
-    String content_type;
-    String content_disposition;
-    Vector<DataElementPtr> elements;
-  };
-  Vector<Registration> registrations;
-
-  struct BindingRequest {
-    String uuid;
-  };
-  Vector<BindingRequest> binding_requests;
-};
 
 struct ExpectedElement {
   DataElementPtr element;
@@ -282,7 +212,7 @@ class BlobDataHandleTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MockBlobRegistry mock_blob_registry_;
+  FakeBlobRegistry mock_blob_registry_;
   BlobRegistryPtr blob_registry_ptr_;
   mojo::Binding<BlobRegistry> blob_registry_binding_;
 
