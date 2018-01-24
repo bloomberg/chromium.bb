@@ -2530,7 +2530,7 @@ ShadowRoot* Element::GetShadowRoot() const {
   ElementShadow* element_shadow = Shadow();
   if (!element_shadow)
     return nullptr;
-  return &element_shadow->YoungestShadowRoot();
+  return &element_shadow->GetShadowRoot();
 }
 
 ShadowRoot* Element::OpenShadowRoot() const {
@@ -2559,11 +2559,10 @@ ShadowRoot* Element::AuthorShadowRoot() const {
 
 ShadowRoot* Element::UserAgentShadowRoot() const {
   if (ElementShadow* element_shadow = Shadow()) {
-    ShadowRoot& root = element_shadow->OldestShadowRoot();
+    ShadowRoot& root = element_shadow->GetShadowRoot();
     DCHECK(root.IsUserAgent());
     return &root;
   }
-
   return nullptr;
 }
 

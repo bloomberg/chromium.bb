@@ -928,7 +928,7 @@ static Node* NextNodeWithShadowDOMInMind(const Node& current,
     const Element& element = ToElement(current);
     ElementShadow* element_shadow = element.Shadow();
     if (element_shadow) {
-      ShadowRoot& shadow_root = element_shadow->YoungestShadowRoot();
+      ShadowRoot& shadow_root = element_shadow->GetShadowRoot();
       if (!shadow_root.IsUserAgent() || include_user_agent_shadow_dom)
         return &shadow_root;
     }
@@ -1466,11 +1466,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     if (shadow) {
       std::unique_ptr<protocol::Array<protocol::DOM::Node>> shadow_roots =
           protocol::Array<protocol::DOM::Node>::create();
-      for (ShadowRoot* root = &shadow->YoungestShadowRoot(); root;
-           root = root->OlderShadowRoot()) {
-        shadow_roots->addItem(BuildObjectForNode(
-            root, pierce ? depth : 0, pierce, nodes_map, flatten_result));
-      }
+      ShadowRoot& root = shadow->GetShadowRoot();
+      shadow_roots->addItem(BuildObjectForNode(
+          &root, pierce ? depth : 0, pierce, nodes_map, flatten_result));
       value->setShadowRoots(std::move(shadow_roots));
       force_push_children = true;
     }
@@ -1756,10 +1754,7 @@ void InspectorDOMAgent::CollectNodes(
 
     ElementShadow* shadow = element->Shadow();
     if (pierce && shadow) {
-      for (ShadowRoot* root = &shadow->YoungestShadowRoot(); root;
-           root = root->OlderShadowRoot()) {
-        CollectNodes(root, depth, pierce, filter, result);
-      }
+      CollectNodes(&shadow->GetShadowRoot(), depth, pierce, filter, result);
     }
 
     if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {

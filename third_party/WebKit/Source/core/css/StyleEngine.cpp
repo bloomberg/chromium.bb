@@ -1032,12 +1032,10 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
       InvalidateSlottedElements(ToHTMLSlotElement(*element));
 
     if (invalidation_scope == kInvalidateAllScopes) {
-      ElementShadow* shadow = element->Shadow();
-      ShadowRoot* shadow_root = shadow ? &shadow->OldestShadowRoot() : nullptr;
-      while (shadow_root) {
-        ScheduleInvalidationsForRuleSets(*shadow_root, rule_sets,
+      if (ElementShadow* shadow = element->Shadow()) {
+        ShadowRoot& shadow_root = shadow->GetShadowRoot();
+        ScheduleInvalidationsForRuleSets(shadow_root, rule_sets,
                                          kInvalidateAllScopes);
-        shadow_root = shadow_root->YoungerShadowRoot();
       }
     }
 
