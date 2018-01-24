@@ -141,8 +141,8 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
 // This is a crash test for crbug.com/803026. At some point, we shipped the
 // CSSPaintAPI without shipping the CSSPaintAPIArguments, the result of it is
 // that the |paint_arguments| in the CSSPaintDefinition::Paint() becomes
-// nullptr and we need to null check that. This is a regression test to ensure
-// that we don't crash.
+// nullptr and the renderer crashes. This is a regression test to ensure that
+// we will never crash.
 TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
   PaintWorkletGlobalScope* global_scope = GetProxy()->global_scope();
   global_scope->ScriptController()->Evaluate(
@@ -157,7 +157,7 @@ TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
   const IntSize container_size(100, 100);
   scoped_refptr<Image> image =
       definition->Paint(*observer, container_size, nullptr);
-  EXPECT_EQ(image, nullptr);
+  EXPECT_NE(image, nullptr);
 }
 
 // In this test, we set a list of "paints_to_switch" numbers, and in each frame,
