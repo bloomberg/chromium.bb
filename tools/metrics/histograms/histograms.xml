@@ -48291,6 +48291,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLRecordSizeRead" units="bytes">
+  <obsolete>
+    Removed in January 2018.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <owner>svaldez@chromium.org</owner>
   <summary>
