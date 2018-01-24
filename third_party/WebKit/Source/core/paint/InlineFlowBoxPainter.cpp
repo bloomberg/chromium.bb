@@ -33,6 +33,13 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
     return;
 
   if (paint_info.phase == PaintPhase::kMask) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(
+            paint_info.context, inline_flow_box_,
+            DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+      return;
+    DrawingRecorder recorder(
+        paint_info.context, inline_flow_box_,
+        DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
     PaintMask(paint_info, paint_offset);
     return;
   }
@@ -336,20 +343,10 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
 
 void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
-  DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
-  const auto& box_model = *ToLayoutBoxModelObject(
-      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
-  DCHECK(box_model.HasMask());
-  if (box_model.StyleRef().Visibility() != EVisibility::kVisible)
+  if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
+          EVisibility::kVisible ||
+      paint_info.phase != PaintPhase::kMask)
     return;
-
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, inline_flow_box_,
-          DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
-    return;
-  DrawingRecorder recorder(
-      paint_info.context, inline_flow_box_,
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
 
   LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
 
@@ -358,32 +355,45 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   inline_flow_box_.FlipForWritingMode(local_rect);
   LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
 
-  const auto& mask_nine_piece_image = box_model.StyleRef().MaskBoxImage();
-  const auto* mask_box_image = mask_nine_piece_image.GetImage();
+  const NinePieceImage& mask_nine_piece_image =
+      inline_flow_box_.GetLineLayoutItem().Style()->MaskBoxImage();
+  StyleImage* mask_box_image =
+      inline_flow_box_.GetLineLayoutItem().Style()->MaskBoxImage().GetImage();
 
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
+  bool flatten_compositing_layers =
+      paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
+  bool mask_blending_applied_by_compositor =
+      !flatten_compositing_layers &&
+      inline_flow_box_.GetLineLayoutItem().HasLayer() &&
+      inline_flow_box_.BoxModelObject()
+          .Layer()
+          ->MaskBlendingAppliedByCompositor();
   SkBlendMode composite_op = SkBlendMode::kSrcOver;
-  DCHECK(box_model.HasLayer());
-  if (!box_model.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
-    if ((mask_box_image && box_model.StyleRef().MaskLayers().HasImage()) ||
-        box_model.StyleRef().MaskLayers().Next()) {
+  if (!mask_blending_applied_by_compositor) {
+    if ((mask_box_image && inline_flow_box_.GetLineLayoutItem()
+                               .Style()
+                               ->MaskLayers()
+                               .HasImage()) ||
+        inline_flow_box_.GetLineLayoutItem().Style()->MaskLayers().Next()) {
       push_transparency_layer = true;
       paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn);
     } else {
       // TODO(fmalita): passing a dst-in xfer mode down to
-      // paintFillLayers/paintNinePieceImage seems dangerous: it is only
-      // correct if applied atomically (single draw call). While the heuristic
-      // above presumably ensures that is the case, this approach seems super
-      // fragile. We should investigate dropping this optimization in favour
-      // of the more robust layer branch above.
+      // paintFillLayers/paintNinePieceImage seems dangerous: it is only correct
+      // if applied atomically (single draw call). While the heuristic above
+      // presumably ensures that is the case, this approach seems super fragile.
+      // We should investigate dropping this optimization in favour of the more
+      // robust layer branch above.
       composite_op = SkBlendMode::kDstIn;
     }
   }
 
   LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   PaintFillLayers(paint_info, Color::kTransparent,
-                  box_model.StyleRef().MaskLayers(), paint_rect, composite_op);
+                  inline_flow_box_.GetLineLayoutItem().Style()->MaskLayers(),
+                  paint_rect, composite_op);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
   if (!has_box_image || !mask_box_image->IsLoaded()) {
@@ -392,13 +402,16 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     return;  // Don't paint anything while we wait for the image to load.
   }
 
+  LayoutBoxModelObject* box_model = ToLayoutBoxModelObject(
+      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
   // The simple case is where we are the only box for this object. In those
   // cases only a single call to draw is required.
   if (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) {
-    NinePieceImagePainter::Paint(paint_info.context, box_model,
-                                 box_model.GetDocument(), GetNode(&box_model),
-                                 paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image, composite_op);
+    NinePieceImagePainter::Paint(
+        paint_info.context, *box_model, box_model->GetDocument(),
+        GetNode(box_model), paint_rect,
+        inline_flow_box_.GetLineLayoutItem().StyleRef(), mask_nine_piece_image,
+        composite_op);
   } else {
     // We have a mask image that spans multiple lines.
     // FIXME: What the heck do we do with RTL here? The math we're using is
@@ -410,10 +423,11 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should be pixel-snapped.
     paint_info.context.Clip(clip_rect);
-    NinePieceImagePainter::Paint(paint_info.context, box_model,
-                                 box_model.GetDocument(), GetNode(&box_model),
-                                 image_strip_paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image, composite_op);
+    NinePieceImagePainter::Paint(
+        paint_info.context, *box_model, box_model->GetDocument(),
+        GetNode(box_model), image_strip_paint_rect,
+        inline_flow_box_.GetLineLayoutItem().StyleRef(), mask_nine_piece_image,
+        composite_op);
   }
 
   if (push_transparency_layer)
