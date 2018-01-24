@@ -229,6 +229,7 @@ NSTextField* MakeLabel(
   MDDownloadItemProgressIndicator* progressIndicator_;
   NSTextField* filenameView_;
   NSTextField* statusTextView_;
+  BOOL finished_;
 
   // Danger state
   MDDownloadItemDangerView* dangerView_;
@@ -402,6 +403,7 @@ NSTextField* MakeLabel(
 }
 
 - (void)finish {
+  finished_ = YES;
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC),
                  dispatch_get_main_queue(), ^{
                    [NSAnimationContext
@@ -416,6 +418,8 @@ NSTextField* MakeLabel(
 }
 
 - (void)setCanceled:(BOOL)canceled {
+  if (finished_)
+    return;
   if (progressIndicator_.hidden == canceled)
     return;
   [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
@@ -495,7 +499,7 @@ NSTextField* MakeLabel(
       cr_setAccessibilityLabel:base::SysUTF8ToNSString(
                                    download.GetFileNameToReportUser().value())];
 
-  button_.enabled = ^{
+  button_.enabled = [&] {
     switch (state) {
       case content::DownloadItem::IN_PROGRESS:
       case content::DownloadItem::COMPLETE:
@@ -503,7 +507,10 @@ NSTextField* MakeLabel(
       default:
         return NO;
     }
-  }();
+  }() && !download.GetFileExternallyRemoved();
+
+  NSString* statusString =
+      base::SysUTF16ToNSString(downloadModel->GetStatusText());
 
   switch (state) {
     case content::DownloadItem::COMPLETE:
@@ -520,8 +527,10 @@ NSTextField* MakeLabel(
                       forKey:nil];
             [filenameView_
                 setFrameOrigin:NSMakePoint(NSMinX(filenameView_.frame),
-                                           kFilenameY)];
-            statusTextView_.animator.hidden = YES;
+                                           statusString.length
+                                               ? kFilenameWithStatusY
+                                               : kFilenameY)];
+            statusTextView_.animator.hidden = !statusString.length;
           }
           completion:^{
             [self finish];
@@ -559,12 +568,8 @@ NSTextField* MakeLabel(
                          NSWidth(filenameView_.bounds) - lineFragmentPadding,
                          gfx::Typesetter::BROWSER));
 
-  NSString* statusString =
-      base::SysUTF16ToNSString(downloadModel->GetStatusText());
-
-  // Never make the status label blank. For example, GetStatusText() will
-  // return the empty string on completion, but -finish hides the label with an
-  // animation instead.
+  // Never make the status label blank. Instead, let the code above hide or show
+  // the label with an animation.
   if (statusString.length)
     statusTextView_.stringValue = statusString;
 
