@@ -12,6 +12,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/navigation_handle.h"
@@ -26,7 +27,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "chromecast/browser/android/cast_web_contents_activity.h"
+#include "chromecast/browser/android/cast_web_contents_surface_helper.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_AURA)
@@ -222,8 +223,8 @@ void CastWebView::RequestMediaAccessPermission(
 base::android::ScopedJavaLocalRef<jobject>
 CastWebView::GetContentVideoViewEmbedder() {
   DCHECK(web_contents_);
-  auto* activity = shell::CastWebContentsActivity::Get(web_contents_.get());
-  return activity->GetContentVideoViewEmbedder();
+  auto* helper = shell::CastWebContentsSurfaceHelper::Get(web_contents_.get());
+  return helper->GetContentVideoViewEmbedder();
 }
 #endif  // defined(OS_ANDROID)
 

@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.PatternMatcher;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.junit.Assert;
@@ -75,10 +74,7 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
-        IntentFilter intentFilter = new IntentFilter(CastIntents.ACTION_STOP_ACTIVITY);
-        intentFilter.addDataScheme(CastWebContentsComponent.ACTION_DATA_SCHEME);
-        intentFilter.addDataAuthority(CastWebContentsComponent.ACTION_DATA_AUTHORITY, null);
-        intentFilter.addDataPath("/" + INSTANCE_ID, PatternMatcher.PATTERN_LITERAL);
+        IntentFilter intentFilter = new IntentFilter(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
         LocalBroadcastManager.getInstance(mActivity).registerReceiver(receiver, intentFilter);
 
         CastWebContentsComponent component =

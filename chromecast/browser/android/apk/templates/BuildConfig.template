@@ -11,6 +11,13 @@ public class BuildConfig {
     false;
 #endif
 
+  public static final boolean ENABLE_CAST_FRAGMENT =
+#if defined(_ENABLE_CAST_FRAGMENT)
+    true;
+#else
+    false;
+#endif
+
   // Set the number of lines for LogcatExtractor to send.
   public static final int LOGCAT_SIZE = _LOGCAT_EXTRACTOR_SIZE;
 }

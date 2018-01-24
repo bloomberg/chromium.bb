@@ -32,6 +32,10 @@ java_cpp_template("cast_shell_build_config_gen") {
     defines += [ "_DISPLAY_WEB_CONTENTS_IN_SERVICE" ]
   }
 
+  if (enable_cast_fragment) {
+    defines += [ "_ENABLE_CAST_FRAGMENT" ]
+  }
+
   # Set the logcat extractor size in lines.
   defines += [ "_LOGCAT_EXTRACTOR_SIZE=${logcat_extractor_size}" ]
 }
@@ -66,7 +70,9 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastMetricsHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsActivity.java",
+    "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsFragment.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsService.java",
+    "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsComponent.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatExtractor.java",
