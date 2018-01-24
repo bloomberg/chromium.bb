@@ -2117,6 +2117,28 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
   return tarball
 
 
+def BuildAutotestTarballsForHWTest(buildroot, cwd, tarball_dir):
+  """Generate the "usual" autotest tarballs required for running HWTests.
+
+  These tarballs are created in multiple places wherever they need to be staged
+  for running HWTests.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory.
+    tarball_dir: Location for storing autotest tarballs.
+
+  Returns:
+    A list of paths of the generated tarballs.
+  """
+  return [
+      BuildAutotestControlFilesTarball(buildroot, cwd, tarball_dir),
+      BuildAutotestPackagesTarball(buildroot, cwd, tarball_dir),
+      BuildAutotestTestSuitesTarball(buildroot, cwd, tarball_dir),
+      BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir),
+  ]
+
+
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """Tar up the full autotest directory into image_dir.
 

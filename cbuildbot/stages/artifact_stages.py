@@ -680,24 +680,9 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
-
-        control_files_tarball = commands.BuildAutotestControlFilesTarball(
-            self._build_root, cwd, tempdir)
-        queue.put([control_files_tarball])
-
-        packages_tarball = commands.BuildAutotestPackagesTarball(
-            self._build_root, cwd, tempdir)
-        queue.put([packages_tarball])
-
-        # Tar up the test suites.
-        test_suites_tarball = commands.BuildAutotestTestSuitesTarball(
-            self._build_root, cwd, tempdir)
-        queue.put([test_suites_tarball])
-
-        # Build the server side package.
-        server_tarball = commands.BuildAutotestServerPackageTarball(
-            self._build_root, cwd, tempdir)
-        queue.put([server_tarball])
+        for tarball in commands.BuildAutotestTarballsForHWTest(
+            self._build_root, cwd, tempdir):
+          queue.put([tarball])
 
   def _GeneratePayloads(self, image_name, **kwargs):
     """Generate and upload payloads for |image_name|.

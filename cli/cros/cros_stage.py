@@ -222,12 +222,7 @@ NOTES:
     """
     build_root = cros_build_lib.GetSysroot(board=self.board)
     cwd = os.path.join(build_root, BOARD_BUILD_DIR)
-    tarball_funcs = [commands.BuildAutotestControlFilesTarball,
-                     commands.BuildAutotestPackagesTarball,
-                     commands.BuildAutotestTestSuitesTarball,
-                     commands.BuildAutotestServerPackageTarball]
-    for tarball_func in tarball_funcs:
-      tarball_func(build_root, cwd, tempdir)
+    commands.BuildAutotestTarballsForHWTest(build_root, cwd, tempdir)
 
   def _StageOnMoblab(self, tempdir):
     """Stage the generated payloads and test bits on a moblab device.
