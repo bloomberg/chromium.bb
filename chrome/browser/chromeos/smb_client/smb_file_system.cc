@@ -411,9 +411,9 @@ void SmbFileSystem::Configure(
 void SmbFileSystem::HandleRequestReadDirectoryCallback(
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
     smbprovider::ErrorType error,
-    const smbprovider::DirectoryEntryList& entries) const {
+    const smbprovider::DirectoryEntryListProto& entries) const {
   storage::AsyncFileUtil::EntryList entry_list;
-  for (const smbprovider::DirectoryEntry& entry : entries.entries()) {
+  for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
     entry_list.emplace_back(entry.name(), MapEntryType(entry.is_directory()));
   }
   // TODO(allenvic): Implement has_more (crbug.com/796246).
@@ -424,7 +424,7 @@ void SmbFileSystem::HandleRequestGetMetadataEntryCallback(
     ProvidedFileSystemInterface::MetadataFieldMask fields,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback,
     smbprovider::ErrorType error,
-    const smbprovider::DirectoryEntry& entry) const {
+    const smbprovider::DirectoryEntryProto& entry) const {
   if (error != smbprovider::ERROR_OK) {
     callback.Run(std::unique_ptr<file_system_provider::EntryMetadata>(),
                  TranslateError(error));
