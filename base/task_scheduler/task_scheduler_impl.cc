@@ -186,7 +186,7 @@ void TaskSchedulerImpl::Shutdown() {
 }
 
 void TaskSchedulerImpl::FlushForTesting() {
-  task_tracker_->Flush();
+  task_tracker_->FlushForTesting();
 }
 
 void TaskSchedulerImpl::JoinForTesting() {

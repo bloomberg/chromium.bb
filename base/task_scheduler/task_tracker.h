@@ -107,7 +107,7 @@ class BASE_EXPORT TaskTracker {
   //
   // Does not wait for delayed tasks. Waits for undelayed tasks posted from
   // other threads during the call. Returns immediately when shutdown completes.
-  void Flush();
+  void FlushForTesting();
 
   // Returns and calls |flush_callback| when there are no incomplete undelayed
   // tasks. |flush_callback| may be called back on any thread and should not
@@ -240,8 +240,9 @@ class BASE_EXPORT TaskTracker {
 
   // Number of undelayed tasks that haven't completed their execution. Is
   // decremented with a memory barrier after a task runs. Is accessed with an
-  // acquire memory barrier in Flush(). The memory barriers ensure that the
-  // memory written by flushed tasks is visible when Flush() returns.
+  // acquire memory barrier in FlushForTesting(). The memory barriers ensure
+  // that the memory written by flushed tasks is visible when FlushForTesting()
+  // returns.
   subtle::Atomic32 num_incomplete_undelayed_tasks_ = 0;
 
   // Lock associated with |flush_cv_|. Partially synchronizes access to

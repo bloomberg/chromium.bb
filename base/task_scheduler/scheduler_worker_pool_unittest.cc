@@ -182,7 +182,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostTasks) {
 
   // Flush the task tracker to be sure that no task accesses its TestTaskFactory
   // after |thread_posting_tasks| is destroyed.
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 TEST_P(TaskSchedulerWorkerPoolTest, NestedPostTasks) {
@@ -204,7 +204,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, NestedPostTasks) {
 
   // Flush the task tracker to be sure that no task accesses its TestTaskFactory
   // after |thread_posting_tasks| is destroyed.
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 // Verify that a Task can't be posted after shutdown.
@@ -308,7 +308,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   task_1_running.Wait();
   task_2_running.Wait();
 
-  task_tracker_.Flush();
+  task_tracker_.FlushForTesting();
 }
 
 INSTANTIATE_TEST_CASE_P(GenericParallel,
