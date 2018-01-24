@@ -37,8 +37,6 @@ namespace blink {
 const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestSpecialOperations::domTemplate,
-    V8TestSpecialOperations::Trace,
-    V8TestSpecialOperations::TraceWrappers,
     nullptr,
     "TestSpecialOperations",
     nullptr,

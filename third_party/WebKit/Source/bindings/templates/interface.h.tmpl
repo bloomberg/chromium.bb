@@ -45,12 +45,6 @@ class {{v8_class}} {
   {% else %}
   {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
   {% endif %}
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<{{cpp_class}}>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<{{cpp_class}}>());
-  }
   {% for method in methods %}
   {% if method.is_custom %}
   static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);

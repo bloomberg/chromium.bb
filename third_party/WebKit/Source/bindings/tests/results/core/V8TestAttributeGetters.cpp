@@ -32,8 +32,6 @@ namespace blink {
 const WrapperTypeInfo V8TestAttributeGetters::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestAttributeGetters::domTemplate,
-    V8TestAttributeGetters::Trace,
-    V8TestAttributeGetters::TraceWrappers,
     nullptr,
     "TestAttributeGetters",
     nullptr,

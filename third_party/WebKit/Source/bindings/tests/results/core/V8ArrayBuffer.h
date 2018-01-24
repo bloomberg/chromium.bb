@@ -30,12 +30,6 @@ class V8ArrayBuffer {
   CORE_EXPORT static TestArrayBuffer* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestArrayBuffer>());
-  }
-  static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestArrayBuffer>());
-  }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

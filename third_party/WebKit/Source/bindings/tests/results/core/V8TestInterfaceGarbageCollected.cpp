@@ -36,8 +36,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceGarbageCollected::domTemplate,
-    V8TestInterfaceGarbageCollected::Trace,
-    V8TestInterfaceGarbageCollected::TraceWrappers,
     nullptr,
     "TestInterfaceGarbageCollected",
     &V8EventTarget::wrapperTypeInfo,

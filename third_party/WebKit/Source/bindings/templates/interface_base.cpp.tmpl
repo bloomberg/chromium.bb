@@ -27,8 +27,6 @@ namespace blink {
 {{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     {{dom_template}},
-    {{v8_class}}::Trace,
-    {{v8_class}}::TraceWrappers,
     {{install_conditional_features_func or 'nullptr'}},
     "{{interface_name}}",
     {{parent_wrapper_type_info}},

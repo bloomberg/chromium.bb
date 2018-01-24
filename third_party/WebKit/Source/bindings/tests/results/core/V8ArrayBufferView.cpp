@@ -44,8 +44,6 @@ namespace blink {
 const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     nullptr,
-    V8ArrayBufferView::Trace,
-    V8ArrayBufferView::TraceWrappers,
     nullptr,
     "ArrayBufferView",
     nullptr,

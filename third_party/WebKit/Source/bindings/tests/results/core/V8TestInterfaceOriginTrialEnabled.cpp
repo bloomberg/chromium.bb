@@ -32,8 +32,6 @@ namespace blink {
 const WrapperTypeInfo V8TestInterfaceOriginTrialEnabled::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceOriginTrialEnabled::domTemplate,
-    V8TestInterfaceOriginTrialEnabled::Trace,
-    V8TestInterfaceOriginTrialEnabled::TraceWrappers,
     nullptr,
     "TestInterfaceOriginTrialEnabled",
     nullptr,
