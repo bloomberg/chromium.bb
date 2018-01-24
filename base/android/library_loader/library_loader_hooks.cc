@@ -5,6 +5,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 
 #include "base/android/jni_string.h"
+#include "base/android/library_loader/anchor_functions_flags.h"
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/android/library_loader/library_prefetcher.h"
 #include "base/at_exit.h"
@@ -169,7 +170,12 @@ static jboolean JNI_LibraryLoader_LibraryLoaded(
     const JavaParamRef<jobject>& jcaller) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMadviseRandomExecutableCode)) {
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
     NativeLibraryPrefetcher::MadviseRandomText();
+#else
+    LOG(WARNING) << switches::kMadviseRandomExecutableCode
+                 << " is not supported on this architecture.";
+#endif
   }
 
   if (g_native_initialization_hook && !g_native_initialization_hook())
@@ -189,19 +195,31 @@ void LibraryLoaderExitHook() {
 static jboolean JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
+#else
+  return false;
+#endif
 }
 
 static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
+#else
+  return -1;
+#endif
 }
 
 static void JNI_LibraryLoader_PeriodicallyCollectResidency(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return NativeLibraryPrefetcher::PeriodicallyCollectResidency();
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+  NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
+#else
+  LOG(WARNING) << "Collecting residency is not supported.";
+#endif
 }
 
 void SetVersionNumber(const char* version_number) {

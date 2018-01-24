@@ -4,13 +4,11 @@
 
 #include "base/android/library_loader/anchor_functions.h"
 
-#include "base/android/library_loader/anchor_functions_flags.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
-// asm() macros below don't compile on x86, and haven't been validated outside
-// ARM.
-#if defined(ARCH_CPU_ARMEL)
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+
 // These functions are here to, respectively:
 // 1. Check that functions are ordered
 // 2. Delimit the start of .text
@@ -68,20 +66,18 @@ const size_t kStartOfText =
 const size_t kEndOfText =
     reinterpret_cast<size_t>(dummy_function_at_the_end_of_text);
 
-void CheckOrderingSanity() {
+bool IsOrderingSane() {
+  size_t dummy = reinterpret_cast<size_t>(&dummy_function_to_check_ordering);
+  size_t here = reinterpret_cast<size_t>(&IsOrderingSane);
   // The linker usually keeps the input file ordering for symbols.
   // dummy_function_to_anchor_text() should then be after
   // dummy_function_to_check_ordering() without ordering.
   // This check is thus intended to catch the lack of ordering.
-  CHECK_LT(kStartOfText,
-           reinterpret_cast<size_t>(&dummy_function_to_check_ordering));
-  CHECK_LT(kStartOfText, kEndOfText);
-  CHECK_LT(kStartOfText,
-           reinterpret_cast<size_t>(&dummy_function_to_check_ordering));
-  CHECK_LT(kStartOfText, reinterpret_cast<size_t>(&CheckOrderingSanity));
-  CHECK_GT(kEndOfText, reinterpret_cast<size_t>(&CheckOrderingSanity));
+  return kStartOfText < dummy && dummy < kEndOfText && kStartOfText < here &&
+         here < kEndOfText;
 }
 
 }  // namespace android
 }  // namespace base
-#endif  // defined(ARCH_CPU_ARMEL)
+
+#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)

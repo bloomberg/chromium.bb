@@ -1787,10 +1787,14 @@ buildflag_header("synchronization_flags") {
 buildflag_header("anchor_functions_flags") {
   header = "anchor_functions_flags.h"
   header_dir = "base/android/library_loader"
+  _supports_code_ordering = current_cpu == "arm"
 
   # buildflag entries added to this header must also must be manually added to
   # tools/gn/bootstrap/bootstrap.py
-  flags = [ "USE_LLD=$use_lld" ]
+  flags = [
+    "USE_LLD=$use_lld",
+    "SUPPORTS_CODE_ORDERING=$_supports_code_ordering",
+  ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
