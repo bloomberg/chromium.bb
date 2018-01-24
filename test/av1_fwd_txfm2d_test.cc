@@ -44,8 +44,8 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
     TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg;
     av1_get_fwd_txfm_cfg(tx_type_, tx_size_, &fwd_txfm_flip_cfg);
     amplify_factor_ = libaom_test::get_amplification_factor(tx_type_, tx_size_);
-    tx_width_ = fwd_txfm_flip_cfg.row_cfg->txfm_size;
-    tx_height_ = fwd_txfm_flip_cfg.col_cfg->txfm_size;
+    tx_width_ = tx_size_wide[fwd_txfm_flip_cfg.tx_size];
+    tx_height_ = tx_size_high[fwd_txfm_flip_cfg.tx_size];
     ud_flip_ = fwd_txfm_flip_cfg.ud_flip;
     lr_flip_ = fwd_txfm_flip_cfg.lr_flip;
 
@@ -196,12 +196,10 @@ TEST(AV1FwdTxfm2d, CfgTest) {
         int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
         av1_gen_fwd_stage_range(stage_range_col, stage_range_row, &cfg, bd);
-        const TXFM_1D_CFG *col_cfg = cfg.col_cfg;
-        const TXFM_1D_CFG *row_cfg = cfg.row_cfg;
-        libaom_test::txfm_stage_range_check(stage_range_col, col_cfg->stage_num,
+        libaom_test::txfm_stage_range_check(stage_range_col, cfg.stage_num_col,
                                             cfg.cos_bit_col, low_range,
                                             high_range);
-        libaom_test::txfm_stage_range_check(stage_range_row, row_cfg->stage_num,
+        libaom_test::txfm_stage_range_check(stage_range_row, cfg.stage_num_row,
                                             cfg.cos_bit_row, low_range,
                                             high_range);
       }

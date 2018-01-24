@@ -122,24 +122,23 @@ typedef enum TXFM_TYPE {
   TXFM_TYPE_IDENTITY16,
   TXFM_TYPE_IDENTITY32,
   TXFM_TYPE_IDENTITY64,
+  TXFM_TYPES,
+  TXFM_TYPE_INVALID,
 } TXFM_TYPE;
 
-typedef struct TXFM_1D_CFG {
-  const int txfm_size;
-  const int stage_num;
-
-  const int8_t *stage_range;
-  const TXFM_TYPE txfm_type;
-} TXFM_1D_CFG;
-
 typedef struct TXFM_2D_FLIP_CFG {
+  TX_SIZE tx_size;
   int ud_flip;  // flip upside down
   int lr_flip;  // flip left to right
   const int8_t *shift;
   int8_t cos_bit_col;
   int8_t cos_bit_row;
-  const TXFM_1D_CFG *col_cfg;
-  const TXFM_1D_CFG *row_cfg;
+  int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
+  int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
+  TXFM_TYPE txfm_type_col;
+  TXFM_TYPE txfm_type_row;
+  int stage_num_col;
+  int stage_num_row;
 } TXFM_2D_FLIP_CFG;
 
 static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
@@ -260,6 +259,8 @@ void av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg);
 void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg);
+extern const TXFM_TYPE av1_txfm_type_ls[5][TX_TYPES_1D];
+extern const int8_t av1_txfm_stage_num_list[TXFM_TYPES];
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

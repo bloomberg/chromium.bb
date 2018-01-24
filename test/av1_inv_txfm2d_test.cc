@@ -203,12 +203,10 @@ TEST(AV1InvTxfm2d, CfgTest) {
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
         av1_gen_inv_stage_range(stage_range_col, stage_range_row, &cfg,
                                 (TX_SIZE)tx_size, bd);
-        const TXFM_1D_CFG *col_cfg = cfg.col_cfg;
-        const TXFM_1D_CFG *row_cfg = cfg.row_cfg;
-        libaom_test::txfm_stage_range_check(stage_range_col, col_cfg->stage_num,
+        libaom_test::txfm_stage_range_check(stage_range_col, cfg.stage_num_col,
                                             cfg.cos_bit_col, low_range,
                                             high_range);
-        libaom_test::txfm_stage_range_check(stage_range_row, row_cfg->stage_num,
+        libaom_test::txfm_stage_range_check(stage_range_row, cfg.stage_num_row,
                                             cfg.cos_bit_row, low_range,
                                             high_range);
       }

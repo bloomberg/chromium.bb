@@ -86,6 +86,10 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
 }
 
 #if CONFIG_TX64X64 && (!CONFIG_DAALA_TX32 || !CONFIG_DAALA_TX64)
+static const int8_t inv_stage_range_col_dct_64[12] = { 0, 0, 0, 0, 0, 0,
+                                                       0, 0, 0, 0, 0, 0 };
+static const int8_t inv_stage_range_row_dct_64[12] = { 0, 0, 0, 0, 0, 0,
+                                                       0, 0, 0, 0, 0, 0 };
 static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
   const int txw_idx = tx_size_wide_log2[TX_64X64] - tx_size_wide_log2[0];

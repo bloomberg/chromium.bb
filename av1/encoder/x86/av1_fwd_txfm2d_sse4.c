@@ -45,17 +45,15 @@ static INLINE void fwd_txfm2d_sse4_1(const int16_t *input, int32_t *output,
   // Rectangular transforms use c code only, so it should be ok for now.
   // It will be corrected when there are sse implementations for rectangular
   // transforms.
-  assert(cfg->row_cfg->txfm_size == cfg->col_cfg->txfm_size);
-  const int txfm_size = cfg->row_cfg->txfm_size;
+  assert(cfg->tx_size < TX_SIZES);
+  const int txfm_size = tx_size_wide[cfg->tx_size];
   const int8_t *shift = cfg->shift;
-  const int8_t *stage_range_col = cfg->col_cfg->stage_range;
-  const int8_t *stage_range_row = cfg->row_cfg->stage_range;
+  const int8_t *stage_range_col = cfg->stage_range_col;
+  const int8_t *stage_range_row = cfg->stage_range_row;
   const int8_t cos_bit_col = cfg->cos_bit_col;
   const int8_t cos_bit_row = cfg->cos_bit_row;
-  const TxfmFuncSSE2 txfm_func_col =
-      fwd_txfm_type_to_func(cfg->col_cfg->txfm_type);
-  const TxfmFuncSSE2 txfm_func_row =
-      fwd_txfm_type_to_func(cfg->row_cfg->txfm_type);
+  const TxfmFuncSSE2 txfm_func_col = fwd_txfm_type_to_func(cfg->txfm_type_col);
+  const TxfmFuncSSE2 txfm_func_row = fwd_txfm_type_to_func(cfg->txfm_type_row);
 
   __m128i *buf_128 = (__m128i *)txfm_buf;
   __m128i *out_128 = (__m128i *)output;

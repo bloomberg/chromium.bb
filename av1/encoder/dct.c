@@ -2281,7 +2281,11 @@ static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
   fdct32(inputhalf, output);
   // Note overall scaling factor is 2 times unitary
 }
-
+// stage range
+static const int8_t fwd_stage_range_col_dct_64[12] = { 0, 1, 2, 3, 4, 5,
+                                                       6, 6, 6, 6, 6, 6 };
+static const int8_t fwd_stage_range_row_dct_64[12] = { 6,  7,  8,  9,  10, 11,
+                                                       11, 11, 11, 11, 11, 11 };
 static void fdct64_col(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
   int i;
