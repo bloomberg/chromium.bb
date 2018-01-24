@@ -30,6 +30,8 @@ target(link_target_type, "renderer") {
   ]
 
   sources = [
+    "accessibility/aom_content_ax_tree.cc",
+    "accessibility/aom_content_ax_tree.h",
     "accessibility/blink_ax_enum_conversion.cc",
     "accessibility/blink_ax_enum_conversion.h",
     "accessibility/blink_ax_tree_source.cc",

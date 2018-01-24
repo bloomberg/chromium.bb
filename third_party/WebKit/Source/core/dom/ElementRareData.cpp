@@ -34,6 +34,7 @@
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "core/style/ComputedStyle.h"
+#include "third_party/WebKit/Source/core/dom/AXObjectCache.h"
 
 namespace blink {
 
@@ -75,6 +76,14 @@ void ElementRareData::SetComputedStyle(
 
 void ElementRareData::ClearComputedStyle() {
   computed_style_ = nullptr;
+}
+
+ComputedAccessibleNode* ElementRareData::EnsureComputedAccessibleNode(
+    Element* owner_element) {
+  if (!computed_accessible_node_) {
+    computed_accessible_node_ = ComputedAccessibleNode::Create(owner_element);
+  }
+  return computed_accessible_node_;
 }
 
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {

@@ -1111,7 +1111,7 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
   DCHECK(element);
   ComputedAccessibleNode* computed_accessible_node =
       element->GetComputedAccessibleNode();
-  return computed_accessible_node->ComputePromiseProperty(script_state);
+  return computed_accessible_node->ComputeAccessibleProperties(script_state);
 }
 
 CSSRuleList* LocalDOMWindow::getMatchedCSSRules(

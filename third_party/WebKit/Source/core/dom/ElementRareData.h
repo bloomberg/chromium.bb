@@ -142,12 +142,7 @@ class ElementRareData : public NodeRareData {
     return accessible_node_;
   }
 
-  ComputedAccessibleNode* EnsureComputedAccessibleNode(Element* owner_element) {
-    if (!computed_accessible_node_) {
-      computed_accessible_node_ = ComputedAccessibleNode::Create(owner_element);
-    }
-    return computed_accessible_node_;
-  }
+  ComputedAccessibleNode* EnsureComputedAccessibleNode(Element* owner_element);
 
   AttrNodeList& EnsureAttrNodeList();
   AttrNodeList* GetAttrNodeList() { return attr_node_list_.Get(); }
