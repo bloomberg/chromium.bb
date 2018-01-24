@@ -405,7 +405,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            DeviceScaleFactorChanges);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                            HideThenShow);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, PopupMenuTest);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest, PopupMenuTest);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
 

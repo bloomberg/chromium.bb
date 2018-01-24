@@ -267,13 +267,13 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   friend class RenderWidgetHostInputEventRouterTest;
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            InputEventRouterGestureTargetMapTest);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            InputEventRouterGesturePreventDefaultTargetMapTest);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            InputEventRouterTouchpadGestureTargetTest);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessMouseWheelBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessMouseWheelHitTestBrowserTest,
                            InputEventRouterWheelTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMacBrowserTest,
                            InputEventRouterTouchpadGestureTargetTest);

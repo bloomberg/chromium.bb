@@ -795,6 +795,7 @@ test("content_browsertests") {
     "../browser/shared_worker/worker_browsertest.cc",
     "../browser/site_per_process_browsertest.cc",
     "../browser/site_per_process_browsertest.h",
+    "../browser/site_per_process_hit_test_browsertest.cc",
     "../browser/site_per_process_mac_browsertest.mm",
     "../browser/snapshot_browsertest.cc",
     "../browser/storage_partition_impl_browsertest.cc",
