@@ -7,6 +7,11 @@
 namespace previews {
 namespace features {
 
+// Kill switch (or holdback) for all previews. No previews will be allowed
+// if this feature is disabled. If enabled, which specific previews that
+// are enabled are controlled by other features.
+const base::Feature kPreviews{"Previews", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the Offline previews on android slow connections.
 const base::Feature kOfflinePreviews{"OfflinePreviews",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

@@ -21,6 +21,10 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
     previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
+  if (!previews::params::ArePreviewsAllowed()) {
+    return previews_state;
+  }
+
   if (!url_request.url().SchemeIsHTTPOrHTTPS()) {
     return previews_state;
   }

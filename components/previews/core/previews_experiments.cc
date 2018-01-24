@@ -151,6 +151,10 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
   return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
+bool ArePreviewsAllowed() {
+  return base::FeatureList::IsEnabled(features::kPreviews);
+}
+
 bool IsOfflinePreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kOfflinePreviews);
 }

@@ -86,6 +86,9 @@ base::TimeDelta OfflinePreviewFreshnessDuration();
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type);
 
+// Whether any previews are allowed. Acts as a kill-switch or holdback check.
+bool ArePreviewsAllowed();
+
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
 bool IsClientLoFiEnabled();
