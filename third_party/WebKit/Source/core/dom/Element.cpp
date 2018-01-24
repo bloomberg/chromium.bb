@@ -2065,8 +2065,7 @@ void Element::RecalcStyle(StyleRecalcChange change) {
     UpdatePseudoElement(kPseudoIdBefore, change);
 
     if (change > kUpdatePseudoElements || ChildNeedsStyleRecalc()) {
-      for (ShadowRoot* root = YoungestShadowRoot(); root;
-           root = root->OlderShadowRoot()) {
+      if (ShadowRoot* root = GetShadowRoot()) {
         if (root->ShouldCallRecalcStyle(change))
           root->RecalcStyle(change);
       }
@@ -2223,10 +2222,8 @@ void Element::RecalcShadowIncludingDescendantStylesForReattach() {
 }
 
 void Element::RecalcShadowRootStylesForReattach() {
-  for (ShadowRoot* root = YoungestShadowRoot(); root;
-       root = root->OlderShadowRoot()) {
+  if (ShadowRoot* root = GetShadowRoot())
     root->RecalcStylesForReattach();
-  }
 }
 
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -2277,10 +2274,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 void Element::RebuildShadowRootLayoutTree(
     WhitespaceAttacher& whitespace_attacher) {
   DCHECK(Shadow());
-  for (ShadowRoot* root = YoungestShadowRoot(); root;
-       root = root->OlderShadowRoot()) {
+  if (ShadowRoot* root = GetShadowRoot())
     root->RebuildLayoutTree(whitespace_attacher);
-  }
   RebuildNonDistributedChildren();
 }
 
@@ -2524,13 +2519,6 @@ ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
   ShadowRoot& shadow_root = EnsureShadow().AddShadowRoot(*this, type);
   shadow_root.SetDelegatesFocus(delegates_focus);
   return shadow_root;
-}
-
-ShadowRoot* Element::GetShadowRoot() const {
-  ElementShadow* element_shadow = Shadow();
-  if (!element_shadow)
-    return nullptr;
-  return &element_shadow->GetShadowRoot();
 }
 
 ShadowRoot* Element::OpenShadowRoot() const {

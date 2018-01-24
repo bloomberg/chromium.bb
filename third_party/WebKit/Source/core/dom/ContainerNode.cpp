@@ -912,8 +912,7 @@ void ContainerNode::NotifyNodeInsertedInternal(
     if (Node::kInsertionShouldCallDidNotifySubtreeInsertions ==
         node.InsertedInto(this))
       post_insertion_notification_targets.push_back(&node);
-    for (ShadowRoot* shadow_root = node.YoungestShadowRoot(); shadow_root;
-         shadow_root = shadow_root->OlderShadowRoot())
+    if (ShadowRoot* shadow_root = node.GetShadowRoot())
       NotifyNodeInsertedInternal(*shadow_root,
                                  post_insertion_notification_targets);
   }
@@ -930,8 +929,7 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
     if (!node.IsContainerNode() && !node.IsInTreeScope())
       continue;
     node.RemovedFrom(this);
-    for (ShadowRoot* shadow_root = node.YoungestShadowRoot(); shadow_root;
-         shadow_root = shadow_root->OlderShadowRoot())
+    if (ShadowRoot* shadow_root = node.GetShadowRoot())
       NotifyNodeRemoved(*shadow_root);
   }
 }
