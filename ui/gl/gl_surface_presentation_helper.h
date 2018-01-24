@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 
@@ -36,7 +35,7 @@ class GL_EXPORT GLSurfacePresentationHelper {
 
   void OnMakeCurrent(GLContext* context, GLSurface* surface);
   void PreSwapBuffers(const GLSurface::PresentationCallback& callback);
-  void PostSwapBuffers(gfx::SwapResult result);
+  void PostSwapBuffers();
 
  private:
   struct Frame {
