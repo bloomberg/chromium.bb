@@ -13,7 +13,12 @@ import("//v8/gni/v8.gni")
 
 declare_args() {
   # TODO(crbug.com/764576): Enable the feature on more environments.
-  use_v8_context_snapshot =
-      target_os != "chromeos" && target_os != "android" && !is_chromecast &&
-      v8_use_external_startup_data && (v8_target_cpu == target_cpu || is_msan)
+  use_v8_context_snapshot = !is_chromeos && !is_android && !is_chromecast &&
+                            !(host_os == "mac" && current_cpu == "x86") &&
+                            (v8_target_cpu == target_cpu || is_msan)
+}
+
+# We cannot use V8 context snapshot, if V8 doesn't use snapshot files.
+if (use_v8_context_snapshot && !v8_use_external_startup_data) {
+  use_v8_context_snapshot = false
 }
