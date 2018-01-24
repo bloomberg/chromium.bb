@@ -17,7 +17,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.PopupZoomer;
-import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
@@ -59,12 +58,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void setTextSuggestionHostForTesting(TextSuggestionHost textSuggestionHost) {}
-
-    @Override
-    public void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
-
-    @Override
-    public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
 
     @Override
     public void initialize(ViewAndroidDelegate viewDelegate,

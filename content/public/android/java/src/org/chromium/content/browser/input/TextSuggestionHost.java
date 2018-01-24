@@ -4,13 +4,17 @@
 
 package org.chromium.content.browser.input;
 
+import android.content.Context;
+import android.view.View;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContentViewCoreImpl;
+import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Handles displaying the Android spellcheck/text suggestion menu (provided by
@@ -18,21 +22,46 @@ import org.chromium.content_public.browser.WebContents;
  * the commands in that menu (by calling back to the C++ class).
  */
 @JNINamespace("content")
-public class TextSuggestionHost implements WindowEventObserver {
+public class TextSuggestionHost implements WindowEventObserver, WindowAndroidChangedObserver {
     private long mNativeTextSuggestionHost;
-    private final ContentViewCoreImpl mContentViewCore;
+    private final Context mContext;
+    private final WebContentsImpl mWebContents;
+
+    private View mContainerView;
     private boolean mIsAttachedToWindow;
+    private WindowAndroid mWindowAndroid;
 
     private SpellCheckPopupWindow mSpellCheckPopupWindow;
     private TextSuggestionsPopupWindow mTextSuggestionsPopupWindow;
 
-    public TextSuggestionHost(ContentViewCoreImpl contentViewCore) {
-        mContentViewCore = contentViewCore;
-        mNativeTextSuggestionHost = nativeInit(contentViewCore.getWebContents());
+    public TextSuggestionHost(
+            Context context, WebContentsImpl webContents, WindowAndroid windowAndroid, View view) {
+        mContext = context;
+        mWebContents = webContents;
+        mWindowAndroid = windowAndroid;
+        mContainerView = view;
+        mNativeTextSuggestionHost = nativeInit(webContents);
     }
 
-    private static float getContentOffsetYPix(WebContents webContents) {
-        return ((WebContentsImpl) webContents).getRenderCoordinates().getContentOffsetYPix();
+    private float getContentOffsetYPix() {
+        return mWebContents.getRenderCoordinates().getContentOffsetYPix();
+    }
+
+    public void setContainerView(View containerView) {
+        mContainerView = containerView;
+    }
+
+    // WindowAndroidChangedObserver
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
+        mWindowAndroid = newWindowAndroid;
+        if (mSpellCheckPopupWindow != null) {
+            mSpellCheckPopupWindow.updateWindowAndroid(mWindowAndroid);
+        }
+        if (mTextSuggestionsPopupWindow != null) {
+            mTextSuggestionsPopupWindow.updateWindowAndroid(mWindowAndroid);
+        }
     }
 
     // WindowEventObserver
@@ -58,12 +87,11 @@ public class TextSuggestionHost implements WindowEventObserver {
         }
 
         hidePopups();
-        mSpellCheckPopupWindow = new SpellCheckPopupWindow(mContentViewCore.getContext(), this,
-                mContentViewCore.getContainerView(), mContentViewCore);
+        mSpellCheckPopupWindow =
+                new SpellCheckPopupWindow(mContext, this, mWindowAndroid, mContainerView);
 
-        mSpellCheckPopupWindow.show(caretXPx,
-                caretYPx + getContentOffsetYPix(mContentViewCore.getWebContents()), markedText,
-                suggestions);
+        mSpellCheckPopupWindow.show(
+                caretXPx, caretYPx + getContentOffsetYPix(), markedText, suggestions);
     }
 
     @CalledByNative
@@ -77,12 +105,11 @@ public class TextSuggestionHost implements WindowEventObserver {
         }
 
         hidePopups();
-        mTextSuggestionsPopupWindow = new TextSuggestionsPopupWindow(mContentViewCore.getContext(),
-                this, mContentViewCore.getContainerView(), mContentViewCore);
+        mTextSuggestionsPopupWindow =
+                new TextSuggestionsPopupWindow(mContext, this, mWindowAndroid, mContainerView);
 
-        mTextSuggestionsPopupWindow.show(caretXPx,
-                caretYPx + getContentOffsetYPix(mContentViewCore.getWebContents()), markedText,
-                suggestions);
+        mTextSuggestionsPopupWindow.show(
+                caretXPx, caretYPx + getContentOffsetYPix(), markedText, suggestions);
     }
 
     /**
