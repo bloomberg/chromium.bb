@@ -4,8 +4,9 @@
 
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 
-#include <algorithm>
 #include <string.h>
+
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -530,7 +531,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     initiator = request()->initiator().value();
 
   // Don't block same-origin documents.
-  if (CrossSiteDocumentClassifier::IsSameOrigin(initiator, url))
+  if (initiator.IsSameOriginWith(url::Origin::Create(url)))
     return false;
 
   // Only block documents from HTTP(S) schemes.
@@ -558,7 +559,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   std::string cors_header;
   response->head.headers->GetNormalizedHeader("access-control-allow-origin",
                                               &cors_header);
-  if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(initiator, url,
+  if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(initiator,
                                                         cors_header)) {
     return false;
   }

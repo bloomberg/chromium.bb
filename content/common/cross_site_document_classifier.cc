@@ -153,18 +153,12 @@ bool CrossSiteDocumentClassifier::IsBlockableScheme(const GURL& url) {
   return url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme);
 }
 
-bool CrossSiteDocumentClassifier::IsSameOrigin(const url::Origin& frame_origin,
-                                               const GURL& response_url) {
-  return frame_origin.IsSameOriginWith(url::Origin::Create(response_url));
-}
-
 // We don't use Webkit's existing CORS policy implementation since
 // their policy works in terms of origins, not sites. For example,
 // when frame is sub.a.com and it is not allowed to access a document
 // with sub1.a.com. But under Site Isolation, it's allowed.
 bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
     const url::Origin& frame_origin,
-    const GURL& website_origin,
     const std::string& access_control_origin) {
   // Many websites are sending back "\"*\"" instead of "*". This is
   // non-standard practice, and not supported by Chrome. Refer to
@@ -182,7 +176,8 @@ bool CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
   if (access_control_origin == "*" || access_control_origin == "null")
     return true;
 
-  return IsSameOrigin(frame_origin, GURL(access_control_origin));
+  return frame_origin.IsSameOriginWith(
+      url::Origin::Create(GURL(access_control_origin)));
 }
 
 // This function is a slight modification of |net::SniffForHTML|.

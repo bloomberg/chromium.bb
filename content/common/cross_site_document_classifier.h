@@ -55,11 +55,6 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // policy(XSDP). This returns true only for http://* and https://* urls.
   static bool IsBlockableScheme(const GURL& frame_origin);
 
-  // Returns whether the two urls belong to the same origin.
-  // TODO(lukasza): Remove this function / inline it into the callers.
-  static bool IsSameOrigin(const url::Origin& frame_origin,
-                           const GURL& response_url);
-
   // Returns whether there's a valid CORS header for frame_origin.  This is
   // simliar to CrossOriginAccessControl::passesAccessControlCheck(), but we use
   // sites as our security domain, not origins.
@@ -68,9 +63,7 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // not allowed by actual CORS rules by ignoring 1) credentials and 2)
   // methods. Preflight requests don't matter here since they are not used to
   // decide whether to block a document or not on the client side.
-  // TODO(lukasza): Remove the unused website_origin parameter.
   static bool IsValidCorsHeaderSet(const url::Origin& frame_origin,
-                                   const GURL& website_origin,
                                    const std::string& access_control_origin);
 
   static Result SniffForHTML(base::StringPiece data);
