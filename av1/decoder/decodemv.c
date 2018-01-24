@@ -1276,6 +1276,13 @@ static void set_ref_frames_for_skip_mode(AV1_COMMON *const cm,
 static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *r, int segment_id,
                             MV_REFERENCE_FRAME ref_frame[2]) {
+#if CONFIG_EXT_SKIP
+  if (xd->mi[0]->mbmi.skip_mode) {
+    set_ref_frames_for_skip_mode(cm, ref_frame);
+    return;
+  }
+#endif  // CONFIG_EXT_SKIP
+
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     ref_frame[0] = (MV_REFERENCE_FRAME)get_segdata(&cm->seg, segment_id,
                                                    SEG_LVL_REF_FRAME);
@@ -1291,13 +1298,6 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     ref_frame[0] = LAST_FRAME;
     ref_frame[1] = NONE_FRAME;
   } else {
-#if CONFIG_EXT_SKIP
-    if (xd->mi[0]->mbmi.skip_mode) {
-      set_ref_frames_for_skip_mode(cm, ref_frame);
-      return;
-    }
-#endif  // CONFIG_EXT_SKIP
-
     const REFERENCE_MODE mode = read_block_reference_mode(cm, xd, r);
 
     if (mode == COMPOUND_REFERENCE) {
@@ -1820,29 +1820,32 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
+#if CONFIG_EXT_SKIP
+  if (mbmi->skip_mode) {
+    assert(is_compound);
+    mbmi->mode = NEAREST_NEARESTMV;
+  } else {
+#endif  // CONFIG_EXT_SKIP
 #if CONFIG_SEGMENT_GLOBALMV
-  if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP) ||
-      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_GLOBALMV))
+    if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP) ||
+        segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_GLOBALMV))
 #else
   if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP))
 #endif
-  {
-    mbmi->mode = GLOBALMV;
+    {
+      mbmi->mode = GLOBALMV;
+    } else {
+      if (is_compound)
+        mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
+      else
+        mbmi->mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
+      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
+          have_nearmv_in_inter_mode(mbmi->mode))
+        read_drl_idx(ec_ctx, xd, mbmi, r);
+    }
 #if CONFIG_EXT_SKIP
-  } else if (mbmi->skip_mode) {
-    assert(is_compound);
-    mbmi->mode = NEAREST_NEARESTMV;
-#endif  // CONFIG_EXT_SKIP
-  } else {
-    if (is_compound)
-      mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
-    else
-      mbmi->mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
-    if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
-        have_nearmv_in_inter_mode(mbmi->mode))
-      read_drl_idx(ec_ctx, xd, mbmi, r);
   }
-
+#endif
   if (is_compound != is_inter_compound_mode(mbmi->mode)) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Prediction mode %d invalid with ref frame %d %d",
