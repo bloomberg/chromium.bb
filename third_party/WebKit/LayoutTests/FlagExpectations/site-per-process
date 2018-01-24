@@ -170,6 +170,8 @@ Bug(none) external/wpt/html/browsers/the-window-object/apis-for-creating-and-nav
 Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Failure ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Timeout ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Timeout ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Timeout ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Timeout ]
 Bug(none) external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Crash ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/error-codes/error.html [ Timeout ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay.html [ Timeout ]
