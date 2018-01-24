@@ -329,6 +329,295 @@ static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
   }
 }
 
+#if CONFIG_FAST_SGR
+// Assumes that C, D are integral images for the original buffer which has been
+// extended to have a padding of SGRPROJ_BORDER_VERT/SGRPROJ_BORDER_HORZ pixels
+// on the sides. A, B, C, D point at logical position (0, 0).
+static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
+                         const int32_t *D, int width, int height,
+                         int buf_stride, int eps, int bit_depth, int r) {
+  const int n = (2 * r + 1) * (2 * r + 1);
+  const __m256i s = _mm256_set1_epi32(sgrproj_mtable[eps - 1][n - 1]);
+  // one_over_n[n-1] is 2^12/n, so easily fits in an int16
+  const __m256i one_over_n = _mm256_set1_epi32(one_by_x[n - 1]);
+
+  const __m256i rnd_z = round_for_shift(SGRPROJ_MTABLE_BITS);
+  const __m256i rnd_res = round_for_shift(SGRPROJ_RECIP_BITS);
+
+  // Set up masks
+  const __m128i ones32 = _mm_set_epi64x(0, 0xffffffffffffffffULL);
+  __m256i mask[8];
+  for (int idx = 0; idx < 8; idx++) {
+    const __m128i shift = _mm_set_epi64x(0, 8 * (8 - idx));
+    mask[idx] = _mm256_cvtepi8_epi32(_mm_srl_epi64(ones32, shift));
+  }
+
+  for (int i = -1; i < height + 1; i += 2) {
+    for (int j = -1; j < width + 1; j += 8) {
+      const int32_t *Cij = C + i * buf_stride + j;
+      const int32_t *Dij = D + i * buf_stride + j;
+
+      __m256i sum1 = boxsum_from_ii(Dij, buf_stride, r);
+      __m256i sum2 = boxsum_from_ii(Cij, buf_stride, r);
+
+      // When width + 2 isn't a multiple of 8, sum1 and sum2 will contain
+      // some uninitialised data in their upper words. We use a mask to
+      // ensure that these bits are set to 0.
+      int idx = AOMMIN(8, width + 1 - j);
+      assert(idx >= 1);
+
+      if (idx < 8) {
+        sum1 = _mm256_and_si256(mask[idx], sum1);
+        sum2 = _mm256_and_si256(mask[idx], sum2);
+      }
+
+      const __m256i p = compute_p(sum1, sum2, bit_depth, n);
+
+      const __m256i z = _mm256_min_epi32(
+          _mm256_srli_epi32(_mm256_add_epi32(_mm256_mullo_epi32(p, s), rnd_z),
+                            SGRPROJ_MTABLE_BITS),
+          _mm256_set1_epi32(255));
+
+      const __m256i a_res = _mm256_i32gather_epi32(x_by_xplus1, z, 4);
+
+      yy_storeu_256(A + i * buf_stride + j, a_res);
+
+      const __m256i a_complement =
+          _mm256_sub_epi32(_mm256_set1_epi32(SGRPROJ_SGR), a_res);
+
+      // sum1 might have lanes greater than 2^15, so we can't use madd to do
+      // multiplication involving sum1. However, a_complement and one_over_n
+      // are both less than 256, so we can multiply them first.
+      const __m256i a_comp_over_n = _mm256_madd_epi16(a_complement, one_over_n);
+      const __m256i b_int = _mm256_mullo_epi32(a_comp_over_n, sum1);
+      const __m256i b_res = _mm256_srli_epi32(_mm256_add_epi32(b_int, rnd_res),
+                                              SGRPROJ_RECIP_BITS);
+
+      yy_storeu_256(B + i * buf_stride + j, b_res);
+    }
+  }
+}
+
+// Calculate 4 values of the "cross sum" starting at buf.
+//
+// Pixels are indexed like this:
+// xtl  xt   xtr
+//  -   buf   -
+// xbl  xb   xbr
+//
+// Pixels are weighted like this:
+//  5    6    5
+//  0    0    0
+//  5    6    5
+//
+// fives = xtl + xtr + xbl + xbr
+// sixes = xt + xb
+// cross_sum = 6 * sixes + 5 * fives
+//           = 5 * (fives + sixes) - sixes
+//           = (fives + sixes) << 2 + (fives + sixes) + sixes
+static __m256i cross_sum_fast_even(const int32_t *buf, int stride) {
+  const __m256i xtl = yy_loadu_256(buf - 1 - stride);
+  const __m256i xt = yy_loadu_256(buf - stride);
+  const __m256i xtr = yy_loadu_256(buf + 1 - stride);
+  const __m256i xbl = yy_loadu_256(buf - 1 + stride);
+  const __m256i xb = yy_loadu_256(buf + stride);
+  const __m256i xbr = yy_loadu_256(buf + 1 + stride);
+
+  const __m256i fives =
+      _mm256_add_epi32(xtl, _mm256_add_epi32(xtr, _mm256_add_epi32(xbr, xbl)));
+  const __m256i sixes = _mm256_add_epi32(xt, xb);
+  const __m256i fives_plus_sixes = _mm256_add_epi32(fives, sixes);
+
+  return _mm256_add_epi32(
+      _mm256_add_epi32(_mm256_slli_epi32(fives_plus_sixes, 2),
+                       fives_plus_sixes),
+      sixes);
+}
+
+// Calculate 4 values of the "cross sum" starting at buf.
+//
+// Pixels are indexed like this:
+// xtl  xt   xtr
+//  -    -    -
+// xl    x   xr
+//  -    -    -
+// xbl  xb   xbr
+//
+// Pixels are weighted like this:
+//  3    4    3
+//  0    0    0
+//  14   16   14
+//  0    0    0
+//  3    4    3
+//
+// buf points to x
+//
+// threes = xtl + xtr + xbr + xbl
+// fours = xt + xb
+// fourteens = xl + xr
+// sixteens = x
+// cross_sum = 4 * fours + 3 * threes + 14 * fourteens + 16 * sixteens
+//           = 4 * (fours + threes) + 16 * (sixteens + fourteens)
+//              - (threes + fourteens) - fourteens
+//           = (fours + threes) << 2 + (sixteens + fourteens) << 4
+//              - (threes + fourteens) - fourteens
+static __m256i cross_sum_fast_odd_not_last(const int32_t *buf, int stride) {
+  const int two_stride = 2 * stride;
+  const __m256i xtl = yy_loadu_256(buf - 1 - two_stride);
+  const __m256i xt = yy_loadu_256(buf - two_stride);
+  const __m256i xtr = yy_loadu_256(buf + 1 - two_stride);
+  const __m256i xl = yy_loadu_256(buf - 1);
+  const __m256i x = yy_loadu_256(buf);
+  const __m256i xr = yy_loadu_256(buf + 1);
+  const __m256i xbl = yy_loadu_256(buf - 1 + two_stride);
+  const __m256i xb = yy_loadu_256(buf + two_stride);
+  const __m256i xbr = yy_loadu_256(buf + 1 + two_stride);
+
+  const __m256i threes =
+      _mm256_add_epi32(xtl, _mm256_add_epi32(xtr, _mm256_add_epi32(xbr, xbl)));
+  const __m256i fours = _mm256_add_epi32(xt, xb);
+  const __m256i fourteens = _mm256_add_epi32(xl, xr);
+  const __m256i sixteens = x;
+
+  const __m256i fours_plus_threes = _mm256_add_epi32(fours, threes);
+  const __m256i sixteens_plus_fourteens = _mm256_add_epi32(sixteens, fourteens);
+  const __m256i threes_plus_fourteens = _mm256_add_epi32(threes, fourteens);
+
+  return _mm256_sub_epi32(
+      _mm256_sub_epi32(
+          _mm256_add_epi32(_mm256_slli_epi32(fours_plus_threes, 2),
+                           _mm256_slli_epi32(sixteens_plus_fourteens, 4)),
+          threes_plus_fourteens),
+      fourteens);
+}
+
+// Calculate 4 values of the "cross sum" starting at buf.
+//
+// Pixels are indexed like this:
+// xtl  xt   xtr
+//  -    -    -
+// xl    x   xr
+//
+// Pixels are weighted like this:
+//  6    8    6
+//  0    0    0
+//  14   16   14
+//
+// buf points to x
+//
+// sixes = xtl + xtr
+// eights = xt
+// fourteens = xl + xr
+// sixteens = x
+// cross_sum = 6 * sixes + 8 * eights + 14 * fourteens + 16 * sixteens
+//           = 8 * (sixes + eights) + 16 * (sixteens + fourteens)
+//              - 2 * (sixes + fourteens)
+//           = (sixes + eights) << 3 + (sixteens + fourteens) << 4
+//              - (sixes + fourteens) << 1
+static __m256i cross_sum_fast_odd_last(const int32_t *buf, int stride) {
+  const int two_stride = 2 * stride;
+  const __m256i xtl = yy_loadu_256(buf - 1 - two_stride);
+  const __m256i xt = yy_loadu_256(buf - two_stride);
+  const __m256i xtr = yy_loadu_256(buf + 1 - two_stride);
+  const __m256i xl = yy_loadu_256(buf - 1);
+  const __m256i x = yy_loadu_256(buf);
+  const __m256i xr = yy_loadu_256(buf + 1);
+
+  const __m256i sixes = _mm256_add_epi32(xtl, xtr);
+  const __m256i eights = xt;
+  const __m256i fourteens = _mm256_add_epi32(xl, xr);
+  const __m256i sixteens = x;
+
+  const __m256i sixes_plus_eights = _mm256_add_epi32(sixes, eights);
+  const __m256i sixteens_plus_fourteens = _mm256_add_epi32(sixteens, fourteens);
+  const __m256i sixes_plus_fourteens = _mm256_add_epi32(sixes, fourteens);
+
+  return _mm256_sub_epi32(
+      _mm256_add_epi32(_mm256_slli_epi32(sixes_plus_eights, 3),
+                       _mm256_slli_epi32(sixteens_plus_fourteens, 4)),
+      _mm256_slli_epi32(sixes_plus_fourteens, 1));
+}
+
+// The final filter for selfguided restoration. Computes a weighted average
+// across A, B with "cross sums" (see cross_sum_... implementations above)
+static void final_filter_fast(int32_t *dst, int dst_stride, const int32_t *A,
+                              const int32_t *B, int buf_stride,
+                              const void *dgd8, int dgd_stride, int width,
+                              int height, int highbd) {
+  const int nb0 = 5;
+  const int nb1 = 6;
+
+  const __m256i rounding0 =
+      round_for_shift(SGRPROJ_SGR_BITS + nb0 - SGRPROJ_RST_BITS);
+  const __m256i rounding1 =
+      round_for_shift(SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
+
+  const uint8_t *dgd_real =
+      highbd ? (const uint8_t *)CONVERT_TO_SHORTPTR(dgd8) : dgd8;
+
+  for (int i = 0; i < height; ++i) {
+    if (!(i & 1)) {  // even row
+      for (int j = 0; j < width; j += 4) {
+        const __m256i a =
+            cross_sum_fast_even(A + i * buf_stride + j, buf_stride);
+        const __m256i b =
+            cross_sum_fast_even(B + i * buf_stride + j, buf_stride);
+
+        const __m128i raw =
+            xx_loadu_128(dgd_real + ((i * dgd_stride + j) << highbd));
+        const __m256i src =
+            highbd ? _mm256_cvtepu16_epi32(raw) : _mm256_cvtepu8_epi32(raw);
+
+        __m256i v = _mm256_add_epi32(_mm256_madd_epi16(a, src), b);
+        __m256i w =
+            _mm256_srai_epi32(_mm256_add_epi32(v, rounding0),
+                              SGRPROJ_SGR_BITS + nb0 - SGRPROJ_RST_BITS);
+
+        yy_storeu_256(dst + i * dst_stride + j, w);
+      }
+    } else if (i != height - 1) {  // odd row and not last
+      for (int j = 0; j < width; j += 4) {
+        const __m256i a =
+            cross_sum_fast_odd_not_last(A + i * buf_stride + j, buf_stride);
+        const __m256i b =
+            cross_sum_fast_odd_not_last(B + i * buf_stride + j, buf_stride);
+
+        const __m128i raw =
+            xx_loadu_128(dgd_real + ((i * dgd_stride + j) << highbd));
+        const __m256i src =
+            highbd ? _mm256_cvtepu16_epi32(raw) : _mm256_cvtepu8_epi32(raw);
+
+        __m256i v = _mm256_add_epi32(_mm256_madd_epi16(a, src), b);
+        __m256i w =
+            _mm256_srai_epi32(_mm256_add_epi32(v, rounding1),
+                              SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
+
+        yy_storeu_256(dst + i * dst_stride + j, w);
+      }
+    } else {  // odd row and last
+      for (int j = 0; j < width; j += 4) {
+        const __m256i a =
+            cross_sum_fast_odd_last(A + i * buf_stride + j, buf_stride);
+        const __m256i b =
+            cross_sum_fast_odd_last(B + i * buf_stride + j, buf_stride);
+
+        const __m128i raw =
+            xx_loadu_128(dgd_real + ((i * dgd_stride + j) << highbd));
+        const __m256i src =
+            highbd ? _mm256_cvtepu16_epi32(raw) : _mm256_cvtepu8_epi32(raw);
+
+        __m256i v = _mm256_add_epi32(_mm256_madd_epi16(a, src), b);
+        __m256i w =
+            _mm256_srai_epi32(_mm256_add_epi32(v, rounding1),
+                              SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
+
+        yy_storeu_256(dst + i * dst_stride + j, w);
+      }
+    }
+  }
+}
+#endif
+
 void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
                                      int dgd_stride, int32_t *flt1,
                                      int32_t *flt2, int flt_stride,
@@ -394,9 +683,15 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
     int32_t *flt = i ? flt2 : flt1;
 
     assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
+#if CONFIG_FAST_SGR
+    calc_ab_fast(A, B, C, D, width, height, buf_stride, e, bit_depth, r);
+    final_filter_fast(flt, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
+                      width, height, highbd);
+#else
     calc_ab(A, B, C, D, width, height, buf_stride, e, bit_depth, r);
     final_filter(flt, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                  height, highbd);
+#endif
   }
 }
 
