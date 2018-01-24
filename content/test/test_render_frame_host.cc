@@ -84,6 +84,10 @@ class TestRenderFrameHost::NavigationInterceptor
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories)
       override {}
 
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders)
+      override{};
+
  private:
   TestRenderFrameHost* const frame_host_;
 

@@ -84,6 +84,10 @@ class CONTENT_EXPORT URLLoaderFactoryBundle : public SharedURLLoaderFactory {
 
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
 
+  // The |info| contains replacement factories for a subset of the existing
+  // bundle.
+  void Update(std::unique_ptr<URLLoaderFactoryBundleInfo> info);
+
  private:
   ~URLLoaderFactoryBundle() override;
 

@@ -102,6 +102,16 @@ interface FrameNavigationControl {
       int32 error_code,
       string? error_page_content,
       URLLoaderFactoryBundle? subresource_loader_factories);
+
+  // Provides the renderer an updated |subresource_loader_factories|.
+  //
+  // This method is intended to fix broken loaders after a Network Service
+  // crash, and is only used when Network Service is enabled.
+  //
+  // The new bundle contains replacement factories for a subset of the
+  // receiver's existing bundle.
+  UpdateSubresourceLoaderFactories(
+      URLLoaderFactoryBundle subresource_loader_factories);
 };
 
 // Implemented by the frame (e.g. renderer processes).

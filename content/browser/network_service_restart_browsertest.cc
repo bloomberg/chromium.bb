@@ -4,18 +4,22 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 
@@ -75,7 +79,11 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceRestartBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
+  }
+
+  void SetUpOnMainThread() override {
     EXPECT_TRUE(embedded_test_server()->Start());
+    ContentBrowserTest::SetUpOnMainThread();
   }
 
   GURL GetTestURL() const {
@@ -186,6 +194,93 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+}
+
+class NetworkServiceRestartDisableWebSecurityTest
+    : public NetworkServiceRestartBrowserTest {
+ public:
+  NetworkServiceRestartDisableWebSecurityTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Simulate a compromised renderer, otherwise the cross-origin request is
+    // blocked.
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+    NetworkServiceRestartBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &NetworkServiceRestartDisableWebSecurityTest::MonitorRequest,
+        base::Unretained(this)));
+    NetworkServiceRestartBrowserTest::SetUpOnMainThread();
+  }
+
+  RenderFrameHostImpl* main_frame() {
+    return static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame());
+  }
+
+  bool CheckCanLoadHttp(const std::string& relative_url) {
+    GURL test_url = embedded_test_server()->GetURL(relative_url);
+    std::string script(
+        "var xhr = new XMLHttpRequest();"
+        "xhr.open('GET', '");
+    script += test_url.spec() +
+              "', true);"
+              "xhr.onload = function (e) {"
+              "  if (xhr.readyState === 4) {"
+              "    window.domAutomationController.send(xhr.status === 200);"
+              "  }"
+              "};"
+              "xhr.onerror = function () {"
+              "  window.domAutomationController.send(false);"
+              "};"
+              "xhr.send(null)";
+    bool xhr_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(shell(), script, &xhr_result);
+    return xhr_result && execute_result;
+  }
+
+  // Called by |embedded_test_server()|.
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    last_request_relative_url_ = request.relative_url;
+  }
+
+  std::string last_request_relative_url() const {
+    return last_request_relative_url_;
+  }
+
+ private:
+  std::string last_request_relative_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceRestartDisableWebSecurityTest);
+};
+
+// Make sure basic XHR works after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartDisableWebSecurityTest, BasicXHR) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/echo")));
+  EXPECT_TRUE(CheckCanLoadHttp("/title1.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title1.html");
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+  // Flush the interface to make sure the frame host has received error
+  // notification and the new URLLoaderFactoryBundle has been received by the
+  // frame.
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  EXPECT_TRUE(CheckCanLoadHttp("/title2.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
 }  // namespace content

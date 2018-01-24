@@ -97,4 +97,12 @@ std::unique_ptr<SharedURLLoaderFactoryInfo> URLLoaderFactoryBundle::Clone() {
       std::move(default_factory_info), std::move(factories_info));
 }
 
+void URLLoaderFactoryBundle::Update(
+    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
+  if (info->default_factory_info())
+    default_factory_.Bind(std::move(info->default_factory_info()));
+  for (auto& factory_info : info->factories_info())
+    factories_[factory_info.first].Bind(std::move(factory_info.second));
+}
+
 }  // namespace content

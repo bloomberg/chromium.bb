@@ -537,6 +537,8 @@ class CONTENT_EXPORT RenderFrameImpl
       int error_code,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) override;
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
