@@ -24,6 +24,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -302,6 +303,42 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   button_->SetMinSize(gfx::Size());
   button_->SetMaxSize(gfx::Size(1, 1));
   EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(1, 1));
+}
+
+TEST_F(LabelButtonTest, LabelWrapAndImageAlignment) {
+  LayoutProvider* provider = LayoutProvider::Get();
+  const gfx::FontList font_list = button_->label()->font_list();
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm abcdefghijklm"));
+  const int text_wrap_width = gfx::GetStringWidth(text, font_list) / 2;
+  const int image_spacing =
+      provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+
+  button_->SetText(text);
+  button_->label()->SetMultiLine(true);
+
+  const int image_size = font_list.GetHeight();
+  const gfx::ImageSkia image = CreateTestImage(image_size, image_size);
+  ASSERT_EQ(font_list.GetHeight(), image.width());
+
+  button_->SetImage(Button::STATE_NORMAL, image);
+  button_->SetMaxSize(
+      gfx::Size(image.width() + image_spacing + text_wrap_width, 0));
+
+  gfx::Insets button_insets = button_->GetInsets();
+  gfx::Size preferred_size = button_->GetPreferredSize();
+  preferred_size.set_height(button_->GetHeightForWidth(preferred_size.width()));
+  button_->SetSize(preferred_size);
+  button_->Layout();
+
+  EXPECT_EQ(preferred_size.width(),
+            image.width() + image_spacing + text_wrap_width);
+  EXPECT_EQ(preferred_size.height(),
+            font_list.GetHeight() * 2 + button_insets.height());
+
+  // The image should be centered on the first line of the multi-line label.
+  EXPECT_EQ(button_->image()->y(),
+            (font_list.GetHeight() - button_->image()->height()) / 2 +
+                button_insets.top());
 }
 
 // This test was added because GetHeightForWidth and GetPreferredSize were
