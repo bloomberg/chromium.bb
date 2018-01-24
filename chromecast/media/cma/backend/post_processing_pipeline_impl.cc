@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/scoped_native_library.h"
 #include "base/values.h"
-#include "chromecast/base/serializers.h"
 #include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/volume_control.h"
 
@@ -20,9 +21,17 @@ namespace media {
 namespace {
 
 const int kNoSampleRate = -1;
-const char kProcessorKey[] = "processor";
-const char kTypeKey[] = "type";
-const char kNameKey[] = "name";
+
+// Used for AudioPostProcessor(1)
+const char kJsonKeyProcessor[] = "processor";
+
+// Used for AudioPostProcessor2
+const char kJsonKeyLib[] = "lib";
+const char kJsonKeyType[] = "type";
+
+const char kJsonKeyName[] = "name";
+const char kJsonKeyConfig[] = "config";
+
 }  // namespace
 
 PostProcessingPipelineFactoryImpl::PostProcessingPipelineFactoryImpl() =
@@ -47,46 +56,65 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
   if (!filter_description_list) {
     return;  // Warning logged.
   }
-  for (size_t i = 0; i < filter_description_list->GetSize(); ++i) {
-    const base::DictionaryValue* processor_description_dict;
-    CHECK(
-        filter_description_list->GetDictionary(i, &processor_description_dict));
+  for (const base::Value& processor_description_dict :
+       filter_description_list->GetList()) {
+    DCHECK(processor_description_dict.is_dict());
 
     std::string processor_name;
-    processor_description_dict->GetString(kNameKey, &processor_name);
-    std::vector<PostProcessorInfo>::iterator it =
-        find_if(processors_.begin(), processors_.end(),
-                [&processor_name](PostProcessorInfo& p) {
-                  return p.name == processor_name;
-                });
-    LOG_IF(DFATAL, it != processors_.end())
-        << "Duplicate postprocessor name " << processor_name;
-    std::string library_path;
-    CHECK(processor_description_dict->GetString(kProcessorKey, &library_path));
-    if (library_path == "null" || library_path == "none") {
-      continue;
+    const base::Value* name_val = processor_description_dict.FindKeyOfType(
+        kJsonKeyName, base::Value::Type::STRING);
+    if (name_val) {
+      processor_name = name_val->GetString();
     }
 
-    std::string post_processor_name;
+    if (!processor_name.empty()) {
+      std::vector<PostProcessorInfo>::iterator it =
+          find_if(processors_.begin(), processors_.end(),
+                  [&processor_name](PostProcessorInfo& p) {
+                    return p.name == processor_name;
+                  });
+      LOG_IF(DFATAL, it != processors_.end())
+          << "Duplicate postprocessor name " << processor_name;
+    }
 
-    // TODO(bshaya): CHECK this when support for AudioPostProcessor is removed.
-    processor_description_dict->GetString(kTypeKey, &post_processor_name);
+    std::string library_path;
+    std::string post_processor_type;
 
-    const base::Value* processor_config_val;
-    CHECK(processor_description_dict->Get("config", &processor_config_val));
-    CHECK(processor_config_val->is_dict() || processor_config_val->is_string());
-    std::unique_ptr<std::string> processor_config_string =
-        SerializeToJson(*processor_config_val);
+    // Keys for AudioPostProcessor2:
+    const base::Value* library_val = processor_description_dict.FindKeyOfType(
+        kJsonKeyLib, base::Value::Type::STRING);
+    if (library_val) {
+      library_path = library_val->GetString();
+      const base::Value* type_val = processor_description_dict.FindKeyOfType(
+          kJsonKeyType, base::Value::Type::STRING);
+      DCHECK(type_val) << "AudioPostProcessor2 must specify " << kJsonKeyType
+                       << " (key provided to AUDIO_POST_PROCESSOR2_CREATE())";
+      post_processor_type = type_val->GetString();
+    } else {
+      // Keys for AudioPostProcessor
+      // TODO(bshaya): Remove when AudioPostProcessor support is removed.
+      library_val = processor_description_dict.FindKeyOfType(
+          kJsonKeyProcessor, base::Value::Type::STRING);
+      DCHECK(library_val) << "Post processor description is missing key "
+                          << kJsonKeyLib;
+      library_path = library_val->GetString();
+    }
+
+    std::string processor_config_string;
+    const base::Value* processor_config_val =
+        processor_description_dict.FindKey(kJsonKeyConfig);
+    if (processor_config_val) {
+      DCHECK(processor_config_val->is_dict() ||
+             processor_config_val->is_string());
+      base::JSONWriter::Write(*processor_config_val, &processor_config_string);
+    }
 
     LOG(INFO) << "Creating an instance of " << library_path << "("
-              << *processor_config_string << ")";
-
-    // TODO(bshaya): parse v2 plugin names.
-    std::string plugin_name = "";
+              << processor_config_string << ")";
 
     processors_.emplace_back(PostProcessorInfo{
-        factory_.CreatePostProcessor(library_path, plugin_name,
-                                     *processor_config_string, channels),
+        factory_.CreatePostProcessor(library_path, post_processor_type,
+                                     processor_config_string, channels),
         processor_name});
     channels = processors_.back().ptr->NumOutputChannels();
   }

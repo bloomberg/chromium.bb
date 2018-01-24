@@ -36,10 +36,10 @@
 // AudioPostProcessors are created on startup and destroyed on shutdown.
 // libcast_FOOBAR_1.0.so should export a CREATE function as follows:
 // AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(FOOBAR) { }
-#define AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(type)                  \
-  extern "C" CHROMECAST_EXPORT chromecast::media::AudioPostProcessor2* \
-      AudioPostProcessor2##type##Create(const std::string& config,     \
-                                        int channels_in)
+#define AUDIO_POST_PROCESSOR2_SHLIB_CREATE_FUNC(type)                   \
+  extern "C" CHROMECAST_EXPORT chromecast::media::AudioPostProcessor2*  \
+      AudioPostProcessor2Shlib##type##Create(const std::string& config, \
+                                             int num_channels_in)
 
 namespace chromecast {
 namespace media {
@@ -112,7 +112,12 @@ class AudioPostProcessor2 {
 
   // Sends a message to the PostProcessor. Implementations are responsible
   // for the format and parsing of messages.
-  virtual void UpdateParameters(const std::string& message) {}
+  // Returns |true| if the message was accepted or |false| if the message could
+  // not be applied (i.e. invalid parameter, format error, parameter out of
+  // range, etc).
+  // If the PostProcessor can/will not be updated at runtime, this can be
+  // implemented as "return false;"
+  virtual bool UpdateParameters(const std::string& message) = 0;
 
   // Sets content type to the PostProcessor so it could change processing
   // settings accordingly.

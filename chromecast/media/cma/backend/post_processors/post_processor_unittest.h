@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,9 +34,22 @@ namespace chromecast {
 namespace media {
 namespace post_processor_test {
 
-const int kNumChannels = 2;
 const int kBufSizeFrames = 256;
+const int kNumChannels = 2;
 
+void TestDelay(AudioPostProcessor2* pp,
+               int sample_rate,
+               int num_input_channels = 2);
+void TestRingingTime(AudioPostProcessor2* pp,
+                     int sample_rate,
+                     int num_input_channels = 2);
+
+// Requires that num_output_channels == |input_channels|
+void TestPassthrough(AudioPostProcessor2* pp,
+                     int sample_rate,
+                     int num_input_channels = 2);
+
+// Legacy tests for AudioPostProcessor(1).
 void TestDelay(AudioPostProcessor* pp, int sample_rate);
 void TestRingingTime(AudioPostProcessor* pp, int sample_rate);
 void TestPassthrough(AudioPostProcessor* pp, int sample_rate);
@@ -46,30 +60,47 @@ int GetMaximumFrames(int sample_rate);
 
 // Tests that the first |size| elements of |expected| and |actual| are the same.
 template <typename T>
-void CheckArraysEqual(T* expected, T* actual, size_t size);
+void CheckArraysEqual(const T* expected, const T* actual, size_t size);
 
 // Returns a list of indexes at which |expected| and |actual| differ.
 template <typename T>
-std::vector<int> CompareArray(T* expected, T* actual, size_t size);
+std::vector<int> CompareArray(const T* expected, const T* actual, size_t size);
 
 // Print the first |size| elemenents of |array| to a string.
 template <typename T>
-std::string ArrayToString(T* array, size_t size);
+std::string ArrayToString(const T* array, size_t size);
 
 // Compute the amplitude of a sinusoid as power * sqrt(2)
 // This is more robust that looking for the maximum value.
-float SineAmplitude(std::vector<float> data, int num_channels);
+float SineAmplitude(const float* data, int num_samples);
 
-// Return a vector of |frames| frames of |kNumChannels| interleaved data.
+// Return a vector of |frames| frames of |num_channels| interleaved data.
 // |frequency| is in hz.
-// Channel 0 will be sin(n) and channel 1 will be cos(n).
-std::vector<float> GetSineData(size_t frames, float frequency, int sample_rate);
+// Each channel, ch,  will be sin(2 *pi * frequency / sample_rate * (n + ch)).
+std::vector<float> GetSineData(int frames,
+                               float frequency,
+                               int sample_rate,
+                               int num_channels = kNumChannels);
+
+// Returns a vector of interleaved chirp waveforms with |frames| frames and
+// number of channels equal to |start_frequencies.size()|.
+// |start_frequencies| and |end_frequencies| must be the same size.
+// Each channel, ch, will have frequency linearly interpolated from
+// |start_frequencies[ch]| to |end_frequencies[ch]|
+// Frequencies are normalized to (2 * freq_in_hz / sample_rate); 0 = DC, 1 =
+// nyquist.
+std::vector<float> LinearChirp(int frames,
+                               const std::vector<double>& start_frequencies,
+                               const std::vector<double>& end_frequencies);
 
 // Returns a vector of interleaved stereo chirp waveform with |frames| frames
 // from |start_frequency_left| to |start_frequency_left| for left channel and
 // from |start_frequency_right| to |end_frequency_right| for right channel,
 // where |start_frequency_x| and |end_frequency_x| are normalized frequencies
 // (2 * freq_in_hz / sample_rate) i.e. 0 - DC, 1 - nyquist.
+// Equivalent to LinearChirp(frames,
+//                          {start_frequency_left, start_frequency_right},
+//                          {end_frequency_left, end_frequency_right})
 std::vector<float> GetStereoChirp(size_t frames,
                                   float start_frequency_left,
                                   float end_frequency_left,

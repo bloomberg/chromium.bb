@@ -4,6 +4,7 @@
 
 #include "chromecast/media/cma/backend/post_processors/post_processor_wrapper.h"
 
+#include "base/logging.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 
 namespace chromecast {
@@ -12,7 +13,15 @@ namespace media {
 AudioPostProcessorWrapper::AudioPostProcessorWrapper(
     std::unique_ptr<AudioPostProcessor> pp,
     int channels)
-    : pp_(std::move(pp)), channels_(channels) {}
+    : owned_pp_(std::move(pp)), pp_(owned_pp_.get()), channels_(channels) {
+  DCHECK(owned_pp_);
+}
+
+AudioPostProcessorWrapper::AudioPostProcessorWrapper(AudioPostProcessor* pp,
+                                                     int channels)
+    : pp_(pp), channels_(channels) {
+  DCHECK(pp_);
+}
 
 AudioPostProcessorWrapper::~AudioPostProcessorWrapper() = default;
 
@@ -36,8 +45,9 @@ int AudioPostProcessorWrapper::GetRingingTimeInFrames() {
   return pp_->GetRingingTimeInFrames();
 }
 
-void AudioPostProcessorWrapper::UpdateParameters(const std::string& message) {
+bool AudioPostProcessorWrapper::UpdateParameters(const std::string& message) {
   pp_->UpdateParameters(message);
+  return true;
 }
 
 void AudioPostProcessorWrapper::SetContentType(AudioContentType content_type) {

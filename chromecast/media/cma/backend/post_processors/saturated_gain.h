@@ -9,13 +9,13 @@
 
 #include "base/macros.h"
 #include "chromecast/media/base/slew_volume.h"
-#include "chromecast/public/media/audio_post_processor_shlib.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 
 namespace chromecast {
 namespace media {
 
-// Provides a simple gain, avoiding overflow.
-class SaturatedGain : public AudioPostProcessor {
+// Applys a gain to audio, limited such that gain + system_volume <= 0dB.
+class SaturatedGain : public AudioPostProcessor2 {
  public:
   SaturatedGain(const std::string& config, int channels);
   ~SaturatedGain() override;
@@ -27,10 +27,14 @@ class SaturatedGain : public AudioPostProcessor {
                     float volume,
                     float volume_dbfs) override;
   int GetRingingTimeInFrames() override;
+  int NumOutputChannels() override;
+  float* GetOutputBuffer() override;
+  bool UpdateParameters(const std::string& message) override;
 
  private:
   int channels_;
   int sample_rate_;
+  float* data_ = nullptr;
   float last_volume_dbfs_;
   SlewVolume slew_volume_;
   float gain_;
