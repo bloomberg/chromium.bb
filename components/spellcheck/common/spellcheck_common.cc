@@ -36,7 +36,7 @@ static constexpr LanguageRegion kSupportedSpellCheckerLanguages[] = {
     {"da", "da-DK"},
     {"de", "de-DE"},
     {"el", "el-GR"},
-    {"en-AU", "en-GB"},
+    {"en-AU", "en-AU"},
     {"en-CA", "en-CA"},
     {"en-GB", "en-GB"},
     {"en-US", "en-US"},
