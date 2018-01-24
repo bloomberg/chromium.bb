@@ -208,6 +208,9 @@ void DOMFileSystem::CreateFile(
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
                                      base::OnceClosure task) {
+  if (!execution_context)
+    return;
+
   DCHECK(execution_context->IsContextThread());
 
   std::unique_ptr<int> identifier = std::make_unique<int>(0);
