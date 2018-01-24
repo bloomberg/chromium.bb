@@ -39,8 +39,7 @@
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
-      return ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled |
-             ToolbarComponentVisibilityRegularWidthCompactHeight |
+      return ToolbarComponentVisibilityOnlyWhenEnabled |
              ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
 }
@@ -88,8 +87,7 @@
     case SECONDARY:
       return ToolbarComponentVisibilitySplit;
     case LEGACY:
-      return ToolbarComponentVisibilityRegularWidthCompactHeight |
-             ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
 }
 
@@ -100,8 +98,7 @@
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
-      return ToolbarComponentVisibilityRegularWidthCompactHeight |
-             ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
 }
 
@@ -112,8 +109,7 @@
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
-      return ToolbarComponentVisibilityRegularWidthCompactHeight |
-             ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
 }
 
