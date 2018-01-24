@@ -142,8 +142,11 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
 
-  // Returns true if metrics reporting is enabled. |local_state| is the
-  // PrefService for local state. Typically this comes from
+  // Returns true if metrics reporting is enabled. This does NOT necessary mean
+  // that it is active as configuration may prevent it on some devices (i.e.
+  // the "MetricsReporting" field trial that controls sampling). To include
+  // that, call: metrics_services_manager->IsReportingEnabled()
+  // |local_state| is the PrefService for local state. Typically this comes from
   // g_browser_process->local_state(), but during startup |g_browser_process|
   // may not have been created, in which case it's the local state that will
   // eventually be assigned to |g_browser_process|.
