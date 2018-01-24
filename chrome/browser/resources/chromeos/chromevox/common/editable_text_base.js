@@ -464,7 +464,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged = function(
  */
 cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   var personality = {};
-  if (evt.value.length < this.value.length) {
+  if (evt.value.length < (this.value.length - 1)) {
     personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
   if (this.isPassword) {
