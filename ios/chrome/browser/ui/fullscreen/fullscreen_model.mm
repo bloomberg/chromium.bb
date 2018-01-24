@@ -51,7 +51,11 @@ void FullscreenModel::DecrementDisabledCounter() {
 }
 
 void FullscreenModel::ResetForNavigation() {
+  // Set |progress_| to NAN to bypass the early return in SetProgress().  This
+  // ensures that FullscreenUIElements are updated for every navigation.
+  progress_ = NAN;
   SetProgress(1.0);
+
   scrolling_ = false;
   base_offset_ = NAN;
 }
