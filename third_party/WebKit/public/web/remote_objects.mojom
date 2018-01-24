@@ -20,4 +20,12 @@ interface RemoteObject {
 };
 
 struct RemoteInvocationArgument {};
-struct RemoteInvocationResult {};
+
+enum RemoteInvocationError {
+  OK = 0,
+  METHOD_NOT_FOUND,
+};
+
+struct RemoteInvocationResult {
+  RemoteInvocationError error = OK;
+};
