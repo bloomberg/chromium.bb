@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
+import("//testing/test.gni")
+
+assert(is_android)
+
 config("crazy_config") {
   include_dirs = [ "src/include" ]
   libs = [
@@ -10,63 +15,116 @@ config("crazy_config") {
   ]
 }
 
-source_set("android_crazy_linker") {
+# Template to define a source set for the crazy linker.
+# This takes a single boolean parameter:
+#
+#   unit_tests: if true, build a version with unit-testing support.
+#
+template("crazy_linker_library") {
+  source_set(target_name) {
+    forward_variables_from(invoker, [ "*" ])
+    sources = [
+      "src/include/crazy_linker.h",
+      "src/src/crazy_linker_api.cpp",
+      "src/src/crazy_linker_ashmem.cpp",
+      "src/src/crazy_linker_ashmem.h",
+      "src/src/crazy_linker_debug.cpp",
+      "src/src/crazy_linker_debug.h",
+      "src/src/crazy_linker_defines.h",
+      "src/src/crazy_linker_elf_loader.cpp",
+      "src/src/crazy_linker_elf_loader.h",
+      "src/src/crazy_linker_elf_relocations.cpp",
+      "src/src/crazy_linker_elf_relocations.h",
+      "src/src/crazy_linker_elf_relro.cpp",
+      "src/src/crazy_linker_elf_relro.h",
+      "src/src/crazy_linker_elf_symbols.cpp",
+      "src/src/crazy_linker_elf_symbols.h",
+      "src/src/crazy_linker_elf_view.cpp",
+      "src/src/crazy_linker_elf_view.h",
+      "src/src/crazy_linker_error.cpp",
+      "src/src/crazy_linker_error.h",
+      "src/src/crazy_linker_globals.cpp",
+      "src/src/crazy_linker_globals.h",
+      "src/src/crazy_linker_library_list.cpp",
+      "src/src/crazy_linker_library_list.h",
+      "src/src/crazy_linker_library_view.cpp",
+      "src/src/crazy_linker_library_view.h",
+      "src/src/crazy_linker_line_reader.cpp",
+      "src/src/crazy_linker_line_reader.h",
+      "src/src/crazy_linker_memory_mapping.h",
+      "src/src/crazy_linker_proc_maps.cpp",
+      "src/src/crazy_linker_proc_maps.h",
+      "src/src/crazy_linker_rdebug.cpp",
+      "src/src/crazy_linker_rdebug.h",
+      "src/src/crazy_linker_search_path_list.cpp",
+      "src/src/crazy_linker_search_path_list.h",
+      "src/src/crazy_linker_shared_library.cpp",
+      "src/src/crazy_linker_shared_library.h",
+      "src/src/crazy_linker_system.cpp",
+      "src/src/crazy_linker_system.h",
+      "src/src/crazy_linker_thread.cpp",
+      "src/src/crazy_linker_thread.h",
+      "src/src/crazy_linker_util.cpp",
+      "src/src/crazy_linker_util.h",
+      "src/src/crazy_linker_wrappers.cpp",
+      "src/src/crazy_linker_wrappers.h",
+      "src/src/crazy_linker_zip.cpp",
+      "src/src/crazy_linker_zip.h",
+      "src/src/elf_traits.h",
+      "src/src/linker_phdr.cpp",
+      "src/src/linker_phdr.h",
+      "src/src/linker_reloc_iterators.h",
+      "src/src/linker_sleb128.h",
+    ]
+
+    include_dirs = [ "src/src" ]
+
+    if (defined(invoker.unit_tests) && invoker.unit_tests) {
+      sources += [
+        "src/src/crazy_linker_system_mock.cpp",
+        "src/src/crazy_linker_system_mock.h",
+      ]
+      defines = [
+        "UNIT_TESTS",
+        "CRAZY_DEBUG=1",
+      ]
+    }
+
+    public_configs = [ ":crazy_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+  }
+}
+
+crazy_linker_library("android_crazy_linker") {
+}
+
+crazy_linker_library("android_crazy_linker_for_unittests") {
+  unit_tests = true
+}
+
+test("android_crazy_linker_unittests") {
   sources = [
-    "src/include/crazy_linker.h",
-    "src/src/crazy_linker_api.cpp",
-    "src/src/crazy_linker_ashmem.cpp",
-    "src/src/crazy_linker_ashmem.h",
-    "src/src/crazy_linker_debug.cpp",
-    "src/src/crazy_linker_debug.h",
-    "src/src/crazy_linker_elf_loader.cpp",
-    "src/src/crazy_linker_elf_loader.h",
-    "src/src/crazy_linker_elf_relocations.cpp",
-    "src/src/crazy_linker_elf_relocations.h",
-    "src/src/crazy_linker_elf_relro.cpp",
-    "src/src/crazy_linker_elf_relro.h",
-    "src/src/crazy_linker_elf_symbols.cpp",
-    "src/src/crazy_linker_elf_symbols.h",
-    "src/src/crazy_linker_elf_view.cpp",
-    "src/src/crazy_linker_elf_view.h",
-    "src/src/crazy_linker_error.cpp",
-    "src/src/crazy_linker_error.h",
-    "src/src/crazy_linker_globals.cpp",
-    "src/src/crazy_linker_globals.h",
-    "src/src/crazy_linker_library_list.cpp",
-    "src/src/crazy_linker_library_list.h",
-    "src/src/crazy_linker_library_view.cpp",
-    "src/src/crazy_linker_library_view.h",
-    "src/src/crazy_linker_line_reader.cpp",
-    "src/src/crazy_linker_line_reader.h",
-    "src/src/crazy_linker_memory_mapping.h",
-    "src/src/crazy_linker_proc_maps.cpp",
-    "src/src/crazy_linker_proc_maps.h",
-    "src/src/crazy_linker_rdebug.cpp",
-    "src/src/crazy_linker_rdebug.h",
-    "src/src/crazy_linker_search_path_list.cpp",
-    "src/src/crazy_linker_search_path_list.h",
-    "src/src/crazy_linker_shared_library.cpp",
-    "src/src/crazy_linker_shared_library.h",
-    "src/src/crazy_linker_system.cpp",
-    "src/src/crazy_linker_system.h",
-    "src/src/crazy_linker_thread.cpp",
-    "src/src/crazy_linker_thread.h",
-    "src/src/crazy_linker_util.cpp",
-    "src/src/crazy_linker_util.h",
-    "src/src/crazy_linker_wrappers.cpp",
-    "src/src/crazy_linker_wrappers.h",
-    "src/src/crazy_linker_zip.cpp",
-    "src/src/crazy_linker_zip.h",
-    "src/src/elf_traits.h",
-    "src/src/linker_phdr.cpp",
-    "src/src/linker_phdr.h",
-    "src/src/linker_reloc_iterators.h",
-    "src/src/linker_sleb128.h",
+    "src/src/crazy_linker_ashmem_unittest.cpp",
+    "src/src/crazy_linker_error_unittest.cpp",
+    "src/src/crazy_linker_globals_unittest.cpp",
+    "src/src/crazy_linker_line_reader_unittest.cpp",
+    "src/src/crazy_linker_proc_maps_unittest.cpp",
+    "src/src/crazy_linker_search_path_list_unittest.cpp",
+    "src/src/crazy_linker_system_unittest.cpp",
+    "src/src/crazy_linker_thread_unittest.cpp",
+    "src/src/crazy_linker_util_unittest.cpp",
   ]
 
   include_dirs = [ "src/src" ]
 
-  public_configs = [ ":crazy_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  deps = [
+    ":android_crazy_linker_for_unittests",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
+  ]
+
+  use_raw_android_executable = true
 }

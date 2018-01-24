@@ -4,7 +4,7 @@
 
 #include "crazy_linker_system.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 #include <stdlib.h>
 #include "crazy_linker_system_mock.h"
 

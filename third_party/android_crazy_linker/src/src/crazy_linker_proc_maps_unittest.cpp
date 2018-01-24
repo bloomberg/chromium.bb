@@ -4,8 +4,8 @@
 
 #include "crazy_linker_proc_maps.h"
 
+#include <gtest/gtest.h>
 #include <limits.h>
-#include <minitest/minitest.h>
 #include "crazy_linker_system_mock.h"
 
 namespace crazy {
@@ -84,13 +84,12 @@ TEST(ProcMaps, FindProtectionFlagsForAddress) {
                {0x40084000, true, PROT_READ | PROT_WRITE}, };
 
   int prot;
-  for (size_t n = 0; n < ARRAY_LEN(kData); ++n) {
-    void* address = reinterpret_cast<void*>(kData[n].address);
-    TEST_TEXT << minitest::Format("Checking address %p", address);
-    EXPECT_EQ(kData[n].success, FindProtectionFlagsForAddress(address, &prot));
-    if (kData[n].success) {
-      TEST_TEXT << minitest::Format("Checking address %p", address);
-      EXPECT_EQ(kData[n].prot, prot);
+  for (auto const& data : kData) {
+    void* address = reinterpret_cast<void*>(data.address);
+    EXPECT_EQ(data.success, FindProtectionFlagsForAddress(address, &prot))
+        << "Checking address " << address;
+    if (data.success) {
+      EXPECT_EQ(data.prot, prot) << "Checking address " << address;
     }
   }
 }
@@ -108,17 +107,13 @@ TEST(ProcMaps, FindLoadAddressForFile) {
                {false, 0, 0, "bin/mksh"},
                {true, 0x4005c000, 0, "/system/bin/mksh"},
                {true, 0x40231000, 0x1000000, "libc.so"}, };
-  for (size_t n = 0; n < ARRAY_LEN(kData); ++n) {
+  for (auto const& data : kData) {
     uintptr_t address, offset;
-    TEST_TEXT << "Checking " << kData[n].name;
-    bool success = FindLoadAddressForFile(kData[n].name, &address, &offset);
-    EXPECT_EQ(kData[n].success, success);
+    bool success = FindLoadAddressForFile(data.name, &address, &offset);
+    EXPECT_EQ(data.success, success) << "Checking " << data.name;
     if (success) {
-      TEST_TEXT << "Checking " << kData[n].name;
-      EXPECT_EQ(kData[n].address, address);
-
-      TEST_TEXT << "Checking " << kData[n].name;
-      EXPECT_EQ(kData[n].offset, offset);
+      EXPECT_EQ(data.address, address) << "Checking " << data.name;
+      EXPECT_EQ(data.offset, offset) << "Checking " << data.name;
     }
   }
 }
@@ -184,29 +179,26 @@ TEST(ProcMaps, GetNextEntry) {
   ProcMaps self_maps;
   ProcMaps::Entry entry;
 
-  for (size_t n = 0; n < ARRAY_LEN(kData); ++n) {
-    minitest::internal::String text =
-        minitest::Format("Checking entry #%d %p-%p",
-                         n + 1,
-                         kData[n].vma_start,
-                         kData[n].vma_end);
-    TEST_TEXT << text;
-    EXPECT_TRUE(self_maps.GetNextEntry(&entry));
-    TEST_TEXT << text;
-    EXPECT_EQ(kData[n].vma_start, entry.vma_start);
-    TEST_TEXT << text;
-    EXPECT_EQ(kData[n].vma_end, entry.vma_end);
-    TEST_TEXT << text;
-    EXPECT_EQ(kData[n].prot_flags, entry.prot_flags);
-    TEST_TEXT << text;
-    EXPECT_EQ(kData[n].load_offset, entry.load_offset);
+  size_t count = 0;
+  for (const auto& data : kData) {
+    std::string text = "Checking entry #";
+    text += std::to_string(++count);
+    text += " ";
+    text += std::to_string(data.vma_start);
+    text += "-";
+    text += std::to_string(data.vma_end);
 
-    if (!kData[n].path) {
-      TEST_TEXT << text;
-      EXPECT_FALSE(entry.path);
+    EXPECT_TRUE(self_maps.GetNextEntry(&entry)) << text;
+    EXPECT_EQ(data.vma_start, entry.vma_start) << text;
+    EXPECT_EQ(data.vma_end, entry.vma_end) << text;
+    EXPECT_EQ(data.prot_flags, entry.prot_flags) << text;
+    EXPECT_EQ(data.load_offset, entry.load_offset) << text;
+
+    if (!data.path) {
+      EXPECT_FALSE(entry.path) << text;
     } else {
-      EXPECT_MEMEQ(
-          kData[n].path, strlen(kData[n].path), entry.path, entry.path_len);
+      EXPECT_EQ(std::string(data.path), std::string(entry.path, entry.path_len))
+          << text;
     }
   }
   EXPECT_FALSE(self_maps.GetNextEntry(&entry));

@@ -4,7 +4,7 @@
 
 #include "crazy_linker_util.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 
 namespace crazy {
 
@@ -116,8 +116,7 @@ TEST(Vector, At) {
     v.PushBack(n * 100);
 
   for (int n = 0; n < kMaxCount; ++n) {
-    TEST_TEXT << "Checking v[" << n << "]";
-    EXPECT_EQ(n * 100, v[n]);
+    EXPECT_EQ(n * 100, v[n]) << "Checking v[" << n << "]";
   }
 }
 
@@ -128,8 +127,7 @@ TEST(Vector, IndexOf) {
     v.PushBack(n * 100);
 
   for (int n = 0; n < kMaxCount; ++n) {
-    TEST_TEXT << "Checking v.IndexOf(" << n * 100 << ")";
-    EXPECT_EQ(n, v.IndexOf(n * 100));
+    EXPECT_EQ(n, v.IndexOf(n * 100)) << "Checking v.IndexOf(" << n * 100 << ")";
   }
 }
 
@@ -145,7 +143,6 @@ TEST(Vector, InsertAt) {
 
     EXPECT_EQ(kMaxCount + 1, v.GetCount());
     for (int n = 0; n < v.GetCount(); ++n) {
-      TEST_TEXT << "Checking v[" << n << "]";
       int expected;
       if (n < k)
         expected = n * 100;
@@ -153,7 +150,7 @@ TEST(Vector, InsertAt) {
         expected = -1000;
       else
         expected = (n - 1) * 100;
-      EXPECT_EQ(expected, v[n]);
+      EXPECT_EQ(expected, v[n]) << "Checking v[" << n << "]";
     }
   }
 }
@@ -170,9 +167,8 @@ TEST(Vector, RemoveAt) {
 
     EXPECT_EQ(kMaxCount - 1, v.GetCount());
     for (int n = 0; n < kMaxCount - 1; ++n) {
-      TEST_TEXT << "Checking v[" << n << "]";
       int expected = (n < k) ? (n * 100) : ((n + 1) * 100);
-      EXPECT_EQ(expected, v[n]);
+      EXPECT_EQ(expected, v[n]) << "Checking v[" << n << "]";
     }
   }
 }
@@ -185,9 +181,9 @@ TEST(Vector, PopFirst) {
 
   for (int n = 0; n < kMaxCount; ++n) {
     int first = v.PopFirst();
-    TEST_TEXT << "Checking " << n << "-th PopFirst()";
-    EXPECT_EQ(n * 100, first);
-    EXPECT_EQ(kMaxCount - 1 - n, v.GetCount());
+    EXPECT_EQ(n * 100, first) << "Checking " << n << "-th PopFirst()";
+    EXPECT_EQ(kMaxCount - 1 - n, v.GetCount())
+        << "Checking " << n << "-th PopFirst()";
   }
   EXPECT_EQ(0u, v.GetCount());
   EXPECT_TRUE(v.IsEmpty());

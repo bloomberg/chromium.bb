@@ -4,14 +4,13 @@
 
 #include "crazy_linker_thread.h"
 
-#include <minitest/minitest.h>
+#include <gtest/gtest.h>
 
 namespace crazy {
 
 TEST(Thread, GetThreadData) {
   ThreadData* data = GetThreadData();
-  TEST_TEXT << "Checking first GetThreadData() call";
-  EXPECT_TRUE(data);
+  EXPECT_TRUE(data) << "Checking first GetThreadData() call";
   EXPECT_EQ(data, GetThreadData());
   EXPECT_EQ(data, GetThreadDataFast());
 }
@@ -84,12 +83,11 @@ TEST(Thread, AppendErrorFull) {
   const char* error = data->GetError();
   size_t error_len = strlen(error);
 
-  EXPECT_GT(0, error_len);
-  EXPECT_LT(kMaxCount * 10, error_len);
+  EXPECT_GT(error_len, 0U);
+  EXPECT_LT(error_len, kMaxCount * 10);
 
   for (size_t n = 0; n < error_len; ++n) {
-    TEST_TEXT << "Checking error[" << n << "]";
-    EXPECT_EQ('0' + (n % 10), error[n]);
+    EXPECT_EQ('0' + (n % 10), error[n]) << "Checking error[" << n << "]";
   }
 }
 
