@@ -1729,23 +1729,6 @@ static void extend_lines(uint8_t *buf, int width, int height, int stride,
   }
 }
 
-/* Important: There is a special case in this function which we manage to
-   deal with easily in this implementation, but which other implementations
-   should be aware of.
-
-   When frame->crop_height[] is either:
-   * 57 (mod 64) for planes with subsampling_y == 0, or
-   * 29 (mod 32) for planes with subsampling_y == 1
-   then we will have a restoration stripe which ends 1px above the crop border
-   in this particular plane. We want to save 2 rows of deblocked "below"
-   pixels. We can get away with doing that, even though one of the rows lies
-   outside of the crop region, because the deblocker always produces output
-   which is a multiple of 8 luma pixels high.
-
-   Note that save_cdef_boundary_lines() doesn't have this issue, because it
-   always saves CDEF pixels from *inside* the appropriate stripe, rather
-   than above/below it.
-*/
 static void save_deblock_boundary_lines(
     const YV12_BUFFER_CONFIG *frame, const AV1_COMMON *cm, int plane, int row,
     int stripe, int use_highbd, int is_above,
@@ -1762,31 +1745,46 @@ static void save_deblock_boundary_lines(
   uint8_t *bdry_rows = bdry_start + RESTORATION_CTX_VERT * stripe * bdry_stride;
   (void)cm;
 
+  // There is a rare case in which a processing stripe can end 1px above the
+  // crop border. In this case, we do want to use deblocked pixels from below
+  // the stripe (hence why we ended up in this function), but instead of
+  // fetching 2 "below" rows we need to fetch one and duplicate it.
+  // This is equivalent to clamping the sample locations against the crop border
+  const int lines_to_save =
+      AOMMIN(RESTORATION_CTX_VERT, frame->crop_heights[is_uv] - row);
+  assert(lines_to_save == 1 || lines_to_save == 2);
+
   int upscaled_width;
+  int line_bytes;
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   if (!av1_superres_unscaled(cm)) {
     const int ss_x = is_uv && cm->subsampling_x;
     upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
+    line_bytes = upscaled_width << use_highbd;
     if (use_highbd)
       av1_upscale_normative_rows(
           cm, CONVERT_TO_BYTEPTR(src_rows), frame->strides[is_uv],
           CONVERT_TO_BYTEPTR(bdry_rows), boundaries->stripe_boundary_stride,
-          plane, RESTORATION_CTX_VERT);
+          plane, lines_to_save);
     else
       av1_upscale_normative_rows(cm, src_rows, frame->strides[is_uv], bdry_rows,
                                  boundaries->stripe_boundary_stride, plane,
-                                 RESTORATION_CTX_VERT);
+                                 lines_to_save);
   } else {
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
     upscaled_width = frame->crop_widths[is_uv];
-    const int line_bytes = upscaled_width << use_highbd;
-    for (int i = 0; i < RESTORATION_CTX_VERT; i++) {
+    line_bytes = upscaled_width << use_highbd;
+    for (int i = 0; i < lines_to_save; i++) {
       memcpy(bdry_rows + i * bdry_stride, src_rows + i * src_stride,
              line_bytes);
     }
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   }
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
+  // If we only saved one line, then copy it into the second line buffer
+  if (lines_to_save == 1)
+    memcpy(bdry_rows + bdry_stride, bdry_rows, line_bytes);
+
   extend_lines(bdry_rows, upscaled_width, RESTORATION_CTX_VERT, bdry_stride,
                RESTORATION_EXTRA_HORZ, use_highbd);
 }
