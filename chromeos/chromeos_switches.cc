@@ -546,9 +546,6 @@ const char kStubCrosSettings[] = "stub-cros-settings";
 // done by session manager.
 const char kSystemDevMode[] = "system-developer-mode";
 
-// Enables testing for auto update UI.
-const char kTestAutoUpdateUI[] = "test-auto-update-ui";
-
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 

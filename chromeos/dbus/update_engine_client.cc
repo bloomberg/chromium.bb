@@ -542,23 +542,51 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
  public:
   UpdateEngineClientStubImpl()
       : current_channel_(kReleaseChannelBeta),
-        target_channel_(kReleaseChannelBeta) {}
+        target_channel_(kReleaseChannelBeta),
+        weak_factory_(this) {}
 
   // UpdateEngineClient implementation:
   void Init(dbus::Bus* bus) override {}
-  void AddObserver(Observer* observer) override {}
-  void RemoveObserver(Observer* observer) override {}
-  bool HasObserver(const Observer* observer) const override { return false; }
+
+  void AddObserver(Observer* observer) override {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observers_.RemoveObserver(observer);
+  }
+
+  bool HasObserver(const Observer* observer) const override {
+    return observers_.HasObserver(observer);
+  }
 
   void RequestUpdateCheck(const UpdateCheckCallback& callback) override {
-    callback.Run(UPDATE_RESULT_NOTIMPLEMENTED);
+    if (last_status_.status != UPDATE_STATUS_IDLE) {
+      callback.Run(UPDATE_RESULT_FAILED);
+      return;
+    }
+    callback.Run(UPDATE_RESULT_SUCCESS);
+    last_status_.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
+    last_status_.download_progress = 0.0;
+    last_status_.last_checked_time = 0;
+    last_status_.new_size = 0;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&UpdateEngineClientStubImpl::StateTransition,
+                       weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kStateTransitionDefaultDelayMs));
   }
+
   void RebootAfterUpdate() override {}
+
   void Rollback() override {}
+
   void CanRollbackCheck(const RollbackCheckCallback& callback) override {
     callback.Run(true);
   }
-  Status GetLastStatus() override { return Status(); }
+
+  Status GetLastStatus() override { return last_status_; }
+
   void SetChannel(const std::string& target_channel,
                   bool is_powerwash_allowed) override {
     VLOG(1) << "Requesting to set channel: "
@@ -589,52 +617,6 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
       const std::string& update_version,
       int64_t update_size,
       const UpdateOverCellularOneTimePermissionCallback& callback) override {}
-
-  std::string current_channel_;
-  std::string target_channel_;
-};
-
-// The UpdateEngineClient implementation used on Linux desktop, which
-// tries to emulate real update engine client.
-class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
- public:
-  UpdateEngineClientFakeImpl() : weak_factory_(this) {
-  }
-
-  ~UpdateEngineClientFakeImpl() override = default;
-
-  // UpdateEngineClient implementation:
-  void AddObserver(Observer* observer) override {
-    if (observer)
-      observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(Observer* observer) override {
-    if (observer)
-      observers_.RemoveObserver(observer);
-  }
-
-  bool HasObserver(const Observer* observer) const override {
-    return observers_.HasObserver(observer);
-  }
-
-  void RequestUpdateCheck(const UpdateCheckCallback& callback) override {
-    if (last_status_.status != UPDATE_STATUS_IDLE) {
-      callback.Run(UPDATE_RESULT_FAILED);
-      return;
-    }
-    callback.Run(UPDATE_RESULT_SUCCESS);
-    last_status_.status = UPDATE_STATUS_CHECKING_FOR_UPDATE;
-    last_status_.download_progress = 0.0;
-    last_status_.last_checked_time = 0;
-    last_status_.new_size = 0;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&UpdateEngineClientFakeImpl::StateTransition,
-                              weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kStateTransitionDefaultDelayMs));
-  }
-
-  Status GetLastStatus() override { return last_status_; }
 
  private:
   void StateTransition() {
@@ -676,18 +658,23 @@ class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
       observer.UpdateStatusChanged(last_status_);
     if (last_status_.status != UPDATE_STATUS_IDLE) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&UpdateEngineClientFakeImpl::StateTransition,
-                                weak_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&UpdateEngineClientStubImpl::StateTransition,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(delay_ms));
     }
   }
 
   base::ObserverList<Observer> observers_;
+
+  std::string current_channel_;
+  std::string target_channel_;
+
   Status last_status_;
 
-  base::WeakPtrFactory<UpdateEngineClientFakeImpl> weak_factory_;
+  base::WeakPtrFactory<UpdateEngineClientStubImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientFakeImpl);
+  DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientStubImpl);
 };
 
 UpdateEngineClient::UpdateEngineClient() = default;
@@ -706,11 +693,7 @@ UpdateEngineClient* UpdateEngineClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new UpdateEngineClientImpl();
   DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestAutoUpdateUI))
-    return new UpdateEngineClientFakeImpl();
-  else
-    return new UpdateEngineClientStubImpl();
+  return new UpdateEngineClientStubImpl();
 }
 
 // static
