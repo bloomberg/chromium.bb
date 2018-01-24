@@ -19,12 +19,14 @@
 
 typedef bool (*FunctionPtr)();
 
+#define LIB_NAME "libcrazy_linker_tests_libzoo.so"
+
 int main() {
   crazy_context_t* context = crazy_context_create();
   crazy_library_t* library;
 
   // Load libzoo.so
-  if (!crazy_library_open(&library, "libzoo.so", context)) {
+  if (!crazy_library_open(&library, LIB_NAME, context)) {
     Panic("Could not open library: %s\n", crazy_context_get_error(context));
   }
 
@@ -32,7 +34,7 @@ int main() {
   FunctionPtr zoo_func;
   if (!crazy_library_find_symbol(
            library, "Zoo", reinterpret_cast<void**>(&zoo_func))) {
-    Panic("Could not find 'Zoo' in libzoo.so\n");
+    Panic("Could not find 'Zoo' in " LIB_NAME "\n");
   }
 
   // Call it.
@@ -41,10 +43,10 @@ int main() {
     Panic("'Zoo' function failed!");
 
   // Close the library.
-  printf("Closing libzoo.so\n");
+  printf("Closing " LIB_NAME "\n");
   crazy_library_close(library);
 
   crazy_context_destroy(context);
-
+  printf("OK\n");
   return 0;
 }

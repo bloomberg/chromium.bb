@@ -5,6 +5,7 @@
 #include <android/log.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // This is a large table that contains pointers to ensure that it
 // gets put inside the RELRO section.

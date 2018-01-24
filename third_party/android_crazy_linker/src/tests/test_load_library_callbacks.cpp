@@ -106,6 +106,8 @@ pthread_t AsyncCrazyLibraryCloseWithContext(crazy_library_t* library,
 
 }  // namespace
 
+#define LIB_NAME "libcrazy_linker_tests_libfoo.so"
+
 int main() {
   crazy_context_t* context = crazy_context_create();
   crazy_library_t* library;
@@ -126,8 +128,8 @@ int main() {
     Panic("Get callback poster error\n");
   }
 
-  // Load libfoo.so.
-  if (!crazy_library_open(&library, "libfoo.so", context)) {
+  // Load library
+  if (!crazy_library_open(&library, LIB_NAME, context)) {
     Panic("Could not open library: %s\n", crazy_context_get_error(context));
   }
   CheckAndRunCallback(&callback_data);
@@ -136,7 +138,7 @@ int main() {
   FunctionPtr foo_func;
   if (!crazy_library_find_symbol(
            library, "Foo", reinterpret_cast<void**>(&foo_func))) {
-    Panic("Could not find 'Foo' in libfoo.so\n");
+    Panic("Could not find 'Foo' in %s\n", LIB_NAME);
   }
 
   // Call it.

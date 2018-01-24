@@ -14,6 +14,8 @@
 
 #include "test_util.h"
 
+#define LIB_NAME "libcrazy_linker_tests_libbar.so"
+
 typedef void (*FunctionPtr)();
 
 int main() {
@@ -24,7 +26,7 @@ int main() {
   crazy_context_set_load_address(context, 0x20000000);
 
   // Load libbar.so
-  if (!crazy_library_open(&library, "libbar.so", context)) {
+  if (!crazy_library_open(&library, LIB_NAME, context)) {
     Panic("Could not open library: %s\n", crazy_context_get_error(context));
   }
 
@@ -32,7 +34,7 @@ int main() {
   FunctionPtr bar_func;
   if (!crazy_library_find_symbol(
            library, "Bar", reinterpret_cast<void**>(&bar_func))) {
-    Panic("Could not find 'Bar' in libbar.so\n");
+    Panic("Could not find 'Bar' in %s\n", LIB_NAME);
   }
 
   // Call it.
@@ -42,14 +44,14 @@ int main() {
   FunctionPtr foo_func;
   if (!crazy_library_find_symbol(
            library, "Foo", reinterpret_cast<void**>(&foo_func))) {
-    Panic("Could not find 'Foo' from libbar.so\n");
+    Panic("Could not find 'Foo' from %s\n", LIB_NAME);
   }
 
   // Close the library.
-  printf("Closing libbar.so\n");
+  printf("Closing %s\n", LIB_NAME);
   crazy_library_close(library);
 
   crazy_context_destroy(context);
-
+  printf("OK\n");
   return 0;
 }
