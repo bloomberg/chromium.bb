@@ -47,6 +47,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.autofill.SubmissionSource;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -453,9 +454,10 @@ public class AwAutofillTest {
         }
 
         @Override
-        public void commit() {
+        public void commit(int submissionSource) {
             if (DEBUG) Log.i(TAG, "commit");
             mEventQueue.add(AUTOFILL_COMMIT);
+            mSubmissionSource = submissionSource;
             mCallbackHelper.notifyCalled();
         }
 
@@ -498,6 +500,7 @@ public class AwAutofillTest {
     private AwContents mAwContents;
     private ConcurrentLinkedQueue<Integer> mEventQueue = new ConcurrentLinkedQueue<>();
     private TestValues mTestValues = new TestValues();
+    private int mSubmissionSource;
 
     @Before
     public void setUp() throws Exception {
@@ -824,6 +827,7 @@ public class AwAutofillTest {
             assertEquals(2, values.size());
             assertEquals("a", values.get(0).second.getTextValue());
             assertEquals("b", values.get(1).second.getTextValue());
+            assertEquals(SubmissionSource.FORM_SUBMISSION, mSubmissionSource);
         } finally {
             webServer.shutdown();
         }
@@ -988,6 +992,87 @@ public class AwAutofillTest {
                     DOMUtils.clickNode(mTestContainerView.getContentViewCore(), "passwordid"));
             cnt += waitForCallbackAndVerifyTypes(
                     cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED});
+        }
+    }
+
+    /**
+     * This test is verifying the session is still alive after navigation.
+     */
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSessionAliveAfterNavigation() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='password' id='passwordid' name='passwordname'>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        final String success = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "</body>"
+                + "</html>";
+        try {
+            webServer.setResponse("/success.html", success, null);
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            // Note that we currently call ENTER/EXIT one more time.
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            executeJavaScriptAndWaitForResult("window.location.href = 'success.html'; ");
+            waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {
+                            AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED, AUTOFILL_COMMIT});
+            assertEquals(SubmissionSource.PROBABLY_FORM_SUBMITTED, mSubmissionSource);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * This test is verifying there is no callback if there is no form change between two
+     * navigations.
+     */
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNoSubmissionWithoutFillingForm() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='password' id='passwordid' name='passwordname'>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        final String success = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "</body>"
+                + "</html>";
+        try {
+            final String successUrl = webServer.setResponse("/success.html", success, null);
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            executeJavaScriptAndWaitForResult("window.location.href = 'success.html'; ");
+            // There is no callback. AUTOFILL_CANCEL shouldn't be invoked.
+            assertEquals(0, getCallbackCount());
+        } finally {
+            webServer.shutdown();
         }
     }
 

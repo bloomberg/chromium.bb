@@ -322,11 +322,11 @@ public class AwAutofillProvider extends AutofillProvider {
     }
 
     @Override
-    public void onWillSubmitForm() {
+    public void onFormSubmitted(int submissionSource) {
         // The changes could be missing, like those made by Javascript, we'd better to notify
         // AutofillManager current values. also see crbug.com/353001 and crbug.com/732856.
         notifyFormValues();
-        mAutofillManager.commit();
+        mAutofillManager.commit(submissionSource);
         mRequest = null;
     }
 

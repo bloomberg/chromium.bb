@@ -63,7 +63,7 @@ class AutofillProviderAndroid : public AutofillProvider {
   void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
 
  private:
-  void FireSuccessfulSubmission();
+  void FireSuccessfulSubmission(SubmissionSource source);
   void OnFocusChanged(bool focus_on_form,
                       size_t index,
                       const gfx::RectF& bounding_box);
@@ -82,6 +82,8 @@ class AutofillProviderAndroid : public AutofillProvider {
   JavaObjectWeakGlobalRef java_ref_;
   content::WebContents* web_contents_;
   bool check_submission_;
+  // Valid only if check_submission_ is true.
+  SubmissionSource pending_submission_source_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProviderAndroid);
 };

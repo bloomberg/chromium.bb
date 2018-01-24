@@ -62,9 +62,9 @@ public class AwAutofillManager {
         mAutofillManager.notifyValueChanged(parent, childId, value);
     }
 
-    public void commit() {
+    public void commit(int submissionSource) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "commit");
+        if (DEBUG) Log.i(TAG, "commit source:" + submissionSource);
         mAutofillManager.commit();
     }
 

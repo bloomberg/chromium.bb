@@ -7,6 +7,7 @@
 
 namespace autofill {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.autofill
 enum class SubmissionSource {
   SAME_DOCUMENT_NAVIGATION,  // The form was removed in same document
                              // navigation.
