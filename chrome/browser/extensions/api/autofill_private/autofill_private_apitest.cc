@@ -45,11 +45,6 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 // TODO(hcarmona): Investigate converting these tests to unittests.
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_SaveAddress) {
-  EXPECT_TRUE(RunAutofillSubtest("saveAddress")) << message_;
-}
-
-// TODO(crbug.com/643097) Disabled for flakiness.
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_GetCountryList) {
   EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
@@ -59,17 +54,20 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetAddressComponents) {
 }
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_SaveCreditCard) {
-  EXPECT_TRUE(RunAutofillSubtest("saveCreditCard")) << message_;
-}
-
-// TODO(crbug.com/643097) Disabled for flakiness.
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_RemoveEntry) {
   EXPECT_TRUE(RunAutofillSubtest("removeEntry")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, ValidatePhoneNumbers) {
   EXPECT_TRUE(RunAutofillSubtest("ValidatePhoneNumbers")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
+  EXPECT_TRUE(RunAutofillSubtest("addAndUpdateAddress")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateCreditCard) {
+  EXPECT_TRUE(RunAutofillSubtest("addAndUpdateCreditCard")) << message_;
 }
 
 }  // namespace extensions
