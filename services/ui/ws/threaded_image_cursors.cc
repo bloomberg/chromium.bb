@@ -98,9 +98,10 @@ void SetCustomCursorOnResourceThread(
     // |platform_window| is owned by the UI Service thread, so setting the
     // cursor on it also needs to happen on that thread.
     ui_service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ThreadedImageCursors::SetCursorOnPlatformWindow,
-                              threaded_image_cursors_weak_ptr, platform_cursor,
-                              platform_window));
+        FROM_HERE,
+        base::Bind(&ThreadedImageCursors::SetCursorOnPlatformWindowAndUnref,
+                   threaded_image_cursors_weak_ptr, platform_cursor,
+                   platform_window));
   }
 }
 #endif  // defined(USE_OZONE)
@@ -206,6 +207,26 @@ void ThreadedImageCursors::SetCursorOnPlatformWindow(
     ui::PlatformWindow* platform_window) {
   platform_window->SetCursor(platform_cursor);
 }
+
+#if defined(USE_OZONE)
+void ThreadedImageCursors::SetCursorOnPlatformWindowAndUnref(
+    ui::PlatformCursor platform_cursor,
+    ui::PlatformWindow* platform_window) {
+  SetCursorOnPlatformWindow(platform_cursor, platform_window);
+
+  // The PlatformCursor returned by CreateAnimatedCursor() has a single
+  // refcount which is owned by the caller. If we were returned a valid
+  // |platform_cursor|, we must unref it here. All implementations of
+  // PlatformWindow::SetCursor() which need to keep the PlatformCursor have
+  // increased the refcount for their self.
+  //
+  // Note: Cursors returned by SetPlatformCursor() do not return custom bitmap
+  // cursors. The refcount of such a cursor is owned by the caller and
+  // shouldn't be refed/unrefed by the caller.
+  if (platform_cursor)
+    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor);
+}
+#endif
 
 }  // namespace ws
 }  // namespace ui
