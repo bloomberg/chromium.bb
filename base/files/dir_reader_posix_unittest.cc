@@ -33,8 +33,10 @@ TEST(DirReaderPosixUnittest, Read) {
   ASSERT_TRUE(dir);
 
   char wdbuf[PATH_MAX];
-  getcwd(wdbuf, PATH_MAX);
-  LOG(ERROR) << "Current directory: " << wdbuf;
+  if (getcwd(wdbuf, PATH_MAX))
+    LOG(ERROR) << "Current directory: " << wdbuf;
+  else
+    PLOG(ERROR) << "getcwd() failed with ";
   const int prev_wd = open(".", O_RDONLY | O_DIRECTORY);
   PLOG_IF(ERROR, prev_wd < 0) << "opening . failed with ";
   DCHECK_GE(prev_wd, 0);
