@@ -367,6 +367,8 @@ void Compositor::SetScaleAndSize(float scale,
 }
 
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
+  if (output_color_space_ == color_space)
+    return;
   output_color_space_ = color_space;
   blending_color_space_ = output_color_space_.GetBlendingColorSpace();
   // Do all ui::Compositor rasterization to sRGB because UI resources will not
@@ -374,6 +376,12 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
   // image color conversions.
   // https://crbug.com/769677
   host_->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
+  // Always force the ui::Compositor to re-draw all layers, because damage
+  // tracking bugs result in black flashes.
+  // https://crbug.com/804430
+  // TODO(ccameron): Remove this when the above bug is fixed.
+  host_->SetNeedsDisplayOnAllLayers();
+
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
   // TODO(fsamuel): Get rid of this.
