@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MEDIA_BASE_ANDROID_ANDROID_UTIL_H_
+#define MEDIA_BASE_ANDROID_ANDROID_UTIL_H_
+
 #include <memory>
 #include <string>
 
@@ -25,3 +28,5 @@ base::android::ScopedJavaLocalRef<jbyteArray> StringToJavaBytes(
 JavaObjectPtr CreateJavaObjectPtr(jobject object);
 
 }  // namespace media
+
+#endif  // MEDIA_BASE_ANDROID_ANDROID_UTIL_H_
