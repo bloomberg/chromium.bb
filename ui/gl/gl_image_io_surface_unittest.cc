@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -37,11 +38,24 @@ class GLImageIOSurfaceTestDelegate : public GLImageTestDelegateBase {
     IOReturn status = IOSurfaceLock(surface_ref, 0, nullptr);
     EXPECT_NE(status, kIOReturnCannotLock);
 
+    static const bool is_nvidia =
+        base::StartsWith(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
+                         "nvidia", base::CompareCase::INSENSITIVE_ASCII);
+
     uint8_t corrected_color[4];
     if (format == gfx::BufferFormat::RGBA_8888) {
       // GL_RGBA is not supported by CGLTexImageIOSurface2D(), so we pretend it
       // is GL_BGRA, (see https://crbug.com/533677#c6) swizzle the channels for
       // the purpose of this test.
+      corrected_color[0] = color[2];
+      corrected_color[1] = color[1];
+      corrected_color[2] = color[0];
+      corrected_color[3] = color[3];
+    } else if (format == gfx::BufferFormat::BGRX_1010102 && is_nvidia) {
+      // Framebuffers are wrongly interpreted as BGRA when using GL_RGB10_A2
+      // textures and/or IOSurfaces; swizzle the channels here in advance
+      // https://crbug.com/803473, http://www.openradar.me/36824694,
+      // rdar://36824694.
       corrected_color[0] = color[2];
       corrected_color[1] = color[1];
       corrected_color[2] = color[0];
@@ -109,11 +123,11 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageRGBTestTypes);
 
 using GLImageBindTestTypes = testing::Types<
-    // TODO(mcasas): enable BGRX_1010102, https://crbug.com/803473.
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
-    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>>;
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageBindTest,
