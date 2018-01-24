@@ -218,4 +218,35 @@ TEST_F(SimpleFileTrackerTest, PointerStability) {
   EXPECT_TRUE(file_tracker_.IsEmptyForTesting());
 }
 
+TEST_F(SimpleFileTrackerTest, Doom) {
+  SyncEntryPointer entry1 = MakeSyncEntry(1);
+  base::FilePath path1 = cache_path_.AppendASCII("file1");
+  std::unique_ptr<base::File> file1 = std::make_unique<base::File>(
+      path1, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file1->IsValid());
+
+  file_tracker_.Register(entry1.get(), SimpleFileTracker::SubFile::FILE_0,
+                         std::move(file1));
+  SimpleFileTracker::EntryFileKey key1 = entry1->entry_file_key();
+  file_tracker_.Doom(entry1.get(), &key1);
+  EXPECT_NE(0u, key1.doom_generation);
+
+  // Other entry with same key.
+  SyncEntryPointer entry2 = MakeSyncEntry(1);
+  base::FilePath path2 = cache_path_.AppendASCII("file2");
+  std::unique_ptr<base::File> file2 = std::make_unique<base::File>(
+      path2, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file2->IsValid());
+
+  file_tracker_.Register(entry2.get(), SimpleFileTracker::SubFile::FILE_0,
+                         std::move(file2));
+  SimpleFileTracker::EntryFileKey key2 = entry2->entry_file_key();
+  file_tracker_.Doom(entry2.get(), &key2);
+  EXPECT_NE(0u, key2.doom_generation);
+  EXPECT_NE(key1.doom_generation, key2.doom_generation);
+
+  file_tracker_.Close(entry1.get(), SimpleFileTracker::SubFile::FILE_0);
+  file_tracker_.Close(entry2.get(), SimpleFileTracker::SubFile::FILE_0);
+}
+
 }  // namespace disk_cache
