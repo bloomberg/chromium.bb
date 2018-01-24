@@ -463,8 +463,8 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
     if (WasAlreadyDestructed())
       return;
     NodeAllocator::TraceValue(visitor, this);
-    visitor->Mark(Next());
-    visitor->Mark(Prev());
+    visitor->Trace(Next());
+    visitor->Trace(Prev());
   }
 
   ListHashSetNode* Next() const {

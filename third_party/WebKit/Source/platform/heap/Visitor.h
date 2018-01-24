@@ -158,12 +158,6 @@ class PLATFORM_EXPORT Visitor {
     RegisterWeakCell(const_cast<WeakMember<T>&>(t).Cell());
   }
 
-  template <typename T>
-  void TraceInCollection(T& t,
-                         WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
-    HashTraits<T>::TraceInCollection(this, t, strongify);
-  }
-
   // Fallback trace method for part objects to allow individual trace methods
   // to trace through a part object with visitor->trace(m_partObject). This
   // takes a const argument, because otherwise it will match too eagerly: a
