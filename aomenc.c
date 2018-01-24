@@ -2186,12 +2186,8 @@ int main(int argc, const char **argv_) {
         if (stream->config.use_16bit_internal) {
           use_16bit_internal = 1;
         }
-        if (stream->config.cfg.g_profile == 0) {
-          input_shift = 0;
-        } else {
-          input_shift = (int)stream->config.cfg.g_bit_depth -
-                        stream->config.cfg.g_input_bit_depth;
-        }
+        input_shift = (int)stream->config.cfg.g_bit_depth -
+                      stream->config.cfg.g_input_bit_depth;
       };
     }
 
