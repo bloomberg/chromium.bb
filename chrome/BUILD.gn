@@ -436,7 +436,6 @@ if (is_win) {
         # The browser DLL may not depend on blink or v8.
         "//third_party/WebKit/public:blink",
         "//gin",
-        "//tools/v8_context_snapshot",
         "//v8",
       ]
     } else {
@@ -1430,7 +1429,6 @@ group("browser_dependencies") {
       assert_no_deps += [
         # V8/Gin should not be used in the browser DLL on Windows.
         "//gin",
-        "//tools/v8_context_snapshot",
         "//v8",
       ]
     }
