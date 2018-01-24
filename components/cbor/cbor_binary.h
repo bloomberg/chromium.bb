@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #ifndef COMPONENTS_CBOR_CBOR_BINARY_H_
 #define COMPONENTS_CBOR_CBOR_BINARY_H_
+
+#include <stdint.h>
 
 namespace cbor {
 namespace constants {

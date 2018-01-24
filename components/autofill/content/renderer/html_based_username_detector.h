@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_H_
+
 #include <map>
 
 #include "components/autofill/core/common/password_form.h"
@@ -34,3 +37,5 @@ bool GetUsernameFieldBasedOnHtmlAttributes(
     UsernameDetectorCache* username_detector_cache);
 
 }  // namespace autofill
+
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_HTML_BASED_USERNAME_DETECTOR_H_

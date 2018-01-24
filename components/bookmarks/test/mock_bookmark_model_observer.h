@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_BOOKMARKS_TEST_MOCK_BOOKMARK_MODEL_OBSERVER_H_
+#define COMPONENTS_BOOKMARKS_TEST_MOCK_BOOKMARK_MODEL_OBSERVER_H_
+
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -44,3 +47,5 @@ class MockBookmarkModelObserver : public BookmarkModelObserver {
 };
 
 }  // namespace bookmarks
+
+#endif  // COMPONENTS_BOOKMARKS_TEST_MOCK_BOOKMARK_MODEL_OBSERVER_H_

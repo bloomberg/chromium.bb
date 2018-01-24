@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string16.h"
-
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_STATE_NAMES_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_STATE_NAMES_H_
+
+#include "base/strings/string16.h"
 
 namespace autofill {
 namespace state_names {
