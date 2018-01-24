@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef DEVICE_TEST_TEST_DEVICE_CLIENT_H_
+#define DEVICE_TEST_TEST_DEVICE_CLIENT_H_
+
 #include <memory>
 
 #include "build/build_config.h"
@@ -25,3 +28,5 @@ class TestDeviceClient : public DeviceClient {
 };
 
 }  // namespace device
+
+#endif  // DEVICE_TEST_TEST_DEVICE_CLIENT_H_
