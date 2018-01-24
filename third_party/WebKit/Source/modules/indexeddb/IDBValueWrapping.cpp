@@ -142,8 +142,6 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
 
   // TODO(pwnall): The MIME type should probably be an atomic string.
   String mime_type(kWrapMimeType);
-  // TODO(crbug.com/721516): Use WebBlobRegistry::CreateBuilder instead of
-  //                         Blob::Create to avoid a buffer copy.
   std::unique_ptr<BlobData> wrapper_blob_data = BlobData::Create();
   wrapper_blob_data->SetContentType(String(kWrapMimeType));
   wrapper_blob_data->AppendBytes(wire_data_.data(), wire_data_size);
