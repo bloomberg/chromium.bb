@@ -85,6 +85,9 @@ enum DistanceMetric {
   // Horizontal spacing between an item such as an icon or checkbox and a
   // label related to it.
   DISTANCE_RELATED_LABEL_HORIZONTAL,
+  // Height to stop at when expanding a scrollable area in a dialog to
+  // accommodate its content.
+  DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT,
   // Horizontal margin between a table cell and its contents.
   DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN,
   // Horizontal padding applied to text in a textfield.
