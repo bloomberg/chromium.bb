@@ -234,17 +234,33 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // (crbug.com/780405)
   // TODO(kinuko): Implement request timeout and ask the browser to kill
   // the controller if it takes too long. (crbug.com/774374)
+
+  // Passing the request body over Mojo moves it out. But the request body
+  // may be needed later, in the case where the service worker doesn't provide a
+  // response in the fetch event. So instead send a cloned body. (Note that
+  // we can't do the reverse, i.e., send the original and restore the clone
+  // later.  By always sending the clone, we ensure the original ResourceRequest
+  // passed into the constructor always points to a valid ResourceRequestBody,
+  // even if this loader gets destructed.)
+  if (resource_request_.request_body) {
+    inflight_fetch_request_->request_body =
+        ServiceWorkerLoaderHelpers::CloneResourceRequestBody(
+            resource_request_.request_body.get());
+  }
+
   controller->DispatchFetchEvent(
       *inflight_fetch_request_, std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));
+  // |inflight_fetch_request_->request_body| should not be used after this
+  // point.
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
-  // fetch event could be successfully dispatched.
+  // fetch event was successfully dispatched.
   SettleInflightFetchRequestIfNeeded();
 
   switch (status) {
@@ -350,8 +366,6 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   }
 
   // Hand over to the network loader.
-  // Per spec, redirects after this point are not intercepted by the service
-  // worker again. (https://crbug.com/517364)
   default_loader_factory_getter_->GetNetworkLoaderFactory()
       ->CreateLoaderAndStart(
           url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
@@ -362,6 +376,8 @@ void ServiceWorkerSubresourceLoader::OnFallback(
                          response_head_.service_worker_start_time,
                          response_head_.service_worker_ready_time)),
           traffic_annotation_);
+  // Per spec, redirects after this point are not intercepted by the service
+  // worker again (https://crbug.com/517364). So this loader is done.
   DeleteSoon();
 }
 
