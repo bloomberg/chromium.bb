@@ -112,5 +112,24 @@ TEST_F(PpdCacheTest, MissThenHit) {
   EXPECT_FALSE(find_result_.success);
 }
 
+// Test that we fill in the age field with something plausible.
+TEST_F(PpdCacheTest, HitAge) {
+  auto cache = CreateTestCache();
+  const char kTestKey[] = "My totally awesome key";
+  const char kTestContents[] = "Like, totally awesome contents";
+  cache->Store(
+      kTestKey, kTestContents,
+      base::Bind(&PpdCacheTest::CaptureStoreResult, base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(captured_store_results_, 1);
+
+  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
+                                   base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(captured_find_results_, 1);
+  // The age should be well under a second, but accept anything under an hour.
+  EXPECT_LT(find_result_.age, TimeDelta::FromHours(1));
+}
+
 }  // namespace
 }  // namespace chromeos

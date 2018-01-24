@@ -87,12 +87,13 @@ PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
 }
 
 // Store implementation, blocks on file access.  Must be run on a thread that
-// allows I/O.
+// allows I/O.  If |age| is non-zero, explicitly set the age of the resulting
+// file to be |age| before Now.
 void StoreImpl(const base::FilePath& cache_dir,
                const std::string& key,
-               const std::string& contents) {
+               const std::string& contents,
+               base::TimeDelta age) {
   base::AssertBlockingAllowed();
-
   MaybeCreateCache(cache_dir);
   if (contents.size() > kMaxPpdSizeBytes) {
     LOG(ERROR) << "Ignoring attempt to cache large object";
@@ -111,6 +112,12 @@ void StoreImpl(const base::FilePath& cache_dir,
       if (!base::DeleteFile(path, false)) {
         LOG(ERROR) << "Failed to cleanup failed creation.";
       }
+    } else {
+      // Successfully wrote the file, adjust the age if requested.
+      if (!age.is_zero()) {
+        base::Time mod_time = base::Time::Now() - age;
+        file.SetTimes(mod_time, mod_time);
+      }
     }
   }
 }
@@ -122,14 +129,13 @@ void StoreImpl(const base::FilePath& cache_dir,
 // callback is run.
 class PpdCacheImpl : public PpdCache {
  public:
-  explicit PpdCacheImpl(const base::FilePath& cache_base_dir)
+  explicit PpdCacheImpl(
+      const base::FilePath& cache_base_dir,
+      scoped_refptr<base::SequencedTaskRunner> fetch_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> store_task_runner)
       : cache_base_dir_(cache_base_dir),
-        fetch_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-        store_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::BACKGROUND, base::MayBlock(),
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {}
+        fetch_task_runner_(std::move(fetch_task_runner)),
+        store_task_runner_(std::move(store_task_runner)) {}
 
   // Public API functions.
   void Find(const std::string& key, FindCallback cb) override {
@@ -144,7 +150,17 @@ class PpdCacheImpl : public PpdCache {
              const std::string& contents,
              const base::Closure& cb) override {
     store_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind(&StoreImpl, cache_base_dir_, key, contents), cb);
+        FROM_HERE,
+        base::Bind(&StoreImpl, cache_base_dir_, key, contents,
+                   base::TimeDelta()),
+        cb);
+  }
+
+  void StoreForTesting(const std::string& key,
+                       const std::string& contents,
+                       base::TimeDelta age) override {
+    store_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&StoreImpl, cache_base_dir_, key, contents, age));
   }
 
  private:
@@ -161,7 +177,21 @@ class PpdCacheImpl : public PpdCache {
 
 // static
 scoped_refptr<PpdCache> PpdCache::Create(const base::FilePath& cache_base_dir) {
-  return scoped_refptr<PpdCache>(new PpdCacheImpl(cache_base_dir));
+  return scoped_refptr<PpdCache>(
+      new PpdCacheImpl(cache_base_dir,
+                       base::CreateSequencedTaskRunnerWithTraits(
+                           {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+                       base::CreateSequencedTaskRunnerWithTraits(
+                           {base::TaskPriority::BACKGROUND, base::MayBlock(),
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
+}
+
+scoped_refptr<PpdCache> PpdCache::CreateForTesting(
+    const base::FilePath& cache_base_dir,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
+  return scoped_refptr<PpdCache>(
+      new PpdCacheImpl(cache_base_dir, io_task_runner, io_task_runner));
 }
 
 }  // namespace chromeos

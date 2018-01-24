@@ -47,7 +47,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
     // Other error that is not expected to be transient.
     INTERNAL_ERROR,
 
-    // The provded PPD was too large to be processed.
+    // The provided PPD was too large to be processed.
     PPD_TOO_LARGE,
   };
 
@@ -55,6 +55,12 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // a sane default.
   struct Options {
     Options() {}
+
+    // Any results from PpdCache older than this are treated as
+    // non-authoritative -- PpdProvider will attempt to re-resolve from the
+    // network anyways and only use the cache results if the network is
+    // unavailable.
+    base::TimeDelta cache_staleness_age = base::TimeDelta::FromDays(14);
 
     // Root of the ppd serving hierarchy.
     std::string ppd_server_root = "https://www.gstatic.com/chromeos_printing";
@@ -179,6 +185,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // construct that reference.
   virtual void ReverseLookup(const std::string& effective_make_and_model,
                              const ReverseLookupCallback& cb) = 0;
+
+  // Transform from ppd reference to ppd cache key.  This is exposed for
+  // testing, and should not be used by other code.
+  static std::string PpdReferenceToCacheKey(
+      const Printer::PpdReference& reference);
 
  protected:
   friend class base::RefCounted<PpdProvider>;

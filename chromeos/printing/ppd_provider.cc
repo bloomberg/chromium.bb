@@ -128,6 +128,18 @@ struct ManufacturerMetadata {
   std::unique_ptr<std::unordered_map<std::string, PrintersJSON>> printers;
 };
 
+// Carried information for an inflight PPD resolution.
+struct PpdResolutionQueueEntry {
+  // Original reference being resolved.
+  Printer::PpdReference reference;
+
+  // If non-empty, the contents from the cache for this resolution.
+  std::string cached_contents;
+
+  // Callback to be invoked on completion.
+  PpdProvider::ResolvePpdCallback callback;
+};
+
 // Extract cupsFilter/cupsFilter2 filter names from a line from a ppd.
 
 // cupsFilter2 lines look like this:
@@ -231,20 +243,6 @@ bool PpdReferenceIsWellFormed(const Printer::PpdReference& reference) {
   // Should have exactly one non-empty field.
   return filled_fields == 1;
 }
-
-std::string PpdReferenceToCacheKey(const Printer::PpdReference& reference) {
-  DCHECK(PpdReferenceIsWellFormed(reference));
-  // The key prefixes here are arbitrary, but ensure we can't have an (unhashed)
-  // collision between keys generated from different PpdReference fields.
-  if (!reference.effective_make_and_model.empty()) {
-    return std::string("em:") + reference.effective_make_and_model;
-  } else {
-    return std::string("up:") + reference.user_supplied_ppd_url;
-  }
-}
-
-// Handles the result after PPD storage.
-void OnPpdStored() {}
 
 // Fetch the file pointed at by |url| and store it in |file_contents|.
 // Returns true if the fetch was successful.
@@ -458,15 +456,15 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     }
     while (!ppd_resolution_queue_.empty()) {
       auto& next = ppd_resolution_queue_.front();
-      if (!next.first.user_supplied_ppd_url.empty()) {
-        DCHECK(next.first.effective_make_and_model.empty());
-        GURL url(next.first.user_supplied_ppd_url);
+      if (!next.reference.user_supplied_ppd_url.empty()) {
+        DCHECK(next.reference.effective_make_and_model.empty());
+        GURL url(next.reference.user_supplied_ppd_url);
         DCHECK(url.is_valid());
         StartFetch(url, FT_PPD);
         return;
       }
-      DCHECK(!next.first.effective_make_and_model.empty());
-      int ppd_index_shard = IndexShard(next.first.effective_make_and_model);
+      DCHECK(!next.reference.effective_make_and_model.empty());
+      int ppd_index_shard = IndexShard(next.reference.effective_make_and_model);
       if (!base::ContainsKey(cached_ppd_idxs_, ppd_index_shard)) {
         // Have to have the ppd index before we can resolve by ppd server
         // key.
@@ -475,7 +473,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       }
       // Get the URL from the ppd index and start the fetch.
       auto& cached_ppd_index = cached_ppd_idxs_[ppd_index_shard];
-      auto it = cached_ppd_index.find(next.first.effective_make_and_model);
+      auto it = cached_ppd_index.find(next.reference.effective_make_and_model);
       if (it != cached_ppd_index.end()) {
         StartFetch(GetPpdURL(it->second), FT_PPD);
         return;
@@ -483,11 +481,11 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       // This ppd reference isn't in the index.  That's not good. Fail
       // out the current resolution and go try to start the next
       // thing if there is one.
-      LOG(ERROR) << "PPD " << next.first.effective_make_and_model
+      LOG(ERROR) << "PPD " << next.reference.effective_make_and_model
                  << " not found in server index";
 
-      FinishPpdResolution(std::move(next.second), PpdProvider::INTERNAL_ERROR,
-                          std::string());
+      FinishPpdResolution(std::move(next.callback), {},
+                          PpdProvider::INTERNAL_ERROR);
       ppd_resolution_queue_.pop_front();
     }
   }
@@ -545,10 +543,10 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     // Do a sanity check here, so we can assume |reference| is well-formed in
     // the rest of this class.
     if (!PpdReferenceIsWellFormed(lowercase_reference)) {
-      FinishPpdResolution(std::move(cb), PpdProvider::INTERNAL_ERROR,
-                          std::string());
+      FinishPpdResolution(std::move(cb), {}, PpdProvider::INTERNAL_ERROR);
       return;
     }
+
     // First step, check the cache.  If the cache lookup fails, we'll (try to)
     // consult the server.
     ppd_cache_->Find(PpdReferenceToCacheKey(lowercase_reference),
@@ -706,18 +704,23 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     OnURLFetchComplete(nullptr);
   }
 
+  // Tidy up loose ends on an outstanding PPD resolution.
+  //
+  // If |ppd_contents| is non-empty, the request is resolved successfully
+  // using those contents.  Otherwise |error_code| and an empty ppd
+  // is given to |cb|.
   void FinishPpdResolution(ResolvePpdCallback cb,
-                           PpdProvider::CallbackResultCode result_code,
-                           const std::string& ppd_contents) {
-    if (result_code == PpdProvider::SUCCESS) {
+                           const std::string& ppd_contents,
+                           PpdProvider::CallbackResultCode error_code) {
+    if (!ppd_contents.empty()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ppd_contents,
                          ExtractFiltersFromPpd(ppd_contents)));
     } else {
-      // Just post the failure.
+      DCHECK_NE(error_code, PpdProvider::SUCCESS);
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(cb), result_code, std::string(),
+          FROM_HERE, base::BindOnce(std::move(cb), error_code, std::string(),
                                     std::vector<std::string>()));
     }
   }
@@ -728,12 +731,22 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void ResolvePpdCacheLookupDone(const Printer::PpdReference& reference,
                                  ResolvePpdCallback cb,
                                  const PpdCache::FindResult& result) {
-    if (result.success) {
-      // Cache hit.
-      FinishPpdResolution(std::move(cb), PpdProvider::SUCCESS, result.contents);
+    // If all of the following are true, we use the cache result now:
+    //
+    // * It was a cache hit
+    // * The reference is not from a user-supplied ppd file
+    // * The cached data was fresh.
+    //
+    // In all other cases, we go through the full resolution flow (passing along
+    // the cached data, if we got any), even if we got something from the cache.
+    if (result.success && reference.user_supplied_ppd_url.empty() &&
+        result.age < options_.cache_staleness_age) {
+      DCHECK(!result.contents.empty());
+      FinishPpdResolution(std::move(cb), result.contents, PpdProvider::SUCCESS);
     } else {
-      // Cache miss.  Queue it to be satisfied by the fetcher queue.
-      ppd_resolution_queue_.push_back({reference, std::move(cb)});
+      // Save the cache result (if any), and queue up for resolution.
+      ppd_resolution_queue_.push_back(
+          {reference, result.contents, std::move(cb)});
       MaybeStartFetch();
     }
   }
@@ -879,7 +892,6 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
         FailQueuedServerPpdResolutions(PpdProvider::INTERNAL_ERROR);
         return;
       }
-
       auto& cached_ppd_index = cached_ppd_idxs_[ppd_index_shard];
       for (const auto& entry : contents) {
         cached_ppd_index.insert(
@@ -894,19 +906,23 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void OnPpdFetchComplete() {
     DCHECK(!ppd_resolution_queue_.empty());
     std::string contents;
-
+    auto& entry = ppd_resolution_queue_.front();
     if ((ValidateAndGetResponseAsString(&contents) != PpdProvider::SUCCESS)) {
-      FinishPpdResolution(std::move(ppd_resolution_queue_.front().second),
-                          PpdProvider::SERVER_ERROR, std::string());
+      FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
+                          PpdProvider::SERVER_ERROR);
     } else if (contents.size() > kMaxPpdSizeBytes) {
-      FinishPpdResolution(std::move(ppd_resolution_queue_.front().second),
-                          PpdProvider::PPD_TOO_LARGE, std::string());
+      FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
+                          PpdProvider::PPD_TOO_LARGE);
+    } else if (contents.empty()) {
+      FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
+                          PpdProvider::INTERNAL_ERROR);
     } else {
+      // Success.  Cache it and return it to the user.
       ppd_cache_->Store(
-          PpdReferenceToCacheKey(ppd_resolution_queue_.front().first), contents,
-          base::Bind(&OnPpdStored));
-      FinishPpdResolution(std::move(ppd_resolution_queue_.front().second),
-                          PpdProvider::SUCCESS, contents);
+          PpdReferenceToCacheKey(ppd_resolution_queue_.front().reference),
+          contents, base::Bind(&base::DoNothing));
+      FinishPpdResolution(std::move(entry.callback), contents,
+                          PpdProvider::SUCCESS);
     }
     ppd_resolution_queue_.pop_front();
   }
@@ -1012,23 +1028,26 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     manufacturers_resolution_queue_.clear();
   }
 
-  // Fail all server-based ppd and ppd reference resolutions inflight, because
-  // we failed to grab the necessary index data from the server.  Note we leave
-  // any user-based ppd resolutions intact, as they don't depend on the data
-  // we're missing.
+  // Give up on all server-based ppd and ppd reference resolutions inflight,
+  // because we failed to grab the necessary index data from the server.
+  //
+  // User-based ppd resolutions, which depend on local files, are left in the
+  // queue.
+  //
+  // Other entries use cached data, if they found some, or failed outright.
   void FailQueuedServerPpdResolutions(PpdProvider::CallbackResultCode code) {
-    base::circular_deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
-        filtered_queue;
+    base::circular_deque<PpdResolutionQueueEntry> filtered_queue;
     for (auto& entry : ppd_resolution_queue_) {
-      if (!entry.first.user_supplied_ppd_url.empty()) {
+      if (!entry.reference.user_supplied_ppd_url.empty()) {
         filtered_queue.emplace_back(std::move(entry));
       } else {
-        FinishPpdResolution(std::move(entry.second), code, std::string());
+        FinishPpdResolution(std::move(entry.callback), entry.cached_contents,
+                            code);
       }
     }
     ppd_resolution_queue_ = std::move(filtered_queue);
 
-    // Everything in the ppdreference queue also depends on server information,
+    // Everything in the PpdReference queue also depends on server information,
     // so should also be failed.
     auto task_runner = base::SequencedTaskRunnerHandle::Get();
     for (const auto& entry : ppd_reference_resolution_queue_) {
@@ -1414,9 +1433,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   base::circular_deque<PrinterResolutionQueueEntry> printers_resolution_queue_;
 
   // Queued ResolvePpd() requests.
-
-  base::circular_deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
-      ppd_resolution_queue_;
+  base::circular_deque<PpdResolutionQueueEntry> ppd_resolution_queue_;
 
   // Queued ResolvePpdReference() requests.
   base::circular_deque<
@@ -1467,6 +1484,19 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
 };
 
 }  // namespace
+
+// static
+std::string PpdProvider::PpdReferenceToCacheKey(
+    const Printer::PpdReference& reference) {
+  DCHECK(PpdReferenceIsWellFormed(reference));
+  // The key prefixes here are arbitrary, but ensure we can't have an (unhashed)
+  // collision between keys generated from different PpdReference fields.
+  if (!reference.effective_make_and_model.empty()) {
+    return std::string("em:") + reference.effective_make_and_model;
+  } else {
+    return std::string("up:") + reference.user_supplied_ppd_url;
+  }
+}
 
 PpdProvider::PrinterSearchData::PrinterSearchData() = default;
 PpdProvider::PrinterSearchData::PrinterSearchData(

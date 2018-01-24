@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 
@@ -23,8 +24,6 @@ namespace chromeos {
 // the cache).  However, changing *any* field in PpdReference will make the
 // previous cache entry invalid.  This is the intentional behavior -- we want to
 // re-run the resolution logic if we have new meta-information about a printer.
-//
-// All cache functions must be called on a thread which is permitted to do I/O.
 class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
  public:
   struct FindResult {
@@ -32,10 +31,10 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
     // valid.
     bool success = false;
 
-    // How old is this entry?
+    // How old is this entry?  Zero on failure.
     base::TimeDelta age;
 
-    // Contents of the entry.
+    // Contents of the entry.  Empty on failure.
     std::string contents;
   };
 
@@ -46,15 +45,27 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
   // cache needs to store state.
   static scoped_refptr<PpdCache> Create(const base::FilePath& cache_base_dir);
 
+  // Create a PpdCache that uses the given task runner for background
+  // processing.
+  static scoped_refptr<PpdCache> CreateForTesting(
+      const base::FilePath& cache_base_dir,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+
   // Start a Find, looking, for an entry with the given key that is at most
   // |max_age| old.  |cb| will be invoked on the calling thread.
   virtual void Find(const std::string& key, FindCallback cb) = 0;
 
-  // Store the given contents at the given key.  If cb is non-null, it will
-  // be invoked on completion.
+  // Store |contents| at the the location indicated by |key|.  |cb| will be
+  // invoked on completion.
   virtual void Store(const std::string& key,
                      const std::string& contents,
                      const base::Closure& cb) = 0;
+
+  // Store the given contents at the given key, and change the resulting
+  // cache file's last modified date to be |age| before now.
+  virtual void StoreForTesting(const std::string& key,
+                               const std::string& contents,
+                               base::TimeDelta age) = 0;
 
  protected:
   friend class base::RefCounted<PpdCache>;
