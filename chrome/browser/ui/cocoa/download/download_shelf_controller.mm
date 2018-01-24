@@ -397,7 +397,10 @@ const CGFloat kMDCloseButtonSize = 24;
     frame.size.width = [itemController preferredSize].width;
     if (!skipFirst)
       [[[itemController view] animator]
-          setFrame:[itemContainerView_ cr_localizedRect:frame]];
+          setFrame:base::FeatureList::IsEnabled(
+                       features::kMacMaterialDesignDownloadShelf)
+                       ? [itemContainerView_ cr_localizedRect:frame]
+                       : frame];
     currentX += frame.size.width + kDownloadItemPadding;
     skipFirst = NO;
   }
@@ -435,7 +438,9 @@ const CGFloat kMDCloseButtonSize = 24;
 
   [itemContainerView_ addSubview:[controller view]];
   [controller view].autoresizingMask =
-      [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
+      base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)
+          ? [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin]
+          : NSViewMaxXMargin;
 
   // The controller is in charge of removing itself as an observer in its
   // dealloc.
@@ -465,7 +470,10 @@ const CGFloat kMDCloseButtonSize = 24;
   NSSize size = [controller preferredSize];
   NSRect frame = NSMakeRect(0, 0, 0, size.height);
   NSView* view = [controller view];
-  [view setFrame:[itemContainerView_ cr_localizedRect:frame]];
+  [view setFrame:base::FeatureList::IsEnabled(
+                     features::kMacMaterialDesignDownloadShelf)
+                     ? [itemContainerView_ cr_localizedRect:frame]
+                     : frame];
 
   // ...then, in MD, animate everything together.
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {

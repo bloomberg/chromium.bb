@@ -268,8 +268,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [self updateTheme:[[[self view] window] themeProvider]];
 
   NSView* view = [self view];
-  [view setHidden:NSMaxX([view.superview cr_localizedRect:view.frame]) >
-                  NSMaxX(view.superview.bounds)];
+  [view setHidden:NSMaxX(base::FeatureList::IsEnabled(
+                             features::kMacMaterialDesignDownloadShelf)
+                             ? [view.superview cr_localizedRect:view.frame]
+                             : view.frame) > NSMaxX(view.superview.bounds)];
 }
 
 - (void)downloadWasOpened {
