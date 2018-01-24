@@ -48,6 +48,9 @@ class AdbImpl : public Adb {
   Status GetPidByName(const std::string& device_serial,
                       const std::string& process_name,
                       int* pid) override;
+  Status GetSocketByPattern(const std::string& device_serial,
+                            const std::string& grep_pattern,
+                            std::string* socket_name) override;
 
  private:
   Status ExecuteCommand(const std::string& command,
