@@ -489,7 +489,10 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 
   // A mousemove should still show the cursor even if the window is
   // being moved or resized with touch, so do not lock the cursor.
-  if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
+  // If the window state is controlled by a client, which may set the
+  // cursor by itself, don't lock the cursor.
+  if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
+      !window_state->allow_set_bounds_direct()) {
     ShellPort::Get()->LockCursor();
     did_lock_cursor_ = true;
   }
