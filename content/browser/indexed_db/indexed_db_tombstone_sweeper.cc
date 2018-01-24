@@ -132,56 +132,64 @@ void IndexedDBTombstoneSweeper::RecordUMAStats(
   DCHECK(stop_reason || status);
   DCHECK(!stop_reason || !status);
 
-  std::string uma_prefix = kUmaPrefix;
+  // Metadata error statistics are recorded in the PreCloseTaskList.
+  if (stop_reason && stop_reason == StopReason::METADATA_ERROR)
+    return;
+
+  std::string uma_count_label = kUmaPrefix;
+  std::string uma_size_label = kUmaPrefix;
+
+  switch (mode_) {
+    case Mode::STATISTICS:
+      uma_count_label.append("NumTombstones.");
+      uma_size_label.append("TombstonesSize.");
+      break;
+    case Mode::DELETION:
+      uma_count_label.append("NumDeletedTombstones.");
+      uma_size_label.append("DeletedTombstonesSize.");
+      break;
+    default:
+      NOTREACHED();
+  }
 
   if (stop_reason) {
     switch (stop_reason.value()) {
       case StopReason::NEW_CONNECTION:
-        uma_prefix.append("ConnectionOpened.");
+        uma_count_label.append("ConnectionOpened");
+        uma_size_label.append("ConnectionOpened");
         break;
       case StopReason::TIMEOUT:
-        uma_prefix.append("TimeoutReached.");
+        uma_count_label.append("TimeoutReached");
+        uma_size_label.append("TimeoutReached");
         break;
       case StopReason::METADATA_ERROR:
-        // Metadata error statistics are recorded in the PreCloseTaskList.
-        return;
+        NOTREACHED();
+        break;
     }
   } else if (status) {
     switch (status.value()) {
       case Status::DONE_REACHED_MAX:
-        uma_prefix.append("MaxIterations.");
+        uma_count_label.append("MaxIterations");
+        uma_size_label.append("MaxIterations");
         break;
       case Status::DONE_ERROR:
-        LOCAL_HISTOGRAM_ENUMERATION(
+        UMA_HISTOGRAM_ENUMERATION(
             "WebCore.IndexedDB.TombstoneSweeper.SweepError",
             leveldb_env::GetLevelDBStatusUMAValue(leveldb_error),
             leveldb_env::LEVELDB_STATUS_MAX);
-        uma_prefix.append("SweepError.");
+        uma_count_label.append("SweepError");
+        uma_size_label.append("SweepError");
         break;
       case Status::DONE_COMPLETE:
-        uma_prefix.append("Complete.");
+        uma_count_label.append("Complete");
+        uma_size_label.append("Complete");
         break;
       case Status::SWEEPING:
         NOTREACHED();
+        break;
     }
   } else {
     NOTREACHED();
-  }
-
-  std::string uma_count_label = uma_prefix;
-  std::string uma_size_label = std::move(uma_prefix);
-
-  switch (mode_) {
-    case Mode::STATISTICS:
-      uma_count_label.append("NumTombstones");
-      uma_size_label.append("TombstonesSize");
-      break;
-    case Mode::DELETION:
-      uma_count_label.append("NumDeletedTombstones");
-      uma_size_label.append("DeletedTombstonesSize");
-      break;
-    default:
-      NOTREACHED();
   }
 
   // Some stats are only recorded for completed runs.
@@ -193,19 +201,19 @@ void IndexedDBTombstoneSweeper::RecordUMAStats(
           start_time_.value();
       switch (mode_) {
         case Mode::STATISTICS:
-          LOCAL_HISTOGRAM_TIMES(
-              "WebCore.IndexedDB.TombstoneSweeper.Complete.StatsTotalTime",
+          UMA_HISTOGRAM_TIMES(
+              "WebCore.IndexedDB.TombstoneSweeper.StatsTotalTime.Complete",
               total_time);
           break;
         case Mode::DELETION:
-          LOCAL_HISTOGRAM_TIMES(
-              "WebCore.IndexedDB.TombstoneSweeper.Complete.DeletionTotalTime",
+          UMA_HISTOGRAM_TIMES(
+              "WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete",
               total_time);
           if (metrics_.seen_tombstones > 0) {
             // Only record deletion time if we do a deletion.
-            LOCAL_HISTOGRAM_TIMES(
-                "WebCore.IndexedDB.TombstoneSweeper.Complete."
-                "DeletionCommitTime",
+            UMA_HISTOGRAM_TIMES(
+                "WebCore.IndexedDB.TombstoneSweeper.DeletionCommitTime."
+                "Complete",
                 total_deletion_time_);
           }
           break;
@@ -216,9 +224,12 @@ void IndexedDBTombstoneSweeper::RecordUMAStats(
   }
 
   base::HistogramBase* count_histogram = base::Histogram::FactoryGet(
-      uma_count_label, 1, 1000000, 50, base::HistogramBase::kNoFlags);
+      uma_count_label, 1, 1'000'000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  // Range of 1 byte to 100 MB.
   base::HistogramBase* size_histogram = base::Histogram::FactoryGet(
-      uma_size_label, 1, 1000000, 50, base::HistogramBase::kNoFlags);
+      uma_size_label, 1, 100'000'000, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
 
   if (count_histogram)
     count_histogram->Add(metrics_.seen_tombstones);
@@ -228,7 +239,7 @@ void IndexedDBTombstoneSweeper::RecordUMAStats(
   // We put our max at 20 instead of 100 to reduce the number of buckets.
   if (total_indices_ > 0) {
     const static int kIndexPercentageBucketCount = 20;
-    LOCAL_HISTOGRAM_ENUMERATION(
+    UMA_HISTOGRAM_ENUMERATION(
         "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent",
         indices_scanned_ * kIndexPercentageBucketCount / total_indices_,
         kIndexPercentageBucketCount + 1);
@@ -246,7 +257,7 @@ leveldb::Status IndexedDBTombstoneSweeper::FlushDeletions() {
   has_writes_ = false;
 
   if (!status.ok()) {
-    LOCAL_HISTOGRAM_ENUMERATION(
+    UMA_HISTOGRAM_ENUMERATION(
         "WebCore.IndexedDB.TombstoneSweeper.DeletionWriteError",
         leveldb_env::GetLevelDBStatusUMAValue(status),
         leveldb_env::LEVELDB_STATUS_MAX);

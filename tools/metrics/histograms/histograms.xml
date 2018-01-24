@@ -97431,6 +97431,114 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize"
+    units="bytes">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the total size of tombstones deleted by the IndexedDB Tombstone
+    Sweeper. Recorded on the browser side (back end) when the sweeper has
+    completed scanning and it is in the 'deletion' mode. See
+    https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram
+    name="WebCore.IndexedDB.TombstoneSweeper.DeletionCommitTime.Complete"
+    units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the time it takes for the IndexedDB Tombstone Sweeper to commit
+    tombstone deletions. Recorded on the browser side (back end) when the
+    sweeper has completed a round of sweeping and, it's in 'deletion' mode, and
+    it has tombstones to delete. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete"
+    units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the time it takes for the IndexedDB Tombstone Sweeper to fully sweep
+    the indexes. Recorded on the browser side (back end) when the sweeper has
+    completed sweeping all indexes (so partial sweeps are not recorded) and it
+    is in 'deletion' mode. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.DeletionWriteError"
+    units="LevelDBStatus">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records when an error occurs during deletion of index tombstones by the
+    IndexedDB Tombstone Sweeper. Recorded on the browser side (back end) when
+    the sweeper has completed a round of sweeping and, it's in 'deletion' mode,
+    and it has tombstones to delete. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent"
+    units="%/5">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded on the browser side (back end) when the IndexedDB Tombstone Sweeper
+    has completed scanning. Records the percentage of the indexes the scanner
+    fully scanned before it was stopped. To reduce the number of buckets, the
+    recorded value is the percentage divided by 5. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones"
+    units="Index Tombstones">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the number of tombstones deleted by the IndexedDB Tombstone Sweeper.
+    Recorded on the browser side (back end) when the sweeper has completed
+    scanning and it is in 'deletion' mode. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.NumTombstones"
+    units="Index Tombstones">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the number of tombstones encountered by the IndexedDB Tombstone
+    Sweeper. Recorded on the browser side (back end) when the sweeper has
+    completed scanning and it is in 'statistics' mode. See
+    https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.StatsTotalTime.Complete"
+    units="ms">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the time it takes for the IndexedDB Tombstone Sweeper to fully scan
+    the indexes. Recorded on the browser side (back end) when the sweeper has
+    completed scanning all indexes (so partial scans are not recorded) and it is
+    in 'statistics' mode. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.SweepError"
+    enum="LevelDBStatus">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Recorded on the browser side (back end) when the IndexedDB Tombstone Sweeper
+    encounters an error while sweeping. See https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.TombstoneSweeper.TombstonesSize"
+    units="bytes">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Records the total size of tombstones encountered by the IndexedDB Tombstone
+    Sweeper. Recorded on the browser side (back end) when the sweeper has
+    completed scanning and it is in the 'statistics' mode. See
+    https://goo.gl/coKwA7.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit"
     units="KB">
   <obsolete>
@@ -111804,6 +111912,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       Obsolete as of April 2017
     </obsolete>
   </affected-histogram>
+</histogram_suffixes>
+
+<histogram_suffixes name="SweeperCompletionTypes" separator=".">
+  <affected-histogram
+      name="WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize"/>
+  <affected-histogram
+      name="WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones"/>
+  <suffix name="Complete" label="All indexes are scanned."/>
+  <suffix name="ConnectionOpened"
+      label="Scanning is interrupted by an new connection to the database."/>
+  <suffix name="TimeoutReached" label="Scanning is stopped by the timeout."/>
+  <suffix name="MaxIterations"
+      label="Scanning is stopped because the maximum record iteration count
+             was hit."/>
+  <suffix name="SweepError"
+      label="Scanning is stopped because a leveldb error was encountered
+             during sweeping."/>
+  <affected-histogram name="WebCore.IndexedDB.TombstoneSweeper.NumTombstones"/>
+  <affected-histogram name="WebCore.IndexedDB.TombstoneSweeper.TombstonesSize"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyncModelType" separator=".">

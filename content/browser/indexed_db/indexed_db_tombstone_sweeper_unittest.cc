@@ -159,19 +159,18 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
     std::string category = reached_max ? "MaxIterations" : "Complete";
     if (GetParam() == Mode::STATISTICS) {
       histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper." + category + ".NumTombstones",
-          num, 1);
+          "WebCore.IndexedDB.TombstoneSweeper.NumTombstones." + category, num,
+          1);
       histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper." + category + ".TombstonesSize",
-          size, 1);
+          "WebCore.IndexedDB.TombstoneSweeper.TombstonesSize." + category, size,
+          1);
     } else {
       histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper." + category +
-              ".NumDeletedTombstones",
+          "WebCore.IndexedDB.TombstoneSweeper.NumDeletedTombstones." + category,
           num, 1);
       histogram_tester_.ExpectUniqueSample(
-          "WebCore.IndexedDB.TombstoneSweeper." + category +
-              ".DeletedTombstonesSize",
+          "WebCore.IndexedDB.TombstoneSweeper.DeletedTombstonesSize." +
+              category,
           size, 1);
     }
   }
@@ -179,11 +178,11 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   void ExpectTaskTimeRecorded() {
     if (GetParam() == Mode::STATISTICS) {
       histogram_tester_.ExpectTimeBucketCount(
-          "WebCore.IndexedDB.TombstoneSweeper.Complete.StatsTotalTime",
+          "WebCore.IndexedDB.TombstoneSweeper.StatsTotalTime.Complete",
           base::TimeDelta::FromSeconds(1), 1);
     } else {
       histogram_tester_.ExpectTimeBucketCount(
-          "WebCore.IndexedDB.TombstoneSweeper.Complete.DeletionTotalTime",
+          "WebCore.IndexedDB.TombstoneSweeper.DeletionTotalTime.Complete",
           base::TimeDelta::FromSeconds(1), 1);
     }
   }
