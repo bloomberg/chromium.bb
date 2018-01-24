@@ -80,9 +80,12 @@ class CustomThreadWatcher : public ThreadWatcher {
                       const std::string thread_name,
                       const TimeDelta& sleep_time,
                       const TimeDelta& unresponsive_time)
-      : ThreadWatcher(WatchingParams(thread_id, thread_name, sleep_time,
-                      unresponsive_time, ThreadWatcherList::kUnresponsiveCount,
-                      true, ThreadWatcherList::kLiveThreadsThreshold)),
+      : ThreadWatcher(WatchingParams(thread_id,
+                                     thread_name,
+                                     sleep_time,
+                                     unresponsive_time,
+                                     ThreadWatcherList::kUnresponsiveCount,
+                                     true)),
         state_changed_(&custom_lock_),
         thread_watcher_state_(INITIALIZED),
         wait_state_(UNINITIALIZED),
@@ -92,8 +95,7 @@ class CustomThreadWatcher : public ThreadWatcher {
         success_response_(0),
         failed_response_(0),
         saved_ping_time_(base::TimeTicks::Now()),
-        saved_ping_sequence_number_(0) {
-  }
+        saved_ping_sequence_number_(0) {}
 
   State UpdateState(State new_state) {
     State old_state;
@@ -243,13 +245,13 @@ class CustomThreadWatcher : public ThreadWatcher {
 
 class ThreadWatcherTest : public ::testing::Test {
  public:
-  static const TimeDelta kSleepTime;
-  static const TimeDelta kUnresponsiveTime;
-  static const char kIOThreadName[];
-  static const char kUIThreadName[];
-  static const char kCrashOnHangThreadNames[];
-  static const char kThreadNamesAndLiveThreshold[];
-  static const char kCrashOnHangThreadData[];
+  static constexpr TimeDelta kSleepTime = TimeDelta::FromMilliseconds(50);
+  static constexpr TimeDelta kUnresponsiveTime =
+      TimeDelta::FromMilliseconds(500);
+  static constexpr char kIOThreadName[] = "IO";
+  static constexpr char kUIThreadName[] = "UI";
+  static constexpr char kCrashOnHangThreadNames[] = "UI,IO";
+  static constexpr char kCrashOnHangThreadData[] = "UI:12,IO:12";
 
   CustomThreadWatcher* io_watcher_;
   CustomThreadWatcher* ui_watcher_;
@@ -336,16 +338,13 @@ class ThreadWatcherTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherTest);
 };
 
-// Define static constants.
-const TimeDelta ThreadWatcherTest::kSleepTime = TimeDelta::FromMilliseconds(50);
-const TimeDelta ThreadWatcherTest::kUnresponsiveTime =
-    TimeDelta::FromMilliseconds(500);
-const char ThreadWatcherTest::kIOThreadName[] = "IO";
-const char ThreadWatcherTest::kUIThreadName[] = "UI";
-const char ThreadWatcherTest::kCrashOnHangThreadNames[] = "UI,IO";
-const char ThreadWatcherTest::kThreadNamesAndLiveThreshold[] = "UI:4,IO:4";
-const char ThreadWatcherTest::kCrashOnHangThreadData[] =
-    "UI:5:12,IO:5:12,FILE:5:12";
+// Declare storage for ThreadWatcherTest's static constants.
+constexpr TimeDelta ThreadWatcherTest::kSleepTime;
+constexpr TimeDelta ThreadWatcherTest::kUnresponsiveTime;
+constexpr char ThreadWatcherTest::kIOThreadName[];
+constexpr char ThreadWatcherTest::kUIThreadName[];
+constexpr char ThreadWatcherTest::kCrashOnHangThreadNames[];
+constexpr char ThreadWatcherTest::kCrashOnHangThreadData[];
 
 TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
   // Setup command_line arguments.
@@ -373,41 +372,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
         crash_on_hang_threads.find(thread_name);
     bool crash_on_hang = (it != crash_on_hang_threads.end());
     EXPECT_TRUE(crash_on_hang);
-    EXPECT_LT(0u, it->second.live_threads_threshold);
-    EXPECT_LT(0u, it->second.unresponsive_threshold);
-  }
-}
-
-TEST_F(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs) {
-  // Setup command_line arguments.
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(switches::kCrashOnHangThreads,
-                                 kThreadNamesAndLiveThreshold);
-
-  // Parse command_line arguments.
-  ThreadWatcherList::CrashOnHangThreadMap crash_on_hang_threads;
-  uint32_t unresponsive_threshold;
-  ThreadWatcherList::ParseCommandLine(command_line,
-                                      &unresponsive_threshold,
-                                      &crash_on_hang_threads);
-
-  // Verify the data.
-  base::CStringTokenizer tokens(
-      kThreadNamesAndLiveThreshold,
-      kThreadNamesAndLiveThreshold +
-          (arraysize(kThreadNamesAndLiveThreshold) - 1),
-      ",");
-  while (tokens.GetNext()) {
-    std::vector<base::StringPiece> values = base::SplitStringPiece(
-        tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    std::string thread_name = values[0].as_string();
-
-    ThreadWatcherList::CrashOnHangThreadMap::iterator it =
-        crash_on_hang_threads.find(thread_name);
-    bool crash_on_hang = (it != crash_on_hang_threads.end());
-    EXPECT_TRUE(crash_on_hang);
-    EXPECT_EQ(4u, it->second.live_threads_threshold);
-    EXPECT_LT(0u, it->second.unresponsive_threshold);
+    EXPECT_LT(0u, it->second);
   }
 }
 
@@ -439,10 +404,7 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
     bool crash_on_hang = (it != crash_on_hang_threads.end());
     EXPECT_TRUE(crash_on_hang);
 
-    uint32_t crash_live_threads_threshold = it->second.live_threads_threshold;
-    EXPECT_EQ(5u, crash_live_threads_threshold);
-
-    uint32_t crash_unresponsive_threshold = it->second.unresponsive_threshold;
+    uint32_t crash_unresponsive_threshold = it->second;
     uint32_t crash_on_unresponsive_seconds =
         ThreadWatcherList::kUnresponsiveSeconds * crash_unresponsive_threshold;
     EXPECT_EQ(12u, crash_on_unresponsive_seconds);
