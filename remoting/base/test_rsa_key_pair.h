@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef REMOTING_BASE_TEST_RSA_KEY_PAIR_H_
+#define REMOTING_BASE_TEST_RSA_KEY_PAIR_H_
+
 namespace remoting {
 
 // An RSA keypair used in unittests.
@@ -30,3 +33,5 @@ const char kTestRsaKeyPair[] =
 "ZA6a+IB";
 
 }  // namespace remoting
+
+#endif  // REMOTING_BASE_TEST_RSA_KEY_PAIR_H_
