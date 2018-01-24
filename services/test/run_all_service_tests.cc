@@ -36,6 +36,7 @@ class ServiceTestSuite : public base::TestSuite {
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
     ui::OzonePlatform::InitializeForGPU(params);
+    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
     // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.

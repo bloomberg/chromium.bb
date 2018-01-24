@@ -27,7 +27,7 @@ class DrmThreadProxy {
 
   void BindThreadIntoMessagingProxy(InterThreadMessagingProxy* messaging_proxy);
 
-  void StartDrmThread();
+  void StartDrmThread(base::OnceClosure binding_drainer);
 
   std::unique_ptr<DrmWindowProxy> CreateDrmWindowProxy(
       gfx::AcceleratedWidget widget);
