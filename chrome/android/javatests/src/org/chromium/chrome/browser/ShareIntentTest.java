@@ -121,7 +121,7 @@ public class ShareIntentTest {
     @Test
     @LargeTest
     @RetryOnFailure
-    public void testShareIntent() throws ExecutionException {
+    public void testShareIntent() throws ExecutionException, InterruptedException {
         MockChromeActivity mockActivity = ThreadUtils.runOnUiThreadBlocking(() -> {
             // Sets a test component as last shared and "shareDirectly" option is set so that
             // the share selector menu is not opened. The start activity is overriden, so the
@@ -136,11 +136,7 @@ public class ShareIntentTest {
         ThreadUtils.runOnUiThreadBlocking(() -> mockActivity.onShareMenuItemSelected(
                     true /* shareDirectly */, false /* isIncognito */));
 
-        try {
-            mockActivity.waitForFileCheck();
-        } catch (InterruptedException e) {
-            throw new AssertionError("Test thread was interrupted while trying to wait.", e);
-        }
+        mockActivity.waitForFileCheck();
 
         ShareHelper.setLastShareComponentName(new ComponentName("", ""), null);
     }

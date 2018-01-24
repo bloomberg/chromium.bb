@@ -1482,7 +1482,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipeOnlyTab() throws InterruptedException {
+    public void testToolbarSwipeOnlyTab() throws InterruptedException, TimeoutException {
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
 
@@ -1496,7 +1496,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipePrevTab() throws InterruptedException {
+    public void testToolbarSwipePrevTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1514,7 +1514,7 @@ public class TabsTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     @DisabledTest(message = "crbug.com/802183")
-    public void testToolbarSwipeNextTab() throws InterruptedException {
+    public void testToolbarSwipeNextTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
@@ -1532,7 +1532,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipePrevTabNone() throws InterruptedException {
+    public void testToolbarSwipePrevTabNone() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
@@ -1550,7 +1550,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipeNextTabNone() throws InterruptedException {
+    public void testToolbarSwipeNextTabNone() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1567,7 +1567,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipeNextThenPrevTab() throws InterruptedException {
+    public void testToolbarSwipeNextThenPrevTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
@@ -1588,7 +1588,8 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testToolbarSwipeNextThenPrevTabIncognito() throws InterruptedException {
+    public void testToolbarSwipeNextThenPrevTabIncognito()
+            throws InterruptedException, TimeoutException {
         mActivityTestRule.newIncognitoTabFromMenu();
         mActivityTestRule.newIncognitoTabFromMenu();
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
@@ -1605,7 +1606,7 @@ public class TabsTest {
     }
 
     private void runToolbarSideSwipeTestOnCurrentModel(ScrollDirection direction, int finalIndex,
-            boolean expectsSelection) throws InterruptedException {
+            boolean expectsSelection) throws InterruptedException, TimeoutException {
         final CallbackHelper selectCallback = new CallbackHelper();
         final int id =
                 mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(finalIndex).getId();
@@ -1631,11 +1632,7 @@ public class TabsTest {
                 mActivityTestRule.getActivity().getCurrentTabModel().index());
 
         if (expectsSelection) {
-            try {
-                selectCallback.waitForCallback(0);
-            } catch (TimeoutException e) {
-                throw new AssertionError("Tab selected event was never received", e);
-            }
+            selectCallback.waitForCallback(0);
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
                 for (TabModel tabModel : selector.getModels()) {
