@@ -221,6 +221,17 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   GetInkDrop()->AnimateToState(state);
 }
 
+void InkDropHostView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  // If we're being removed hide the ink-drop so if we're highlighted now the
+  // highlight won't be active if we're added back again.
+  if (!details.is_add && details.child == this && ink_drop_) {
+    GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
+    GetInkDrop()->SetHovered(false);
+  }
+  View::ViewHierarchyChanged(details);
+}
+
 void InkDropHostView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (ink_drop_)
     ink_drop_->HostSizeChanged(size());
