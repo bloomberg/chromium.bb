@@ -487,10 +487,12 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
       kShellWindowId_SettingBubbleContainer);
 
   // Place the bubble in |container|, or in a window clipped to the work area
-  // in maximize mode, to avoid tray bubble and shelf overlap.
+  // in maximize mode, to avoid tray bubble and shelf overlap when dragging the
+  // bubble from the tray.
   if (Shell::Get()
           ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+          ->IsTabletModeWindowManagerEnabled() &&
+      drag_controller()) {
     if (!clipping_window_.get()) {
       clipping_window_ = std::make_unique<aura::Window>(nullptr);
       clipping_window_->Init(ui::LAYER_NOT_DRAWN);
