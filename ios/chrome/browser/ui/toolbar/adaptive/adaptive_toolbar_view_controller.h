@@ -11,8 +11,9 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
 
 @protocol ApplicationCommands;
-@class ToolbarButtonFactory;
 @protocol BrowserCommands;
+@class ToolbarButtonFactory;
+@class ToolbarToolsMenuButton;
 
 // ViewController for the adaptive toolbar. This ViewController is the super
 // class of the different implementation (primary or secondary).
@@ -22,6 +23,9 @@
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 // Dispatcher for the ViewController.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+
+// Returns the tools menu button.
+- (ToolbarToolsMenuButton*)toolsMenuButton;
 
 @end
 
