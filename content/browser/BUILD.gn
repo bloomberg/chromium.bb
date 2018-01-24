@@ -84,7 +84,6 @@ jumbo_source_set("browser") {
     "//device/gamepad",
     "//device/geolocation",
     "//device/geolocation/public/cpp",
-    "//device/geolocation/public/interfaces",
     "//device/screen_orientation/public/interfaces",
     "//device/u2f",
     "//device/vr:mojo_bindings",

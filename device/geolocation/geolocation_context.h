@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "services/device/public/interfaces/geolocation.mojom.h"
 #include "services/device/public/interfaces/geolocation_context.mojom.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 

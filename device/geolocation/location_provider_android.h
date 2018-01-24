@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "device/geolocation/public/cpp/location_provider.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 

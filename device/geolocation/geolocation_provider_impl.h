@@ -16,9 +16,9 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/public/cpp/location_provider.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/geolocation_control.mojom.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace base {
 template <typename Type>

@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 #include "url/gurl.h"
 
 namespace net {

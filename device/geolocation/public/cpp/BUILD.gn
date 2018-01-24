@@ -10,7 +10,7 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    "//device/geolocation/public/interfaces",
+    "//services/device/public/interfaces",
   ]
 }
 
@@ -24,7 +24,6 @@ source_set("test_support") {
 
   deps = [
     ":cpp",
-    "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

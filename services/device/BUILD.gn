@@ -28,7 +28,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//device/geolocation",
-    "//device/geolocation/public/interfaces",
     "//device/sensors",
     "//device/sensors/public/interfaces",
     "//services/device/fingerprint",
@@ -96,7 +95,6 @@ source_set("tests") {
     "//base/test:test_support",
     "//device/base/synchronization",
     "//device/geolocation/public/cpp",
-    "//device/geolocation/public/interfaces",
     "//mojo/edk/embedder:headers",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -106,6 +104,7 @@ source_set("tests") {
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
+    "//services/device/public/interfaces",
     "//services/device/wake_lock",
     "//testing/gmock",
     "//testing/gtest",
@@ -244,7 +243,9 @@ if (is_android) {
       "//content/public/android:*",
       "//services:*",
     ]
-    java_files = [ "android/java/src/org/chromium/services/device/InterfaceRegistrar.java" ]
+    java_files = [
+      "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
+    ]
     deps = [
       "//base:base_java",
       "//mojo/android:system_java",
