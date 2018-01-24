@@ -31,6 +31,11 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // VisualRect of itself including contents, in the local coordinate.
   NGPhysicalOffsetRect VisualRectWithContents() const;
 
+  // Returns the first/last leaf fragment in the line in logical order. Returns
+  // nullptr if the line box is empty.
+  const NGPhysicalFragment* FirstLogicalLeaf() const;
+  const NGPhysicalFragment* LastLogicalLeaf() const;
+
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
     return base::AdoptRef(new NGPhysicalLineBoxFragment(
