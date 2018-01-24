@@ -7,42 +7,77 @@
 
 from __future__ import print_function
 
+import datetime
 import json
 import os
 
 from chromite.cli import command
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_cidbcreds
 from chromite.lib import cros_logging as logging
 
 
-def FetchBuildStatus(db, buildbucket_id=None, cidb_id=None):
-  """Fetch the build_status dict for a given build.
+_FINISHED_STATUSES = (
+    'fail', 'pass', 'missing', 'aborted', 'skipped', 'forgiven')
+
+
+def FetchBuildStatuses(db, options):
+  """Fetch the requested build statuses.
+
+  The results are NOT filtered or fixed up.
 
   Args:
     db: CIDBConnection.
-    buildbucket_id: A buildbucket_id as a str.
-    cidb_id: A cidb_id as a str.
+    options: Parsed command line options set.
+
+  Returns:
+    List of build_status dicts from CIDB, or None.
   """
-  # Look up build details in CIDB.
-  if buildbucket_id:
-    build_status = db.GetBuildStatusWithBuildbucketId(buildbucket_id)
-  elif cidb_id:
-    build_status = db.GetBuildStatus(cidb_id)
+  if options.buildbucket_id:
+    build_status = db.GetBuildStatusWithBuildbucketId(
+        options.buildbucket_id)
+    if build_status:
+      return [build_status]
+  elif options.cidb_id:
+    build_status = db.GetBuildStatus(options.cidb_id)
+    if build_status:
+      return [build_status]
+  elif options.build_config:
+    start_date = options.start_date or options.date
+    end_date = options.end_date or options.date
+    return db.GetBuildHistory(
+        options.build_config, db.NUM_RESULTS_NO_LIMIT,
+        start_date=start_date, end_date=end_date)
   else:
-    raise ValueError('Must set buildbucket_id or cidb_id.')
+    cros_build_lib.Die('You must specify which builds.')
 
-  if not build_status:
-    logging.error('Build not found. Perhaps not started?')
-    raise SystemExit(2)
 
-  # Exit if the build isn't finished yet.
-  FINISHED_STATUSES = ('fail', 'pass', 'missing', 'aborted', 'skipped',
-                       'forgiven')
-  if build_status['status'] not in FINISHED_STATUSES:
-    logging.error('Build not finished. Status: %s', build_status['status'])
-    raise SystemExit(2)
+def IsBuildStatusFinished(build_status):
+  """Populates the 'artifacts_url' and 'stages' build_status fields.
 
+  Args:
+    db: CIDBConnection.
+    build_status: Single build_status dict returned by any Fetch method.
+
+  Returns:
+    build_status dict with additional fields populated.
+  """
+  return build_status['status'] in _FINISHED_STATUSES
+
+
+def FixUpBuildStatus(db, build_status):
+  """Add 'extra' build_status values we need.
+
+  Populates the 'artifacts_url' and 'stages' build_status fields.
+
+  Args:
+    db: CIDBConnection.
+    build_status: Single build_status dict returned by any Fetch method.
+
+  Returns:
+    build_status dict with additional fields populated.
+  """
   # We don't actually store the artifacts_url, but we store a URL for a specific
   # artifact we can use to derive it.
   build_status['artifacts_url'] = None
@@ -109,7 +144,26 @@ def ReportJson(build_statuses):
 
 @command.CommandDecorator('buildresult')
 class BuildResultCommand(command.CliCommand):
-  """Script that shows build timing for a build, and it's stages."""
+  """Script that looks up results of finished builds."""
+
+  EPILOG = """
+Look up a single build result:
+  cros buildresult --buildbot-id 1234567890123
+  cros buildresult --cidb-id 1234
+
+Look up results by build config name:
+  cros buildresult --build-config samus-pre-cq
+  cros buildresult --build-config samus-pre-cq --date 2018-1-2
+  cros buildresult --build-config samus-pre-cq \
+      --start-date 2018-1-2 --end-date 2018-1-7
+
+Output can be json formatted with:
+  cros buildresult --buildbot-id 1234567890123 --report json
+
+Note:
+  Exit code 1: A script error or bad options combination.
+  Exit code 2: No matching finished builds were found.
+"""
 
   def __init__(self, options):
     super(BuildResultCommand, self).__init__(options)
@@ -139,6 +193,23 @@ class BuildResultCommand(command.CliCommand):
         '--buildbucket-id', help='Buildbucket ID of build to look up.')
     request_group.add_argument(
         '--cidb-id', help='CIDB ID of the build to look up.')
+    request_group.add_argument(
+        '--build-config', help='')
+
+    #
+    date_group = parser.add_argument_group()
+
+    date_group.add_argument(
+        '--date', action='store', type='date', default=datetime.date.today(),
+        help='Request all finished builds on a given day. Default today.')
+
+    date_group.add_argument(
+        '--start-date', action='store', type='date', default=None,
+        help='Request all builds between (inclusive) start and end dates.')
+
+    date_group.add_argument(
+        '--end-date', action='store', type='date', default=None,
+        help='End of date range (inclusive) specified by --start-date.')
 
     # What kind of report do we generate?
     parser.add_argument('--report', default='standard',
@@ -161,11 +232,22 @@ class BuildResultCommand(command.CliCommand):
 
     db = cidb.CIDBConnection(credentials)
 
-    # Turn the single build into a list, so we can easily add new fetch
-    # methods later that query multiple builds.
-    build_statuses = [FetchBuildStatus(
-        db, self.options.buildbucket_id, self.options.cidb_id)]
+    build_statuses = FetchBuildStatuses(db, self.options)
 
+    if build_statuses:
+      # Filter out builds that don't exist in CIDB, or which aren't finished.
+      build_statuses = [b for b in build_statuses if IsBuildStatusFinished(b)]
+
+    # If we found no builds at all, return a different exit code to help
+    # automated scripts know they should try waiting longer.
+    if not build_statuses:
+      logging.error('No build found. Perhaps not started?')
+      return 2
+
+    # Fixup all of the builds we have.
+    build_statuses = [FixUpBuildStatus(db, b) for b in build_statuses]
+
+    # Produce our final result.
     if self.options.report == 'json':
       report = ReportJson(build_statuses)
     else:
