@@ -34,9 +34,9 @@ typedef NS_OPTIONS(NSUInteger, ToolbarComponentVisibility) {
   ToolbarComponentVisibilitySplit =
       ToolbarComponentVisibilityCompactWidthRegularHeight,
   // TODO(crbug.com/800266): Remove this, only used for non-adaptive toolbar.
-  // Use this option when the component should be visible in CompactWidth only
-  // if it's enabled. Override other CompactWidth settings.
-  ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled = 1 << 4,
+  // Use this option when the component should be visible only if it's enabled.
+  // This setting applies only if the other settings don't show the button.
+  ToolbarComponentVisibilityOnlyWhenEnabled = 1 << 4,
   // TODO(crbug.com/800266): Remove this, only used for non-adaptive toolbar.
   // Use this option when the component should be always visible on iPhone only.
   ToolbarComponentVisibilityIPhoneOnly = 1 << 5,
