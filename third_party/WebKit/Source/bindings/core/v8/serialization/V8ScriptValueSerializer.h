@@ -105,7 +105,7 @@ class CORE_EXPORT V8ScriptValueSerializer
   const Transferables* transferables_ = nullptr;
   const ExceptionState* exception_state_ = nullptr;
   WebBlobInfoArray* blob_info_array_ = nullptr;
-  ArrayBufferArray shared_array_buffers_;
+  SharedArrayBufferArray shared_array_buffers_;
   Options::WasmSerializationPolicy wasm_policy_;
   bool for_storage_ = false;
 #if DCHECK_IS_ON()

@@ -99,6 +99,9 @@ class CORE_EXPORT V8ScriptValueDeserializer
   v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
   v8::MaybeLocal<v8::WasmCompiledModule> GetWasmModuleFromId(v8::Isolate*,
                                                              uint32_t) override;
+  v8::MaybeLocal<v8::SharedArrayBuffer> GetSharedArrayBufferFromId(
+      v8::Isolate*,
+      uint32_t) override;
 
   scoped_refptr<ScriptState> script_state_;
   Member<UnpackedSerializedScriptValue> unpacked_value_;

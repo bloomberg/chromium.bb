@@ -370,6 +370,24 @@ void SerializedScriptValue::TransferArrayBuffers(
       TransferArrayBufferContents(isolate, array_buffers, exception_state);
 }
 
+void SerializedScriptValue::CloneSharedArrayBuffers(
+    SharedArrayBufferArray& array_buffers) {
+  if (!array_buffers.size())
+    return;
+
+  HeapHashSet<Member<DOMArrayBufferBase>> visited;
+  shared_array_buffers_contents_.Grow(array_buffers.size());
+  size_t i = 0;
+  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+    DOMSharedArrayBuffer* shared_array_buffer = *it;
+    if (visited.Contains(shared_array_buffer))
+      continue;
+    visited.insert(shared_array_buffer);
+    shared_array_buffer->ShareContentsWith(shared_array_buffers_contents_[i]);
+    i++;
+  }
+}
+
 v8::Local<v8::Value> SerializedScriptValue::Deserialize(
     v8::Isolate* isolate,
     const DeserializeOptions& options) {
@@ -391,6 +409,7 @@ UnpackedSerializedScriptValue* SerializedScriptValue::Unpack(
 
 bool SerializedScriptValue::HasPackedContents() const {
   return !array_buffer_contents_array_.IsEmpty() ||
+         !shared_array_buffers_contents_.IsEmpty() ||
          !image_bitmap_contents_array_.IsEmpty();
 }
 
@@ -535,15 +554,10 @@ SerializedScriptValue::TransferArrayBufferContents(
 
     size_t index = std::distance(array_buffers.begin(), it);
     if (array_buffer_base->IsShared()) {
-      DOMSharedArrayBuffer* shared_array_buffer =
-          static_cast<DOMSharedArrayBuffer*>(array_buffer_base);
-      if (!shared_array_buffer->ShareContentsWith(contents.at(index))) {
-        exception_state.ThrowDOMException(kDataCloneError,
-                                          "SharedArrayBuffer at index " +
-                                              String::Number(index) +
-                                              " could not be transferred.");
-        return ArrayBufferContentsArray();
-      }
+      exception_state.ThrowDOMException(
+          kDataCloneError, "SharedArrayBuffer at index " +
+                               String::Number(index) + " is not transferable.");
+      return ArrayBufferContentsArray();
     } else {
       DOMArrayBuffer* array_buffer =
           static_cast<DOMArrayBuffer*>(array_buffer_base);
@@ -572,6 +586,8 @@ void SerializedScriptValue::
   if (!transferables_need_external_allocation_registration_) {
     for (auto& buffer : array_buffer_contents_array_)
       buffer.UnregisterExternalAllocationWithCurrentContext();
+    for (auto& buffer : shared_array_buffers_contents_)
+      buffer.UnregisterExternalAllocationWithCurrentContext();
     transferables_need_external_allocation_registration_ = true;
   }
 }
@@ -589,6 +605,8 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
   // SerializedScriptValue has explicitly unregistered them before.
   if (transferables_need_external_allocation_registration_) {
     for (auto& buffer : array_buffer_contents_array_)
+      buffer.RegisterExternalAllocationWithCurrentContext();
+    for (auto& buffer : shared_array_buffers_contents_)
       buffer.RegisterExternalAllocationWithCurrentContext();
   }
 }

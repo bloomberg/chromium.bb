@@ -612,4 +612,30 @@ V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
   return v8::MaybeLocal<v8::WasmCompiledModule>();
 }
 
+v8::MaybeLocal<v8::SharedArrayBuffer>
+V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
+                                                      uint32_t id) {
+  auto& shared_array_buffers_contents =
+      serialized_script_value_->SharedArrayBuffersContents();
+  if (id < shared_array_buffers_contents.size()) {
+    WTF::ArrayBufferContents& contents = shared_array_buffers_contents.at(id);
+    DOMSharedArrayBuffer* shared_array_buffer =
+        DOMSharedArrayBuffer::Create(contents);
+    v8::Local<v8::Object> creation_context =
+        script_state_->GetContext()->Global();
+    v8::Local<v8::Value> wrapper =
+        ToV8(shared_array_buffer, creation_context, isolate);
+    DCHECK(wrapper->IsSharedArrayBuffer());
+    return v8::Local<v8::SharedArrayBuffer>::Cast(wrapper);
+  }
+  ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
+                                 nullptr, nullptr);
+  exception_state.ThrowDOMException(kDataCloneError,
+                                    "Unable to deserialize SharedArrayBuffer.");
+  // If the id does not map to a valid index, it is expected that the
+  // SerializedScriptValue emptied its shared ArrayBufferContents when crossing
+  // a process boundary.
+  CHECK(shared_array_buffers_contents.IsEmpty());
+  return v8::MaybeLocal<v8::SharedArrayBuffer>();
+}
 }  // namespace blink
