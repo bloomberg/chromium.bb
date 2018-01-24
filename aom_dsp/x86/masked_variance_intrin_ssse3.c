@@ -1039,3 +1039,74 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
   *sum_ = _mm_cvtsi128_si32(sum);
   *sse = _mm_cvtsi128_si32(_mm_srli_si128(sum, 4));
 }
+
+INLINE void aom_comp_mask_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
+                                     int width, int height, const uint8_t *ref,
+                                     int ref_stride, const uint8_t *mask,
+                                     int mask_stride, int invert_mask) {
+  const uint8_t *src0 = invert_mask ? pred : ref;
+  const uint8_t *src1 = invert_mask ? ref : pred;
+  const int stride0 = invert_mask ? width : ref_stride;
+  const int stride1 = invert_mask ? ref_stride : width;
+
+  const __m128i alpha_max = _mm_set1_epi8(AOM_BLEND_A64_MAX_ALPHA);
+  const __m128i round_offset =
+      _mm_set1_epi16(1 << (15 - AOM_BLEND_A64_ROUND_BITS));
+  assert(height % 2 == 0);
+  assert(width % 8 == 0);
+  int i = 0, j = 0;
+  do {
+    // TODO(bingpengsmail@gmail.com): add 16 pixel version
+    j = 0;
+    do {
+      // odd line A
+      const __m128i sA0 = _mm_loadl_epi64((const __m128i *)(src0 + j));
+      const __m128i sA1 = _mm_loadl_epi64((const __m128i *)(src1 + j));
+      const __m128i aA = _mm_loadl_epi64((const __m128i *)(mask + j));
+
+      // even line B
+      const __m128i sB0 =
+          _mm_loadl_epi64((const __m128i *)(src0 + j + stride0));
+      const __m128i sB1 =
+          _mm_loadl_epi64((const __m128i *)(src1 + j + stride1));
+      const __m128i a = _mm_castps_si128(_mm_loadh_pi(
+          _mm_castsi128_ps(aA), (const __m64 *)(mask + j + mask_stride)));
+
+      const __m128i ssA = _mm_unpacklo_epi8(sA0, sA1);
+      const __m128i ssB = _mm_unpacklo_epi8(sB0, sB1);
+
+      const __m128i ma = _mm_sub_epi8(alpha_max, a);
+      const __m128i aaA = _mm_unpacklo_epi8(a, ma);
+      const __m128i aaB = _mm_unpackhi_epi8(a, ma);
+
+      const __m128i blendA = _mm_maddubs_epi16(ssA, aaA);
+      const __m128i blendB = _mm_maddubs_epi16(ssB, aaB);
+      const __m128i roundA = _mm_mulhrs_epi16(blendA, round_offset);
+      const __m128i roundB = _mm_mulhrs_epi16(blendB, round_offset);
+      const __m128i round = _mm_packus_epi16(roundA, roundB);
+      _mm_storel_epi64((__m128i *)(comp_pred + j), round);
+      _mm_storeh_pi((__m64 *)(comp_pred + j + width), _mm_castsi128_ps(round));
+      j += 8;
+    } while (j < width);
+    comp_pred += (width << 1);
+    src0 += (stride0 << 1);
+    src1 += (stride1 << 1);
+    mask += (mask_stride << 1);
+    i += 2;
+  } while (i < height);
+}
+
+void aom_comp_mask_upsampled_pred_ssse3(uint8_t *comp_pred, const uint8_t *pred,
+                                        int width, int height, int subpel_x_q3,
+                                        int subpel_y_q3, const uint8_t *ref,
+                                        int ref_stride, const uint8_t *mask,
+                                        int mask_stride, int invert_mask) {
+  if (subpel_x_q3 || subpel_y_q3) {
+    aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                       ref_stride);
+    ref = comp_pred;
+    ref_stride = width;
+  }
+  aom_comp_mask_pred_ssse3(comp_pred, pred, width, height, ref, ref_stride,
+                           mask, mask_stride, invert_mask);
+}
