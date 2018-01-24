@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
 
@@ -96,10 +97,12 @@ AccountReconcilor::AccountReconcilor(
       reconcile_is_noop_(true),
       chrome_accounts_changed_(false),
       account_reconcilor_lock_count_(0),
-      reconcile_on_unblock_(false) {
+      reconcile_on_unblock_(false),
+      timer_(new base::OneShotTimer) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
   DCHECK(delegate_);
   delegate_->set_reconcilor(this);
+  timeout_ = delegate_->GetReconcileTimeout();
 }
 
 AccountReconcilor::~AccountReconcilor() {
@@ -297,6 +300,16 @@ void AccountReconcilor::StartReconcile() {
     VLOG(1)
         << "AccountReconcilor::StartReconcile: token service *not* ready yet.";
     return;
+  }
+
+  if (!timeout_.is_max()) {
+    // This is NOT a repeating callback but to test it, we need a |MockTimer|,
+    // which mocks |Timer| and not |OneShotTimer|. |Timer| currently does not
+    // support a |OnceClosure|.
+    timer_->Start(
+        FROM_HERE, timeout_,
+        base::BindRepeating(&AccountReconcilor::HandleReconcileTimeout,
+                            base::Unretained(this)));
   }
 
   primary_account_ = signin_manager_->GetAuthenticatedAccountId();
@@ -504,6 +517,7 @@ void AccountReconcilor::CalculateIfReconcileIsDone() {
   if (is_reconcile_started_ && add_to_cookie_.empty()) {
     signin_metrics::LogSigninAccountReconciliationDuration(duration,
         !error_during_last_reconcile_);
+    timer_->Stop();
   }
 
   is_reconcile_started_ = !add_to_cookie_.empty();
@@ -619,4 +633,15 @@ void AccountReconcilor::UnblockReconcile() {
     reconcile_on_unblock_ = false;
     StartReconcile();
   }
+}
+
+void AccountReconcilor::set_timer_for_testing(
+    std::unique_ptr<base::Timer> timer) {
+  timer_ = std::move(timer);
+}
+
+void AccountReconcilor::HandleReconcileTimeout() {
+  AbortReconcile();
+  delegate_->OnReconcileError(
+      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
 }

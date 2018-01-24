@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <cstring>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
@@ -13,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "base/timer/mock_timer.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -32,6 +35,7 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +55,7 @@ using FakeSigninManagerForTesting = FakeSigninManager;
 // TestSigninClient keeping track of the dice migration.
 class DiceTestSigninClient : public TestSigninClient {
  public:
-  DiceTestSigninClient(PrefService* prefs) : TestSigninClient(prefs) {}
+  explicit DiceTestSigninClient(PrefService* prefs) : TestSigninClient(prefs) {}
 
   void SetReadyForDiceMigration(bool ready) override {
     is_ready_for_dice_migration_ = ready;
@@ -62,6 +66,41 @@ class DiceTestSigninClient : public TestSigninClient {
  private:
   bool is_ready_for_dice_migration_ = false;
   DISALLOW_COPY_AND_ASSIGN(DiceTestSigninClient);
+};
+
+// An AccountReconcilorDelegate that records all calls (Spy pattern).
+class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
+ public:
+  int num_reconcile_finished_calls_{0};
+  int num_reconcile_timeout_calls_{0};
+
+  bool IsReconcileEnabled() const override { return true; }
+
+  bool IsAccountConsistencyEnforced() const override { return true; }
+
+  bool ShouldAbortReconcileIfPrimaryHasError() const override { return true; }
+
+  std::string GetFirstGaiaAccountForReconcile(
+      const std::vector<std::string>& chrome_accounts,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const std::string& primary_account,
+      bool first_execution) const override {
+    return primary_account;
+  }
+
+  void OnReconcileFinished(const std::string& first_account,
+                           bool is_reconcile_noop) override {
+    ++num_reconcile_finished_calls_;
+  }
+
+  base::TimeDelta GetReconcileTimeout() const override {
+    // Does not matter as long as it is different from base::TimeDelta::Max().
+    return base::TimeDelta::FromMinutes(100);
+  }
+
+  void OnReconcileError(const GoogleServiceAuthError& error) override {
+    ++num_reconcile_timeout_calls_;
+  }
 };
 
 // gmock does not allow mocking classes with move-only parameters, preventing
@@ -84,6 +123,23 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
             CreateAccountReconcilorDelegate(client,
                                             signin_manager,
                                             account_consistency)) {
+    Initialize(false /* start_reconcile_if_tokens_available */);
+  }
+
+  // Takes ownership of |delegate|.
+  // gmock can't work with move only parameters.
+  explicit DummyAccountReconcilorWithDelegate(
+      ProfileOAuth2TokenService* token_service,
+      SigninManagerBase* signin_manager,
+      SigninClient* client,
+      GaiaCookieManagerService* cookie_manager_service,
+      signin::AccountReconcilorDelegate* delegate)
+      : AccountReconcilor(
+            token_service,
+            signin_manager,
+            client,
+            cookie_manager_service,
+            std::unique_ptr<signin::AccountReconcilorDelegate>(delegate)) {
     Initialize(false /* start_reconcile_if_tokens_available */);
   }
 
@@ -125,6 +181,13 @@ class MockAccountReconcilor
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency);
 
+  explicit MockAccountReconcilor(
+      ProfileOAuth2TokenService* token_service,
+      SigninManagerBase* signin_manager,
+      SigninClient* client,
+      GaiaCookieManagerService* cookie_manager_service,
+      std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
+
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
   MOCK_METHOD0(PerformLogoutAllAccountsAction, void());
 };
@@ -141,6 +204,19 @@ MockAccountReconcilor::MockAccountReconcilor(
           client,
           cookie_manager_service,
           account_consistency) {}
+
+MockAccountReconcilor::MockAccountReconcilor(
+    ProfileOAuth2TokenService* token_service,
+    SigninManagerBase* signin_manager,
+    SigninClient* client,
+    GaiaCookieManagerService* cookie_manager_service,
+    std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
+    : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
+          token_service,
+          signin_manager,
+          client,
+          cookie_manager_service,
+          delegate.release()) {}
 
 }  // namespace
 
@@ -170,6 +246,8 @@ class AccountReconcilorTest : public ::testing::Test {
   }
 
   MockAccountReconcilor* GetMockReconcilor();
+  MockAccountReconcilor* GetMockReconcilor(
+      std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
 
   std::string ConnectProfileToAccount(const std::string& gaia_id,
                                       const std::string& username);
@@ -251,6 +329,15 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
         &token_service_, &signin_manager_, &test_signin_client_,
         &cookie_manager_service_, account_consistency_);
   }
+
+  return mock_reconcilor_.get();
+}
+
+MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor(
+    std::unique_ptr<signin::AccountReconcilorDelegate> delegate) {
+  mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
+      &token_service_, &signin_manager_, &test_signin_client_,
+      &cookie_manager_service_, std::move(delegate));
 
   return mock_reconcilor_.get();
 }
@@ -1733,4 +1820,72 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_FALSE(reconcilor->error_during_last_reconcile_);
+}
+
+// Test that delegate timeout is called when the delegate offers a valid
+// timeout.
+TEST_F(AccountReconcilorTest, DelegateTimeoutIsCalled) {
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  auto spy_delegate0 = std::make_unique<SpyReconcilorDelegate>();
+  SpyReconcilorDelegate* spy_delegate = spy_delegate0.get();
+  AccountReconcilor* reconcilor = GetMockReconcilor(std::move(spy_delegate0));
+  ASSERT_TRUE(reconcilor);
+  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
+                                                  false /* is_repeating */);
+  base::MockTimer* timer = timer0.get();
+  reconcilor->set_timer_for_testing(std::move(timer0));
+
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  ASSERT_TRUE(timer->IsRunning());
+
+  // Simulate a timeout
+  timer->Fire();
+  EXPECT_EQ(1, spy_delegate->num_reconcile_timeout_calls_);
+  EXPECT_EQ(0, spy_delegate->num_reconcile_finished_calls_);
+  EXPECT_FALSE(reconcilor->is_reconcile_started_);
+}
+
+// Test that delegate timeout is not called when the delegate does not offer a
+// valid timeout.
+TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalled) {
+  SetAccountConsistency(signin::AccountConsistencyMethod::kMirror);
+  ConnectProfileToAccount("12345", "user@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
+                                                              "12345");
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  ASSERT_TRUE(reconcilor);
+  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
+                                                  false /* is_repeating */);
+  base::MockTimer* timer = timer0.get();
+  reconcilor->set_timer_for_testing(std::move(timer0));
+
+  reconcilor->StartReconcile();
+  EXPECT_TRUE(reconcilor->is_reconcile_started_);
+  EXPECT_FALSE(timer->IsRunning());
+}
+
+TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalledIfTimeoutIsNotReached) {
+  ConnectProfileToAccount("12345", "user@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
+                                                              "12345");
+  auto spy_delegate0 = std::make_unique<SpyReconcilorDelegate>();
+  SpyReconcilorDelegate* spy_delegate = spy_delegate0.get();
+  AccountReconcilor* reconcilor = GetMockReconcilor(std::move(spy_delegate0));
+  ASSERT_TRUE(reconcilor);
+  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
+                                                  false /* is_repeating */);
+  base::MockTimer* timer = timer0.get();
+  reconcilor->set_timer_for_testing(std::move(timer0));
+
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  ASSERT_TRUE(timer->IsRunning());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(timer->IsRunning());
+  EXPECT_EQ(0, spy_delegate->num_reconcile_timeout_calls_);
+  EXPECT_EQ(1, spy_delegate->num_reconcile_finished_calls_);
+  EXPECT_FALSE(reconcilor->is_reconcile_started_);
 }
