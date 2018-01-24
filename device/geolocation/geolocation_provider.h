@@ -9,8 +9,8 @@
 
 #include "base/callback_list.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 

@@ -455,7 +455,6 @@ if (!is_ios) {
       "//content/test:test_support",
       "//device/bluetooth",
       "//device/geolocation/public/cpp:test_support",
-      "//device/geolocation/public/interfaces",
       "//ipc:test_support",
       "//net:test_support",
       "//printing/features",

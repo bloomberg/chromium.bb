@@ -62,7 +62,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
@@ -70,6 +69,7 @@
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/gfx/geometry/rect.h"
 

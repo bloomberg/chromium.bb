@@ -13,6 +13,7 @@ mojom("interfaces") {
     "geolocation_config.mojom",
     "geolocation_context.mojom",
     "geolocation_control.mojom",
+    "geoposition.mojom",
     "hid.mojom",
     "input_service.mojom",
     "nfc.mojom",
@@ -29,7 +30,6 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-    "//device/geolocation/public/interfaces",
     "//services/network/public/interfaces",
   ]
 

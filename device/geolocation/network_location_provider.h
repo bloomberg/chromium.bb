@@ -20,8 +20,8 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/network_location_request.h"
 #include "device/geolocation/public/cpp/location_provider.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 

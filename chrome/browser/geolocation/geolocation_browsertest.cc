@@ -36,11 +36,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "device/geolocation/network_location_request.h"
 #include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 
 namespace {
 

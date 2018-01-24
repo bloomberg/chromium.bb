@@ -9,10 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "device/geolocation/public/cpp/geoposition.h"
-#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/device/public/interfaces/geoposition.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
