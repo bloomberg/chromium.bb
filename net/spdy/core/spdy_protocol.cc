@@ -158,6 +158,9 @@ bool SettingsIdToString(SpdySettingsIds id, const char** settings_id_string) {
     case SETTINGS_MAX_HEADER_LIST_SIZE:
       *settings_id_string = "SETTINGS_MAX_HEADER_LIST_SIZE";
       return true;
+    case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+      *settings_id_string = "SETTINGS_ENABLE_CONNECT_PROTOCOL";
+      return true;
   }
 
   *settings_id_string = "SETTINGS_UNKNOWN";
