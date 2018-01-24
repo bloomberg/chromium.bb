@@ -72,6 +72,7 @@ source_set("wayland") {
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:alpha_compositing_protocol",
     "//third_party/wayland-protocols:gaming_input_protocol",
+    "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:keyboard_configuration_protocol",
     "//third_party/wayland-protocols:keyboard_extension_protocol",
     "//third_party/wayland-protocols:pointer_gestures_protocol",
@@ -153,6 +154,7 @@ source_set("client_support") {
   public_deps = [
     "//skia",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
   ]
@@ -183,6 +185,7 @@ executable("wayland_rects_client") {
     "//build/config:exe_and_shlib_deps",
     "//skia",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
     "//ui/gfx/geometry",

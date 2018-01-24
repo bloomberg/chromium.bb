@@ -301,3 +301,24 @@ source_set("keyboard_extension_protocol") {
 
   public_configs = [ ":keyboard_extension_protocol_config" ]
 }
+
+config("input_timestamps_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("input_timestamps_protocol") {
+  sources = [
+    "include/protocol/input-timestamps-unstable-v1-client-protocol.h",
+    "include/protocol/input-timestamps-unstable-v1-server-protocol.h",
+    "protocol/input-timestamps-v1-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":input_timestamps_protocol_config" ]
+}

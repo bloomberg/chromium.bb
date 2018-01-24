@@ -1,6 +1,6 @@
 Name: wayland-protocols
 URL: http://wayland.freedesktop.org/
-Version: 1.8
+Version: 4f789286e4ab7f6fecc2ccb895d79362a9b2382a
 License: MIT
 License File: src/COPYING
 Security Critical: yes
@@ -13,7 +13,7 @@ protocol either in Wayland core, or some other protocol in
 wayland-protocols.
 
 To import a new snapshot of wayland-protocols:
-- Checkout the latest release tag: git checkout 1.8
+- Checkout the latest version: git checkout 4f789286e4ab7f6fecc2ccb895d79362a9b2382a
 - Change the DEPS entry to the newly checked out commit.
 - Update generated files:
     wayland-scanner code < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > protocol/xdg-shell-v5-protocol.c
@@ -61,6 +61,10 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < unstable/keyboard/keyboard-extension-unstable-v1.xml > protocol/keyboard-extension-protocol.c
     wayland-scanner server-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-client-protocol.h
+    wayland-scanner code < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > protocol/pointer-gestures-v1-protocol.c
     wayland-scanner client-header < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > include/protocol/pointer-gestures-unstable-v1-client-protocol.h
     wayland-scanner server-header < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > include/protocol/pointer-gestures-unstable-v1-server-protocol.h
+    wayland-scanner code < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > protocol/input-timestamps-v1-protocol.c
+    wayland-scanner server-header < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > include/protocol/input-timestamps-unstable-v1-server-protocol.h
+    wayland-scanner client-header < src/unstable/input-timestamps/input-timestamps-unstable-v1.xml > include/protocol/input-timestamps-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.

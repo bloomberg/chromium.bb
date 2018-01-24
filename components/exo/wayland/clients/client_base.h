@@ -68,6 +68,7 @@ class ClientBase {
     std::unique_ptr<wl_seat> seat;
     std::unique_ptr<wl_subcompositor> subcompositor;
     std::unique_ptr<zaura_shell> aura_shell;
+    std::unique_ptr<zwp_input_timestamps_manager_v1> input_timestamps_manager;
   };
 
   struct Buffer {

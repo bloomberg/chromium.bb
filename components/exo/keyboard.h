@@ -39,6 +39,8 @@ class Keyboard : public ui::EventHandler,
   Keyboard(KeyboardDelegate* delegate, Seat* seat);
   ~Keyboard() override;
 
+  KeyboardDelegate* delegate() const { return delegate_; }
+
   bool HasDeviceConfigurationDelegate() const;
   void SetDeviceConfigurationDelegate(
       KeyboardDeviceConfigurationDelegate* delegate);
