@@ -494,6 +494,8 @@ const IDNTestCase idn_cases[] = {
     {"xn--r4am0b3s.com", L"\x04ab\x04b1\x04ff\x04bd.com", false},
     // ҫұӿҿ.com
     {"xn--r4am6b4p.com", L"\x04ab\x04b1\x04ff\x04bf.com", false},
+    // ҫұӿє.com
+    {"xn--91a7osa62a.com", L"\x04ab\x04b1\x04ff\x0454.com", false},
     // ӏԃԍ.com
     {"xn--s5a8h4a.com", L"\x04cf\x0503\x050d.com", false},
 
