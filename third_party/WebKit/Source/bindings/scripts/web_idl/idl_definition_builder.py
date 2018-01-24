@@ -296,7 +296,7 @@ class IdlDefinitionBuilder(object):
         identifier = node.GetName()
         is_static = bool(node.GetProperty('STATIC'))
         properties = node.GetProperties()
-        for special_keyword in ['DELETER', 'GETTER', 'LEGACYCALLER', 'SETTER']:
+        for special_keyword in ['DELETER', 'GETTER', 'SETTER']:
             if special_keyword in properties:
                 special_keywords.append(special_keyword.lower())
 

@@ -76,24 +76,6 @@ static void sizeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
   V8SetReturnValueUnsigned(info, impl->size());
 }
 
-static void legacyCallerMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface2", "legacyCaller");
-
-  TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  uint32_t index;
-  index = NativeValueTraits<IDLUnsignedLong>::NativeValue(info.GetIsolate(), info[0], exceptionState, kNormalConversion);
-  if (exceptionState.HadException())
-    return;
-
-  V8SetReturnValue(info, impl->legacyCaller(index));
-}
-
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface2", "item");
 
@@ -510,12 +492,6 @@ void V8TestInterface2::sizeAttributeGetterCallback(const v8::FunctionCallbackInf
   TestInterface2V8Internal::sizeAttributeGetter(info);
 }
 
-void V8TestInterface2::legacyCallerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_legacyCaller");
-
-  TestInterface2V8Internal::legacyCallerMethod(info);
-}
-
 void V8TestInterface2::itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_item");
 
@@ -681,7 +657,6 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterface2Accessors
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
-    {"legacyCaller", V8TestInterface2::legacyCallerMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"item", V8TestInterface2::itemMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"setItem", V8TestInterface2::setItemMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"deleteItem", V8TestInterface2::deleteItemMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
@@ -765,8 +740,6 @@ void V8TestInterface2::installV8TestInterface2Template(
       V8DOMConfiguration::kDoNotCheckAccess
   };
   V8DOMConfiguration::InstallMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
-
-  instanceTemplate->SetCallAsFunctionHandler(TestInterface2V8Internal::legacyCallerMethodCallback);
 
   // Custom signature
 }

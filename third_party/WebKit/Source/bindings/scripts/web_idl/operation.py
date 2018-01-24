@@ -9,7 +9,7 @@ from .utilities import assert_no_extra_args
 # https://heycam.github.io/webidl/#idl-operations
 class Operation(object):
     # https://www.w3.org/TR/WebIDL-1/#idl-special-operations
-    _SPECIAL_KEYWORDS = frozenset(['deleter', 'getter', 'legacycaller', 'setter', 'stringifier', 'serializer'])
+    _SPECIAL_KEYWORDS = frozenset(['deleter', 'getter', 'setter', 'stringifier', 'serializer'])
 
     def __init__(self, **kwargs):
         self._identifier = kwargs.pop('identifier')

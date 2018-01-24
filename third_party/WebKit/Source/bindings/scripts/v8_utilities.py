@@ -536,27 +536,6 @@ def on_interface(interface, member):
 
 
 ################################################################################
-# Legacy callers
-# https://heycam.github.io/webidl/#idl-legacy-callers
-################################################################################
-
-def legacy_caller(interface):
-    try:
-        # Find legacy caller, if present; has form:
-        # legacycaller TYPE [OPTIONAL_IDENTIFIER](OPTIONAL_ARGUMENTS)
-        caller = next(
-            method
-            for method in interface.operations
-            if 'legacycaller' in method.specials)
-        if not caller.name:
-            raise Exception('legacycaller with no identifier is not supported: '
-                            '%s' % interface.name)
-        return caller
-    except StopIteration:
-        return None
-
-
-################################################################################
 # Indexed properties
 # http://heycam.github.io/webidl/#idl-indexed-properties
 ################################################################################
@@ -652,7 +631,6 @@ def named_property_deleter(interface):
         return None
 
 
-IdlInterface.legacy_caller = property(legacy_caller)
 IdlInterface.indexed_property_getter = property(indexed_property_getter)
 IdlInterface.indexed_property_setter = property(indexed_property_setter)
 IdlInterface.indexed_property_deleter = property(indexed_property_deleter)
