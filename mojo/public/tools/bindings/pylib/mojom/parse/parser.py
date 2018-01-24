@@ -383,8 +383,8 @@ class Parser(object):
                          filename=self.filename, lineno=p.lineno(2))
 
   def p_const(self, p):
-    """const : CONST typename NAME EQUALS constant SEMI"""
-    p[0] = ast.Const(p[3], p[2], p[5])
+    """const : attribute_section CONST typename NAME EQUALS constant SEMI"""
+    p[0] = ast.Const(p[4], p[1], p[3], p[6])
 
   def p_constant(self, p):
     """constant : literal

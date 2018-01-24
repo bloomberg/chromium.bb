@@ -192,7 +192,7 @@ class ParserTest(unittest.TestCase):
                           None,
                           ast.EnumValueList(
                               ast.EnumValue('VALUE', None, None))),
-                 ast.Const('kMyConst', 'double', '1.23'),
+                 ast.Const('kMyConst', None, 'double', '1.23'),
                  ast.StructField('a', None, None, 'int32', None),
                  ast.StructField('b', None, None, 'SomeOtherStruct', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
@@ -409,7 +409,7 @@ class ParserTest(unittest.TestCase):
         [ast.Struct(
             'MyStruct', None,
             ast.StructBody(
-                [ast.Const('kNumber', 'int8', '-1'),
+                [ast.Const('kNumber', None, 'int8', '-1'),
                  ast.StructField('number', None, ast.Ordinal(0), 'int8',
                                  ('IDENTIFIER', 'kNumber'))]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
@@ -897,7 +897,7 @@ class ParserTest(unittest.TestCase):
                           None,
                           ast.EnumValueList(
                               ast.EnumValue('VALUE', None, None))),
-                 ast.Const('kMyConst', 'int32', '123'),
+                 ast.Const('kMyConst', None, 'int32', '123'),
                  ast.Method(
                     'MyMethod',
                     None,
@@ -1002,6 +1002,7 @@ class ParserTest(unittest.TestCase):
         [Attr7=7] interface MyInterface {
           [Attr8=8] MyMethod([Attr9=9] int32 a) => ([Attr10=10] bool b);
         };
+        [Attr11=11] const double kMyConst = 1.23;
         """
     expected4 = ast.Mojom(
         ast.Module(('IDENTIFIER', 'my_module'),
@@ -1044,7 +1045,11 @@ class ParserTest(unittest.TestCase):
                         ast.Parameter(
                             'b',
                             ast.AttributeList([ast.Attribute("Attr10", 10)]),
-                            None, 'bool')))))])
+                            None, 'bool'))))),
+         ast.Const(
+            'kMyConst',
+            ast.AttributeList(ast.Attribute("Attr11", 11)),
+            'double', '1.23')])
     self.assertEquals(parser.Parse(source4, "my_file.mojom"), expected4)
 
     # TODO(vtl): Boolean attributes don't work yet. (In fact, we just |eval()|
