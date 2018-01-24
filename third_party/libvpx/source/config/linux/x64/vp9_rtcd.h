@@ -12,10 +12,10 @@
  * VP9
  */
 
+#include "vpx/vpx_integer.h"
 #include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_enums.h"
 #include "vp9/common/vp9_filter.h"
-#include "vpx/vpx_integer.h"
 
 struct macroblockd;
 
@@ -246,7 +246,16 @@ void vp9_highbd_iht16x16_256_add_c(const tran_low_t* input,
                                    int pitch,
                                    int tx_type,
                                    int bd);
-#define vp9_highbd_iht16x16_256_add vp9_highbd_iht16x16_256_add_c
+void vp9_highbd_iht16x16_256_add_sse4_1(const tran_low_t* input,
+                                        uint16_t* output,
+                                        int pitch,
+                                        int tx_type,
+                                        int bd);
+RTCD_EXTERN void (*vp9_highbd_iht16x16_256_add)(const tran_low_t* input,
+                                                uint16_t* output,
+                                                int pitch,
+                                                int tx_type,
+                                                int bd);
 
 void vp9_highbd_iht4x4_16_add_c(const tran_low_t* input,
                                 uint16_t* dest,
@@ -269,7 +278,16 @@ void vp9_highbd_iht8x8_64_add_c(const tran_low_t* input,
                                 int stride,
                                 int tx_type,
                                 int bd);
-#define vp9_highbd_iht8x8_64_add vp9_highbd_iht8x8_64_add_c
+void vp9_highbd_iht8x8_64_add_sse4_1(const tran_low_t* input,
+                                     uint16_t* dest,
+                                     int stride,
+                                     int tx_type,
+                                     int bd);
+RTCD_EXTERN void (*vp9_highbd_iht8x8_64_add)(const tran_low_t* input,
+                                             uint16_t* dest,
+                                             int stride,
+                                             int tx_type,
+                                             int bd);
 
 void vp9_highbd_mbpost_proc_across_ip_c(uint16_t* src,
                                         int pitch,
@@ -476,9 +494,15 @@ static void setup_rtcd_internal(void) {
   vp9_fdct8x8_quant = vp9_fdct8x8_quant_c;
   if (flags & HAS_SSSE3)
     vp9_fdct8x8_quant = vp9_fdct8x8_quant_ssse3;
+  vp9_highbd_iht16x16_256_add = vp9_highbd_iht16x16_256_add_c;
+  if (flags & HAS_SSE4_1)
+    vp9_highbd_iht16x16_256_add = vp9_highbd_iht16x16_256_add_sse4_1;
   vp9_highbd_iht4x4_16_add = vp9_highbd_iht4x4_16_add_c;
   if (flags & HAS_SSE4_1)
     vp9_highbd_iht4x4_16_add = vp9_highbd_iht4x4_16_add_sse4_1;
+  vp9_highbd_iht8x8_64_add = vp9_highbd_iht8x8_64_add_c;
+  if (flags & HAS_SSE4_1)
+    vp9_highbd_iht8x8_64_add = vp9_highbd_iht8x8_64_add_sse4_1;
   vp9_quantize_fp = vp9_quantize_fp_sse2;
   if (flags & HAS_SSSE3)
     vp9_quantize_fp = vp9_quantize_fp_ssse3;

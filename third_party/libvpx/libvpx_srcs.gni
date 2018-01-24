@@ -450,7 +450,9 @@ libvpx_srcs_x86_ssse3 = [
 ]
 libvpx_srcs_x86_sse4_1 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht16x16_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht4x4_add_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht8x8_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct16x16_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct32x32_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct4x4_add_sse4.c",
@@ -924,7 +926,9 @@ libvpx_srcs_x86_64_ssse3 = [
 ]
 libvpx_srcs_x86_64_sse4_1 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht16x16_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht4x4_add_sse4.c",
+  "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_highbd_iht8x8_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct16x16_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct32x32_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct4x4_add_sse4.c",
