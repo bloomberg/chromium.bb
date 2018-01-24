@@ -99,8 +99,12 @@
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "extensions/browser/extension_message_filter.h"  // nogncheck
+#include "extensions/browser/extension_registry.h"        // nogncheck
+#include "extensions/browser/extension_system.h"          // nogncheck
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"  // nogncheck
+#include "extensions/browser/info_map.h"                            // nogncheck
 #include "extensions/browser/io_thread_extension_message_filter.h"  // nogncheck
+#include "extensions/browser/process_map.h"                         // nogncheck
 #endif
 
 namespace chromecast {
@@ -388,6 +392,34 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
   }
 
   return false;
+}
+
+void CastContentBrowserClient::SiteInstanceGotProcess(
+    content::SiteInstance* site_instance) {
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  // If this isn't an extension renderer there's nothing to do.
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext());
+  const extensions::Extension* extension =
+      registry->enabled_extensions().GetExtensionOrAppByURL(
+          site_instance->GetSiteURL());
+  if (!extension)
+    return;
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(
+          cast_browser_main_parts_->browser_context());
+
+  extensions::ProcessMap::Get(cast_browser_main_parts_->browser_context())
+      ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
+               site_instance->GetId());
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
+                     extension_system->info_map(), extension->id(),
+                     site_instance->GetProcess()->GetID(),
+                     site_instance->GetId()));
+#endif
 }
 
 void CastContentBrowserClient::AppendExtraCommandLineSwitches(

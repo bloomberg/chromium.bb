@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -17,6 +18,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_network_delegate.h"
+#include "chromecast/chromecast_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -46,6 +48,12 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "extensions/browser/extension_protocols.h"  // nogncheck
+#include "extensions/browser/extension_system.h"     // nogncheck
+#include "extensions/common/constants.h"             // nogncheck
+#endif
+
 namespace chromecast {
 namespace shell {
 
@@ -71,6 +79,39 @@ bool IgnoreCertificateErrors() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(switches::kIgnoreCertificateErrors);
 }
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+// extensions::ExtensionSystem::Get will fail until much later in the
+// initialization process so we delay creation until the first request, at which
+// point the ExtensionSystem has been created.
+class DelayedExtensionProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  DelayedExtensionProtocolHandler(content::BrowserContext* browser_context,
+                                  bool is_incognito)
+      : browser_context_(browser_context), is_incognito_(is_incognito) {
+    DCHECK(browser_context_);
+  }
+  ~DelayedExtensionProtocolHandler() override {}
+
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    if (!handler_) {
+      handler_ = extensions::CreateExtensionProtocolHandler(
+          is_incognito_,
+          extensions::ExtensionSystem::Get(browser_context_)->info_map());
+    }
+
+    return handler_->MaybeCreateJob(request, network_delegate);
+  }
+
+ private:
+  content::BrowserContext* const browser_context_;
+  const bool is_incognito_;
+  mutable std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler> handler_;
+};
+#endif
 
 }  // namespace
 
@@ -201,6 +242,12 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!main_getter_.get())
       << "Main URLRequestContextGetter already initialized";
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  (*protocol_handlers)[extensions::kExtensionScheme] =
+      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new DelayedExtensionProtocolHandler(browser_context,
+                                              false /* is_incognito */));
+#endif
   main_getter_ =
       new MainURLRequestContextGetter(this, browser_context, protocol_handlers,
                                       std::move(request_interceptors));

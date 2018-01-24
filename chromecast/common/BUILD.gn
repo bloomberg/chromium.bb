@@ -16,6 +16,7 @@ cast_source_set("common") {
 
   deps = [
     "//base",
+    "//chromecast:chromecast_features",
     "//chromecast/base",
     "//chromecast/base:cast_version",
     "//chromecast/common/media",
