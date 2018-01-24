@@ -456,6 +456,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return !active_streams_.empty() || !created_streams_.empty();
   }
 
+  // True if the server supports WebSocket protocol.
+  bool support_websocket() const { return support_websocket_; }
+
   // Returns true if no stream in the session can send data due to
   // session flow control.
   bool IsSendStalled() const { return session_send_window_size_ == 0; }
@@ -1042,6 +1045,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // If true, alt-svc headers advertising QUIC in IETF format will be supported.
   bool support_ietf_format_quic_altsvc_;
+
+  // True if the server has advertised WebSocket support via
+  // SETTINGS_ENABLE_CONNECT_PROTOCOL, see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
+  bool support_websocket_;
 
   // |connection_at_risk_of_loss_time_| is an optimization to avoid sending
   // wasteful preface pings (when we just got some data).

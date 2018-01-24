@@ -5778,6 +5778,121 @@ TEST_F(SpdySessionTest, RejectInvalidUnknownFrames) {
   EXPECT_FALSE(OnUnknownFrame(8, 0));
 }
 
+TEST_F(SpdySessionTest, EnableWebsocket) {
+  SettingsMap settings_map;
+  settings_map[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  SpdySerializedFrame settings(spdy_util_.ConstructSpdySettings(settings_map));
+  MockRead reads[] = {CreateMockRead(settings, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  SpdySerializedFrame ack(spdy_util_.ConstructSpdySettingsAck());
+  MockWrite writes[] = {CreateMockWrite(ack, 1)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_FALSE(session_->support_websocket());
+
+  // Read SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(session_->support_websocket());
+
+  // Read EOF.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_FALSE(session_);
+}
+
+TEST_F(SpdySessionTest, DisableWebsocketDoesNothing) {
+  SettingsMap settings_map;
+  settings_map[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 0;
+  SpdySerializedFrame settings(spdy_util_.ConstructSpdySettings(settings_map));
+  MockRead reads[] = {CreateMockRead(settings, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      MockRead(ASYNC, 0, 3)};
+
+  SpdySerializedFrame ack(spdy_util_.ConstructSpdySettingsAck());
+  MockWrite writes[] = {CreateMockWrite(ack, 1)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_FALSE(session_->support_websocket());
+
+  // Read SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(session_->support_websocket());
+
+  // Read EOF.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_FALSE(session_);
+}
+
+TEST_F(SpdySessionTest, EnableWebsocketThenDisableIsProtocolError) {
+  SettingsMap settings_map1;
+  settings_map1[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  SpdySerializedFrame settings1(
+      spdy_util_.ConstructSpdySettings(settings_map1));
+  SettingsMap settings_map2;
+  settings_map2[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 0;
+  SpdySerializedFrame settings2(
+      spdy_util_.ConstructSpdySettings(settings_map2));
+  MockRead reads[] = {CreateMockRead(settings1, 0),
+                      MockRead(ASYNC, ERR_IO_PENDING, 2),
+                      CreateMockRead(settings2, 3)};
+
+  SpdySerializedFrame ack1(spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame ack2(spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
+      0, ERROR_CODE_PROTOCOL_ERROR,
+      "Invalid value for SETTINGS_ENABLE_CONNECT_PROTOCOL."));
+  MockWrite writes[] = {CreateMockWrite(ack1, 1), CreateMockWrite(ack2, 4),
+                        CreateMockWrite(goaway, 5)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_FALSE(session_->support_websocket());
+
+  // Read first SETTINGS frame.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(session_->support_websocket());
+
+  // Read second SETTINGS frame.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_FALSE(session_);
+}
+
 enum ReadIfReadySupport {
   // ReadIfReady() field trial is enabled, and ReadIfReady() is implemented.
   READ_IF_READY_ENABLED_SUPPORTED,

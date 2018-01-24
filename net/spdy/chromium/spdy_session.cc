@@ -147,6 +147,8 @@ bool IsSpdySettingAtDefaultInitialValue(SpdySettingsIds setting_id,
     case SETTINGS_MAX_HEADER_LIST_SIZE:
       // There is no initial limit on the size of the header list.
       return false;
+    case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+      return value == 0;
     default:
       // Undefined parameters have no initial value.
       return false;
@@ -786,6 +788,7 @@ SpdySession::SpdySession(
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
+      support_websocket_(false),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
@@ -2230,6 +2233,16 @@ void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
           NetLog::IntCallback("delta_window_size", delta_window_size));
       break;
     }
+    case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+      if ((value != 0 && value != 1) || (support_websocket_ && value == 0)) {
+        DoDrainSession(ERR_SPDY_PROTOCOL_ERROR,
+                       "Invalid value for SETTINGS_ENABLE_CONNECT_PROTOCOL.");
+        return;
+      }
+      if (value == 1) {
+        support_websocket_ = true;
+      }
+      break;
   }
 }
 

@@ -118,7 +118,9 @@ TEST(SpdyProtocolTest, ParseSettingsId) {
   EXPECT_EQ(SETTINGS_MAX_FRAME_SIZE, setting_id);
   EXPECT_TRUE(ParseSettingsId(6, &setting_id));
   EXPECT_EQ(SETTINGS_MAX_HEADER_LIST_SIZE, setting_id);
-  EXPECT_FALSE(ParseSettingsId(7, &setting_id));
+  EXPECT_TRUE(ParseSettingsId(8, &setting_id));
+  EXPECT_EQ(SETTINGS_ENABLE_CONNECT_PROTOCOL, setting_id);
+  EXPECT_FALSE(ParseSettingsId(9, &setting_id));
 }
 
 TEST(SpdyProtocolTest, SettingsIdToString) {
@@ -135,7 +137,10 @@ TEST(SpdyProtocolTest, SettingsIdToString) {
       {SETTINGS_INITIAL_WINDOW_SIZE, true, "SETTINGS_INITIAL_WINDOW_SIZE"},
       {SETTINGS_MAX_FRAME_SIZE, true, "SETTINGS_MAX_FRAME_SIZE"},
       {SETTINGS_MAX_HEADER_LIST_SIZE, true, "SETTINGS_MAX_HEADER_LIST_SIZE"},
-      {static_cast<SpdySettingsIds>(7), false, "SETTINGS_UNKNOWN"}};
+      {static_cast<SpdySettingsIds>(7), false, "SETTINGS_UNKNOWN"},
+      {SETTINGS_ENABLE_CONNECT_PROTOCOL, true,
+       "SETTINGS_ENABLE_CONNECT_PROTOCOL"},
+      {static_cast<SpdySettingsIds>(9), false, "SETTINGS_UNKNOWN"}};
   for (auto test_case : test_cases) {
     const char* settings_id_string;
     EXPECT_EQ(test_case.expected_bool,

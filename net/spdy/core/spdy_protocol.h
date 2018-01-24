@@ -156,7 +156,10 @@ enum SpdySettingsIds : uint16_t {
   SETTINGS_MAX_FRAME_SIZE = 0x5,
   // The maximum size of header list that the sender is prepared to accept.
   SETTINGS_MAX_HEADER_LIST_SIZE = 0x6,
-  SETTINGS_MAX = SETTINGS_MAX_HEADER_LIST_SIZE
+  // Enable Websockets over HTTP/2, see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
+  SETTINGS_ENABLE_CONNECT_PROTOCOL = 0x8,
+  SETTINGS_MAX = SETTINGS_ENABLE_CONNECT_PROTOCOL
 };
 
 // This explicit operator is needed, otherwise compiler finds
