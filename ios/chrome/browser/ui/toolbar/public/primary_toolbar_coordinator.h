@@ -17,9 +17,7 @@
 
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
 // split between primary and secondary.
-@protocol PrimaryToolbarCoordinator<OmniboxFocuser,
-                                    FakeboxFocuser,
-                                    SideSwipeToolbarInteracting>
+@protocol PrimaryToolbarCoordinator<FakeboxFocuser, SideSwipeToolbarInteracting>
 
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
@@ -29,6 +27,7 @@
 - (id<QRScannerResultLoading>)QRScannerResultLoader;
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 - (id<ActivityServicePositioner>)activityServicePositioner;
+- (id<OmniboxFocuser>)omniboxFocuser;
 
 // Stops the coordinator.
 - (void)stop;

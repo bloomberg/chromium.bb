@@ -153,11 +153,11 @@
 
   self.buttonUpdater = [[ToolbarButtonUpdater alloc] init];
   self.buttonUpdater.factory = factory;
-  self.toolbarViewController =
-      [[ToolbarViewController alloc] initWithDispatcher:self.dispatcher
-                                          buttonFactory:factory
-                                          buttonUpdater:self.buttonUpdater
-                                         omniboxFocuser:self];
+  self.toolbarViewController = [[ToolbarViewController alloc]
+      initWithDispatcher:self.dispatcher
+           buttonFactory:factory
+           buttonUpdater:self.buttonUpdater
+          omniboxFocuser:self.locationBarCoordinator];
   self.toolbarViewController.locationBarView =
       self.locationBarCoordinator.locationBarView;
   self.toolbarViewController.dispatcher = self.dispatcher;
@@ -212,6 +212,10 @@
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
   return self.toolbarViewController;
+}
+
+- (id<OmniboxFocuser>)omniboxFocuser {
+  return self.locationBarCoordinator;
 }
 
 - (void)updateToolbarState {
@@ -321,17 +325,6 @@
   return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
 }
 
-#pragma mark - OmniboxFocuser
-
-- (void)focusOmnibox {
-  [self.locationBarCoordinator.locationBarView.textField becomeFirstResponder];
-}
-
-- (void)cancelOmniboxEdit {
-  _locationBar->HideKeyboardAndEndEditing();
-  [self updateToolbarState];
-}
-
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {
@@ -349,7 +342,7 @@
     [self expandOmniboxAnimated:NO];
   }
 
-  [self focusOmnibox];
+  [self.locationBarCoordinator focusOmnibox];
 }
 
 - (void)onFakeboxBlur {
@@ -380,7 +373,7 @@
   if (load) {
     [self loadURLForQuery:result];
   } else {
-    [self focusOmnibox];
+    [self.locationBarCoordinator focusOmnibox];
     [self.locationBarCoordinator.locationBarView.textField
         insertTextWhileEditing:result];
     // The call to |setText| shouldn't be needed, but without it the "Go" button

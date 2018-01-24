@@ -422,7 +422,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
                          referrer:web::Referrer()
                        transition:transition
                 rendererInitiated:NO];
-          [self cancelOmniboxEdit];
+          [static_cast<LocationBarCoordinator*>(self) cancelOmniboxEdit];
         };
 
     load_GURL_from_location_bar_swizzler_.reset(
