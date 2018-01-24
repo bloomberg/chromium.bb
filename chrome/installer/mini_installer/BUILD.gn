@@ -137,10 +137,6 @@ template("generate_mini_installer") {
       release_file,
     ]
 
-    if (v8_use_snapshot) {
-      inputs += [ "$root_out_dir/v8_context_snapshot.bin" ]
-    }
-
     outputs = [
       # See also chrome.packed.7z conditionally added below.
       "$output_dir/chrome.7z",
