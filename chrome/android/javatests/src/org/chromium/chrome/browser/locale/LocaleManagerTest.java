@@ -24,6 +24,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.policy.test.annotations.Policies;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -33,16 +35,13 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class LocaleManagerTest {
     @Before
-    public void setUp() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+    public void setUp() throws ExecutionException, ProcessInitException {
+        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                            .handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    throw new AssertionError("Failed to load browser.", e);
-                }
+            public Void call() throws ProcessInitException {
+                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                        .handleSynchronousStartup();
+                return null;
             }
         });
     }
