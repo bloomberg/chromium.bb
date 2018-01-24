@@ -21,65 +21,12 @@
 
 namespace dom_distiller {
 namespace {
-void OnOGArticleJsResult(base::Callback<void(bool)> callback,
-                         const base::Value* result) {
-  bool success = false;
-  if (result) {
-    result->GetAsBoolean(&success);
-  }
-  callback.Run(success);
-}
-
 void OnExtractFeaturesJsResult(const DistillablePageDetector* detector,
                                base::Callback<void(bool)> callback,
                                const base::Value* result) {
   callback.Run(detector->Classify(CalculateDerivedFeaturesFromJSON(result)));
 }
 }  // namespace
-
-void IsOpenGraphArticle(content::WebContents* web_contents,
-                        base::Callback<void(bool)> callback) {
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  if (!main_frame) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
-    return;
-  }
-  std::string og_article_js = ui::ResourceBundle::GetSharedInstance()
-                                  .GetRawDataResource(IDR_IS_DISTILLABLE_JS)
-                                  .as_string();
-  RunIsolatedJavaScript(main_frame, og_article_js,
-                        base::Bind(OnOGArticleJsResult, callback));
-}
-
-void IsDistillablePage(content::WebContents* web_contents,
-                       bool is_mobile_optimized,
-                       base::Callback<void(bool)> callback) {
-  switch (GetDistillerHeuristicsType()) {
-    case DistillerHeuristicsType::ALWAYS_TRUE:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    base::Bind(callback, true));
-      return;
-    case DistillerHeuristicsType::OG_ARTICLE:
-      IsOpenGraphArticle(web_contents, callback);
-      return;
-    case DistillerHeuristicsType::ADABOOST_MODEL:
-      // The adaboost model is only applied to non-mobile pages.
-      if (is_mobile_optimized) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(callback, false));
-        return;
-      }
-      IsDistillablePageForDetector(
-          web_contents, DistillablePageDetector::GetDefault(), callback);
-      return;
-    case DistillerHeuristicsType::NONE:
-    default:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, false));
-      return;
-  }
-}
 
 void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,

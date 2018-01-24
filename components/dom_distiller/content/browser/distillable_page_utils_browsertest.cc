@@ -26,7 +26,6 @@ namespace dom_distiller {
 namespace {
 
 const char* kArticlePath = "/og_article.html";
-const char* kNonArticlePath = "/non_og_article.html";
 
 class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
                                              content::WebContentsObserver {
@@ -111,25 +110,6 @@ class ResultHolder {
 };
 
 }  // namespace
-
-IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest, TestIsOGArticle) {
-  LoadURL(kArticlePath);
-  base::RunLoop run_loop_;
-  ResultHolder holder(run_loop_.QuitClosure());
-  IsOpenGraphArticle(shell()->web_contents(), holder.GetCallback());
-  run_loop_.Run();
-  ASSERT_TRUE(holder.GetResult());
-}
-
-IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
-                       TestIsNotOGArticle) {
-  LoadURL(kNonArticlePath);
-  base::RunLoop run_loop_;
-  ResultHolder holder(run_loop_.QuitClosure());
-  IsOpenGraphArticle(shell()->web_contents(), holder.GetCallback());
-  run_loop_.Run();
-  ASSERT_FALSE(holder.GetResult());
-}
 
 IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
                        TestIsDistillablePage) {

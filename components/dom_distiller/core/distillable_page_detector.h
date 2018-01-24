@@ -19,7 +19,6 @@ namespace dom_distiller {
 // model.
 class DistillablePageDetector {
  public:
-  static const DistillablePageDetector* GetDefault();
   static const DistillablePageDetector* GetNewModel();
   static const DistillablePageDetector* GetLongPageModel();
   explicit DistillablePageDetector(std::unique_ptr<AdaBoostProto> proto);
