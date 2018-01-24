@@ -122,8 +122,10 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
       Gamepad& pad = state->data;
 
       if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
-        haptics_[i] =
-            std::make_unique<XInputHapticGamepadWin>(i, xinput_set_state_);
+        if (!haptics_[i]) {
+          haptics_[i] =
+              std::make_unique<XInputHapticGamepadWin>(i, xinput_set_state_);
+        }
 
         // This is the first time we've seen this device, so do some one-time
         // initialization
