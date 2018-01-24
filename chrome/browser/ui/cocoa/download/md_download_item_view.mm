@@ -347,8 +347,8 @@ NSTextField* MakeLabel(
 
 - (CGFloat)preferredWidth {
   if (dangerView_) {
-    CGFloat delta = [dangerView_ preferredWidth] - NSWidth(dangerView_.frame);
-    return NSWidth(self.frame) + delta;
+    return NSWidth(dangerView_.frame) + kMenuButtonSpacing + kMenuButtonSize +
+           kMenuButtonTrailingMargin;
   } else {
     return kNormalSize.width;
   }
@@ -461,22 +461,19 @@ NSTextField* MakeLabel(
       for (NSView* view in [self normalViews]) {
         view.hidden = YES;
       }
-      NSRect dangerViewRect =
-          NSMakeRect(0, 0,
-                     NSWidth(self.bounds) - NSWidth(menuButton_.frame) -
-                         kMenuButtonSpacing - kMenuButtonTrailingMargin,
-                     NSHeight(self.bounds));
       base::scoped_nsobject<MDDownloadItemDangerView> dangerView(
           [[MDDownloadItemDangerView alloc]
-              initWithFrame:[self cr_localizedRect:dangerViewRect]]);
+              initWithFrame:NSMakeRect(0, 0, 0, NSHeight(self.bounds))]);
       dangerView_ = dangerView;
       dangerView_.autoresizingMask =
-          [NSView cr_localizedAutoresizingMask:NSViewWidthSizable];
+          [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
       dangerView_.button.target = controller_;
       dangerView_.button.action = @selector(discardDownload:);
       [self addSubview:dangerView_];
     }
     [dangerView_ setStateFromDownload:downloadModel];
+    [dangerView_ setFrameSize:NSMakeSize(dangerView_.preferredWidth,
+                                         NSHeight(dangerView_.frame))];
     return;
   } else if (dangerView_) {
     for (NSView* view in [self normalViews]) {
