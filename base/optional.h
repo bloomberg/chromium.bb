@@ -40,7 +40,7 @@ struct OptionalStorageBase {
 
   template <class... Args>
   constexpr explicit OptionalStorageBase(in_place_t, Args&&... args)
-      : is_null_(false), value_(std::forward<Args>(args)...) {}
+      : is_populated_(true), value_(std::forward<Args>(args)...) {}
 
   // When T is not trivially destructible we must call its
   // destructor before deallocating its memory.
@@ -54,18 +54,18 @@ struct OptionalStorageBase {
   // necessary for this case at the moment. Please see also the destructor
   // comment in "is_trivially_destructible = true" specialization below.
   ~OptionalStorageBase() {
-    if (!is_null_)
+    if (is_populated_)
       value_.~T();
   }
 
   template <class... Args>
   void Init(Args&&... args) {
-    DCHECK(is_null_);
+    DCHECK(!is_populated_);
     ::new (&value_) T(std::forward<Args>(args)...);
-    is_null_ = false;
+    is_populated_ = true;
   }
 
-  bool is_null_ = true;
+  bool is_populated_ = false;
   union {
     // |empty_| exists so that the union will always be initialized, even when
     // it doesn't contain a value. Union members must be initialized for the
@@ -83,7 +83,7 @@ struct OptionalStorageBase<T, true /* trivially destructible */> {
 
   template <class... Args>
   constexpr explicit OptionalStorageBase(in_place_t, Args&&... args)
-      : is_null_(false), value_(std::forward<Args>(args)...) {}
+      : is_populated_(true), value_(std::forward<Args>(args)...) {}
 
   // When T is trivially destructible (i.e. its destructor does nothing) there
   // is no need to call it. Implicitly defined destructor is trivial, because
@@ -101,12 +101,12 @@ struct OptionalStorageBase<T, true /* trivially destructible */> {
 
   template <class... Args>
   void Init(Args&&... args) {
-    DCHECK(is_null_);
+    DCHECK(!is_populated_);
     ::new (&value_) T(std::forward<Args>(args)...);
-    is_null_ = false;
+    is_populated_ = true;
   }
 
-  bool is_null_ = true;
+  bool is_populated_ = false;
   union {
     // |empty_| exists so that the union will always be initialized, even when
     // it doesn't contain a value. Union members must be initialized for the
@@ -132,7 +132,7 @@ struct OptionalStorage : OptionalStorageBase<T> {
 
   // Accessing the members of template base class requires explicit
   // declaration.
-  using OptionalStorageBase<T>::is_null_;
+  using OptionalStorageBase<T>::is_populated_;
   using OptionalStorageBase<T>::value_;
   using OptionalStorageBase<T>::Init;
 
@@ -144,12 +144,12 @@ struct OptionalStorage : OptionalStorageBase<T> {
   OptionalStorage() = default;
 
   OptionalStorage(const OptionalStorage& other) {
-    if (!other.is_null_)
+    if (other.is_populated_)
       Init(other.value_);
   }
 
   OptionalStorage(OptionalStorage&& other) {
-    if (!other.is_null_)
+    if (other.is_populated_)
       Init(std::move(other.value_));
   }
 };
@@ -159,7 +159,7 @@ struct OptionalStorage<T,
                        true /* trivially copy constructible */,
                        false /* trivially move constructible */>
     : OptionalStorageBase<T> {
-  using OptionalStorageBase<T>::is_null_;
+  using OptionalStorageBase<T>::is_populated_;
   using OptionalStorageBase<T>::value_;
   using OptionalStorageBase<T>::Init;
   using OptionalStorageBase<T>::OptionalStorageBase;
@@ -168,7 +168,7 @@ struct OptionalStorage<T,
   OptionalStorage(const OptionalStorage& other) = default;
 
   OptionalStorage(OptionalStorage&& other) {
-    if (!other.is_null_)
+    if (other.is_populated_)
       Init(std::move(other.value_));
   }
 };
@@ -178,7 +178,7 @@ struct OptionalStorage<T,
                        false /* trivially copy constructible */,
                        true /* trivially move constructible */>
     : OptionalStorageBase<T> {
-  using OptionalStorageBase<T>::is_null_;
+  using OptionalStorageBase<T>::is_populated_;
   using OptionalStorageBase<T>::value_;
   using OptionalStorageBase<T>::Init;
   using OptionalStorageBase<T>::OptionalStorageBase;
@@ -187,7 +187,7 @@ struct OptionalStorage<T,
   OptionalStorage(OptionalStorage&& other) = default;
 
   OptionalStorage(const OptionalStorage& other) {
-    if (!other.is_null_)
+    if (other.is_populated_)
       Init(other.value_);
   }
 };
@@ -222,7 +222,7 @@ class OptionalBase {
   ~OptionalBase() = default;
 
   OptionalBase& operator=(const OptionalBase& other) {
-    if (other.storage_.is_null_) {
+    if (!other.storage_.is_populated_) {
       FreeIfNeeded();
       return *this;
     }
@@ -232,7 +232,7 @@ class OptionalBase {
   }
 
   OptionalBase& operator=(OptionalBase&& other) {
-    if (other.storage_.is_null_) {
+    if (!other.storage_.is_populated_) {
       FreeIfNeeded();
       return *this;
     }
@@ -242,24 +242,24 @@ class OptionalBase {
   }
 
   void InitOrAssign(const T& value) {
-    if (storage_.is_null_)
+    if (!storage_.is_populated_)
       storage_.Init(value);
     else
       storage_.value_ = value;
   }
 
   void InitOrAssign(T&& value) {
-    if (storage_.is_null_)
+    if (!storage_.is_populated_)
       storage_.Init(std::move(value));
     else
       storage_.value_ = std::move(value);
   }
 
   void FreeIfNeeded() {
-    if (storage_.is_null_)
+    if (!storage_.is_populated_)
       return;
     storage_.value_.~T();
-    storage_.is_null_ = true;
+    storage_.is_populated_ = false;
   }
 
   OptionalStorage<T> storage_;
@@ -333,12 +333,12 @@ class Optional : public internal::OptionalBase<T> {
   }
 
   constexpr const T* operator->() const {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return &value();
   }
 
   constexpr T* operator->() {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return &value();
   }
 
@@ -350,27 +350,27 @@ class Optional : public internal::OptionalBase<T> {
 
   constexpr T&& operator*() && { return std::move(value()); }
 
-  constexpr explicit operator bool() const { return !storage_.is_null_; }
+  constexpr explicit operator bool() const { return storage_.is_populated_; }
 
-  constexpr bool has_value() const { return !storage_.is_null_; }
+  constexpr bool has_value() const { return storage_.is_populated_; }
 
   constexpr T& value() & {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr const T& value() const & {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr T&& value() && {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
   constexpr const T&& value() const && {
-    DCHECK(!storage_.is_null_);
+    DCHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
@@ -381,8 +381,9 @@ class Optional : public internal::OptionalBase<T> {
     //               "T must be copy constructible");
     static_assert(std::is_convertible<U, T>::value,
                   "U must be convertible to T");
-    return storage_.is_null_ ? static_cast<T>(std::forward<U>(default_value))
-                             : value();
+    return storage_.is_populated_
+               ? value()
+               : static_cast<T>(std::forward<U>(default_value));
   }
 
   template <class U>
@@ -392,26 +393,27 @@ class Optional : public internal::OptionalBase<T> {
     //               "T must be move constructible");
     static_assert(std::is_convertible<U, T>::value,
                   "U must be convertible to T");
-    return storage_.is_null_ ? static_cast<T>(std::forward<U>(default_value))
-                             : std::move(value());
+    return storage_.is_populated_
+               ? std::move(value())
+               : static_cast<T>(std::forward<U>(default_value));
   }
 
   void swap(Optional& other) {
-    if (storage_.is_null_ && other.storage_.is_null_)
+    if (!storage_.is_populated_ && !other.storage_.is_populated_)
       return;
 
-    if (storage_.is_null_ != other.storage_.is_null_) {
-      if (storage_.is_null_) {
-        storage_.Init(std::move(other.storage_.value_));
-        other.FreeIfNeeded();
-      } else {
+    if (storage_.is_populated_ != other.storage_.is_populated_) {
+      if (storage_.is_populated_) {
         other.storage_.Init(std::move(storage_.value_));
         FreeIfNeeded();
+      } else {
+        storage_.Init(std::move(other.storage_.value_));
+        other.FreeIfNeeded();
       }
       return;
     }
 
-    DCHECK(!storage_.is_null_ && !other.storage_.is_null_);
+    DCHECK(storage_.is_populated_ && other.storage_.is_populated_);
     using std::swap;
     swap(**this, *other);
   }
