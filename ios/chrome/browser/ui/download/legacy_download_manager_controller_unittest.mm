@@ -88,7 +88,7 @@ TEST_F(LegacyDownloadManagerControllerTest, TestXibViewConnections) {
 }
 
 // TODO(crbug.com/804250): this test is flaky.
-TEST_F(LegacyDownloadManagerControllerTest, FLAKY_TestStart) {
+TEST_F(LegacyDownloadManagerControllerTest, TestStart) {
   [_controller start];
   EXPECT_TRUE(
       [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);
