@@ -254,7 +254,9 @@ class BASE_EXPORT StackSamplingProfiler {
   // but not already finished.
   ~StackSamplingProfiler();
 
-  // Initializes the profiler and starts sampling.
+  // Initializes the profiler and starts sampling. Might block on a
+  // WaitableEvent if this StackSamplingProfiler was previously started and
+  // recently stopped, while the previous profiling phase winds down.
   void Start();
 
   // Stops the profiler and any ongoing sampling. This method will return

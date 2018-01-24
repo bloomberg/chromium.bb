@@ -28,6 +28,25 @@ class StackSamplingConfiguration {
       GetSamplingParamsForCurrentProcess() const;
 
   // Returns true if the profiler should be started for the current process.
+  //
+  // This method must first be called from the main thread while the process is
+  // single-threaded. It is thereafter safe to call it concurrently from other
+  // threads.
+  //
+  // This method can be used via the following pattern:
+  // if
+  // (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess()) {
+  //   // start the profiler.
+  // }
+  //
+  // This method is currently called unsynchronized from two different threads
+  // (UI thread and IO thread). This is okay due to the following reasons.
+  //
+  // 1) The profile configuration (which is constant) is guaranteed to have
+  // already been created when this method is called from the IO thread, because
+  // of the access for the UI thread sampling.
+  //
+  // 2) The only other data accessed in this method is the command line.
   bool IsProfilerEnabledForCurrentProcess() const;
 
   // Get the synthetic field trial configuration. Returns true if a synthetic

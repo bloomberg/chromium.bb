@@ -74,6 +74,10 @@ class CONTENT_EXPORT BrowserMainParts {
   // (or 0 if no error).
   virtual int PreCreateThreads();
 
+  // This is called right after all child threads owned by the content framework
+  // are created.
+  virtual void PostCreateThreads() {}
+
   virtual void ServiceManagerConnectionStarted(
       ServiceManagerConnection* connection) {}
 
