@@ -61,6 +61,12 @@ void SafeSeedManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kVariationsFailedToFetchSeedStreak, 0);
 }
 
+bool SafeSeedManager::ShouldRunInSafeMode() const {
+  // TODO(isherman): Choose reasonable thresholds for the crash and fetch
+  // failure streaks, and return true or false based on those.
+  return false;
+}
+
 void SafeSeedManager::SetActiveSeedState(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
@@ -89,8 +95,6 @@ void SafeSeedManager::RecordSuccessfulFetch(VariationsSeedStore* seed_store) {
   // even if running in safe mode, as the saved seed in that case will just be
   // the existing safe seed.
   if (active_seed_state_) {
-    // TODO(isherman): As an optimization, skip writing the seed if we're
-    // already running in safe mode.
     seed_store->StoreSafeSeed(active_seed_state_->seed_data,
                               active_seed_state_->base64_seed_signature,
                               *active_seed_state_->client_filterable_state);

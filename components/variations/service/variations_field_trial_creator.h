@@ -96,14 +96,6 @@ class VariationsFieldTrialCreator {
                 std::string* seed_data,
                 std::string* base64_signature);
 
-  // Loads the seed from the variations store into |seed|. Returns true on
-  // success, in which case |seed| will contain the loaded data, and |seed_data|
-  // and |base64_signature| will contain the raw pref values. Virtual for
-  // testing.
-  virtual bool LoadSeedFromStore(VariationsSeed* seed,
-                                 std::string* seed_data,
-                                 std::string* base64_signature);
-
   // Creates field trials based on the variations seed loaded from local state.
   // If there is a problem loading the seed data, all trials specified by the
   // seed may not be created. Some field trials are configured to override or
@@ -116,6 +108,9 @@ class VariationsFieldTrialCreator {
           low_entropy_provider,
       base::FeatureList* feature_list,
       SafeSeedManager* safe_seed_manager);
+
+  // Returns the seed store. Virtual for testing.
+  virtual VariationsSeedStore* GetSeedStore();
 
   PrefService* local_state() { return seed_store_.local_state(); }
   const PrefService* local_state() const { return seed_store_.local_state(); }

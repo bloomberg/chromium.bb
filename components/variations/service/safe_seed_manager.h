@@ -30,8 +30,13 @@ class SafeSeedManager {
   // Register safe mode prefs in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns true iff the client should use the safe seed for variations state.
+  // Virtual for testing.
+  virtual bool ShouldRunInSafeMode() const;
+
   // Stores the combined server and client state that control the active
   // variations state. Must be called at most once per launch of the Chrome app.
+  // As an optimization, should not be called when running in safe mode.
   // Virtual for testing.
   virtual void SetActiveSeedState(
       const std::string& seed_data,
@@ -49,7 +54,7 @@ class SafeSeedManager {
 
  private:
   // The combined server and client state needed to save an active seed as a
-  // safe seed.
+  // safe seed. Not set when running in safe mode.
   struct ActiveSeedState {
     ActiveSeedState(
         const std::string& seed_data,
