@@ -344,6 +344,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     /**
+     * @return Whether the native library initialization is delayed at this point.
+     */
+    protected boolean isStartupDelayed() {
+        return mStartupDelayed;
+    }
+
+    /**
      * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
      */
     @Nullable
