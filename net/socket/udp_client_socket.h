@@ -50,6 +50,7 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   int SetSendBufferSize(int32_t size) override;
   int SetDoNotFragment() override;
   const NetLogWithSource& NetLog() const override;
+  void EnableRecvOptimization() override;
 
   // Switch to use non-blocking IO. Must be called right after construction and
   // before other calls.

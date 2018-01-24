@@ -136,6 +136,8 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // Set of QUIC tags to send in the handshake's connection options that only
     // affect the client.
     QuicTagVector quic_client_connection_options;
+    // Enables experimental optimization for receiving data in UDPSocket.
+    bool quic_enable_socket_recv_optimization;
 
     // Active QUIC experiments
 

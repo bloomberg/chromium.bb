@@ -911,6 +911,121 @@ TEST_F(UDPSocketTest, SetDSCPFake) {
 }
 #endif
 
+TEST_F(UDPSocketTest, ReadWithSocketOptimization) {
+  const uint16_t kPort = 10000;
+  std::string simple_message("hello world!");
+
+  // Setup the server to listen.
+  IPEndPoint server_address(IPAddress::IPv4Localhost(), kPort);
+  UDPServerSocket server(NULL, NetLogSource());
+  server.AllowAddressReuse();
+  int rv = server.Listen(server_address);
+  ASSERT_THAT(rv, IsOk());
+
+  // Setup the client, enable experimental optimization and connected to the
+  // server.
+  UDPClientSocket client(DatagramSocket::DEFAULT_BIND, RandIntCallback(), NULL,
+                         NetLogSource());
+  client.EnableRecvOptimization();
+  rv = client.Connect(server_address);
+  EXPECT_THAT(rv, IsOk());
+
+  // Get the client's address.
+  IPEndPoint client_address;
+  rv = client.GetLocalAddress(&client_address);
+  EXPECT_THAT(rv, IsOk());
+
+  // Server sends the message to the client.
+  rv = SendToSocket(&server, simple_message, client_address);
+  EXPECT_EQ(simple_message.length(), static_cast<size_t>(rv));
+
+  // Client receives the message.
+  std::string str = ReadSocket(&client);
+  EXPECT_EQ(simple_message, str);
+
+  server.Close();
+  client.Close();
+}
+
+// Tests that read from a socket correctly returns
+// |ERR_MSG_TOO_BIG| when the buffer is too small and
+// returns the actual message when it fits the buffer.
+// For the optimized path, the buffer size should be at least
+// 1 byte greater than the message.
+TEST_F(UDPSocketTest, ReadWithSocketOptimizationTruncation) {
+  const uint16_t kPort = 10000;
+  std::string too_long_message(kMaxRead + 1, 'A');
+  std::string right_length_message(kMaxRead - 1, 'B');
+  std::string exact_length_message(kMaxRead, 'C');
+
+  // Setup the server to listen.
+  IPEndPoint server_address(IPAddress::IPv4Localhost(), kPort);
+  UDPServerSocket server(NULL, NetLogSource());
+  server.AllowAddressReuse();
+  int rv = server.Listen(server_address);
+  ASSERT_THAT(rv, IsOk());
+
+  // Setup the client, enable experimental optimization and connected to the
+  // server.
+  UDPClientSocket client(DatagramSocket::DEFAULT_BIND, RandIntCallback(), NULL,
+                         NetLogSource());
+  client.EnableRecvOptimization();
+  rv = client.Connect(server_address);
+  EXPECT_THAT(rv, IsOk());
+
+  // Get the client's address.
+  IPEndPoint client_address;
+  rv = client.GetLocalAddress(&client_address);
+  EXPECT_THAT(rv, IsOk());
+
+  // Send messages to the client.
+  rv = SendToSocket(&server, too_long_message, client_address);
+  EXPECT_EQ(too_long_message.length(), static_cast<size_t>(rv));
+  rv = SendToSocket(&server, right_length_message, client_address);
+  EXPECT_EQ(right_length_message.length(), static_cast<size_t>(rv));
+  rv = SendToSocket(&server, exact_length_message, client_address);
+  EXPECT_EQ(exact_length_message.length(), static_cast<size_t>(rv));
+
+  // Client receives the messages.
+
+  // 1. The first message is |too_long_message|. Its size exceeds the buffer.
+  // In that case, the client is expected to get |ERR_MSG_TOO_BIG| when the
+  // data is read.
+  TestCompletionCallback callback;
+  rv = client.Read(buffer_.get(), kMaxRead, callback.callback());
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(ERR_MSG_TOO_BIG, rv);
+
+  // 2. The second message is |right_length_message|. Its size is
+  // one byte smaller than the size of the buffer. In that case, the client
+  // is expected to read the whole message successfully.
+  rv = client.Read(buffer_.get(), kMaxRead, callback.callback());
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(static_cast<int>(right_length_message.length()), rv);
+  EXPECT_EQ(right_length_message, std::string(buffer_->data(), rv));
+
+  // 3. The third message is |exact_length_message|. Its size is equal to
+  // the read buffer size. In that case, the client expects to get
+  // |ERR_MSG_TOO_BIG| when the socket is read. Internally, the optimized
+  // path uses read() system call that requires one extra byte to detect
+  // truncated messages; therefore, messages that fill the buffer exactly
+  // are considered truncated.
+  // The optimization is only enabled on POSIX platforms. On Windows,
+  // the optimization is turned off; therefore, the client
+  // should be able to read the whole message without encountering
+  // |ERR_MSG_TOO_BIG|.
+  rv = client.Read(buffer_.get(), kMaxRead, callback.callback());
+  rv = callback.GetResult(rv);
+#if defined(OS_POSIX)
+  EXPECT_EQ(ERR_MSG_TOO_BIG, rv);
+#else
+  EXPECT_EQ(static_cast<int>(exact_length_message.length()), rv);
+  EXPECT_EQ(exact_length_message, std::string(buffer_->data(), rv));
+#endif
+  server.Close();
+  client.Close();
+}
+
 // On Android, where socket tagging is supported, verify that UDPSocket::Tag
 // works as expected.
 #if defined(OS_ANDROID)

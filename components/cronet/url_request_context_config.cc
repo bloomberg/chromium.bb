@@ -68,6 +68,8 @@ const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
 const char kQuicRaceCertVerification[] = "race_cert_verification";
 const char kQuicHostWhitelist[] = "host_whitelist";
+const char kQuicEnableSocketRecvOptimization[] =
+    "enable_socket_recv_optimization";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -302,6 +304,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string quic_user_agent_id;
       if (quic_args->GetString(kQuicUserAgentId, &quic_user_agent_id)) {
         session_params->quic_user_agent_id = quic_user_agent_id;
+      }
+
+      bool quic_enable_socket_recv_optimization = false;
+      if (quic_args->GetBoolean(kQuicEnableSocketRecvOptimization,
+                                &quic_enable_socket_recv_optimization)) {
+        session_params->quic_enable_socket_recv_optimization =
+            quic_enable_socket_recv_optimization;
       }
 
       bool quic_migrate_sessions_on_network_change_v2 = false;
