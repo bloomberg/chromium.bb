@@ -462,7 +462,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     """Test Uprev of a single project ebuild."""
     self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -490,7 +490,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -505,7 +505,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -520,7 +520,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -551,7 +551,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -559,7 +559,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     """Test Uprev of a multi-project (array) ebuild."""
     self.createRevWorkOnMocks(self._mock_ebuild_multi, rev=True, multi=True)
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
-    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
     self.assertEqual(self._revved_ebuild_multi, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
@@ -582,7 +582,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                               rev=True)
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
 
-    self.assertEqual(result, 'category/test_package-0.0.1-r1')
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r1')
     self.assertEqual(self._revved_ebuild, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 

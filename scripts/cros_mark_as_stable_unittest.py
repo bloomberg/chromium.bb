@@ -8,14 +8,18 @@
 from __future__ import print_function
 
 import mock
+import os
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
 
 
@@ -92,6 +96,156 @@ class NonClassTests(cros_test_lib.MockTestCase):
   def testPushChangeBadCls(self):
     """Verify we do not push bad CLs."""
     self.assertRaises(AssertionError, self._TestPushChange, bad_cls=True)
+
+
+class EbuildMock(object):
+  """Mock portage_util.Ebuild."""
+
+  def __init__(self, path, new_package=True):
+    self.path = path
+    self.package = '%s_package' % path
+    self.cros_workon_vars = 'cros_workon_vars'
+    self._new_package = new_package
+
+  # pylint: disable=unused-argument
+  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None):
+    if self._new_package:
+      return ('%s_new_package' % self.path,
+              '%s_new_ebuild' % self.path,
+              '%s_old_ebuild' % self.path)
+
+
+# pylint: disable=protected-access
+class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
+  """Test mark_as_stable in parallel."""
+
+  def setUp(self):
+    self._overlay = 'test-overlay'
+    self._manifest = 'manifest'
+    self._parser = cros_mark_as_stable.GetParser()
+
+    self._manager = parallel.Manager()
+    self.ebuild_paths_to_add = self._manager.list()
+    self.ebuild_paths_to_remove = self._manager.list()
+    self.revved_packages = self._manager.list()
+    self.new_package_atoms = self._manager.list()
+    self.messages = self._manager.list()
+    self._manager.__enter__()
+
+    self.PatchObject(git, 'GetTrackingBranchViaManifest')
+
+  def tearDown(self):
+    # Mimic exiting a 'with' statement.
+    self._manager.__exit__(None, None, None)
+
+  def testWorkOnEbuildWithNewPackage(self):
+    """Test _WorkOnEbuild with new packages."""
+    ebuild = EbuildMock('ebuild')
+    options = self._parser.parse_args(['commit'])
+
+    cros_mark_as_stable._WorkOnEbuild(
+        self._overlay, ebuild, self._manifest, options,
+        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
+        self.messages, self.revved_packages, self.new_package_atoms)
+    self.assertItemsEqual(self.ebuild_paths_to_add, ['ebuild_new_ebuild'])
+    self.assertItemsEqual(self.ebuild_paths_to_remove, ['ebuild_old_ebuild'])
+    self.assertItemsEqual(self.messages,
+                          [cros_mark_as_stable._GIT_COMMIT_MESSAGE %
+                           'ebuild_package'])
+    self.assertItemsEqual(self.revved_packages, ['ebuild_package'])
+    self.assertItemsEqual(self.new_package_atoms, ['=ebuild_new_package'])
+
+  def testWorkOnEbuildWithoutNewPackage(self):
+    """Test _WorkOnEbuild without new packages."""
+    ebuild = EbuildMock('ebuild', new_package=False)
+    options = self._parser.parse_args(['commit'])
+
+    cros_mark_as_stable._WorkOnEbuild(
+        self._overlay, ebuild, self._manifest, options,
+        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
+        self.messages, self.revved_packages, self.new_package_atoms)
+    self.assertEqual(len(self.ebuild_paths_to_add), 0)
+    self.assertEqual(len(self.ebuild_paths_to_remove), 0)
+    self.assertEqual(len(self.messages), 0)
+    self.assertEqual(len(self.revved_packages), 0)
+    self.assertEqual(len(self.new_package_atoms), 0)
+
+  def testWorkOnOverlayWithPushCmd(self):
+    """Test _WorkOnOverlay with Push command."""
+    ebuild_1 = EbuildMock('ebuild_1')
+    ebuild_2 = EbuildMock('ebuild_2')
+    ebuilds = [ebuild_1, ebuild_2]
+    options = self._parser.parse_args(['push'])
+
+    push_change_mock = self.PatchObject(cros_mark_as_stable, 'PushChange')
+    self.PatchObject(os.path, 'isdir', return_value=True)
+
+    cros_mark_as_stable._WorkOnOverlay(
+        self._overlay, ebuilds, self._manifest, options,
+        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
+        self.messages, self.revved_packages, self.new_package_atoms)
+
+    push_change_mock.assert_called_once_with(
+        constants.STABLE_EBUILD_BRANCH, mock.ANY,
+        options.dryrun, cwd=self._overlay,
+        staging_branch=options.staging_branch)
+
+  def testWorkOnOverlayWithCommitCmd(self):
+    """Test _WorkOnOverlay with Commit command."""
+    ebuild_1 = EbuildMock('ebuild_1')
+    ebuild_2 = EbuildMock('ebuild_2')
+    ebuilds = [ebuild_1, ebuild_2]
+    options = self._parser.parse_args(['commit'])
+
+    self.PatchObject(git, 'GetGitRepoRevision')
+    self.PatchObject(git, 'RunGit')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists', return_value=True)
+    self.PatchObject(portage_util.EBuild, 'CommitChange')
+    self.PatchObject(os.path, 'isdir', return_value=True)
+
+    cros_mark_as_stable._WorkOnOverlay(
+        self._overlay, ebuilds, self._manifest, options,
+        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
+        self.messages, self.revved_packages, self.new_package_atoms)
+
+    self.assertItemsEqual(
+        self.ebuild_paths_to_add,
+        ['ebuild_1_new_ebuild', 'ebuild_2_new_ebuild'])
+    self.assertItemsEqual(
+        self.ebuild_paths_to_remove,
+        ['ebuild_1_old_ebuild', 'ebuild_2_old_ebuild'])
+    self.assertItemsEqual(
+        self.messages,
+        [cros_mark_as_stable._GIT_COMMIT_MESSAGE % 'ebuild_1_package',
+         cros_mark_as_stable._GIT_COMMIT_MESSAGE % 'ebuild_2_package'])
+    self.assertItemsEqual(
+        self.revved_packages,
+        ['ebuild_1_package', 'ebuild_2_package'])
+    self.assertItemsEqual(
+        self.new_package_atoms,
+        ['=ebuild_1_new_package', '=ebuild_2_new_package'])
+
+  def testWorkOnOverlayNoEbuildsWithCommitCmd(self):
+    """Test _WorkOnOverlay without ebuilds with Commit command."""
+    ebuilds = []
+    options = self._parser.parse_args(['commit'])
+
+    self.PatchObject(git, 'GetGitRepoRevision')
+    self.PatchObject(git, 'RunGit')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch')
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists', return_value=True)
+    self.PatchObject(os.path, 'isdir', return_value=True)
+
+    cros_mark_as_stable._WorkOnOverlay(
+        self._overlay, ebuilds, self._manifest, options,
+        self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
+        self.messages, self.revved_packages, self.new_package_atoms)
+    self.assertItemsEqual(self.ebuild_paths_to_add, [])
+    self.assertItemsEqual(self.ebuild_paths_to_remove, [])
+    self.assertItemsEqual(self.messages, [])
+    self.assertItemsEqual(self.revved_packages, [])
+    self.assertItemsEqual(self.new_package_atoms, [])
 
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):

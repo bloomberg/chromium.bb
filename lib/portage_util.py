@@ -66,6 +66,11 @@ UNITTEST_PACKAGE_BLACKLIST = set((
     'sys-devel/binutils',
 ))
 
+# A structure to hold computed values of CROS_WORKON_*.
+CrosWorkonVars = collections.namedtuple(
+    'CrosWorkonVars',
+    ('localname', 'project', 'srcpath', 'always_live', 'commit', 'rev_subdirs'))
+
 
 class MissingOverlayException(Exception):
   """This exception indicates that a needed overlay is missing."""
@@ -332,12 +337,6 @@ class EBuild(object):
   _PACKAGE_VERSION_PATTERN = re.compile(
       r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
   _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT="(.*)"$')
-
-  # A structure to hold computed values of CROS_WORKON_*.
-  CrosWorkonVars = collections.namedtuple(
-      'CrosWorkonVars',
-      ('localname', 'project', 'srcpath', 'always_live', 'commit',
-       'rev_subdirs'))
 
   @classmethod
   def _RunCommand(cls, command, **kwargs):
@@ -648,8 +647,8 @@ class EBuild(object):
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
           'cros_workon projects or source paths.')
 
-    return EBuild.CrosWorkonVars(localnames, projects, srcpaths, live, commit,
-                                 rev_subdirs)
+    return CrosWorkonVars(localnames, projects, srcpaths, live, commit,
+                          rev_subdirs)
 
   def GetSourcePath(self, srcroot, manifest):
     """Get the project and path for this ebuild.
@@ -833,8 +832,10 @@ class EBuild(object):
         opened and closed by the caller.
 
     Returns:
-      If the revved package is different than the old ebuild, return the full
-      revved package name, including the version number. Otherwise, return None.
+      If the revved package is different than the old ebuild, return a tuple
+      of (full revved package name (including the version number), new stable
+      ebuild path to add to git, old ebuild path to remove from git (if any)).
+      Otherwise, return None.
 
     Raises:
       OSError: Error occurred while creating a new ebuild.
@@ -907,17 +908,11 @@ class EBuild(object):
     old_ebuild_path = self.ebuild_path
     if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
       os.unlink(new_stable_ebuild_path)
-      return None
+      return
     else:
-      logging.info('Adding new stable ebuild to git')
-      self._RunGit(self.overlay, ['add', new_stable_ebuild_path])
-
-      if self.is_stable:
-        logging.info('Removing old ebuild from git')
-        self._RunGit(self.overlay, ['rm', '-f', old_ebuild_path])
-
-      return '%s-%s' % (self.package, new_version)
-
+      ebuild_path_to_remove = old_ebuild_path if self.is_stable else None
+      return ('%s-%s' % (self.package, new_version),
+              new_stable_ebuild_path, ebuild_path_to_remove)
 
   def _ShouldRevEBuild(self, commit_ids, srcdirs, subdirs_to_rev):
     """Determine whether we should attempt to rev |ebuild|.

@@ -269,65 +269,128 @@ def main(argv):
     portage_util.BuildEBuildDictionary(overlays, options.all, package_list,
                                        allow_blacklisted=options.force)
 
-  # Contains the array of packages we actually revved.
-  revved_packages = []
-  new_package_atoms = []
+  with parallel.Manager() as manager:
+    # Contains the array of packages we actually revved.
+    revved_packages = manager.list()
+    new_package_atoms = manager.list()
 
-  for overlay in overlays:
-    ebuilds = overlays[overlay]
-    if not os.path.isdir(overlay):
-      logging.warning('Skipping %s' % overlay)
-      continue
+    for overlay in overlays:
+      ebuilds = overlays[overlay]
+      messages = manager.list()
+      ebuild_paths_to_add = manager.list()
+      ebuild_paths_to_remove = manager.list()
+      _WorkOnOverlay(overlay, ebuilds, manifest, options, ebuild_paths_to_add,
+                     ebuild_paths_to_remove, messages, revved_packages,
+                     new_package_atoms)
 
-    # Note we intentionally work from the non push tracking branch;
-    # everything built thus far has been against it (meaning, http mirrors),
-    # thus we should honor that.  During the actual push, the code switches
-    # to the correct urls, and does an appropriate rebasing.
-    tracking_branch = git.GetTrackingBranchViaManifest(
-        overlay, manifest=manifest).ref
+    if options.command == 'commit':
+      chroot_path = os.path.join(options.srcroot, constants.DEFAULT_CHROOT_DIR)
+      if os.path.exists(chroot_path):
+        CleanStalePackages(options.srcroot, options.boards.split(':'),
+                           new_package_atoms)
+      if options.drop_file:
+        osutils.WriteFile(options.drop_file, ' '.join(revved_packages))
 
-    if options.command == 'push':
-      PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                 options.dryrun, cwd=overlay,
-                 staging_branch=options.staging_branch)
-    elif options.command == 'commit':
-      existing_commit = git.GetGitRepoRevision(overlay)
-      work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                              cwd=overlay)
-      work_branch.CreateBranch()
-      if not work_branch.Exists():
-        cros_build_lib.Die('Unable to create stabilizing branch in %s' %
-                           overlay)
 
-      # In the case of uprevving overlays that have patches applied to them,
-      # include the patched changes in the stabilizing branch.
-      git.RunGit(overlay, ['rebase', existing_commit])
+def _WorkOnOverlay(overlay, ebuilds, manifest, options, ebuild_paths_to_add,
+                   ebuild_paths_to_remove, messages, revved_packages,
+                   new_package_atoms):
+  """Work on a single overlay.
 
-      messages = []
-      for ebuild in ebuilds:
-        if options.verbose:
-          logging.info('Working on %s, info %s', ebuild.package,
-                       ebuild.cros_workon_vars)
-        try:
-          new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
-          if new_package:
-            revved_packages.append(ebuild.package)
-            new_package_atoms.append('=%s' % new_package)
-            messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
-        except (OSError, IOError):
-          logging.warning(
-              'Cannot rev %s\n'
-              'Note you will have to go into %s '
-              'and reset the git repo yourself.' % (ebuild.package, overlay))
-          raise
+  Args:
+    overlay: The overlay to work on.
+    ebuilds: The ebuilds belonging to the overlay.
+    manifest: The manifest of the given source root.
+    options: The options object returned by the argument parser.
+    ebuild_paths_to_add: New stable ebuild paths to add to git.
+    ebuild_paths_to_remove: Old ebuild paths to remove from git.
+    messages: A share list of commit messages.
+    revved_packages: A shared list of revved packages.
+    new_package_atoms: A shared list of new package atoms.
+  """
+  if not os.path.isdir(overlay):
+    logging.warning('Skipping %s' % overlay)
+    return
+
+  # Note we intentionally work from the non push tracking branch;
+  # everything built thus far has been against it (meaning, http mirrors),
+  # thus we should honor that.  During the actual push, the code switches
+  # to the correct urls, and does an appropriate rebasing.
+  tracking_branch = git.GetTrackingBranchViaManifest(
+      overlay, manifest=manifest).ref
+
+  if options.command == 'push':
+    PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+               options.dryrun, cwd=overlay,
+               staging_branch=options.staging_branch)
+  elif options.command == 'commit':
+    existing_commit = git.GetGitRepoRevision(overlay)
+    work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+                            cwd=overlay)
+    work_branch.CreateBranch()
+    if not work_branch.Exists():
+      cros_build_lib.Die('Unable to create stabilizing branch in %s' %
+                         overlay)
+
+    # In the case of uprevving overlays that have patches applied to them,
+    # include the patched changes in the stabilizing branch.
+    git.RunGit(overlay, ['rebase', existing_commit])
+
+    if ebuilds:
+      inputs = [[overlay, ebuild, manifest, options, ebuild_paths_to_add,
+                 ebuild_paths_to_remove, messages, revved_packages,
+                 new_package_atoms] for ebuild in ebuilds]
+      parallel.RunTasksInProcessPool(_WorkOnEbuild, inputs)
+
+      if ebuild_paths_to_add:
+        logging.info('Adding new stable ebuild paths %s in overlay %s.',
+                     ebuild_paths_to_add, overlay)
+        git.RunGit(overlay, ['add'] + list(ebuild_paths_to_add))
+
+      if ebuild_paths_to_remove:
+        logging.info('Removing old ebuild paths %s in overlay %s.',
+                     ebuild_paths_to_remove, overlay)
+        git.RunGit(overlay, ['rm', '-f'] + list(ebuild_paths_to_remove))
 
       if messages:
         portage_util.EBuild.CommitChange('\n\n'.join(messages), overlay)
 
-  if options.command == 'commit':
-    chroot_path = os.path.join(options.srcroot, constants.DEFAULT_CHROOT_DIR)
-    if os.path.exists(chroot_path):
-      CleanStalePackages(options.srcroot, options.boards.split(':'),
-                         new_package_atoms)
-    if options.drop_file:
-      osutils.WriteFile(options.drop_file, ' '.join(revved_packages))
+
+def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
+                  ebuild_paths_to_remove, messages, revved_packages,
+                  new_package_atoms):
+  """Work on a single ebuild.
+
+  Args:
+    overlay: The overlay where the ebuild belongs to.
+    ebuild: The ebuild to work on.
+    manifest: The manifest of the given source root.
+    options: The options object returned by the argument parser.
+    ebuild_paths_to_add: New stable ebuild paths to add to git.
+    ebuild_paths_to_remove: Old ebuild paths to remove from git.
+    messages: A share list of commit messages.
+    revved_packages: A shared list of revved packages.
+    new_package_atoms: A shared list of new package atoms.
+  """
+  if options.verbose:
+    logging.info('Working on %s, info %s', ebuild.package,
+                 ebuild.cros_workon_vars)
+  try:
+    result = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
+    if result:
+      new_package, ebuild_path_to_add, ebuild_path_to_remove = result
+
+      if ebuild_path_to_add:
+        ebuild_paths_to_add.append(ebuild_path_to_add)
+      if ebuild_path_to_remove:
+        ebuild_paths_to_remove.append(ebuild_path_to_remove)
+
+      messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
+      revved_packages.append(ebuild.package)
+      new_package_atoms.append('=%s' % new_package)
+  except (OSError, IOError):
+    logging.warning(
+        'Cannot rev %s\n'
+        'Note you will have to go into %s '
+        'and reset the git repo yourself.' % (ebuild.package, overlay))
+    raise
