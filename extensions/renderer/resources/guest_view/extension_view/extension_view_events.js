@@ -8,7 +8,7 @@ var CreateEvent = require('guestViewEvents').CreateEvent;
 var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 
 function ExtensionViewEvents(extensionViewImpl) {
-  GuestViewEvents.call(this, extensionViewImpl);
+  $Function.call(GuestViewEvents, this, extensionViewImpl);
 }
 
 ExtensionViewEvents.prototype.__proto__ = GuestViewEvents.prototype;

@@ -6,7 +6,7 @@ var CreateEvent = require('guestViewEvents').CreateEvent;
 var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
 
 function ExtensionOptionsEvents(extensionOptionsImpl) {
-  GuestViewEvents.call(this, extensionOptionsImpl);
+  $Function.call(GuestViewEvents, this, extensionOptionsImpl);
 
   // |setupEventProperty| is normally called automatically, but the
   // 'createfailed' event is registered here because the event is fired from

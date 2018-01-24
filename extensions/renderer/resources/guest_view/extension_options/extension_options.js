@@ -9,7 +9,8 @@ var ExtensionOptionsEvents =
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 
 function ExtensionOptionsImpl(extensionoptionsElement) {
-  GuestViewContainer.call(this, extensionoptionsElement, 'extensionoptions');
+  $Function.call(
+      GuestViewContainer, this, extensionoptionsElement, 'extensionoptions');
 
   new ExtensionOptionsEvents(this);
 };

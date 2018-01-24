@@ -17,8 +17,9 @@ var ExtensionViewInternal = getInternalApi ?
 
 // Attribute that handles the extension associated with the extensionview.
 function ExtensionAttribute(view) {
-  GuestViewAttributes.ReadOnlyAttribute.call(
-      this, ExtensionViewConstants.ATTRIBUTE_EXTENSION, view);
+  $Function.call(
+      GuestViewAttributes.ReadOnlyAttribute, this,
+      ExtensionViewConstants.ATTRIBUTE_EXTENSION, view);
 }
 
 ExtensionAttribute.prototype.__proto__ =
@@ -32,8 +33,9 @@ ExtensionAttribute.prototype.__proto__ =
 // through the load API call, which checks for URL validity and the extension
 // ID of the new src.
 function SrcAttribute(view) {
-  GuestViewAttributes.ReadOnlyAttribute.call(
-      this, ExtensionViewConstants.ATTRIBUTE_SRC, view);
+  $Function.call(
+      GuestViewAttributes.ReadOnlyAttribute, this,
+      ExtensionViewConstants.ATTRIBUTE_SRC, view);
 }
 
 SrcAttribute.prototype.__proto__ =
