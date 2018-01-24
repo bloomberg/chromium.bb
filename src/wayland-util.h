@@ -78,12 +78,23 @@ extern "C" {
  * wl_message is to a protocol message like a class is to an object.
  *
  * The `name` of a wl_message is the name of the corresponding protocol message.
+ *
  * The `signature` is an ordered list of symbols representing the data types
  * of message arguments and, optionally, a protocol version and indicators for
  * nullability. A leading integer in the `signature` indicates the _since_
  * version of the protocol message. A `?` preceding a data type symbol indicates
- * that the following argument type is nullable. When no arguments accompany a
- * message, `signature` is an empty string.
+ * that the following argument type is nullable. While it is a protocol violation
+ * to send messages with non-nullable arguments set to `NULL`, event handlers in
+ * clients might still get called with non-nullable object arguments set to
+ * `NULL`. This can happen when the client destroyed the object being used as
+ * argument on its side and an event referencing that object was sent before the
+ * server knew about its destruction. As this race cannot be prevented, clients
+ * should - as a general rule - program their event handlers such that they can
+ * handle object arguments declared non-nullable being `NULL` gracefully.
+ *
+ * When no arguments accompany a message, `signature` is an empty string.
+ *
+ * Symbols:
  *
  * * `i`: int
  * * `u`: uint
