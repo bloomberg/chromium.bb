@@ -14,6 +14,7 @@
   <template>
     <style include="shared-style">
       :host {
+        min-width: 300px;
         overflow-y: auto;
         padding: 24px var(--card-padding-side) 24px
             calc(var(--card-padding-side) - var(--splitter-width));
@@ -24,7 +25,6 @@
         background-color: #fff;
         margin: 0 auto;
         max-width: var(--card-max-width);
-        min-width: 300px;
         padding: 8px 0;
       }
 
@@ -38,6 +38,7 @@
         height: 100%;
         justify-content: center;
         user-select: none;
+        white-space: nowrap;
       }
     </style>
     <iron-list id="list"
