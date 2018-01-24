@@ -105,13 +105,13 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
     return min_remaining_time_;
   }
 
-  void OnByteStreamReady(
+  void OnInputStreamReady(
       DownloadWorker* worker,
-      std::unique_ptr<ByteStreamReader> stream_reader) override {
-    CountOnByteStreamReady();
+      std::unique_ptr<DownloadManager::InputStream> input_stream) override {
+    CountOnInputStreamReady();
   }
 
-  MOCK_METHOD0(CountOnByteStreamReady, void());
+  MOCK_METHOD0(CountOnInputStreamReady, void());
 
  private:
   int request_count_;
@@ -418,7 +418,7 @@ TEST_F(ParallelDownloadJobTest, EarlyPauseBeforeByteStreamReady) {
   EXPECT_TRUE(job_->is_paused());
 
   for (auto& worker : job_->workers()) {
-    EXPECT_CALL(*job_.get(), CountOnByteStreamReady());
+    EXPECT_CALL(*job_.get(), CountOnInputStreamReady());
     std::unique_ptr<MockDownloadRequestHandle> mock_handle =
         std::make_unique<MockDownloadRequestHandle>();
     EXPECT_CALL(*mock_handle.get(), PauseRequest());
