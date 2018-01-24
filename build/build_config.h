@@ -63,6 +63,8 @@
 #define OS_QNX 1
 #elif defined(_AIX)
 #define OS_AIX 1
+#elif defined(__asmjs__)
+#define OS_ASMJS
 #else
 #error Please add support for your platform in build/build_config.h
 #endif
@@ -77,10 +79,10 @@
 
 // For access to standard POSIXish features, use OS_POSIX instead of a
 // more specific macro.
-#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_FREEBSD) ||  \
-    defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_NACL) || defined(OS_NETBSD) || defined(OS_OPENBSD) ||  \
-    defined(OS_QNX) || defined(OS_SOLARIS)
+#if defined(OS_AIX) || defined(OS_ANDROID) || defined(OS_ASMJS) ||     \
+    defined(OS_FREEBSD) || defined(OS_FUCHSIA) || defined(OS_LINUX) || \
+    defined(OS_MACOSX) || defined(OS_NACL) || defined(OS_NETBSD) ||    \
+    defined(OS_OPENBSD) || defined(OS_QNX) || defined(OS_SOLARIS)
 #define OS_POSIX 1
 #endif
 
@@ -143,7 +145,7 @@
 #define ARCH_CPU_ARM64 1
 #define ARCH_CPU_64_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-#elif defined(__pnacl__)
+#elif defined(__pnacl__) || defined(__asmjs__)
 #define ARCH_CPU_32_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
 #elif defined(__MIPSEL__)
