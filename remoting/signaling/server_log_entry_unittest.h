@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef REMOTING_SIGNALING_SERVER_LOG_ENTRY_UNITTEST_H_
+#define REMOTING_SIGNALING_SERVER_LOG_ENTRY_UNITTEST_H_
+
 #include <map>
 #include <set>
 #include <string>
@@ -34,3 +37,5 @@ bool VerifyStanza(
     std::string* error);
 
 }  // namespace remoting
+
+#endif  // REMOTING_SIGNALING_SERVER_LOG_ENTRY_UNITTEST_H_

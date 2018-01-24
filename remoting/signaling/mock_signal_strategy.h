@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef REMOTING_SIGNALING_MOCK_SIGNAL_STRATEGY_H_
+#define REMOTING_SIGNALING_MOCK_SIGNAL_STRATEGY_H_
+
 #include <memory>
 
 #include "remoting/signaling/iq_sender.h"
@@ -39,3 +42,5 @@ class MockSignalStrategy : public SignalStrategy {
 };
 
 }  // namespace remoting
+
+#endif  // REMOTING_SIGNALING_MOCK_SIGNAL_STRATEGY_H_
