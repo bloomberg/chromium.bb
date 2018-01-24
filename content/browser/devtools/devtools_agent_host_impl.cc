@@ -311,11 +311,13 @@ void DevToolsAgentHostImpl::ForceDetachAllClients() {
   }
 }
 
-void DevToolsAgentHostImpl::ForceDetachSession(DevToolsSession* session) {
-  DevToolsAgentHostClient* client = session->client();
-  InnerDetachClient(client);
-  client->AgentHostClosed(this);
-}
+void DevToolsAgentHostImpl::AttachSession(DevToolsSession* session) {}
+
+void DevToolsAgentHostImpl::DetachSession(DevToolsSession* session) {}
+
+void DevToolsAgentHostImpl::DispatchProtocolMessage(
+    DevToolsSession* session,
+    const std::string& message) {}
 
 void DevToolsAgentHostImpl::InspectElement(
     DevToolsSession* session,

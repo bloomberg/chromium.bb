@@ -14,24 +14,28 @@ namespace content {
 
 class ForwardingAgentHost::SessionProxy : public DevToolsExternalAgentProxy {
  public:
-  SessionProxy(ForwardingAgentHost* agent_host, DevToolsSession* session)
-      : agent_host_(agent_host), session_(session) {
+  SessionProxy(ForwardingAgentHost* agent_host, DevToolsAgentHostClient* client)
+      : agent_host_(agent_host), client_(client) {
     agent_host_->delegate_->Attach(this);
   }
 
   ~SessionProxy() override { agent_host_->delegate_->Detach(this); }
 
- private:
-  void DispatchOnClientHost(const std::string& message) override {
-    session_->client()->DispatchProtocolMessage(agent_host_, message);
+  void ConnectionClosed() override {
+    DevToolsAgentHostClient* client = client_;
+    ForwardingAgentHost* agent_host = agent_host_;
+    agent_host_->session_proxies_.erase(client_);
+    // |this| is delete here, do not use any fields below.
+    client->AgentHostClosed(agent_host);
   }
 
-  void ConnectionClosed() override {
-    agent_host_->ForceDetachSession(session_);
+ private:
+  void DispatchOnClientHost(const std::string& message) override {
+    client_->DispatchProtocolMessage(agent_host_, message);
   }
 
   ForwardingAgentHost* agent_host_;
-  DevToolsSession* session_;
+  DevToolsAgentHostClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionProxy);
 };
@@ -47,19 +51,36 @@ ForwardingAgentHost::ForwardingAgentHost(
 ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
-void ForwardingAgentHost::AttachSession(DevToolsSession* session) {
-  session_proxies_[session].reset(new SessionProxy(this, session));
+void ForwardingAgentHost::AttachClient(DevToolsAgentHostClient* client) {
+  session_proxies_[client].reset(new SessionProxy(this, client));
 }
 
-void ForwardingAgentHost::DetachSession(DevToolsSession* session) {
-  session_proxies_.erase(session);
+void ForwardingAgentHost::ForceAttachClient(DevToolsAgentHostClient* client) {
+  while (!session_proxies_.empty())
+    session_proxies_.begin()->second->ConnectionClosed();
+  AttachClient(client);
 }
 
-void ForwardingAgentHost::DispatchProtocolMessage(DevToolsSession* session,
-                                                  const std::string& message) {
-  auto it = session_proxies_.find(session);
-  if (it != session_proxies_.end())
-    delegate_->SendMessageToBackend(it->second.get(), message);
+bool ForwardingAgentHost::DetachClient(DevToolsAgentHostClient* client) {
+  auto it = session_proxies_.find(client);
+  if (it == session_proxies_.end())
+    return false;
+  session_proxies_.erase(it);
+  return true;
+}
+
+bool ForwardingAgentHost::DispatchProtocolMessage(
+    DevToolsAgentHostClient* client,
+    const std::string& message) {
+  auto it = session_proxies_.find(client);
+  if (it == session_proxies_.end())
+    return false;
+  delegate_->SendMessageToBackend(it->second.get(), message);
+  return true;
+}
+
+bool ForwardingAgentHost::IsAttached() {
+  return !session_proxies_.empty();
 }
 
 std::string ForwardingAgentHost::GetType() {

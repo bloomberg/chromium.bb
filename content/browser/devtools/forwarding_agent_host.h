@@ -26,13 +26,13 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
 
   ~ForwardingAgentHost() override;
 
-  // DevToolsAgentHostImpl implementation.
-  void AttachSession(DevToolsSession* session) override;
-  void DetachSession(DevToolsSession* session) override;
-  void DispatchProtocolMessage(DevToolsSession* session,
-                               const std::string& message) override;
-
   // DevToolsAgentHost implementation
+  void AttachClient(DevToolsAgentHostClient* client) override;
+  void ForceAttachClient(DevToolsAgentHostClient* client) override;
+  bool DetachClient(DevToolsAgentHostClient* client) override;
+  bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
+                               const std::string& message) override;
+  bool IsAttached() override;
   std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
@@ -44,7 +44,7 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
   base::TimeTicks GetLastActivityTime() override;
 
   std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
-  base::flat_map<DevToolsSession*, std::unique_ptr<SessionProxy>>
+  base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<SessionProxy>>
       session_proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingAgentHost);
