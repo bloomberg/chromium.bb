@@ -379,29 +379,39 @@ static INLINE int has_uni_comp_refs(const MB_MODE_INFO *mbmi) {
   return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
                                     (mbmi->ref_frame[1] >= BWDREF_FRAME)));
 }
+#endif  // CONFIG_EXT_COMP_REFS
 
 static INLINE MV_REFERENCE_FRAME comp_ref0(int ref_idx) {
   static const MV_REFERENCE_FRAME lut[] = {
-    LAST_FRAME,    // LAST_LAST2_FRAMES,
-    LAST_FRAME,    // LAST_LAST3_FRAMES,
-    LAST_FRAME,    // LAST_GOLDEN_FRAMES,
-    BWDREF_FRAME,  // BWDREF_ALTREF_FRAMES,
+    LAST_FRAME,     // LAST_LAST2_FRAMES,
+    LAST_FRAME,     // LAST_LAST3_FRAMES,
+    LAST_FRAME,     // LAST_GOLDEN_FRAMES,
+    BWDREF_FRAME,   // BWDREF_ALTREF_FRAMES,
+    LAST2_FRAME,    // LAST2_LAST3_FRAMES
+    LAST2_FRAME,    // LAST2_GOLDEN_FRAMES,
+    LAST3_FRAME,    // LAST3_GOLDEN_FRAMES,
+    BWDREF_FRAME,   // BWDREF_ALTREF2_FRAMES,
+    ALTREF2_FRAME,  // ALTREF2_ALTREF_FRAMES,
   };
-  assert(NELEMENTS(lut) == UNIDIR_COMP_REFS);
+  assert(NELEMENTS(lut) == TOTAL_UNIDIR_COMP_REFS);
   return lut[ref_idx];
 }
 
 static INLINE MV_REFERENCE_FRAME comp_ref1(int ref_idx) {
   static const MV_REFERENCE_FRAME lut[] = {
-    LAST2_FRAME,   // LAST_LAST2_FRAMES,
-    LAST3_FRAME,   // LAST_LAST3_FRAMES,
-    GOLDEN_FRAME,  // LAST_GOLDEN_FRAMES,
-    ALTREF_FRAME,  // BWDREF_ALTREF_FRAMES,
+    LAST2_FRAME,    // LAST_LAST2_FRAMES,
+    LAST3_FRAME,    // LAST_LAST3_FRAMES,
+    GOLDEN_FRAME,   // LAST_GOLDEN_FRAMES,
+    ALTREF_FRAME,   // BWDREF_ALTREF_FRAMES,
+    LAST3_FRAME,    // LAST2_LAST3_FRAMES
+    GOLDEN_FRAME,   // LAST2_GOLDEN_FRAMES,
+    GOLDEN_FRAME,   // LAST3_GOLDEN_FRAMES,
+    ALTREF2_FRAME,  // BWDREF_ALTREF2_FRAMES,
+    ALTREF_FRAME,   // ALTREF2_ALTREF_FRAMES,
   };
-  assert(NELEMENTS(lut) == UNIDIR_COMP_REFS);
+  assert(NELEMENTS(lut) == TOTAL_UNIDIR_COMP_REFS);
   return lut[ref_idx];
 }
-#endif  // CONFIG_EXT_COMP_REFS
 
 PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi);
 

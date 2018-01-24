@@ -9451,6 +9451,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             .as_int;
   }
 
+  // TODO(zoeliu@google.com): To further optimize the obtaining of motion vector
+  // references for compound prediction, as not every pair of reference frames
+  // woud be examined for the RD evaluation.
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
     MODE_INFO *const mi = xd->mi[0];
     int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
