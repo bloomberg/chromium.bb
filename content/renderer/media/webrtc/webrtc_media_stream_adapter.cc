@@ -195,8 +195,8 @@ RemoteWebRtcMediaStreamAdapter::RemoteWebRtcMediaStreamAdapter(
                                blink::WebMediaStream()),
       is_initialized_(false),
       weak_factory_(this) {
-  DCHECK(!main_thread_->BelongsToCurrentThread());
-  DCHECK(track_adapter_map_);
+  CHECK(!main_thread_->BelongsToCurrentThread());
+  CHECK(track_adapter_map_);
 
   RemoteAdapterRefs adapter_refs = GetRemoteAdapterRefsFromWebRtcStream(
       track_adapter_map_, webrtc_stream_.get());
@@ -238,8 +238,8 @@ void RemoteWebRtcMediaStreamAdapter::InitializeOnMainThread(
     RemoteAdapterRefs adapter_refs,
     size_t audio_track_count,
     size_t video_track_count) {
-  DCHECK(main_thread_->BelongsToCurrentThread());
-  DCHECK_EQ(audio_track_count + video_track_count, adapter_refs.size());
+  CHECK(main_thread_->BelongsToCurrentThread());
+  CHECK_EQ(audio_track_count + video_track_count, adapter_refs.size());
 
   adapter_refs_ = std::move(adapter_refs);
   blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks(
@@ -258,6 +258,7 @@ void RemoteWebRtcMediaStreamAdapter::InitializeOnMainThread(
 
   web_stream_.Initialize(blink::WebString::FromUTF8(label), web_audio_tracks,
                          web_video_tracks);
+  CHECK(!web_stream_.IsNull());
 
   base::AutoLock scoped_lock(lock_);
   is_initialized_ = true;

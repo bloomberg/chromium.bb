@@ -68,7 +68,7 @@ WebRtcSetRemoteDescriptionObserverHandler::
 
 void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
     webrtc::RTCError error) {
-  DCHECK(!main_thread_->BelongsToCurrentThread());
+  CHECK(!main_thread_->BelongsToCurrentThread());
 
   webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
       states_or_error;
@@ -101,7 +101,7 @@ void WebRtcSetRemoteDescriptionObserverHandler::
     OnSetRemoteDescriptionCompleteOnMainThread(
         webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>
             states_or_error) {
-  DCHECK(main_thread_->BelongsToCurrentThread());
+  CHECK(main_thread_->BelongsToCurrentThread());
   observer_->OnSetRemoteDescriptionComplete(std::move(states_or_error));
 }
 
