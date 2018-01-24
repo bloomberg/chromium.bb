@@ -95,6 +95,12 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   }
 
   void TearDown() override {
+    // If some extensions are being installed (on a background thread) and we
+    // stop before the intsallation is complete, some installation related
+    // objects might be leaked (as the background thread won't block on exit and
+    // finish cleanly).
+    // So ensure we let pending extension installations finish.
+    WaitForPendingStandaloneExtensionsInstalled();
     chromeos::KioskAppManager::Shutdown();
   }
 
