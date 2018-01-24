@@ -9,7 +9,6 @@
 
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "ui/display/win/display_info.h"
 #include "ui/gfx/icc_profile.h"
 
@@ -58,9 +57,6 @@ void ColorProfileReader::UpdateIfNeeded() {
 
   DeviceToPathMap new_device_to_path_map = BuildDeviceToPathMap();
   if (device_to_path_map_ == new_device_to_path_map)
-    return;
-
-  if (!base::SequencedWorkerPool::IsEnabled())
     return;
 
   update_in_flight_ = true;
