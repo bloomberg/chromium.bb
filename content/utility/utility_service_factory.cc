@@ -32,7 +32,6 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
-#include "media/mojo/features.h"                     // nogncheck
 #include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/cdm_service.h"         // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"     // nogncheck
@@ -62,18 +61,15 @@ namespace {
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-static_assert(BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE), "");
-static_assert(BUILDFLAG(ENABLE_MOJO_CDM), "");
-
 std::unique_ptr<media::CdmAuxiliaryHelper> CreateCdmHelper(
     service_manager::mojom::InterfaceProvider* interface_provider) {
   return std::make_unique<media::MojoCdmHelper>(interface_provider);
 }
 
-class CdmMojoMediaClient final : public media::MojoMediaClient {
+class ContentCdmServiceClient final : public media::CdmService::Client {
  public:
-  CdmMojoMediaClient() {}
-  ~CdmMojoMediaClient() override {}
+  ContentCdmServiceClient() {}
+  ~ContentCdmServiceClient() override {}
 
   void EnsureSandboxed() override {
 #if defined(OS_WIN)
@@ -100,7 +96,7 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
 
 std::unique_ptr<service_manager::Service> CreateCdmService() {
   return std::unique_ptr<service_manager::Service>(
-      new ::media::CdmService(std::make_unique<CdmMojoMediaClient>()));
+      new ::media::CdmService(std::make_unique<ContentCdmServiceClient>()));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 

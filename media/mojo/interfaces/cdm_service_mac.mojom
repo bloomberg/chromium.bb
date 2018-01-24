@@ -4,7 +4,7 @@
 
 module media.mojom;
 
-import "media/mojo/interfaces/interface_factory.mojom";
+import "media/mojo/interfaces/content_decryption_module.mojom";
 import "mojo/common/file_path.mojom";
 import "sandbox/mac/mojom/seatbelt_extension_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
@@ -12,14 +12,14 @@ import "services/service_manager/public/interfaces/interface_provider.mojom";
 // TODO(xhwang): Merge this file with media_service.mojom once EnabledIf
 // attribute is supported in mojom files. See https://crbug.com/676224
 
-// A service to provide media InterfaceFactory to provide CDM service, typically
+// A service to create a CdmFactory that can provide CDM service, typically
 // to the media pipeline running in the renderer process. The service itself
 // runs in the CDM (utility) process. The service is always connected from the
 // browser process.
 interface CdmService {
   // Loads the CDM at |cdm_path| into the process. Must be called before
-  // CreateInterfaceFactory(). Since the client will not know whether LoadCdm()
-  // has been called by a previous CdmService instance, the client should always
+  // CreateCdmFactory(). Since the client will not know whether LoadCdm() has
+  // been called by a previous CdmService instance, the client should always
   // call it after service connection. If the CDM is already loaded, this will
   // be a no-op.
   // |token_provider| can be used to get a sandbox seatbelt extension token
@@ -28,11 +28,10 @@ interface CdmService {
   LoadCdm(mojo.common.mojom.FilePath cdm_path,
           SeatbeltExtensionTokenProvider? token_provider);
 
-  // Requests an InterfaceFactory. |host_interfaces| can optionally be used to
-  // provide interfaces hosted by the caller to the remote InterfaceFactory
-  // implementation.
-  CreateInterfaceFactory(
-      InterfaceFactory& factory,
+  // Requests an CdmFactory. |host_interfaces| can optionally be used to provide
+  // interfaces hosted by the caller to the remote CdmFactory implementation.
+  CreateCdmFactory(
+      CdmFactory& factory,
       service_manager.mojom.InterfaceProvider? host_interfaces);
 };
 

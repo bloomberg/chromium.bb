@@ -129,7 +129,8 @@ declare_args() {
 }
 
 # Enables the use of library CDMs that implements the interface defined at
-# media/cdm/api/content_decryption_module.h
+# media/cdm/api/content_decryption_module.h. If true, the actually library CDM
+# will be hosted in the mojo CDM service running in the CDM (utility) process.
 # TODO(xhwang): Remove |enable_plugins| once pepper CDM support is removed.
 enable_library_cdms = enable_plugins && (is_linux || is_mac || is_win)
 
@@ -194,19 +195,18 @@ declare_args() {
   #                    Renderer. Cannot be used with the mojo Renderer above.
   mojo_media_services = []
 
-  # The process to host the mojo media service.
+  # The process that the mojo MediaService runs in. By default, all services
+  # registered in |mojo_media_services| are hosted in the MediaService, with the
+  # exception that when |enable_library_cdms| is true, the "cdm" service will
+  # run in a separate CdmService in the CDM (utility) process, while other
+  # |mojo_media_services| still run in the MediaService in the process specified
+  # by "mojo_media_host".
   # Valid options are:
   # - "none": Do not use mojo media service.
   # - "browser": Use mojo media service hosted in the browser process.
   # - "gpu": Use mojo media service hosted in the gpu process.
   # - "utility": Use mojo media service hosted in the utility process.
   mojo_media_host = "none"
-
-  # Force to host the CDM service in standalone "cdm" service instead of the
-  # "media" service hosted in the process specified by "mojo_media_host". Other
-  # mojo media services will not be affected. If true, the "cdm" service must
-  # also be included in "mojo_media_services".
-  enable_standalone_cdm_service = false
 
   # Default mojo_media_services and mojo_media_host on various platforms.
   # Can be overridden by gn build arguments from the --args command line flag
@@ -229,7 +229,6 @@ declare_args() {
     } else if (enable_library_cdms) {
       mojo_media_services = [ "cdm" ]
       mojo_media_host = "gpu"
-      enable_standalone_cdm_service = true
     }
 
     if (is_win) {
