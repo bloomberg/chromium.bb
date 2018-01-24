@@ -103,18 +103,6 @@ public interface ContentViewCore {
     WindowAndroid getWindowAndroid();
 
     /**
-     * Add {@link WindowAndroidChangeObserver} object.
-     * @param observer Observer instance to add.
-     */
-    void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer);
-
-    /**
-     * Remove {@link WindowAndroidChangeObserver} object.
-     * @param observer Observer instance to remove.
-     */
-    void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer);
-
-    /**
      * Initialize {@link ContentViewCore} object.
      * @param viewDelegate Delegate to add/remove anchor views.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
