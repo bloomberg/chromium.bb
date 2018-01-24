@@ -372,6 +372,13 @@ void NotifyResourceSchedulerOfNavigation(
                  render_process_id, params.render_view_routing_id));
 }
 
+bool IsOutOfProcessNetworkService() {
+  return base::FeatureList::IsEnabled(features::kNetworkService) &&
+         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess);
+}
+
 }  // namespace
 
 // static
@@ -2253,6 +2260,16 @@ void RenderFrameHostImpl::ViewSource() {
   delegate_->ViewSource(this);
 }
 
+void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting() {
+  DCHECK(network_service_connection_error_handler_holder_);
+  network_service_connection_error_handler_holder_.FlushForTesting();
+
+  if (!navigation_control_)
+    GetNavigationControl();
+  DCHECK(navigation_control_);
+  navigation_control_.FlushForTesting();
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
@@ -3260,6 +3277,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
   }
   send_before_unload_start_time_ = base::TimeTicks();
   render_view_host_->is_waiting_for_close_ack_ = false;
+  network_service_connection_error_handler_holder_.reset();
 }
 
 bool RenderFrameHostImpl::CanCommitOrigin(
@@ -3553,17 +3571,8 @@ void RenderFrameHostImpl::CommitNavigation(
     if (!default_factory_info) {
       // Otherwise default to a Network Service-backed loader from the
       // appropriate NetworkContext.
-      if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-        storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-            mojo::MakeRequest(&default_factory_info), GetProcess()->GetID());
-      } else {
-        network::mojom::URLLoaderFactoryPtr original_factory;
-        storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-            mojo::MakeRequest(&original_factory), GetProcess()->GetID());
-        g_url_loader_factory_callback_for_test.Get().Run(
-            mojo::MakeRequest(&default_factory_info), GetProcess()->GetID(),
-            original_factory.PassInterface());
-      }
+      CreateNetworkServiceDefaultFactoryAndObserve(
+          mojo::MakeRequest(&default_factory_info));
     }
 
     DCHECK(default_factory_info);
@@ -3659,22 +3668,9 @@ void RenderFrameHostImpl::FailedNavigation(
   // completing an unload handler.
   ResetWaitingState();
 
-  StoragePartitionImpl* storage_partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&default_factory_info), GetProcess()->GetID());
-  } else {
-    network::mojom::URLLoaderFactoryPtr original_factory;
-    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-        mojo::MakeRequest(&original_factory), GetProcess()->GetID());
-    g_url_loader_factory_callback_for_test.Get().Run(
-        mojo::MakeRequest(&default_factory_info), GetProcess()->GetID(),
-        original_factory.PassInterface());
-  }
+  CreateNetworkServiceDefaultFactoryAndObserve(
+      mojo::MakeRequest(&default_factory_info));
 
   auto subresource_loader_factories =
       std::make_unique<URLLoaderFactoryBundleInfo>(
@@ -4116,6 +4112,52 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // called from ResourceDispatcherHostImpl::BeginRequest).
   if (common_params.post_data)
     GrantFileAccessFromResourceRequestBody(*common_params.post_data);
+}
+
+void RenderFrameHostImpl::OnNetworkServiceConnectionError() {
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(network_service_connection_error_handler_holder_.is_bound() &&
+         network_service_connection_error_handler_holder_.encountered_error());
+  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  CreateNetworkServiceDefaultFactoryAndObserve(
+      mojo::MakeRequest(&default_factory_info));
+
+  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
+      std::make_unique<URLLoaderFactoryBundleInfo>();
+  subresource_loader_factories->default_factory_info() =
+      std::move(default_factory_info);
+  GetNavigationControl()->UpdateSubresourceLoaderFactories(
+      std::move(subresource_loader_factories));
+}
+
+void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
+    network::mojom::URLLoaderFactoryRequest default_factory_request) {
+  StoragePartitionImpl* storage_partition =
+      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
+    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+        std::move(default_factory_request), GetProcess()->GetID());
+  } else {
+    network::mojom::URLLoaderFactoryPtr original_factory;
+    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&original_factory), GetProcess()->GetID());
+    g_url_loader_factory_callback_for_test.Get().Run(
+        std::move(default_factory_request), GetProcess()->GetID(),
+        original_factory.PassInterface());
+  }
+
+  // Add connection error observer when Network Service is running
+  // out-of-process.
+  if (IsOutOfProcessNetworkService()) {
+    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&network_service_connection_error_handler_holder_),
+        GetProcess()->GetID());
+    network_service_connection_error_handler_holder_
+        .set_connection_error_handler(base::BindOnce(
+            &RenderFrameHostImpl::OnNetworkServiceConnectionError,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
