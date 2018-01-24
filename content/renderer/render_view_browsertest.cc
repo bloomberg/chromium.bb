@@ -399,6 +399,12 @@ class RenderViewImplTest : public RenderViewTest {
         PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE, level);
   }
 
+  int GetScrollbarWidth() {
+    blink::WebView* webview = view()->webview();
+    return webview->Size().width -
+           webview->MainFrame()->VisibleContentRect().width;
+  }
+
   // Closes a view created during the test, i.e. not the |view()|. Checks that
   // the main frame is detached and deleted, and makes sure the view does not
   // leak.
@@ -2168,33 +2174,46 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
-  LoadHTML("<body style='margin:0;'><div style='display:inline-block; "
-           "width:400px; height:400px;'/></body>");
+  LoadHTML(
+      "<body style='margin:0;'>"
+      "<div style='display:inline-block; "
+      "width:400px; height:400px;'/></body>");
+
+  // For unknown reasons, setting fixed scrollbar width using
+  // ::-webkit-scrollbar makes Mac bots flaky (crbug.com/785088).
+  // Measure native scrollbar width instead.
+  int scrollbar_width = GetScrollbarWidth();
   EnablePreferredSizeMode();
 
   gfx::Size size = GetPreferredSize();
-  EXPECT_EQ(gfx::Size(400, 400), size);
+  EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
   SetZoomLevel(ZoomFactorToZoomLevel(2.0));
   size = GetPreferredSize();
-  EXPECT_EQ(gfx::Size(800, 800), size);
+  EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
 
 TEST_F(RenderViewImplScaleFactorTest, PreferredSizeWithScaleFactor) {
   DoSetUp();
-  LoadHTML("<body style='margin:0;'><div style='display:inline-block; "
-           "width:400px; height:400px;'/></body>");
+  LoadHTML(
+      "<body style='margin:0;'><div style='display:inline-block; "
+      "width:400px; height:400px;'/></body>");
+
+  // For unknown reasons, setting fixed scrollbar width using
+  // ::-webkit-scrollbar makes Mac bots flaky (crbug.com/785088).
+  // Measure native scrollbar width instead.
+  int scrollbar_width = GetScrollbarWidth();
   EnablePreferredSizeMode();
 
   gfx::Size size = GetPreferredSize();
-  EXPECT_EQ(gfx::Size(400, 400), size);
+  EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
   // The size is in DIP. Changing the scale factor should not change
   // the preferred size. (Caveat: a page may apply different layout for
   // high DPI, in which case, the size may differ.)
   SetDeviceScaleFactor(2.f);
   size = GetPreferredSize();
-  EXPECT_EQ(gfx::Size(400, 400), size);
+  EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 }
 
 // Ensure the RenderViewImpl history list is properly updated when starting a
