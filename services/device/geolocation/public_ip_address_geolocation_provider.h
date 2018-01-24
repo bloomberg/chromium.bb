@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
-#include "device/geolocation/public/interfaces/geolocation.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/public_ip_address_geolocator.h"
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
+#include "services/device/public/interfaces/geolocation.mojom.h"
 #include "services/device/public/interfaces/public_ip_address_geolocation_provider.mojom.h"
 
 namespace device {

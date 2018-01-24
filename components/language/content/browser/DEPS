@@ -1,5 +1,4 @@
 include_rules = [
-  "+device/geolocation/public/interfaces",
   "+net",
   "+services/device/public/interfaces",
   "+services/service_manager/public",
