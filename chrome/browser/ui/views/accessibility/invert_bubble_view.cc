@@ -10,54 +10,71 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
-const char kHighContrastExtensionUrl[] =
-    "https://chrome.google.com/webstore/detail/djcfdncoelnlbldjfhinnjlhdjlikmph";
-const char kDarkThemeSearchUrl[] =
+constexpr char kHighContrastExtensionUrl[] =
+    "https://chrome.google.com/webstore/detail/"
+    "djcfdncoelnlbldjfhinnjlhdjlikmph";
+constexpr char kDarkThemeSearchUrl[] =
     "https://chrome.google.com/webstore/category/collection/dark_themes";
-const char kLearnMoreUrl[] =
-    "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
+constexpr char kLearnMoreUrl[] =
+    "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/"
+    "Xrco2HsXS-8/discussion";
+
+// Tag value used to uniquely identify the "learn more" (?) button.
+constexpr int kLearnMoreButton = 100;
 
 class InvertBubbleView : public views::BubbleDialogDelegateView,
-                         public views::LinkListener {
+                         public views::LinkListener,
+                         public views::ButtonListener {
  public:
   InvertBubbleView(Browser* browser, views::View* anchor_view);
   ~InvertBubbleView() override;
 
  private:
   // Overridden from views::BubbleDialogDelegateView:
+  views::View* CreateExtraView() override;
   int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
+
+  // Overridden from views::WidgetDelegate:
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
   // Overridden from views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
+
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void OpenLink(const std::string& url, int event_flags);
 
   Browser* browser_;
   views::Link* high_contrast_;
   views::Link* dark_theme_;
-  views::Link* learn_more_;
-  views::Link* close_;
 
   DISALLOW_COPY_AND_ASSIGN(InvertBubbleView);
 };
@@ -66,10 +83,8 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
     : views::BubbleDialogDelegateView(anchor_view,
                                       views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
-      high_contrast_(NULL),
-      dark_theme_(NULL),
-      learn_more_(NULL),
-      close_(NULL) {
+      high_contrast_(nullptr),
+      dark_theme_(nullptr) {
   set_margins(gfx::Insets());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
 }
@@ -77,8 +92,21 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
 InvertBubbleView::~InvertBubbleView() {
 }
 
+views::View* InvertBubbleView::CreateExtraView() {
+  views::ImageButton* learn_more = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(learn_more, vector_icons::kHelpOutlineIcon);
+  learn_more->set_tag(kLearnMoreButton);
+  return learn_more;
+}
+
 int InvertBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
+  return ui::DIALOG_BUTTON_OK;
+}
+
+base::string16 InvertBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  DCHECK_EQ(button, ui::DialogButton::DIALOG_BUTTON_OK);
+  return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
 void InvertBubbleView::Init() {
@@ -86,57 +114,27 @@ void InvertBubbleView::Init() {
   SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(views::INSETS_DIALOG)));
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& original_font_list =
-      rb.GetFontList(ui::ResourceBundle::MediumFont);
-
-  // TODO(tapted): This should be using WidgetDelegate::GetWindowTitle().
-  views::Label* title = new views::Label(
-      base::string16(), views::Label::CustomFont{original_font_list.Derive(
-                            2, gfx::Font::NORMAL, gfx::Font::Weight::BOLD)});
-  title->SetMultiLine(true);
-
-  learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more_->SetFontList(original_font_list);
-  learn_more_->set_listener(this);
+  views::Label* header =
+      new views::Label(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),
+                       CONTEXT_BODY_TEXT_LARGE);
 
   high_contrast_ =
-      new views::Link(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT));
-  high_contrast_->SetFontList(original_font_list);
+      new views::Link(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT),
+                      CONTEXT_BODY_TEXT_LARGE);
   high_contrast_->set_listener(this);
 
-  dark_theme_ = new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME));
-  dark_theme_->SetFontList(original_font_list);
+  dark_theme_ = new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME),
+                                CONTEXT_BODY_TEXT_LARGE);
   dark_theme_->set_listener(this);
 
-  close_ = new views::Link(l10n_util::GetStringUTF16(IDS_CLOSE));
-  close_->SetFontList(original_font_list);
-  close_->set_listener(this);
+  views::BoxLayout* layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
 
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
-
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  for (int i = 0; i < 4; i++) {
-    columns->AddColumn(views::GridLayout::LEADING,
-                       views::GridLayout::LEADING, 0,
-                       views::GridLayout::USE_PREF, 0, 0);
-  }
-
-  layout->StartRow(0, 0);
-  layout->AddView(title, 4, 1);
-  layout->StartRowWithPadding(
-      0, 0, 0,
-      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
-  layout->AddView(high_contrast_);
-  layout->AddView(dark_theme_);
-  layout->AddView(learn_more_);
-  layout->AddView(close_);
-
-  // Fit the message to the width of the links in the bubble.
-  const gfx::Size size(GetPreferredSize());
-  title->SetText(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION));
-  title->SizeToFit(size.width());
+  AddChildView(header);
+  AddChildView(high_contrast_);
+  AddChildView(dark_theme_);
 
   // Switching to high-contrast mode has a nasty habit of causing Chrome
   // top-level windows to lose focus, so closing the bubble on deactivate
@@ -146,17 +144,27 @@ void InvertBubbleView::Init() {
   set_close_on_deactivate(false);
 }
 
+base::string16 InvertBubbleView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_TITLE);
+}
+
+bool InvertBubbleView::ShouldShowCloseButton() const {
+  return true;
+}
+
 void InvertBubbleView::LinkClicked(views::Link* source, int event_flags) {
   if (source == high_contrast_)
     OpenLink(kHighContrastExtensionUrl, event_flags);
   else if (source == dark_theme_)
     OpenLink(kDarkThemeSearchUrl, event_flags);
-  else if (source == learn_more_)
-    OpenLink(kLearnMoreUrl, event_flags);
-  else if (source == close_)
-    GetWidget()->Close();
   else
     NOTREACHED();
+}
+
+void InvertBubbleView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  if (sender->tag() == kLearnMoreButton)
+    OpenLink(kLearnMoreUrl, event.flags());
 }
 
 void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
