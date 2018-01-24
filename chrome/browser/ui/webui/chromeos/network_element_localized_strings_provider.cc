@@ -169,6 +169,7 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
     const char* name;
     int id;
   } localized_strings[] = {
+      {"loading", IDS_SETTINGS_LOADING},
       {"networkProxy", IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY},
       {"networkProxyAddException",
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION},
