@@ -17,11 +17,6 @@ namespace mojo {
 template <>
 struct StructTraits<viz::mojom::ResourceSettingsDataView,
                     viz::ResourceSettings> {
-  static size_t texture_id_allocation_chunk_size(
-      const viz::ResourceSettings& input) {
-    return input.texture_id_allocation_chunk_size;
-  }
-
   static bool use_gpu_memory_buffer_resources(
       const viz::ResourceSettings& input) {
     return input.use_gpu_memory_buffer_resources;

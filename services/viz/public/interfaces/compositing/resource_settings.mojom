@@ -7,6 +7,5 @@ module viz.mojom;
 // Corresponds to |viz::ResourceSettings| in
 // components/viz/common/resources/resource_settings.h
 struct ResourceSettings {
-  uint32 texture_id_allocation_chunk_size;
   bool use_gpu_memory_buffer_resources;
 };

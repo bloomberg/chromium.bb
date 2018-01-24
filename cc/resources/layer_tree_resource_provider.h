@@ -25,7 +25,6 @@ class RasterInterface;
 }  // namespace gpu
 
 namespace cc {
-class TextureIdAllocator;
 
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
@@ -346,7 +345,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   viz::SharedBitmapManager* shared_bitmap_manager_;
   struct ImportedResource;
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
-  std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::ResourceId next_id_;
 

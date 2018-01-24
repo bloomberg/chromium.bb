@@ -1137,9 +1137,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);
 class UIResourceLostTest : public LayerTreeHostContextTest {
  public:
   UIResourceLostTest() : time_step_(0) {}
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->resource_settings.texture_id_allocation_chunk_size = 1;
-  }
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
   void AfterTest() override {}
 
