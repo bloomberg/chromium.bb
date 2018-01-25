@@ -46,7 +46,6 @@ from webkitpy.tool.commands.command import HelpPrintingOptionParser
 from webkitpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
 from webkitpy.tool.commands.flaky_tests import FlakyTests
 from webkitpy.tool.commands.help_command import HelpCommand
-from webkitpy.tool.commands.layout_tests_server import LayoutTestsServer
 from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
 from webkitpy.tool.commands.pretty_diff import PrettyDiff
 from webkitpy.tool.commands.queries import CrashLog
@@ -82,7 +81,6 @@ class WebKitPatch(Host):
             CopyExistingBaselines(),
             CrashLog(),
             FlakyTests(),
-            LayoutTestsServer(),
             OptimizeBaselines(),
             PrettyDiff(),
             PrintBaselines(),
