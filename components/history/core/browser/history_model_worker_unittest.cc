@@ -29,11 +29,12 @@ class HistoryServiceMock : public history::HistoryService {
       : history_thread_(std::move(history_thread)) {}
 
   base::CancelableTaskTracker::TaskId ScheduleDBTask(
+      const base::Location& from_here,
       std::unique_ptr<history::HistoryDBTask> task,
       base::CancelableTaskTracker* tracker) override {
     history::HistoryDBTask* task_raw = task.get();
     history_thread_->PostTaskAndReply(
-        FROM_HERE,
+        from_here,
         base::Bind(base::IgnoreResult(&history::HistoryDBTask::RunOnDBThread),
                    base::Unretained(task_raw), nullptr, nullptr),
         base::Bind(&history::HistoryDBTask::DoneRunOnMainThread,

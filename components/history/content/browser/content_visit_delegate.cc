@@ -120,7 +120,7 @@ void ContentVisitDelegate::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(history_service_);
   std::unique_ptr<HistoryDBTask> task(new IterateUrlsDBTask(enumerator));
-  history_service_->ScheduleDBTask(std::move(task), &task_tracker_);
+  history_service_->ScheduleDBTask(FROM_HERE, std::move(task), &task_tracker_);
 }
 
 }  // namespace history

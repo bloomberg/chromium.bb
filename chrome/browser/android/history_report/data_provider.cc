@@ -89,6 +89,7 @@ void StartVisitMigrationToUsageBufferUiThread(
     base::WaitableEvent* finished,
     base::CancelableTaskTracker* task_tracker) {
   history_service->ScheduleDBTask(
+      FROM_HERE,
       std::unique_ptr<history::HistoryDBTask>(
           new history_report::HistoricVisitsMigrationTask(finished,
                                                           buffer_service)),
@@ -185,7 +186,8 @@ void DataProvider::RecreateLog() {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(base::IgnoreResult(&history::HistoryService::ScheduleDBTask),
-                   base::Unretained(history_service_), base::Passed(&task),
+                   base::Unretained(history_service_), FROM_HERE,
+                   base::Passed(&task),
                    base::Unretained(&history_task_tracker_)));
     finished.Wait();
   }

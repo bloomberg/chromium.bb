@@ -78,7 +78,7 @@ void TypedURLModelTypeController::PostBridgeTask(const base::Location& location,
   }
 
   history->ScheduleDBTask(
-      std::make_unique<RunTaskOnHistoryThread>(std::move(task)),
+      FROM_HERE, std::make_unique<RunTaskOnHistoryThread>(std::move(task)),
       &task_tracker_);
 }
 

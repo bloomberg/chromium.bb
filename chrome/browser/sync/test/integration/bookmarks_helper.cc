@@ -332,8 +332,8 @@ void WaitForHistoryToProcessPendingTasks() {
     base::CancelableTaskTracker task_tracker;
     // Post a task that signals |done|. Since tasks run in posting order, all
     // previously posted tasks have run when |done| is signaled.
-    history_service->ScheduleDBTask(std::make_unique<SignalEventTask>(&done),
-                                    &task_tracker);
+    history_service->ScheduleDBTask(
+        FROM_HERE, std::make_unique<SignalEventTask>(&done), &task_tracker);
     done.Wait();
   }
   // Wait such that any notifications broadcast from one of the history threads

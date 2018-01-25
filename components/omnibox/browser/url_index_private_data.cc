@@ -330,6 +330,7 @@ void URLIndexPrivateData::ScheduleUpdateRecentVisits(
     history::URLID url_id,
     base::CancelableTaskTracker* tracker) {
   history_service->ScheduleDBTask(
+      FROM_HERE,
       std::unique_ptr<history::HistoryDBTask>(
           new UpdateRecentVisitsFromHistoryDBTask(this, url_id)),
       tracker);
