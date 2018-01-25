@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class Tab;
-
 // Protocol used by SideSwipe to interact with the toolbar.
 @protocol SideSwipeToolbarInteracting
 
@@ -16,9 +14,6 @@
 - (UIView*)toolbarView;
 // Returns whether a swipe on the toolbar can start.
 - (BOOL)canBeginToolbarSwipe;
-// Returns a snapshot of the toolbar with the controls visibility adapted to
-// |tab|.
-- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab;
 
 @end
 

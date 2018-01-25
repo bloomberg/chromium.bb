@@ -10,13 +10,12 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 
 @class SideSwipeGestureRecognizer;
-@protocol SideSwipeToolbarInteracting;
+@protocol SideSwipeToolbarSnapshotProviding;
 @class TabModel;
 
 @interface SwipeView : UIView {
   UIImageView* image_;
   UIImageView* shadowView_;
-  UIImageView* toolbarHolder_;
 }
 @end
 
@@ -42,8 +41,12 @@
 }
 
 @property(nonatomic, weak) id<SideSwipeControllerDelegate> delegate;
-@property(nonatomic, weak) id<SideSwipeToolbarInteracting>
-    toolbarInteractionHandler;
+// Snapshot provider for the top toolbar.
+@property(nonatomic, weak) id<SideSwipeToolbarSnapshotProviding>
+    topToolbarSnapshotProvider;
+// Snapshot provider for the bottom toolbar.
+@property(nonatomic, weak) id<SideSwipeToolbarSnapshotProviding>
+    bottomToolbarSnapshotProvider;
 @property(nonatomic, assign) CGFloat topMargin;
 
 - (id)initWithFrame:(CGRect)frame

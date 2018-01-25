@@ -27,6 +27,12 @@
 // Returns the tools menu button.
 - (ToolbarToolsMenuButton*)toolsMenuButton;
 
+// Updates the view so a snapshot can be taken. It needs to be adapted,
+// depending on if it is a snapshot displayed |onNTP| or not.
+- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP;
+// Resets the view after taking a snapshot for a side swipe.
+- (void)resetAfterSideSwipeSnapshot;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_ADAPTIVE_TOOLBAR_VIEW_CONTROLLER_H_

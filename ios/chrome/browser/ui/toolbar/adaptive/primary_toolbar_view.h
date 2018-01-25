@@ -31,6 +31,9 @@
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
 
+// Container for the location bar.
+@property(nonatomic, strong, readonly) UIView* locationBarContainer;
+
 // StackView containing the leading buttons (relative to the location bar).
 // It should only contain ToolbarButtons.
 @property(nonatomic, strong, readonly) UIStackView* leadingStackView;

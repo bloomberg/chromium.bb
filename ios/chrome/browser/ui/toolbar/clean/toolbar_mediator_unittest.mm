@@ -466,4 +466,33 @@ TEST_F(ToolbarMediatorTest, TestVoiceSearchProviderNotEnabled) {
   EXPECT_OCMOCK_VERIFY(consumer_);
 }
 
+// Test that updating the consumer for a specific webState works.
+TEST_F(ToolbarMediatorTest, TestUpdateConsumerForWebState) {
+  VoiceSearchProvider provider;
+
+  SetUpBookmarks();
+  mediator_.webStateList = web_state_list_.get();
+  SetUpActiveWebState();
+  mediator_.consumer = consumer_;
+  mediator_.bookmarkModel = bookmark_model_;
+
+  auto navigation_manager = std::make_unique<ToolbarTestNavigationManager>();
+  navigation_manager->set_can_go_forward(true);
+  navigation_manager->set_can_go_back(true);
+  std::unique_ptr<ToolbarTestWebState> test_web_state =
+      std::make_unique<ToolbarTestWebState>();
+  test_web_state->SetNavigationManager(std::move(navigation_manager));
+  test_web_state->SetCurrentURL(GURL(kTestUrl));
+  test_web_state->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+
+  OCMExpect([consumer_ setCanGoForward:YES]);
+  OCMExpect([consumer_ setCanGoBack:YES]);
+  OCMExpect([consumer_ setPageBookmarked:YES]);
+  OCMExpect([consumer_ setShareMenuEnabled:YES]);
+
+  [mediator_ updateConsumerForWebState:test_web_state.get()];
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
 }  // namespace

@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -24,6 +23,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -48,8 +48,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -220,10 +218,7 @@
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  web::NavigationItem* item =
-      webState->GetNavigationManager()->GetVisibleItem();
-  GURL URL = item ? item->GetURL().GetOrigin() : GURL::EmptyGURL();
-  BOOL isNTP = (URL == GURL(kChromeUINewTabURL));
+  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
 
   // Don't do anything for a live non-ntp tab.
   if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
@@ -341,7 +336,7 @@
   DCHECK(!IsIPadIdiom());
   // Hide the toolbar if the NTP is currently displayed.
   web::WebState* webState = self.webStateList->GetActiveWebState();
-  if (webState && (webState->GetVisibleURL() == kChromeUINewTabURL)) {
+  if (webState && IsVisibleUrlNewTabPage(webState)) {
     self.viewController.view.hidden = YES;
   }
 }
