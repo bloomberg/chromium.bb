@@ -138,6 +138,8 @@ struct hmi_controller {
 
 	struct weston_output * workspace_background_output;
 	int32_t				    screen_num;
+
+	const struct ivi_layout_interface *interface;
 };
 
 struct launcher_info {
@@ -145,8 +147,6 @@ struct launcher_info {
 	uint32_t workspace_id;
 	int32_t index;
 };
-
-const struct ivi_layout_interface *ivi_layout_interface;
 
 int
 controller_module_init(struct weston_compositor *ec,
@@ -169,7 +169,7 @@ static int32_t
 is_surf_in_ui_widget(struct hmi_controller *hmi_ctrl,
 		     struct ivi_layout_surface *ivisurf)
 {
-	uint32_t id = ivi_layout_interface->get_id_of_surface(ivisurf);
+	uint32_t id = hmi_ctrl->interface->get_id_of_surface(ivisurf);
 
 	uint32_t *ui_widget_id = NULL;
 	wl_array_for_each(ui_widget_id, &hmi_ctrl->ui_widgets) {
@@ -259,24 +259,24 @@ mode_divided_into_tiling(struct hmi_controller *hmi_ctrl,
 				surface_y = (int32_t)surface_height;
 			}
 
-			ivi_layout_interface->surface_set_transition(ivisurf,
+			hmi_ctrl->interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
 					duration);
-			ivi_layout_interface->surface_set_visibility(ivisurf, true);
-			ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+			hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
+			hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf,
 					surface_x, surface_y,
 					(int32_t)surface_width,
 					(int32_t)surface_height);
 
 		}
-		ivi_layout_interface->layer_set_render_order(ivilayer, new_order, i);
+		hmi_ctrl->interface->layer_set_render_order(ivilayer, new_order, i);
 
-		ivi_layout_interface->layer_set_transition(ivilayer,
+		hmi_ctrl->interface->layer_set_transition(ivilayer,
 					IVI_LAYOUT_TRANSITION_LAYER_VIEW_ORDER,
 					duration);
 	}
 	for (i = idx; i < surf_num; i++)
-		ivi_layout_interface->surface_set_visibility(surfaces[i], false);
+		hmi_ctrl->interface->surface_set_visibility(surfaces[i], false);
 
 	free(surfaces);
 	free(new_order);
@@ -327,24 +327,24 @@ mode_divided_into_sidebyside(struct hmi_controller *hmi_ctrl,
 			ivisurf = surfaces[idx];
 			new_order[i] = ivisurf;
 
-			ivi_layout_interface->surface_set_transition(ivisurf,
+			hmi_ctrl->interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
 					duration);
-			ivi_layout_interface->surface_set_visibility(ivisurf, true);
+			hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 
-			ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+			hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf,
 								i * surface_width, 0,
 								surface_width,
 								surface_height);
 		}
-		ivi_layout_interface->layer_set_render_order(ivilayer, new_order, i);
+		hmi_ctrl->interface->layer_set_render_order(ivilayer, new_order, i);
 	}
 
 	for (i = idx; i < surf_num; i++) {
-		ivi_layout_interface->surface_set_transition(surfaces[i],
+		hmi_ctrl->interface->surface_set_transition(surfaces[i],
 						IVI_LAYOUT_TRANSITION_VIEW_FADE_ONLY,
 						duration);
-		ivi_layout_interface->surface_set_visibility(surfaces[i], false);
+		hmi_ctrl->interface->surface_set_visibility(surfaces[i], false);
 	}
 
 	free(surfaces);
@@ -377,21 +377,21 @@ mode_fullscreen_someone(struct hmi_controller *hmi_ctrl,
 
 		surfaces[surf_num++] = ivisurf;
 	}
-	ivi_layout_interface->layer_set_render_order(layer->ivilayer, surfaces, surf_num);
+	hmi_ctrl->interface->layer_set_render_order(layer->ivilayer, surfaces, surf_num);
 
 	for (i = 0; i < surf_num; i++) {
 		ivisurf = surfaces[i];
 
 		if ((i > 0) && (i < hmi_ctrl->screen_num)) {
 			layer = wl_container_of(layer->link.prev, layer, link);
-			ivi_layout_interface->layer_set_render_order(layer->ivilayer, &ivisurf, 1);
+			hmi_ctrl->interface->layer_set_render_order(layer->ivilayer, &ivisurf, 1);
 		}
 
-		ivi_layout_interface->surface_set_transition(ivisurf,
+		hmi_ctrl->interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
 					duration);
-		ivi_layout_interface->surface_set_visibility(ivisurf, true);
-		ivi_layout_interface->surface_set_destination_rectangle(ivisurf, 0, 0,
+		hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
+		hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf, 0, 0,
 							     surface_width,
 							     surface_height);
 	}
@@ -433,24 +433,24 @@ mode_random_replace(struct hmi_controller *hmi_ctrl,
 		/* surface determined at random a layer that belongs */
 		layer_idx = rand() % hmi_ctrl->screen_num;
 
-		ivi_layout_interface->surface_set_transition(ivisurf,
+		hmi_ctrl->interface->surface_set_transition(ivisurf,
 					IVI_LAYOUT_TRANSITION_VIEW_DEFAULT,
 					duration);
 
-		ivi_layout_interface->surface_set_visibility(ivisurf, true);
+		hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 
 		surface_width  = (int32_t)(layers[layer_idx]->width * 0.25f);
 		surface_height = (int32_t)(layers[layer_idx]->height * 0.25f);
 		surface_x = rand() % (layers[layer_idx]->width - surface_width);
 		surface_y = rand() % (layers[layer_idx]->height - surface_height);
 
-		ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+		hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf,
 							     surface_x,
 							     surface_y,
 							     surface_width,
 							     surface_height);
 
-		ivi_layout_interface->layer_add_surface(layers[layer_idx]->ivilayer, ivisurf);
+		hmi_ctrl->interface->layer_add_surface(layers[layer_idx]->ivilayer, ivisurf);
 	}
 
 	free(layers);
@@ -495,7 +495,7 @@ switch_mode(struct hmi_controller *hmi_ctrl,
 
 	hmi_ctrl->layout_mode = layout_mode;
 
-	ret = ivi_layout_interface->get_surfaces(&surface_length, &pp_surface);
+	ret = hmi_ctrl->interface->get_surfaces(&surface_length, &pp_surface);
 	assert(!ret);
 
 	if (!has_application_surface(hmi_ctrl, pp_surface, surface_length)) {
@@ -523,7 +523,7 @@ switch_mode(struct hmi_controller *hmi_ctrl,
 		break;
 	}
 
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 	free(pp_surface);
 }
 
@@ -541,10 +541,10 @@ hmi_controller_fade_run(struct hmi_controller *hmi_ctrl, uint32_t is_fade_in,
 	fade->is_fade_in = is_fade_in;
 
 	wl_list_for_each(linklayer, &fade->layer_list, link) {
-		ivi_layout_interface->layer_set_transition(linklayer->layout_layer,
+		hmi_ctrl->interface->layer_set_transition(linklayer->layout_layer,
 					IVI_LAYOUT_TRANSITION_LAYER_FADE,
 					duration);
-		ivi_layout_interface->layer_set_fade_info(linklayer->layout_layer,
+		hmi_ctrl->interface->layer_set_fade_info(linklayer->layout_layer,
 					is_fade_in, 1.0 - tint, tint);
 	}
 }
@@ -555,26 +555,27 @@ hmi_controller_fade_run(struct hmi_controller *hmi_ctrl, uint32_t is_fade_in,
  */
 static void
 create_layer(struct weston_output *output,
-	     struct hmi_controller_layer *layer)
+	     struct hmi_controller_layer *layer,
+	     struct hmi_controller *hmi_ctrl)
 {
 	int32_t ret = 0;
 
 	layer->ivilayer =
-		ivi_layout_interface->layer_create_with_dimension(layer->id_layer,
+		hmi_ctrl->interface->layer_create_with_dimension(layer->id_layer,
 						       layer->width,
 						       layer->height);
 	assert(layer->ivilayer != NULL);
 
-	ret = ivi_layout_interface->screen_add_layer(output, layer->ivilayer);
+	ret = hmi_ctrl->interface->screen_add_layer(output, layer->ivilayer);
 	assert(!ret);
 
-	ret = ivi_layout_interface->layer_set_destination_rectangle(layer->ivilayer,
+	ret = hmi_ctrl->interface->layer_set_destination_rectangle(layer->ivilayer,
 							 layer->x, layer->y,
 							 layer->width,
 							 layer->height);
 	assert(!ret);
 
-	ret = ivi_layout_interface->layer_set_visibility(layer->ivilayer, true);
+	ret = hmi_ctrl->interface->layer_set_visibility(layer->ivilayer, true);
 	assert(!ret);
 }
 
@@ -599,7 +600,7 @@ set_notification_create_surface(struct wl_listener *listener, void *data)
 	if (is_surf_in_ui_widget(hmi_ctrl, ivisurf))
 		return;
 
-	ret = ivi_layout_interface->layer_add_surface(application_layer, ivisurf);
+	ret = hmi_ctrl->interface->layer_add_surface(application_layer, ivisurf);
 	assert(!ret);
 }
 
@@ -637,9 +638,9 @@ set_notification_configure_surface(struct wl_listener *listener, void *data)
 	 * if application changes size of wl_buffer. The source rectangle shall be
 	 * fit to the size.
 	 */
-	surface = ivi_layout_interface->surface_get_weston_surface(ivisurf);
+	surface = hmi_ctrl->interface->surface_get_weston_surface(ivisurf);
 	if (surface) {
-		ivi_layout_interface->surface_set_source_rectangle(
+		hmi_ctrl->interface->surface_set_source_rectangle(
 			ivisurf, 0, 0, surface->width,
 			surface->height);
 	}
@@ -650,7 +651,7 @@ set_notification_configure_surface(struct wl_listener *listener, void *data)
 	 */
 	wl_list_for_each_reverse(layer_link, &hmi_ctrl->application_layer_list, link) {
 		application_layer = layer_link->ivilayer;
-		ivi_layout_interface->get_surfaces_on_layer(application_layer,
+		hmi_ctrl->interface->get_surfaces_on_layer(application_layer,
 							&length, &ivisurfs);
 		for (i = 0; i < length; i++) {
 			if (ivisurf == ivisurfs[i]) {
@@ -658,7 +659,7 @@ set_notification_configure_surface(struct wl_listener *listener, void *data)
 				 * if it is non new invoked application, just call
 				 * commit_changes to apply source_rectangle.
 				 */
-				ivi_layout_interface->commit_changes();
+				hmi_ctrl->interface->commit_changes();
 				free(ivisurfs);
 				return;
 			}
@@ -765,7 +766,8 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
  * ivi_hmi_controller_home is requested.
  */
 static struct hmi_controller *
-hmi_controller_create(struct weston_compositor *ec)
+hmi_controller_create(struct weston_compositor *ec,
+		      const struct ivi_layout_interface *interface)
 {
 	struct link_layer *tmp_link_layer = NULL;
 	int32_t panel_height = 0;
@@ -781,6 +783,7 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->hmi_setting = hmi_server_setting_create(ec);
 	hmi_ctrl->compositor = ec;
 	hmi_ctrl->screen_num = wl_list_length(&ec->output_list);
+	hmi_ctrl->interface = interface;
 
 	/* init base ivi_layer*/
 	wl_list_init(&hmi_ctrl->base_layer_list);
@@ -795,7 +798,7 @@ hmi_controller_create(struct weston_compositor *ec)
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
 		wl_list_insert(&hmi_ctrl->base_layer_list, &base_layer->link);
 
-		create_layer(output, base_layer);
+		create_layer(output, base_layer, hmi_ctrl);
 		i++;
 	}
 
@@ -815,7 +818,7 @@ hmi_controller_create(struct weston_compositor *ec)
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
 		wl_list_insert(&hmi_ctrl->application_layer_list, &application_layer->link);
 
-		create_layer(output, application_layer);
+		create_layer(output, application_layer, hmi_ctrl);
 		i++;
 	}
 
@@ -832,10 +835,10 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->workspace_background_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_background_layer_id;
 
-	create_layer(output, &hmi_ctrl->workspace_background_layer);
-	ivi_layout_interface->layer_set_opacity(
+	create_layer(output, &hmi_ctrl->workspace_background_layer, hmi_ctrl);
+	hmi_ctrl->interface->layer_set_opacity(
 		hmi_ctrl->workspace_background_layer.ivilayer, 0);
-	ivi_layout_interface->layer_set_visibility(
+	hmi_ctrl->interface->layer_set_visibility(
 		hmi_ctrl->workspace_background_layer.ivilayer, false);
 
 
@@ -847,10 +850,10 @@ hmi_controller_create(struct weston_compositor *ec)
 		       &tmp_link_layer->link);
 
 	hmi_ctrl->surface_removed.notify = set_notification_remove_surface;
-	ivi_layout_interface->add_listener_remove_surface(&hmi_ctrl->surface_removed);
+	hmi_ctrl->interface->add_listener_remove_surface(&hmi_ctrl->surface_removed);
 
 	hmi_ctrl->surface_configured.notify = set_notification_configure_surface;
-	ivi_layout_interface->add_listener_configure_surface(&hmi_ctrl->surface_configured);
+	hmi_ctrl->interface->add_listener_configure_surface(&hmi_ctrl->surface_configured);
 
 	hmi_ctrl->destroy_listener.notify = hmi_controller_destroy;
 	wl_signal_add(&hmi_ctrl->compositor->destroy_signal,
@@ -894,17 +897,17 @@ ivi_hmi_controller_set_background(struct hmi_controller *hmi_ctrl,
 		height = base_layer->height;
 		ivilayer = base_layer->ivilayer;
 
-		ivisurf = ivi_layout_interface->get_surface_from_id(*add_surface_id);
+		ivisurf = hmi_ctrl->interface->get_surface_from_id(*add_surface_id);
 		assert(ivisurf != NULL);
 
-		ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+		ret = hmi_ctrl->interface->layer_add_surface(ivilayer, ivisurf);
 		assert(!ret);
 
-		ret = ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+		ret = hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf,
 						dstx, dsty, width, height);
 		assert(!ret);
 
-		ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+		ret = hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 		assert(!ret);
 
 		i++;
@@ -938,20 +941,20 @@ ivi_hmi_controller_set_panel(struct hmi_controller *hmi_ctrl,
 		*add_surface_id = id_surface + (i * hmi_ctrl->ui_setting.surface_id_offset);
 
 		ivilayer = base_layer->ivilayer;
-		ivisurf = ivi_layout_interface->get_surface_from_id(*add_surface_id);
+		ivisurf = hmi_ctrl->interface->get_surface_from_id(*add_surface_id);
 		assert(ivisurf != NULL);
 
-		ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+		ret = hmi_ctrl->interface->layer_add_surface(ivilayer, ivisurf);
 		assert(!ret);
 
 		dsty = base_layer->height - panel_height;
 		width = base_layer->width;
 
-		ret = ivi_layout_interface->surface_set_destination_rectangle(
+		ret = hmi_ctrl->interface->surface_set_destination_rectangle(
 			ivisurf, dstx, dsty, width, panel_height);
 		assert(!ret);
 
-		ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+		ret = hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 		assert(!ret);
 
 		i++;
@@ -987,10 +990,10 @@ ivi_hmi_controller_set_button(struct hmi_controller *hmi_ctrl,
 						sizeof(*add_surface_id));
 	*add_surface_id = id_surface;
 
-	ivisurf = ivi_layout_interface->get_surface_from_id(id_surface);
+	ivisurf = hmi_ctrl->interface->get_surface_from_id(id_surface);
 	assert(ivisurf != NULL);
 
-	ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+	ret = hmi_ctrl->interface->layer_add_surface(ivilayer, ivisurf);
 	assert(!ret);
 
 	panel_height = hmi_ctrl->hmi_setting->panel_height;
@@ -998,11 +1001,11 @@ ivi_hmi_controller_set_button(struct hmi_controller *hmi_ctrl,
 	dstx = (60 * number) + 15;
 	dsty = (base_layer->height - panel_height) + 5;
 
-	ret = ivi_layout_interface->surface_set_destination_rectangle(
+	ret = hmi_ctrl->interface->surface_set_destination_rectangle(
 		ivisurf,dstx, dsty, width, height);
 	assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+	ret = hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 	assert(!ret);
 }
 
@@ -1033,17 +1036,17 @@ ivi_hmi_controller_set_home_button(struct hmi_controller *hmi_ctrl,
 						sizeof(*add_surface_id));
 	*add_surface_id = id_surface;
 
-	ivisurf = ivi_layout_interface->get_surface_from_id(id_surface);
+	ivisurf = hmi_ctrl->interface->get_surface_from_id(id_surface);
 	assert(ivisurf != NULL);
 
-	ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+	ret = hmi_ctrl->interface->layer_add_surface(ivilayer, ivisurf);
 	assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_destination_rectangle(
+	ret = hmi_ctrl->interface->surface_set_destination_rectangle(
 			ivisurf, dstx, dsty, size, size);
 	assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+	ret = hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 	assert(!ret);
 }
 
@@ -1069,17 +1072,17 @@ ivi_hmi_controller_set_workspacebackground(struct hmi_controller *hmi_ctrl,
 	*add_surface_id = id_surface;
 	ivilayer = hmi_ctrl->workspace_background_layer.ivilayer;
 
-	ivisurf = ivi_layout_interface->get_surface_from_id(id_surface);
+	ivisurf = hmi_ctrl->interface->get_surface_from_id(id_surface);
 	assert(ivisurf != NULL);
 
-	ret = ivi_layout_interface->layer_add_surface(ivilayer, ivisurf);
+	ret = hmi_ctrl->interface->layer_add_surface(ivilayer, ivisurf);
 	assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_destination_rectangle(ivisurf,
+	ret = hmi_ctrl->interface->surface_set_destination_rectangle(ivisurf,
 							   0, 0, width, height);
 	assert(!ret);
 
-	ret = ivi_layout_interface->surface_set_visibility(ivisurf, true);
+	ret = hmi_ctrl->interface->surface_set_visibility(ivisurf, true);
 	assert(!ret);
 }
 
@@ -1205,10 +1208,10 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 		y = ny * fcell_size_y  + space_y;
 
 		layout_surface =
-			ivi_layout_interface->get_surface_from_id(data->surface_id);
+			hmi_ctrl->interface->get_surface_from_id(data->surface_id);
 		assert(layout_surface);
 
-		ret = ivi_layout_interface->surface_set_destination_rectangle(
+		ret = hmi_ctrl->interface->surface_set_destination_rectangle(
 				layout_surface, x, y, icon_size, icon_size);
 		assert(!ret);
 
@@ -1230,9 +1233,10 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	hmi_ctrl->workspace_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_layer_id;
 
-	create_layer(hmi_ctrl->workspace_background_output, &hmi_ctrl->workspace_layer);
-	ivi_layout_interface->layer_set_opacity(hmi_ctrl->workspace_layer.ivilayer, 0);
-	ivi_layout_interface->layer_set_visibility(hmi_ctrl->workspace_layer.ivilayer,
+	create_layer(hmi_ctrl->workspace_background_output,
+		     &hmi_ctrl->workspace_layer, hmi_ctrl);
+	hmi_ctrl->interface->layer_set_opacity(hmi_ctrl->workspace_layer.ivilayer, 0);
+	hmi_ctrl->interface->layer_set_visibility(hmi_ctrl->workspace_layer.ivilayer,
 					false);
 
 	tmp_link_layer = MEM_ALLOC(sizeof(*tmp_link_layer));
@@ -1243,19 +1247,19 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	/* Add surface to layer */
 	wl_array_for_each(data, &launchers) {
 		layout_surface =
-			ivi_layout_interface->get_surface_from_id(data->surface_id);
+			hmi_ctrl->interface->get_surface_from_id(data->surface_id);
 		assert(layout_surface);
 
-		ret = ivi_layout_interface->layer_add_surface(hmi_ctrl->workspace_layer.ivilayer,
+		ret = hmi_ctrl->interface->layer_add_surface(hmi_ctrl->workspace_layer.ivilayer,
 								  layout_surface);
 		assert(!ret);
 
-		ret = ivi_layout_interface->surface_set_visibility(layout_surface, true);
+		ret = hmi_ctrl->interface->surface_set_visibility(layout_surface, true);
 		assert(!ret);
 	}
 
 	wl_array_release(&launchers);
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 }
 
 static void
@@ -1272,7 +1276,7 @@ ivi_hmi_controller_UI_ready(struct wl_client *client,
 	ivi_hmi_controller_set_button(hmi_ctrl, hmi_ctrl->ui_setting.random_id, 3);
 	ivi_hmi_controller_set_home_button(hmi_ctrl, hmi_ctrl->ui_setting.home_id);
 	ivi_hmi_controller_set_workspacebackground(hmi_ctrl, hmi_ctrl->ui_setting.workspace_background_id);
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 
 	ivi_hmi_controller_add_launchers(hmi_ctrl, 256);
 
@@ -1280,7 +1284,7 @@ ivi_hmi_controller_UI_ready(struct wl_client *client,
 	 * Otherwise, surfaces of the launchers will be added to application
 	 * layer too.*/
 	hmi_ctrl->surface_created.notify = set_notification_create_surface;
-	ivi_layout_interface->add_listener_create_surface(&hmi_ctrl->surface_created);
+	hmi_ctrl->interface->add_listener_create_surface(&hmi_ctrl->surface_created);
 
 	hmi_ctrl->is_initialized = 1;
 }
@@ -1398,7 +1402,7 @@ move_workspace_grab_end(struct move_grab *move, struct wl_resource* resource,
 	if (200 < from_motion_time)
 		pointer_v = 0.0;
 
-	prop = ivi_layout_interface->get_properties_of_layer(layer);
+	prop = hmi_ctrl->interface->get_properties_of_layer(layer);
 	pos_x = prop->dest_x;
 	pos_y = prop->dest_y;
 
@@ -1419,14 +1423,14 @@ move_workspace_grab_end(struct move_grab *move, struct wl_resource* resource,
 
 	duration = hmi_ctrl->hmi_setting->transition_duration;
 	ivi_hmi_controller_send_workspace_end_control(resource, move->is_moved);
-	ivi_layout_interface->layer_set_transition(layer,
+	hmi_ctrl->interface->layer_set_transition(layer,
 					IVI_LAYOUT_TRANSITION_LAYER_MOVE,
 					duration);
-	ivi_layout_interface->layer_set_destination_rectangle(layer,
+	hmi_ctrl->interface->layer_set_destination_rectangle(layer,
 				end_pos, pos_y,
 				hmi_ctrl->workspace_layer.width,
 				hmi_ctrl->workspace_layer.height);
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 }
 
 static void
@@ -1517,20 +1521,20 @@ move_grab_update(struct move_grab *move, wl_fixed_t pointer[2])
 }
 
 static void
-layer_set_pos(struct ivi_layout_layer *layer, wl_fixed_t pos_x,
-	      wl_fixed_t pos_y)
+layer_set_pos(struct hmi_controller *hmi_ctrl, struct ivi_layout_layer *layer,
+	      wl_fixed_t pos_x, wl_fixed_t pos_y)
 {
 	const struct ivi_layout_layer_properties *prop;
 	int32_t layout_pos_x = 0;
 	int32_t layout_pos_y = 0;
 
-	prop = ivi_layout_interface->get_properties_of_layer(layer);
+	prop = hmi_ctrl->interface->get_properties_of_layer(layer);
 
 	layout_pos_x = wl_fixed_to_int(pos_x);
 	layout_pos_y = wl_fixed_to_int(pos_y);
-	ivi_layout_interface->layer_set_destination_rectangle(layer,
+	hmi_ctrl->interface->layer_set_destination_rectangle(layer,
 			layout_pos_x, layout_pos_y, prop->dest_width, prop->dest_height);
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 }
 
 static void
@@ -1540,12 +1544,14 @@ pointer_move_grab_motion(struct weston_pointer_grab *grab,
 {
 	struct pointer_move_grab *pnt_move_grab =
 		(struct pointer_move_grab *)grab;
+	struct hmi_controller *hmi_ctrl =
+			wl_resource_get_user_data(pnt_move_grab->base.resource);
 	wl_fixed_t pointer_pos[2];
 
 	weston_pointer_motion_to_abs(grab->pointer, event,
 				     &pointer_pos[0], &pointer_pos[1]);
 	move_grab_update(&pnt_move_grab->move, pointer_pos);
-	layer_set_pos(pnt_move_grab->base.layer,
+	layer_set_pos(hmi_ctrl, pnt_move_grab->base.layer,
 		      pnt_move_grab->move.pos[0], pnt_move_grab->move.pos[1]);
 	weston_pointer_move(pnt_move_grab->base.grab.pointer, event);
 }
@@ -1556,6 +1562,8 @@ touch_move_grab_motion(struct weston_touch_grab *grab,
 		       wl_fixed_t x, wl_fixed_t y)
 {
 	struct touch_move_grab *tch_move_grab = (struct touch_move_grab *)grab;
+	struct hmi_controller *hmi_ctrl =
+			wl_resource_get_user_data(tch_move_grab->base.resource);
 
 	if (!tch_move_grab->is_active)
 		return;
@@ -1566,7 +1574,7 @@ touch_move_grab_motion(struct weston_touch_grab *grab,
 	};
 
 	move_grab_update(&tch_move_grab->move, pointer_pos);
-	layer_set_pos(tch_move_grab->base.layer,
+	layer_set_pos(hmi_ctrl, tch_move_grab->base.layer,
 		      tch_move_grab->move.pos[0], tch_move_grab->move.pos[1]);
 }
 
@@ -1706,7 +1714,7 @@ move_grab_init_workspace(struct move_grab* move,
 	wl_fixed_t rgn[2][2] = {{0}};
 	wl_fixed_t grab_pos[2] = { grab_x, grab_y };
 
-	prop = ivi_layout_interface->get_properties_of_layer(layer);
+	prop = hmi_ctrl->interface->get_properties_of_layer(layer);
 	layer_pos_x = prop->dest_x;
 	layer_pos_y = prop->dest_y;
 
@@ -1779,7 +1787,7 @@ ivi_hmi_controller_workspace_control(struct wl_client *client,
 
 	layer = hmi_ctrl->workspace_layer.ivilayer;
 
-	ivi_layout_interface->transition_move_layer_cancel(layer);
+	hmi_ctrl->interface->transition_move_layer_cancel(layer);
 
 	switch (device) {
 	case HMI_GRAB_DEVICE_POINTER:
@@ -1841,7 +1849,7 @@ ivi_hmi_controller_home(struct wl_client *client,
 					&hmi_ctrl->workspace_fade);
 	}
 
-	ivi_layout_interface->commit_changes();
+	hmi_ctrl->interface->commit_changes();
 }
 
 /**
@@ -1959,9 +1967,7 @@ controller_module_init(struct weston_compositor *ec,
 		return -1;
 	}
 
-	ivi_layout_interface = interface;
-
-	hmi_ctrl = hmi_controller_create(ec);
+	hmi_ctrl = hmi_controller_create(ec, interface);
 	if (hmi_ctrl == NULL)
 		return -1;
 
