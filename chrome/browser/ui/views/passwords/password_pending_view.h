@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_PENDING_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_PENDING_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_
 
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
@@ -19,19 +19,19 @@ class ToggleImageButton;
 }  // namespace views
 
 class DesktopIOSPromotionBubbleView;
-class ManagePasswordSignInPromoView;
+class PasswordSignInPromoView;
 
 // A view offering the user the ability to save credentials. Contains a
 // username and password field, along with a "Save Passwords" button and a
 // "Never" button.
-class ManagePasswordPendingView : public ManagePasswordsBubbleDelegateViewBase,
-                                  public views::ButtonListener,
-                                  public views::StyledLabelListener {
+class PasswordPendingView : public PasswordBubbleViewBase,
+                            public views::ButtonListener,
+                            public views::StyledLabelListener {
  public:
-  ManagePasswordPendingView(content::WebContents* web_contents,
-                            views::View* anchor_view,
-                            const gfx::Point& anchor_point,
-                            DisplayReason reason);
+  PasswordPendingView(content::WebContents* web_contents,
+                      views::View* anchor_view,
+                      const gfx::Point& anchor_point,
+                      DisplayReason reason);
 
   static void BuildCredentialRows(
       views::GridLayout* layout,
@@ -45,7 +45,7 @@ class ManagePasswordPendingView : public ManagePasswordsBubbleDelegateViewBase,
 #endif
 
  private:
-  ~ManagePasswordPendingView() override;
+  ~PasswordPendingView() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -55,7 +55,7 @@ class ManagePasswordPendingView : public ManagePasswordsBubbleDelegateViewBase,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // ManagePasswordsBubbleDelegateViewBase:
+  // PasswordBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -77,7 +77,7 @@ class ManagePasswordPendingView : public ManagePasswordsBubbleDelegateViewBase,
   // Different promo dialogs that helps the user get access to credentials
   // across devices. One of these are non-null when the promotion dialog is
   // active.
-  ManagePasswordSignInPromoView* sign_in_promo_;
+  PasswordSignInPromoView* sign_in_promo_;
   DesktopIOSPromotionBubbleView* desktop_ios_promo_;
 
   views::View* username_field_;
@@ -91,7 +91,7 @@ class ManagePasswordPendingView : public ManagePasswordsBubbleDelegateViewBase,
 
   bool are_passwords_revealed_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordPendingView);
+  DISALLOW_COPY_AND_ASSIGN(PasswordPendingView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_PENDING_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_PENDING_VIEW_H_

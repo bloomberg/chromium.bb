@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_pending_view.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
+#include "chrome/browser/ui/views/passwords/password_items_view.h"
+#include "chrome/browser/ui/views/passwords/password_sign_in_promo_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -164,15 +164,11 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
 }
 }  // namespace
 
-ManagePasswordPendingView::ManagePasswordPendingView(
-    content::WebContents* web_contents,
-    views::View* anchor_view,
-    const gfx::Point& anchor_point,
-    DisplayReason reason)
-    : ManagePasswordsBubbleDelegateViewBase(web_contents,
-                                            anchor_view,
-                                            anchor_point,
-                                            reason),
+PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
+                                         views::View* anchor_view,
+                                         const gfx::Point& anchor_point,
+                                         DisplayReason reason)
+    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason),
       sign_in_promo_(nullptr),
       desktop_ios_promo_(nullptr),
       username_field_(nullptr),
@@ -209,7 +205,7 @@ ManagePasswordPendingView::ManagePasswordPendingView(
 // |password_view_button| is an optional field. If it is a nullptr, a
 // DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
 // TRIPLE_VIEW_COLUMN_SET.
-void ManagePasswordPendingView::BuildCredentialRows(
+void PasswordPendingView::BuildCredentialRows(
     views::GridLayout* layout,
     views::View* username_field,
     views::View* password_field,
@@ -252,9 +248,9 @@ void ManagePasswordPendingView::BuildCredentialRows(
   }
 }
 
-ManagePasswordPendingView::~ManagePasswordPendingView() = default;
+PasswordPendingView::~PasswordPendingView() = default;
 
-bool ManagePasswordPendingView::Accept() {
+bool PasswordPendingView::Accept() {
   if (sign_in_promo_)
     return sign_in_promo_->Accept();
 #if defined(OS_WIN)
@@ -270,7 +266,7 @@ bool ManagePasswordPendingView::Accept() {
   return true;
 }
 
-bool ManagePasswordPendingView::Cancel() {
+bool PasswordPendingView::Cancel() {
   if (sign_in_promo_)
     return sign_in_promo_->Cancel();
 #if defined(OS_WIN)
@@ -281,38 +277,37 @@ bool ManagePasswordPendingView::Cancel() {
   return true;
 }
 
-bool ManagePasswordPendingView::Close() {
+bool PasswordPendingView::Close() {
   return true;
 }
 
-void ManagePasswordPendingView::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
+void PasswordPendingView::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
   DCHECK(sender == password_view_button_);
   TogglePasswordVisibility();
 }
 
-void ManagePasswordPendingView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
+void PasswordPendingView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                 const gfx::Range& range,
+                                                 int event_flags) {
   DCHECK_EQ(model()->title_brand_link_range(), range);
   model()->OnBrandLinkClicked();
 }
 
-gfx::Size ManagePasswordPendingView::CalculatePreferredSize() const {
+gfx::Size PasswordPendingView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-views::View* ManagePasswordPendingView::GetInitiallyFocusedView() {
+views::View* PasswordPendingView::GetInitiallyFocusedView() {
   if (initially_focused_view_)
     return initially_focused_view_;
-  return ManagePasswordsBubbleDelegateViewBase::GetInitiallyFocusedView();
+  return PasswordBubbleViewBase::GetInitiallyFocusedView();
 }
 
-base::string16 ManagePasswordPendingView::GetDialogButtonLabel(
+base::string16 PasswordPendingView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (sign_in_promo_)
     return sign_in_promo_->GetDialogButtonLabel(button);
@@ -327,7 +322,7 @@ base::string16 ManagePasswordPendingView::GetDialogButtonLabel(
           : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON);
 }
 
-gfx::ImageSkia ManagePasswordPendingView::GetWindowIcon() {
+gfx::ImageSkia PasswordPendingView::GetWindowIcon() {
 #if defined(OS_WIN)
   if (desktop_ios_promo_)
     return desktop_ios_promo_->GetWindowIcon();
@@ -335,7 +330,7 @@ gfx::ImageSkia ManagePasswordPendingView::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-void ManagePasswordPendingView::AddedToWidget() {
+void PasswordPendingView::AddedToWidget() {
   auto title_view =
       base::MakeUnique<views::StyledLabel>(base::string16(), this);
   title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
@@ -343,15 +338,15 @@ void ManagePasswordPendingView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_view));
 }
 
-bool ManagePasswordPendingView::ShouldShowWindowIcon() const {
+bool PasswordPendingView::ShouldShowWindowIcon() const {
   return desktop_ios_promo_ != nullptr;
 }
 
-bool ManagePasswordPendingView::ShouldShowCloseButton() const {
+bool PasswordPendingView::ShouldShowCloseButton() const {
   return true;
 }
 
-void ManagePasswordPendingView::CreateAndSetLayout(bool show_password_label) {
+void PasswordPendingView::CreateAndSetLayout(bool show_password_label) {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
@@ -362,7 +357,7 @@ void ManagePasswordPendingView::CreateAndSetLayout(bool show_password_label) {
                       password_view_button_, show_password_label);
 }
 
-void ManagePasswordPendingView::CreatePasswordField() {
+void PasswordPendingView::CreatePasswordField() {
   const autofill::PasswordForm& password_form = model()->pending_password();
   if (password_form.all_possible_passwords.size() > 1 &&
       model()->enable_editing()) {
@@ -378,7 +373,7 @@ void ManagePasswordPendingView::CreatePasswordField() {
   }
 }
 
-void ManagePasswordPendingView::TogglePasswordVisibility() {
+void PasswordPendingView::TogglePasswordVisibility() {
   if (!are_passwords_revealed_ && !model()->RevealPasswords())
     return;
 
@@ -394,7 +389,7 @@ void ManagePasswordPendingView::TogglePasswordVisibility() {
   }
 }
 
-void ManagePasswordPendingView::UpdateUsernameAndPasswordInModel() {
+void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
   const bool username_editable = model()->enable_editing();
   const bool password_editable =
       password_dropdown_ && model()->enable_editing();
@@ -414,12 +409,12 @@ void ManagePasswordPendingView::UpdateUsernameAndPasswordInModel() {
   model()->OnCredentialEdited(new_username, new_password);
 }
 
-void ManagePasswordPendingView::ReplaceWithPromo() {
+void PasswordPendingView::ReplaceWithPromo() {
   RemoveAllChildViews(true);
   initially_focused_view_ = nullptr;
   SetLayoutManager(std::make_unique<views::FillLayout>());
   if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    sign_in_promo_ = new ManagePasswordSignInPromoView(model());
+    sign_in_promo_ = new PasswordSignInPromoView(model());
     AddChildView(sign_in_promo_);
 #if defined(OS_WIN)
   } else if (model()->state() ==
@@ -440,8 +435,7 @@ void ManagePasswordPendingView::ReplaceWithPromo() {
   SizeToContents();
 }
 
-void ManagePasswordPendingView::UpdateTitleText(
-    views::StyledLabel* title_view) {
+void PasswordPendingView::UpdateTitleText(views::StyledLabel* title_view) {
   title_view->SetText(GetWindowTitle());
   if (!model()->title_brand_link_range().is_empty()) {
     auto link_style = views::StyledLabel::RangeStyleInfo::CreateForLink();

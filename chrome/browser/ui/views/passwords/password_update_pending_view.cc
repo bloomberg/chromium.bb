@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_update_pending_view.h"
 
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_items_view.h"
+#include "chrome/browser/ui/views/passwords/password_pending_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -16,15 +16,12 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
-ManagePasswordUpdatePendingView::ManagePasswordUpdatePendingView(
+PasswordUpdatePendingView::PasswordUpdatePendingView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     const gfx::Point& anchor_point,
     DisplayReason reason)
-    : ManagePasswordsBubbleDelegateViewBase(web_contents,
-                                            anchor_view,
-                                            anchor_point,
-                                            reason),
+    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason),
       selection_view_(nullptr) {
   // Credential row.
   if (model()->ShouldShowMultipleAccountUpdateUI()) {
@@ -34,7 +31,7 @@ ManagePasswordUpdatePendingView::ManagePasswordUpdatePendingView(
     const autofill::PasswordForm& password_form = model()->pending_password();
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
-    ManagePasswordPendingView::BuildCredentialRows(
+    PasswordPendingView::BuildCredentialRows(
         layout, CreateUsernameLabel(password_form).release(),
         CreatePasswordLabel(password_form,
                             IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION, false)
@@ -44,23 +41,23 @@ ManagePasswordUpdatePendingView::ManagePasswordUpdatePendingView(
   }
 }
 
-ManagePasswordUpdatePendingView::~ManagePasswordUpdatePendingView() = default;
+PasswordUpdatePendingView::~PasswordUpdatePendingView() = default;
 
-gfx::Size ManagePasswordUpdatePendingView::CalculatePreferredSize() const {
+gfx::Size PasswordUpdatePendingView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-base::string16 ManagePasswordUpdatePendingView::GetDialogButtonLabel(
+base::string16 PasswordUpdatePendingView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_PASSWORD_MANAGER_UPDATE_BUTTON
                                        : IDS_PASSWORD_MANAGER_CANCEL_BUTTON);
 }
 
-bool ManagePasswordUpdatePendingView::Accept() {
+bool PasswordUpdatePendingView::Accept() {
   if (selection_view_) {
     // Multi account case.
     model()->OnUpdateClicked(*selection_view_->GetSelectedCredentials());
@@ -70,16 +67,16 @@ bool ManagePasswordUpdatePendingView::Accept() {
   return true;
 }
 
-bool ManagePasswordUpdatePendingView::Cancel() {
+bool PasswordUpdatePendingView::Cancel() {
   model()->OnNopeUpdateClicked();
   return true;
 }
 
-bool ManagePasswordUpdatePendingView::Close() {
+bool PasswordUpdatePendingView::Close() {
   return true;
 }
 
-void ManagePasswordUpdatePendingView::AddedToWidget() {
+void PasswordUpdatePendingView::AddedToWidget() {
   auto title_view =
       base::MakeUnique<views::StyledLabel>(base::string16(), this);
   title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
@@ -87,7 +84,7 @@ void ManagePasswordUpdatePendingView::AddedToWidget() {
   GetBubbleFrameView()->SetTitleView(std::move(title_view));
 }
 
-void ManagePasswordUpdatePendingView::StyledLabelLinkClicked(
+void PasswordUpdatePendingView::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
@@ -95,7 +92,7 @@ void ManagePasswordUpdatePendingView::StyledLabelLinkClicked(
   model()->OnBrandLinkClicked();
 }
 
-void ManagePasswordUpdatePendingView::UpdateTitleText(
+void PasswordUpdatePendingView::UpdateTitleText(
     views::StyledLabel* title_view) {
   title_view->SetText(GetWindowTitle());
   if (!model()->title_brand_link_range().is_empty()) {

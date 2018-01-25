@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_UPDATE_PENDING_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_UPDATE_PENDING_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_UPDATE_PENDING_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_UPDATE_PENDING_VIEW_H_
 
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
@@ -18,18 +18,17 @@ class CredentialsSelectionView;
 // single credential row (in case of one credentials) or
 // CredentialsSelectionView otherwise, along with a "Update Passwords" button
 // and a rejection button.
-class ManagePasswordUpdatePendingView
-    : public ManagePasswordsBubbleDelegateViewBase,
-      public views::StyledLabelListener {
+class PasswordUpdatePendingView : public PasswordBubbleViewBase,
+                                  public views::StyledLabelListener {
  public:
-  ManagePasswordUpdatePendingView(content::WebContents* web_contents,
-                                  views::View* anchor_view,
-                                  const gfx::Point& anchor_point,
-                                  DisplayReason reason);
-  ~ManagePasswordUpdatePendingView() override;
+  PasswordUpdatePendingView(content::WebContents* web_contents,
+                            views::View* anchor_view,
+                            const gfx::Point& anchor_point,
+                            DisplayReason reason);
+  ~PasswordUpdatePendingView() override;
 
  private:
-  // ManagePasswordsBubbleDelegateViewBase:
+  // PasswordBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
@@ -46,7 +45,7 @@ class ManagePasswordUpdatePendingView
 
   CredentialsSelectionView* selection_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordUpdatePendingView);
+  DISALLOW_COPY_AND_ASSIGN(PasswordUpdatePendingView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_UPDATE_PENDING_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_UPDATE_PENDING_VIEW_H_

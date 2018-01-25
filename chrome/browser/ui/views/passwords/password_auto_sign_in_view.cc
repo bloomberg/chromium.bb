@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,19 +21,16 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
-int ManagePasswordAutoSignInView::auto_signin_toast_timeout_ = 3;
+int PasswordAutoSignInView::auto_signin_toast_timeout_ = 3;
 
-ManagePasswordAutoSignInView::~ManagePasswordAutoSignInView() = default;
+PasswordAutoSignInView::~PasswordAutoSignInView() = default;
 
-ManagePasswordAutoSignInView::ManagePasswordAutoSignInView(
+PasswordAutoSignInView::PasswordAutoSignInView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     const gfx::Point& anchor_point,
     DisplayReason reason)
-    : ManagePasswordsBubbleDelegateViewBase(web_contents,
-                                            anchor_view,
-                                            anchor_point,
-                                            reason) {
+    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   const autofill::PasswordForm& form = model()->pending_password();
   base::string16 upper_text, lower_text = form.username_value;
@@ -59,47 +56,46 @@ ManagePasswordAutoSignInView::ManagePasswordAutoSignInView(
   Browser* browser = chrome::FindBrowserWithWebContents(GetWebContents());
   DCHECK(browser);
 
-// Sign-in dialogs opened for inactive browser windows do not auto-close on
-// MacOS. This matches existing Cocoa bubble behavior.
-// TODO(varkha): Remove the limitation as part of http://crbug/671916 .
+  // Sign-in dialogs opened for inactive browser windows do not auto-close on
+  // MacOS. This matches existing Cocoa bubble behavior.
+  // TODO(varkha): Remove the limitation as part of http://crbug/671916 .
   if (browser->window()->IsActive()) {
     timer_.Start(FROM_HERE, GetTimeout(), this,
-                 &ManagePasswordAutoSignInView::OnTimer);
+                 &PasswordAutoSignInView::OnTimer);
   }
 }
 
-void ManagePasswordAutoSignInView::OnWidgetActivationChanged(
-    views::Widget* widget,
-    bool active) {
+void PasswordAutoSignInView::OnWidgetActivationChanged(views::Widget* widget,
+                                                       bool active) {
   if (active && !timer_.IsRunning()) {
     timer_.Start(FROM_HERE, GetTimeout(), this,
-                 &ManagePasswordAutoSignInView::OnTimer);
+                 &PasswordAutoSignInView::OnTimer);
   }
   LocationBarBubbleDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
-int ManagePasswordAutoSignInView::GetDialogButtons() const {
+int PasswordAutoSignInView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-gfx::Size ManagePasswordAutoSignInView::CalculatePreferredSize() const {
+gfx::Size PasswordAutoSignInView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-void ManagePasswordAutoSignInView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
+void PasswordAutoSignInView::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
   NOTREACHED();
 }
 
-void ManagePasswordAutoSignInView::OnTimer() {
+void PasswordAutoSignInView::OnTimer() {
   model()->OnAutoSignInToastTimeout();
   CloseBubble();
 }
 
-base::TimeDelta ManagePasswordAutoSignInView::GetTimeout() {
+base::TimeDelta PasswordAutoSignInView::GetTimeout() {
   return base::TimeDelta::FromSeconds(
-      ManagePasswordAutoSignInView::auto_signin_toast_timeout_);
+      PasswordAutoSignInView::auto_signin_toast_timeout_);
 }

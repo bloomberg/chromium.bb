@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_AUTO_SIGN_IN_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_AUTO_SIGN_IN_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_AUTO_SIGN_IN_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_AUTO_SIGN_IN_VIEW_H_
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 // A view containing just one credential that was used for for automatic signing
 // in.
-class ManagePasswordAutoSignInView
-    : public ManagePasswordsBubbleDelegateViewBase,
-      public views::ButtonListener {
+class PasswordAutoSignInView : public PasswordBubbleViewBase,
+                               public views::ButtonListener {
  public:
-  explicit ManagePasswordAutoSignInView(content::WebContents* web_contents,
-                                        views::View* anchor_view,
-                                        const gfx::Point& anchor_point,
-                                        DisplayReason reason);
+  explicit PasswordAutoSignInView(content::WebContents* web_contents,
+                                  views::View* anchor_view,
+                                  const gfx::Point& anchor_point,
+                                  DisplayReason reason);
 
 #if defined(UNIT_TEST)
   static void set_auto_signin_toast_timeout(int seconds) {
@@ -29,7 +28,7 @@ class ManagePasswordAutoSignInView
 #endif
 
  private:
-  ~ManagePasswordAutoSignInView() override;
+  ~PasswordAutoSignInView() override;
 
   // LocationBarBubbleDelegateView:
   int GetDialogButtons() const override;
@@ -47,7 +46,7 @@ class ManagePasswordAutoSignInView
   // The timeout in seconds for the auto sign-in toast.
   static int auto_signin_toast_timeout_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordAutoSignInView);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutoSignInView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_AUTO_SIGN_IN_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_AUTO_SIGN_IN_VIEW_H_

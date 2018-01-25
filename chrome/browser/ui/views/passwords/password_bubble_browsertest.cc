@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 
 class PasswordBubbleBrowserTest
     : public SupportsTestDialog<ManagePasswordsTest> {
@@ -36,7 +36,7 @@ class PasswordBubbleBrowserTest
       local_credentials.push_back(
           std::make_unique<autofill::PasswordForm>(*test_form()));
 
-      ManagePasswordAutoSignInView::set_auto_signin_toast_timeout(10);
+      PasswordAutoSignInView::set_auto_signin_toast_timeout(10);
       SetupAutoSignin(std::move(local_credentials));
     } else {
       ADD_FAILURE() << "Unknown dialog type";

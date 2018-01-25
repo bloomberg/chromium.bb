@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_auto_sign_in_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_pending_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
-#include "chrome/browser/ui/views/passwords/manage_password_update_pending_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
+#include "chrome/browser/ui/views/passwords/password_items_view.h"
+#include "chrome/browser/ui/views/passwords/password_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
+#include "chrome/browser/ui/views/passwords/password_update_pending_view.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -21,15 +21,14 @@
 #endif
 
 // static
-ManagePasswordsBubbleDelegateViewBase*
-    ManagePasswordsBubbleDelegateViewBase::g_manage_passwords_bubble_ = nullptr;
+PasswordBubbleViewBase* PasswordBubbleViewBase::g_manage_passwords_bubble_ =
+    nullptr;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 // static
-void ManagePasswordsBubbleDelegateViewBase::ShowBubble(
-    content::WebContents* web_contents,
-    DisplayReason reason) {
+void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
+                                        DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -48,7 +47,7 @@ void ManagePasswordsBubbleDelegateViewBase::ShowBubble(
     }
   }
 
-  ManagePasswordsBubbleDelegateViewBase* bubble =
+  PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, gfx::Point(), reason);
   DCHECK(bubble);
   DCHECK(bubble == g_manage_passwords_bubble_);
@@ -77,31 +76,30 @@ void ManagePasswordsBubbleDelegateViewBase::ShowBubble(
 #endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 // static
-ManagePasswordsBubbleDelegateViewBase*
-ManagePasswordsBubbleDelegateViewBase::CreateBubble(
+PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
     content::WebContents* web_contents,
     views::View* anchor_view,
     const gfx::Point& anchor_point,
     DisplayReason reason) {
-  ManagePasswordsBubbleDelegateViewBase* view = nullptr;
+  PasswordBubbleViewBase* view = nullptr;
   password_manager::ui::State model_state =
       PasswordsModelDelegateFromWebContents(web_contents)->GetState();
   if (model_state == password_manager::ui::MANAGE_STATE) {
-    view = new ManagePasswordItemsView(web_contents, anchor_view, anchor_point,
-                                       reason);
+    view =
+        new PasswordItemsView(web_contents, anchor_view, anchor_point, reason);
   } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
-    view = new ManagePasswordAutoSignInView(web_contents, anchor_view,
-                                            anchor_point, reason);
+    view = new PasswordAutoSignInView(web_contents, anchor_view, anchor_point,
+                                      reason);
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
-    view = new ManagePasswordSaveConfirmationView(web_contents, anchor_view,
-                                                  anchor_point, reason);
+    view = new PasswordSaveConfirmationView(web_contents, anchor_view,
+                                            anchor_point, reason);
   } else if (model_state ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    view = new ManagePasswordUpdatePendingView(web_contents, anchor_view,
-                                               anchor_point, reason);
-  } else if (model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
-    view = new ManagePasswordPendingView(web_contents, anchor_view,
+    view = new PasswordUpdatePendingView(web_contents, anchor_view,
                                          anchor_point, reason);
+  } else if (model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
+    view = new PasswordPendingView(web_contents, anchor_view, anchor_point,
+                                   reason);
   } else {
     NOTREACHED();
   }
@@ -111,32 +109,31 @@ ManagePasswordsBubbleDelegateViewBase::CreateBubble(
 }
 
 // static
-void ManagePasswordsBubbleDelegateViewBase::CloseCurrentBubble() {
+void PasswordBubbleViewBase::CloseCurrentBubble() {
   if (g_manage_passwords_bubble_)
     g_manage_passwords_bubble_->GetWidget()->Close();
 }
 
 // static
-void ManagePasswordsBubbleDelegateViewBase::ActivateBubble() {
+void PasswordBubbleViewBase::ActivateBubble() {
   DCHECK(g_manage_passwords_bubble_);
   DCHECK(g_manage_passwords_bubble_->GetWidget()->IsVisible());
   g_manage_passwords_bubble_->GetWidget()->Activate();
 }
 
-const content::WebContents*
-ManagePasswordsBubbleDelegateViewBase::GetWebContents() const {
+const content::WebContents* PasswordBubbleViewBase::GetWebContents() const {
   return model_.GetWebContents();
 }
 
-base::string16 ManagePasswordsBubbleDelegateViewBase::GetWindowTitle() const {
+base::string16 PasswordBubbleViewBase::GetWindowTitle() const {
   return model_.title();
 }
 
-bool ManagePasswordsBubbleDelegateViewBase::ShouldShowWindowTitle() const {
+bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
   return !model_.title().empty();
 }
 
-ManagePasswordsBubbleDelegateViewBase::ManagePasswordsBubbleDelegateViewBase(
+PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
     const gfx::Point& anchor_point,
@@ -148,14 +145,12 @@ ManagePasswordsBubbleDelegateViewBase::ManagePasswordsBubbleDelegateViewBase(
       mouse_handler_(
           std::make_unique<WebContentMouseHandler>(this, web_contents)) {}
 
-ManagePasswordsBubbleDelegateViewBase::
-    ~ManagePasswordsBubbleDelegateViewBase() {
+PasswordBubbleViewBase::~PasswordBubbleViewBase() {
   if (g_manage_passwords_bubble_ == this)
     g_manage_passwords_bubble_ = nullptr;
 }
 
-void ManagePasswordsBubbleDelegateViewBase::OnWidgetClosing(
-    views::Widget* widget) {
+void PasswordBubbleViewBase::OnWidgetClosing(views::Widget* widget) {
   LocationBarBubbleDelegateView::OnWidgetClosing(widget);
   if (widget != GetWidget())
     return;
