@@ -148,12 +148,6 @@ struct launcher_info {
 	int32_t index;
 };
 
-int
-controller_module_init(struct weston_compositor *ec,
-		       int *argc, char *argv[],
-		       const struct ivi_layout_interface *interface,
-		       size_t interface_version);
-
 /*****************************************************************************
  *  local functions
  ****************************************************************************/
@@ -766,17 +760,26 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
  * ivi_hmi_controller_home is requested.
  */
 static struct hmi_controller *
-hmi_controller_create(struct weston_compositor *ec,
-		      const struct ivi_layout_interface *interface)
+hmi_controller_create(struct weston_compositor *ec)
 {
 	struct link_layer *tmp_link_layer = NULL;
 	int32_t panel_height = 0;
-	struct hmi_controller *hmi_ctrl = MEM_ALLOC(sizeof(*hmi_ctrl));
+	struct hmi_controller *hmi_ctrl;
+	const struct ivi_layout_interface *interface;
 	struct hmi_controller_layer *base_layer = NULL;
 	struct hmi_controller_layer *application_layer = NULL;
 	struct weston_output *output;
+	int32_t i;
 
-	int32_t i = 0;
+	interface = ivi_layout_get_api(ec);
+
+	if (!interface) {
+		weston_log("Cannot use ivi_layout_interface.\n");
+		return NULL;
+	}
+
+	hmi_ctrl = MEM_ALLOC(sizeof(*hmi_ctrl));
+	i = 0;
 
 	wl_array_init(&hmi_ctrl->ui_widgets);
 	hmi_ctrl->layout_mode = IVI_HMI_CONTROLLER_LAYOUT_MODE_TILING;
@@ -1954,20 +1957,13 @@ launch_hmi_client_process(void *data)
  *  exported functions
  ****************************************************************************/
 WL_EXPORT int
-controller_module_init(struct weston_compositor *ec,
-		       int *argc, char *argv[],
-		       const struct ivi_layout_interface *interface,
-		       size_t interface_version)
+wet_module_init(struct weston_compositor *ec,
+		       int *argc, char *argv[])
 {
 	struct hmi_controller *hmi_ctrl = NULL;
 	struct wl_event_loop *loop = NULL;
 
-	if (interface_version < sizeof(struct ivi_layout_interface)) {
-		weston_log("ivi-shell: version mismatch of controller interface\n");
-		return -1;
-	}
-
-	hmi_ctrl = hmi_controller_create(ec, interface);
+	hmi_ctrl = hmi_controller_create(ec);
 	if (hmi_ctrl == NULL)
 		return -1;
 
