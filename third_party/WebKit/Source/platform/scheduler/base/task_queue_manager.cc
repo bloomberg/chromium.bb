@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
+#include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
@@ -858,9 +859,11 @@ void TaskQueueManager::SetRandomSeed(uint64_t value) {
   random_generator_.seed(value);
 }
 
+MSVC_DISABLE_OPTIMIZE()
 bool TaskQueueManager::Validate() {
   return memory_corruption_sentinel_ == kMemoryCorruptionSentinelValue;
 }
+MSVC_ENABLE_OPTIMIZE()
 
 void TaskQueueManager::EnableCrashKeys(
     const char* file_name_crash_key_name,
