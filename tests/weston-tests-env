@@ -47,8 +47,7 @@ case $TEST_FILE in
 			--config=$abs_builddir/tests/weston-ivi.ini \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
-			--modules=$TEST_PLUGIN \
-			--ivi-module=$MODDIR/${TEST_FILE/.la/.so} \
+			--modules=$TEST_PLUGIN,$MODDIR/${TEST_FILE/.la/.so}\
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;

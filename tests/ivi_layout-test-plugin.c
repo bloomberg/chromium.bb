@@ -217,25 +217,19 @@ idle_launch_client(void *data)
 	weston_watch_process(&launcher->process);
 }
 
-int
-controller_module_init(struct weston_compositor *compositor,
-		       int *argc, char *argv[],
-		       const struct ivi_layout_interface *iface,
-		       size_t iface_version);
-
 WL_EXPORT int
-controller_module_init(struct weston_compositor *compositor,
-		       int *argc, char *argv[],
-		       const struct ivi_layout_interface *iface,
-		       size_t iface_version)
+wet_module_init(struct weston_compositor *compositor,
+		       int *argc, char *argv[])
 {
 	struct wl_event_loop *loop;
 	struct test_launcher *launcher;
 	const char *path;
+	const struct ivi_layout_interface *iface;
 
-	/* strict check, since this is an internal test module */
-	if (iface_version != sizeof(*iface)) {
-		weston_log("fatal: controller interface mismatch\n");
+	iface = ivi_layout_get_api(compositor);
+
+	if (!iface) {
+		weston_log("fatal: cannot use ivi_layout_interface.\n");
 		return -1;
 	}
 
