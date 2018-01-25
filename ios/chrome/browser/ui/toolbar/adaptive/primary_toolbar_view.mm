@@ -26,13 +26,13 @@
 @property(nonatomic, strong) UIView* locationBarContainer;
 
 // StackView containing the leading buttons (relative to the location bar). It
-// should only contain ToolbarButtons.
-@property(nonatomic, strong) UIStackView* leadingStackView;
+// should only contain ToolbarButtons. Redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIStackView* leadingStackView;
 // Buttons from the leading stack view.
 @property(nonatomic, strong) NSArray<ToolbarButton*>* leadingStackViewButtons;
 // StackView containing the trailing buttons (relative to the location bar). It
-// should only contain ToolbarButtons.
-@property(nonatomic, strong) UIStackView* trailingStackView;
+// should only contain ToolbarButtons. Redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIStackView* trailingStackView;
 // Buttons from the trailing stack view.
 @property(nonatomic, strong) NSArray<ToolbarButton*>* trailingStackViewButtons;
 

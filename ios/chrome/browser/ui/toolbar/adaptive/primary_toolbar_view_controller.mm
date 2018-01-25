@@ -6,6 +6,7 @@
 
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
@@ -111,6 +112,27 @@
   self.view.backButton.selected = NO;
   self.view.forwardLeadingButton.selected = NO;
   self.view.forwardTrailingButton.selected = NO;
+}
+
+#pragma mark - FullscreenUIElement
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  self.view.leadingStackView.alpha = progress;
+  self.view.trailingStackView.alpha = progress;
+  // TODO(crbug.com/804731): Update the location bar constraints.
+}
+
+- (void)updateForFullscreenEnabled:(BOOL)enabled {
+  if (!enabled)
+    [self updateForFullscreenProgress:1.0];
+}
+
+- (void)finishFullscreenScrollWithAnimator:
+    (FullscreenScrollEndAnimator*)animator {
+  CGFloat finalProgress = animator.finalProgress;
+  [animator addAnimations:^{
+    [self updateForFullscreenProgress:finalProgress];
+  }];
 }
 
 #pragma mark - Private
