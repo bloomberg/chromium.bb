@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -101,7 +102,7 @@ class AppListSyncableService : public syncer::SyncableService,
   void RemoveUninstalledItem(const std::string& id);
 
   // Called when properties of an item may have changed, e.g. default/oem state.
-  void UpdateItem(AppListItem* app_item);
+  void UpdateItem(const ChromeAppListItem* app_item);
 
   // Returns the existing sync item matching |id| or NULL.
   const SyncItem* GetSyncItem(const std::string& id) const;
@@ -169,25 +170,25 @@ class AppListSyncableService : public syncer::SyncableService,
   // If |app_item| matches an existing sync item, returns it. Otherwise adds
   // |app_item| to |sync_items_| and returns the new item. If |app_item| is
   // invalid returns NULL.
-  SyncItem* FindOrAddSyncItem(AppListItem* app_item);
+  SyncItem* FindOrAddSyncItem(const ChromeAppListItem* app_item);
 
   // Creates a sync item for |app_item| and sends an ADD SyncChange event.
-  SyncItem* CreateSyncItemFromAppItem(AppListItem* app_item);
+  SyncItem* CreateSyncItemFromAppItem(const ChromeAppListItem* app_item);
 
   // If a sync item for |app_item| already exists, update |app_item| from the
   // sync item, otherwise create a new sync item from |app_item|.
-  void AddOrUpdateFromSyncItem(AppListItem* app_item);
+  void AddOrUpdateFromSyncItem(const ChromeAppListItem* app_item);
 
   // Either uninstalling a default app or remove the REMOVE_DEFAULT sync item.
   // Returns true if the app is removed. Otherwise deletes the existing sync
   // item and returns false.
-  bool RemoveDefaultApp(AppListItem* item, SyncItem* sync_item);
+  bool RemoveDefaultApp(const ChromeAppListItem* item, SyncItem* sync_item);
 
   // Deletes a sync item from |sync_items_| and sends a DELETE action.
   void DeleteSyncItem(const std::string& item_id);
 
   // Updates existing entry in |sync_items_| from |app_item|.
-  void UpdateSyncItem(AppListItem* app_item);
+  void UpdateSyncItem(const ChromeAppListItem* app_item);
 
   // Removes sync item matching |id|.
   void RemoveSyncItem(const std::string& id);

@@ -116,7 +116,7 @@ void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
                                           const std::string& folder_id) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
-  app_list::AppListFolderItem* folder =
+  ChromeAppListItem* folder =
       service->GetModelUpdater()->FindFolderItem(folder_id);
   if (!folder) {
     LOG(ERROR) << "Folder not found: " << folder_id;
@@ -138,12 +138,13 @@ void SyncAppListHelper::PrintAppList(Profile* profile) {
   for (size_t i = 0; i < service->GetModelUpdater()->ItemCount(); ++i) {
     ChromeAppListItem* item = service->GetModelUpdater()->ItemAtForTest(i);
     // Skip if it's not a top level item.
-    if (item->folder_id().empty())
+    if (!item->folder_id().empty())
       continue;
     std::string label = base::StringPrintf("Item(%d): ", static_cast<int>(i));
     PrintItem(profile, item, label);
     // Print children if it has any.
     if (children.count(item->id())) {
+      DCHECK(item->is_folder());
       auto& child_items = children[item->folder_id()];
       for (size_t j = 0; j < child_items.size(); ++j) {
         ChromeAppListItem* child_item = child_items[j];

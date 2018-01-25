@@ -40,8 +40,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   ChromeAppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
   ChromeAppListItem* ItemAtForTest(size_t index) override;
-  app_list::AppListFolderItem* FindFolderItem(
-      const std::string& folder_id) override;
+  ChromeAppListItem* FindFolderItem(const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
   size_t BadgedItemCount() override;

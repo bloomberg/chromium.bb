@@ -4,6 +4,8 @@
 
 #include "ash/app_list/model/app_list_item_list.h"
 
+#include <utility>
+
 #include "ash/app_list/model/app_list_item.h"
 #include "base/memory/ptr_util.h"
 
@@ -267,13 +269,6 @@ void AppListItemList::FixItemPosition(size_t index) {
   AppListItem* item = item_at(index);
   for (auto& observer : observers_)
     observer.OnListItemMoved(index, index, item);
-}
-
-size_t AppListItemList::BadgedItemCount() const {
-  size_t count = 0;
-  for (size_t i = 0; i < app_list_items_.size(); ++i)
-    count += app_list_items_[i]->BadgedItemCount();
-  return count;
 }
 
 }  // namespace app_list
