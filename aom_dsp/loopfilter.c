@@ -543,11 +543,7 @@ void aom_lpf_horizontal_16_c(uint8_t *s, int p, const uint8_t *blimit,
 
 void aom_lpf_horizontal_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh) {
-#if CONFIG_PARALLEL_DEBLOCKING
-  mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1);
-#else
   mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 2);
-#endif
 }
 
 static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
