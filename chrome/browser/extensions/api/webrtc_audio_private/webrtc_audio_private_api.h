@@ -59,7 +59,6 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   // Calculates a single HMAC, using the extension ID as the security origin.
-  // Call only on IO thread.
   std::string CalculateHMAC(const std::string& raw_id);
 
   // Initializes |device_id_salt_|. Must be called on the UI thread,
@@ -98,16 +97,10 @@ class WebrtcAudioPrivateGetSinksFunction : public WebrtcAudioPrivateFunction {
 
   bool RunAsync() override;
 
-  // Requests output device descriptions.
-  void GetOutputDeviceDescriptionsOnIOThread();
-
-  // Receives output device descriptions, calculates HMACs for them and replies
-  // to UI thread with DoneOnUIThread().
-  void ReceiveOutputDeviceDescriptionsOnIOThread(
+  // Receives output device descriptions, calculates HMACs for them and sends
+  // the response.
+  void ReceiveOutputDeviceDescriptions(
       media::AudioDeviceDescriptions sink_devices);
-
-  // Sends the response.
-  void DoneOnUIThread(std::unique_ptr<SinkInfoVector> results);
 };
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction
@@ -125,23 +118,17 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
   // UI thread: Entry point, posts GetInputDeviceDescriptions() to IO thread.
   bool RunAsync() override;
 
-  // Enumerates input devices.
-  void GetInputDeviceDescriptionsOnIOThread();
-
   // Receives the input device descriptions, looks up the raw source device ID
   // basing on |params|, and requests the associated raw sink ID for it.
-  void ReceiveInputDeviceDescriptionsOnIOThread(
+  void ReceiveInputDeviceDescriptions(
       media::AudioDeviceDescriptions source_devices);
 
-  // IO thread: Receives the raw sink ID, calculates HMAC and replies to IO
-  // thread with ReceiveHMACOnUIThread().
-  void CalculateHMACOnIOThread(const base::Optional<std::string>& raw_sink_id);
+  // Receives the raw sink ID, calculates HMAC and calls Reply().
+  void CalculateHMACAndReply(const base::Optional<std::string>& raw_sink_id);
 
   // Receives the associated sink ID as HMAC and sends the response.
-  void ReceiveHMACOnUIThread(const std::string& hmac);
+  void Reply(const std::string& hmac);
 
-  // Initialized on UI thread in RunAsync(), read-only access on IO thread - no
-  // locking needed.
   std::unique_ptr<api::webrtc_audio_private::GetAssociatedSink::Params> params_;
 };
 
