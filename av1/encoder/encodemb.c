@@ -595,7 +595,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
                     pd->subsampling_x, pd->subsampling_y);
     mismatch_record_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r,
-                             blk_w, blk_h);
+                             blk_w, blk_h,
+                             xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
   }
 #endif
 }

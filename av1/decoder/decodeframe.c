@@ -245,7 +245,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
                     pd->subsampling_x, pd->subsampling_y);
     mismatch_check_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r, blk_w,
-                            blk_h);
+                            blk_h, xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
 #endif
     *eob_total += eob;
   } else {
@@ -478,7 +478,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                pd->subsampling_y))
         continue;
       mismatch_check_block_pre(pd->dst.buf, pd->dst.stride, plane, pixel_c,
-                               pixel_r, pd->width, pd->height);
+                               pixel_r, pd->width, pd->height,
+                               xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
     }
 #endif
 

@@ -48,13 +48,17 @@ void mismatch_move_frame_idx_w();
 void mismatch_move_frame_idx_r();
 void mismatch_reset_frame(int num_planes);
 void mismatch_record_block_pre(const uint8_t *src, int src_stride, int plane,
-                               int pixel_c, int pixel_r, int blk_w, int blk_h);
+                               int pixel_c, int pixel_r, int blk_w, int blk_h,
+                               int highbd);
 void mismatch_record_block_tx(const uint8_t *src, int src_stride, int plane,
-                              int pixel_c, int pixel_r, int blk_w, int blk_h);
+                              int pixel_c, int pixel_r, int blk_w, int blk_h,
+                              int highbd);
 void mismatch_check_block_pre(const uint8_t *src, int src_stride, int plane,
-                              int pixel_c, int pixel_r, int blk_w, int blk_h);
+                              int pixel_c, int pixel_r, int blk_w, int blk_h,
+                              int highbd);
 void mismatch_check_block_tx(const uint8_t *src, int src_stride, int plane,
-                             int pixel_c, int pixel_r, int blk_w, int blk_h);
+                             int pixel_c, int pixel_r, int blk_w, int blk_h,
+                             int highbd);
 #endif  // CONFIG_MISMATCH_DEBUG
 
 #ifdef __cplusplus
