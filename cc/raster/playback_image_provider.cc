@@ -27,9 +27,7 @@ PlaybackImageProvider::PlaybackImageProvider(
   DCHECK(cache_);
 }
 
-PlaybackImageProvider::~PlaybackImageProvider() {
-  DCHECK(!in_raster_);
-}
+PlaybackImageProvider::~PlaybackImageProvider() = default;
 
 PlaybackImageProvider::PlaybackImageProvider(PlaybackImageProvider&& other) =
     default;
@@ -37,28 +35,8 @@ PlaybackImageProvider::PlaybackImageProvider(PlaybackImageProvider&& other) =
 PlaybackImageProvider& PlaybackImageProvider::operator=(
     PlaybackImageProvider&& other) = default;
 
-void PlaybackImageProvider::BeginRaster() {
-  DCHECK(decoded_at_raster_.empty());
-  DCHECK(!in_raster_);
-  in_raster_ = true;
-
-  if (!settings_.has_value())
-    return;
-
-  for (auto& draw_image : settings_->at_raster_images)
-    decoded_at_raster_.push_back(GetDecodedDrawImage(draw_image));
-}
-
-void PlaybackImageProvider::EndRaster() {
-  DCHECK(in_raster_);
-  decoded_at_raster_.clear();
-  in_raster_ = false;
-}
-
 ImageProvider::ScopedDecodedDrawImage
 PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
-  DCHECK(in_raster_);
-
   // Return an empty decoded image if we are skipping all images during this
   // raster.
   if (!settings_.has_value())

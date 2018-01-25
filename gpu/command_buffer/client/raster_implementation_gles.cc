@@ -423,7 +423,6 @@ void RasterImplementationGLES::RasterCHROMIUM(
 
   // Wrap the provided provider in a stashing provider so that we can delay
   // unrefing images until we have serialized dependent commands.
-  provider->BeginRaster();
   cc::DecodeStashingImageProvider stashing_image_provider(provider);
 
   // TODO(enne): need to implement alpha folding optimization from POB.
@@ -439,7 +438,6 @@ void RasterImplementationGLES::RasterCHROMIUM(
   serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
-  provider->EndRaster();
 }
 
 void RasterImplementationGLES::EndRasterCHROMIUM() {

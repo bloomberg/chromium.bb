@@ -151,16 +151,10 @@ void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
 
 void RasterSource::RasterCommon(SkCanvas* raster_canvas,
                                 ImageProvider* image_provider) const {
-  if (image_provider)
-    image_provider->BeginRaster();
-
   DCHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
     display_list_->Raster(raster_canvas, image_provider);
-
-  if (image_provider)
-    image_provider->EndRaster();
 }
 
 sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {

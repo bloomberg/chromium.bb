@@ -1175,9 +1175,9 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   ImageDecodeCache::TracingInfo tracing_info(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin,
       ImageDecodeCache::TaskType::kInRaster);
-  std::vector<DrawImage> at_raster_images;
+  bool has_at_raster_images = false;
   image_controller_.GetTasksForImagesAndRef(
-      &sync_decoded_images, &at_raster_images, &decode_tasks, tracing_info);
+      &sync_decoded_images, &decode_tasks, &has_at_raster_images, tracing_info);
 
   const bool has_checker_images = !checkered_images.empty();
   tile->set_raster_task_scheduled_with_checker_images(has_checker_images);
@@ -1186,7 +1186,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   // Don't allow at-raster prepaint tiles, because they could be very slow
   // and block high-priority tasks.
-  if (!at_raster_images.empty() && tile->is_prepaint()) {
+  if (has_at_raster_images && tile->is_prepaint()) {
     work_to_schedule->extra_prepaint_images.insert(
         work_to_schedule->extra_prepaint_images.end(),
         sync_decoded_images.begin(), sync_decoded_images.end());
@@ -1221,7 +1221,6 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   if (!skip_images) {
     settings.emplace();
     settings->images_to_skip = std::move(images_to_skip);
-    settings->at_raster_images = std::move(at_raster_images);
     settings->image_to_current_frame_index =
         std::move(image_id_to_current_frame_index);
   }
