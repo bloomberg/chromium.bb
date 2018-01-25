@@ -26,25 +26,26 @@ class PLATFORM_EXPORT SamplingNativeHeapProfiler {
   struct Sample {
     size_t size;
     size_t count;
-    unsigned offset;
+    uint32_t ordinal;
+    uint32_t offset;
     std::vector<void*> stack;
   };
 
   SamplingNativeHeapProfiler() = default;
 
-  void Start();
+  uint32_t Start();
   void Stop();
-  void SetSamplingInterval(unsigned sampling_interval);
+  void SetSamplingInterval(size_t sampling_interval);
   void SuppressRandomnessForTest();
 
-  std::vector<Sample> GetSamples();
+  std::vector<Sample> GetSamples(uint32_t profile_id);
 
   static SamplingNativeHeapProfiler* GetInstance();
 
   static inline bool CreateAllocSample(size_t, Sample*);
   void* RecordAlloc(Sample&,
                     void* address,
-                    unsigned offset,
+                    uint32_t offset,
                     unsigned skip_frames,
                     bool preserve_data = false);
   void* RecordFree(void* address);

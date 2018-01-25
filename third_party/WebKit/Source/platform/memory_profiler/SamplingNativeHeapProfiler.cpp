@@ -33,6 +33,7 @@ Atomic32 g_deterministic;
 AtomicWord g_cumulative_counter = 0;
 AtomicWord g_threshold;
 AtomicWord g_sampling_interval = 128 * 1024;
+uint32_t g_last_sample_ordinal = 0;
 
 static void* AllocFn(const AllocatorDispatch* self,
                      size_t size,
@@ -185,26 +186,27 @@ bool SamplingNativeHeapProfiler::InstallAllocatorHooks() {
   return true;
 }
 
-void SamplingNativeHeapProfiler::Start() {
+uint32_t SamplingNativeHeapProfiler::Start() {
   InstallAllocatorHooksOnce();
   base::subtle::Release_Store(&g_threshold, g_sampling_interval);
   base::subtle::Release_Store(&g_running, true);
+  return g_last_sample_ordinal;
 }
 
 void SamplingNativeHeapProfiler::Stop() {
   base::subtle::Release_Store(&g_running, false);
 }
 
-void SamplingNativeHeapProfiler::SetSamplingInterval(
-    unsigned sampling_interval) {
+void SamplingNativeHeapProfiler::SetSamplingInterval(size_t sampling_interval) {
   // TODO(alph): Update the threshold. Make sure not to leave it in a state
   // when the threshold is already crossed.
-  base::subtle::Release_Store(&g_sampling_interval, sampling_interval);
+  base::subtle::Release_Store(&g_sampling_interval,
+                              static_cast<AtomicWord>(sampling_interval));
 }
 
 // static
 intptr_t SamplingNativeHeapProfiler::GetNextSampleInterval(uint64_t interval) {
-  if (base::subtle::NoBarrier_Load(&g_deterministic))
+  if (UNLIKELY(base::subtle::NoBarrier_Load(&g_deterministic)))
     return static_cast<intptr_t>(interval);
   // We sample with a Poisson process, with constant average sampling
   // interval. This follows the exponential probability distribution with
@@ -271,7 +273,7 @@ void SamplingNativeHeapProfiler::RecordStackTrace(Sample* sample,
 
 void* SamplingNativeHeapProfiler::RecordAlloc(Sample& sample,
                                               void* address,
-                                              unsigned offset,
+                                              uint32_t offset,
                                               unsigned skip_frames,
                                               bool preserve_data) {
   // TODO(alph): It's better to use a recursive mutex and move the check
@@ -286,6 +288,7 @@ void* SamplingNativeHeapProfiler::RecordAlloc(Sample& sample,
   if (preserve_data)
     memmove(client_address, address, sample.size);
   RecordStackTrace(&sample, skip_frames);
+  sample.ordinal = ++g_last_sample_ordinal;
   samples_.insert(std::make_pair(client_address, sample));
   if (offset)
     reinterpret_cast<unsigned*>(client_address)[-1] = kMagicSignature;
@@ -317,13 +320,17 @@ void SamplingNativeHeapProfiler::SuppressRandomnessForTest() {
 }
 
 std::vector<SamplingNativeHeapProfiler::Sample>
-SamplingNativeHeapProfiler::GetSamples() {
+SamplingNativeHeapProfiler::GetSamples(uint32_t profile_id) {
   base::AutoLock lock(mutex_);
   CHECK(!entered_.Get());
   entered_.Set(true);
   std::vector<Sample> samples;
-  for (auto it = samples_.begin(); it != samples_.end(); ++it)
-    samples.push_back(it->second);
+  for (auto it = samples_.begin(); it != samples_.end(); ++it) {
+    Sample& sample = it->second;
+    if (sample.ordinal <= profile_id)
+      continue;
+    samples.push_back(sample);
+  }
   entered_.Set(false);
   return samples;
 }
