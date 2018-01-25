@@ -26,11 +26,6 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
     // The set of image ids to skip during raster.
     PaintImageIdFlatSet images_to_skip;
 
-    // The set of images which must be decoded by the provider before beginning
-    // raster. The images are decoded and locked by the provider in BeginRaster
-    // and unlocked in EndRaster.
-    std::vector<DrawImage> at_raster_images;
-
     // The frame index to use for the given image id. If no index is provided,
     // the frame index provided in the PaintImage will be used.
     base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index;
@@ -41,9 +36,6 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
                         const gfx::ColorSpace& target_color_space,
                         base::Optional<Settings> settings);
   ~PlaybackImageProvider() override;
-
-  void BeginRaster() override;
-  void EndRaster() override;
 
   PlaybackImageProvider(PlaybackImageProvider&& other);
   PlaybackImageProvider& operator=(PlaybackImageProvider&& other);
@@ -56,9 +48,6 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
   ImageDecodeCache* cache_;
   gfx::ColorSpace target_color_space_;
   base::Optional<Settings> settings_;
-
-  bool in_raster_ = false;
-  std::vector<ImageProvider::ScopedDecodedDrawImage> decoded_at_raster_;
 
   DISALLOW_COPY_AND_ASSIGN(PlaybackImageProvider);
 };

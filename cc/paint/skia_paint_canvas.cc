@@ -19,8 +19,6 @@ namespace cc {
 SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
                                  std::unique_ptr<ImageProvider> image_provider)
     : canvas_(canvas), image_provider_(std::move(image_provider)) {
-  if (image_provider_)
-    image_provider_->BeginRaster();
 }
 
 SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap)
@@ -35,14 +33,9 @@ SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
                                  std::unique_ptr<ImageProvider> image_provider)
     : canvas_(canvas), image_provider_(std::move(image_provider)) {
   WrapCanvasInColorSpaceXformCanvas(target_color_space);
-  if (image_provider_)
-    image_provider_->BeginRaster();
 }
 
-SkiaPaintCanvas::~SkiaPaintCanvas() {
-  if (image_provider_)
-    image_provider_->EndRaster();
-}
+SkiaPaintCanvas::~SkiaPaintCanvas() = default;
 
 void SkiaPaintCanvas::WrapCanvasInColorSpaceXformCanvas(
     sk_sp<SkColorSpace> target_color_space) {

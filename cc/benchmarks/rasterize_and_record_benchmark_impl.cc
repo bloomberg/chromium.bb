@@ -63,7 +63,6 @@ void RunBenchmark(RasterSource* raster_source,
       base::Optional<PlaybackImageProvider::Settings> image_settings;
       image_settings.emplace();
       image_settings->images_to_skip = {};
-      image_settings->at_raster_images = {};
       image_settings->image_to_current_frame_index = {};
 
       PlaybackImageProvider image_provider(

@@ -48,9 +48,6 @@ class CC_PAINT_EXPORT ImageProvider {
 
   virtual ~ImageProvider() {}
 
-  virtual void BeginRaster() {}
-  virtual void EndRaster() {}
-
   // Returns the DecodedDrawImage to use for this PaintImage. If no image is
   // provided, the draw for this image will be skipped during raster.
   virtual ScopedDecodedDrawImage GetDecodedDrawImage(

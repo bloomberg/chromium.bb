@@ -38,8 +38,8 @@ class CC_EXPORT ImageController {
   void SetImageDecodeCache(ImageDecodeCache* cache);
   void GetTasksForImagesAndRef(
       std::vector<DrawImage>* sync_decoded_images,
-      std::vector<DrawImage>* at_raster_images,
       std::vector<scoped_refptr<TileTask>>* tasks,
+      bool* has_at_raster_images,
       const ImageDecodeCache::TracingInfo& tracing_info);
   void UnrefImages(const std::vector<DrawImage>& images);
   void ReduceMemoryUsage();
