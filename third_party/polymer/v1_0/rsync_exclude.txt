@@ -12,6 +12,7 @@ hero.svg
 index.html
 *.md
 metadata.html
+package.json
 */test/
 */tests/
 .travis.yml
@@ -29,3 +30,6 @@ paper-material/paper-material.html
 
 # paper-spinner
 paper-spinner/paper-spinner.html
+
+# paper-styles
+paper-styles/classes/shadow-layout.html
