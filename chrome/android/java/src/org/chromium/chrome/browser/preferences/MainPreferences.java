@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.Settings;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
@@ -100,10 +101,9 @@ public class MainPreferences extends PreferenceFragment
             // Settings notifications page, not to Chrome's notifications settings page.
             Preference notifications = findPreference(PREF_NOTIFICATIONS);
             notifications.setOnPreferenceClickListener(preference -> {
-                // TODO(crbug.com/707804): Use Android O constants.
                 Intent intent = new Intent();
-                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
-                intent.putExtra("android.provider.extra.APP_PACKAGE", BuildInfo.getPackageName());
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, BuildInfo.getPackageName());
                 startActivity(intent);
                 // We handle the click so the default action (opening NotificationsPreference)
                 // isn't triggered.

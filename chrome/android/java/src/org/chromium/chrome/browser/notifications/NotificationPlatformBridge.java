@@ -290,10 +290,6 @@ public class NotificationPlatformBridge {
         }
         preferencesIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
 
-        // We need to ensure that no existing preference tasks are being re-used in order for the
-        // new activity to appear on top.
-        preferencesIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
         applicationContext.startActivity(preferencesIntent);
     }
 
