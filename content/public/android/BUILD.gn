@@ -467,7 +467,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/JavaBridgeCoercionTest.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeFieldsTest.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeReturnValuesTest.java",
-    "javatests/src/org/chromium/content/browser/JavaBridgeTestBase.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeTestCommon.java",
     "javatests/src/org/chromium/content/browser/MediaResourceGetterTest.java",
     "javatests/src/org/chromium/content/browser/MediaSessionTest.java",
