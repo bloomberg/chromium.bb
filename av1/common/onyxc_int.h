@@ -120,8 +120,8 @@ typedef enum {
 #define MFMV_STACK_SIZE 3
 
 typedef struct {
-  int_mv mfmv[INTER_REFS_PER_FRAME][MFMV_STACK_SIZE];
-  int mem_size;
+  int_mv mfmv0[MFMV_STACK_SIZE];
+  uint8_t ref_frame_offset[MFMV_STACK_SIZE];
 } TPL_MV_REF;
 #endif
 
@@ -590,6 +590,7 @@ typedef struct AV1Common {
 #endif
 #if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
+  int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[TOTAL_REFS_PER_FRAME];
 #endif
@@ -720,13 +721,13 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   const int mem_size =
       ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
   int realloc = cm->tpl_mvs == NULL;
-  if (cm->tpl_mvs) realloc |= cm->tpl_mvs->mem_size < mem_size;
+  if (cm->tpl_mvs) realloc |= cm->tpl_mvs_mem_size < mem_size;
 
   if (realloc) {
     aom_free(cm->tpl_mvs);
     CHECK_MEM_ERROR(cm, cm->tpl_mvs,
                     (TPL_MV_REF *)aom_calloc(mem_size, sizeof(*cm->tpl_mvs)));
-    cm->tpl_mvs->mem_size = mem_size;
+    cm->tpl_mvs_mem_size = mem_size;
   }
 #endif
 }

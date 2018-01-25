@@ -14,6 +14,27 @@
 
 #define USE_CUR_GM_REFMV 1
 
+#if CONFIG_MFMV
+// Although we assign 32 bit integers, all the values are strictly under 14
+// bits.
+static int div_mult[64] = {
+  0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638, 1489, 1365,
+  1260, 1170,  1092, 1024, 963,  910,  862,  819,  780,  744,  712,  682,  655,
+  630,  606,   585,  564,  546,  528,  512,  496,  481,  468,  455,  442,  431,
+  420,  409,   399,  390,  381,  372,  364,  356,  348,  341,  334,  327,  321,
+  315,  309,   303,  297,  292,  287,  282,  277,  273,  268,  264,  260,
+};
+
+// TODO(jingning): Consider the use of lookup table for (num / den)
+// altogether.
+static void get_mv_projection(MV *output, MV ref, int num, int den) {
+  output->row =
+      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14));
+  output->col =
+      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14));
+}
+#endif  // CONFIG_MFMV
+
 void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
                         int mi_col, int x_mis, int y_mis) {
 #if CONFIG_TMV || CONFIG_MFMV
@@ -455,10 +476,17 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
   av1_set_ref_frame(rf, ref_frame);
 
   if (rf[1] == NONE_FRAME) {
+    int cur_frame_index = cm->cur_frame->cur_frame_offset;
+    int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
+    int cur_offset_0 = cur_frame_index -
+                       cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
-      if (prev_frame_mvs->mfmv[ref_frame - LAST_FRAME][i].as_int !=
-          INVALID_MV) {
-        int_mv this_refmv = prev_frame_mvs->mfmv[ref_frame - LAST_FRAME][i];
+      if (prev_frame_mvs->mfmv0[i].as_int != INVALID_MV) {
+        int_mv this_refmv;
+
+        get_mv_projection(&this_refmv.as_mv, prev_frame_mvs->mfmv0[i].as_mv,
+                          cur_offset_0, prev_frame_mvs->ref_frame_offset[i]);
 #if CONFIG_AMVR
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
@@ -494,11 +522,23 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
     }
   } else {
     // Process compound inter mode
+    int cur_frame_index = cm->cur_frame->cur_frame_offset;
+    int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
+    int cur_offset_0 = cur_frame_index -
+                       cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+    int buf_idx_1 = cm->frame_refs[FWD_RF_OFFSET(rf[1])].idx;
+    int cur_offset_1 = cur_frame_index -
+                       cm->buffer_pool->frame_bufs[buf_idx_1].cur_frame_offset;
+
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
-      if (prev_frame_mvs->mfmv[rf[0] - LAST_FRAME][i].as_int != INVALID_MV &&
-          prev_frame_mvs->mfmv[rf[1] - LAST_FRAME][i].as_int != INVALID_MV) {
-        int_mv this_refmv = prev_frame_mvs->mfmv[rf[0] - LAST_FRAME][i];
-        int_mv comp_refmv = prev_frame_mvs->mfmv[rf[1] - LAST_FRAME][i];
+      if (prev_frame_mvs->mfmv0[i].as_int != INVALID_MV) {
+        int_mv this_refmv;
+        int_mv comp_refmv;
+        get_mv_projection(&this_refmv.as_mv, prev_frame_mvs->mfmv0[i].as_mv,
+                          cur_offset_0, prev_frame_mvs->ref_frame_offset[i]);
+        get_mv_projection(&comp_refmv.as_mv, prev_frame_mvs->mfmv0[i].as_mv,
+                          cur_offset_1, prev_frame_mvs->ref_frame_offset[i]);
+
 #if CONFIG_AMVR
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
@@ -1361,27 +1401,6 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
 #endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_MFMV
-// Although we assign 32 bit integers, all the values are strictly under 14
-// bits.
-static int div_mult[64] = {
-  0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638, 1489, 1365,
-  1260, 1170,  1092, 1024, 963,  910,  862,  819,  780,  744,  712,  682,  655,
-  630,  606,   585,  564,  546,  528,  512,  496,  481,  468,  455,  442,  431,
-  420,  409,   399,  390,  381,  372,  364,  356,  348,  341,  334,  327,  321,
-  315,  309,   303,  297,  292,  287,  282,  277,  273,  268,  264,  260,
-};
-
-// TODO(jingning): Consider the use of lookup table for (num / den)
-// altogether.
-static void get_mv_projection(MV *output, MV ref, int num, int den) {
-  output->row =
-      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14));
-  output->col =
-      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14));
-}
-#endif  // CONFIG_MFMV
-
-#if CONFIG_MFMV
 #define MAX_OFFSET_WIDTH 64
 #define MAX_OFFSET_HEIGHT 0
 
@@ -1490,12 +1509,12 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
         if (pos_valid) {
           int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
 
-          for (MV_REFERENCE_FRAME rf = ALTREF_FRAME; rf >= LAST_FRAME; --rf) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_offset[rf],
-                              ref_frame_offset);
-            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(rf)][ref_stamp].as_int =
-                this_mv.as_int;
-          }
+          tpl_mvs_base[mi_offset].mfmv0[ref_stamp].as_mv.row =
+              (dir == 1) ? -fwd_mv.row : fwd_mv.row;
+          tpl_mvs_base[mi_offset].mfmv0[ref_stamp].as_mv.col =
+              (dir == 1) ? -fwd_mv.col : fwd_mv.col;
+          tpl_mvs_base[mi_offset].ref_frame_offset[ref_stamp] =
+              ref_frame_offset;
         }
       }
     }
@@ -1510,11 +1529,11 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   int bwd_frame_index = 0, alt2_frame_index = 0;
 
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
-  for (int ref_frame = 0; ref_frame < INTER_REFS_PER_FRAME; ++ref_frame) {
-    int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
-    for (int idx = 0; idx < size; ++idx) {
-      for (int i = 0; i < MFMV_STACK_SIZE; ++i)
-        tpl_mvs_base[idx].mfmv[ref_frame][i].as_int = INVALID_MV;
+  int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
+  for (int idx = 0; idx < size; ++idx) {
+    for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
+      tpl_mvs_base[idx].mfmv0[i].as_int = INVALID_MV;
+      tpl_mvs_base[idx].ref_frame_offset[i] = 0;
     }
   }
 
