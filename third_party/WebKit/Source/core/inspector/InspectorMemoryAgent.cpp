@@ -105,7 +105,7 @@ Response InspectorMemoryAgent::startSampling(
   state_->setInteger(MemoryAgentState::samplingProfileInterval, interval);
   if (in_suppressRandomness.fromMaybe(false))
     SamplingNativeHeapProfiler::GetInstance()->SuppressRandomnessForTest();
-  SamplingNativeHeapProfiler::GetInstance()->Start();
+  profile_id_ = SamplingNativeHeapProfiler::GetInstance()->Start();
   return Response::OK();
 }
 
@@ -126,8 +126,8 @@ Response InspectorMemoryAgent::getSamplingProfile(
       samples =
           protocol::Array<protocol::Memory::SamplingProfileNode>::create();
   std::vector<SamplingNativeHeapProfiler::Sample> raw_samples =
-      SamplingNativeHeapProfiler::GetInstance()->GetSamples();
-  // TODO(alph): Only report samples recorded within the current session.
+      SamplingNativeHeapProfiler::GetInstance()->GetSamples(profile_id_);
+
   for (auto it = raw_samples.begin(); it != raw_samples.end(); ++it) {
     std::unique_ptr<protocol::Array<protocol::String>> stack =
         protocol::Array<protocol::String>::create();
