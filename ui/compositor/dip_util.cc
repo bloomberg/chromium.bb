@@ -66,7 +66,10 @@ gfx::Rect ConvertRectToPixel(const Layer* layer,
 namespace {
 
 void CheckSnapped(float snapped_position) {
-  const float kEplison = 0.0003f;
+  // The acceptable error epsilon should be small enough to detect visible
+  // artifacts as well as large enough to not cause false crashes when an
+  // uncommon device scale factor is applied.
+  const float kEplison = 0.003f;
   float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
   DCHECK_LT(diff, kEplison);
 }
