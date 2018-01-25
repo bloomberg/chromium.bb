@@ -133,19 +133,20 @@ public class TabListSceneLayer extends SceneLayer {
     /**
      * @param context An android context for resources.
      * @param t The layout tab to determine the color of.
-     * @return The theme color for the provided tab. This accounts for features like Chrome Home and
-     *         Chrome Modern.
+     * @return The theme color for the provided tab. This accounts for features like Chrome Modern.
      */
     private int getTabThemeColor(Context context, LayoutTab t) {
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            if (t.isIncognito()) {
-                return ApiCompatibilityUtils.getColor(
-                        context.getResources(), R.color.incognito_primary_color);
-            }
-            return Color.WHITE;
+        int themeColor = t.getToolbarBackgroundColor();
+
+        // The only time we need to override the theme color is if modern is enabled and the theme
+        // color is the old default theme color.
+        if (FeatureUtilities.isChromeModernDesignEnabled()
+                && ColorUtils.isUsingDefaultToolbarColor(
+                           context.getResources(), false, false, t.getToolbarBackgroundColor())) {
+            themeColor = Color.WHITE;
         }
 
-        return t.getToolbarBackgroundColor();
+        return themeColor;
     }
 
     /**
