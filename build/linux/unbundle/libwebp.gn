@@ -2,10 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("libwebp") {
+source_set("libwebp_webp") {
   libs = [
     "webp",
     "webpdemux",
     "webpmux",
+  ]
+}
+
+group("libwebp") {
+  deps = [
+    ":libwebp_webp",
   ]
 }
