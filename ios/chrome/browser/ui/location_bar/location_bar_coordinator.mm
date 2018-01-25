@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/web/public/referrer.h"
 #include "url/gurl.h"
@@ -44,6 +45,7 @@
 @synthesize URLLoader = _URLLoader;
 @synthesize locationBarController = _locationBarController;
 @synthesize delegate = _delegate;
+@synthesize webStateList = _webStateList;
 
 #pragma mark - public
 
@@ -139,4 +141,28 @@
   _locationBarController->HideKeyboardAndEndEditing();
   [self updateOmniboxState];
 }
+
+#pragma mark - LocationBarDelegate
+
+- (void)locationBarHasBecomeFirstResponder {
+  [self.delegate locationBarDidBecomeFirstResponder];
+}
+
+- (void)locationBarHasResignedFirstResponder {
+  [self.delegate locationBarDidResignFirstResponder];
+}
+
+- (void)locationBarBeganEdit {
+  [self.delegate locationBarBeganEdit];
+}
+
+- (web::WebState*)webState {
+  return self.webStateList->GetActiveWebState();
+}
+
+- (ToolbarModel*)toolbarModel {
+  ToolbarModelIOS* toolbarModelIOS = [self.delegate toolbarModelIOS];
+  return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
+}
+
 @end

@@ -143,6 +143,20 @@
   [self.toolbarController setShareButtonEnabled:enabled];
 }
 
+- (void)currentPageLoadStarted {
+  [self.toolbarController currentPageLoadStarted];
+}
+
+- (CGRect)visibleOmniboxFrame {
+  return [self.toolbarController visibleOmniboxFrame];
+}
+
+- (void)triggerToolsMenuButtonAnimation {
+  [self.toolbarController triggerToolsMenuButtonAnimation];
+}
+
+#pragma mark - PrimaryToolbarCoordinator
+
 - (void)showPrerenderingAnimation {
   [self.toolbarController showPrerenderingAnimation];
 }
@@ -155,16 +169,8 @@
   return [self.toolbarController showingOmniboxPopup];
 }
 
-- (void)currentPageLoadStarted {
-  [self.toolbarController currentPageLoadStarted];
-}
-
-- (CGRect)visibleOmniboxFrame {
-  return [self.toolbarController visibleOmniboxFrame];
-}
-
-- (void)triggerToolsMenuButtonAnimation {
-  [self.toolbarController triggerToolsMenuButtonAnimation];
+- (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  [self.toolbarController transitionToLocationBarFocusedState:focused];
 }
 
 #pragma mark - FakeboxFocuser

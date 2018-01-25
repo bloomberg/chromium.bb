@@ -39,6 +39,10 @@
 // Whether the omnibox popup is currently presented.
 - (BOOL)showingOmniboxPopup;
 
+// Coordinates the location bar focusing/defocusing. For example, initiates
+// transition to the expanded location bar state of the view controller.
+- (void)transitionToLocationBarFocusedState:(BOOL)focused;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_PRIMARY_TOOLBAR_COORDINATOR_H_

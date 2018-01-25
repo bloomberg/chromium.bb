@@ -42,7 +42,8 @@ class WebState;
         dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
-// Delegate for this coordinator.
+// Delegate for this coordinator. Only used for plumbing to Location Bar
+// coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // URL loader for the toolbar.
@@ -63,6 +64,10 @@ class WebState;
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
+
+// Coordinates the location bar focusing/defocusing. For example, initiates
+// transition to the expanded location bar state of the view controller.
+- (void)transitionToLocationBarFocusedState:(BOOL)focused;
 
 // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
 // created.

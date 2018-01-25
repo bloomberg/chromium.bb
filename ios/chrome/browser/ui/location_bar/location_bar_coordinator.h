@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_view.h"
+#import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
 namespace ios {
@@ -19,9 +20,10 @@ class ChromeBrowserState;
 @protocol UrlLoader;
 @protocol ToolbarCoordinatorDelegate;
 class LocationBarControllerImpl;
+class WebStateList;
 
 @interface LocationBarCoordinator
-    : NSObject<LocationBarURLLoader, OmniboxFocuser>
+    : NSObject<LocationBarURLLoader, OmniboxFocuser, LocationBarDelegate>
 
 // LocationBarView containing the omnibox.
 @property(nonatomic, strong) LocationBarView* locationBarView;
@@ -37,6 +39,8 @@ class LocationBarControllerImpl;
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
+// The web state list this ToolbarCoordinator is handling.
+@property(nonatomic, assign) WebStateList* webStateList;
 
 // Start this coordinator.
 - (void)start;

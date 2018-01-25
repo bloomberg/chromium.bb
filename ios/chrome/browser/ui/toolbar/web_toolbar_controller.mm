@@ -962,7 +962,7 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
   [self.delegate locationBarBeganEdit];
 }
 
-- (web::WebState*)getWebState {
+- (web::WebState*)webState {
   return [self.delegate currentWebState];
 }
 
@@ -1945,6 +1945,12 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
       [self layoutClippingView];
     }
   }
+}
+
+#pragma mark - Toolbar
+
+- (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  // This is a no-op, since this class implements LocationBarDelegate directly.
 }
 
 @end
