@@ -442,8 +442,7 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
-  # Checks that Client LoFi resource requests have the Intervention header
-  # (in case page has https images that may not be fully loaded).
+  # Checks that Client LoFi resource requests have the Intervention header.
   @ChromeVersionEqualOrAfterM(61)
   def testClientLoFiInterventionHeader(self):
     with TestDriver() as test_driver:
@@ -459,7 +458,7 @@ class LoFi(IntegrationTest):
           '--force-fieldtrials=NetworkQualityEstimator/Enabled/'
           'PreviewsClientLoFi/Enabled')
 
-      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+      test_driver.LoadURL('https://check.googlezip.net/static/index.html')
 
       intervention_headers = 0
       for response in test_driver.GetHTTPResponses():
