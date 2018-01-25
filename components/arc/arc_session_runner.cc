@@ -112,23 +112,6 @@ bool IsRequestAllowed(const base::Optional<ArcInstanceMode>& current_mode,
   return false;
 }
 
-// Returns true if OnSessionStopped() should be called to notify observers.
-bool ShouldNotifyOnSessionStopped(
-    const base::Optional<ArcInstanceMode>& target_mode) {
-  DCHECK(target_mode.has_value());
-
-  switch (target_mode.value()) {
-    case ArcInstanceMode::MINI_INSTANCE:
-      return false;
-    case ArcInstanceMode::FULL_INSTANCE:
-      return true;
-  }
-
-  NOTREACHED() << "Unexpeceted |target_mode|: "
-               << static_cast<int>(target_mode.value());
-  return false;
-}
-
 }  // namespace
 
 ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
@@ -242,15 +225,15 @@ void ArcSessionRunner::StartArcSession() {
   if (!arc_session_) {
     arc_session_ = factory_.Run();
     arc_session_->AddObserver(this);
+    arc_session_->StartMiniInstance();
     // Record the UMA only when |restart_after_crash_count_| is zero to avoid
     // recording an auto-restart-then-crash loop. Such a crash loop is recorded
     // separately with RecordInstanceRestartAfterCrashUma().
     if (!restart_after_crash_count_)
       RecordInstanceCrashUma(ArcContainerLifetimeEvent::CONTAINER_STARTING);
-  } else {
-    DCHECK_EQ(ArcInstanceMode::MINI_INSTANCE, arc_session_->GetTargetMode());
   }
-  arc_session_->Start(target_mode_.value());
+  if (target_mode_ == ArcInstanceMode::FULL_INSTANCE)
+    arc_session_->RequestUpgrade();
 }
 
 void ArcSessionRunner::RestartArcSession() {
@@ -262,17 +245,13 @@ void ArcSessionRunner::RestartArcSession() {
 }
 
 void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
-                                        bool was_running) {
+                                        bool was_running,
+                                        bool full_requested) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
   VLOG(0) << "ARC stopped: " << stop_reason;
-
-  // The observers should be agnostic to the existence of the limited-purpose
-  // instance.
-  const bool notify_observers =
-      ShouldNotifyOnSessionStopped(arc_session_->GetTargetMode());
 
   arc_session_->RemoveObserver(this);
   arc_session_.reset();
@@ -305,7 +284,9 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (notify_observers) {
+  // The observers should be agnostic to the existence of the limited-purpose
+  // instance.
+  if (full_requested) {
     for (auto& observer : observer_list_)
       observer.OnSessionStopped(stop_reason, restarting);
   }

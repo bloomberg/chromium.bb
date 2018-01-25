@@ -102,7 +102,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   void RestartArcSession();
 
   // ArcSession::Observer:
-  void OnSessionStopped(ArcStopReason reason, bool was_running) override;
+  void OnSessionStopped(ArcStopReason reason,
+                        bool was_running,
+                        bool full_requested) override;
 
   THREAD_CHECKER(thread_checker_);
 

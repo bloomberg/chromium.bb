@@ -233,6 +233,7 @@ TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
   // If starting the mini instance fails, arc_session_runner()'s state goes back
   // to STOPPED, but its observers won't be notified.
   arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  arc_session()->EmulateMiniContainerStart();
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(stopped_called());
 
@@ -255,6 +256,7 @@ TEST_F(ArcSessionRunnerTest, Crash_MiniInstance) {
   // If starting the mini instance fails, arc_session_runner()'s state goes back
   // to STOPPED, but its observers won't be notified.
   arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  arc_session()->EmulateMiniContainerStart();
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(stopped_called());
 }
