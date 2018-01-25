@@ -7,7 +7,21 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol LocationBarConsumer;
+class WebStateList;
+
+// A mediator object that updates the mediator when the web state changes.
 @interface LocationBarMediator : NSObject
+// The WebStateList that this mediator listens for any changes on the active web
+// state.
+@property(nonatomic, assign) WebStateList* webStateList;
+
+// The consumer for this object. This can change during the lifetime of this
+// object and may be nil.
+@property(nonatomic, strong) id<LocationBarConsumer> consumer;
+
+// Stops observing all objects.
+- (void)disconnect;
 
 @end
 

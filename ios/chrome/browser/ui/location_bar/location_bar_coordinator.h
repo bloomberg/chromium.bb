@@ -47,8 +47,6 @@ class WebStateList;
 // Stop this coordinator.
 - (void)stop;
 
-// Updates omnibox state, including the displayed text and the cursor position.
-- (void)updateOmniboxState;
 
 @end
 
