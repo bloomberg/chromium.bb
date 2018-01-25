@@ -377,9 +377,6 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
       case session_manager::SessionState::ACTIVE:
         login_shelf_view_->SetVisible(false);
         shelf_view_->SetVisible(true);
-        // TODO(wzang): Combine with the codes specific to SessionState::ACTIVE
-        // in PostCreateShelf() when view-based shelf on login screen is
-        // supported.
         break;
       case session_manager::SessionState::LOCKED:
       case session_manager::SessionState::LOGIN_SECONDARY:
