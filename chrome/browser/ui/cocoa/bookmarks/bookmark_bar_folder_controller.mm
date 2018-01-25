@@ -1713,17 +1713,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     unichar theChar = [newText characterAtIndex:0];
     switch (theChar) {
 
-      // Keys that trigger opening of the selection.
-      case kUnicodeSpace: // Space.
-      case NSNewlineCharacter:
-      case NSCarriageReturnCharacter:
-      case NSEnterCharacter:
-        if (selectedIndex_ >= 0 && selectedIndex_ < [self buttonCount]) {
-          [barController_ openBookmark:[buttons_ objectAtIndex:selectedIndex_]];
-          return NO; // NO because the selection-handling code will close later.
-        } else {
-          return YES; // Triggering with no selection closes the menu.
-        }
       // Keys that cancel and close the menu.
       case kUnicodeEscape:
       case NSDeleteCharacter:
@@ -1739,6 +1728,22 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [self clearInputText];
         [self selectNext];
         return NO;
+      // Keys that trigger opening of the selection.
+      case kUnicodeSpace:  // Space.
+      case NSNewlineCharacter:
+      case NSCarriageReturnCharacter:
+      case NSEnterCharacter: {
+        BookmarkButton* btn = [self buttonAtIndex:selectedIndex_];
+        if (!btn)
+          return YES;  // Triggering with no selection closes the menu.
+
+        if (![btn isFolder]) {
+          [barController_ openBookmark:[buttons_ objectAtIndex:selectedIndex_]];
+          return NO;  // NO because the selection-handling code will close
+                      // later.
+        }
+        // Fall-through if selected index is folder.
+      }
       // Keys that open and close submenus.
       case NSRightArrowFunctionKey: {
         BookmarkButton* btn = [self buttonAtIndex:selectedIndex_];

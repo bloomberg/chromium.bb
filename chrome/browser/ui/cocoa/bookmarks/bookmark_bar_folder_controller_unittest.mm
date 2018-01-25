@@ -1421,6 +1421,34 @@ TEST_F(BookmarkBarFolderControllerMenuTest, ActOnEmptyMenu) {
   EXPECT_TRUE([bbfc handleInputText:@" "]);
 }
 
+// Tests that sending enter key event to the nested folder opens
+// submenu for it. https://crbug.com/791962
+TEST_F(BookmarkBarFolderControllerMenuTest, ActOnNestedFolder) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const BookmarkNode* folder =
+      model->AddFolder(root, root->child_count(), ASCIIToUTF16("folder"));
+  ASSERT_TRUE(folder);
+
+  const BookmarkNode* nested_folder =
+      model->AddFolder(folder, folder->child_count(), ASCIIToUTF16("nested"));
+  ASSERT_TRUE(nested_folder);
+
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"folder"];
+  [[button target] performSelector:@selector(openBookmarkFolderFromButton:)
+                        withObject:button];
+
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  NSArray* buttons = [bbfc buttons];
+  ASSERT_EQ(1u, [buttons count]);
+
+  button = [buttons objectAtIndex:0];
+  [bbfc mouseEnteredButton:button event:nil];
+
+  // It musn't be closed.
+  EXPECT_FALSE([bbfc handleInputText:@" "]);
+}
+
 // Just like a BookmarkBarFolderController but intercedes when providing
 // pasteboard drag data.
 @interface BookmarkBarFolderControllerDragData : BookmarkBarFolderController {
