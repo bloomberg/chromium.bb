@@ -1363,6 +1363,10 @@ bool AXLayoutObject::AriaHasPopup() const {
          RoleValue() == kTextFieldWithComboBoxRole;
 }
 
+// TODO : Aria-dropeffect and aria-grabbed are deprecated in aria 1.1
+// Also those properties are expected to be replaced by a new feature in
+// a future version of WAI-ARIA. After that we will re-implement them
+// following new spec.
 bool AXLayoutObject::SupportsARIADragging() const {
   const AtomicString& grabbed = GetAttribute(aria_grabbedAttr);
   return EqualIgnoringASCIICase(grabbed, "true") ||
