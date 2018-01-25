@@ -127,11 +127,6 @@ class BackgroundContentsServiceNotificationTest
         std::make_unique<NotificationDisplayServiceTester>(profile());
   }
 
-  void TearDown() override {
-    display_service_.reset();
-    BrowserWithTestWindowTest::TearDown();
-  }
-
  protected:
   // Creates crash notification for the specified extension and returns
   // the created one.
