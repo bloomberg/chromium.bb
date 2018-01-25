@@ -86,6 +86,7 @@
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "content/zygote/zygote_main.h"
+#include "sandbox/linux/services/libc_interceptor.h"
 #endif
 
 #endif  // OS_POSIX
@@ -343,7 +344,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(command_line);
   if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
-    content::DisableLocaltimeOverride();
+    sandbox::SetUseLocaltimeOverride(false);
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)

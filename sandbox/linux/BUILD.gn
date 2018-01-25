@@ -37,7 +37,6 @@ group("sandbox") {
   public_deps = [
     ":sandbox_services",
   ]
-
   if (compile_suid_client || is_nacl_nonsfi) {
     public_deps += [ ":suid_sandbox_client" ]
   }
@@ -417,6 +416,11 @@ component("sandbox_services") {
       "syscall_broker/broker_permission_list.h",
       "syscall_broker/broker_process.cc",
       "syscall_broker/broker_process.h",
+    ]
+  } else if (!is_android) {
+    sources += [
+      "services/libc_interceptor.cc",
+      "services/libc_interceptor.h",
     ]
   }
 }
