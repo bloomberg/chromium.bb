@@ -6,6 +6,7 @@
 
 import os
 import subprocess
+import sys
 import xml.dom.minidom
 
 
@@ -25,6 +26,10 @@ def FormatCheckstyleOutput(checkstyle_output):
 
 
 def RunCheckstyle(input_api, output_api, style_file, black_list=None):
+  # Android toolchain is only available on Linux.
+  if not sys.platform.startswith('linux'):
+    return []
+
   if not os.path.exists(style_file):
     file_error = ('  Java checkstyle configuration file is missing: '
                   + style_file)
