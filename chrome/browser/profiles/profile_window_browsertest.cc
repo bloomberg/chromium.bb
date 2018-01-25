@@ -81,7 +81,7 @@ void WaitForHistoryBackendToRun(Profile* profile) {
   std::unique_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
-  history->ScheduleDBTask(std::move(task), &task_tracker);
+  history->ScheduleDBTask(FROM_HERE, std::move(task), &task_tracker);
   content::RunMessageLoop();
 }
 

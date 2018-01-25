@@ -44,7 +44,8 @@ void PostWorkerTask(
     base::CancelableTaskTracker* cancelable_tracker) {
   if (history_service.get()) {
     history_service->ScheduleDBTask(
-        std::make_unique<WorkerTask>(std::move(work)), cancelable_tracker);
+        FROM_HERE, std::make_unique<WorkerTask>(std::move(work)),
+        cancelable_tracker);
   }
 }
 

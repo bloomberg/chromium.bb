@@ -23,7 +23,7 @@ void TypedUrlPageRevisitObserver::OnPageVisit(
     const PageVisitObserver::TransitionType transition) {
   if (history_) {
     history_->ScheduleDBTask(
-        std::make_unique<TypedUrlPageRevisitTask>(url, transition),
+        FROM_HERE, std::make_unique<TypedUrlPageRevisitTask>(url, transition),
         &task_tracker_);
   }
 }

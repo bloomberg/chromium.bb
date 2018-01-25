@@ -306,6 +306,7 @@ void HistoryService::RemoveObserver(HistoryServiceObserver* observer) {
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
+    const base::Location& from_here,
     std::unique_ptr<HistoryDBTask> task,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -317,7 +318,7 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
   // the current message loop so that we can forward the call to the method
   // HistoryDBTask::DoneRunOnMainThread() in the correct thread.
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTask, history_backend_,
+      from_here, base::Bind(&HistoryBackend::ProcessDBTask, history_backend_,
                             base::Passed(&task),
                             base::ThreadTaskRunnerHandle::Get(), is_canceled));
   return task_id;

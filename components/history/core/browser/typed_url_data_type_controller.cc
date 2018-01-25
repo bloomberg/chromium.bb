@@ -96,7 +96,8 @@ bool TypedUrlDataTypeController::PostTaskOnModelThread(
   DCHECK(CalledOnValidThread());
   history::HistoryService* history = sync_client_->GetHistoryService();
   if (history) {
-    history->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+    history->ScheduleDBTask(FROM_HERE,
+                            std::unique_ptr<history::HistoryDBTask>(
                                 new RunTaskOnHistoryThread(task)),
                             &task_tracker_);
     return true;

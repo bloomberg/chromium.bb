@@ -629,6 +629,7 @@ TEST_F(HistoryServiceTest, HistoryDBTask) {
   int invoke_count = 0;
   bool done_invoked = false;
   history_service_->ScheduleDBTask(
+      FROM_HERE,
       std::unique_ptr<history::HistoryDBTask>(
           new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
       &task_tracker);
@@ -649,6 +650,7 @@ TEST_F(HistoryServiceTest, HistoryDBTaskCanceled) {
   int invoke_count = 0;
   bool done_invoked = false;
   history_service_->ScheduleDBTask(
+      FROM_HERE,
       std::unique_ptr<history::HistoryDBTask>(
           new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
       &task_tracker);

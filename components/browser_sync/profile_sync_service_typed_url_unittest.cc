@@ -99,14 +99,16 @@ class HistoryServiceMock : public history::HistoryService {
   HistoryServiceMock() : history::HistoryService(), backend_(nullptr) {}
 
   base::CancelableTaskTracker::TaskId ScheduleDBTask(
+      const base::Location& from_here,
       std::unique_ptr<history::HistoryDBTask> task,
       base::CancelableTaskTracker* tracker) override {
     // Explicitly copy out the raw pointer -- compilers might decide to
     // evaluate task.release() before the arguments for the first Bind().
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind(&HistoryServiceMock::RunTaskOnDBThread,
-                              base::Unretained(this), task_raw),
+        from_here,
+        base::Bind(&HistoryServiceMock::RunTaskOnDBThread,
+                   base::Unretained(this), task_raw),
         base::Bind(&base::DeletePointer<history::HistoryDBTask>,
                    task.release()));
     return base::CancelableTaskTracker::kBadTaskId;  // unused
