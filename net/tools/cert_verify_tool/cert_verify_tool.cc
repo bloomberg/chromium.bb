@@ -8,15 +8,63 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
 #include "net/tools/cert_verify_tool/verify_using_path_builder.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_getter.h"
+
+#if defined(OS_LINUX)
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service_fixed.h"
+#endif
+
+#if defined(USE_NSS_CERTS)
+#include "net/cert_net/nss_ocsp.h"
+#endif
 
 namespace {
+
+std::string GetUserAgent() {
+  return "cert_verify_tool/0.1";
+}
+
+void SetUpOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context,
+                          base::WaitableEvent* initialization_complete_event) {
+  net::URLRequestContextBuilder url_request_context_builder;
+  url_request_context_builder.set_user_agent(GetUserAgent());
+#if defined(OS_LINUX)
+  // On Linux, use a fixed ProxyConfigService, since the default one
+  // depends on glib.
+  //
+  // TODO(akalin): Remove this once http://crbug.com/146421 is fixed.
+  url_request_context_builder.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(net::ProxyConfig()));
+#endif
+  *context = url_request_context_builder.Build();
+
+#if defined(USE_NSS_CERTS)
+  net::SetURLRequestContextForNSSHttpIO(context->get());
+#endif
+  net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(context->get()));
+  initialization_complete_event->Signal();
+}
+
+void ShutdownOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context) {
+  net::ShutdownGlobalCertNetFetcher();
+  context->reset();
+}
 
 // Base class to abstract running a particular implementation of certificate
 // verification.
@@ -209,6 +257,22 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  // Create a network thread to be used for AIA fetches, and wait for a
+  // CertNetFetcher to be constructed on that thread.
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread thread("network_thread");
+  CHECK(thread.StartWithOptions(options));
+  // Owned by this thread, but initialized, used, and shutdown on the network
+  // thread.
+  std::unique_ptr<net::URLRequestContext> context;
+  base::WaitableEvent initialization_complete_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&SetUpOnNetworkThread, &context,
+                                &initialization_complete_event));
+  initialization_complete_event.Wait();
+
   // Sequentially run each of the certificate verifier implementations.
   std::vector<std::unique_ptr<CertVerifyImpl>> impls;
 
@@ -231,6 +295,12 @@ int main(int argc, char** argv) {
       all_impls_success = false;
     }
   }
+
+  // Clean up on the network thread and stop it (which waits for the clean up
+  // task to run).
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ShutdownOnNetworkThread, &context));
+  thread.Stop();
 
   return all_impls_success ? 0 : 1;
 }
