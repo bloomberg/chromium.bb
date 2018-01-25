@@ -703,6 +703,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @param useModernDesign Whether the modern design should be used for the toolbar managed by
+     *                        this manager.
+     */
+    public void setUseModernDesign(boolean useModernDesign) {
+        mToolbarModel.setUseModernDesign(useModernDesign);
+    }
+
+    /**
      * @return The bookmarks bridge.
      */
     public BookmarkBridge getBookmarkBridge() {

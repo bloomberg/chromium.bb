@@ -392,5 +392,13 @@ public class LocationBarPhone extends LocationBarLayout {
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
         if (mBottomSheet != null) updateGoogleG();
+
+        // TODO(twellington): Move this to constructor when isModernUiEnabled() is available before
+        // native is loaded.
+        if (useModernDesign()) {
+            // Modern does not use the incognito badge. Remove the View to save memory.
+            removeView(mIncognitoBadge);
+            mIncognitoBadge = null;
+        }
     }
 }
