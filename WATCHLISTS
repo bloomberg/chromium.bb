@@ -138,11 +138,6 @@
         '|content/browser/renderer_host/delegated' \
         '|content/common/gpu/client/' \
     },
-    'auto_bisect': {
-      'filepath': 'tools/run-bisect-perf-regression.py'\
-                  '|tools/run-perf-test.cfg'\
-                  '|tools/auto_bisect/'
-    },
     'autofill': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill/|'\
                   'chrome/browser/autofill/|'\
@@ -1676,7 +1671,6 @@
                         'jbauman+watch@chromium.org',
                         'kalyan.kondapally@intel.com',
                         'piman+watch@chromium.org'],
-    'auto_bisect': ['auto-bisect-reviews@chromium.org'],
     'autofill': ['rouslan+autofill@chromium.org',
                  'vabr+watchlistautofill@chromium.org',
                  'mathp+autofillwatch@chromium.org',

@@ -19,10 +19,6 @@ thakis@chromium.org
 per-file bisect*.py=anantha@chromium.org
 per-file bisect*.py=prasadv@chromium.org
 per-file bisect*.py=robertocn@chromium.org
-per-file run-bisect*.py=prasadv@chromium.org
-per-file run-bisect*.py=robertocn@chromium.org
-per-file prepare-bisect*.py=prasadv@chromium.org
-per-file prepare-bisect*.py=robertocn@chromium.org
 
 per-file boilerplate.py=rsesek@chromium.org
 
@@ -58,4 +54,3 @@ per-file safely-roll-deps.py=borenet@chromium.org
 per-file sort-headers.py=satorux@chromium.org
 per-file sort-sources.py=satorux@chromium.org
 per-file yes_no.py=satorux@chromium.org
-
