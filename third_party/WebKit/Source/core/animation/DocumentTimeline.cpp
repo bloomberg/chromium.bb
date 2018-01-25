@@ -199,8 +199,10 @@ size_t DocumentTimeline::MainThreadCompositableAnimationsCount() const {
 
 double DocumentTimeline::ZeroTime() {
   if (!zero_time_initialized_ && document_ && document_->Loader()) {
-    zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime() +
-                 origin_time_;
+    zero_time_ =
+        TimeTicksInSeconds(
+            document_->Loader()->GetTiming().ReferenceMonotonicTime()) +
+        origin_time_;
     zero_time_initialized_ = true;
   }
   return zero_time_;

@@ -94,14 +94,14 @@ bool IsSameOrigin(String key) {
 
 }  // namespace
 
-static double ToTimeOrigin(LocalDOMWindow* window) {
+static TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
   Document* document = window->document();
   if (!document)
-    return 0.0;
+    return TimeTicks();
 
   DocumentLoader* loader = document->Loader();
   if (!loader)
-    return 0.0;
+    return TimeTicks();
 
   return loader->GetTiming().ReferenceMonotonicTime();
 }
@@ -153,7 +153,7 @@ PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
       PerformanceServerTiming::ParseServerTiming(*info);
   if (!server_timing.empty())
     UseCounter::Count(GetFrame(), WebFeature::kPerformanceServerTiming);
-  return new PerformanceNavigationTiming(GetFrame(), info, GetTimeOrigin(),
+  return new PerformanceNavigationTiming(GetFrame(), info, time_origin_,
                                          server_timing);
 }
 
@@ -261,14 +261,15 @@ void Performance::ReportLongTask(
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
       !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
     AddLongTaskTiming(
-        start_time, end_time, attribution.first, g_empty_string, g_empty_string,
-        g_empty_string,
+        TimeTicksFromSeconds(start_time), TimeTicksFromSeconds(end_time),
+        attribution.first, g_empty_string, g_empty_string, g_empty_string,
         IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
     AddLongTaskTiming(
-        start_time, end_time, attribution.first,
+        TimeTicksFromSeconds(start_time), TimeTicksFromSeconds(end_time),
+        attribution.first,
         GetFrameAttribute(frame_owner, HTMLNames::srcAttr, false),
         GetFrameAttribute(frame_owner, HTMLNames::idAttr, false),
         GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true),

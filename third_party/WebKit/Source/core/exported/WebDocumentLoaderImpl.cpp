@@ -116,10 +116,10 @@ void WebDocumentLoaderImpl::UpdateNavigation(double redirect_start_time,
   // Updates the redirection timing if there is at least one redirection
   // (between two URLs).
   if (has_redirect) {
-    GetTiming().SetRedirectStart(redirect_start_time);
-    GetTiming().SetRedirectEnd(redirect_end_time);
+    GetTiming().SetRedirectStart(TimeTicksFromSeconds(redirect_start_time));
+    GetTiming().SetRedirectEnd(TimeTicksFromSeconds(redirect_end_time));
   }
-  GetTiming().SetFetchStart(fetch_start_time);
+  GetTiming().SetFetchStart(TimeTicksFromSeconds(fetch_start_time));
 }
 
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
@@ -149,7 +149,7 @@ void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
 }
 
 void WebDocumentLoaderImpl::SetNavigationStartTime(double navigation_start) {
-  GetTiming().SetNavigationStart(navigation_start);
+  GetTiming().SetNavigationStart(TimeTicksFromSeconds(navigation_start));
 }
 
 WebNavigationType WebDocumentLoaderImpl::ToWebNavigationType(

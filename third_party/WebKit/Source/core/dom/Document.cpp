@@ -1461,16 +1461,16 @@ void Document::SetReadyState(DocumentReadyState ready_state) {
 
   switch (ready_state) {
     case kLoading:
-      if (!document_timing_.DomLoading()) {
+      if (document_timing_.DomLoading().is_null()) {
         document_timing_.MarkDomLoading();
       }
       break;
     case kInteractive:
-      if (!document_timing_.DomInteractive())
+      if (document_timing_.DomInteractive().is_null())
         document_timing_.MarkDomInteractive();
       break;
     case kComplete:
-      if (!document_timing_.DomComplete())
+      if (document_timing_.DomComplete().is_null())
         document_timing_.MarkDomComplete();
       break;
   }
@@ -2419,7 +2419,7 @@ void Document::LayoutUpdated() {
   // a paint for many seconds.
   if (IsRenderingReady() && body() &&
       !GetStyleEngine().HasPendingScriptBlockingSheets()) {
-    if (!document_timing_.FirstLayout())
+    if (document_timing_.FirstLayout().is_null())
       document_timing_.MarkFirstLayout();
   }
 
@@ -3491,19 +3491,20 @@ void Document::DispatchUnloadEvents() {
           frame_->Loader().GetProvisionalDocumentLoader();
       load_event_progress_ = kUnloadEventInProgress;
       Event* unload_event(Event::Create(EventTypeNames::unload));
-      if (document_loader && !document_loader->GetTiming().UnloadEventStart() &&
-          !document_loader->GetTiming().UnloadEventEnd()) {
+      if (document_loader &&
+          document_loader->GetTiming().UnloadEventStart().is_null() &&
+          document_loader->GetTiming().UnloadEventEnd().is_null()) {
         DocumentLoadTiming& timing = document_loader->GetTiming();
-        DCHECK(timing.NavigationStart());
-        const double unload_event_start = CurrentTimeTicksInSeconds();
+        DCHECK(!timing.NavigationStart().is_null());
+        const TimeTicks unload_event_start = CurrentTimeTicks();
         timing.MarkUnloadEventStart(unload_event_start);
         frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const double unload_event_end = CurrentTimeTicksInSeconds();
+        const TimeTicks unload_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
-        unload_histogram.Count((unload_event_end - unload_event_start) *
-                               1000000.0);
+        unload_histogram.Count(
+            (unload_event_end - unload_event_start).InMicroseconds());
         timing.MarkUnloadEventEnd(unload_event_end);
       } else {
         frame_->DomWindow()->DispatchEvent(unload_event, frame_->GetDocument());
@@ -5784,10 +5785,10 @@ void Document::FinishedParsing() {
 
   // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
   // dispatched in a queued task, see https://crbug.com/425790
-  if (!document_timing_.DomContentLoadedEventStart())
+  if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
   DispatchEvent(Event::CreateBubble(EventTypeNames::DOMContentLoaded));
-  if (!document_timing_.DomContentLoadedEventEnd())
+  if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
 

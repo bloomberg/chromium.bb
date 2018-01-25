@@ -22,7 +22,7 @@ namespace blink {
 class TestPerformanceBase : public PerformanceBase {
  public:
   explicit TestPerformanceBase(ScriptState* script_state)
-      : PerformanceBase(0,
+      : PerformanceBase(TimeTicks(),
                         ExecutionContext::From(script_state)
                             ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
   ~TestPerformanceBase() = default;
@@ -120,8 +120,9 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   SubTaskAttribution::EntriesVector sub_task_attributions;
 
   // Add a long task entry, but no observer registered.
-  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "", "",
-                           sub_task_attributions);
+  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
+                           TimeTicksFromSeconds(5678), "same-origin",
+                           "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
@@ -135,8 +136,9 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "", "",
-                           sub_task_attributions);
+  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
+                           TimeTicksFromSeconds(5678), "same-origin",
+                           "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 

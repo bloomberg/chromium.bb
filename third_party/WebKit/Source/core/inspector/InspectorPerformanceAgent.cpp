@@ -53,8 +53,8 @@ protocol::Response InspectorPerformanceAgent::enable() {
   state_->setBoolean(kPerformanceAgentEnabled, true);
   instrumenting_agents_->addInspectorPerformanceAgent(this);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
-  task_start_time_ = 0;
-  script_start_time_ = 0;
+  task_start_time_ = TimeTicks();
+  script_start_time_ = TimeTicks();
   return Response::OK();
 }
 
@@ -90,8 +90,8 @@ Response InspectorPerformanceAgent::getMetrics(
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
 
-  double now = (CurrentTimeTicks() - TimeTicks()).InSecondsF();
-  AppendMetric(result.get(), "Timestamp", now);
+  TimeTicks now = CurrentTimeTicks();
+  AppendMetric(result.get(), "Timestamp", TimeTicksInSeconds(now));
 
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
@@ -104,16 +104,17 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "LayoutCount", static_cast<double>(layout_count_));
   AppendMetric(result.get(), "RecalcStyleCount",
                static_cast<double>(recalc_style_count_));
-  AppendMetric(result.get(), "LayoutDuration", layout_duration_);
-  AppendMetric(result.get(), "RecalcStyleDuration", recalc_style_duration_);
-  double script_duration = script_duration_;
-  if (script_start_time_)
+  AppendMetric(result.get(), "LayoutDuration", layout_duration_.InSecondsF());
+  AppendMetric(result.get(), "RecalcStyleDuration",
+               recalc_style_duration_.InSecondsF());
+  TimeDelta script_duration = script_duration_;
+  if (!script_start_time_.is_null())
     script_duration += now - script_start_time_;
-  AppendMetric(result.get(), "ScriptDuration", script_duration);
-  double task_duration = task_duration_;
-  if (task_start_time_)
+  AppendMetric(result.get(), "ScriptDuration", script_duration.InSecondsF());
+  TimeDelta task_duration = task_duration_;
+  if (!task_start_time_.is_null())
     task_duration += now - task_start_time_;
-  AppendMetric(result.get(), "TaskDuration", task_duration);
+  AppendMetric(result.get(), "TaskDuration", task_duration.InSecondsF());
 
   v8::HeapStatistics heap_statistics;
   V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(&heap_statistics);
@@ -126,11 +127,14 @@ Response InspectorPerformanceAgent::getMetrics(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (document) {
     AppendMetric(result.get(), "FirstMeaningfulPaint",
-                 PaintTiming::From(*document).FirstMeaningfulPaint());
-    AppendMetric(result.get(), "DomContentLoaded",
-                 document->GetTiming().DomContentLoadedEventStart());
-    AppendMetric(result.get(), "NavigationStart",
-                 document->Loader()->GetTiming().NavigationStart());
+                 TimeTicksInSeconds(
+                     PaintTiming::From(*document).FirstMeaningfulPaint()));
+    AppendMetric(
+        result.get(), "DomContentLoaded",
+        TimeTicksInSeconds(document->GetTiming().DomContentLoadedEventStart()));
+    AppendMetric(
+        result.get(), "NavigationStart",
+        TimeTicksInSeconds(document->Loader()->GetTiming().NavigationStart()));
   }
 
   *out_result = std::move(result);
@@ -154,7 +158,7 @@ void InspectorPerformanceAgent::Did(const probe::CallFunction& probe) {
   if (--script_call_depth_)
     return;
   script_duration_ += probe.Duration();
-  script_start_time_ = 0;
+  script_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Will(const probe::ExecuteScript& probe) {
@@ -166,7 +170,7 @@ void InspectorPerformanceAgent::Did(const probe::ExecuteScript& probe) {
   if (--script_call_depth_)
     return;
   script_duration_ += probe.Duration();
-  script_start_time_ = 0;
+  script_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Will(const probe::RecalculateStyle& probe) {
@@ -191,14 +195,14 @@ void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
 }
 
 void InspectorPerformanceAgent::WillProcessTask(double start_time) {
-  task_start_time_ = start_time;
+  task_start_time_ = TimeTicksFromSeconds(start_time);
 }
 
 void InspectorPerformanceAgent::DidProcessTask(double start_time,
                                                double end_time) {
-  if (task_start_time_ == start_time)
-    task_duration_ += end_time - start_time;
-  task_start_time_ = 0;
+  if (task_start_time_ == TimeTicksFromSeconds(start_time))
+    task_duration_ += TimeDelta::FromSeconds(end_time - start_time);
+  task_start_time_ = TimeTicks();
 }
 
 void InspectorPerformanceAgent::Trace(blink::Visitor* visitor) {

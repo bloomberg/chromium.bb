@@ -92,23 +92,23 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
     return;
 
   // Skip document background-only paints.
-  if (paint_timing_->FirstPaintRendered() == 0.0)
+  if (paint_timing_->FirstPaintRendered().is_null())
     return;
-  provisional_first_meaningful_paint_ = CurrentTimeTicksInSeconds();
+  provisional_first_meaningful_paint_ = CurrentTimeTicks();
   next_paint_is_meaningful_ = false;
 
   if (network2_quiet_reached_)
     return;
 
   had_user_input_before_provisional_first_meaningful_paint_ = had_user_input_;
-  provisional_first_meaningful_paint_swap_ = 0.0;
+  provisional_first_meaningful_paint_swap_ = TimeTicks();
   RegisterNotifySwapTime(PaintEvent::kProvisionalFirstMeaningfulPaint);
 }
 
 // This is called only on FirstMeaningfulPaintDetector for main frame.
 void FirstMeaningfulPaintDetector::NotifyInputEvent() {
   // Ignore user inputs before first paint.
-  if (paint_timing_->FirstPaintRendered() == 0.0)
+  if (paint_timing_->FirstPaintRendered().is_null())
     return;
   had_user_input_ = kHadUserInput;
 }
@@ -146,11 +146,11 @@ void FirstMeaningfulPaintDetector::SetNetworkQuietTimers(
 
 void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
   if (!GetDocument() || network0_quiet_reached_ || ActiveConnections() > 0 ||
-      !paint_timing_->FirstContentfulPaintRendered())
+      paint_timing_->FirstContentfulPaintRendered().is_null())
     return;
   network0_quiet_reached_ = true;
 
-  if (provisional_first_meaningful_paint_) {
+  if (!provisional_first_meaningful_paint_.is_null()) {
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     first_meaningful_paint0_quiet_ =
         std::max(provisional_first_meaningful_paint_,
@@ -161,12 +161,12 @@ void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
 
 void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
   if (!GetDocument() || network2_quiet_reached_ || ActiveConnections() > 2 ||
-      !paint_timing_->FirstContentfulPaintRendered())
+      paint_timing_->FirstContentfulPaintRendered().is_null())
     return;
   network2_quiet_reached_ = true;
 
-  if (provisional_first_meaningful_paint_) {
-    double first_meaningful_paint2_quiet_swap = 0.0;
+  if (!provisional_first_meaningful_paint_.is_null()) {
+    TimeTicks first_meaningful_paint2_quiet_swap;
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     if (provisional_first_meaningful_paint_ <
         paint_timing_->FirstContentfulPaintRendered()) {
@@ -177,7 +177,7 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
       // It's possible that this timer fires between when the first contentful
       // paint is set and its SwapPromise is fulfilled. If this happens, defer
       // until NotifyFirstContentfulPaint() is called.
-      if (first_meaningful_paint2_quiet_swap == 0.0)
+      if (first_meaningful_paint2_quiet_swap.is_null())
         defer_first_meaningful_paint_ = kDeferFirstContentfulPaintNotSet;
     } else {
       first_meaningful_paint2_quiet_ = provisional_first_meaningful_paint_;
@@ -225,7 +225,8 @@ void FirstMeaningfulPaintDetector::ReportHistograms() {
        "FirstMeaningfulPaintOrdering",
        kFMPOrderingEnumMax));
 
-  if (first_meaningful_paint0_quiet_ && first_meaningful_paint2_quiet_) {
+  if (!first_meaningful_paint0_quiet_.is_null() &&
+      !first_meaningful_paint2_quiet_.is_null()) {
     int sample;
     if (first_meaningful_paint2_quiet_ < first_meaningful_paint0_quiet_) {
       sample = kFMP0QuietFirst;
@@ -236,9 +237,9 @@ void FirstMeaningfulPaintDetector::ReportHistograms() {
       sample = kFMP0QuietEqualFMP2Quiet;
     }
     first_meaningful_paint_ordering_histogram.Count(sample);
-  } else if (first_meaningful_paint0_quiet_) {
+  } else if (!first_meaningful_paint0_quiet_.is_null()) {
     had_network_quiet_histogram.Count(kHadNetwork0Quiet);
-  } else if (first_meaningful_paint2_quiet_) {
+  } else if (!first_meaningful_paint2_quiet_.is_null()) {
     had_network_quiet_histogram.Count(kHadNetwork2Quiet);
   }
 }
@@ -271,10 +272,9 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
   // TODO(crbug.com/738235): Consider not reporting any timestamp when failing
   // for reasons other than kDidNotSwapSwapFails.
   paint_timing_->ReportSwapResultHistogram(result);
-  provisional_first_meaningful_paint_swap_ = timestamp;
+  provisional_first_meaningful_paint_swap_ = TimeTicksFromSeconds(timestamp);
 
-  probe::paintTiming(GetDocument(), "firstMeaningfulPaintCandidate",
-                     provisional_first_meaningful_paint_swap_);
+  probe::paintTiming(GetDocument(), "firstMeaningfulPaintCandidate", timestamp);
 
   // Ignore the first meaningful paint candidate as this generally is the first
   // contentful paint itself.
@@ -287,28 +287,29 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
 
   if (defer_first_meaningful_paint_ == kDeferOutstandingSwapPromises &&
       outstanding_swap_promise_count_ == 0) {
-    DCHECK_GT(first_meaningful_paint2_quiet_, 0.0);
+    DCHECK(!first_meaningful_paint2_quiet_.is_null());
     SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_,
                             provisional_first_meaningful_paint_swap_);
   }
 }
 
 void FirstMeaningfulPaintDetector::NotifyFirstContentfulPaint(
-    double swap_stamp) {
+    TimeTicks swap_stamp) {
   if (defer_first_meaningful_paint_ != kDeferFirstContentfulPaintNotSet)
     return;
   SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_, swap_stamp);
 }
 
-void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(double stamp,
-                                                           double swap_stamp) {
-  DCHECK_EQ(paint_timing_->FirstMeaningfulPaint(), 0.0);
+void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
+    TimeTicks stamp,
+    TimeTicks swap_stamp) {
+  DCHECK(paint_timing_->FirstMeaningfulPaint().is_null());
   DCHECK_GE(swap_stamp, stamp);
-  DCHECK_GT(swap_stamp, 0.0);
+  DCHECK(!swap_stamp.is_null());
   DCHECK(network2_quiet_reached_);
 
-  probe::paintTiming(GetDocument(), "firstMeaningfulPaint",
-    swap_stamp);
+  double swap_time_seconds = TimeTicksInSeconds(swap_stamp);
+  probe::paintTiming(GetDocument(), "firstMeaningfulPaint", swap_time_seconds);
 
   // If there's only been one contentful paint, then there won't have been
   // a meaningful paint signalled to the Scheduler, so mark one now.

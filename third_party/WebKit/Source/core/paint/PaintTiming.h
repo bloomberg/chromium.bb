@@ -14,6 +14,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Functional.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
@@ -50,10 +51,10 @@ class CORE_EXPORT PaintTiming final
   void MarkFirstTextPaint();
   void MarkFirstImagePaint();
 
-  void SetFirstMeaningfulPaintCandidate(double timestamp);
+  void SetFirstMeaningfulPaintCandidate(TimeTicks timestamp);
   void SetFirstMeaningfulPaint(
-      double stamp,
-      double swap_stamp,
+      TimeTicks stamp,
+      TimeTicks swap_stamp,
       FirstMeaningfulPaintDetector::HadUserInput had_input);
   void NotifyPaint(bool is_first_paint, bool text_painted, bool image_painted);
 
@@ -63,28 +64,32 @@ class CORE_EXPORT PaintTiming final
 
   // FirstPaint returns the first time that anything was painted for the
   // current document.
-  double FirstPaint() const { return first_paint_swap_; }
+  TimeTicks FirstPaint() const { return first_paint_swap_; }
 
   // FirstContentfulPaint returns the first time that 'contentful' content was
   // painted. For instance, the first time that text or image content was
   // painted.
-  double FirstContentfulPaint() const { return first_contentful_paint_swap_; }
+  TimeTicks FirstContentfulPaint() const {
+    return first_contentful_paint_swap_;
+  }
 
   // FirstTextPaint returns the first time that text content was painted.
-  double FirstTextPaint() const { return first_text_paint_swap_; }
+  TimeTicks FirstTextPaint() const { return first_text_paint_swap_; }
 
   // FirstImagePaint returns the first time that image content was painted.
-  double FirstImagePaint() const { return first_image_paint_swap_; }
+  TimeTicks FirstImagePaint() const { return first_image_paint_swap_; }
 
   // FirstMeaningfulPaint returns the first time that page's primary content
   // was painted.
-  double FirstMeaningfulPaint() const { return first_meaningful_paint_swap_; }
+  TimeTicks FirstMeaningfulPaint() const {
+    return first_meaningful_paint_swap_;
+  }
 
   // FirstMeaningfulPaintCandidate indicates the first time we considered a
   // paint to qualify as the potentially first meaningful paint. Unlike
   // firstMeaningfulPaint, this signal is available in real time, but it may be
   // an optimistic (i.e., too early) estimate.
-  double FirstMeaningfulPaintCandidate() const {
+  TimeTicks FirstMeaningfulPaintCandidate() const {
     return first_meaningful_paint_candidate_;
   }
 
@@ -112,51 +117,52 @@ class CORE_EXPORT PaintTiming final
   // or Set*() methods to make sure that first paint is marked as part of
   // marking first contentful paint, or that first contentful paint is marked as
   // part of marking first text/image paint, for example.
-  void SetFirstPaint(double stamp);
+  void SetFirstPaint(TimeTicks stamp);
 
   // setFirstContentfulPaint will also set first paint time if first paint
   // time has not yet been recorded.
-  void SetFirstContentfulPaint(double stamp);
+  void SetFirstContentfulPaint(TimeTicks stamp);
 
   // Set*Swap() are called when the SwapPromise is fulfilled and the swap
   // timestamp is available. These methods will record trace events, update Web
   // Perf API (FP and FCP only), and notify that paint timing has changed, which
   // triggers UMAs and UKMS.
   // |stamp| is the swap timestamp used for tracing, UMA, UKM, and Web Perf API.
-  void SetFirstPaintSwap(double stamp);
-  void SetFirstContentfulPaintSwap(double stamp);
-  void SetFirstImagePaintSwap(double stamp);
-  void SetFirstTextPaintSwap(double stamp);
+  void SetFirstPaintSwap(TimeTicks stamp);
+  void SetFirstContentfulPaintSwap(TimeTicks stamp);
+  void SetFirstImagePaintSwap(TimeTicks stamp);
+  void SetFirstTextPaintSwap(TimeTicks stamp);
 
   void RegisterNotifySwapTime(PaintEvent);
   void ReportUserInputHistogram(
       FirstMeaningfulPaintDetector::HadUserInput had_input);
-  void ReportSwapTimeDeltaHistogram(double timestamp, double swap_timestamp);
+  void ReportSwapTimeDeltaHistogram(TimeTicks timestamp,
+                                    TimeTicks swap_timestamp);
 
-  double FirstPaintRendered() const { return first_paint_; }
+  TimeTicks FirstPaintRendered() const { return first_paint_; }
 
-  double FirstContentfulPaintRendered() const {
+  TimeTicks FirstContentfulPaintRendered() const {
     return first_contentful_paint_;
   }
 
-  double FirstMeaningfulPaintRendered() const {
+  TimeTicks FirstMeaningfulPaintRendered() const {
     return first_meaningful_paint_;
   }
 
   // TODO(crbug/738235): Non first_*_swap_ variables are only being tracked to
   // compute deltas for reporting histograms and should be removed once we
   // confirm the deltas and discrepancies look reasonable.
-  double first_paint_ = 0.0;
-  double first_paint_swap_ = 0.0;
-  double first_text_paint_ = 0.0;
-  double first_text_paint_swap_ = 0.0;
-  double first_image_paint_ = 0.0;
-  double first_image_paint_swap_ = 0.0;
-  double first_contentful_paint_ = 0.0;
-  double first_contentful_paint_swap_ = 0.0;
-  double first_meaningful_paint_ = 0.0;
-  double first_meaningful_paint_swap_ = 0.0;
-  double first_meaningful_paint_candidate_ = 0.0;
+  TimeTicks first_paint_;
+  TimeTicks first_paint_swap_;
+  TimeTicks first_text_paint_;
+  TimeTicks first_text_paint_swap_;
+  TimeTicks first_image_paint_;
+  TimeTicks first_image_paint_swap_;
+  TimeTicks first_contentful_paint_;
+  TimeTicks first_contentful_paint_swap_;
+  TimeTicks first_meaningful_paint_;
+  TimeTicks first_meaningful_paint_swap_;
+  TimeTicks first_meaningful_paint_candidate_;
 
   Member<FirstMeaningfulPaintDetector> fmp_detector_;
 

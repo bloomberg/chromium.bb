@@ -141,12 +141,12 @@ class CORE_EXPORT PerformanceMonitor final
       Frame* observer_frame);
 
   bool enabled_ = false;
-  double per_task_style_and_layout_time_ = 0;
+  TimeDelta per_task_style_and_layout_time_;
   unsigned script_depth_ = 0;
   unsigned layout_depth_ = 0;
   unsigned user_callback_depth_ = 0;
   const void* user_callback_;
-  double v8_compile_start_time_ = 0;
+  TimeTicks v8_compile_start_time_;
 
   SubTaskAttribution::EntriesVector sub_task_attributions_;
 

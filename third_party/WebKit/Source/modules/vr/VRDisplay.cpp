@@ -72,10 +72,11 @@ class VRDisplayFrameRequestCallback
       monotonic_time = WTF::CurrentTimeTicksInSeconds();
     } else {
       // Convert document-zero time back to monotonic time.
-      double reference_monotonic_time = vr_display_->GetDocument()
-                                            ->Loader()
-                                            ->GetTiming()
-                                            .ReferenceMonotonicTime();
+      double reference_monotonic_time =
+          TimeTicksInSeconds(vr_display_->GetDocument()
+                                 ->Loader()
+                                 ->GetTiming()
+                                 .ReferenceMonotonicTime());
       monotonic_time = (high_res_time_ms / 1000.0) + reference_monotonic_time;
     }
     vr_display_->OnMagicWindowVSync(monotonic_time);

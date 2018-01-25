@@ -204,8 +204,8 @@ void AudioContext::getOutputTimestamp(ScriptState* script_state,
 
   AudioIOPosition position = OutputPosition();
 
-  double performance_time =
-      performance->MonotonicTimeToDOMHighResTimeStamp(position.timestamp);
+  double performance_time = performance->MonotonicTimeToDOMHighResTimeStamp(
+      TimeTicksFromSeconds(position.timestamp));
   if (performance_time < 0.0)
     performance_time = 0.0;
 

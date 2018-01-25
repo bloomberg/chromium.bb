@@ -30,7 +30,7 @@ class IdlenessDetectorTest : public PageTestBase {
   }
 
   double NetworkQuietStartTime() {
-    return Detector()->network_2_quiet_start_time_;
+    return TimeTicksInSeconds(Detector()->network_2_quiet_start_time_);
   }
 
   void WillProcessTask(double start_time) {

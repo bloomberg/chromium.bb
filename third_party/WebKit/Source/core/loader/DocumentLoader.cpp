@@ -120,7 +120,6 @@ DocumentLoader::DocumentLoader(
       data_received_(false),
       navigation_type_(kNavigationTypeOther),
       document_load_timing_(*this),
-      time_of_last_data_received_(0.0),
       application_cache_host_(ApplicationCacheHost::Create(this)),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
@@ -392,7 +391,7 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
   DCHECK(GetResource());
 
   if (!resource->ErrorOccurred() && !resource->WasCanceled()) {
-    FinishedLoading(resource->LoadFinishTime());
+    FinishedLoading(TimeTicksFromSeconds(resource->LoadFinishTime()));
     return;
   }
 
@@ -444,16 +443,16 @@ void DocumentLoader::SetUserActivated() {
   user_activated_ = true;
 }
 
-void DocumentLoader::FinishedLoading(double finish_time) {
+void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   DCHECK(frame_->Loader().StateMachine()->CreatingInitialEmptyDocument() ||
          !frame_->GetPage()->Paused() ||
          MainThreadDebugger::Instance()->IsPaused());
 
-  double response_end_time = finish_time;
-  if (!response_end_time)
+  TimeTicks response_end_time = finish_time;
+  if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
-  if (!response_end_time)
-    response_end_time = CurrentTimeTicksInSeconds();
+  if (response_end_time.is_null())
+    response_end_time = CurrentTimeTicks();
   GetTiming().SetResponseEnd(response_end_time);
   if (!MaybeCreateArchive()) {
     // If this is an empty document, it will not have actually been created yet.
@@ -502,7 +501,7 @@ bool DocumentLoader::RedirectReceived(
     return false;
   }
 
-  DCHECK(GetTiming().FetchStart());
+  DCHECK(!GetTiming().FetchStart().is_null());
   AppendRedirect(request_url);
   GetTiming().AddRedirect(redirect_response.Url(), request_url);
 
@@ -567,7 +566,7 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   redirect_chain_.pop_back();
   AppendRedirect(blocked_url);
   response_ = ResourceResponse(blocked_url, "text/html");
-  FinishedLoading(CurrentTimeTicksInSeconds());
+  FinishedLoading(CurrentTimeTicks());
 
   return;
 }
@@ -755,7 +754,7 @@ void DocumentLoader::DataReceived(Resource* resource,
 
 void DocumentLoader::ProcessData(const char* data, size_t length) {
   application_cache_host_->MainResourceDataReceived(data, length);
-  time_of_last_data_received_ = CurrentTimeTicksInSeconds();
+  time_of_last_data_received_ = CurrentTimeTicks();
 
   if (IsArchiveMIMEType(GetResponse().MimeType()))
     return;
@@ -839,7 +838,7 @@ bool DocumentLoader::MaybeLoadEmpty() {
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     request_.SetURL(BlankURL());
   response_ = ResourceResponse(request_.Url(), "text/html");
-  FinishedLoading(CurrentTimeTicksInSeconds());
+  FinishedLoading(CurrentTimeTicks());
   return true;
 }
 
@@ -852,12 +851,12 @@ void DocumentLoader::StartLoading() {
   if (MaybeLoadEmpty())
     return;
 
-  DCHECK(GetTiming().NavigationStart());
+  DCHECK(!GetTiming().NavigationStart().is_null());
 
   // PlzNavigate:
   // The fetch has already started in the browser. Don't mark it again.
   if (!frame_->GetSettings()->GetBrowserSideNavigationEnabled()) {
-    DCHECK(!GetTiming().FetchStart());
+    DCHECK(GetTiming().FetchStart().is_null());
     GetTiming().MarkFetchStart();
   }
 

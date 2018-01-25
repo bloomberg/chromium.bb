@@ -81,15 +81,15 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   static double ClampTimeResolution(double time_seconds);
 
   static DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(
-      double time_origin,
-      double monotonic_time,
+      TimeTicks time_origin,
+      TimeTicks monotonic_time,
       bool allow_negative_value);
 
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
   // document's time origin and has a time resolution that is safe for
   // exposing to web.
-  DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(double) const;
+  DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(TimeTicks) const;
   DOMHighResTimeStamp now() const;
 
   // High Resolution Time Level 3 timeOrigin.
@@ -97,7 +97,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   DOMHighResTimeStamp timeOrigin() const;
 
   // Internal getter method for the time origin value.
-  double GetTimeOrigin() const { return time_origin_; }
+  double GetTimeOrigin() const { return TimeTicksInSeconds(time_origin_); }
 
   PerformanceEntryVector getEntries();
   PerformanceEntryVector getEntriesByType(const String& entry_type);
@@ -110,8 +110,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
 
   void AddLongTaskTiming(
-      double start_time,
-      double end_time,
+      TimeTicks start_time,
+      TimeTicks end_time,
       const String& name,
       const String& culprit_frame_src,
       const String& culprit_frame_id,
@@ -136,9 +136,9 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   void NotifyNavigationTimingToObservers();
 
-  void AddFirstPaintTiming(double start_time);
+  void AddFirstPaintTiming(TimeTicks start_time);
 
-  void AddFirstContentfulPaintTiming(double start_time);
+  void AddFirstContentfulPaintTiming(TimeTicks start_time);
 
   void mark(ScriptState*, const String& mark_name, ExceptionState&);
 
@@ -223,10 +223,10 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
                                      const AtomicString&,
                                      ExecutionContext*);
 
-  void AddPaintTiming(PerformancePaintTiming::PaintType, double start_time);
+  void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
 
  protected:
-  PerformanceBase(double time_origin, scoped_refptr<WebTaskRunner>);
+  PerformanceBase(TimeTicks time_origin, scoped_refptr<WebTaskRunner>);
 
   // Expect Performance to override this method,
   // WorkerPerformance doesn't have to override this.
@@ -254,7 +254,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   Member<PerformanceEntry> first_paint_timing_;
   Member<PerformanceEntry> first_contentful_paint_timing_;
 
-  double time_origin_;
+  TimeTicks time_origin_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<TraceWrapperMember<PerformanceObserver>> observers_;

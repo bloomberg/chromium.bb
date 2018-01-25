@@ -23,8 +23,8 @@ void IdlenessDetector::Shutdown() {
 void IdlenessDetector::WillCommitLoad() {
   network_2_quiet_ = -1;
   network_0_quiet_ = -1;
-  network_2_quiet_start_time_ = 0;
-  network_0_quiet_start_time_ = 0;
+  network_2_quiet_start_time_ = TimeTicks();
+  network_0_quiet_start_time_ = TimeTicks();
 }
 
 void IdlenessDetector::DomContentLoadedEventFired() {
@@ -86,20 +86,21 @@ void IdlenessDetector::OnDidLoadResource() {
   if (request_count > 2)
     return;
 
-  double timestamp = CurrentTimeTicksInSeconds();
+  TimeTicks timestamp = CurrentTimeTicks();
+  double timestamp_seconds = TimeTicksInSeconds(timestamp);
   // Arriving at =2 updates the quiet_2 base timestamp.
   // Arriving at <2 sets the quiet_2 base timestamp only if
   // it was not already set.
   if (request_count == 2 && network_2_quiet_ >= 0) {
-    network_2_quiet_ = timestamp;
+    network_2_quiet_ = timestamp_seconds;
     network_2_quiet_start_time_ = timestamp;
   } else if (request_count < 2 && network_2_quiet_ == 0) {
-    network_2_quiet_ = timestamp;
+    network_2_quiet_ = timestamp_seconds;
     network_2_quiet_start_time_ = timestamp;
   }
 
   if (request_count == 0 && network_0_quiet_ >= 0) {
-    network_0_quiet_ = timestamp;
+    network_0_quiet_ = timestamp_seconds;
     network_0_quiet_start_time_ = timestamp;
   }
 
@@ -108,11 +109,11 @@ void IdlenessDetector::OnDidLoadResource() {
   }
 }
 
-double IdlenessDetector::GetNetworkAlmostIdleTime() {
+TimeTicks IdlenessDetector::GetNetworkAlmostIdleTime() {
   return network_2_quiet_start_time_;
 }
 
-double IdlenessDetector::GetNetworkIdleTime() {
+TimeTicks IdlenessDetector::GetNetworkIdleTime() {
   return network_0_quiet_start_time_;
 }
 
@@ -123,7 +124,7 @@ void IdlenessDetector::WillProcessTask(double start_time) {
   if (network_2_quiet_ > 0 &&
       start_time - network_2_quiet_ > kNetworkQuietWindowSeconds) {
     probe::lifecycleEvent(local_frame_, loader, "networkAlmostIdle",
-                          network_2_quiet_start_time_);
+                          TimeTicksInSeconds(network_2_quiet_start_time_));
     if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
       if (auto* frame_resource_coordinator =
               local_frame_->GetFrameResourceCoordinator()) {
@@ -137,7 +138,7 @@ void IdlenessDetector::WillProcessTask(double start_time) {
   if (network_0_quiet_ > 0 &&
       start_time - network_0_quiet_ > kNetworkQuietWindowSeconds) {
     probe::lifecycleEvent(local_frame_, loader, "networkIdle",
-                          network_0_quiet_start_time_);
+                          TimeTicksInSeconds(network_0_quiet_start_time_));
     network_0_quiet_ = -1;
   }
 

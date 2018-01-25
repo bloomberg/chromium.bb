@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/FetchContext.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -19,13 +20,13 @@ class PLATFORM_EXPORT ProbeBase {
   STACK_ALLOCATED();
 
  public:
-  double CaptureStartTime() const;
-  double CaptureEndTime() const;
-  double Duration() const;
+  TimeTicks CaptureStartTime() const;
+  TimeTicks CaptureEndTime() const;
+  TimeDelta Duration() const;
 
  private:
-  mutable double start_time_ = 0;
-  mutable double end_time_ = 0;
+  mutable TimeTicks start_time_;
+  mutable TimeTicks end_time_;
 };
 
 inline PlatformProbeSink* ToPlatformProbeSink(FetchContext* context) {

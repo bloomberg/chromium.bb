@@ -35,8 +35,8 @@ class CORE_EXPORT IdlenessDetector
   void OnWillSendRequest(ResourceFetcher*);
   void OnDidLoadResource();
 
-  double GetNetworkAlmostIdleTime();
-  double GetNetworkIdleTime();
+  TimeTicks GetNetworkAlmostIdleTime();
+  TimeTicks GetNetworkIdleTime();
 
   void Trace(blink::Visitor*);
 
@@ -62,8 +62,8 @@ class CORE_EXPORT IdlenessDetector
   double network_0_quiet_ = 0;
   double network_2_quiet_ = 0;
   // Record the actual start time of network quiet.
-  double network_0_quiet_start_time_ = 0;
-  double network_2_quiet_start_time_ = 0;
+  TimeTicks network_0_quiet_start_time_;
+  TimeTicks network_2_quiet_start_time_;
   TaskRunnerTimer<IdlenessDetector> network_quiet_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdlenessDetector);

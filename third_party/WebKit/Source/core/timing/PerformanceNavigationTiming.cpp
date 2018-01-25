@@ -19,7 +19,7 @@ namespace blink {
 PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
-    double time_origin,
+    TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(info ? info->InitialURL().GetString() : "",
                                 "navigation",

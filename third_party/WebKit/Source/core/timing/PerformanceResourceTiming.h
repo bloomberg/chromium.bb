@@ -37,6 +37,7 @@
 #include "core/timing/PerformanceServerTiming.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -51,7 +52,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   ~PerformanceResourceTiming() override;
   static PerformanceResourceTiming* Create(
       const WebResourceTimingInfo& info,
-      double time_origin,
+      TimeTicks time_origin,
       const AtomicString& initiator_type = g_null_atom) {
     return new PerformanceResourceTiming(info, time_origin, initiator_type);
   }
@@ -85,17 +86,17 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const String& name,
                             const String& entry_type,
-                            double time_origin,
+                            TimeTicks time_origin,
                             const WebVector<WebServerTimingInfo>&);
   virtual AtomicString AlpnNegotiatedProtocol() const;
   virtual AtomicString ConnectionInfo() const;
 
  protected:
-  double TimeOrigin() const { return time_origin_; }
+  TimeTicks TimeOrigin() const { return time_origin_; }
 
  private:
   PerformanceResourceTiming(const WebResourceTimingInfo&,
-                            double time_origin,
+                            TimeTicks time_origin,
                             const AtomicString& initiator_type);
 
   static AtomicString GetNextHopProtocol(
@@ -114,10 +115,10 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   AtomicString initiator_type_;
   AtomicString alpn_negotiated_protocol_;
   AtomicString connection_info_;
-  double time_origin_;
+  TimeTicks time_origin_;
   scoped_refptr<ResourceLoadTiming> timing_;
-  double last_redirect_end_time_;
-  double finish_time_;
+  TimeTicks last_redirect_end_time_;
+  TimeTicks finish_time_;
   unsigned long long transfer_size_;
   unsigned long long encoded_body_size_;
   unsigned long long decoded_body_size_;
