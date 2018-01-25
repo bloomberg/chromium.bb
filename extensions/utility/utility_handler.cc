@@ -32,7 +32,6 @@ namespace {
 
 struct UnpackResult {
   std::unique_ptr<base::DictionaryValue> parsed_manifest;
-  std::unique_ptr<base::ListValue> parsed_json_ruleset;
   base::string16 error;
 };
 
@@ -51,7 +50,6 @@ UnpackResult UnpackOnBackgroundTaskRunner(const base::FilePath& path,
   UnpackResult result;
   if (unpacker.Run()) {
     result.parsed_manifest = unpacker.TakeParsedManifest();
-    result.parsed_json_ruleset = unpacker.TakeParsedJSONRuleset();
   } else {
     result.error = unpacker.error_message();
   }
@@ -117,8 +115,7 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
         base::BindOnce(
             [](UnpackCallback callback, UnpackResult result) {
               std::move(callback).Run(result.error,
-                                      std::move(result.parsed_manifest),
-                                      std::move(result.parsed_json_ruleset));
+                                      std::move(result.parsed_manifest));
             },
             std::move(callback)));
   }
