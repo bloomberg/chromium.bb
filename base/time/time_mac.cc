@@ -21,6 +21,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)
@@ -81,8 +82,9 @@ int64_t ComputeCurrentTicks() {
   int kr = sysctl(mib, arraysize(mib), &boottime, &size, nullptr, 0);
   DCHECK_EQ(KERN_SUCCESS, kr);
   base::TimeDelta time_difference =
-      base::Time::Now() - (base::Time::FromTimeT(boottime.tv_sec) +
-                           base::TimeDelta::FromMicroseconds(boottime.tv_usec));
+      base::subtle::TimeNowIgnoringOverride() -
+      (base::Time::FromTimeT(boottime.tv_sec) +
+       base::TimeDelta::FromMicroseconds(boottime.tv_usec));
   return time_difference.InMicroseconds();
 #else
   // mach_absolute_time is it when it comes to ticks on the Mac.  Other calls
@@ -135,10 +137,16 @@ namespace base {
 
 // Time -----------------------------------------------------------------------
 
-// static
-Time Time::Now() {
-  return FromCFAbsoluteTime(CFAbsoluteTimeGetCurrent());
+namespace subtle {
+Time TimeNowIgnoringOverride() {
+  return Time::FromCFAbsoluteTime(CFAbsoluteTimeGetCurrent());
 }
+
+Time TimeNowFromSystemTimeIgnoringOverride() {
+  // Just use TimeNowIgnoringOverride() because it returns the system time.
+  return TimeNowIgnoringOverride();
+}
+}  // namespace subtle
 
 // static
 Time Time::FromCFAbsoluteTime(CFAbsoluteTime t) {
@@ -163,12 +171,6 @@ CFAbsoluteTime Time::ToCFAbsoluteTime() const {
   return (static_cast<CFAbsoluteTime>(us_ - kTimeTToMicrosecondsOffset) /
           kMicrosecondsPerSecond) -
          kCFAbsoluteTimeIntervalSince1970;
-}
-
-// static
-Time Time::NowFromSystemTime() {
-  // Just use Now() because Now() returns the system time.
-  return Now();
 }
 
 // Note: These implementations of Time::FromExploded() and Time::Explode() are
@@ -269,10 +271,11 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
 
 // TimeTicks ------------------------------------------------------------------
 
-// static
-TimeTicks TimeTicks::Now() {
-  return TimeTicks(ComputeCurrentTicks());
+namespace subtle {
+TimeTicks TimeTicksNowIgnoringOverride() {
+  return TimeTicks() + TimeDelta::FromMicroseconds(ComputeCurrentTicks());
 }
+}  // namespace subtle
 
 // static
 bool TimeTicks::IsHighResolution() {
@@ -300,9 +303,12 @@ TimeTicks::Clock TimeTicks::GetClock() {
 #endif  // defined(OS_IOS)
 }
 
-// static
-ThreadTicks ThreadTicks::Now() {
-  return ThreadTicks(ComputeThreadTicks());
+// ThreadTicks ----------------------------------------------------------------
+
+namespace subtle {
+ThreadTicks ThreadTicksNowIgnoringOverride() {
+  return ThreadTicks() + TimeDelta::FromMicroseconds(ComputeThreadTicks());
 }
+}  // namespace subtle
 
 }  // namespace base

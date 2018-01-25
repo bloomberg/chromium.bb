@@ -15,9 +15,25 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/nspr/prtime.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 
 namespace base {
+
+namespace internal {
+
+TimeNowFunction g_time_now_function = &subtle::TimeNowIgnoringOverride;
+
+TimeNowFunction g_time_now_from_system_time_function =
+    &subtle::TimeNowFromSystemTimeIgnoringOverride;
+
+TimeTicksNowFunction g_time_ticks_now_function =
+    &subtle::TimeTicksNowIgnoringOverride;
+
+ThreadTicksNowFunction g_thread_ticks_now_function =
+    &subtle::ThreadTicksNowIgnoringOverride;
+
+}  // namespace internal
 
 // TimeDelta ------------------------------------------------------------------
 
@@ -133,6 +149,17 @@ std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {
 }
 
 // Time -----------------------------------------------------------------------
+
+// static
+Time Time::Now() {
+  return internal::g_time_now_function();
+}
+
+// static
+Time Time::NowFromSystemTime() {
+  // Just use g_time_now_function because it returns the system time.
+  return internal::g_time_now_from_system_time_function();
+}
 
 // static
 Time Time::FromDeltaSinceWindowsEpoch(TimeDelta delta) {
@@ -298,10 +325,19 @@ std::ostream& operator<<(std::ostream& os, Time time) {
                             exploded.millisecond);
 }
 
-// Static
+// TimeTicks ------------------------------------------------------------------
+
+// static
+TimeTicks TimeTicks::Now() {
+  return internal::g_time_ticks_now_function();
+}
+
+// static
 TimeTicks TimeTicks::UnixEpoch() {
-  static const base::NoDestructor<base::TimeTicks> epoch(
-      []() { return TimeTicks::Now() - (Time::Now() - Time::UnixEpoch()); }());
+  static const base::NoDestructor<base::TimeTicks> epoch([]() {
+    return subtle::TimeTicksNowIgnoringOverride() -
+           (subtle::TimeNowIgnoringOverride() - Time::UnixEpoch());
+  }());
   return *epoch;
 }
 
@@ -326,6 +362,13 @@ std::ostream& operator<<(std::ostream& os, TimeTicks time_ticks) {
   // down during a single run.
   const TimeDelta as_time_delta = time_ticks - TimeTicks();
   return os << as_time_delta.InMicroseconds() << " bogo-microseconds";
+}
+
+// ThreadTicks ----------------------------------------------------------------
+
+// static
+ThreadTicks ThreadTicks::Now() {
+  return internal::g_thread_ticks_now_function();
 }
 
 std::ostream& operator<<(std::ostream& os, ThreadTicks thread_ticks) {
