@@ -8,7 +8,6 @@ mojom("interfaces") {
   sources = [
     "bitmap.mojom",
     "blur_image_filter_tile_mode.mojom",
-    "image_filter.mojom",
   ]
 }
 
@@ -20,16 +19,5 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":interfaces",
-  ]
-}
-
-source_set("struct_traits") {
-  sources = [
-    "image_filter_struct_traits.cc",
-    "image_filter_struct_traits.h",
-  ]
-  public_deps = [
-    ":interfaces_shared_cpp_sources",
-    "//skia",
   ]
 }

@@ -81,25 +81,4 @@ void WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style) {
   pickle->WriteUInt16(style.slant());
 }
 
-sk_sp<SkData> ValidatingSerializeFlattenable(SkFlattenable* flattenable) {
-  SkSerialProcs procs;
-  procs.fImageProc = [](SkImage* image, void*) {
-    // We choose to not trust natively encoded images, but we are fine to force
-    // a "clean" encoded version for transport.
-    return image->encodeToData(SkEncodedImageFormat::kPNG, 100);
-  };
-  return flattenable->serialize(&procs);
-}
-
-SkFlattenable* ValidatingDeserializeFlattenable(const void* data,
-                                                size_t size,
-                                                SkFlattenable::Type type) {
-  SkDeserialProcs procs;
-  procs.fImageProc = [](const void* data, size_t length, void*) {
-    // Our custom encode is standard, so we can just call Skia to deserialize
-    return SkImage::MakeFromEncoded(SkData::MakeWithCopy(data, length));
-  };
-  return SkFlattenable::Deserialize(type, data, size, &procs).release();
-}
-
 }  // namespace skia
