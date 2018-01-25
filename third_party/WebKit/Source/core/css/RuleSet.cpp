@@ -222,6 +222,11 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
 void RuleSet::AddRule(StyleRule* rule,
                       unsigned selector_index,
                       AddRuleFlags add_rule_flags) {
+  // The selector index field in RuleData is only 13 bits so we can't support
+  // selectors at index 8192 or beyond.
+  // See https://crbug.com/804179
+  if (selector_index >= 8192)
+    return;
   RuleData rule_data(rule, selector_index, rule_count_++, add_rule_flags);
   if (features_.CollectFeaturesFromRuleData(rule_data) ==
       RuleFeatureSet::kSelectorNeverMatches)
