@@ -63,12 +63,12 @@ shouldThrow('shadowRoot.elementsFromPoint()');
 shouldThrow('shadowRoot.elementsFromPoint(0)');
 
 assertElementsFromPoint(
-        'shadowRoot.elementsFromPoint(x12, y12)', [box12]);
+        'shadowRoot.elementsFromPoint(x12, y12)', [box12, host, document.body, document.documentElement]);
 assertElementsFromPoint(
-        'nestedShadowRoot.elementsFromPoint(x22, y22)', [box22]);
+        'nestedShadowRoot.elementsFromPoint(x22, y22)', [box22, nestedHost, host, document.body, document.documentElement]);
 
 assertElementsFromPoint(
-        'shadowRoot.elementsFromPoint(x22, y22)', [nestedHost]);
+        'shadowRoot.elementsFromPoint(x22, y22)', [nestedHost, host, document.body, document.documentElement]);
 assertElementsFromPoint(
         'document.elementsFromPoint(x22, y22)',
         [host, document.body, document.documentElement]);
@@ -80,13 +80,13 @@ root4.appendChild(document.createTextNode('text2'));
 
 assertElementsFromPoint(
         'root3.elementsFromPoint(centerX(blockHost), centerY(blockHost))',
-        []);
+        [blockHost, document.body, document.documentElement]);
 assertElementsFromPoint(
         'document.elementsFromPoint(centerX(blockHost), centerY(blockHost))',
         [blockHost, document.body, document.documentElement]);
 assertElementsFromPoint(
         'root4.elementsFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))',
-        []);
+        [inlineBlockHost, document.body, document.documentElement]);
 assertElementsFromPoint(
         'document.elementsFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))',
         [inlineBlockHost, document.body, document.documentElement]);
