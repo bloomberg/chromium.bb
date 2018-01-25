@@ -19,6 +19,8 @@ source_set("lib") {
     "in_process_audio_manager_accessor.h",
     "service.cc",
     "service.h",
+    "service_factory.cc",
+    "service_factory.h",
     "system_info.cc",
     "system_info.h",
   ]

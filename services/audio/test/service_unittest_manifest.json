@@ -9,7 +9,7 @@
         ]
       },
       "requires": {
-        "audio": [ "device" ],
+        "audio": [ "info" ],
         "service_manager": [ "service_manager:service_manager" ]
       }
     }

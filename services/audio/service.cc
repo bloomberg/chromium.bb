@@ -4,6 +4,7 @@
 
 #include "services/audio/service.h"
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@ Service::~Service() {
 
 void Service::OnStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(4) << "audio::Service::OnStart";
   registry_.AddInterface<mojom::SystemInfo>(base::BindRepeating(
       &Service::BindSystemInfoRequest, base::Unretained(this)));
 }
@@ -33,6 +35,7 @@ void Service::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(4) << "audio::Service::OnBinfInterface";
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
@@ -45,6 +48,8 @@ bool Service::OnServiceManagerConnectionLost() {
 void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!system_info_) {
+    DVLOG(4)
+        << "audio::Service::BindSystemInfoRequest: lazy SystemInfo creation";
     system_info_ = std::make_unique<SystemInfo>(
         audio_manager_accessor_->GetAudioManager());
   }
