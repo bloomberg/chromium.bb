@@ -756,6 +756,7 @@
         'shards': 4,
       },
     },
+    'views_perftests': {},
     'webkit_layout_tests': {
       'isolate_name': 'webkit_layout_tests_exparchive',
       'merge': {

@@ -1191,4 +1191,9 @@ test("views_perftests") {
     "//testing/perf",
     "//ui/resources:ui_test_pak",
   ]
+
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
+    "//testing:run_gtest_perf_test",
+  ]
 }
