@@ -2221,6 +2221,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return Whether this Activity supports modern design.
+     */
+    public boolean supportsModernDesign() {
+        return false;
+    }
+
+    /**
      * @return the reference pool for this activity.
      * @deprecated Use {@link ChromeApplication#getReferencePool} instead.
      */

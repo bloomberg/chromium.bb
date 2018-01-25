@@ -875,6 +875,12 @@ public class ChromeTabbedActivity
                     mLayoutManager, mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
                     bookmarkClickHandler, null);
 
+            // TODO(twellington): Move to toolbar manager construction after isModernUiEnabled is
+            //                    available before native is loaded.
+            if (FeatureUtilities.isChromeModernDesignEnabled()) {
+                getToolbarManager().setUseModernDesign(true);
+            }
+
             if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
                         getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,
@@ -2466,6 +2472,11 @@ public class ChromeTabbedActivity
     @Override
     public boolean supportsFullscreenActivity() {
         return !VrShellDelegate.isInVr();
+    }
+
+    @Override
+    public boolean supportsModernDesign() {
+        return true;
     }
 
     @Override
