@@ -180,10 +180,14 @@ FloatQuad LayoutGeometryMap::MapToAncestor(
     // Inspector creates layoutObjects with negative width
     // <https://bugs.webkit.org/show_bug.cgi?id=87194>.
     // Taking FloatQuad bounds avoids spurious assertions because of that.
-    DCHECK(EnclosingIntRect(layout_object_mapped_result) ==
-               EnclosingIntRect(result.BoundingBox()) ||
+    DCHECK(RoundedIntRect(layout_object_mapped_result) ==
+               RoundedIntRect(result.BoundingBox()) ||
            layout_object_mapped_result.MayNotHaveExactIntRectRepresentation() ||
-           result.BoundingBox().MayNotHaveExactIntRectRepresentation());
+           result.BoundingBox().MayNotHaveExactIntRectRepresentation())
+        << "Rounded: " << RoundedIntRect(layout_object_mapped_result) << " vs "
+        << RoundedIntRect(result.BoundingBox())
+        << ". Original: " << layout_object_mapped_result << " vs "
+        << result.BoundingBox();
   }
 #endif
 
