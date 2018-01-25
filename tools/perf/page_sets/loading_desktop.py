@@ -106,5 +106,5 @@ class LoadingDesktopStorySet(story.StorySet):
     for url, name in urls:
       for temp in cache_temperatures:
           self.AddStory(page_cycler_story.PageCyclerStory(url, self,
-              shared_page_state_class=shared_page_state.SharedMobilePageState,
+              shared_page_state_class=shared_page_state.SharedDesktopPageState,
               cache_temperature=temp, tags=tags, name=name))
