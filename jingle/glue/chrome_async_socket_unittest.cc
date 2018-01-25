@@ -26,6 +26,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/ipaddress.h"
@@ -182,11 +183,11 @@ class ChromeAsyncSocketTest
         mock_xmpp_client_socket_factory(new MockXmppClientSocketFactory(
             mock_client_socket_factory.release(), address_list));
     chrome_async_socket_.reset(
-        new ChromeAsyncSocket(mock_xmpp_client_socket_factory.release(),
-                              14, 20)),
+        new ChromeAsyncSocket(mock_xmpp_client_socket_factory.release(), 14, 20,
+                              TRAFFIC_ANNOTATION_FOR_TESTS)),
 
-    chrome_async_socket_->SignalConnected.connect(
-        this, &ChromeAsyncSocketTest::OnConnect);
+        chrome_async_socket_->SignalConnected.connect(
+            this, &ChromeAsyncSocketTest::OnConnect);
     chrome_async_socket_->SignalSSLConnected.connect(
         this, &ChromeAsyncSocketTest::OnSSLConnect);
     chrome_async_socket_->SignalClosed.connect(

@@ -16,6 +16,7 @@
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
@@ -42,8 +43,10 @@ buzz::AsyncSocket* CreateSocket(
           ssl_config,
           request_context_getter,
           use_fake_ssl_client_socket);
-  return new jingle_glue::ChromeAsyncSocket(client_socket_factory,
-                                            kReadBufSize, kWriteBufSize);
+  // TODO(crbug.com/656607): Add proper traffic annotation.
+  return new jingle_glue::ChromeAsyncSocket(client_socket_factory, kReadBufSize,
+                                            kWriteBufSize,
+                                            NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 }  // namespace
