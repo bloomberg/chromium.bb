@@ -718,12 +718,10 @@ _FUNCTION_INFO = {
   'CopyTexImage2D': {
     'decoder_func': 'DoCopyTexImage2D',
     'unit_test': False,
-    'defer_reads': True,
     'trace_level': 1,
   },
   'CopyTexSubImage2D': {
     'decoder_func': 'DoCopyTexSubImage2D',
-    'defer_reads': True,
     'trace_level': 1,
   },
   'CreateImageCHROMIUM': {
@@ -749,7 +747,6 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'decoder_func': 'DoFinish',
-    'defer_reads': True,
     'trace_level': 1,
   },
   'Flush': {
@@ -1093,8 +1090,8 @@ def main(argv):
   #   "gpu/command_buffer/client/raster_c_lib_autogen.h")
   # gen.WriteCmdHelperHeader(
   #   "gpu/command_buffer/client/raster_cmd_helper_autogen.h")
-  # gen.WriteServiceImplementation(
-  #   "gpu/command_buffer/service/raster_cmd_decoder_autogen.h")
+  gen.WriteServiceImplementation(
+    "gpu/command_buffer/service/raster_cmd_decoder_autogen.h")
   # gen.WriteServiceUnitTests(
   #   "gpu/command_buffer/service/raster_cmd_decoder_unittest_%d_autogen.h")
   # gen.WriteServiceUnitTestsForExtensions(
