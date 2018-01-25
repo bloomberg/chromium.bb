@@ -282,6 +282,11 @@ typedef enum {
   FINAL_PASS_TRELLIS_OPT  // Trellis optimization in only the final encode pass
 } TRELLIS_OPT_TYPE;
 
+typedef enum {
+  FULL_TXFM_RD,
+  LOW_TXFM_RD,
+} TXFM_RD_MODEL;
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 

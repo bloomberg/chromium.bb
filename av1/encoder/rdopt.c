@@ -1830,7 +1830,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int rate_cost = 0;
   const int is_inter = is_inter_block(mbmi);
   TX_TYPE txk_start = DCT_DCT;
-  TX_TYPE txk_end = x->rd_model ? DCT_DCT : TX_TYPES - 1;
+  TX_TYPE txk_end = x->rd_model == LOW_TXFM_RD ? DCT_DCT : TX_TYPES - 1;
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
   uint8_t best_txb_ctx = 0;
@@ -2365,10 +2365,10 @@ static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                                    MACROBLOCK *x, int *r, int64_t *d, int *s,
                                    int64_t *sse, int64_t ref_best_rd) {
   RD_STATS rd_stats;
-  x->rd_model = 1;
+  x->rd_model = LOW_TXFM_RD;
   int64_t rd = txfm_yrd(cpi, x, &rd_stats, ref_best_rd, bs, DCT_DCT,
                         max_txsize_lookup[bs]);
-  x->rd_model = 0;
+  x->rd_model = FULL_TXFM_RD;
   *r = rd_stats.rate;
   *d = rd_stats.dist;
   *s = rd_stats.skip;
@@ -2545,9 +2545,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       RD_STATS this_rd_stats;
       if (skip_txfm_search(cpi, x, bs, tx_type, n, prune)) continue;
 
-      if (mbmi->ref_mv_idx > 0) x->rd_model = 1;
+      if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
       rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, n);
-      x->rd_model = 0;
+      x->rd_model = FULL_TXFM_RD;
 
       // Early termination in transform size search.
       if (cpi->sf.tx_size_search_breakout &&

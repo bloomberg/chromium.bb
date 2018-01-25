@@ -164,6 +164,9 @@ struct macroblock {
   // Save the transform RD search info.
   TX_RD_RECORD tx_rd_record;
 
+  // Determine if one would go with reduced complexity transform block
+  // search model to select prediction modes, or full complexity model
+  // to select transform kernel.
   int rd_model;
 
   // Also save RD info on the TX size search level for square TX sizes.
