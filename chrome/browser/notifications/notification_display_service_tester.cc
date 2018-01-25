@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/ui_features.h"
 #include "ui/message_center/notification.h"
@@ -58,6 +59,28 @@ class MockNotificationPlatformBridge : public NotificationPlatformBridge {
 
 #endif  // !BUILDFLAG(ENABLE_MESSAGE_CENTER)
 
+class NotificationDisplayServiceShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static NotificationDisplayServiceShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<
+        NotificationDisplayServiceShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      NotificationDisplayServiceShutdownNotifierFactory>;
+
+  NotificationDisplayServiceShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "NotificationDisplayService") {
+    DependsOn(NotificationDisplayServiceFactory::GetInstance());
+  }
+  ~NotificationDisplayServiceShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationDisplayServiceShutdownNotifierFactory);
+};
+
 }  // namespace
 
 NotificationDisplayServiceTester::NotificationDisplayServiceTester(
@@ -78,13 +101,23 @@ NotificationDisplayServiceTester::NotificationDisplayServiceTester(
   display_service_ = static_cast<StubNotificationDisplayService*>(
       NotificationDisplayServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_, &StubNotificationDisplayService::FactoryForTests));
+
+  profile_shutdown_subscription_ =
+      NotificationDisplayServiceShutdownNotifierFactory::GetInstance()
+          ->Get(profile)
+          ->Subscribe(base::BindRepeating(
+              &NotificationDisplayServiceTester::OnProfileShutdown,
+              base::Unretained(this)));
+
   g_tester = this;
 }
 
 NotificationDisplayServiceTester::~NotificationDisplayServiceTester() {
   g_tester = nullptr;
-  NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(profile_,
-                                                                      nullptr);
+  if (profile_) {
+    NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
+        profile_, nullptr);
+  }
 }
 
 // static
@@ -148,4 +181,9 @@ void NotificationDisplayServiceTester::SetProcessNotificationOperationDelegate(
     const StubNotificationDisplayService::ProcessNotificationOperationCallback&
         delegate) {
   display_service_->SetProcessNotificationOperationDelegate(delegate);
+}
+
+void NotificationDisplayServiceTester::OnProfileShutdown() {
+  profile_ = nullptr;
+  profile_shutdown_subscription_.reset();
 }

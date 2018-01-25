@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 
 class Profile;
 
@@ -78,8 +79,12 @@ class NotificationDisplayServiceTester {
           ProcessNotificationOperationCallback& delegate);
 
  private:
+  void OnProfileShutdown();
+
   Profile* profile_;
   StubNotificationDisplayService* display_service_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      profile_shutdown_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayServiceTester);
 };

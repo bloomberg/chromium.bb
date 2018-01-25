@@ -104,11 +104,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     InitStorageMonitor();
   }
 
-  void TearDownOnMainThread() override {
-    display_service_.reset();
-    ExtensionBrowserTest::TearDownOnMainThread();
-  }
-
   ExtensionStorageMonitor* monitor() {
     CHECK(storage_monitor_);
     return storage_monitor_;
