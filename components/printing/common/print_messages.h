@@ -49,7 +49,7 @@ struct PrintMsg_Print_Params {
   gfx::Rect printable_area;
   int margin_top;
   int margin_left;
-  double dpi;
+  gfx::Size dpi;
   double scale_factor;
   bool rasterize_pdf;
   int document_cookie;
@@ -126,7 +126,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // in pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(page_size)
 
-  // In pixels according to dpi_x and dpi_y.
+  // In pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(content_size)
 
   // Physical printable area of the page in pixels according to dpi.
@@ -138,7 +138,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // The x-offset of the printable area, in pixels according to dpi.
   IPC_STRUCT_TRAITS_MEMBER(margin_left)
 
-  // Specifies dots per inch.
+  // Specifies dots per inch in the x and y direction.
   IPC_STRUCT_TRAITS_MEMBER(dpi)
 
   // Specifies the scale factor in percent

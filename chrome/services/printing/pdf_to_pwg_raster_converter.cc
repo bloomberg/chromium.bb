@@ -55,13 +55,13 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
 
     if (!chrome_pdf::RenderPDFPageToBitmap(
             data.data(), data_size, page_number, image.pixel_data(),
-            image.size().width(), image.size().height(), settings.dpi,
-            settings.autorotate)) {
+            image.size().width(), image.size().height(), settings.dpi.width(),
+            settings.dpi.height(), settings.autorotate)) {
       return false;
     }
 
     cloud_print::PwgHeaderInfo header_info;
-    header_info.dpi = gfx::Size(settings.dpi, settings.dpi);
+    header_info.dpi = settings.dpi;
     header_info.total_pages = total_page_count;
     header_info.color_space = bitmap_settings.use_color
                                   ? cloud_print::PwgHeaderInfo::SRGB
