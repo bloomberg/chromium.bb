@@ -22,6 +22,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/web_package_request_handler.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
@@ -63,6 +64,11 @@
 namespace content {
 
 namespace {
+
+bool IsRequestHandlerEnabled() {
+  return base::FeatureList::IsEnabled(features::kNetworkService) ||
+         base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
+}
 
 // Request ID for browser initiated requests. We start at -2 on the same lines
 // as ResourceDispatcherHostImpl.
@@ -177,6 +183,61 @@ bool IsDownload(const network::ResourceResponse& response,
           response.head.headers->response_code() / 100 == 2);
 }
 
+std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
+    NavigationRequestInfo* request_info,
+    int frame_tree_node_id,
+    bool allow_download) {
+  // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
+  auto new_request = std::make_unique<network::ResourceRequest>();
+
+  new_request->method = request_info->common_params.method;
+  new_request->url = request_info->common_params.url;
+  new_request->site_for_cookies = request_info->site_for_cookies;
+  new_request->priority = net::HIGHEST;
+  new_request->render_frame_id = frame_tree_node_id;
+
+  // The code below to set fields like request_initiator, referrer, etc has
+  // been copied from ResourceDispatcherHostImpl. We did not refactor the
+  // common code into a function, because RDHI uses accessor functions on the
+  // URLRequest class to set these fields. whereas we use ResourceRequest here.
+  new_request->request_initiator = request_info->begin_params->initiator_origin;
+  new_request->referrer = request_info->common_params.referrer.url;
+  new_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
+      request_info->common_params.referrer.policy);
+  new_request->headers.AddHeadersFromString(
+      request_info->begin_params->headers);
+  new_request->headers.SetHeader(network::kAcceptHeader,
+                                 network::kFrameAcceptHeader);
+
+  new_request->resource_type = request_info->is_main_frame
+                                   ? RESOURCE_TYPE_MAIN_FRAME
+                                   : RESOURCE_TYPE_SUB_FRAME;
+  if (request_info->is_main_frame)
+    new_request->update_first_party_url_on_redirect = true;
+
+  int load_flags = request_info->begin_params->load_flags;
+  load_flags |= net::LOAD_VERIFY_EV_CERT;
+  if (request_info->is_main_frame)
+    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
+
+  // Sync loads should have maximum priority and should be the only
+  // requests that have the ignore limits flag set.
+  DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
+
+  new_request->load_flags = load_flags;
+
+  new_request->request_body = request_info->common_params.post_data.get();
+  new_request->report_raw_headers = request_info->report_raw_headers;
+  new_request->allow_download = allow_download;
+  new_request->enable_load_timing = true;
+
+  new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+  new_request->fetch_credentials_mode =
+      network::mojom::FetchCredentialsMode::kInclude;
+  new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  return new_request;
+}
+
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -241,6 +302,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       network::mojom::URLLoaderClientPtr url_loader_client) {
     DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    default_loader_used_ = true;
+    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+      handlers_.push_back(base::MakeUnique<WebPackageRequestHandler>());
+    }
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
     if (ResourceDispatcherHostImpl::Get()) {
@@ -363,12 +429,16 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         handlers_.push_back(std::move(appcache_handler));
     }
 
+    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+      handlers_.push_back(base::MakeUnique<WebPackageRequestHandler>());
+    }
+
     Restart();
   }
 
   // This could be called multiple times to follow a chain of redirects.
   void Restart() {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(IsRequestHandlerEnabled());
     // Clear |url_loader_| if it's not the default one (network). This allows
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
@@ -387,15 +457,17 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // if the |handler| wants to handle the request.
   void MaybeStartLoader(URLLoaderRequestHandler* handler,
                         StartLoaderCallback start_loader_callback) {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(IsRequestHandlerEnabled());
     if (start_loader_callback) {
       // |handler| wants to handle the request.
       DCHECK(handler);
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(start_loader_callback),
-          GetContentClient()->browser()->CreateURLLoaderThrottles(
-              web_contents_getter_, navigation_ui_data_.get()),
+          base::FeatureList::IsEnabled(features::kNetworkService)
+              ? GetContentClient()->browser()->CreateURLLoaderThrottles(
+                    web_contents_getter_, navigation_ui_data_.get())
+              : std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
           frame_tree_node_id_, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
@@ -479,13 +551,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   void FollowRedirect() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
-    DCHECK(!response_url_loader_);
-    DCHECK(url_loader_);
 
-    // TODO(arthursonzogni): We might need to go through the rest of the
-    // function once there are several types of URLLoader handling the
-    // navigation, even in non network-service mode.
-    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (!IsRequestHandlerEnabled()) {
       url_loader_->FollowRedirect();
       return;
     }
@@ -554,7 +621,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_download;
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (IsRequestHandlerEnabled()) {
       is_download = IsDownload(*response.get(), url_, url_chain_,
                                initiator_origin_, suggested_filename_);
       is_stream = false;
@@ -663,7 +730,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
-    if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    if (!IsRequestHandlerEnabled())
       return false;
 
     if (!default_loader_used_)
@@ -672,7 +739,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     for (auto& handler : handlers_) {
       network::mojom::URLLoaderClientRequest response_client_request;
       if (handler->MaybeCreateLoaderForResponse(response, &response_url_loader_,
-                                                &response_client_request)) {
+                                                &response_client_request,
+                                                url_loader_.get())) {
         response_loader_binding_.Bind(std::move(response_client_request));
         default_loader_used_ = false;
         url_loader_.reset();
@@ -781,12 +849,18 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   AppCacheNavigationHandleCore* appcache_handle_core =
       appcache_handle ? appcache_handle->core() : nullptr;
 
+  std::unique_ptr<network::ResourceRequest> new_request;
+  if (IsRequestHandlerEnabled()) {
+    new_request = CreateResourceRequest(request_info.get(), frame_tree_node_id,
+                                        allow_download_);
+  }
+
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
         /* initial_handlers = */
         std::vector<std::unique_ptr<URLLoaderRequestHandler>>(),
-        /* resource_request = */ nullptr, resource_context,
+        std::move(new_request), resource_context,
         /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
         request_info->begin_params->initiator_origin,
@@ -806,55 +880,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
             base::Passed(std::move(navigation_ui_data))));
     return;
   }
-
-  // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
-  auto new_request = std::make_unique<network::ResourceRequest>();
-
-  new_request->method = request_info->common_params.method;
-  new_request->url = request_info->common_params.url;
-  new_request->site_for_cookies = request_info->site_for_cookies;
-  new_request->priority = net::HIGHEST;
-  new_request->render_frame_id = frame_tree_node_id;
-
-  // The code below to set fields like request_initiator, referrer, etc has
-  // been copied from ResourceDispatcherHostImpl. We did not refactor the
-  // common code into a function, because RDHI uses accessor functions on the
-  // URLRequest class to set these fields. whereas we use ResourceRequest here.
-  new_request->request_initiator = request_info->begin_params->initiator_origin;
-  new_request->referrer = request_info->common_params.referrer.url;
-  new_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
-      request_info->common_params.referrer.policy);
-  new_request->headers.AddHeadersFromString(
-      request_info->begin_params->headers);
-  new_request->headers.SetHeader(network::kAcceptHeader,
-                                 network::kFrameAcceptHeader);
-
-  new_request->resource_type = request_info->is_main_frame
-                                   ? RESOURCE_TYPE_MAIN_FRAME
-                                   : RESOURCE_TYPE_SUB_FRAME;
-  if (request_info->is_main_frame)
-    new_request->update_first_party_url_on_redirect = true;
-
-  int load_flags = request_info->begin_params->load_flags;
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (request_info->is_main_frame)
-    load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
-
-  // Sync loads should have maximum priority and should be the only
-  // requests that have the ignore limits flag set.
-  DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
-
-  new_request->load_flags = load_flags;
-
-  new_request->request_body = request_info->common_params.post_data.get();
-  new_request->report_raw_headers = request_info->report_raw_headers;
-  new_request->allow_download = allow_download_;
-  new_request->enable_load_timing = true;
-
-  new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
-  new_request->fetch_credentials_mode =
-      network::mojom::FetchCredentialsMode::kInclude;
-  new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
 
   // Check if a web UI scheme wants to handle this request.
   FrameTreeNode* frame_tree_node =

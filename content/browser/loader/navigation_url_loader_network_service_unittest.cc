@@ -63,7 +63,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request) override {
+      network::mojom::URLLoaderClientRequest* client_request,
+      ThrottlingURLLoader* url_loader) override {
     return false;
   }
 

@@ -93,7 +93,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request) override;
+      network::mojom::URLLoaderClientRequest* client_request,
+      ThrottlingURLLoader* url_loader) override;
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
