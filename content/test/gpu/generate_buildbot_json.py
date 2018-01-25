@@ -145,6 +145,13 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'use_gpu_trigger_script': True,
+      'alternate_swarming_dimensions': [
+        {
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          'pool': 'Chrome-GPU',
+        },
+      ],
     },
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
@@ -278,6 +285,13 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'use_gpu_trigger_script': True,
+      'alternate_swarming_dimensions': [
+        {
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          'pool': 'Chrome-GPU',
+        },
+      ],
     },
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
@@ -304,6 +318,13 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'type': Types.DEQP,
       'use_gpu_trigger_script': True,
+      'alternate_swarming_dimensions': [
+        {
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          'pool': 'Chrome-GPU',
+        },
+      ],
     },
     'Win7 Experimental Release (NVIDIA)': {
       'swarming_dimensions': [
@@ -821,6 +842,13 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'type': Types.OPTIONAL,
       'use_gpu_trigger_script': True,
+      'alternate_swarming_dimensions': [
+        {
+          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          'pool': 'Chrome-GPU',
+        },
+      ],
     },
     'Optional Mac Release (Intel)': {
       'swarming_dimensions': [
