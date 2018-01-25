@@ -230,7 +230,7 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 
 	for (i = 0; i < 200; i++) {
 		r = amdgpu_cs_submit(context_handle, 0,&ibs_request, 1);
-		CU_ASSERT_EQUAL(r, 0);
+		CU_ASSERT_EQUAL((r == 0 || r == -ECANCELED), 1);
 
 	}
 
@@ -243,7 +243,7 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
 			AMDGPU_TIMEOUT_INFINITE,0, &expired);
-	CU_ASSERT_EQUAL(r, 0);
+	CU_ASSERT_EQUAL((r == 0 || r == -ECANCELED), 1);
 
 	r = amdgpu_bo_list_destroy(bo_list);
 	CU_ASSERT_EQUAL(r, 0);
