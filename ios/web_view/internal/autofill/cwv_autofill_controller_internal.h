@@ -15,12 +15,14 @@ class WebState;
 
 @class AutofillAgent;
 @class JsAutofillManager;
+@class JsSuggestionManager;
 
 @interface CWVAutofillController ()
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                    autofillAgent:(AutofillAgent*)autofillAgent
                JSAutofillManager:(JsAutofillManager*)JSAutofillManager
+             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
     NS_DESIGNATED_INITIALIZER;
 
 @end

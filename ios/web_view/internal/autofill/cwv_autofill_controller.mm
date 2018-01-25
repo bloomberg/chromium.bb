@@ -15,6 +15,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
+#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -53,6 +54,9 @@
   // Javascript autofill manager associated with |webState|.
   JsAutofillManager* _JSAutofillManager;
 
+  // Javascript suggestion manager associated with |webState|.
+  JsSuggestionManager* _JSSuggestionManager;
+
   // The |webState| which this autofill controller should observe.
   web::WebState* _webState;
 }
@@ -61,7 +65,8 @@
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                    autofillAgent:(AutofillAgent*)autofillAgent
-               JSAutofillManager:(JsAutofillManager*)JSAutofillManager {
+               JSAutofillManager:(JsAutofillManager*)JSAutofillManager
+             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -99,6 +104,8 @@
                            ->autofill_manager();
 
     _JSAutofillManager = JSAutofillManager;
+
+    _JSSuggestionManager = JSSuggestionManager;
   }
   return self;
 }
@@ -192,6 +199,21 @@
   }
 }
 
+- (void)focusPreviousField {
+  [_JSSuggestionManager selectPreviousElement];
+}
+
+- (void)focusNextField {
+  [_JSSuggestionManager selectNextElement];
+}
+
+- (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
+    (void (^)(BOOL previous, BOOL next))completionHandler {
+  [_JSSuggestionManager
+      fetchPreviousAndNextElementsPresenceWithCompletionHandler:
+          completionHandler];
+}
+
 #pragma mark - AutofillClientIOSBridge | AutofillDriverIOSBridge
 
 - (void)showAutofillPopup:(const std::vector<autofill::Suggestion>&)suggestions
@@ -255,10 +277,12 @@
 - (void)webState:(web::WebState*)webState
     didRegisterFormActivity:(const web::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
+
+  [_JSSuggestionManager inject];
+
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
-
   if (params.type == "focus") {
     if ([_delegate
             respondsToSelector:@selector
