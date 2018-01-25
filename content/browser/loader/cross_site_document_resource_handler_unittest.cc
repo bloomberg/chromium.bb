@@ -582,6 +582,36 @@ const TestScenario kScenarios[] = {
         Verdict::kAllow,                        // verdict
         0,                                      // verdict_packet
     },
+    {
+        "Allowed: Same-site XHR to a filesystem URI",
+        __LINE__,
+        "filesystem:http://www.a.com/file.html",    // target_url
+        RESOURCE_TYPE_XHR,                          // resource_type
+        "http://www.a.com/",                        // initiator_origin
+        OriginHeader::kOmit,                        // cors_request
+        "text/html",                                // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        false,                                      // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,      // cors_response
+        {"<html><head>this should sniff as HTML"},  // packets
+        Verdict::kAllow,                            // verdict
+        -1,                                         // verdict_packet
+    },
+    {
+        "Allowed: Same-site XHR to a blob URI",
+        __LINE__,
+        "blob:http://www.a.com/guid-goes-here",     // target_url
+        RESOURCE_TYPE_XHR,                          // resource_type
+        "http://www.a.com/",                        // initiator_origin
+        OriginHeader::kOmit,                        // cors_request
+        "text/html",                                // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        false,                                      // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,      // cors_response
+        {"<html><head>this should sniff as HTML"},  // packets
+        Verdict::kAllow,                            // verdict
+        -1,                                         // verdict_packet
+    },
 
     // Blocked responses (without sniffing):
     {
@@ -910,6 +940,36 @@ const TestScenario kScenarios[] = {
         {")]}'\n[true, false]"},                              // packets
         Verdict::kBlock,                                      // verdict
         0,                                                    // verdict_packet
+    },
+    {
+        "Blocked: Cross-site XHR to a filesystem URI",
+        __LINE__,
+        "filesystem:http://www.b.com/file.html",    // target_url
+        RESOURCE_TYPE_XHR,                          // resource_type
+        "http://www.a.com/",                        // initiator_origin
+        OriginHeader::kOmit,                        // cors_request
+        "text/html",                                // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        false,                                      // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,      // cors_response
+        {"<html><head>this should sniff as HTML"},  // packets
+        Verdict::kBlock,                            // verdict
+        0,                                          // verdict_packet
+    },
+    {
+        "Blocked: Cross-site XHR to a blob URI",
+        __LINE__,
+        "blob:http://www.b.com/guid-goes-here",     // target_url
+        RESOURCE_TYPE_XHR,                          // resource_type
+        "http://www.a.com/",                        // initiator_origin
+        OriginHeader::kOmit,                        // cors_request
+        "text/html",                                // response_mime_type
+        CROSS_SITE_DOCUMENT_MIME_TYPE_HTML,         // canonical_mime_type
+        false,                                      // include_no_sniff_header
+        AccessControlAllowOriginHeader::kOmit,      // cors_response
+        {"<html><head>this should sniff as HTML"},  // packets
+        Verdict::kBlock,                            // verdict
+        0,                                          // verdict_packet
     },
 };
 
