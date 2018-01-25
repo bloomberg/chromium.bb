@@ -43,7 +43,7 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDispatchSafetyNetCheckOffThread{
-    "DispatchSafetyNetCheckOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DispatchSafetyNetCheckOffThread", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAppendRecentNavigationEvents{
     "AppendRecentNavigationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
