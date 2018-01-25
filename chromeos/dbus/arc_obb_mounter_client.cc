@@ -12,20 +12,11 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 namespace {
-
-// TODO(hashimoto): Share these constants with the service.
-// D-Bus service constants.
-const char kArcObbMounterInterface[] = "org.chromium.ArcObbMounterInterface";
-const char kArcObbMounterServicePath[] = "/org/chromium/ArcObbMounter";
-const char kArcObbMounterServiceName[] = "org.chromium.ArcObbMounter";
-
-// Method names.
-const char kMountObbMethod[] = "MountObb";
-const char kUnmountObbMethod[] = "UnmountObb";
 
 class ArcObbMounterClientImpl : public ArcObbMounterClient {
  public:
@@ -37,7 +28,8 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
                 const std::string& mount_path,
                 int32_t owner_gid,
                 VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(kArcObbMounterInterface, kMountObbMethod);
+    dbus::MethodCall method_call(arc::obb_mounter::kArcObbMounterInterface,
+                                 arc::obb_mounter::kMountObbMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(obb_file);
     writer.AppendString(mount_path);
@@ -50,7 +42,8 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
 
   void UnmountObb(const std::string& mount_path,
                   VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(kArcObbMounterInterface, kUnmountObbMethod);
+    dbus::MethodCall method_call(arc::obb_mounter::kArcObbMounterInterface,
+                                 arc::obb_mounter::kUnmountObbMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(mount_path);
     proxy_->CallMethod(
@@ -62,8 +55,9 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
-    proxy_ = bus->GetObjectProxy(kArcObbMounterServiceName,
-                                 dbus::ObjectPath(kArcObbMounterServicePath));
+    proxy_ = bus->GetObjectProxy(
+        arc::obb_mounter::kArcObbMounterServiceName,
+        dbus::ObjectPath(arc::obb_mounter::kArcObbMounterServicePath));
   }
 
  private:
