@@ -1755,7 +1755,7 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 # DCHECK failure.
 crbug.com/805061 external/wpt/custom-elements/upgrading/Node-cloneNode.html [ Crash ]
 
-crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Pass Failure ]
+crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-display/display-contents-fieldset-nested-legend.html [ Failure ]
