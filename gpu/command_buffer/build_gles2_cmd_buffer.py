@@ -3581,6 +3581,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoSwapBuffersWithBoundsCHROMIUM',
     'impl_func': False,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'SwapInterval': {
@@ -4489,10 +4490,12 @@ _FUNCTION_INFO = {
   },
   'SetDrawRectangleCHROMIUM': {
     'decoder_func': 'DoSetDrawRectangleCHROMIUM',
+    'unit_test': False,
     'extension': 'CHROMIUM_set_draw_rectangle',
   },
   'SetEnableDCLayersCHROMIUM': {
     'decoder_func': 'DoSetEnableDCLayersCHROMIUM',
+    'unit_test': False,
     'extension': 'CHROMIUM_dc_layers',
   },
   'InitializeDiscardableTextureCHROMIUM': {
@@ -4555,6 +4558,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'DeleteTransferCacheEntryINTERNAL': {
@@ -4563,6 +4567,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'UnlockTransferCacheEntryINTERNAL': {
@@ -4571,6 +4576,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
     'extension': True,
   },
   'TexStorage2DImageCHROMIUM': {
