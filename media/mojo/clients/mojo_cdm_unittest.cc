@@ -78,8 +78,8 @@ class MojoCdmTest : public ::testing::Test {
 
   MojoCdmTest()
       : mojo_cdm_service_(
-            std::make_unique<MojoCdmService>(&mojo_cdm_service_context_,
-                                             &cdm_factory_)),
+            std::make_unique<MojoCdmService>(&cdm_factory_,
+                                             &mojo_cdm_service_context_)),
         cdm_binding_(mojo_cdm_service_.get()) {}
 
   virtual ~MojoCdmTest() = default;

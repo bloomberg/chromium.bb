@@ -48,11 +48,19 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
   // CdmProxy::Client implementation.
   void NotifyHardwareReset() final;
 
+  // Get CdmContext to be used by the media pipeline.
+  base::WeakPtr<CdmContext> GetCdmContext();
+
+  int GetCdmIdForTesting() const { return cdm_id_; }
+
  private:
   std::unique_ptr<::media::CdmProxy> cdm_proxy_;
-  MojoCdmServiceContext* context_ = nullptr;
+  MojoCdmServiceContext* const context_ = nullptr;
 
   mojom::CdmProxyClientAssociatedPtr client_;
+
+  // Set to a valid CDM ID if the |cdm_proxy_| is successfully initialized.
+  int cdm_id_ = CdmContext::kInvalidCdmId;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmProxyService);
 };

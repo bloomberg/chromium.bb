@@ -42,7 +42,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
       int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
-  MojoCdmService(MojoCdmServiceContext* context, CdmFactory* cdm_factory);
+  MojoCdmService(CdmFactory* cdm_factory, MojoCdmServiceContext* context);
 
   ~MojoCdmService() final;
 
@@ -95,14 +95,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // Callback for when |decryptor_| loses connectivity.
   void OnDecryptorConnectionError();
 
-  // CDM ID to be assigned to the next successfully initialized CDM. This ID is
-  // unique per process. It will be used to locate the CDM by the media players
-  // living in the same process.
-  static int next_cdm_id_;
-
-  MojoCdmServiceContext* const context_ = nullptr;
-
   CdmFactory* cdm_factory_;
+  MojoCdmServiceContext* const context_ = nullptr;
   scoped_refptr<::media::ContentDecryptionModule> cdm_;
 
   // MojoDecryptorService is passed the Decryptor from |cdm_|, so

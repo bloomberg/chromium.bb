@@ -13,6 +13,11 @@ ClearKeyCdmProxy::ClearKeyCdmProxy() {}
 
 ClearKeyCdmProxy::~ClearKeyCdmProxy() {}
 
+// TODO(xhwang): Returns a non-null pointer and add a test covering this path.
+base::WeakPtr<CdmContext> ClearKeyCdmProxy::GetCdmContext() {
+  return nullptr;
+}
+
 void ClearKeyCdmProxy::Initialize(Client* client, InitializeCB init_cb) {
   DVLOG(1) << __func__;
 

@@ -147,7 +147,7 @@ void InterfaceFactoryImpl::CreateCdm(
     return;
 
   cdm_bindings_.AddBinding(
-      std::make_unique<MojoCdmService>(&cdm_service_context_, cdm_factory),
+      std::make_unique<MojoCdmService>(cdm_factory, &cdm_service_context_),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
