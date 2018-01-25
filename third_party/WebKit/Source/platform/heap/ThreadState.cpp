@@ -197,7 +197,7 @@ void ThreadState::RunTerminationGC() {
 
   ReleaseStaticPersistentNodes();
 
-  ProcessHeap::GetCrossThreadPersistentRegion()
+  ProcessHeap::GetCrossThreadPersistentRegions()
       .PrepareForThreadStateTermination(this);
 
   // Do thread local GC's as long as the count of thread local Persistents
@@ -1265,13 +1265,13 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   GCForbiddenScope gc_forbidden_scope(this);
 
   {
-    // Access to the CrossThreadPersistentRegion has to be prevented
+    // Access to the CrossThreadPersistentRegions has to be prevented
     // while in the marking phase because otherwise other threads may
     // allocate or free PersistentNodes and we can't handle
     // that. Grabbing this lock also prevents non-attached threads
     // from accessing any GCed heap while a GC runs.
-    CrossThreadPersistentRegion::LockScope persistent_lock(
-        ProcessHeap::GetCrossThreadPersistentRegion());
+    CrossThreadPersistentRegions::LockScope persistent_lock(
+        ProcessHeap::GetCrossThreadPersistentRegions());
 
     {
       TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",

@@ -197,8 +197,8 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
     // data. Detect that condition by trying to take the cross-thread
     // persistent lock which is held while a GC runs. If the lock is
     // already held, simply delay rendering until the next quantum.
-    CrossThreadPersistentRegion::LockScope gc_lock(
-        ProcessHeap::GetCrossThreadPersistentRegion(), true);
+    CrossThreadPersistentRegions::LockScope gc_lock(
+        ProcessHeap::GetCrossThreadPersistentRegions(), true);
     if (!gc_lock.HasLock()) {
       // To ensure that the rendering step eventually happens, repost.
       GetRenderingThread()->GetWebTaskRunner()->PostTask(
