@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
-                       DeviceMotionCrossOriginIframeTest) {
+                       DeviceMotionCrossOriginIframeForbiddenTest) {
   // Main frame is on a.com, iframe is on b.com.
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
@@ -487,11 +487,38 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
   content::RenderFrameHost* iframe =
       ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
   ASSERT_TRUE(iframe);
+  EXPECT_EQ("fail", iframe->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
+                       DeviceMotionCrossOriginIframeAllowedTest) {
+  // Main frame is on a.com, iframe is on b.com.
+  GURL main_frame_url =
+      https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
+  GURL iframe_url =
+      https_embedded_test_server_->GetURL("b.com", "/device_motion_test.html");
+
+  // Wait for the main frame, subframe, and the #pass/#fail commits.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  // Now allow 'accelerometer' and 'gyroscope' policy features.
+  EXPECT_TRUE(ExecuteScript(shell(),
+                            "document.getElementById('cross_origin_iframe')."
+                            "allow='accelerometer; gyroscope'"));
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
+                                  "cross_origin_iframe", iframe_url));
+
+  navigation_observer.Wait();
+
+  content::RenderFrameHost* iframe =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  ASSERT_TRUE(iframe);
   EXPECT_EQ("pass", iframe->GetLastCommittedURL().ref());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
-                       DeviceOrientationCrossOriginIframeTest) {
+                       DeviceOrientationCrossOriginIframeForbiddenTest) {
   // Main frame is on a.com, iframe is on b.com.
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
@@ -502,6 +529,33 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
   TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
 
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
+                                  "cross_origin_iframe", iframe_url));
+
+  navigation_observer.Wait();
+
+  content::RenderFrameHost* iframe =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  ASSERT_TRUE(iframe);
+  EXPECT_EQ("fail", iframe->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
+                       DeviceOrientationCrossOriginIframeAllowedTest) {
+  // Main frame is on a.com, iframe is on b.com.
+  GURL main_frame_url =
+      https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
+  GURL iframe_url = https_embedded_test_server_->GetURL(
+      "b.com", "/device_orientation_test.html");
+
+  // Wait for the main frame, subframe, and the #pass/#fail commits.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  // Now allow 'accelerometer' and 'gyroscope' policy features.
+  EXPECT_TRUE(ExecuteScript(shell(),
+                            "document.getElementById('cross_origin_iframe')."
+                            "allow='accelerometer; gyroscope'"));
   EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
                                   "cross_origin_iframe", iframe_url));
 
