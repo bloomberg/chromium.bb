@@ -23,12 +23,14 @@ void av1_enable_segmentation(struct segmentation *seg) {
   seg->enabled = 1;
   seg->update_map = 1;
   seg->update_data = 1;
+  seg->temporal_update = 0;
 }
 
 void av1_disable_segmentation(struct segmentation *seg) {
   seg->enabled = 0;
   seg->update_map = 0;
   seg->update_data = 0;
+  seg->temporal_update = 0;
 }
 
 void av1_disable_segfeature(struct segmentation *seg, int segment_id,
