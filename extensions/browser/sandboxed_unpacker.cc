@@ -549,12 +549,6 @@ void SandboxedUnpacker::ImageSanitizationDone(
     std::unique_ptr<base::DictionaryValue> manifest,
     ImageSanitizer::Status status,
     const base::FilePath& file_path_for_error) {
-  // Release |image_sanitizer_|, it is not useful anymore and reference |this|.
-  // (keep a local ref to this so if |image_sanitizer_| was the last ref to
-  // |this| it stays valid for the duration of the call).
-  scoped_refptr<SandboxedUnpacker> keep_this_alive = this;
-  image_sanitizer_ = nullptr;
-
   if (status == ImageSanitizer::Status::kSuccess) {
     // Next step is to sanitize the message catalogs.
     ReadMessageCatalogs(std::move(manifest));
