@@ -1226,13 +1226,18 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int bh = block_size_high[mi->mbmi.sb_type];
   const TileInfo *const tile = &xd->tile;
   POSITION mv_ref_search[2];
-  const int num_8x8_blocks_wide = mi_size_wide[mi->mbmi.sb_type];
-  const int num_8x8_blocks_high = mi_size_high[mi->mbmi.sb_type];
+  const int num_8x8_blocks_wide = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type];
+  const int num_8x8_blocks_high = num_8x8_blocks_high_lookup[mi->mbmi.sb_type];
 
   mv_ref_search[0].row = num_8x8_blocks_high - 1;
   mv_ref_search[0].col = -1;
   mv_ref_search[1].row = -1;
   mv_ref_search[1].col = num_8x8_blocks_wide - 1;
+
+  for (i = 0; i < 2; ++i) {
+    mv_ref_search[i].row *= 2;
+    mv_ref_search[i].col *= 2;
+  }
 
   // Blank the reference vector list
   memset(mv_ref_list, 0, sizeof(*mv_ref_list) * MAX_MV_REF_CANDIDATES);
