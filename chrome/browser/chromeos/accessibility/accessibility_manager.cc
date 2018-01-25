@@ -1438,7 +1438,8 @@ void AccessibilityManager::PostLoadChromeVox() {
   event_router->DispatchEventWithLazyListener(
       extension_misc::kChromeVoxExtensionId, std::move(event));
 
-  if (!chromevox_panel_) {
+  // TODO(mash): Support ChromeVoxPanel. http://crbug.com/628655
+  if (!chromevox_panel_ && chromeos::GetAshConfig() != ash::Config::MASH) {
     chromevox_panel_ = new ChromeVoxPanel(
         profile_,
         session_manager::SessionManager::Get()->IsUserSessionBlocked());
@@ -1480,6 +1481,10 @@ void AccessibilityManager::PostSwitchChromeVoxProfile() {
 }
 
 void AccessibilityManager::ReloadChromeVoxPanel() {
+  // TODO(mash): Support ChromeVoxPanel. http://crbug.com/628655
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return;
+
   if (chromevox_panel_) {
     chromevox_panel_->Close();
     chromevox_panel_ = nullptr;
