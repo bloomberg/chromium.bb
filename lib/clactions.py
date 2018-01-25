@@ -17,6 +17,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import iter_utils
 from chromite.lib import metrics
+from chromite.lib import cros_logging as logging
 
 site_config = config_lib.GetConfig()
 
@@ -1183,6 +1184,14 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       total_rejections += c
 
     false_rejection_total_metric.add(total_rejections, fields=fields)
+    n_exonerations = len(exonerations.get(change, []))
+    # TODO(crbug.com/804900) max(0, ...) is required because of an accounting
+    # bug where sometimes this quantity is negative.
+    net_rejections = total_rejections - n_exonerations
+    if net_rejections < 0:
+      logging.error(
+          'Exonerations is larger than total rejections for CL %s.'
+          ' See crbug.com/804900', change)
     false_rejections_minus_exonerations_metric.add(
-        total_rejections - len(exonerations.get(change, [])),
+        max(0, net_rejections),
         fields=fields)
