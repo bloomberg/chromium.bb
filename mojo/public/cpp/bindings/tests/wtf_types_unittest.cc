@@ -128,6 +128,32 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
   EXPECT_EQ(strs, strs2);
 }
 
+TEST_F(WTFTypesTest, Serialization_WTFVectorInlineCapacity) {
+  using MojomType = ArrayDataView<StringDataView>;
+
+  WTF::Vector<WTF::String, 1> strs(4);
+  // strs[0] is null.
+  // strs[1] is empty.
+  strs[1] = "";
+  strs[2] = kHelloWorld;
+  strs[3] = WTF::String::FromUTF8(kUTF8HelloWorld);
+  auto cloned_strs = strs;
+
+  mojo::Message message(0, 0, 0, 0, nullptr);
+  mojo::internal::SerializationContext context;
+  typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
+      writer;
+  mojo::internal::ContainerValidateParams validate_params(
+      0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
+  mojo::internal::Serialize<MojomType>(cloned_strs, message.payload_buffer(),
+                                       &writer, &validate_params, &context);
+
+  WTF::Vector<WTF::String, 1> strs2;
+  mojo::internal::Deserialize<MojomType>(writer.data(), &strs2, &context);
+
+  EXPECT_EQ(strs, strs2);
+}
+
 TEST_F(WTFTypesTest, Serialization_WTFVectorToStlVector) {
   using MojomType = ArrayDataView<StringDataView>;
 

@@ -10,33 +10,42 @@
 
 namespace mojo {
 
-template <typename U>
-struct ArrayTraits<WTF::Vector<U>> {
+template <typename U, size_t InlineCapacity>
+struct ArrayTraits<WTF::Vector<U, InlineCapacity>> {
   using Element = U;
 
-  static bool IsNull(const WTF::Vector<U>& input) {
+  static bool IsNull(const WTF::Vector<U, InlineCapacity>& input) {
     // WTF::Vector<> is always converted to non-null mojom array.
     return false;
   }
 
-  static void SetToNull(WTF::Vector<U>* output) {
+  static void SetToNull(WTF::Vector<U, InlineCapacity>* output) {
     // WTF::Vector<> doesn't support null state. Set it to empty instead.
     output->clear();
   }
 
-  static size_t GetSize(const WTF::Vector<U>& input) { return input.size(); }
+  static size_t GetSize(const WTF::Vector<U, InlineCapacity>& input) {
+    return input.size();
+  }
 
-  static U* GetData(WTF::Vector<U>& input) { return input.data(); }
+  static U* GetData(WTF::Vector<U, InlineCapacity>& input) {
+    return input.data();
+  }
 
-  static const U* GetData(const WTF::Vector<U>& input) { return input.data(); }
+  static const U* GetData(const WTF::Vector<U, InlineCapacity>& input) {
+    return input.data();
+  }
 
-  static U& GetAt(WTF::Vector<U>& input, size_t index) { return input[index]; }
-
-  static const U& GetAt(const WTF::Vector<U>& input, size_t index) {
+  static U& GetAt(WTF::Vector<U, InlineCapacity>& input, size_t index) {
     return input[index];
   }
 
-  static bool Resize(WTF::Vector<U>& input, size_t size) {
+  static const U& GetAt(const WTF::Vector<U, InlineCapacity>& input,
+                        size_t index) {
+    return input[index];
+  }
+
+  static bool Resize(WTF::Vector<U, InlineCapacity>& input, size_t size) {
     input.resize(size);
     return true;
   }
