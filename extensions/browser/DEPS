@@ -51,7 +51,6 @@ specific_include_rules = {
     "+chrome/browser/extensions/extension_apitest.h",
     "+chrome/browser/extensions/extension_function_test_utils.h",
     "+chrome/browser/extensions/extension_service_test_base.h",
-    "+chrome/browser/extensions/test_extension_dir.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/common/chrome_switches.h",
     "+chrome/test/base/testing_profile.h",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/test_extension_dir.h"
+#include "extensions/test/test_extension_dir.h"
 
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
@@ -62,8 +62,8 @@ base::FilePath TestExtensionDir::Pack() {
     pem_out_path = pem_path;
   if (!creator.Run(dir_.GetPath(), crx_path, pem_in_path, pem_out_path,
                    ExtensionCreator::kOverwriteCRX)) {
-    ADD_FAILURE()
-        << "ExtensionCreator::Run() failed: " << creator.error_message();
+    ADD_FAILURE() << "ExtensionCreator::Run() failed: "
+                  << creator.error_message();
     return base::FilePath();
   }
   if (!base::PathExists(crx_path)) {
