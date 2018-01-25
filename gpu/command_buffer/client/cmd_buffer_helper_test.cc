@@ -196,6 +196,10 @@ class CommandBufferHelperTest : public testing::Test {
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
+  void WaitForGetOffsetInRange(int32_t start, int32_t end) {
+    helper_->WaitForGetOffsetInRange(start, end);
+  }
+
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferDirectLocked> command_buffer_;
   std::unique_ptr<AsyncAPIMock> api_mock_;
@@ -719,6 +723,46 @@ TEST_F(CommandBufferHelperTest, TestOrderingBarrierToCommandBuffer) {
 
   EXPECT_EQ(flush_count2, flush_count1 + 1);
   EXPECT_EQ(flush_count3, flush_count2 + 1);
+}
+
+TEST_F(CommandBufferHelperTest, TestWrapAroundAfterOrderingBarrier) {
+  // Explicit flushing only.
+  helper_->SetAutomaticFlushes(false);
+
+  // Flush with put = 3. We will wrap around to flush this exact offset again.
+  AddUniqueCommandWithExpect(error::kNoError, 3);
+  helper_->Flush();
+
+  // Add an ordering barrier that's never explicitly flushed by us.
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  helper_->OrderingBarrier();
+
+  WaitForGetOffsetInRange(5, 5);
+
+  // Add enough commands to wrap around to put = 2. Add commands of size 2 so
+  // that last command inserts nop at the end and avoids an automatic flush.
+  ASSERT_EQ(kTotalNumCommandEntries % 2, 0);
+  for (int i = 0; i < kTotalNumCommandEntries / 2 - 2; ++i)
+    AddUniqueCommandWithExpect(error::kNoError, 2);
+
+  // We have 2 entries available. Asking for 1 entry will update put offset to
+  // 3 which is equal to the put offset of the last explicit flush.
+  AddUniqueCommandWithExpect(error::kNoError, 1);
+  EXPECT_EQ(GetHelperPutOffset(), 3);
+  EXPECT_EQ(GetHelperGetOffset(), 5);
+  EXPECT_EQ(ImmediateEntryCount(), 1);
+
+  // We have 1 entry available. Asking for 2 entries will automatically call
+  // Flush and WaitForGetOffsetInRange.
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  EXPECT_EQ(GetHelperPutOffset(), 5);
+  EXPECT_EQ(GetHelperGetOffset(), 3);
+  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 5);
+
+  // Flush the last command explicitly.
+  helper_->Flush();
+
+  Mock::VerifyAndClearExpectations(api_mock_.get());
 }
 
 }  // namespace gpu
