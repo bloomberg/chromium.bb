@@ -914,9 +914,23 @@ GLRendererCopier::CacheEntry::CacheEntry() {
   object_names.fill(0);
 }
 
-GLRendererCopier::CacheEntry::CacheEntry(CacheEntry&&) = default;
+GLRendererCopier::CacheEntry::CacheEntry(CacheEntry&& other)
+    : purge_count_at_last_use(other.purge_count_at_last_use),
+      object_names(other.object_names),
+      scaler(std::move(other.scaler)),
+      i420_converter(std::move(other.i420_converter)) {
+  other.object_names.fill(0);
+}
+
 GLRendererCopier::CacheEntry& GLRendererCopier::CacheEntry::operator=(
-    CacheEntry&&) = default;
+    CacheEntry&& other) {
+  purge_count_at_last_use = other.purge_count_at_last_use;
+  object_names = other.object_names;
+  other.object_names.fill(0);
+  scaler = std::move(other.scaler);
+  i420_converter = std::move(other.i420_converter);
+  return *this;
+}
 
 GLRendererCopier::CacheEntry::~CacheEntry() {
   // Ensure all resources were freed by this point. Resources aren't explicity

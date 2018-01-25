@@ -123,11 +123,11 @@ void FrameSinkVideoCapturerImpl::OnTargetWillGoAway() {
 
   SetResolvedTarget(nullptr);
 
-  if (requested_target_.is_valid()) {
-    if (consumer_) {
-      consumer_->OnTargetLost(requested_target_);
-    }
-    requested_target_ = FrameSinkId();
+  // TODO(crbug/754872): Remove this, since it's misleading: Resolved targets
+  // can be temporarily deleted and then re-created. So, the target really isn't
+  // lost.
+  if (requested_target_.is_valid() && consumer_) {
+    consumer_->OnTargetLost(requested_target_);
   }
 }
 

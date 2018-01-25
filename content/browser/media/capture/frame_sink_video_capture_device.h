@@ -58,6 +58,11 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       const media::VideoCaptureParams& params,
       std::unique_ptr<media::VideoFrameReceiver> receiver);
 
+  // Returns the VideoCaptureParams passed to AllocateAndStartWithReceiver().
+  const media::VideoCaptureParams& capture_params() const {
+    return capture_params_;
+  }
+
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) final;
@@ -88,6 +93,11 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   // Overrides the callback that is run to create the capturer.
   void SetCapturerCreatorForTesting(CapturerCreatorCallback creator);
+
+ protected:
+  // Subclasses override these to perform additional start/stop tasks.
+  virtual void WillStart();
+  virtual void DidStop();
 
  private:
   using BufferId = decltype(media::VideoCaptureDevice::Client::Buffer::id);

@@ -16,6 +16,8 @@
 
 namespace content {
 
+struct DesktopMediaID;
+
 // Implementation of BuildableVideoCaptureDevice that creates capture devices
 // in the same process as it is being operated on, which must be the Browser
 // process. The devices are operated on the given |device_task_runner|.
@@ -49,7 +51,8 @@ class InProcessVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
 
   std::unique_ptr<media::VideoCaptureDeviceClient> CreateDeviceClient(
       int buffer_pool_max_buffer_count,
-      base::WeakPtr<media::VideoFrameReceiver> receiver);
+      std::unique_ptr<media::VideoFrameReceiver> receiver,
+      base::WeakPtr<media::VideoFrameReceiver> receiver_on_io_thread);
 
   void OnDeviceStarted(Callbacks* callbacks,
                        base::OnceClosure done_cb,
@@ -64,11 +67,11 @@ class InProcessVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
   void DoStartTabCaptureOnDeviceThread(
       const std::string& device_id,
       const media::VideoCaptureParams& params,
-      std::unique_ptr<media::VideoCaptureDeviceClient> client,
+      std::unique_ptr<media::VideoFrameReceiver> receiver,
       ReceiveDeviceCallback result_callback);
 
   void DoStartDesktopCaptureOnDeviceThread(
-      const std::string& device_id,
+      const DesktopMediaID& desktop_id,
       const media::VideoCaptureParams& params,
       std::unique_ptr<media::VideoCaptureDeviceClient> client,
       ReceiveDeviceCallback result_callback);
