@@ -17,7 +17,6 @@
 
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 #include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_driver_android.h"
 #else
 #include "base/bind.h"

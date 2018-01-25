@@ -20,7 +20,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

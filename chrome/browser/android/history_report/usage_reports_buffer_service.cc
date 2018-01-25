@@ -11,7 +11,6 @@
 #include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/android/history_report/usage_reports_buffer_backend.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
-#include "content/public/browser/browser_thread.h"
 
 
 namespace {
@@ -61,8 +60,6 @@ void DoDump(
 }  // namespace
 
 namespace history_report {
-
-using content::BrowserThread;
 
 UsageReportsBufferService::UsageReportsBufferService(const base::FilePath& dir)
     : task_runner_(base::CreateSequencedTaskRunnerWithTraits(

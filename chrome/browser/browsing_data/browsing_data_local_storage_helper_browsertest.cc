@@ -20,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper_browsertest.h"
 #include "chrome/browser/profiles/profile.h"

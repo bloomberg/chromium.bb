@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "components/prefs/pref_service.h"
 

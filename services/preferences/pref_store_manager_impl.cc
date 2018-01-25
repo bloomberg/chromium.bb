@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

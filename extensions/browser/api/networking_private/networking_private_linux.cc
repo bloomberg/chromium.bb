@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"

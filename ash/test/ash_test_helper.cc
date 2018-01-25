@@ -26,7 +26,6 @@
 #include "ash/window_manager_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

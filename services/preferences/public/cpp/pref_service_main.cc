@@ -4,7 +4,6 @@
 
 #include "services/preferences/public/cpp/pref_service_main.h"
 
-#include "base/threading/sequenced_worker_pool.h"
 #include "services/preferences/pref_store_manager_impl.h"
 #include "services/service_manager/public/cpp/service.h"
 

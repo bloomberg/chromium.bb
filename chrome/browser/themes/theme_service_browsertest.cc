@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_loader.h"

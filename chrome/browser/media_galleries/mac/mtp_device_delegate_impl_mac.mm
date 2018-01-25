@@ -10,7 +10,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "content/public/browser/browser_thread.h"

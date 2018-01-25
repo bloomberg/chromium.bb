@@ -36,7 +36,6 @@
 
 namespace memory {
 
-using base::SequencedWorkerPool;
 using base::TimeDelta;
 
 namespace {

@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_internals.h"

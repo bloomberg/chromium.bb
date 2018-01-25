@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"

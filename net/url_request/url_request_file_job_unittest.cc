@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"

@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"

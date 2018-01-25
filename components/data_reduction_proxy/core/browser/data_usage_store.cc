@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 

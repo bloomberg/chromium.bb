@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"

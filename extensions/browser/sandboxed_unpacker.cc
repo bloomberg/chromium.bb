@@ -23,7 +23,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_thread.h"
