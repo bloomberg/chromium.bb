@@ -59,6 +59,7 @@ extern "C" {
 
 #include "stdbool.h"
 #include "compositor.h"
+#include "plugin-registry.h"
 
 #define IVI_SUCCEEDED (0)
 #define IVI_FAILED (-1)
@@ -139,6 +140,8 @@ enum ivi_layout_transition_type{
 	IVI_LAYOUT_TRANSITION_VIEW_FADE,
 	IVI_LAYOUT_TRANSITION_MAX,
 };
+
+#define IVI_LAYOUT_API_NAME "ivi_layout_api_v1"
 
 struct ivi_layout_interface {
 
@@ -571,6 +574,16 @@ struct ivi_layout_interface {
 	int32_t (*screen_remove_layer)(struct weston_output *output,
 				       struct ivi_layout_layer *removelayer);
 };
+
+static inline const struct ivi_layout_interface *
+ivi_layout_get_api(struct weston_compositor *compositor)
+{
+	const void *api;
+	api = weston_plugin_api_get(compositor, IVI_LAYOUT_API_NAME,
+				    sizeof(struct ivi_layout_interface));
+
+	return (const struct ivi_layout_interface *)api;
+}
 
 #ifdef __cplusplus
 }

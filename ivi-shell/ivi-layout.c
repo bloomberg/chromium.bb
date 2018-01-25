@@ -1906,6 +1906,8 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	return ivisurf;
 }
 
+static struct ivi_layout_interface ivi_layout_interface;
+
 void
 ivi_layout_init_with_compositor(struct weston_compositor *ec)
 {
@@ -1934,6 +1936,10 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 
 	layout->transitions = ivi_layout_transition_set_create(ec);
 	wl_list_init(&layout->pending_transition_list);
+
+	weston_plugin_api_register(ec, IVI_LAYOUT_API_NAME,
+				   &ivi_layout_interface,
+				   sizeof(struct ivi_layout_interface));
 }
 
 static struct ivi_layout_interface ivi_layout_interface = {

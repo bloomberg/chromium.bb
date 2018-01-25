@@ -425,8 +425,6 @@ ivi_shell_setting_create(struct ivi_shell_setting *dest,
 	if (!dest->ivi_module &&
 	    weston_config_section_get_string(section, "ivi-module",
 					     &dest->ivi_module, NULL) < 0) {
-		weston_log("Error: ivi-shell: No ivi-module set\n");
-		result = -1;
 	}
 
 	weston_config_section_get_bool(section, "developermode",
