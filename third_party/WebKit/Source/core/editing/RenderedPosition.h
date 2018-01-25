@@ -40,10 +40,8 @@
 namespace blink {
 
 class FrameSelection;
-class LayoutPoint;
 class LayoutUnit;
 class LayoutObject;
-struct CompositedSelectionBound;
 struct CompositedSelection;
 
 class CORE_EXPORT RenderedPosition {
@@ -88,13 +86,8 @@ class CORE_EXPORT RenderedPosition {
 
   IntRect AbsoluteRect(LayoutUnit* extra_width_to_end_of_line = nullptr) const;
 
-  CompositedSelectionBound PositionInGraphicsLayerBacking(
-      bool selection_start) const;
-
-  // Returns whether this position is not visible on the screen (because
-  // clipped out).
-  bool IsVisible(bool selection_start) const;
-
+  // TODO(editing-dev): This function doesn't use RenderedPosition
+  // instance anymore. Consider moving.
   static CompositedSelection ComputeCompositedSelection(const FrameSelection&);
 
  private:
@@ -114,24 +107,12 @@ class CORE_EXPORT RenderedPosition {
   bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
                                 unsigned char bidi_level_of_run) const;
 
-  std::pair<LayoutPoint, LayoutPoint> GetLocalSelectionEndpoints(
-      bool selection_star) const;
-
-  FloatPoint LocalToInvalidationBackingPoint(
-      const LayoutPoint& local_point) const;
-
-  static LayoutPoint GetSamplePointForVisibility(
-      const LayoutPoint& edge_top_in_layer,
-      const LayoutPoint& edge_bottom_in_layer);
-
   const LayoutObject* layout_object_;
   const InlineBox* inline_box_;
   int offset_;
 
   mutable Optional<const InlineBox*> prev_leaf_child_;
   mutable Optional<const InlineBox*> next_leaf_child_;
-
-  FRIEND_TEST_ALL_PREFIXES(RenderedPositionTest, GetSamplePointForVisibility);
 };
 
 inline RenderedPosition::RenderedPosition()
