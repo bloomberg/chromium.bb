@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_SERVICE_H_
 #define CHROME_BROWSER_CHROME_SERVICE_H_
 
+#include "base/no_destructor.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 
@@ -32,6 +33,8 @@ class ChromeService {
   service_manager::Connector* connector() { return connector_.get(); }
 
  private:
+  friend class base::NoDestructor<ChromeService>;
+
   class ExtraParts;
   class IOThreadContext;
 
@@ -42,9 +45,9 @@ class ChromeService {
 
   std::unique_ptr<service_manager::Service> CreateChromeServiceWrapper();
 
-  std::unique_ptr<service_manager::Connector> connector_;
+  const std::unique_ptr<IOThreadContext> io_thread_context_;
 
-  std::unique_ptr<IOThreadContext> io_thread_context_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeService);
 };

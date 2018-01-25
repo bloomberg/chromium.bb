@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_service.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/constants.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -29,12 +30,6 @@
 #include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
 #endif
 #endif
-
-namespace {
-
-ChromeService* g_instance = nullptr;
-
-}  // namespace
 
 class ChromeService::IOThreadContext : public service_manager::Service {
  public:
@@ -64,16 +59,35 @@ class ChromeService::IOThreadContext : public service_manager::Service {
   }
   ~IOThreadContext() override = default;
 
-  void Init(service_manager::mojom::ConnectorRequest connector_request) {
-    DCHECK(!connector_request_.is_pending());
-    connector_request_ = std::move(connector_request);
+  void BindConnector(
+      service_manager::mojom::ConnectorRequest connector_request) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // NOTE: It's not safe to modify |connector_request_| here since it's read
+    // on the IO thread. Post a task instead. As long as this task is posted
+    // before any code attempts to connect to the chrome service, there's no
+    // race.
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&IOThreadContext::BindConnectorOnIOThread,
+                                  base::Unretained(this),
+                                  std::move(connector_request)));
   }
 
  private:
+  void BindConnectorOnIOThread(
+      service_manager::mojom::ConnectorRequest connector_request) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    connector_request_ = std::move(connector_request);
+  }
+
   // service_manager::Service:
   void OnStart() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK(connector_request_.is_pending());
     context()->connector()->BindConnectorRequest(std::move(connector_request_));
   }
+
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override {
@@ -105,31 +119,32 @@ class ChromeService::IOThreadContext : public service_manager::Service {
 
 class ChromeService::ExtraParts : public ChromeBrowserMainExtraParts {
  public:
-  explicit ExtraParts(ChromeService* service) : service_(service) {}
+  ExtraParts() = default;
   ~ExtraParts() override = default;
 
  private:
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override {
+    // Initializing the connector asynchronously configures the Connector on the
+    // IO thread. This needs to be done before StartService() is called or
+    // ChromeService::BindConnector() can race with ChromeService::OnStart().
+    ChromeService::GetInstance()->InitConnector();
+
     connection->GetConnector()->StartService(
         service_manager::Identity(chrome::mojom::kServiceName));
-    service_->InitConnector();
   }
-
-  ChromeService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtraParts);
 };
 
 // static
 ChromeService* ChromeService::GetInstance() {
-  if (!g_instance)
-    g_instance = new ChromeService;
-  return g_instance;
+  static base::NoDestructor<ChromeService> service;
+  return service.get();
 }
 
 ChromeBrowserMainExtraParts* ChromeService::CreateExtraParts() {
-  return new ExtraParts(this);
+  return new ExtraParts;
 }
 
 service_manager::EmbeddedServiceInfo::ServiceFactory
@@ -140,16 +155,18 @@ ChromeService::CreateChromeServiceFactory() {
 
 ChromeService::ChromeService()
     : io_thread_context_(std::make_unique<IOThreadContext>()) {}
-ChromeService::~ChromeService() {}
+
+ChromeService::~ChromeService() = default;
 
 void ChromeService::InitConnector() {
   service_manager::mojom::ConnectorRequest request;
   connector_ = service_manager::Connector::Create(&request);
-  io_thread_context_->Init(std::move(request));
+  io_thread_context_->BindConnector(std::move(request));
 }
 
 std::unique_ptr<service_manager::Service>
 ChromeService::CreateChromeServiceWrapper() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return std::make_unique<service_manager::ForwardingService>(
       io_thread_context_.get());
 }
