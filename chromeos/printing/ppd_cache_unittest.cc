@@ -40,15 +40,15 @@ class PpdCacheTest : public ::testing::Test {
   // a (nonexistant) subdirectory of temp_dir_ to the cache to exercise
   // the lazy-creation-of-the-cache-directory code.
   scoped_refptr<PpdCache> CreateTestCache() {
-    return PpdCache::Create(ppd_cache_temp_dir_.GetPath().Append("Cache"));
+    return PpdCache::CreateForTesting(
+        ppd_cache_temp_dir_.GetPath().Append("Cache"),
+        scoped_task_environment_.GetMainThreadTaskRunner());
   }
 
   void CaptureFindResult(const PpdCache::FindResult& result) {
     ++captured_find_results_;
     find_result_ = result;
   }
-
-  void CaptureStoreResult() { ++captured_store_results_; }
 
  protected:
   // Environment for task schedulers.
@@ -59,9 +59,6 @@ class PpdCacheTest : public ::testing::Test {
 
   // Most recent captured result.
   PpdCache::FindResult find_result_;
-
-  // Number of store callbacks we've seen.
-  int captured_store_results_ = 0;
 
   // Overrider for DIR_CHROMEOS_PPD_CACHE that points it at a temporary
   // directory for the life of the test.
@@ -91,11 +88,9 @@ TEST_F(PpdCacheTest, MissThenHit) {
   EXPECT_EQ(captured_find_results_, 1);
   EXPECT_FALSE(find_result_.success);
 
-  cache->Store(
-      kTestKey, kTestContents,
-      base::Bind(&PpdCacheTest::CaptureStoreResult, base::Unretained(this)));
+  cache->Store(kTestKey, kTestContents);
+
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(captured_store_results_, 1);
 
   cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
                                    base::Unretained(this)));
@@ -117,11 +112,8 @@ TEST_F(PpdCacheTest, HitAge) {
   auto cache = CreateTestCache();
   const char kTestKey[] = "My totally awesome key";
   const char kTestContents[] = "Like, totally awesome contents";
-  cache->Store(
-      kTestKey, kTestContents,
-      base::Bind(&PpdCacheTest::CaptureStoreResult, base::Unretained(this)));
+  cache->Store(kTestKey, kTestContents);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(captured_store_results_, 1);
 
   cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
                                    base::Unretained(this)));
