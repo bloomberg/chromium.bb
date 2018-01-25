@@ -458,14 +458,19 @@ def _get_bucket_map_for_builders(builders):
 
   bucket_map = {}
   for builder in builders:
-    masters = builders_map.get(builder, [])
-    if not masters:
-      return None, ('No matching master for builder %s.' % builder)
-    if len(masters) > 1:
-      return None, ('The builder name %s exists in multiple masters %s.' %
-                    (builder, masters))
-    bucket = _prefix_master(masters[0])
-    bucket_map.setdefault(bucket, {})[builder] = []
+    builder_info = builders_map.get(builder, {})
+    if isinstance(builder_info, list):
+      # This is a list of masters, legacy mode.
+      # TODO(nodir): remove this code path.
+      buckets = map(_prefix_master, builder_info)
+    else:
+      buckets = builder_info.get('buckets') or []
+    if not buckets:
+      return None, ('No matching bucket for builder %s.' % builder)
+    if len(buckets) > 1:
+      return None, ('The builder name %s exists in multiple buckets %s.' %
+                    (builder, buckets))
+    bucket_map.setdefault(buckets[0], {})[builder] = []
 
   return bucket_map, None
 
