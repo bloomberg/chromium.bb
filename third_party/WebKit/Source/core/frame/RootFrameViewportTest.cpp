@@ -14,6 +14,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScrollIntoViewParams.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -73,7 +74,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   }
 
   scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
-    return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
+    return timer_task_runner_;
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
@@ -89,7 +90,8 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
       : user_input_scrollable_x_(true),
         user_input_scrollable_y_(true),
         viewport_size_(viewport_size),
-        contents_size_(contents_size) {}
+        contents_size_(contents_size),
+        timer_task_runner_(blink::scheduler::CreateWebTaskRunnerForTesting()) {}
 
   CompositorElementId GetCompositorElementId() const override {
     return CompositorElementId();
@@ -131,6 +133,7 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   ScrollOffset scroll_offset_;
   IntSize viewport_size_;
   IntSize contents_size_;
+  scoped_refptr<WebTaskRunner> timer_task_runner_;
 };
 
 class RootFrameViewStub : public ScrollableAreaStub {

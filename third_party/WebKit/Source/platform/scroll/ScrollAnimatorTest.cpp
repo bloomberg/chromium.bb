@@ -35,6 +35,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -119,7 +120,10 @@ class MockScrollableAreaForAnimatorTest
   }
 
   scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final {
-    return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
+    if (!timer_task_runner_) {
+      timer_task_runner_ = blink::scheduler::CreateWebTaskRunnerForTesting();
+    }
+    return timer_task_runner_;
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
@@ -143,6 +147,7 @@ class MockScrollableAreaForAnimatorTest
   ScrollOffset min_offset_;
   ScrollOffset max_offset_;
   Member<ScrollAnimator> animator;
+  mutable scoped_refptr<WebTaskRunner> timer_task_runner_;
 };
 
 class TestScrollAnimator : public ScrollAnimator {
