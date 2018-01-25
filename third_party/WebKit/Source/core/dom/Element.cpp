@@ -1474,8 +1474,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   InvalidateNodeListCachesInAncestors(&name, this, nullptr);
 
   if (isConnected()) {
-    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-      cache->HandleAttributeChanged(name, this);
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+      if (params.old_value != params.new_value)
+        cache->HandleAttributeChanged(name, this);
+    }
   }
 
   if (params.reason == AttributeModificationReason::kDirectly &&
