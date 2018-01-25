@@ -2462,7 +2462,7 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
   if (seg->update_map) {
     // Select the coding strategy (temporal or spatial)
-    av1_choose_segmap_coding_method(cm, xd);
+    if (!cm->error_resilient_mode) av1_choose_segmap_coding_method(cm, xd);
 
     // Write out the chosen coding method.
     if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
