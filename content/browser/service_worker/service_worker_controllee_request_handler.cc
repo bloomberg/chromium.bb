@@ -323,22 +323,9 @@ void ServiceWorkerControlleeRequestHandler::
   }
   DCHECK(registration.get());
 
-  base::Callback<WebContents*(void)> web_contents_getter;
-  if (IsBrowserSideNavigationEnabled()) {
-    web_contents_getter = provider_host_->web_contents_getter();
-  } else if (provider_host_->process_id() != -1 &&
-             provider_host_->frame_id() != -1) {
-    web_contents_getter = base::Bind(
-        [](int render_process_id, int render_frame_id) {
-          RenderFrameHost* rfh =
-              RenderFrameHost::FromID(render_process_id, render_frame_id);
-          return WebContents::FromRenderFrameHost(rfh);
-        },
-        provider_host_->process_id(), provider_host_->frame_id());
-  }
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host_->topmost_frame_url(),
-          resource_context_, web_contents_getter)) {
+          resource_context_, provider_host_->web_contents_getter())) {
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
