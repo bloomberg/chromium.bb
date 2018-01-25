@@ -13,6 +13,7 @@
 #import "components/autofill/ios/browser/fake_autofill_agent.h"
 #import "components/autofill/ios/browser/fake_js_autofill_manager.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -56,6 +57,7 @@ class CWVAutofillControllerTest : public PlatformTest {
 
     js_autofill_manager_ =
         [[FakeJSAutofillManager alloc] initWithReceiver:injectionReceiver];
+    js_suggestion_manager_ = OCMClassMock([JsSuggestionManager class]);
 
     autofill_agent_ =
         [[FakeAutofillAgent alloc] initWithPrefService:browser_state_.GetPrefs()
@@ -64,7 +66,8 @@ class CWVAutofillControllerTest : public PlatformTest {
     autofill_controller_ =
         [[CWVAutofillController alloc] initWithWebState:&web_state_
                                           autofillAgent:autofill_agent_
-                                      JSAutofillManager:js_autofill_manager_];
+                                      JSAutofillManager:js_autofill_manager_
+                                    JSSuggestionManager:js_suggestion_manager_];
   };
 
   web::TestWebThreadBundle web_thread_bundle_;
@@ -73,6 +76,7 @@ class CWVAutofillControllerTest : public PlatformTest {
   CWVAutofillController* autofill_controller_;
   FakeAutofillAgent* autofill_agent_;
   FakeJSAutofillManager* js_autofill_manager_;
+  id js_suggestion_manager_;
 };
 
 // Tests CWVAutofillController fetch suggestions.
@@ -144,6 +148,33 @@ TEST_F(CWVAutofillControllerTest, ClearForm) {
     return clear_form_completion_was_called;
   }));
   EXPECT_NSEQ(kTestFormName, js_autofill_manager_.lastClearedFormName);
+}
+
+// Tests CWVAutofillController focus previous field.
+TEST_F(CWVAutofillControllerTest, FocusPrevious) {
+  [[js_suggestion_manager_ expect] selectPreviousElement];
+  [autofill_controller_ focusPreviousField];
+  [js_suggestion_manager_ verify];
+}
+
+// Tests CWVAutofillController focus next field.
+TEST_F(CWVAutofillControllerTest, FocusNext) {
+  [[js_suggestion_manager_ expect] selectNextElement];
+  [autofill_controller_ focusNextField];
+  [js_suggestion_manager_ verify];
+}
+
+// Tests CWVAutofillController checks previous and next focusable state.
+TEST_F(CWVAutofillControllerTest, CheckFocus) {
+  id completionHandler = ^(BOOL previous, BOOL next) {
+  };
+  [[js_suggestion_manager_ expect]
+      fetchPreviousAndNextElementsPresenceWithCompletionHandler:
+          completionHandler];
+  [autofill_controller_
+      checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
+          completionHandler];
+  [js_suggestion_manager_ verify];
 }
 
 // Tests CWVAutofillController delegate focus callback is invoked.

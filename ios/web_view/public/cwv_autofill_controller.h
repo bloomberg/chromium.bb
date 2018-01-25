@@ -51,6 +51,19 @@ CWV_EXPORT
 // again.
 - (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
 
+// Changes focus to the previous sibling of the currently focused field.
+// No-op if no field is currently focused or if previous field is not available.
+- (void)focusPreviousField;
+
+// Changes focus to the next sibling of the currently focused field.
+// No-op if no field is currently focused or if next field is not available.
+- (void)focusNextField;
+
+// Checks if there are next or previous fields for focusing.
+// |previous| and |next| indiciates if it is possible to focus.
+- (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
+    (void (^)(BOOL previous, BOOL next))completionHandler;
+
 @end
 
 NS_ASSUME_NONNULL_END

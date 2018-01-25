@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
+#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_manager.h"
@@ -412,9 +413,14 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsAutofillManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsAutofillManager class]]);
+  JsSuggestionManager* JSSuggestionManager =
+      base::mac::ObjCCastStrict<JsSuggestionManager>(
+          [_webState->GetJSInjectionReceiver()
+              instanceOfClass:[JsSuggestionManager class]]);
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
-                                       JSAutofillManager:JSAutofillManager];
+                                       JSAutofillManager:JSAutofillManager
+                                     JSSuggestionManager:JSSuggestionManager];
 }
 
 #pragma mark - Preserving and Restoring State
