@@ -207,7 +207,7 @@ TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorLocations) {
             test_api.GetCursorHotPointLocationInRootWindow().ToString());
 
   // Test with ui scale
-  UpdateDisplay("400x600*0.5,400x600");
+  UpdateDisplay("400x600@0.5,400x600");
   generator.MoveMouseToInHost(20, 30);
 
   EXPECT_EQ("4,4", test_api.GetCursorHotPoint().ToString());

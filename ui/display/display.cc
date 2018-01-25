@@ -224,7 +224,7 @@ void Display::SetScaleAndBounds(float device_scale_factor,
 #endif
     device_scale_factor_ = device_scale_factor;
   }
-  device_scale_factor_ = std::max(1.0f, device_scale_factor_);
+  device_scale_factor_ = std::max(0.5f, device_scale_factor_);
   bounds_ = gfx::Rect(gfx::ScaleToFlooredPoint(bounds_in_pixel.origin(),
                                                1.0f / device_scale_factor_),
                       gfx::ScaleToFlooredSize(bounds_in_pixel.size(),

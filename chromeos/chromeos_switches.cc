@@ -315,6 +315,9 @@ const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 
+// Enables the slider in display settings to modify the display size.
+const char kEnableDisplayZoomSetting[] = "enable-display-zoom-setting";
+
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/display_info_provider_chromeos.h"
 
 #include <stdint.h>
+#include <cmath>
 
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/overscan_calibrator.h"
@@ -39,6 +40,11 @@ namespace {
 
 // Maximum allowed bounds origin absolute value.
 const int kMaxBoundsOrigin = 200 * 1000;
+
+// This is the default range of display width in logical pixels allowed after
+// applying display zoom.
+constexpr int kDefaultMaxZoomWidth = 4096;
+constexpr int kDefaultMinZoomWidth = 640;
 
 // Gets the display with the provided string id.
 display::Display GetDisplay(const std::string& display_id_str) {
@@ -386,8 +392,33 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
   }
 
   // Update the display zoom.
-  if (info.display_zoom_factor)
-    display_manager->UpdateZoomFactor(id, *info.display_zoom_factor);
+  if (info.display_zoom_factor) {
+    display::ManagedDisplayMode current_mode;
+    if (!display_manager->GetActiveModeForDisplayId(id, &current_mode)) {
+      *error = "Unable to find the active mode for display id " +
+               base::Int64ToString(id);
+      return false;
+    }
+    // This check is added to limit the range of display zoom that can be
+    // applied via the system display API. The said range is such that when a
+    // display zoom is applied, the final logical width in pixels should lie
+    // within the range of 640 pixels and 4096 pixels.
+    const int kMaxAllowedWidth =
+        std::max(kDefaultMaxZoomWidth, current_mode.size().width());
+    const int kMinAllowedWidth =
+        std::min(kDefaultMinZoomWidth, current_mode.size().width());
+
+    int current_width = static_cast<float>(current_mode.size().width()) /
+                        current_mode.device_scale_factor();
+    if (current_width / (*info.display_zoom_factor) <= kMaxAllowedWidth &&
+        current_width / (*info.display_zoom_factor) >= kMinAllowedWidth) {
+      display_manager->UpdateZoomFactor(id, *info.display_zoom_factor);
+    } else {
+      *error = "Zoom value is out of range for display with id: " +
+               base::Int64ToString(id);
+      return false;
+    }
+  }
 
   // Set the display mode.
   if (info.display_mode) {

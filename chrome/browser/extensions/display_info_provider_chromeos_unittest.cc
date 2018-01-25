@@ -1627,7 +1627,7 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationSuccess) {
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetDisplayZoomFactor) {
-  UpdateDisplay("1200x600,600x1000*2");
+  UpdateDisplay("1200x600,1600x1000*2");
   display::DisplayIdList display_id_list =
       display_manager()->GetCurrentDisplayIdList();
 
@@ -1647,7 +1647,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDisplayZoomFactor) {
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
-  UpdateDisplay("1200x600,600x1000*2");
+  UpdateDisplay("1200x600, 1600x1000#1600x1000");
   display::DisplayIdList display_id_list =
       display_manager()->GetCurrentDisplayIdList();
 
@@ -1692,6 +1692,70 @@ TEST_F(DisplayInfoProviderChromeosTest, SetDisplayZoomFactor) {
             final_zoom_factor_1);
   EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(display_id_list[1]),
             final_zoom_factor_2);
+
+  std::string expected_err =
+      "Zoom value is out of range for display with id: " +
+      base::Int64ToString(display_id_list[0]);
+
+  // This zoom factor when applied to the display with width 1200, will result
+  // in an effective width greater than 4096, which is out of range.
+  float invalid_zoom_factor_1 = 0.285f;
+  info.display_zoom_factor = std::make_unique<double>(invalid_zoom_factor_1);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info,
+                         &success, &error);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(error, expected_err);
+
+  success = false;
+  error = "";
+
+  // This zoom factor when applied to the display with width 1200, will result
+  // in an effective width greater less than 640, which is out of range.
+  float invalid_zoom_factor_2 = 1.88f;
+  info.display_zoom_factor = std::make_unique<double>(invalid_zoom_factor_2);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info,
+                         &success, &error);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(error, expected_err);
+
+  success = false;
+  error = "";
+
+  // Initalize displays that have bounds outside the valid width range of 640px
+  // to 4096px.
+  UpdateDisplay("400x400, 4500x1000#4500x1000");
+
+  display_id_list = display_manager()->GetCurrentDisplayIdList();
+
+  // Results in a logical width of 500px. This is below the 640px threshold but
+  // is valid because the initial width was 400px, so the logical width now
+  // allows a minimum width of 400px.
+  float valid_zoom_factor_1 = 0.8f;
+  info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_1);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info,
+                         &success, &error);
+  EXPECT_TRUE(success);
+
+  // Results in a logical width of 4200px. This is above the 4096px threshold
+  // but is valid because the initial width was 4500px, so logical width of up
+  // to 4500px is allowed in this case.
+  float valid_zoom_factor_2 = 1.07f;
+  info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_2);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info,
+                         &success, &error);
+  EXPECT_TRUE(success);
+
+  float valid_zoom_factor_3 = 0.5f;
+  info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_3);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[0]), info,
+                         &success, &error);
+  EXPECT_TRUE(success);
+
+  float valid_zoom_factor_4 = 2.f;
+  info.display_zoom_factor = std::make_unique<double>(valid_zoom_factor_4);
+  CallSetDisplayUnitInfo(base::Int64ToString(display_id_list[1]), info,
+                         &success, &error);
+  EXPECT_TRUE(success);
 }
 
 class DisplayInfoProviderChromeosTouchviewTest
