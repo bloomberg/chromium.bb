@@ -215,7 +215,7 @@ void av1_free_pc_tree(ThreadData *td, const int num_planes) {
 
 #if CONFIG_EXT_PARTITION_TYPES
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
-                           PICK_MODE_CONTEXT *src_ctx) {
+                           PICK_MODE_CONTEXT *src_ctx, int num_planes) {
   dst_ctx->mic = src_ctx->mic;
   dst_ctx->mbmi_ext = src_ctx->mbmi_ext;
 
@@ -224,7 +224,7 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   dst_ctx->skippable = src_ctx->skippable;
   dst_ctx->best_mode_index = src_ctx->best_mode_index;
 
-  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+  for (int i = 0; i < num_planes; ++i) {
     memcpy(dst_ctx->blk_skip[i], src_ctx->blk_skip[i],
            sizeof(uint8_t) * src_ctx->num_4x4_blk);
   }

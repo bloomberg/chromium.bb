@@ -3029,12 +3029,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     pc_tree->horizontala[1].rd_mode_is_ready = 0;
     pc_tree->horizontala[2].rd_mode_is_ready = 0;
     if (split_ctx_is_ready[0]) {
-      av1_copy_tree_context(&pc_tree->horizontala[0], &pc_tree->split[0]->none);
+      av1_copy_tree_context(&pc_tree->horizontala[0], &pc_tree->split[0]->none,
+                            num_planes);
       pc_tree->horizontala[0].mic.mbmi.partition = PARTITION_HORZ_A;
       pc_tree->horizontala[0].rd_mode_is_ready = 1;
       if (split_ctx_is_ready[1]) {
         av1_copy_tree_context(&pc_tree->horizontala[1],
-                              &pc_tree->split[1]->none);
+                              &pc_tree->split[1]->none, num_planes);
         pc_tree->horizontala[1].mic.mbmi.partition = PARTITION_HORZ_A;
         pc_tree->horizontala[1].rd_mode_is_ready = 1;
       }
@@ -3053,7 +3054,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     pc_tree->horizontalb[1].rd_mode_is_ready = 0;
     pc_tree->horizontalb[2].rd_mode_is_ready = 0;
     if (horz_ctx_is_ready) {
-      av1_copy_tree_context(&pc_tree->horizontalb[0], &pc_tree->horizontal[0]);
+      av1_copy_tree_context(&pc_tree->horizontalb[0], &pc_tree->horizontal[0],
+                            num_planes);
       pc_tree->horizontalb[0].mic.mbmi.partition = PARTITION_HORZ_B;
       pc_tree->horizontalb[0].rd_mode_is_ready = 1;
     }
@@ -3081,7 +3083,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     pc_tree->verticala[1].rd_mode_is_ready = 0;
     pc_tree->verticala[2].rd_mode_is_ready = 0;
     if (split_ctx_is_ready[0]) {
-      av1_copy_tree_context(&pc_tree->verticala[0], &pc_tree->split[0]->none);
+      av1_copy_tree_context(&pc_tree->verticala[0], &pc_tree->split[0]->none,
+                            num_planes);
       pc_tree->verticala[0].mic.mbmi.partition = PARTITION_VERT_A;
       pc_tree->verticala[0].rd_mode_is_ready = 1;
     }
@@ -3099,7 +3102,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     pc_tree->verticalb[1].rd_mode_is_ready = 0;
     pc_tree->verticalb[2].rd_mode_is_ready = 0;
     if (vert_ctx_is_ready) {
-      av1_copy_tree_context(&pc_tree->verticalb[0], &pc_tree->vertical[0]);
+      av1_copy_tree_context(&pc_tree->verticalb[0], &pc_tree->vertical[0],
+                            num_planes);
       pc_tree->verticalb[0].mic.mbmi.partition = PARTITION_VERT_B;
       pc_tree->verticalb[0].rd_mode_is_ready = 1;
     }
