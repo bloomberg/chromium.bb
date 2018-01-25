@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
-<link rel="import" href="../paper-material/paper-material-shared-styles.html">
+<link rel="import" href="../paper-styles/element-styles/paper-material-styles.html">
 
 <!--
 Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
@@ -81,10 +81,11 @@ Custom property | Description | Default
 
 </head><body><dom-module id="paper-button">
   <template strip-whitespace="">
-    <style include="paper-material-shared-styles">
+    <style include="paper-material-styles">
+      /* Need to specify the same specificity as the styles imported from paper-material. */
       :host {
-        @apply(--layout-inline);
-        @apply(--layout-center-center);
+        @apply --layout-inline;
+        @apply --layout-center-center;
         position: relative;
         box-sizing: border-box;
         min-width: 5.14em;
@@ -101,8 +102,28 @@ Custom property | Description | Default
         z-index: 0;
         padding: 0.7em 0.57em;
 
-        @apply(--paper-font-common-base);
-        @apply(--paper-button);
+        @apply --paper-font-common-base;
+        @apply --paper-button;
+      }
+
+      :host([elevation="1"]) {
+        @apply --paper-material-elevation-1;
+      }
+
+      :host([elevation="2"]) {
+        @apply --paper-material-elevation-2;
+      }
+
+      :host([elevation="3"]) {
+        @apply --paper-material-elevation-3;
+      }
+
+      :host([elevation="4"]) {
+        @apply --paper-material-elevation-4;
+      }
+
+      :host([elevation="5"]) {
+        @apply --paper-material-elevation-5;
       }
 
       :host([hidden]) {
@@ -111,12 +132,12 @@ Custom property | Description | Default
 
       :host([raised].keyboard-focus) {
         font-weight: bold;
-        @apply(--paper-button-raised-keyboard-focus);
+        @apply --paper-button-raised-keyboard-focus;
       }
 
       :host(:not([raised]).keyboard-focus) {
         font-weight: bold;
-        @apply(--paper-button-flat-keyboard-focus);
+        @apply --paper-button-flat-keyboard-focus;
       }
 
       :host([disabled]) {
@@ -125,11 +146,11 @@ Custom property | Description | Default
         cursor: auto;
         pointer-events: none;
 
-        @apply(--paper-button-disabled);
+        @apply --paper-button-disabled;
       }
 
       :host([animated]) {
-        @apply(--shadow-transition);
+        @apply --shadow-transition;
       }
 
       paper-ripple {
@@ -137,7 +158,7 @@ Custom property | Description | Default
       }
     </style>
 
-    <content></content>
+    <slot></slot>
   </template>
 
   </dom-module>
