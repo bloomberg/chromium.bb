@@ -95,6 +95,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
+#include "content/renderer/crash_helpers.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
@@ -820,32 +821,6 @@ NOINLINE void ExhaustMemory() {
   } while (ptr);
 }
 
-NOINLINE void CrashIntentionally() {
-  // NOTE(shess): Crash directly rather than using NOTREACHED() so
-  // that the signature is easier to triage in crash reports.
-  //
-  // Linker's ICF feature may merge this function with other functions with the
-  // same definition and it may confuse the crash report processing system.
-  static int static_variable_to_make_this_function_unique = 0;
-  base::debug::Alias(&static_variable_to_make_this_function_unique);
-
-  volatile int* zero = nullptr;
-  *zero = 0;
-}
-
-NOINLINE void BadCastCrashIntentionally() {
-  class A {
-    virtual void f() {}
-  };
-
-  class B {
-    virtual void f() {}
-  };
-
-  A a;
-  (void)(B*) & a;
-}
-
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
@@ -892,11 +867,11 @@ bool MaybeHandleDebugURL(const GURL& url) {
   if (url == kChromeUIBadCastCrashURL) {
     LOG(ERROR) << "Intentionally crashing (with bad cast)"
                << " because user navigated to " << url.spec();
-    BadCastCrashIntentionally();
+    internal::BadCastCrashIntentionally();
   } else if (url == kChromeUICrashURL) {
     LOG(ERROR) << "Intentionally crashing (with null pointer dereference)"
                << " because user navigated to " << url.spec();
-    CrashIntentionally();
+    internal::CrashIntentionally();
   } else if (url == kChromeUIDumpURL) {
     // This URL will only correctly create a crash dump file if content is
     // hosted in a process that has correctly called
