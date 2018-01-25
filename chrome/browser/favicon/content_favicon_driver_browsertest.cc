@@ -4,12 +4,13 @@
 
 #include "components/favicon/content/content_favicon_driver.h"
 
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,16 +25,22 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/load_flags.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/url_constants.h"
+
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 
 namespace {
 
@@ -60,7 +67,6 @@ class TestResourceDispatcherHostDelegate
   bool bypassed_cache() const { return bypassed_cache_; }
 
  private:
-  // content::ResourceDispatcherHostDelegate:
   void RequestBeginning(net::URLRequest* request,
                         content::ResourceContext* resource_context,
                         content::AppCacheService* appcache_service,
@@ -199,6 +205,14 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
  public:
   ContentFaviconDriverTest() {}
   ~ContentFaviconDriverTest() override {}
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
 
   content::WebContents* web_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
@@ -672,3 +686,64 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
                 .bitmap_data);
 }
 #endif
+
+// Checks that a favicon loaded over HTTP is blocked on a secure page.
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
+                       MixedContentInsecureFaviconBlocked) {
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ssl_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  ASSERT_TRUE(ssl_server.Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL favicon_url =
+      embedded_test_server()->GetURL("example.test", "/favicon/icon.png");
+  const GURL favicon_page = ssl_server.GetURL(
+      "example.test",
+      "/favicon/page_with_favicon_by_url.html?url=" + favicon_url.spec());
+
+  // Observe the message for a blocked favicon.
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    "*icon.png*");
+  web_contents()->SetDelegate(&console_observer);
+
+  // Observe if the favicon URL is requested.
+  std::unique_ptr<TestResourceDispatcherHostDelegate> delegate(
+      new TestResourceDispatcherHostDelegate(favicon_url));
+  content::ResourceDispatcherHost::Get()->SetDelegate(delegate.get());
+
+  PendingTaskWaiter waiter(web_contents());
+  ui_test_utils::NavigateToURL(browser(), favicon_page);
+  console_observer.Wait();
+  waiter.Wait();
+
+  EXPECT_TRUE(
+      base::MatchPattern(console_observer.message(), "*insecure favicon*"));
+  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+                                 "*request has been blocked*"));
+  EXPECT_FALSE(delegate->was_requested());
+}
+
+// Checks that a favicon loaded over HTTPS is allowed on a secure page.
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
+                       MixedContentSecureFaviconAllowed) {
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ssl_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  ASSERT_TRUE(ssl_server.Start());
+
+  const GURL favicon_url =
+      ssl_server.GetURL("example.test", "/favicon/icon.png");
+  const GURL favicon_page = ssl_server.GetURL(
+      "example.test",
+      "/favicon/page_with_favicon_by_url.html?url=" + favicon_url.spec());
+
+  // Observe if the favicon URL is requested.
+  std::unique_ptr<TestResourceDispatcherHostDelegate> delegate(
+      new TestResourceDispatcherHostDelegate(favicon_url));
+  content::ResourceDispatcherHost::Get()->SetDelegate(delegate.get());
+
+  PendingTaskWaiter waiter(web_contents());
+  ui_test_utils::NavigateToURL(browser(), favicon_page);
+  waiter.Wait();
+
+  EXPECT_TRUE(delegate->was_requested());
+}
