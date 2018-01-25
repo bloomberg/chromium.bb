@@ -15,7 +15,6 @@ declare_args() {
 if (!use_system_libsync) {
   config("libsync_config") {
     include_dirs = [
-      "include",
       "src",
       "src/include",
     ]
@@ -28,8 +27,6 @@ if (!use_system_libsync) {
 
   source_set("libsync") {
     sources = [
-      "include/linux/sw_sync.h",
-      "include/linux/sync.h",
       "src/include/sync.h",
       "src/sw_sync.h",
       "src/sync.c",
