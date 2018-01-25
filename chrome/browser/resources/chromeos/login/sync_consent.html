@@ -86,7 +86,7 @@
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
         <oobe-next-button on-tap="onSettingsSaveAndContinue_"
-          class="focus-on-show">
+          disabled="[[!userPrefsKnown_]]" class="focus-on-show">
         </oobe-next-button>
       </div>
     </oobe-dialog>
@@ -108,6 +108,7 @@
         <oobe-a11y-option checked="[[syncAllEnabled_]]"
             on-change="onSyncAllEnabledChanged_"
             label-for-aria="[[i18nDynamic(locale, 'syncConsentSyncAllOptionTitle')]]"
+            disabled="[[isManaged_]]"
             class="focus-on-show">
           <span class="title">
             [[i18nDynamic(locale, 'syncConsentSyncAllOptionTitle')]]
@@ -127,7 +128,8 @@
         </div>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="onSettingsSaveAndContinue_">
+        <oobe-text-button inverse on-tap="onSettingsSaveAndContinue_"
+            disabled="[[!userPrefsKnown_]]">
           <div>
             [[i18nDynamic(locale, 'syncConsentSettingsSaveAndContinue')]]
           </div>

@@ -8,6 +8,8 @@
 
 login.createScreen('SyncConsentScreen', 'sync-consent', function() {
   return {
+    EXTERNAL_API: ['onUserSyncPrefsKnown'],
+
     /**
      * Returns the control which should receive initial focus.
      */
@@ -21,6 +23,15 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
-    }
+    },
+
+    /**
+     * This is called once user sync preferences are known.
+     * @param {boolean} sync_everything Whether sync_everything is enabled.
+     * @param {boolean} is_managed Whether sync preferences are managed.
+     */
+    onUserSyncPrefsKnown: function(sync_everything, is_managed) {
+      $('sync-consent-impl').onUserSyncPrefsKnown(sync_everything, is_managed);
+    },
   };
 });
