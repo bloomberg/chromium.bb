@@ -34,6 +34,9 @@ class CTAPMakeCredentialRequestParam : public CTAPRequestParam {
   ~CTAPMakeCredentialRequestParam() override;
 
   base::Optional<std::vector<uint8_t>> SerializeToCBOR() const override;
+  CTAPMakeCredentialRequestParam& SetUserVerificationRequired(
+      bool user_verfication_required);
+  CTAPMakeCredentialRequestParam& SetResidentKey(bool resident_key);
   CTAPMakeCredentialRequestParam& SetExcludeList(
       std::vector<PublicKeyCredentialDescriptor> exclude_list);
   CTAPMakeCredentialRequestParam& SetPinAuth(std::vector<uint8_t> pin_auth);
@@ -44,6 +47,9 @@ class CTAPMakeCredentialRequestParam : public CTAPRequestParam {
   PublicKeyCredentialRPEntity rp_;
   PublicKeyCredentialUserEntity user_;
   PublicKeyCredentialParams public_key_credentials_;
+  bool user_verification_required_ = false;
+  bool resident_key_ = false;
+
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;

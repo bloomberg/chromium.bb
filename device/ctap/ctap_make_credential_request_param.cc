@@ -8,7 +8,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_writer.h"
-#include "device/ctap/ctap_request_command.h"
+#include "device/ctap/ctap_constants.h"
 
 namespace device {
 
@@ -53,8 +53,22 @@ CTAPMakeCredentialRequestParam::SerializeToCBOR() const {
     cbor_map[cbor::CBORValue(9)] = cbor::CBORValue(*pin_protocol_);
   }
 
+  auto resident_key = resident_key_ ? cbor::CBORValue::SimpleValue::TRUE_VALUE
+                                    : cbor::CBORValue::SimpleValue::FALSE_VALUE;
+  auto user_verification_required =
+      user_verification_required_ ? cbor::CBORValue::SimpleValue::TRUE_VALUE
+                                  : cbor::CBORValue::SimpleValue::FALSE_VALUE;
+
+  cbor::CBORValue::MapValue option_map;
+  option_map[cbor::CBORValue(kResidentKeyMapKey)] =
+      cbor::CBORValue(resident_key);
+  option_map[cbor::CBORValue(kUserVerificationMapKey)] =
+      cbor::CBORValue(user_verification_required);
+  cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
+
   auto serialized_param =
       cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
+
   if (!serialized_param)
     return base::nullopt;
 
@@ -63,6 +77,19 @@ CTAPMakeCredentialRequestParam::SerializeToCBOR() const {
   cbor_request.insert(cbor_request.end(), serialized_param->begin(),
                       serialized_param->end());
   return cbor_request;
+}
+
+CTAPMakeCredentialRequestParam&
+CTAPMakeCredentialRequestParam::SetUserVerificationRequired(
+    bool user_verification_required) {
+  user_verification_required_ = user_verification_required;
+  return *this;
+}
+
+CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetResidentKey(
+    bool resident_key) {
+  resident_key_ = resident_key;
+  return *this;
 }
 
 CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetExcludeList(
