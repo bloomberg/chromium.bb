@@ -5,11 +5,10 @@
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "services/audio/in_process_audio_manager_accessor.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 #include "services/audio/public/interfaces/constants.mojom.h"
-#include "services/audio/service.h"
-#include "services/audio/system_info.h"
+#include "services/audio/service_factory.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
@@ -39,9 +38,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
       }
       DCHECK(!service_context_);
       service_context_ = std::make_unique<service_manager::ServiceContext>(
-          std::make_unique<audio::Service>(
-              std::make_unique<InProcessAudioManagerAccessor>(audio_manager_)),
-          std::move(request));
+          CreateEmbeddedService(audio_manager_), std::move(request));
       service_context_->SetQuitClosure(base::BindRepeating(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
     }

@@ -5,6 +5,7 @@
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/audio/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -18,12 +19,13 @@ AudioSystemToServiceAdapter::AudioSystemToServiceAdapter(
   DETACH_FROM_THREAD(thread_checker_);
 }
 
-AudioSystemToServiceAdapter::~AudioSystemToServiceAdapter() {}
+AudioSystemToServiceAdapter::~AudioSystemToServiceAdapter() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 void AudioSystemToServiceAdapter::GetInputStreamParameters(
     const std::string& device_id,
     OnAudioParamsCallback on_params_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->GetInputStreamParameters(
       device_id, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                      std::move(on_params_callback), base::nullopt));
@@ -32,7 +34,6 @@ void AudioSystemToServiceAdapter::GetInputStreamParameters(
 void AudioSystemToServiceAdapter::GetOutputStreamParameters(
     const std::string& device_id,
     OnAudioParamsCallback on_params_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->GetOutputStreamParameters(
       device_id, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                      std::move(on_params_callback), base::nullopt));
@@ -40,14 +41,12 @@ void AudioSystemToServiceAdapter::GetOutputStreamParameters(
 
 void AudioSystemToServiceAdapter::HasInputDevices(
     OnBoolCallback on_has_devices_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->HasInputDevices(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(on_has_devices_callback), false));
 }
 
 void AudioSystemToServiceAdapter::HasOutputDevices(
     OnBoolCallback on_has_devices_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->HasOutputDevices(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(on_has_devices_callback), false));
 }
@@ -55,7 +54,6 @@ void AudioSystemToServiceAdapter::HasOutputDevices(
 void AudioSystemToServiceAdapter::GetDeviceDescriptions(
     bool for_input,
     OnDeviceDescriptionsCallback on_descriptions_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto reply_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(on_descriptions_callback), media::AudioDeviceDescriptions());
   if (for_input)
@@ -67,7 +65,6 @@ void AudioSystemToServiceAdapter::GetDeviceDescriptions(
 void AudioSystemToServiceAdapter::GetAssociatedOutputDeviceID(
     const std::string& input_device_id,
     OnDeviceIdCallback on_device_id_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->GetAssociatedOutputDeviceID(
       input_device_id, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                            std::move(on_device_id_callback), base::nullopt));
@@ -76,7 +73,6 @@ void AudioSystemToServiceAdapter::GetAssociatedOutputDeviceID(
 void AudioSystemToServiceAdapter::GetInputDeviceInfo(
     const std::string& input_device_id,
     OnInputDeviceInfoCallback on_input_device_info_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetSystemInfo()->GetInputDeviceInfo(
       input_device_id, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                            std::move(on_input_device_info_callback),
@@ -86,17 +82,21 @@ void AudioSystemToServiceAdapter::GetInputDeviceInfo(
 mojom::SystemInfo* AudioSystemToServiceAdapter::GetSystemInfo() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!system_info_) {
+    DVLOG(4) << "AudioSystemToServiceAdapter::GetSystemInfo: SystemInfo bind "
+                "request";
     connector_->BindInterface(mojom::kServiceName,
                               mojo::MakeRequest(&system_info_));
+    system_info_.set_connection_error_handler(
+        base::BindOnce(&AudioSystemToServiceAdapter::OnConnectionError,
+                       base::Unretained(this)));
+    DCHECK(system_info_);
   }
-  DCHECK(system_info_);
-  system_info_.set_connection_error_handler(base::BindOnce(
-      &AudioSystemToServiceAdapter::OnConnectionError, base::Unretained(this)));
   return system_info_.get();
 }
 
 void AudioSystemToServiceAdapter::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(4) << "AudioSystemToServiceAdapter::OnConnectionError";
   system_info_.reset();
 }
 
