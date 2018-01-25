@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_password_save_confirmation_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
 
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -13,15 +13,12 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
 
-ManagePasswordSaveConfirmationView::ManagePasswordSaveConfirmationView(
+PasswordSaveConfirmationView::PasswordSaveConfirmationView(
     content::WebContents* web_contents,
     views::View* anchor_view,
     const gfx::Point& anchor_point,
     DisplayReason reason)
-    : ManagePasswordsBubbleDelegateViewBase(web_contents,
-                                            anchor_view,
-                                            anchor_point,
-                                            reason) {
+    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto label = std::make_unique<views::StyledLabel>(
@@ -35,18 +32,17 @@ ManagePasswordSaveConfirmationView::ManagePasswordSaveConfirmationView(
   AddChildView(label.release());
 }
 
-ManagePasswordSaveConfirmationView::~ManagePasswordSaveConfirmationView() =
-    default;
+PasswordSaveConfirmationView::~PasswordSaveConfirmationView() = default;
 
-int ManagePasswordSaveConfirmationView::GetDialogButtons() const {
+int PasswordSaveConfirmationView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-bool ManagePasswordSaveConfirmationView::ShouldShowCloseButton() const {
+bool PasswordSaveConfirmationView::ShouldShowCloseButton() const {
   return true;
 }
 
-void ManagePasswordSaveConfirmationView::StyledLabelLinkClicked(
+void PasswordSaveConfirmationView::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
@@ -55,7 +51,7 @@ void ManagePasswordSaveConfirmationView::StyledLabelLinkClicked(
   CloseBubble();
 }
 
-gfx::Size ManagePasswordSaveConfirmationView::CalculatePreferredSize() const {
+gfx::Size PasswordSaveConfirmationView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
                     margins().width();

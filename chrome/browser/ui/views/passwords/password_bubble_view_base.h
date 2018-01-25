@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_DELEGATE_VIEW_BASE_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_DELEGATE_VIEW_BASE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_BUBBLE_VIEW_BASE_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_BUBBLE_VIEW_BASE_H_
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -24,11 +24,10 @@ class WebContents;
 // this class when ownership has moved to TabDialog instances, as it's hopefully
 // no longer relevant for checking dialog ownership. These two work items should
 // make this base class significantly smaller.
-class ManagePasswordsBubbleDelegateViewBase
-    : public LocationBarBubbleDelegateView {
+class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
  public:
   // Returns a pointer to the bubble.
-  static ManagePasswordsBubbleDelegateViewBase* manage_password_bubble() {
+  static PasswordBubbleViewBase* manage_password_bubble() {
     return g_manage_passwords_bubble_;
   }
 
@@ -40,7 +39,7 @@ class ManagePasswordsBubbleDelegateViewBase
 #endif
   // Creates and returns the passwords manager bubble UI appropriate for the
   // current password_manager::ui::State value for the provided |web_contents|.
-  static ManagePasswordsBubbleDelegateViewBase* CreateBubble(
+  static PasswordBubbleViewBase* CreateBubble(
       content::WebContents* web_contents,
       views::View* anchor_view,
       const gfx::Point& anchor_point,
@@ -63,12 +62,12 @@ class ManagePasswordsBubbleDelegateViewBase
   const ManagePasswordsBubbleModel* model() const { return &model_; }
 
  protected:
-  ManagePasswordsBubbleDelegateViewBase(content::WebContents* web_contents,
-                                        views::View* anchor_view,
-                                        const gfx::Point& anchor_point,
-                                        DisplayReason reason);
+  PasswordBubbleViewBase(content::WebContents* web_contents,
+                         views::View* anchor_view,
+                         const gfx::Point& anchor_point,
+                         DisplayReason reason);
 
-  ~ManagePasswordsBubbleDelegateViewBase() override;
+  ~PasswordBubbleViewBase() override;
 
  private:
   // WidgetObserver:
@@ -76,7 +75,7 @@ class ManagePasswordsBubbleDelegateViewBase
 
   // Singleton instance of the Password bubble.The instance is owned by the
   // Bubble and will be deleted when the bubble closes.
-  static ManagePasswordsBubbleDelegateViewBase* g_manage_passwords_bubble_;
+  static PasswordBubbleViewBase* g_manage_passwords_bubble_;
 
   ManagePasswordsBubbleModel model_;
 
@@ -84,7 +83,7 @@ class ManagePasswordsBubbleDelegateViewBase
   // dismissed when users keep using the web page.
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleDelegateViewBase);
+  DISALLOW_COPY_AND_ASSIGN(PasswordBubbleViewBase);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_DELEGATE_VIEW_BASE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_BUBBLE_VIEW_BASE_H_

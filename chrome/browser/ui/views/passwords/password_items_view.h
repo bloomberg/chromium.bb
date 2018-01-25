@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEMS_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEMS_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_ITEMS_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_ITEMS_VIEW_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_delegate_view_base.h"
+#include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -33,14 +33,14 @@ std::unique_ptr<views::Textfield> CreateUsernameEditable(
 // A dialog for managing stored password and federated login information for a
 // specific site. A user can remove managed credentials for the site via this
 // dialog.
-class ManagePasswordItemsView : public ManagePasswordsBubbleDelegateViewBase,
-                                public views::ButtonListener {
+class PasswordItemsView : public PasswordBubbleViewBase,
+                          public views::ButtonListener {
  public:
-  ManagePasswordItemsView(content::WebContents* web_contents,
-                          views::View* anchor_view,
-                          const gfx::Point& anchor_point,
-                          DisplayReason reason);
-  ~ManagePasswordItemsView() override;
+  PasswordItemsView(content::WebContents* web_contents,
+                    views::View* anchor_view,
+                    const gfx::Point& anchor_point,
+                    DisplayReason reason);
+  ~PasswordItemsView() override;
 
  private:
   class PasswordRow;
@@ -61,7 +61,7 @@ class ManagePasswordItemsView : public ManagePasswordsBubbleDelegateViewBase,
 
   std::vector<std::unique_ptr<PasswordRow>> password_rows_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemsView);
+  DISALLOW_COPY_AND_ASSIGN(PasswordItemsView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEMS_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_ITEMS_VIEW_H_

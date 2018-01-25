@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/manage_password_sign_in_promo_view.h"
+#include "chrome/browser/ui/views/passwords/password_sign_in_promo_view.h"
 
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -11,24 +11,24 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
 
-ManagePasswordSignInPromoView::ManagePasswordSignInPromoView(
+PasswordSignInPromoView::PasswordSignInPromoView(
     ManagePasswordsBubbleModel* model)
     : model_(model) {
   base::RecordAction(
       base::UserMetricsAction("Signin_Impression_FromPasswordBubble"));
 }
 
-bool ManagePasswordSignInPromoView::Accept() {
+bool PasswordSignInPromoView::Accept() {
   model_->OnSignInToChromeClicked();
   return true;
 }
 
-bool ManagePasswordSignInPromoView::Cancel() {
+bool PasswordSignInPromoView::Cancel() {
   model_->OnSkipSignInClicked();
   return true;
 }
 
-base::string16 ManagePasswordSignInPromoView::GetDialogButtonLabel(
+base::string16 PasswordSignInPromoView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK
