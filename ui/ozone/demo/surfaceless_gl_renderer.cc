@@ -37,6 +37,10 @@ OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
 
   OverlaySurfaceCandidate overlay_candidate;
 
+  // Use default display format since this should be compatible with most
+  // devices.
+  overlay_candidate.format = display::DisplaySnapshot::PrimaryFormat();
+
   // The bounds rectangle of the candidate overlay buffer.
   overlay_candidate.buffer_size = bounds_rect.size();
   // The same rectangle in floating point coordinates.
