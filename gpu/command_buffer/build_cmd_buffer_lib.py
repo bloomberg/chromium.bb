@@ -458,17 +458,17 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteServiceHandlerFunctionHeader(self, func, f):
     """Writes function header for service implementation handlers."""
-    f.write("""error::Error GLES2DecoderImpl::Handle%(name)s(
+    f.write("""error::Error %(prefix)sDecoderImpl::Handle%(name)s(
         uint32_t immediate_data_size, const volatile void* cmd_data) {
-      """ % {'name': func.name})
+      """ % {'name': func.name, 'prefix' : _prefix})
     if func.IsES3():
       f.write("""if (!feature_info_->IsWebGL2OrES3Context())
           return error::kUnknownCommand;
         """)
     if func.GetCmdArgs():
-      f.write("""const volatile gles2::cmds::%(name)s& c =
-            *static_cast<const volatile gles2::cmds::%(name)s*>(cmd_data);
-        """ % {'name': func.name})
+      f.write("""const volatile %(prefix)s::cmds::%(name)s& c =
+            *static_cast<const volatile %(prefix)s::cmds::%(name)s*>(cmd_data);
+        """ % {'name': func.name, 'prefix': _lower_prefix})
 
   def WriteServiceHandlerArgGetCode(self, func, f):
     """Writes the argument unpack code for service handlers."""
@@ -6116,20 +6116,20 @@ bool ClientContextState::SetCapabilityState(
 
   def WriteServiceImplementation(self, filename):
     """Writes the service decorder implementation."""
-    comment = "// It is included by gles2_cmd_decoder.cc\n"
+    comment = "// It is included by %s_cmd_decoder.cc\n" % _lower_prefix
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.functions:
         func.WriteServiceImplementation(f)
-
-      f.write("""
+      if self.capability_flags:
+        f.write("""
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
 """)
-      for capability in self.capability_flags:
-        f.write("    case GL_%s:\n" % capability['name'].upper())
-        if 'state_flag' in capability:
+        for capability in self.capability_flags:
+          f.write("    case GL_%s:\n" % capability['name'].upper())
+          if 'state_flag' in capability:
 
-          f.write("""\
+            f.write("""\
               state_.enable_flags.%(name)s = enabled;
               if (state_.enable_flags.cached_%(name)s != enabled
                   || state_.ignore_cached_state) {
@@ -6137,8 +6137,8 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
               }
               return false;
               """ % capability)
-        else:
-          f.write("""\
+          else:
+            f.write("""\
               state_.enable_flags.%(name)s = enabled;
               if (state_.enable_flags.cached_%(name)s != enabled
                   || state_.ignore_cached_state) {
@@ -6147,7 +6147,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
               }
               return false;
               """ % capability)
-      f.write("""    default:
+        f.write("""    default:
       NOTREACHED();
       return false;
   }

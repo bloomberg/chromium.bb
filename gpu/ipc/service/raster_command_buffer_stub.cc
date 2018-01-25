@@ -133,8 +133,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->transfer_buffer_manager());
-  auto decoder = std::make_unique<raster::RasterDecoder>(
-      this, command_buffer_.get(), manager->outputter(), context_group_.get());
+  std::unique_ptr<raster::RasterDecoder> decoder(raster::RasterDecoder::Create(
+      this, command_buffer_.get(), manager->outputter(), context_group_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
