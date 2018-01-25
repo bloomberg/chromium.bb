@@ -385,6 +385,7 @@ static INLINE void dc_predictor_rect(uint8_t *dst, ptrdiff_t stride, int bw,
   }
 
   expected_dc = (int)(((uint64_t)sum * multiplier) >> shift);
+  expected_dc = clip_pixel(expected_dc);
 
   for (r = 0; r < bh; r++) {
     memset(dst, expected_dc, bw);
@@ -1020,7 +1021,6 @@ static INLINE void highbd_dc_predictor_rect(uint16_t *dst, ptrdiff_t stride,
                                             const uint16_t *left, int bd,
                                             uint32_t multiplier, int shift) {
   int i, r, expected_dc, sum = 0;
-  (void)bd;
 
   for (i = 0; i < bw; i++) {
     sum += above[i];
@@ -1030,6 +1030,7 @@ static INLINE void highbd_dc_predictor_rect(uint16_t *dst, ptrdiff_t stride,
   }
 
   expected_dc = (int)(((uint64_t)sum * multiplier) >> shift);
+  expected_dc = clip_pixel_highbd(expected_dc, bd);
 
   for (r = 0; r < bh; r++) {
     aom_memset16(dst, expected_dc, bw);
