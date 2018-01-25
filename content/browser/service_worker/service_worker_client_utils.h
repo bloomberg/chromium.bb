@@ -24,22 +24,22 @@ class ServiceWorkerVersion;
 
 namespace service_worker_client_utils {
 
-using NavigationCallback = base::Callback<void(
+using NavigationCallback = base::OnceCallback<void(
     ServiceWorkerStatusCode status,
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
-using ClientCallback = base::Callback<void(
+using ClientCallback = base::OnceCallback<void(
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
 using GetClientCallback = base::OnceCallback<void(
     blink::mojom::ServiceWorkerClientInfoPtr client_info)>;
 using ServiceWorkerClientPtrs =
     std::vector<blink::mojom::ServiceWorkerClientInfoPtr>;
 using ClientsCallback =
-    base::Callback<void(std::unique_ptr<ServiceWorkerClientPtrs> clients)>;
+    base::OnceCallback<void(std::unique_ptr<ServiceWorkerClientPtrs> clients)>;
 
 // Focuses the window client associated with |provider_host|. |callback| is
 // called with the client information on completion.
 void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
-                       const ClientCallback& callback);
+                       ClientCallback callback);
 
 // Opens a new window and navigates it to |url|. |callback| is called with the
 // window's client information on completion.
@@ -48,7 +48,7 @@ void OpenWindow(const GURL& url,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
                 WindowOpenDisposition disposition,
-                const NavigationCallback& callback);
+                NavigationCallback callback);
 
 // Navigates the client specified by |process_id| and |frame_id| to |url|.
 // |callback| is called with the client information on completion.
@@ -57,7 +57,7 @@ void NavigateClient(const GURL& url,
                     int process_id,
                     int frame_id,
                     const base::WeakPtr<ServiceWorkerContextCore>& context,
-                    const NavigationCallback& callback);
+                    NavigationCallback callback);
 
 // Gets the client specified by |provider_host|. |callback| is called with the
 // client information on completion.
@@ -68,7 +68,7 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
 // information sorted in MRU order (most recently focused order) on completion.
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                 blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
-                const ClientsCallback& callback);
+                ClientsCallback callback);
 
 // Finds the provider host for |origin| in |context| then uses
 // |render_process_id| and |render_process_host| to create a relevant
@@ -76,7 +76,7 @@ void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 // Must be called on the IO thread.
 void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
                  const GURL& origin,
-                 const NavigationCallback& callback,
+                 NavigationCallback callback,
                  int render_process_id,
                  int render_frame_id);
 
