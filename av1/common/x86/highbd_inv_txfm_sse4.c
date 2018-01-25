@@ -1640,10 +1640,10 @@ static void load_buffer_64x64_lower_32x32(const int32_t *coeff, __m128i *in) {
   for (i = 0; i < 512; ++i) in[512 + i] = zero;
 }
 
-static void transpose_64x64(__m128i *in, __m128i *out) {
+static void transpose_64x64(__m128i *in, __m128i *out, int do_cols) {
   int i, j;
-  for (i = 0; i < 16; ++i) {
-    for (j = 0; j < 16; ++j) {
+  for (i = 0; i < (do_cols ? 16 : 8); ++i) {
+    for (j = 0; j < 8; ++j) {
       TRANSPOSE_4X4(in[(4 * i + 0) * 16 + j], in[(4 * i + 1) * 16 + j],
                     in[(4 * i + 2) * 16 + j], in[(4 * i + 3) * 16 + j],
                     out[(4 * j + 0) * 16 + i], out[(4 * j + 1) * 16 + i],
@@ -1662,8 +1662,6 @@ static void round_shift_32x32(__m128i *in, int shift) {
 static void round_shift_64x64(__m128i *in, int shift) {
   round_shift_32x32(&in[0], shift);
   round_shift_32x32(&in[256], shift);
-  round_shift_32x32(&in[512], shift);
-  round_shift_32x32(&in[768], shift);
 }
 
 static void assign_16x16_input_from_32x32(const __m128i *in, __m128i *in16x16,
@@ -1764,7 +1762,7 @@ static void write_buffer_64x64(__m128i *in, uint16_t *output, int stride,
   write_buffer_32x32(in32x32, rightDown, stride, fliplr, flipud, shift, bd);
 }
 
-static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
+static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit, int do_cols) {
   int i, j;
   const int32_t *cospi = cospi_arr(bit);
   const __m128i rnding = _mm_set1_epi32(1 << (bit - 1));
@@ -1802,57 +1800,33 @@ static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
   const __m128i cospi30 = _mm_set1_epi32(cospi[30]);
   const __m128i cospi31 = _mm_set1_epi32(cospi[31]);
   const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
-  const __m128i cospi33 = _mm_set1_epi32(cospi[33]);
-  const __m128i cospi34 = _mm_set1_epi32(cospi[34]);
   const __m128i cospi35 = _mm_set1_epi32(cospi[35]);
   const __m128i cospi36 = _mm_set1_epi32(cospi[36]);
-  const __m128i cospi37 = _mm_set1_epi32(cospi[37]);
   const __m128i cospi38 = _mm_set1_epi32(cospi[38]);
   const __m128i cospi39 = _mm_set1_epi32(cospi[39]);
   const __m128i cospi40 = _mm_set1_epi32(cospi[40]);
-  const __m128i cospi41 = _mm_set1_epi32(cospi[41]);
-  const __m128i cospi42 = _mm_set1_epi32(cospi[42]);
   const __m128i cospi43 = _mm_set1_epi32(cospi[43]);
   const __m128i cospi44 = _mm_set1_epi32(cospi[44]);
-  const __m128i cospi45 = _mm_set1_epi32(cospi[45]);
   const __m128i cospi46 = _mm_set1_epi32(cospi[46]);
   const __m128i cospi47 = _mm_set1_epi32(cospi[47]);
   const __m128i cospi48 = _mm_set1_epi32(cospi[48]);
-  const __m128i cospi49 = _mm_set1_epi32(cospi[49]);
-  const __m128i cospi50 = _mm_set1_epi32(cospi[50]);
   const __m128i cospi51 = _mm_set1_epi32(cospi[51]);
   const __m128i cospi52 = _mm_set1_epi32(cospi[52]);
-  const __m128i cospi53 = _mm_set1_epi32(cospi[53]);
   const __m128i cospi54 = _mm_set1_epi32(cospi[54]);
   const __m128i cospi55 = _mm_set1_epi32(cospi[55]);
   const __m128i cospi56 = _mm_set1_epi32(cospi[56]);
-  const __m128i cospi57 = _mm_set1_epi32(cospi[57]);
-  const __m128i cospi58 = _mm_set1_epi32(cospi[58]);
   const __m128i cospi59 = _mm_set1_epi32(cospi[59]);
   const __m128i cospi60 = _mm_set1_epi32(cospi[60]);
-  const __m128i cospi61 = _mm_set1_epi32(cospi[61]);
   const __m128i cospi62 = _mm_set1_epi32(cospi[62]);
   const __m128i cospi63 = _mm_set1_epi32(cospi[63]);
 
-  const __m128i cospim1 = _mm_set1_epi32(-cospi[1]);
-  const __m128i cospim2 = _mm_set1_epi32(-cospi[2]);
   const __m128i cospim4 = _mm_set1_epi32(-cospi[4]);
-  const __m128i cospim5 = _mm_set1_epi32(-cospi[5]);
   const __m128i cospim8 = _mm_set1_epi32(-cospi[8]);
-  const __m128i cospim9 = _mm_set1_epi32(-cospi[9]);
-  const __m128i cospim10 = _mm_set1_epi32(-cospi[10]);
   const __m128i cospim12 = _mm_set1_epi32(-cospi[12]);
-  const __m128i cospim13 = _mm_set1_epi32(-cospi[13]);
   const __m128i cospim16 = _mm_set1_epi32(-cospi[16]);
-  const __m128i cospim17 = _mm_set1_epi32(-cospi[17]);
-  const __m128i cospim18 = _mm_set1_epi32(-cospi[18]);
   const __m128i cospim20 = _mm_set1_epi32(-cospi[20]);
-  const __m128i cospim21 = _mm_set1_epi32(-cospi[21]);
   const __m128i cospim24 = _mm_set1_epi32(-cospi[24]);
-  const __m128i cospim25 = _mm_set1_epi32(-cospi[25]);
-  const __m128i cospim26 = _mm_set1_epi32(-cospi[26]);
   const __m128i cospim28 = _mm_set1_epi32(-cospi[28]);
-  const __m128i cospim29 = _mm_set1_epi32(-cospi[29]);
   const __m128i cospim32 = _mm_set1_epi32(-cospi[32]);
   const __m128i cospim33 = _mm_set1_epi32(-cospi[33]);
   const __m128i cospim34 = _mm_set1_epi32(-cospi[34]);
@@ -1874,71 +1848,98 @@ static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
   const __m128i cospim60 = _mm_set1_epi32(-cospi[60]);
   const __m128i cospim61 = _mm_set1_epi32(-cospi[61]);
 
-  for (col = 0; col < 64 / 4; ++col) {
+  for (col = 0; col < (do_cols ? 64 / 4 : 32 / 4); ++col) {
     __m128i u[64], v[64];
 
     // stage 1
-    for (i = 0; i < 64; ++i) {
-      int ri = (i & 1) * 32 + (i & 2) * 8 + (i & 4) * 2 + (i & 8) / 2 +
-               (i & 16) / 8 + (i & 32) / 32;
-      u[i] = in[ri * 16 + col];
-    }
+    u[32] = in[1 * 16 + col];
+    u[34] = in[17 * 16 + col];
+    u[36] = in[9 * 16 + col];
+    u[38] = in[25 * 16 + col];
+    u[40] = in[5 * 16 + col];
+    u[42] = in[21 * 16 + col];
+    u[44] = in[13 * 16 + col];
+    u[46] = in[29 * 16 + col];
+    u[48] = in[3 * 16 + col];
+    u[50] = in[19 * 16 + col];
+    u[52] = in[11 * 16 + col];
+    u[54] = in[27 * 16 + col];
+    u[56] = in[7 * 16 + col];
+    u[58] = in[23 * 16 + col];
+    u[60] = in[15 * 16 + col];
+    u[62] = in[31 * 16 + col];
+
+    v[16] = in[2 * 16 + col];
+    v[18] = in[18 * 16 + col];
+    v[20] = in[10 * 16 + col];
+    v[22] = in[26 * 16 + col];
+    v[24] = in[6 * 16 + col];
+    v[26] = in[22 * 16 + col];
+    v[28] = in[14 * 16 + col];
+    v[30] = in[30 * 16 + col];
+
+    u[8] = in[4 * 16 + col];
+    u[10] = in[20 * 16 + col];
+    u[12] = in[12 * 16 + col];
+    u[14] = in[28 * 16 + col];
+
+    v[4] = in[8 * 16 + col];
+    v[6] = in[24 * 16 + col];
+
+    u[0] = in[0 * 16 + col];
+    u[2] = in[16 * 16 + col];
 
     // stage 2
-    for (i = 0; i < 32; ++i) v[i] = u[i];
-
-    v[32] = half_btf_sse4_1(&cospi63, &u[32], &cospim1, &u[63], &rnding, bit);
-    v[33] = half_btf_sse4_1(&cospi31, &u[33], &cospim33, &u[62], &rnding, bit);
-    v[34] = half_btf_sse4_1(&cospi47, &u[34], &cospim17, &u[61], &rnding, bit);
-    v[35] = half_btf_sse4_1(&cospi15, &u[35], &cospim49, &u[60], &rnding, bit);
-    v[36] = half_btf_sse4_1(&cospi55, &u[36], &cospim9, &u[59], &rnding, bit);
-    v[37] = half_btf_sse4_1(&cospi23, &u[37], &cospim41, &u[58], &rnding, bit);
-    v[38] = half_btf_sse4_1(&cospi39, &u[38], &cospim25, &u[57], &rnding, bit);
-    v[39] = half_btf_sse4_1(&cospi7, &u[39], &cospim57, &u[56], &rnding, bit);
-    v[40] = half_btf_sse4_1(&cospi59, &u[40], &cospim5, &u[55], &rnding, bit);
-    v[41] = half_btf_sse4_1(&cospi27, &u[41], &cospim37, &u[54], &rnding, bit);
-    v[42] = half_btf_sse4_1(&cospi43, &u[42], &cospim21, &u[53], &rnding, bit);
-    v[43] = half_btf_sse4_1(&cospi11, &u[43], &cospim53, &u[52], &rnding, bit);
-    v[44] = half_btf_sse4_1(&cospi51, &u[44], &cospim13, &u[51], &rnding, bit);
-    v[45] = half_btf_sse4_1(&cospi19, &u[45], &cospim45, &u[50], &rnding, bit);
-    v[46] = half_btf_sse4_1(&cospi35, &u[46], &cospim29, &u[49], &rnding, bit);
-    v[47] = half_btf_sse4_1(&cospi3, &u[47], &cospim61, &u[48], &rnding, bit);
-    v[48] = half_btf_sse4_1(&cospi61, &u[47], &cospi3, &u[48], &rnding, bit);
-    v[49] = half_btf_sse4_1(&cospi29, &u[46], &cospi35, &u[49], &rnding, bit);
-    v[50] = half_btf_sse4_1(&cospi45, &u[45], &cospi19, &u[50], &rnding, bit);
-    v[51] = half_btf_sse4_1(&cospi13, &u[44], &cospi51, &u[51], &rnding, bit);
-    v[52] = half_btf_sse4_1(&cospi53, &u[43], &cospi11, &u[52], &rnding, bit);
-    v[53] = half_btf_sse4_1(&cospi21, &u[42], &cospi43, &u[53], &rnding, bit);
-    v[54] = half_btf_sse4_1(&cospi37, &u[41], &cospi27, &u[54], &rnding, bit);
-    v[55] = half_btf_sse4_1(&cospi5, &u[40], &cospi59, &u[55], &rnding, bit);
-    v[56] = half_btf_sse4_1(&cospi57, &u[39], &cospi7, &u[56], &rnding, bit);
-    v[57] = half_btf_sse4_1(&cospi25, &u[38], &cospi39, &u[57], &rnding, bit);
-    v[58] = half_btf_sse4_1(&cospi41, &u[37], &cospi23, &u[58], &rnding, bit);
-    v[59] = half_btf_sse4_1(&cospi9, &u[36], &cospi55, &u[59], &rnding, bit);
-    v[60] = half_btf_sse4_1(&cospi49, &u[35], &cospi15, &u[60], &rnding, bit);
-    v[61] = half_btf_sse4_1(&cospi17, &u[34], &cospi47, &u[61], &rnding, bit);
-    v[62] = half_btf_sse4_1(&cospi33, &u[33], &cospi31, &u[62], &rnding, bit);
-    v[63] = half_btf_sse4_1(&cospi1, &u[32], &cospi63, &u[63], &rnding, bit);
+    v[32] = half_btf_0_sse4_1(&cospi63, &u[32], &rnding, bit);
+    v[33] = half_btf_0_sse4_1(&cospim33, &u[62], &rnding, bit);
+    v[34] = half_btf_0_sse4_1(&cospi47, &u[34], &rnding, bit);
+    v[35] = half_btf_0_sse4_1(&cospim49, &u[60], &rnding, bit);
+    v[36] = half_btf_0_sse4_1(&cospi55, &u[36], &rnding, bit);
+    v[37] = half_btf_0_sse4_1(&cospim41, &u[58], &rnding, bit);
+    v[38] = half_btf_0_sse4_1(&cospi39, &u[38], &rnding, bit);
+    v[39] = half_btf_0_sse4_1(&cospim57, &u[56], &rnding, bit);
+    v[40] = half_btf_0_sse4_1(&cospi59, &u[40], &rnding, bit);
+    v[41] = half_btf_0_sse4_1(&cospim37, &u[54], &rnding, bit);
+    v[42] = half_btf_0_sse4_1(&cospi43, &u[42], &rnding, bit);
+    v[43] = half_btf_0_sse4_1(&cospim53, &u[52], &rnding, bit);
+    v[44] = half_btf_0_sse4_1(&cospi51, &u[44], &rnding, bit);
+    v[45] = half_btf_0_sse4_1(&cospim45, &u[50], &rnding, bit);
+    v[46] = half_btf_0_sse4_1(&cospi35, &u[46], &rnding, bit);
+    v[47] = half_btf_0_sse4_1(&cospim61, &u[48], &rnding, bit);
+    v[48] = half_btf_0_sse4_1(&cospi3, &u[48], &rnding, bit);
+    v[49] = half_btf_0_sse4_1(&cospi29, &u[46], &rnding, bit);
+    v[50] = half_btf_0_sse4_1(&cospi19, &u[50], &rnding, bit);
+    v[51] = half_btf_0_sse4_1(&cospi13, &u[44], &rnding, bit);
+    v[52] = half_btf_0_sse4_1(&cospi11, &u[52], &rnding, bit);
+    v[53] = half_btf_0_sse4_1(&cospi21, &u[42], &rnding, bit);
+    v[54] = half_btf_0_sse4_1(&cospi27, &u[54], &rnding, bit);
+    v[55] = half_btf_0_sse4_1(&cospi5, &u[40], &rnding, bit);
+    v[56] = half_btf_0_sse4_1(&cospi7, &u[56], &rnding, bit);
+    v[57] = half_btf_0_sse4_1(&cospi25, &u[38], &rnding, bit);
+    v[58] = half_btf_0_sse4_1(&cospi23, &u[58], &rnding, bit);
+    v[59] = half_btf_0_sse4_1(&cospi9, &u[36], &rnding, bit);
+    v[60] = half_btf_0_sse4_1(&cospi15, &u[60], &rnding, bit);
+    v[61] = half_btf_0_sse4_1(&cospi17, &u[34], &rnding, bit);
+    v[62] = half_btf_0_sse4_1(&cospi31, &u[62], &rnding, bit);
+    v[63] = half_btf_0_sse4_1(&cospi1, &u[32], &rnding, bit);
 
     // stage 3
-    for (i = 0; i < 16; ++i) u[i] = v[i];
-
-    u[16] = half_btf_sse4_1(&cospi62, &v[16], &cospim2, &v[31], &rnding, bit);
-    u[17] = half_btf_sse4_1(&cospi30, &v[17], &cospim34, &v[30], &rnding, bit);
-    u[18] = half_btf_sse4_1(&cospi46, &v[18], &cospim18, &v[29], &rnding, bit);
-    u[19] = half_btf_sse4_1(&cospi14, &v[19], &cospim50, &v[28], &rnding, bit);
-    u[20] = half_btf_sse4_1(&cospi54, &v[20], &cospim10, &v[27], &rnding, bit);
-    u[21] = half_btf_sse4_1(&cospi22, &v[21], &cospim42, &v[26], &rnding, bit);
-    u[22] = half_btf_sse4_1(&cospi38, &v[22], &cospim26, &v[25], &rnding, bit);
-    u[23] = half_btf_sse4_1(&cospi6, &v[23], &cospim58, &v[24], &rnding, bit);
-    u[24] = half_btf_sse4_1(&cospi58, &v[23], &cospi6, &v[24], &rnding, bit);
-    u[25] = half_btf_sse4_1(&cospi26, &v[22], &cospi38, &v[25], &rnding, bit);
-    u[26] = half_btf_sse4_1(&cospi42, &v[21], &cospi22, &v[26], &rnding, bit);
-    u[27] = half_btf_sse4_1(&cospi10, &v[20], &cospi54, &v[27], &rnding, bit);
-    u[28] = half_btf_sse4_1(&cospi50, &v[19], &cospi14, &v[28], &rnding, bit);
-    u[29] = half_btf_sse4_1(&cospi18, &v[18], &cospi46, &v[29], &rnding, bit);
-    u[30] = half_btf_sse4_1(&cospi34, &v[17], &cospi30, &v[30], &rnding, bit);
-    u[31] = half_btf_sse4_1(&cospi2, &v[16], &cospi62, &v[31], &rnding, bit);
+    u[16] = half_btf_0_sse4_1(&cospi62, &v[16], &rnding, bit);
+    u[17] = half_btf_0_sse4_1(&cospim34, &v[30], &rnding, bit);
+    u[18] = half_btf_0_sse4_1(&cospi46, &v[18], &rnding, bit);
+    u[19] = half_btf_0_sse4_1(&cospim50, &v[28], &rnding, bit);
+    u[20] = half_btf_0_sse4_1(&cospi54, &v[20], &rnding, bit);
+    u[21] = half_btf_0_sse4_1(&cospim42, &v[26], &rnding, bit);
+    u[22] = half_btf_0_sse4_1(&cospi38, &v[22], &rnding, bit);
+    u[23] = half_btf_0_sse4_1(&cospim58, &v[24], &rnding, bit);
+    u[24] = half_btf_0_sse4_1(&cospi6, &v[24], &rnding, bit);
+    u[25] = half_btf_0_sse4_1(&cospi26, &v[22], &rnding, bit);
+    u[26] = half_btf_0_sse4_1(&cospi22, &v[26], &rnding, bit);
+    u[27] = half_btf_0_sse4_1(&cospi10, &v[20], &rnding, bit);
+    u[28] = half_btf_0_sse4_1(&cospi14, &v[28], &rnding, bit);
+    u[29] = half_btf_0_sse4_1(&cospi18, &v[18], &rnding, bit);
+    u[30] = half_btf_0_sse4_1(&cospi30, &v[30], &rnding, bit);
+    u[31] = half_btf_0_sse4_1(&cospi2, &v[16], &rnding, bit);
 
     for (i = 32; i < 64; i += 4) {
       u[i + 0] = _mm_add_epi32(v[i + 0], v[i + 1]);
@@ -1948,16 +1949,14 @@ static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
     }
 
     // stage 4
-    for (i = 0; i < 8; ++i) v[i] = u[i];
-
-    v[8] = half_btf_sse4_1(&cospi60, &u[8], &cospim4, &u[15], &rnding, bit);
-    v[9] = half_btf_sse4_1(&cospi28, &u[9], &cospim36, &u[14], &rnding, bit);
-    v[10] = half_btf_sse4_1(&cospi44, &u[10], &cospim20, &u[13], &rnding, bit);
-    v[11] = half_btf_sse4_1(&cospi12, &u[11], &cospim52, &u[12], &rnding, bit);
-    v[12] = half_btf_sse4_1(&cospi52, &u[11], &cospi12, &u[12], &rnding, bit);
-    v[13] = half_btf_sse4_1(&cospi20, &u[10], &cospi44, &u[13], &rnding, bit);
-    v[14] = half_btf_sse4_1(&cospi36, &u[9], &cospi28, &u[14], &rnding, bit);
-    v[15] = half_btf_sse4_1(&cospi4, &u[8], &cospi60, &u[15], &rnding, bit);
+    v[8] = half_btf_0_sse4_1(&cospi60, &u[8], &rnding, bit);
+    v[9] = half_btf_0_sse4_1(&cospim36, &u[14], &rnding, bit);
+    v[10] = half_btf_0_sse4_1(&cospi44, &u[10], &rnding, bit);
+    v[11] = half_btf_0_sse4_1(&cospim52, &u[12], &rnding, bit);
+    v[12] = half_btf_0_sse4_1(&cospi12, &u[12], &rnding, bit);
+    v[13] = half_btf_0_sse4_1(&cospi20, &u[10], &rnding, bit);
+    v[14] = half_btf_0_sse4_1(&cospi28, &u[14], &rnding, bit);
+    v[15] = half_btf_0_sse4_1(&cospi4, &u[8], &rnding, bit);
 
     for (i = 16; i < 32; i += 4) {
       v[i + 0] = _mm_add_epi32(u[i + 0], u[i + 1]);
@@ -1989,12 +1988,10 @@ static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
     v[62] = half_btf_sse4_1(&cospi60, &u[33], &cospi4, &u[62], &rnding, bit);
 
     // stage 5
-    for (i = 0; i < 4; ++i) u[i] = v[i];
-
-    u[4] = half_btf_sse4_1(&cospi56, &v[4], &cospim8, &v[7], &rnding, bit);
-    u[5] = half_btf_sse4_1(&cospi24, &v[5], &cospim40, &v[6], &rnding, bit);
-    u[6] = half_btf_sse4_1(&cospi40, &v[5], &cospi24, &v[6], &rnding, bit);
-    u[7] = half_btf_sse4_1(&cospi8, &v[4], &cospi56, &v[7], &rnding, bit);
+    u[4] = half_btf_0_sse4_1(&cospi56, &v[4], &rnding, bit);
+    u[5] = half_btf_0_sse4_1(&cospim40, &v[6], &rnding, bit);
+    u[6] = half_btf_0_sse4_1(&cospi24, &v[6], &rnding, bit);
+    u[7] = half_btf_0_sse4_1(&cospi8, &v[4], &rnding, bit);
 
     for (i = 8; i < 16; i += 4) {
       u[i + 0] = _mm_add_epi32(v[i + 0], v[i + 1]);
@@ -2030,10 +2027,10 @@ static void idct64x64_sse4_1(__m128i *in, __m128i *out, int bit) {
     }
 
     // stage 6
-    v[0] = half_btf_sse4_1(&cospi32, &u[0], &cospi32, &u[1], &rnding, bit);
-    v[1] = half_btf_sse4_1(&cospi32, &u[0], &cospim32, &u[1], &rnding, bit);
-    v[2] = half_btf_sse4_1(&cospi48, &u[2], &cospim16, &u[3], &rnding, bit);
-    v[3] = half_btf_sse4_1(&cospi16, &u[2], &cospi48, &u[3], &rnding, bit);
+    v[0] = half_btf_0_sse4_1(&cospi32, &u[0], &rnding, bit);
+    v[1] = half_btf_0_sse4_1(&cospi32, &u[0], &rnding, bit);
+    v[2] = half_btf_0_sse4_1(&cospi48, &u[2], &rnding, bit);
+    v[3] = half_btf_0_sse4_1(&cospi16, &u[2], &rnding, bit);
 
     v[4] = _mm_add_epi32(u[4], u[5]);
     v[5] = _mm_sub_epi32(u[4], u[5]);
@@ -2252,13 +2249,13 @@ void av1_inv_txfm2d_add_64x64_sse4_1(const int32_t *coeff, uint16_t *output,
 
   switch (tx_type) {
     case DCT_DCT:
-
       load_buffer_64x64_lower_32x32(coeff, in);
-      transpose_64x64(in, out);
-      idct64x64_sse4_1(out, in, inv_cos_bit_row[txw_idx][txh_idx]);
-      round_shift_64x64(in, -shift[0]);
-      transpose_64x64(in, out);
-      idct64x64_sse4_1(out, in, inv_cos_bit_col[txw_idx][txh_idx]);
+      transpose_64x64(in, out, 0);
+      idct64x64_sse4_1(out, in, inv_cos_bit_row[txw_idx][txh_idx], 0);
+      // transpose before shift, so shift can apply to 512 contiguous values
+      transpose_64x64(in, out, 1);
+      round_shift_64x64(out, -shift[0]);
+      idct64x64_sse4_1(out, in, inv_cos_bit_col[txw_idx][txh_idx], 1);
       write_buffer_64x64(in, output, stride, 0, 0, -shift[1], bd);
       break;
 
