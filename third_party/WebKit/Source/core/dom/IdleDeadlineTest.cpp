@@ -41,6 +41,10 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   void RemovePendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) override {}
 
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override {
+    return base::TimeTicks();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineScheduler);
 };

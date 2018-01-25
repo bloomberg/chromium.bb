@@ -49,6 +49,10 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   void RemovePendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) override {}
 
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override {
+    return base::TimeTicks();
+  }
+
   void RunIdleTask() { std::move(idle_task_).Run(0); }
   bool HasIdleTask() const { return !!idle_task_; }
 

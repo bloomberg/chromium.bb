@@ -26,6 +26,8 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
       InterventionReporter* intervention_reporter,
       WebViewScheduler::WebViewSchedulerDelegate* delegate) override;
 
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;
+
   RendererScheduler* GetRendererSchedulerForTest() override;
 
  private:
