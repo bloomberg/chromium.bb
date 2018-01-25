@@ -4,9 +4,9 @@ vars = {
   "chromium_url": "https://chromium.googlesource.com",
 
   "clang_format_rev": "0653eee0c81ea04715c635dd0885e8096ff6ba6d",   # r302580
-  "libcxx_revision": "f56f1bba1ade4a408d403ff050d50e837bae47df",    # r317124
-  "libcxxabi_revision": "05ba3281482304ae8de31123a594972a495da06d", # r313308
-  "libunwind_revision": "fc0a910c25d5415dd72ba9451b7cba380e3cc1e7", # r317125
+  "libcxx_revision": "8864da5e7823f79f801512ec4dbcca89feff7a23",    # r323390
+  "libcxxabi_revision": "9a02f50fc1d2acde806c69085ad979a685cb0694", # r323397
+  "libunwind_revision": "98762d639111593699b509ab6bc20ebed0e41352", # r323141
 }
 
 deps = {
