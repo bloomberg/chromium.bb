@@ -24,27 +24,7 @@
 namespace gpu {
 
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
-    : command_buffer_(command_buffer),
-      ring_buffer_id_(-1),
-      ring_buffer_size_(0),
-      entries_(nullptr),
-      total_entry_count_(0),
-      immediate_entry_count_(0),
-      token_(0),
-      put_(0),
-      last_put_sent_(0),
-      cached_last_token_read_(0),
-      cached_get_offset_(0),
-      set_get_buffer_count_(0),
-      service_on_old_buffer_(false),
-#if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
-      commands_issued_(0),
-#endif
-      usable_(true),
-      context_lost_(false),
-      flush_automatically_(true),
-      flush_generation_(0) {
-}
+    : command_buffer_(command_buffer) {}
 
 void CommandBufferHelper::SetAutomaticFlushes(bool enabled) {
   flush_automatically_ = enabled;
@@ -80,10 +60,10 @@ void CommandBufferHelper::CalcImmediateEntries(int waiting_count) {
   if (flush_automatically_) {
     int32_t limit =
         total_entry_count_ /
-        ((curr_get == last_put_sent_) ? kAutoFlushSmall : kAutoFlushBig);
+        ((curr_get == last_flush_put_) ? kAutoFlushSmall : kAutoFlushBig);
 
     int32_t pending =
-        (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
+        (put_ + total_entry_count_ - last_flush_put_) % total_entry_count_;
 
     if (pending > 0 && pending >= limit) {
       // Time to force flush.
@@ -136,7 +116,8 @@ void CommandBufferHelper::SetGetBuffer(int32_t id,
   // Call to SetGetBuffer(id) above resets get and put offsets to 0.
   // No need to query it through IPC.
   put_ = 0;
-  last_put_sent_ = 0;
+  last_flush_put_ = 0;
+  last_ordering_barrier_put_ = 0;
   cached_get_offset_ = 0;
   service_on_old_buffer_ = true;
   CalcImmediateEntries(0);
@@ -193,7 +174,8 @@ void CommandBufferHelper::Flush() {
 
   if (HaveRingBuffer()) {
     last_flush_time_ = base::TimeTicks::Now();
-    last_put_sent_ = put_;
+    last_flush_put_ = put_;
+    last_ordering_barrier_put_ = put_;
     command_buffer_->Flush(put_);
     ++flush_generation_;
     CalcImmediateEntries(0);
@@ -201,7 +183,7 @@ void CommandBufferHelper::Flush() {
 }
 
 void CommandBufferHelper::FlushLazy() {
-  if (put_ == last_put_sent_)
+  if (put_ == last_flush_put_ && put_ == last_ordering_barrier_put_)
     return;
   Flush();
 }
@@ -212,6 +194,7 @@ void CommandBufferHelper::OrderingBarrier() {
     put_ = 0;
 
   if (HaveRingBuffer()) {
+    last_ordering_barrier_put_ = put_;
     command_buffer_->OrderingBarrier(put_);
     ++flush_generation_;
     CalcImmediateEntries(0);

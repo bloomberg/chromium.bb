@@ -293,34 +293,43 @@ class GPU_EXPORT CommandBufferHelper
   // from given command buffer state.
   void UpdateCachedState(const CommandBuffer::State& state);
 
-  CommandBuffer* command_buffer_;
-  int32_t ring_buffer_id_;
-  int32_t ring_buffer_size_;
+  CommandBuffer* const command_buffer_;
+  int32_t ring_buffer_id_ = -1;
+  int32_t ring_buffer_size_ = 0;
   scoped_refptr<gpu::Buffer> ring_buffer_;
-  CommandBufferEntry* entries_;
-  int32_t total_entry_count_;  // the total number of entries
-  int32_t immediate_entry_count_;
-  int32_t token_;
-  int32_t put_;
-  int32_t last_put_sent_;
-  int32_t cached_last_token_read_;
-  int32_t cached_get_offset_;
-  uint32_t set_get_buffer_count_;
-  bool service_on_old_buffer_;
+  CommandBufferEntry* entries_ = nullptr;
+  int32_t total_entry_count_ = 0;  // the total number of entries
+  int32_t immediate_entry_count_ = 0;
+  int32_t token_ = 0;
+  int32_t put_ = 0;
+  int32_t cached_last_token_read_ = 0;
+  int32_t cached_get_offset_ = 0;
+  uint32_t set_get_buffer_count_ = 0;
+  bool service_on_old_buffer_ = false;
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
-  int commands_issued_;
+  int commands_issued_ = 0;
 #endif
 
-  bool usable_;
-  bool context_lost_;
-  bool flush_automatically_;
+  bool usable_ = true;
+  bool context_lost_ = false;
+  bool flush_automatically_ = true;
+
+  // We track last put offset to avoid redundant automatic flushes. We track
+  // both flush and ordering barrier put offsets so that an automatic flush
+  // after an ordering barrier forces a flush. Automatic flushes are enabled on
+  // desktop, and are also used to flush before waiting for free space in the
+  // command buffer. If the auto flush logic is wrong, we might call
+  // WaitForGetOffsetInRange without flushing, causing the service to go idle,
+  // and the client to hang. See https://crbug.com/798400 for details.
+  int32_t last_flush_put_ = 0;
+  int32_t last_ordering_barrier_put_ = 0;
 
   base::TimeTicks last_flush_time_;
 
   // Incremented every time the helper flushes the command buffer.
   // Can be used to track when prior commands have been flushed.
-  uint32_t flush_generation_;
+  uint32_t flush_generation_ = 0;
 
   friend class CommandBufferHelperTest;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
