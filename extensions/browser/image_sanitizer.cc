@@ -215,6 +215,10 @@ void ImageSanitizer::ReportError(Status status, const base::FilePath& path) {
 
 void ImageSanitizer::CleanUp() {
   image_decoder_ptr_.reset();
+  // It's important to clear the repeating callback as it may cause a circular
+  // reference (the callback holds a ref to an object that has a ref to |this|)
+  // that would cause a leak.
+  image_decoded_callback_.Reset();
 }
 
 }  // namespace extensions
