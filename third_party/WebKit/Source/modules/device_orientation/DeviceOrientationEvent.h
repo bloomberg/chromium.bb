@@ -26,7 +26,6 @@
 #ifndef DeviceOrientationEvent_h
 #define DeviceOrientationEvent_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 
