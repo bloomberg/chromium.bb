@@ -43,6 +43,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /** Tests for CustomTabsConnection. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -102,7 +103,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testCanWarmup() {
+    public void testCanWarmup() throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         CustomTabsTestUtils.warmUpAndWait();
     }
@@ -110,7 +111,7 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testCreateSpareRenderer() {
+    public void testCreateSpareRenderer() throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         // On UI thread because:
         // 1. takeSpareWebContents needs to be called from the UI thread.
@@ -131,7 +132,8 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testCreateSpareRendererCanBeRecreated() {
+    public void testCreateSpareRendererCanBeRecreated()
+            throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -152,7 +154,7 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPrerenderDestroysSpareRenderer() {
+    public void testPrerenderDestroysSpareRenderer() throws InterruptedException, TimeoutException {
         CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -176,7 +178,8 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPrerenderAndDisconnectOnOtherThread() {
+    public void testPrerenderAndDisconnectOnOtherThread()
+            throws InterruptedException, TimeoutException {
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         final Thread otherThread = new Thread(new Runnable() {
             @Override
@@ -197,7 +200,8 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testMayLaunchUrlKeepsSpareRendererWithoutPrerendering() {
+    public void testMayLaunchUrlKeepsSpareRendererWithoutPrerendering()
+            throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
@@ -218,7 +222,7 @@ public class CustomTabsConnectionTest {
 
     @Test
     @SmallTest
-    public void testMayLaunchUrlNullOrEmptyUrl() {
+    public void testMayLaunchUrlNullOrEmptyUrl() throws InterruptedException, TimeoutException {
         assertWarmupAndMayLaunchUrl(null, null, true);
         CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection); // Resets throttling.
         assertWarmupAndMayLaunchUrl(null, "", true);
@@ -308,7 +312,8 @@ public class CustomTabsConnectionTest {
 
     @Test
     @SmallTest
-    public void testLowConfidenceMayLaunchUrlOnlyAcceptUris() {
+    public void testLowConfidenceMayLaunchUrlOnlyAcceptUris()
+            throws InterruptedException, TimeoutException {
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
@@ -335,7 +340,8 @@ public class CustomTabsConnectionTest {
 
     @Test
     @SmallTest
-    public void testLowConfidenceMayLaunchUrlDoesntCrash() {
+    public void testLowConfidenceMayLaunchUrlDoesntCrash()
+            throws InterruptedException, TimeoutException {
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
@@ -382,7 +388,8 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPrefetchOnlyNoPrerenderHasSpareWebContents() {
+    public void testPrefetchOnlyNoPrerenderHasSpareWebContents()
+            throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createMockSessionTokenForTesting();
@@ -404,7 +411,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
-    public void testCanCancelPrerender() {
+    public void testCanCancelPrerender() throws InterruptedException, TimeoutException {
         CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -438,8 +445,8 @@ public class CustomTabsConnectionTest {
      * Calls warmup() and mayLaunchUrl(), checks for the expected result
      * (success or failure) and returns the result code.
      */
-    private CustomTabsSessionToken assertWarmupAndMayLaunchUrl(
-            CustomTabsSessionToken token, String url, boolean shouldSucceed) {
+    private CustomTabsSessionToken assertWarmupAndMayLaunchUrl(CustomTabsSessionToken token,
+            String url, boolean shouldSucceed) throws InterruptedException, TimeoutException {
         CustomTabsTestUtils.warmUpAndWait();
         if (token == null) {
             token = CustomTabsSessionToken.createMockSessionTokenForTesting();
@@ -459,7 +466,8 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testNoMayLaunchUrlWithInvalidSessionId() {
+    public void testNoMayLaunchUrlWithInvalidSessionId()
+            throws InterruptedException, TimeoutException {
         assertWarmupAndMayLaunchUrl(
                 CustomTabsSessionToken.createMockSessionTokenForTesting(), URL, false);
     }
@@ -471,7 +479,8 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testNoMayLaunchUrlWithInvalidScheme() {
+    public void testNoMayLaunchUrlWithInvalidScheme()
+            throws InterruptedException, TimeoutException {
         assertWarmupAndMayLaunchUrl(null, INVALID_SCHEME_URL, false);
     }
 
@@ -482,7 +491,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testMayLaunchUrl() {
+    public void testMayLaunchUrl() throws InterruptedException, TimeoutException {
         assertWarmupAndMayLaunchUrl(null, URL, true);
     }
 
@@ -493,7 +502,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testMultipleMayLaunchUrl() {
+    public void testMultipleMayLaunchUrl() throws InterruptedException, TimeoutException {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         mCustomTabsConnection.resetThrottling(Process.myUid());
         assertWarmupAndMayLaunchUrl(token, URL, true);
@@ -506,7 +515,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testForgetsSession() {
+    public void testForgetsSession() throws InterruptedException, TimeoutException {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection);
         assertWarmupAndMayLaunchUrl(token, URL, false);
@@ -555,7 +564,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testThrottleMayLaunchUrl() {
+    public void testThrottleMayLaunchUrl() throws InterruptedException, TimeoutException {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         int successfulRequests = 0;
         // Send a burst of requests instead of checking for precise delays to avoid flakiness.
@@ -571,7 +580,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testThrottlingIsReset() {
+    public void testThrottlingIsReset() throws InterruptedException, TimeoutException {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         // Depending on the timing, the delay should be 100 or 200ms here.
         assertWarmupAndMayLaunchUrl(token, URL, true);
@@ -600,7 +609,7 @@ public class CustomTabsConnectionTest {
      */
     @Test
     @SmallTest
-    public void testThrottlingAcrossSessions() {
+    public void testThrottlingAcrossSessions() throws InterruptedException, TimeoutException {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         mCustomTabsConnection.resetThrottling(Process.myUid());
         CustomTabsSessionToken token2 = assertWarmupAndMayLaunchUrl(null, URL, true);
