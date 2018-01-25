@@ -7,7 +7,8 @@ class PixelTestPage(object):
   from the old-style GPU tests.
   """
   def __init__(self, url, name, test_rect, revision,
-               tolerance=2, browser_args=None, expected_colors=None):
+               tolerance=2, browser_args=None, expected_colors=None,
+               gpu_process_disabled=False):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -22,6 +23,10 @@ class PixelTestPage(object):
     # by contract with _CompareScreenshotSamples in
     # cloud_storage_integration_test_base.py.
     self.expected_colors = expected_colors
+    # Only a couple of tests run with the GPU process completely
+    # disabled. To prevent regressions, only allow the GPU information
+    # to be incomplete in these cases.
+    self.gpu_process_disabled = gpu_process_disabled
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -625,15 +630,17 @@ def NoGpuProcessPages(base_name):
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox' + suffix,
       test_rect=[0, 0, 300, 300],
-      revision=1,
-      browser_args=browser_args),
+      revision=2,
+      browser_args=browser_args,
+      gpu_process_disabled=True),
 
     PixelTestPage(
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox' + suffix,
       test_rect=[0, 0, 300, 300],
-      revision=1,
-      browser_args=browser_args),
+      revision=2,
+      browser_args=browser_args,
+      gpu_process_disabled=True),
   ]
 
 # Pages that should be run with various macOS specific command line

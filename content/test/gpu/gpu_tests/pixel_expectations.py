@@ -106,3 +106,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_VP9', ['win', 'intel'], bug=602688)
     self.Fail('Pixel_DirectComposition_Video_VP9', ['win', 'intel'],
         bug=602688)
+
+    # TODO(zmo): temporarily suppress these two tests until new
+    # reference images with new names are generated.
+    self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess',
+              ['linux', 'mac', 'win'], bug=744658)
+    self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
+              ['linux', 'mac', 'win'], bug=744658)

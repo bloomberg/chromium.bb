@@ -216,7 +216,6 @@ CONTENT_EXPORT extern const char kSavePreviousDocumentResources[];
 extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
-CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
 extern const char kSkipReencodingOnSKPCapture[];
 CONTENT_EXPORT extern const char kStartFullscreen[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];

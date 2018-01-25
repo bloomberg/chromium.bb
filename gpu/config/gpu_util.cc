@@ -8,12 +8,9 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -28,18 +25,6 @@
 namespace gpu {
 
 namespace {
-
-// |str| is in the format of "0x040a;0x10de;...;hex32_N".
-void StringToIds(const std::string& str, std::vector<uint32_t>* list) {
-  DCHECK(list);
-  for (const base::StringPiece& piece : base::SplitStringPiece(
-           str, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    uint32_t id = 0;
-    bool succeed = base::HexStringToUInt(piece, &id);
-    DCHECK(succeed);
-    list->push_back(id);
-  }
-}
 
 GpuFeatureStatus GetGpuRasterizationFeatureStatus(
     const std::set<int>& blacklisted_features,
@@ -64,7 +49,7 @@ GpuFeatureStatus GetWebGLFeatureStatus(
     const std::set<int>& blacklisted_features,
     bool use_swift_shader) {
   if (use_swift_shader)
-    return kGpuFeatureStatusSoftware;
+    return kGpuFeatureStatusEnabled;
   if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
     return kGpuFeatureStatusBlacklisted;
   return kGpuFeatureStatusEnabled;
@@ -74,7 +59,7 @@ GpuFeatureStatus GetWebGL2FeatureStatus(
     const std::set<int>& blacklisted_features,
     bool use_swift_shader) {
   if (use_swift_shader)
-    return kGpuFeatureStatusSoftware;
+    return kGpuFeatureStatusEnabled;
   if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_WEBGL2))
     return kGpuFeatureStatusBlacklisted;
   return kGpuFeatureStatusEnabled;
@@ -182,93 +167,6 @@ GPUInfo* g_gpu_info_cache = nullptr;
 GpuFeatureInfo* g_gpu_feature_info_cache = nullptr;
 
 }  // namespace anonymous
-
-void ParseSecondaryGpuDevicesFromCommandLine(
-    const base::CommandLine& command_line,
-    GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  const char* secondary_vendor_switch_key = switches::kGpuSecondaryVendorIDs;
-  const char* secondary_device_switch_key = switches::kGpuSecondaryDeviceIDs;
-
-  if (!command_line.HasSwitch(secondary_vendor_switch_key) ||
-      !command_line.HasSwitch(secondary_device_switch_key)) {
-    return;
-  }
-
-  std::vector<uint32_t> vendor_ids;
-  std::vector<uint32_t> device_ids;
-  StringToIds(command_line.GetSwitchValueASCII(secondary_vendor_switch_key),
-              &vendor_ids);
-  StringToIds(command_line.GetSwitchValueASCII(secondary_device_switch_key),
-              &device_ids);
-
-  DCHECK(vendor_ids.size() == device_ids.size());
-  gpu_info->secondary_gpus.clear();
-  for (size_t i = 0; i < vendor_ids.size() && i < device_ids.size(); ++i) {
-    gpu::GPUInfo::GPUDevice secondary_device;
-    secondary_device.active = false;
-    secondary_device.vendor_id = vendor_ids[i];
-    secondary_device.device_id = device_ids[i];
-    gpu_info->secondary_gpus.push_back(secondary_device);
-  }
-}
-
-void GetGpuInfoFromCommandLine(const base::CommandLine& command_line,
-                               GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  if (!command_line.HasSwitch(switches::kGpuVendorID) ||
-      !command_line.HasSwitch(switches::kGpuDeviceID) ||
-      !command_line.HasSwitch(switches::kGpuDriverVersion))
-    return;
-  bool success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuVendorID),
-      &gpu_info->gpu.vendor_id);
-  DCHECK(success);
-  success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
-      &gpu_info->gpu.device_id);
-  DCHECK(success);
-  gpu_info->driver_vendor =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
-  gpu_info->driver_version =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
-  gpu_info->driver_date =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverDate);
-  gpu::ParseSecondaryGpuDevicesFromCommandLine(command_line, gpu_info);
-
-  // Set active gpu device.
-  if (command_line.HasSwitch(switches::kGpuActiveVendorID) &&
-      command_line.HasSwitch(switches::kGpuActiveDeviceID)) {
-    uint32_t active_vendor_id = 0;
-    uint32_t active_device_id = 0;
-    success = base::HexStringToUInt(
-        command_line.GetSwitchValueASCII(switches::kGpuActiveVendorID),
-        &active_vendor_id);
-    DCHECK(success);
-    success = base::HexStringToUInt(
-        command_line.GetSwitchValueASCII(switches::kGpuActiveDeviceID),
-        &active_device_id);
-    DCHECK(success);
-    if (gpu_info->gpu.vendor_id == active_vendor_id &&
-        gpu_info->gpu.device_id == active_device_id) {
-      gpu_info->gpu.active = true;
-    } else {
-      for (size_t i = 0; i < gpu_info->secondary_gpus.size(); ++i) {
-        if (gpu_info->secondary_gpus[i].vendor_id == active_vendor_id &&
-            gpu_info->secondary_gpus[i].device_id == active_device_id) {
-          gpu_info->secondary_gpus[i].active = true;
-          break;
-        }
-      }
-    }
-  }
-
-  if (command_line.HasSwitch(switches::kAMDSwitchable)) {
-    gpu_info->amd_switchable = true;
-  }
-}
 
 GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
   GpuFeatureInfo gpu_feature_info;

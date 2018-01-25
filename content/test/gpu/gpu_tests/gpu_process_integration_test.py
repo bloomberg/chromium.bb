@@ -298,9 +298,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # Chrome on Android doesn't support software fallback, skip it.
       # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
       return
-    self.RestartBrowserIfNecessaryWithArgs([
-      '--disable-gpu',
-      '--skip-gpu-data-loading'])
+    self.RestartBrowserIfNecessaryWithArgs(['--disable-gpu'])
     self._NavigateAndWait(test_path)
     # On Windows or Linux, SwiftShader is enabled, so GPU process will still
     # launch with SwiftShader.
@@ -320,7 +318,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       return
     self.RestartBrowserIfNecessaryWithArgs([
       '--disable-gpu',
-      '--skip-gpu-data-loading',
       '--disable-software-rasterizer'])
     self._NavigateAndWait(test_path)
     if self.tab.EvaluateJavaScript('chrome.gpuBenchmarking.hasGpuProcess()'):

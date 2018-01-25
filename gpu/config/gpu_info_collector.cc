@@ -24,6 +24,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -110,6 +111,34 @@ int StringContainsName(
 }  // namespace
 
 namespace gpu {
+
+CollectInfoResult CollectBasicGraphicsInfo(
+    const base::CommandLine* command_line,
+    GPUInfo* gpu_info) {
+  const char* software_gl_impl_name =
+      gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
+  if ((command_line->GetSwitchValueASCII(switches::kUseGL) ==
+       software_gl_impl_name) ||
+      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
+    // If using the software GL implementation, use fake vendor and
+    // device ids to make sure it never gets blacklisted. It allows us
+    // to proceed with loading the blacklist which may have non-device
+    // specific entries we want to apply anyways (e.g., OS version
+    // blacklisting).
+    gpu_info->gpu.vendor_id = 0xffff;
+    gpu_info->gpu.device_id = 0xffff;
+
+    // Also declare the driver_vendor to be <software GL> to be able to
+    // specify exceptions based on driver_vendor==<software GL> for some
+    // blacklist rules.
+    gpu_info->driver_vendor = software_gl_impl_name;
+
+    gpu_info->basic_info_state = gpu::kCollectInfoSuccess;
+    return kCollectInfoSuccess;
+  }
+
+  return CollectBasicGraphicsInfo(gpu_info);
+}
 
 CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
@@ -213,6 +242,9 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
       context_gpu_info.vertex_shader_version;
   basic_gpu_info->max_msaa_samples =
       context_gpu_info.max_msaa_samples;
+  basic_gpu_info->machine_model_name = context_gpu_info.machine_model_name;
+  basic_gpu_info->machine_model_version =
+      context_gpu_info.machine_model_version;
   basic_gpu_info->gl_ws_vendor = context_gpu_info.gl_ws_vendor;
   basic_gpu_info->gl_ws_version = context_gpu_info.gl_ws_version;
   basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
