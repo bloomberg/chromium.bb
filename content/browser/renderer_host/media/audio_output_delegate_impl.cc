@@ -24,7 +24,7 @@ namespace content {
 namespace {
 
 // Safe to call from any thread.
-void LogMessage(int stream_id, const std::string& message) {
+void AudioOutputLogMessage(int stream_id, const std::string& message) {
   std::string out_message =
       base::StringPrintf("[stream_id=%d] %s", stream_id, message.c_str());
   content::MediaStreamManager::SendMessageToNativeLog(out_message);
@@ -93,7 +93,7 @@ void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerError() {
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnLog(
     base::StringPiece message) {
-  LogMessage(stream_id_, message.as_string());
+  AudioOutputLogMessage(stream_id_, message.as_string());
 }
 
 std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
@@ -110,7 +110,8 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     const std::string& output_device_id) {
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   auto reader = AudioSyncReader::Create(
-      base::BindRepeating(&LogMessage, stream_id), params, socket.get());
+      base::BindRepeating(&AudioOutputLogMessage, stream_id), params,
+      socket.get());
   if (!reader)
     return nullptr;
 
