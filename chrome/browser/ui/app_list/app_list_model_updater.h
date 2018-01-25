@@ -76,9 +76,7 @@ class AppListModelUpdater {
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
   virtual size_t ItemCount() = 0;
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
-  // TODO(hejq): |FindFolderItem| will return |ChromeAppListItem|.
-  virtual app_list::AppListFolderItem* FindFolderItem(
-      const std::string& folder_id) = 0;
+  virtual ChromeAppListItem* FindFolderItem(const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
   virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
   virtual size_t BadgedItemCount() = 0;

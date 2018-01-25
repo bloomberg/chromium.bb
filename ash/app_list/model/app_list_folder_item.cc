@@ -51,10 +51,6 @@ size_t AppListFolderItem::ChildItemCount() const {
   return item_list_->item_count();
 }
 
-size_t AppListFolderItem::BadgedItemCount() const {
-  return item_list_->BadgedItemCount();
-}
-
 bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
   if (!AppListItem::CompareForTest(other))
     return false;

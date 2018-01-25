@@ -74,11 +74,11 @@ class ExtensionAppItem : public ChromeAppListItem,
   void ExtensionEnableFlowFinished() override;
   void ExtensionEnableFlowAborted(bool user_initiated) override;
 
-  // Overridden from AppListItem:
+  // Overridden from ChromeAppListItem:
   void Activate(int event_flags) override;
   ui::MenuModel* GetContextMenuModel() override;
   const char* GetItemType() const override;
-  size_t BadgedItemCount() const override;
+  bool IsBadged() const override;
 
   // Overridden from app_list::AppContextMenuDelegate:
   void ExecuteLaunchCommand(int event_flags) override;

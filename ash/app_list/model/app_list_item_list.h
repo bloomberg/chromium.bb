@@ -65,10 +65,6 @@ class APP_LIST_MODEL_EXPORT AppListItemList {
   }
   size_t item_count() const { return app_list_items_.size(); }
 
-  // Returns the number of items that were badged because they are extension
-  // apps that have their Android analogs installed.
-  size_t BadgedItemCount() const;
-
  private:
   friend class AppListItemListTest;
   friend class AppListModel;
