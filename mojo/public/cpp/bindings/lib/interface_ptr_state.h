@@ -193,6 +193,11 @@ class InterfacePtrState : public InterfacePtrStateBase {
     endpoint_client()->AcceptWithResponder(&message, std::move(responder));
   }
 
+  void RaiseError() {
+    ConfigureProxyIfNecessary();
+    endpoint_client()->RaiseError();
+  }
+
  private:
   void ConfigureProxyIfNecessary() {
     // The proxy has been configured.
