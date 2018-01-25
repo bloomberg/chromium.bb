@@ -26,6 +26,11 @@ struct WebSocketFrameChunk;
 
 // Implementation of WebSocketStream for non-multiplexed ws:// connections (or
 // the physical side of a multiplexed ws:// connection).
+//
+// Please update the traffic annotations in the websocket_basic_stream.cc and
+// websocket_stream.cc if the class is used for any communication with Google.
+// In such a case, annotation should be passed from the callers to this class
+// and a local annotation can not be used anymore.
 class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
  public:
   typedef WebSocketMaskingKey (*WebSocketMaskingKeyGeneratorFunction)();
