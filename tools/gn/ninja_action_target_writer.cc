@@ -206,6 +206,12 @@ void NinjaActionTargetWriter::WriteSourceRules(
       WriteDepfile(sources[i]);
       out_ << std::endl;
     }
+    if (target_->action_values().pool().ptr) {
+      out_ << "  pool = ";
+      out_ << target_->action_values().pool().ptr->GetNinjaName(
+          settings_->default_toolchain_label());
+      out_ << std::endl;
+    }
   }
 }
 
