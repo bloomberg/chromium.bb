@@ -602,8 +602,8 @@ void av1_inv_txfm2d_add_32x32_avx2(const int32_t *coeff, uint16_t *output,
                                    int stride, TX_TYPE tx_type, int bd) {
   __m256i in[128], out[128];
   const int8_t *shift = inv_txfm_shift_ls[TX_32X32];
-  const int txw_idx = tx_size_wide_log2[TX_32X32] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[TX_32X32] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(TX_32X32);
+  const int txh_idx = get_txh_idx(TX_32X32);
 
   switch (tx_type) {
     case DCT_DCT:

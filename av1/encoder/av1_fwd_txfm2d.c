@@ -463,17 +463,23 @@ const int8_t *fwd_txfm_shift_ls[TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
 };
 
-const int8_t fwd_cos_bit_col[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
-                                                       { 13, 13, 13, 12, 0 },
-                                                       { 13, 13, 13, 12, 13 },
-                                                       { 0, 13, 13, 12, 13 },
-                                                       { 0, 0, 13, 12, 13 } };
+const int8_t fwd_cos_bit_col[MAX_TXWH_IDX /*txw_idx*/]
+                            [MAX_TXWH_IDX /*txh_idx*/] = {
+                              { 13, 13, 13, 0, 0 },
+                              { 13, 13, 13, 12, 0 },
+                              { 13, 13, 13, 12, 13 },
+                              { 0, 13, 13, 12, 13 },
+                              { 0, 0, 13, 12, 13 }
+                            };
 
-const int8_t fwd_cos_bit_row[5 /*row*/][5 /*col*/] = { { 13, 13, 13, 0, 0 },
-                                                       { 13, 13, 13, 12, 0 },
-                                                       { 13, 13, 12, 13, 12 },
-                                                       { 0, 12, 13, 12, 11 },
-                                                       { 0, 0, 12, 11, 10 } };
+const int8_t fwd_cos_bit_row[MAX_TXWH_IDX /*txw_idx*/]
+                            [MAX_TXWH_IDX /*txh_idx*/] = {
+                              { 13, 13, 13, 0, 0 },
+                              { 13, 13, 13, 12, 0 },
+                              { 13, 13, 12, 13, 12 },
+                              { 0, 12, 13, 12, 11 },
+                              { 0, 0, 12, 11, 10 }
+                            };
 
 const int8_t fdct4_range_mult2[4] = { 0, 2, 3, 3 };
 const int8_t fdct8_range_mult2[6] = { 0, 2, 4, 5, 5, 5 };
@@ -495,11 +501,13 @@ const int8_t fidtx16_range_mult2[1] = { 3 };
 const int8_t fidtx32_range_mult2[1] = { 4 };
 const int8_t fidtx64_range_mult2[1] = { 5 };
 
-const int8_t fwd_idtx_range_row[5 /*row*/][5 /*col*/] = { { 2, 4, 5, 0, 0 },
-                                                          { 3, 4, 5, 6, 0 },
-                                                          { 4, 5, 6, 7, 8 },
-                                                          { 0, 5, 6, 7, 8 },
-                                                          { 0, 0, 7, 8, 9 } };
+const int8_t fwd_idtx_range_row[MAX_TXWH_IDX /*txw_idx*/]
+                               [MAX_TXWH_IDX /*txh_idx*/] = { { 2, 4, 5, 0, 0 },
+                                                              { 3, 4, 5, 6, 0 },
+                                                              { 4, 5, 6, 7, 8 },
+                                                              { 0, 5, 6, 7, 8 },
+                                                              { 0, 0, 7, 8,
+                                                                9 } };
 
 const int8_t *fwd_txfm_range_mult2_list[TXFM_TYPES] = {
   fdct4_range_mult2,   fdct8_range_mult2,   fdct16_range_mult2,
@@ -510,8 +518,8 @@ const int8_t *fwd_txfm_range_mult2_list[TXFM_TYPES] = {
 };
 
 static INLINE void set_fwd_txfm_non_scale_range(TXFM_2D_FLIP_CFG *cfg) {
-  const int txw_idx = tx_size_wide_log2[cfg->tx_size] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[cfg->tx_size] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(cfg->tx_size);
+  const int txh_idx = get_txh_idx(cfg->tx_size);
   av1_zero(cfg->stage_range_col);
   av1_zero(cfg->stage_range_row);
 

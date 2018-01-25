@@ -81,8 +81,8 @@ static const int8_t inv_stage_range_row_dct_64[12] = { 0, 0, 0, 0, 0, 0,
                                                        0, 0, 0, 0, 0, 0 };
 static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
-  const int txw_idx = tx_size_wide_log2[TX_64X64] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[TX_64X64] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(TX_64X64);
+  const int txh_idx = get_txh_idx(TX_64X64);
   for (int i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
   av1_idct64_new(in, out, inv_cos_bit_col[txw_idx][txh_idx],
                  inv_stage_range_col_dct_64);

@@ -183,8 +183,8 @@ void av1_fwd_txfm2d_4x4_sse4_1(const int16_t *input, int32_t *coeff,
                                int input_stride, TX_TYPE tx_type, int bd) {
   __m128i in[4];
   const int8_t *shift = fwd_txfm_shift_ls[TX_4X4];
-  const int txw_idx = tx_size_wide_log2[TX_4X4] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[TX_4X4] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(TX_4X4);
+  const int txh_idx = get_txh_idx(TX_4X4);
 
   switch (tx_type) {
     case DCT_DCT:
@@ -773,8 +773,8 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
                                TX_TYPE tx_type, int bd) {
   __m128i in[16], out[16];
   const int8_t *shift = fwd_txfm_shift_ls[TX_8X8];
-  const int txw_idx = tx_size_wide_log2[TX_8X8] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[TX_8X8] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(TX_8X8);
+  const int txh_idx = get_txh_idx(TX_8X8);
 
   switch (tx_type) {
     case DCT_DCT:
@@ -1496,8 +1496,8 @@ void av1_fwd_txfm2d_16x16_sse4_1(const int16_t *input, int32_t *coeff,
                                  int stride, TX_TYPE tx_type, int bd) {
   __m128i in[64], out[64];
   const int8_t *shift = fwd_txfm_shift_ls[TX_16X16];
-  const int txw_idx = tx_size_wide_log2[TX_16X16] - tx_size_wide_log2[0];
-  const int txh_idx = tx_size_high_log2[TX_16X16] - tx_size_high_log2[0];
+  const int txw_idx = get_txw_idx(TX_16X16);
+  const int txh_idx = get_txh_idx(TX_16X16);
   switch (tx_type) {
     case DCT_DCT:
       load_buffer_16x16(input, in, stride, 0, 0, shift[0]);

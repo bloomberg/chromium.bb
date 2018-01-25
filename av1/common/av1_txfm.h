@@ -261,6 +261,13 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
                           TXFM_2D_FLIP_CFG *cfg);
 extern const TXFM_TYPE av1_txfm_type_ls[5][TX_TYPES_1D];
 extern const int8_t av1_txfm_stage_num_list[TXFM_TYPES];
+static INLINE int get_txw_idx(TX_SIZE tx_size) {
+  return tx_size_wide_log2[tx_size] - tx_size_wide_log2[0];
+}
+static INLINE int get_txh_idx(TX_SIZE tx_size) {
+  return tx_size_high_log2[tx_size] - tx_size_high_log2[0];
+}
+#define MAX_TXWH_IDX 5
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
