@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <meta name="viewport" content="width=device-width, user-scalable=no" />
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script>
   // Set the browser controls to be 100px and showing.
   // NOTE: It is important that this test be run with the Android viewport
   // flags turned on.
-  if (window.internals) {
+  if (window.internals)
     window.internals.setBrowserControlsState(100, 0, false);
-    testRunner.waitUntilDone();
-  }
 
   addEventListener("load", function() {
     var iframe = document.getElementById("iframe");
@@ -17,7 +16,7 @@
     if (window.internals)
       window.internals.setBrowserControlsShownRatio(1);
 
-    requestAnimationFrame(() => { testRunner.notifyDone(); });
+    runAfterLayoutAndPaint(() => { testRunner.notifyDone(); }, true);
   });
 </script>
 <style>
