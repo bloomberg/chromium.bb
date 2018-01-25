@@ -141,6 +141,7 @@ crbug.com/311482 virtual/threaded/animations/prefixed/keyframes-unprefixed-03.ht
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
 crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
 crbug.com/664857 virtual/threaded/animations/responsive/transform-responsive-neutral-keyframe.html [ Slow ]
+crbug.com/805794 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Slow ]
 
 
 # These html5lib tests are generated tests that test a huge amount of permutations so they need a bit more time.
