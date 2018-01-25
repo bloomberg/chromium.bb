@@ -83,6 +83,13 @@ interface FrameSinkManager {
       CompositorFrameSink& compositor_frame_sink,
       CompositorFrameSinkClient compositor_frame_sink_client);
 
+  // Destroys CompositorFrameSink created by Create[Root]CompositorFrameSink().
+  // This function should only be used synchronously for destroying root
+  // CompositorFrameSinks to ensure the GL context/surface is destroyed before
+  // the platform window.
+  [Sync]
+  DestroyCompositorFrameSink(FrameSinkId frame_sink_id) => ();
+
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
   // the child inherits the viz::BeginFrameSource from the parent if it doesn't
   // already have a viz::BeginFrameSource.

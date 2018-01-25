@@ -41,6 +41,10 @@ namespace views {
 class ClipboardMus;
 }
 
+namespace viz {
+class HostFrameSinkManager;
+}
+
 namespace mojo {
 class ScopedAllowSyncCallForTesting;
 
@@ -80,6 +84,9 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   friend class mojo::ScopedAllowSyncCallForTesting;
   // For file open and save dialogs created synchronously.
   friend class ::ChromeSelectFileDialogFactory;
+  // For destroying the GL context/surface that draw to a platform window before
+  // the platform window is destroyed.
+  friend class viz::HostFrameSinkManager;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.
