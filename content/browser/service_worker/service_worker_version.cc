@@ -210,7 +210,7 @@ void DidNavigateInPaymentHandlerWindow(
         render_frame_id);
   } else {
     std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED,
-                            blink::mojom::ServiceWorkerClientInfo());
+                            blink::mojom::ServiceWorkerClientInfo::New());
   }
 }
 
@@ -1296,7 +1296,7 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id,
 void ServiceWorkerVersion::OnOpenWindowFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const blink::mojom::ServiceWorkerClientInfo& client_info) {
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -1308,8 +1308,9 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
     return;
   }
 
+  DCHECK(client_info);
   embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_OpenWindowResponse(request_id, client_info));
+      ServiceWorkerMsg_OpenWindowResponse(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnPostMessageToClient(
@@ -1369,14 +1370,15 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
 
 void ServiceWorkerVersion::OnFocusClientFinished(
     int request_id,
-    const blink::mojom::ServiceWorkerClientInfo& client_info) {
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
     return;
 
+  DCHECK(client_info);
   embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_FocusClientResponse(request_id, client_info));
+      ServiceWorkerMsg_FocusClientResponse(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnNavigateClient(int request_id,
@@ -1425,7 +1427,7 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
 void ServiceWorkerVersion::OnNavigateClientFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const blink::mojom::ServiceWorkerClientInfo& client_info) {
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -1437,8 +1439,9 @@ void ServiceWorkerVersion::OnNavigateClientFinished(
     return;
   }
 
+  DCHECK(client_info);
   embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_NavigateClientResponse(request_id, client_info));
+      ServiceWorkerMsg_NavigateClientResponse(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnSkipWaiting(int request_id) {

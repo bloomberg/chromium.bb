@@ -653,7 +653,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnOpenWindowFinished(
       int request_id,
       ServiceWorkerStatusCode status,
-      const blink::mojom::ServiceWorkerClientInfo& client_info);
+      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void OnPostMessageToClient(
       const std::string& client_uuid,
@@ -666,13 +666,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnNavigateClientFinished(
       int request_id,
       ServiceWorkerStatusCode status,
-      const blink::mojom::ServiceWorkerClientInfo& client_info);
+      blink::mojom::ServiceWorkerClientInfoPtr client_info);
   void OnSkipWaiting(int request_id);
   void OnPongFromWorker();
 
   void OnFocusClientFinished(
       int request_id,
-      const blink::mojom::ServiceWorkerClientInfo& client_info);
+      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,
