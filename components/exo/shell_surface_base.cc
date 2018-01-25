@@ -65,6 +65,29 @@ const struct {
     {ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
     {ui::VKEY_F4, ui::EF_ALT_DOWN}};
 
+class ShellSurfaceWidget : public views::Widget {
+ public:
+  explicit ShellSurfaceWidget(ShellSurfaceBase* shell_surface)
+      : shell_surface_(shell_surface) {}
+
+  // Overridden from views::Widget:
+  void Close() override { shell_surface_->Close(); }
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
+    // management keys (like the tab key) as well.
+    if (GetFocusManager()->ProcessAccelerator(ui::Accelerator(*event)))
+      event->SetHandled();
+  }
+  gfx::Size GetMinimumSize() const override {
+    return shell_surface_->GetMinimumSize();
+  }
+
+ private:
+  ShellSurfaceBase* const shell_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
+};
+
 class CustomFrameView : public ash::CustomFrameViewAsh {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
@@ -147,6 +170,10 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
   void SizeConstraintsChanged() override {
     if (enabled())
       return ash::CustomFrameViewAsh::SizeConstraintsChanged();
+  }
+  gfx::Size GetMinimumSize() const override {
+    return static_cast<const ShellSurfaceWidget*>(GetWidget())
+        ->GetMinimumSize();
   }
 
  private:
@@ -239,26 +266,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   const bool client_controlled_move_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
-};
-
-class ShellSurfaceWidget : public views::Widget {
- public:
-  explicit ShellSurfaceWidget(ShellSurfaceBase* shell_surface)
-      : shell_surface_(shell_surface) {}
-
-  // Overridden from views::Widget
-  void Close() override { shell_surface_->Close(); }
-  void OnKeyEvent(ui::KeyEvent* event) override {
-    // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
-    // management keys (like the tab key) as well.
-    if (GetFocusManager()->ProcessAccelerator(ui::Accelerator(*event)))
-      event->SetHandled();
-  }
-
- private:
-  ShellSurfaceBase* const shell_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
 // A place holder to disable default implementation created by
