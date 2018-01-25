@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_DIR_H_
-#define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_DIR_H_
+#ifndef EXTENSIONS_TEST_TEST_EXTENSION_DIR_H_
+#define EXTENSIONS_TEST_TEST_EXTENSION_DIR_H_
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -51,4 +51,4 @@ class TestExtensionDir {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_DIR_H_
+#endif  // EXTENSIONS_TEST_TEST_EXTENSION_DIR_H_

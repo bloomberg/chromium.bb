@@ -117,6 +117,8 @@ static_library("test_support") {
     "test/test_content_browser_client.h",
     "test/test_content_utility_client.cc",
     "test/test_content_utility_client.h",
+    "test/test_extension_dir.cc",
+    "test/test_extension_dir.h",
     "test/test_extensions_client.cc",
     "test/test_extensions_client.h",
     "test/test_permission_message_provider.cc",
