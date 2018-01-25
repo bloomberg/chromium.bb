@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -20,6 +21,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
+#include "content/browser/loader/web_package_request_handler.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -27,6 +29,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -414,6 +417,10 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
   if (!must_download) {
     if (blink::IsSupportedMimeType(mime_type))
       return true;
+    if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
+        WebPackageRequestHandler::IsSupportedMimeType(mime_type)) {
+      return true;
+    }
 
     bool handled_by_plugin;
     if (!CheckForPluginHandler(&handled_by_plugin))

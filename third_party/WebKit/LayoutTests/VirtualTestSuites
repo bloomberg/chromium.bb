@@ -643,5 +643,15 @@
     "prefix": "unified-autoplay",
     "base": "external/wpt/feature-policy",
     "args": ["--autoplay-policy=document-user-activation-required"]
+  },
+  {
+    "prefix": "htxg",
+    "base": "http/tests/loading/htxg/",
+    "args": ["--enable-features=SignedHTTPExchange"]
+  },
+  {
+    "prefix": "htxg-with-network-service",
+    "base": "http/tests/loading/htxg/",
+    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   }
 ]

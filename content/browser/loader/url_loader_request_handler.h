@@ -19,6 +19,7 @@ namespace content {
 class ResourceContext;
 struct ResourceRequest;
 struct SubresourceLoaderParams;
+class ThrottlingURLLoader;
 
 using StartLoaderCallback =
     base::OnceCallback<void(network::mojom::URLLoaderRequest request,
@@ -56,10 +57,17 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
   // The URLLoader interface pointer is returned in the |loader| parameter.
   // The interface request for the URLLoaderClient is returned in the
   // |client_request| parameter.
+  // The |url_loader| points to the ThrottlingURLLoader that currently controls
+  // the request. It can be optionally consumed to get the current
+  // URLLoaderClient and URLLoader so that the implementation can rebind them to
+  // intercept the inflight loading if necessary.  Note that the |url_loader|
+  // will be reset after this method is called, which will also drop the
+  // URLLoader held by |url_loader_| if it is not unbound yet.
   virtual bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request);
+      network::mojom::URLLoaderClientRequest* client_request,
+      ThrottlingURLLoader* url_loader);
 };
 
 }  // namespace content

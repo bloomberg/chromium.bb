@@ -22,7 +22,8 @@ bool IsNavigationMojoResponseEnabled() {
   if (!IsBrowserSideNavigationEnabled())
     return false;
 
-  return base::FeatureList::IsEnabled(features::kNavigationMojoResponse);
+  return base::FeatureList::IsEnabled(features::kNavigationMojoResponse) ||
+         base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
 }
 
 }  // namespace content

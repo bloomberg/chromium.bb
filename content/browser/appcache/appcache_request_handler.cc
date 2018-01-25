@@ -600,7 +600,8 @@ void AppCacheRequestHandler::MaybeCreateLoader(
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
-    network::mojom::URLLoaderClientRequest* client_request) {
+    network::mojom::URLLoaderClientRequest* client_request,
+    ThrottlingURLLoader* url_loader) {
   // The sync interface of this method is inherited from the
   // URLLoaderRequestHandler class. The LoaderCallback created here is invoked
   // synchronously in fallback cases, and only when there really is a loader
