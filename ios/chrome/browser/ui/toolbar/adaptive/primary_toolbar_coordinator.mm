@@ -6,9 +6,15 @@
 
 #import <CoreLocation/CoreLocation.h>
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -29,6 +35,8 @@
 
 @interface PrimaryToolbarCoordinator ()<OmniboxPopupPositioner> {
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
+  // Observer that updates |toolbarViewController| for fullscreen events.
+  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
 
 // Redefined as PrimaryToolbarViewController.
@@ -57,7 +65,14 @@
   [self setUpLocationBar];
   self.viewController.locationBarView =
       self.locationBarCoordinator.locationBarView;
+
   [super start];
+
+  _fullscreenObserver =
+      std::make_unique<FullscreenUIUpdater>(self.viewController);
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->AddObserver(_fullscreenObserver.get());
 }
 
 #pragma mark - PrimaryToolbarCoordinator
