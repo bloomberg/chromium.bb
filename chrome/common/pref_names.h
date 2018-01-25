@@ -518,7 +518,6 @@ extern const char kSelectFileLastDirectory[];
 extern const char kExcludedSchemes[];
 
 extern const char kOptionsWindowLastTabIndex[];
-extern const char kShowFirstRunBubbleOption[];
 
 extern const char kLastKnownIntranetRedirectOrigin[];
 

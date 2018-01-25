@@ -8876,7 +8876,7 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Update Recommended"/>
   <int value="12" label="Crypto Password"/>
   <int value="13" label="Safe Browsing Download Feedback"/>
-  <int value="14" label="First Run Bubble"/>
+  <int value="14" label="First Run Bubble (Obsolete)"/>
   <int value="15" label="Network Share Profile Warning"/>
   <int value="16" label="Conflicting Module"/>
   <int value="17" label="Critical Notification (Upgrade Installed)"/>

@@ -35,8 +35,6 @@ uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   registry->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
-  registry->RegisterIntegerPref(prefs::kShowFirstRunBubbleOption,
-                             first_run::FIRST_RUN_BUBBLE_DONT_SHOW);
 }
 
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {

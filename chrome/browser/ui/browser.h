@@ -502,9 +502,6 @@ class Browser : public TabStripModelObserver,
   // Called each time the browser window is shown.
   void OnWindowDidShow();
 
-  // Show the first run search engine bubble on the location bar.
-  void ShowFirstRunBubble();
-
   ExclusiveAccessManager* exclusive_access_manager() {
     return exclusive_access_manager_.get();
   }
