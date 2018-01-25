@@ -245,6 +245,8 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 			AMDGPU_TIMEOUT_INFINITE,0, &expired);
 	CU_ASSERT_EQUAL((r == 0 || r == -ECANCELED), 1);
 
+	pthread_join(stress_thread, NULL);
+
 	r = amdgpu_bo_list_destroy(bo_list);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -254,6 +256,4 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
-
-	pthread_join(stress_thread, NULL);
 }
