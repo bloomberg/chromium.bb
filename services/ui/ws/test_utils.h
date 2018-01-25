@@ -809,6 +809,8 @@ class TestPlatformDisplay : public PlatformDisplay {
 
   const display::ViewportMetrics& metrics() const { return metrics_; }
 
+  bool has_capture() const { return has_capture_; }
+
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;
   void SetViewportSize(const gfx::Size& size) override;
@@ -836,6 +838,7 @@ class TestPlatformDisplay : public PlatformDisplay {
       display::Display::Rotation::ROTATE_0;
   float cursor_scale_ = 1.0f;
   gfx::Rect confine_cursor_bounds_;
+  bool has_capture_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };

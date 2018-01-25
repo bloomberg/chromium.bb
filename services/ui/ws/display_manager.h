@@ -89,7 +89,11 @@ class DisplayManager : public UserIdTrackerObserver,
 
   // Returns the display with the specified display id, or null if there is no
   // display with that id.
-  Display* GetDisplayById(int64_t display_id);
+  const Display* GetDisplayById(int64_t display_id) const;
+  Display* GetDisplayById(int64_t display_id) {
+    return const_cast<Display*>(
+        const_cast<const DisplayManager*>(this)->GetDisplayById(display_id));
+  }
 
   const WindowManagerDisplayRoot* GetWindowManagerDisplayRoot(
       const ServerWindow* window) const;
@@ -103,6 +107,8 @@ class DisplayManager : public UserIdTrackerObserver,
   bool has_active_or_pending_displays() const {
     return !displays_.empty() || !pending_displays_.empty();
   }
+
+  bool InUnifiedDisplayMode() const;
 
   // Returns the id for the next root window (both for the root of a Display
   // as well as the root of WindowManagers).

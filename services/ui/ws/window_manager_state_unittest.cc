@@ -839,6 +839,27 @@ TEST_F(WindowManagerStateTest, CursorLocationManagerUpdatedOnMouseMove) {
                           .current_cursor_location()));
 }
 
+TEST_F(WindowManagerStateTest, SetCapture) {
+  ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
+  Display* display = *(window_server()->display_manager()->displays().begin());
+  TestPlatformDisplay* platform_display =
+      static_cast<TestPlatformDisplay*>(display->platform_display());
+  EXPECT_TRUE(window_tree()->SetCapture(FirstRootId(window_tree())));
+  EXPECT_EQ(FirstRoot(window_tree()), window_manager_state()->capture_window());
+  EXPECT_TRUE(platform_display->has_capture());
+  EXPECT_TRUE(window_tree()->ReleaseCapture(FirstRootId(window_tree())));
+  EXPECT_FALSE(platform_display->has_capture());
+
+  // In unified mode capture should not propagate to the PlatformDisplay. This
+  // is for compatibility with classic ash. See http://crbug.com/773348.
+  display->SetDisplay(display::Display(display::kUnifiedDisplayId));
+  EXPECT_TRUE(window_tree()->SetCapture(FirstRootId(window_tree())));
+  EXPECT_EQ(FirstRoot(window_tree()), window_manager_state()->capture_window());
+  EXPECT_FALSE(platform_display->has_capture());
+  EXPECT_TRUE(window_tree()->ReleaseCapture(FirstRootId(window_tree())));
+  EXPECT_FALSE(platform_display->has_capture());
+}
+
 TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {
   ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
   const ClientWindowId child_window_id(window_tree()->id(), 11);

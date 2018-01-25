@@ -730,6 +730,12 @@ ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher(
 void WindowManagerState::SetNativeCapture(ServerWindow* window) {
   DCHECK(window);
   DCHECK(IsActive());
+
+  // Classic ash expects no native grab when in unified display.
+  // See http://crbug.com/773348 for details.
+  if (display_manager()->InUnifiedDisplayMode())
+    return;
+
   WindowManagerDisplayRoot* display_root =
       display_manager()->GetWindowManagerDisplayRoot(window);
   DCHECK(display_root);
@@ -738,6 +744,11 @@ void WindowManagerState::SetNativeCapture(ServerWindow* window) {
 }
 
 void WindowManagerState::ReleaseNativeCapture() {
+  // Classic ash expects no native grab when in unified display.
+  // See http://crbug.com/773348 for details.
+  if (display_manager()->InUnifiedDisplayMode())
+    return;
+
   // Tests trigger calling this without a corresponding SetNativeCapture().
   // TODO(sky): maybe abstract this away so that DCHECK can be added?
   if (!platform_display_with_capture_)
