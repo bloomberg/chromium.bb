@@ -495,6 +495,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
   const GURL& url = request()->url();
+  url::Origin target_origin = url::Origin::Create(url);
 
   // Check if the response's site needs to have its documents protected.  By
   // default, this will usually return false.
@@ -507,7 +508,7 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     case SiteIsolationPolicy::XSDB_ENABLED_IF_ISOLATED:
       if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
           !ChildProcessSecurityPolicyImpl::GetInstance()->IsIsolatedOrigin(
-              url::Origin::Create(url))) {
+              target_origin)) {
         return false;
       }
       break;
@@ -531,11 +532,13 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     initiator = request()->initiator().value();
 
   // Don't block same-origin documents.
-  if (initiator.IsSameOriginWith(url::Origin::Create(url)))
+  if (initiator.IsSameOriginWith(target_origin))
     return false;
 
-  // Only block documents from HTTP(S) schemes.
-  if (!CrossSiteDocumentClassifier::IsBlockableScheme(url))
+  // Only block documents from HTTP(S) schemes.  Checking the scheme of
+  // |target_origin| ensures that we also protect content of blob: and
+  // filesystem: URLs if their nested origins have a HTTP(S) scheme.
+  if (!CrossSiteDocumentClassifier::IsBlockableScheme(target_origin.GetURL()))
     return false;
 
   // Allow requests from file:// URLs for now.
