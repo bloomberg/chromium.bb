@@ -4,11 +4,12 @@
 
 mojom = "//services/viz/public/interfaces/compositing/copy_output_result.mojom"
 public_headers = [ "//components/viz/common/frame_sinks/copy_output_result.h" ]
-traits_headers = [ "//services/viz/public/cpp/compositing/copy_output_result_struct_traits.h" ]
+traits_headers = [
+  "//services/viz/public/cpp/compositing/copy_output_result_struct_traits.h",
+]
 public_deps = [
   "//cc",
   "//components/viz/common",
-  "//skia/public/interfaces:struct_traits",
 ]
 sources = [
   "//services/viz/public/cpp/compositing/copy_output_result_struct_traits.cc",

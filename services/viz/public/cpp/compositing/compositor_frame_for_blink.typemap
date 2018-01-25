@@ -19,7 +19,6 @@ traits_headers = [
   "//services/viz/public/cpp/compositing/selection_struct_traits.h",
   "//services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h",
   "//services/viz/public/cpp/compositing/transferable_resource_struct_traits.h",
-  "//skia/public/interfaces/image_filter_struct_traits.h",
   "//ui/gfx/mojo/selection_bound_struct_traits.h",
   "//ui/gfx/mojo/transform_struct_traits.h",
   "//ui/latency/mojo/latency_info_struct_traits.h",
