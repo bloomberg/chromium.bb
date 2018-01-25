@@ -55,7 +55,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
   // Registers a CloudPolicyClient for fetching policy for a user. |username| is
   // explicitly passed because the user is not yet authenticated, but the token
   // service has a refresh token available for |account_id|.
-  void RegisterForPolicyWithAccountId(
+  // Virtual for testing.
+  virtual void RegisterForPolicyWithAccountId(
       const std::string& username,
       const std::string& account_id,
       const PolicyRegistrationCallback& callback);

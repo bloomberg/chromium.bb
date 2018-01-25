@@ -75,7 +75,8 @@ class UserPolicySigninServiceBase : public KeyedService,
   // |client_id| fetched via RegisterForPolicyXXX(). |callback| is invoked
   // once the policy fetch is complete, passing true if the policy fetch
   // succeeded.
-  void FetchPolicyForSignedInUser(
+  // Virtual for testing.
+  virtual void FetchPolicyForSignedInUser(
       const std::string& username,
       const std::string& dm_token,
       const std::string& client_id,
