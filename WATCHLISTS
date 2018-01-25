@@ -1322,6 +1322,9 @@
                   'rlz/lib/machine_id.h|'\
                   'rlz/win/lib/machine_id_win.cc',
     },
+    'runtime_enabled_features': {
+      'filepath' : 'third_party/WebKit/Source/platform/runtime_enabled_features.json5'
+    },
     'safe_browsing': {
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/|'\
                   'components/safe_browsing/',
@@ -1362,6 +1365,9 @@
                   '|chrome/browser/chromeos/smb_client'\
                   '|chromeos/dbus/fake_smb_provider_client'\
                   '|chromeos/dbus/smb_provider_client',
+    },
+    'source_idls': {
+      'filepath': 'third_party/Webkit/Source/(core|modules|platform)/.*\.idl',
     },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\
@@ -2007,7 +2013,8 @@
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'feature_policy': ['loonybear@chromium.org',
-                       'iclelland+watch@chromium.org'],
+                       'iclelland+watch@chromium.org',
+		       'jmedley@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
@@ -2208,6 +2215,7 @@
     'remoting': ['chromoting-reviews@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
+    'runtime_enabled_features': ['jmedley@chromium.org'],
     'safe_browsing': ['timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
     'safe_browsing_db': ['timvolodine@chromium.org',
@@ -2230,6 +2238,7 @@
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
+    'source_idls': ['jmedley@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
