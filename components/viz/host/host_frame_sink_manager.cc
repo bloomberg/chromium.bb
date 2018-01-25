@@ -11,6 +11,7 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
@@ -72,7 +73,14 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
 
-  // This will destroy |frame_sink_id| if using mojom::CompositorFrameSink.
+  if (data.has_created_compositor_frame_sink && data.is_root) {
+    // This synchronous call ensures that the GL context/surface that draw to
+    // the platform window (eg. XWindow or HWND) get destroyed before the
+    // platform window is destroyed.
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id);
+  }
+
   frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
   data.has_created_compositor_frame_sink = false;
   data.client = nullptr;

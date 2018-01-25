@@ -167,6 +167,16 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
   entry.sink = std::move(frame_sink);
 }
 
+void FrameSinkManagerImpl::DestroyCompositorFrameSink(
+    const FrameSinkId& frame_sink_id,
+    DestroyCompositorFrameSinkCallback callback) {
+  auto iter = compositor_frame_sinks_.find(frame_sink_id);
+  if (iter != compositor_frame_sinks_.end())
+    iter->second.sink.reset();
+
+  std::move(callback).Run();
+}
+
 void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
     const FrameSinkId& parent_frame_sink_id,
     const FrameSinkId& child_frame_sink_id) {

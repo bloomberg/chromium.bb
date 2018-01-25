@@ -68,6 +68,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& frame_sink_id,
       mojom::CompositorFrameSinkRequest request,
       mojom::CompositorFrameSinkClientPtr client) override;
+  void DestroyCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
+      DestroyCompositorFrameSinkCallback callback) override;
   void RegisterFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) override;
@@ -132,13 +135,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       uint32_t idle_handle_size);
   void SwitchActiveAggregatedHitTestRegionList(const FrameSinkId& frame_sink_id,
                                                uint8_t active_handle_index);
-
-  // It is necessary to pass |frame_sink_id| by value because the id
-  // is owned by the GpuCompositorFrameSink in the map. When the sink is
-  // removed from the map, |frame_sink_id| would also be destroyed if it were a
-  // reference. But the map can continue to iterate and try to use it. Passing
-  // by value avoids this.
-  void DestroyCompositorFrameSink(FrameSinkId frame_sink_id);
 
   void SubmitHitTestRegionList(
       const SurfaceId& surface_id,
