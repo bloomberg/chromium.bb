@@ -200,16 +200,17 @@ CompleteProviderHostPreparation(
 void DidNavigateInPaymentHandlerWindow(
     const GURL& url,
     const base::WeakPtr<ServiceWorkerContextCore>& context,
-    const service_worker_client_utils::NavigationCallback& callback,
+    service_worker_client_utils::NavigationCallback callback,
     bool success,
     int render_process_id,
     int render_frame_id) {
   if (success) {
     service_worker_client_utils::DidNavigate(
-        context, url.GetOrigin(), callback, render_process_id, render_frame_id);
+        context, url.GetOrigin(), std::move(callback), render_process_id,
+        render_frame_id);
   } else {
-    callback.Run(SERVICE_WORKER_ERROR_FAILED,
-                 blink::mojom::ServiceWorkerClientInfo());
+    std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED,
+                            blink::mojom::ServiceWorkerClientInfo());
   }
 }
 
@@ -1133,8 +1134,7 @@ void ServiceWorkerVersion::GetClients(
     GetClientsCallback callback) {
   service_worker_client_utils::GetClients(
       weak_factory_.GetWeakPtr(), std::move(options),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&DidGetClients, std::move(callback))));
+      base::BindOnce(&DidGetClients, std::move(callback)));
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
@@ -1247,9 +1247,10 @@ void ServiceWorkerVersion::OnOpenPaymentHandlerWindow(int request_id,
       base::BindOnce(
           &ShowPaymentHandlerWindowOnUI, GetContentClient()->browser(),
           base::WrapRefCounted(context_->wrapper()), url,
-          base::BindOnce(&DidNavigateInPaymentHandlerWindow, url, context_,
-                         base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
-                                    weak_factory_.GetWeakPtr(), request_id)),
+          base::BindOnce(
+              &DidNavigateInPaymentHandlerWindow, url, context_,
+              base::BindOnce(&ServiceWorkerVersion::OnOpenWindowFinished,
+                             weak_factory_.GetWeakPtr(), request_id)),
           base::BindOnce(&ServiceWorkerVersion::OnOpenWindow,
                          weak_factory_.GetWeakPtr(), request_id, url,
                          WindowOpenDisposition::NEW_POPUP)));
@@ -1288,8 +1289,8 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id,
 
   service_worker_client_utils::OpenWindow(
       url, script_url_, embedded_worker_->process_id(), context_, disposition,
-      base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
-                 weak_factory_.GetWeakPtr(), request_id));
+      base::BindOnce(&ServiceWorkerVersion::OnOpenWindowFinished,
+                     weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnOpenWindowFinished(
@@ -1361,8 +1362,9 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
   }
 
   service_worker_client_utils::FocusWindowClient(
-      provider_host, base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
-                                weak_factory_.GetWeakPtr(), request_id));
+      provider_host,
+      base::BindOnce(&ServiceWorkerVersion::OnFocusClientFinished,
+                     weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnFocusClientFinished(
@@ -1415,8 +1417,9 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
 
   service_worker_client_utils::NavigateClient(
       url, script_url_, provider_host->process_id(), provider_host->frame_id(),
-      context_, base::Bind(&ServiceWorkerVersion::OnNavigateClientFinished,
-                           weak_factory_.GetWeakPtr(), request_id));
+      context_,
+      base::BindOnce(&ServiceWorkerVersion::OnNavigateClientFinished,
+                     weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnNavigateClientFinished(
