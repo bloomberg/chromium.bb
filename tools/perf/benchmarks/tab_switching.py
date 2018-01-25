@@ -6,10 +6,11 @@ import os
 
 from core import perf_benchmark
 
-from measurements import tab_switching
 from page_sets.system_health import multi_tab_stories
 from telemetry import benchmark
 from telemetry import story
+from telemetry.timeline import chrome_trace_category_filter
+from telemetry.web_perf import timeline_based_measurement
 
 
 @benchmark.Owner(emails=['vovoy@chromium.org'],
@@ -22,7 +23,6 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   tabs, waits for them to load, and then switches to each tab and records the
   metric. The pages were chosen from Alexa top ranking sites.
   """
-  test = tab_switching.TabSwitching
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
@@ -38,6 +38,13 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
     story_set.AddStory(multi_tab_stories.MultiTabTypical24Story(
         story_set, False, options.tabset_repeat))
     return story_set
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+    category_filter.AddIncludedCategory('latency')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics(['tabsMetric'])
+    return options
 
   @classmethod
   def Name(cls):
