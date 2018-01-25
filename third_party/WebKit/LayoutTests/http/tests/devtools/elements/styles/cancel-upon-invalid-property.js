@@ -25,18 +25,13 @@
     treeElement.nameElement.textContent = 'color';
     treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
     treeElement.valueElement.textContent = 'red';
-    ElementsTestRunner.waitForStyleApplied(commitInvalidProperty);
-    treeElement.kickFreeFlowStyleEditForTest();
+    treeElement.kickFreeFlowStyleEditForTest().then(commitInvalidProperty);
   }
 
   function commitInvalidProperty() {
     treeElement.valueElement.textContent = 'red/*';
+    ElementsTestRunner.waitForStyleCommitted(dumpAndExit);
     treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    ElementsTestRunner.waitForStyleApplied(invalidCommitted);
-  }
-
-  function invalidCommitted() {
-    ElementsTestRunner.waitForStyleApplied(dumpAndExit);
   }
 
   function dumpAndExit() {

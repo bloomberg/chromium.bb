@@ -24,8 +24,8 @@
 
     treeElement.startEditing(treeElement.nameElement);
     treeElement.nameElement.textContent = 'background-image';
+    ElementsTestRunner.waitForStyleCommitted(step2);
     treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    ElementsTestRunner.waitForStyleApplied(step2);
   }
 
   function step2() {
