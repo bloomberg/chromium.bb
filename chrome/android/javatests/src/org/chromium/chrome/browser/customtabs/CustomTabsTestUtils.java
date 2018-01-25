@@ -58,7 +58,8 @@ public class CustomTabsTestUtils {
     }
 
     /** Calls warmup() and waits for all the tasks to complete. Fails the test otherwise. */
-    public static CustomTabsConnection warmUpAndWait() {
+    public static CustomTabsConnection warmUpAndWait()
+            throws InterruptedException, TimeoutException {
         CustomTabsConnection connection = setUpConnection();
         try {
             final CallbackHelper startupCallbackHelper = new CallbackHelper();
@@ -70,8 +71,6 @@ public class CustomTabsTestUtils {
             });
             Assert.assertTrue(connection.warmup(0));
             startupCallbackHelper.waitForCallback(0);
-        } catch (TimeoutException | InterruptedException e) {
-            throw new AssertionError("Unexpected exception.", e);
         } finally {
             connection.setWarmupCompletedCallbackForTesting(null);
         }
