@@ -3359,12 +3359,6 @@ crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass
 # This test fails consistently on Nexus4 - see bug for info.
 crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 
-# Sheriff failures 2018-01-09
-# This test is flaky and times out on Windows 7 bots. It also times out on MSAN
-# bots due to taling too long to complete.
-crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Pass Timeout ]
-crbug.com/800359 [ Win7 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Pass Timeout ]
-
 # Sheriff failures 2018-01-18
 # This test has been flaky for some time on Win 7 (dgb)
 crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
