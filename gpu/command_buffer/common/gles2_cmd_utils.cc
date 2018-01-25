@@ -1383,10 +1383,13 @@ void GLES2Util::GetColorFormatComponentSizes(
   switch (internal_format) {
     case GL_ALPHA8_EXT:
       *a = 8;
+      break;
     case GL_ALPHA16F_EXT:
       *a = 16;
+      break;
     case GL_ALPHA32F_EXT:
       *a = 32;
+      break;
     case GL_RGB8_OES:
     case GL_SRGB8:
     case GL_RGB8_SNORM:

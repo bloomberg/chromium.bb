@@ -118,7 +118,8 @@ std::wstring SysNativeMBToWide(StringPiece native_mb) {
         break;
       case 0:
         // We hit an embedded null byte, keep going.
-        i += 1;  // Fall through.
+        i += 1;
+        FALLTHROUGH;
       default:
         i += res;
         ++num_out_chars;
