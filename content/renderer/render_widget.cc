@@ -1016,6 +1016,8 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // tab_capture_performancetest.cc.
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
 
+  DidResizeOrRepaintAck();
+
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
 
@@ -1028,8 +1030,6 @@ void RenderWidget::DidCommitCompositorFrame() {}
 void RenderWidget::DidCompletePageScaleAnimation() {}
 
 void RenderWidget::DidReceiveCompositorFrameAck() {
-  TRACE_EVENT0("renderer", "RenderWidget::DidReceiveCompositorFrameAck");
-  DidResizeOrRepaintAck();
 }
 
 bool RenderWidget::IsClosing() const {
