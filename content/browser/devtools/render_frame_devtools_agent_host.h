@@ -52,6 +52,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // Prefer GetOrCreateFor instead.
   static scoped_refptr<DevToolsAgentHost> GetOrCreateForDangling(
       FrameTreeNode* frame_tree_node);
+  static scoped_refptr<DevToolsAgentHost> FindForDangling(
+      FrameTreeNode* frame_tree_node);
 
   static void OnWillSendNavigationRequest(
       FrameTreeNode* frame_tree_node,
