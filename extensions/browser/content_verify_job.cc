@@ -138,6 +138,7 @@ void ContentVerifyJob::DoneReading() {
 }
 
 bool ContentVerifyJob::FinishBlock() {
+  DCHECK(!failed_);
   if (current_hash_byte_count_ == 0) {
     if (!done_reading_ ||
         // If we have checked all blocks already, then nothing else to do here.
@@ -188,11 +189,15 @@ void ContentVerifyJob::OnHashesReady(bool success) {
     return;
   }
 
+  DCHECK(!failed_);
+
   hashes_ready_ = true;
   if (!queue_.empty()) {
     std::string tmp;
     queue_.swap(tmp);
     BytesRead(tmp.size(), base::string_as_array(&tmp));
+    if (failed_)
+      return;
   }
   if (done_reading_) {
     ScopedElapsedTimer timer(&time_spent_);
