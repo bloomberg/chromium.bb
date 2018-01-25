@@ -6,12 +6,11 @@
 #define BASE_ANDROID_LIBRARY_LOADER_ANCHOR_FUNCTIONS_H_
 
 #include <cstdint>
-#include "base/android/library_loader/anchor_functions_flags.h"
 
 #include "base/base_export.h"
+#include "build/build_config.h"
 
-#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-
+#if defined(ARCH_CPU_ARMEL)
 namespace base {
 namespace android {
 
@@ -19,11 +18,11 @@ namespace android {
 BASE_EXPORT extern const size_t kStartOfText;
 BASE_EXPORT extern const size_t kEndOfText;
 
-// Returns true if the ordering looks sane.
-BASE_EXPORT bool IsOrderingSane();
+// Basic CHECK()s ensuring that the symbols above are correctly set.
+BASE_EXPORT void CheckOrderingSanity();
 
 }  // namespace android
 }  // namespace base
-#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
+#endif  // defined(ARCH_CPU_ARMEL)
 
 #endif  // BASE_ANDROID_LIBRARY_LOADER_ANCHOR_FUNCTIONS_H_

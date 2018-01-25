@@ -161,7 +161,7 @@ void Disable() {
 void SanityChecks() {
   CHECK_LT(base::android::kEndOfText - base::android::kStartOfText,
            kMaxTextSizeInBytes);
-  CHECK(base::android::IsOrderingSane());
+  base::android::CheckOrderingSanity();
 }
 
 bool SwitchToNextPhaseOrDump(int pid, uint64_t start_ns_since_epoch) {
