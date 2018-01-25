@@ -528,6 +528,13 @@ _GENERIC_PYDEPS_FILES = [
 _ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
 
 
+# Bypass the AUTHORS check for these accounts.
+_KNOWN_ROBOTS = set(
+  '%s-chromium-autoroll@skia-buildbots.google.com.iam.gserviceaccount.com' % s
+  for s in ('angle', 'depot-tools', 'nacl', 'pdfium', 'skia', 'src-internal',
+            'webrtc'))
+
+
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
   non-testing code. For now this is just a best-effort implementation
@@ -2482,8 +2489,12 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api,
       excluded_paths=_EXCLUDED_PATHS))
-  results.extend(
-      input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
+
+  author = input_api.change.author_email
+  if author and author not in _KNOWN_ROBOTS:
+    results.extend(
+        input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
+
   results.extend(
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
