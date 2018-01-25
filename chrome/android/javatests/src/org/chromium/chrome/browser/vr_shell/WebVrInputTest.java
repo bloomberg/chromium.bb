@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 
+import android.app.Activity;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -36,7 +38,9 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
+import org.chromium.chrome.browser.vr_shell.mock.MockVrIntentHandler;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
@@ -46,12 +50,15 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.WebContents;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * End-to-end tests for sending input while using WebVR.
@@ -293,6 +300,78 @@ public class WebVrInputTest {
         Assert.assertFalse("App button exited WebVR presentation",
                 VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
                         POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
+    }
+
+    /**
+     * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
+     * WebVR presentation if they entered it via a Deep Link intent.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add("enable-features=WebVrAutopresentFromIntent")
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testAppButtonNoopsWhenDeepLinked() throws InterruptedException, ExecutionException {
+        VrIntentUtils.setHandlerInstanceForTesting(new MockVrIntentHandler(
+                true /* useMockImplementation */, true /* treatIntentsAsTrusted */));
+
+        // Send an autopresent intent, which will open the link in a CCT
+        VrTransitionUtils.sendVrLaunchIntent(
+                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"),
+                mVrTestRule.getActivity(), true /* autopresent */);
+
+        // Wait until a CCT is opened due to the intent
+        final AtomicReference<CustomTabActivity> cct = new AtomicReference<CustomTabActivity>();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
+                for (WeakReference<Activity> ref : list) {
+                    Activity activity = ref.get();
+                    if (activity == null) continue;
+                    if (activity instanceof CustomTabActivity) {
+                        cct.set((CustomTabActivity) activity);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        // Wait until the tab is ready
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (cct.get().getActivityTab() == null) return false;
+                return !cct.get().getActivityTab().isLoading();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        // Wait for autopresent to kick in
+        WebContents wc = cct.get().getActivityTab().getWebContents();
+        VrTestFramework.waitOnJavaScriptStep(wc);
+        Assert.assertTrue("CCT entered presentation",
+                VrTestFramework.pollJavaScriptBoolean(
+                        "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, wc));
+
+        // Verify that pressing the app button does nothing
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
+
+        EmulatedVrController controller = new EmulatedVrController(cct.get());
+        controller.pressReleaseAppButton();
+        Assert.assertFalse("App button left Chrome",
+                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return mockApi.getExitFromVrCalled()
+                                || mockApi.getLaunchVrHomescreenCalled();
+                    }
+                }));
+        Assert.assertFalse("App button exited WebVR presentation",
+                VrTestFramework.pollJavaScriptBoolean(
+                        "!vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS, wc));
+
+        VrTestFramework.endTest(wc);
     }
 
     /**
