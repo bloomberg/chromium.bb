@@ -569,12 +569,14 @@ TEST_F('BackgroundTest', 'ShouldFocusLink', function() {
 
 TEST_F('BackgroundTest', 'NoisySlider', function() {
   var mockFeedback = this.createMockFeedback();
+  // Slider aria-valuetext must change otherwise blink suppresses event.
   this.runWithLoadedTree(  function() {/*!
     <button id="go">go</button>
     <div id="slider" tabindex=0 role="slider"></div>
     <script>
       function update() {
         var s = document.getElementById('slider');
+        s.setAttribute('aria-valuetext', '');
         s.setAttribute('aria-valuetext', 'noisy');
         setTimeout(update, 500);
       }
@@ -1335,7 +1337,7 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
         .expectBraille('test mled mled', {startIndex: 4, endIndex: 4})
         .call(doBrlCmd('previousObject'))
         .call(assertCurNode(textArea))
-        .expectBraille('test mled mled', {startIndex: 0, endIndex: 0}) 
+        .expectBraille('test mled mled', {startIndex: 0, endIndex: 0})
 
         // Sticky mode overrides the edit keys.
         .call(doCmd('toggleStickyMode'))
@@ -1350,7 +1352,7 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
 
         .call(doBrlCmd('previousObject'))
         .call(assertCurNode(contentEditable.firstChild))
-        .expectBraille('test', {startIndex: 0, endIndex: 0}) 
+        .expectBraille('test', {startIndex: 0, endIndex: 0})
 
         .replay();
   });
