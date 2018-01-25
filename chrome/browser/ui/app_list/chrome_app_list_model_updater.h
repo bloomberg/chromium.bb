@@ -112,7 +112,6 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
 
   // TODO(hejq): Move the following methods to ash.
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(
-      app_list::AppListSyncableService::SyncItem* oem_sync_item,
       const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preffered_oem_position);

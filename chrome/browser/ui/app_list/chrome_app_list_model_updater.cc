@@ -275,9 +275,12 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preffered_oem_position) {
+  syncer::StringOrdinal position_to_try = preffered_oem_position;
+  // If we find a valid postion in the sync item, then we'll try it.
+  if (oem_sync_item && oem_sync_item->item_ordinal.IsValid())
+    position_to_try = oem_sync_item->item_ordinal;
   // In ash:
-  FindOrCreateOemFolder(oem_sync_item, oem_folder_id, oem_folder_name,
-                        preffered_oem_position);
+  FindOrCreateOemFolder(oem_folder_id, oem_folder_name, position_to_try);
   // In chrome, after oem folder is created:
   AddItemToFolder(std::move(item), oem_folder_id);
 }
@@ -355,7 +358,6 @@ void ChromeAppListModelUpdater::OnAppListItemUpdated(
 
 ash::mojom::AppListItemMetadataPtr
 ChromeAppListModelUpdater::FindOrCreateOemFolder(
-    app_list::AppListSyncableService::SyncItem* oem_sync_item,
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preffered_oem_position) {
@@ -365,18 +367,11 @@ ChromeAppListModelUpdater::FindOrCreateOemFolder(
     std::unique_ptr<app_list::AppListFolderItem> new_folder(
         new app_list::AppListFolderItem(
             oem_folder_id, app_list::AppListFolderItem::FOLDER_TYPE_OEM));
-    syncer::StringOrdinal oem_position;
-    if (oem_sync_item) {
-      DCHECK(oem_sync_item->item_ordinal.IsValid());
-      VLOG(1) << "Creating OEM folder from existing sync item: "
-              << oem_sync_item->item_ordinal.ToDebugString();
-      oem_position = oem_sync_item->item_ordinal;
-    } else {
-      oem_position = preffered_oem_position.IsValid() ? preffered_oem_position
-                                                      : GetOemFolderPos();
-      // Do not create a sync item for the OEM folder here, do it in
-      // ResolveFolderPositions() when the item position is finalized.
-    }
+    syncer::StringOrdinal oem_position = preffered_oem_position.IsValid()
+                                             ? preffered_oem_position
+                                             : GetOemFolderPos();
+    // Do not create a sync item for the OEM folder here, do it in
+    // ResolveFolderPositions() when the item position is finalized.
     oem_folder = static_cast<app_list::AppListFolderItem*>(
         model_->AddItem(std::move(new_folder)));
     model_->SetItemPosition(oem_folder, oem_position);
