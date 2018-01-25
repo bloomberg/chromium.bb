@@ -227,10 +227,6 @@ struct LogicalOrdering {
   }
 };
 
-// TODO(editing-dev): Move implementation of |FindLeftNonPseudoNodeInlineBox()|
-// to |VisualOrdering::EndNodeAndBox()|.
-InlineBox* FindLeftNonPseudoNodeInlineBox(const RootInlineBox&);
-
 // Provides start end end of line in visual order for implementing expanding
 // selection in line granularity.
 struct VisualOrdering {
@@ -254,10 +250,12 @@ struct VisualOrdering {
     // represented by a VisiblePosition. Use whatever precedes instead.
     // TODO(editing-dev): We should consider text-direction of line to
     // find non-pseudo node.
-    InlineBox* const end_box = FindLeftNonPseudoNodeInlineBox(root_box);
-    if (!end_box)
-      return {nullptr, nullptr};
-    return {end_box->GetLineLayoutItem().NonPseudoNode(), end_box};
+    for (InlineBox* inline_box = root_box.LastLeafChild(); inline_box;
+         inline_box = inline_box->PrevLeafChild()) {
+      if (inline_box->GetLineLayoutItem().NonPseudoNode())
+        return {inline_box->GetLineLayoutItem().NonPseudoNode(), inline_box};
+    }
+    return {nullptr, nullptr};
   }
 };
 
@@ -427,19 +425,6 @@ VisiblePositionInFlatTree LogicalStartOfLine(
   return CreateVisiblePosition(
       LogicalStartOfLine(current_position.ToPositionWithAffinity()));
 }
-
-namespace {
-// TODO(editing-dev): Move implementation of |FindLeftNonPseudoNodeInlineBox()|
-// to |VisualOrdering::EndNodeAndBox()|.
-InlineBox* FindLeftNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
-  for (InlineBox* runner = root_box.LastLeafChild(); runner;
-       runner = runner->PrevLeafChild()) {
-    if (runner->GetLineLayoutItem().NonPseudoNode())
-      return runner;
-  }
-  return nullptr;
-}
-}  // anonymous namespace
 
 template <typename Strategy, typename Ordering>
 static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
