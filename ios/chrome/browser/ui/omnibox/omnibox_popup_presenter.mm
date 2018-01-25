@@ -19,9 +19,10 @@
 namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
+const CGFloat kShadowHeight = 10;
 const CGFloat kWhiteBackgroundHeight = 74;
-NS_INLINE CGFloat ShadowHeight() {
-  return IsIPadIdiom() ? 10 : 0;
+NS_INLINE CGFloat BottomPadding() {
+  return IsIPadIdiom() ? kShadowHeight : 0;
 }
 }  // namespace
 
@@ -50,34 +51,67 @@ NS_INLINE CGFloat ShadowHeight() {
     _positioner = positioner;
     _viewController = viewController;
 
-    if (IsIPadIdiom()) {
-      _popupContainerView = [OmniboxPopupPresenter newBackgroundViewIpad];
-    } else {
-      _popupContainerView = [OmniboxPopupPresenter newBackgroundViewIPhone];
+    UIView* popupContainer = [[UIView alloc] init];
+    if (!base::FeatureList::IsEnabled(kCleanToolbar)) {
+      if (IsIPadIdiom()) {
+        popupContainer = [OmniboxPopupPresenter newBackgroundViewIpad];
+      } else {
+        popupContainer = [OmniboxPopupPresenter newBackgroundViewIPhone];
+      }
     }
-    _popupContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+    popupContainer.translatesAutoresizingMaskIntoConstraints = NO;
 
     _heightConstraint =
-        [_popupContainerView.heightAnchor constraintEqualToConstant:0];
+        [popupContainer.heightAnchor constraintEqualToConstant:0];
     _heightConstraint.active = YES;
 
     CGRect popupControllerFrame = viewController.view.frame;
     popupControllerFrame.origin = CGPointZero;
     viewController.view.frame = popupControllerFrame;
-    [_popupContainerView addSubview:viewController.view];
+    [popupContainer addSubview:viewController.view];
+
+    if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+      UIImageView* shadowView = [[UIImageView alloc]
+          initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
+      [shadowView setUserInteractionEnabled:NO];
+      [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+      [popupContainer addSubview:shadowView];
+      [NSLayoutConstraint activateConstraints:@[
+        [shadowView.leadingAnchor
+            constraintEqualToAnchor:popupContainer.leadingAnchor],
+        [shadowView.trailingAnchor
+            constraintEqualToAnchor:popupContainer.trailingAnchor],
+      ]];
+
+      if (IsIPadIdiom()) {
+        [shadowView.topAnchor
+            constraintEqualToAnchor:popupContainer.bottomAnchor]
+            .active = YES;
+      } else {
+        [shadowView.topAnchor
+            constraintEqualToAnchor:viewController.view.topAnchor]
+            .active = YES;
+      }
+    }
+    _popupContainerView = popupContainer;
   }
   return self;
 }
 
 - (void)updateHeightAndAnimateAppearanceIfNecessary {
   UIView* popup = self.popupContainerView;
-  UIView* siblingView = [self.positioner popupAnchorView];
   BOOL newlyAdded = ([popup superview] == nil);
 
-  if (IsIPadIdiom()) {
-    [[siblingView superview] insertSubview:popup aboveSubview:siblingView];
+  if (!base::FeatureList::IsEnabled(kCleanToolbar)) {
+    UIView* siblingView = [self.positioner popupAnchorView];
+    if (IsIPadIdiom()) {
+      [[siblingView superview] insertSubview:popup aboveSubview:siblingView];
+    } else {
+      [[siblingView superview] insertSubview:popup belowSubview:siblingView];
+    }
   } else {
-    [[siblingView superview] insertSubview:popup belowSubview:siblingView];
+    [[self.positioner popupParentView] addSubview:popup];
   }
 
   if (newlyAdded) {
@@ -93,7 +127,7 @@ NS_INLINE CGFloat ShadowHeight() {
     // insets.top + insets.bottom. |insets.bottom| will be larger than
     // |insets.top| when the keyboard is visible, but |parentHeight| should stay
     // the same.
-    CGFloat iPadHeight = height + insets.top * 2 + ShadowHeight();
+    CGFloat iPadHeight = height + insets.top * 2 + BottomPadding();
     self.heightConstraint.constant = iPadHeight;
   } else {
     self.heightConstraint.active = NO;
@@ -113,7 +147,7 @@ NS_INLINE CGFloat ShadowHeight() {
 
   // Set the size the table view.
   CGRect popupControllerFrame = self.viewController.view.frame;
-  popupControllerFrame.size.height = popup.frame.size.height - ShadowHeight();
+  popupControllerFrame.size.height = popup.frame.size.height - BottomPadding();
   self.viewController.view.frame = popupControllerFrame;
 }
 
@@ -179,6 +213,7 @@ NS_INLINE CGFloat ShadowHeight() {
 
 #pragma mark - Background creation
 
+// TODO(crbug.com/788705): Remove this method.
 + (UIView*)newBackgroundViewIpad {
   UIView* view = [[UIView alloc] init];
   [view setClipsToBounds:YES];
@@ -209,6 +244,7 @@ NS_INLINE CGFloat ShadowHeight() {
   return view;
 }
 
+// TODO(crbug.com/788705): Remove this method.
 + (UIView*)newBackgroundViewIPhone {
   UIView* view = [[UIView alloc] init];
 
@@ -242,5 +278,4 @@ NS_INLINE CGFloat ShadowHeight() {
                                     constant:0]];
   return view;
 }
-
 @end

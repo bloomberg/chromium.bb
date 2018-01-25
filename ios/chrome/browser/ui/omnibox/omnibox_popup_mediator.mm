@@ -26,6 +26,7 @@
   AutocompleteResult _currentResult;
 }
 @synthesize consumer = _consumer;
+@synthesize hasResults = _hasResults;
 @synthesize incognito = _incognito;
 @synthesize open = _open;
 @synthesize presenter = _presenter;
@@ -48,6 +49,8 @@
         withAnimation:(BOOL)animation {
   _currentResult.Reset();
   _currentResult.CopyFrom(result);
+
+  self.hasResults = !_currentResult.empty();
 
   [self.consumer updateMatches:[self wrappedMatches] withAnimation:animation];
 }

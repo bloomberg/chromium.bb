@@ -292,6 +292,10 @@
   return self.toolbarViewController.view;
 }
 
+- (UIView*)popupParentView {
+  return self.toolbarViewController.view.superview;
+}
+
 #pragma mark - LocationBarDelegate
 
 - (void)locationBarHasBecomeFirstResponder {
@@ -343,6 +347,9 @@
   }
 
   [self.locationBarCoordinator focusOmnibox];
+  if (self.omniboxPopupCoordinator.hasResults) {
+    [self onFakeboxAnimationComplete];
+  }
 }
 
 - (void)onFakeboxBlur {
