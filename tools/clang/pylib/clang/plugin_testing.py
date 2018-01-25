@@ -53,7 +53,7 @@ class ClangPluginTest(object):
 
     os.chdir(self._test_base)
 
-    clang_cmd = [self._clang_path, '-c', '-std=c++11']
+    clang_cmd = [self._clang_path, '-c', '-std=c++14']
     if self._plugin_path:
       clang_cmd.extend(['-Xclang', '-load', '-Xclang', self._plugin_path])
     clang_cmd.extend(['-Xclang', '-add-plugin', '-Xclang', self._plugin_name])

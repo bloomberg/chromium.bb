@@ -61,4 +61,8 @@ int main() {
   Iteratable iteratable;
   for (auto& it : iteratable)
     (void)it;
+
+  // This is a valid usecase of deducing a type to be a raw pointer and should
+  // not trigger a warning / error.
+  auto lambda = [foo_ptr = &foo] { return *foo_ptr; };
 }
