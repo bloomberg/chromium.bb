@@ -472,8 +472,10 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
 // Tests that the device refuses to start if the WebContents target was
 // destroyed before the device could start.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
+IN_PROC_BROWSER_TEST_F(
+    WebContentsVideoCaptureDeviceBrowserTest,
+    DISABLED_ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto render_process_id = main_frame->GetProcess()->GetID();
   const auto render_frame_id = main_frame->GetRoutingID();
@@ -505,8 +507,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device starts, captures a frame, and then gracefully
 // errors-out because the WebContents is destroyed before the device is stopped.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutWhenWebContentsIsDestroyed) {
+                       DISABLED_ErrorsOutWhenWebContentsIsDestroyed) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -526,8 +529,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       SuspendsAndResumes) {
+                       DISABLED_SuspendsAndResumes) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
@@ -559,8 +563,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       DeliversRefreshFramesUponRequest) {
+                       DISABLED_DeliversRefreshFramesUponRequest) {
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
@@ -606,8 +611,9 @@ INSTANTIATE_TEST_CASE_P(
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, and whether the WebContents is visible/hidden or
 // occluded/unoccluded.
+// TODO(crbug/754872): Temporarily disabling due to flakiness.
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       CapturesContentChanges) {
+                       DISABLED_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (use_software_compositing() ? "Software Compositing"
