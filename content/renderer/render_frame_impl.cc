@@ -158,6 +158,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -778,7 +779,7 @@ class RenderFrameImpl::FrameURLLoaderFactory
     frame_->UpdatePeakMemoryStats();
 
     scoped_refptr<SharedURLLoaderFactory> factory;
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       factory = frame_->GetSubresourceLoaderFactories();
     } else {
       // TODO(crbug.com/796425): Temporarily wrap the raw
@@ -3162,7 +3163,7 @@ void RenderFrameImpl::CommitNavigation(
   // cross-document navigations with the Network Service enabled.
   DCHECK(is_same_document ||
          common_params.url.SchemeIs(url::kJavaScriptScheme) ||
-         !base::FeatureList::IsEnabled(features::kNetworkService) ||
+         !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
   if (subresource_loader_factories) {
@@ -3174,7 +3175,7 @@ void RenderFrameImpl::CommitNavigation(
   // If the Network Service is enabled, by this point the frame should always
   // have subresource loader factories, even if they're from a previous (but
   // same-document) commit.
-  DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService) ||
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories_);
 
   // Used to determine whether this frame is actually loading a request as part
@@ -6520,7 +6521,7 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
 }
 
 URLLoaderFactoryBundle* RenderFrameImpl::GetSubresourceLoaderFactories() {
-  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   if (!subresource_loader_factories_) {
     RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
         frame_->Parent() ? frame_->Parent() : frame_->Opener());
@@ -6602,7 +6603,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 
 void RenderFrameImpl::SetCustomURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtr factory) {
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // When the network service is enabled, all subresource loads go through
     // a factory from |subresource_loader_factories|. In this case we simply
     // replace the existing default factory within the bundle.
@@ -7127,7 +7128,7 @@ void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
 
 network::mojom::URLLoaderFactory* RenderFrameImpl::GetURLLoaderFactory(
     const GURL& request_url) {
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     return GetSubresourceLoaderFactories()->GetFactoryForRequest(request_url);
   }
 

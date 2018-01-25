@@ -8,6 +8,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 

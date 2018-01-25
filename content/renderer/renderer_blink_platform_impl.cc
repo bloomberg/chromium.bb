@@ -92,6 +92,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -356,7 +357,7 @@ scoped_refptr<ChildURLLoaderFactoryGetter>
 RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryGetter() {
   return base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
       CreateNetworkURLLoaderFactory(),
-      base::FeatureList::IsEnabled(features::kNetworkService)
+      base::FeatureList::IsEnabled(network::features::kNetworkService)
           ? base::BindOnce(&GetBlobURLLoaderFactoryGetter)
           : ChildURLLoaderFactoryGetterImpl::URLLoaderFactoryGetterCallback());
 }
@@ -368,7 +369,7 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
       url_loader_factory;
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
     url_loader_factory = std::move(factory_ptr);

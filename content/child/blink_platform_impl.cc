@@ -46,6 +46,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
@@ -657,7 +658,8 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
 }
 
 bool BlinkPlatformImpl::IsRendererSideResourceSchedulerEnabled() const {
-  return base::FeatureList::IsEnabled(features::kRendererSideResourceScheduler);
+  return base::FeatureList::IsEnabled(
+      network::features::kRendererSideResourceScheduler);
 }
 
 std::unique_ptr<blink::WebGestureCurve>

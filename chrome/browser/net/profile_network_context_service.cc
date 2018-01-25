@@ -23,10 +23,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_features.h"
+#include "services/network/public/cpp/features.h"
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
@@ -44,7 +44,7 @@ ProfileNetworkContextService::~ProfileNetworkContextService() {}
 
 network::mojom::NetworkContextPtr
 ProfileNetworkContextService::CreateMainNetworkContext() {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // |profile_io_data_main_network_context_| may be initialized if
     // SetUpProfileIOdataMainContext was called first.
     if (!profile_io_data_main_network_context_) {
@@ -74,7 +74,7 @@ void ProfileNetworkContextService::SetUpProfileIODataMainContext(
     *network_context_request = std::move(profile_io_data_context_request_);
   }
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     *network_context_params = CreateMainNetworkContextParams();
     return;
   }

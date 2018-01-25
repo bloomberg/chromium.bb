@@ -7,6 +7,7 @@
 #include "content/browser/appcache/appcache_update_url_request.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -51,7 +52,7 @@ AppCacheUpdateJob::UpdateRequestBase::Create(
     const GURL& url,
     int buffer_size,
     URLFetcher* fetcher) {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     return std::unique_ptr<UpdateRequestBase>(new UpdateURLRequest(
         appcache_service->request_context(), url, buffer_size, fetcher));
   } else {

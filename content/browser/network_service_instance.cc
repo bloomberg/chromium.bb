@@ -9,9 +9,9 @@
 #include "content/network/network_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -43,7 +43,7 @@ network::mojom::NetworkService* GetNetworkService() {
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
           mojom::kNetworkServiceName, g_network_service_ptr);
     } else {
@@ -64,7 +64,7 @@ network::mojom::NetworkService* GetNetworkService() {
 
 NetworkService* GetNetworkServiceImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   if (!g_network_service) {
     g_network_service = new NetworkServiceImpl(
         nullptr, nullptr, GetContentClient()->browser()->GetNetLog());
@@ -75,7 +75,7 @@ NetworkService* GetNetworkServiceImpl() {
 
 void FlushNetworkServiceInstanceForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   if (g_network_service_ptr)
     g_network_service_ptr->FlushForTesting();

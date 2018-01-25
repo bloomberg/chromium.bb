@@ -54,6 +54,7 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/loader_util.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -218,7 +219,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     if (is_main_frame)
       options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       options |= network::mojom::kURLLoadOptionSniffMimeType;
     } else {
       // TODO(arthursonzogni): This is a temporary option. Remove this as soon
@@ -239,7 +240,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
-    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // The ResourceDispatcherHostImpl can be null in unit tests.
@@ -270,7 +271,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
-    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
     started_ = true;
@@ -301,7 +302,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
     global_request_id_ = MakeGlobalRequestID();
@@ -368,7 +369,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // This could be called multiple times to follow a chain of redirects.
   void Restart() {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     // Clear |url_loader_| if it's not the default one (network). This allows
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
@@ -387,7 +388,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // if the |handler| wants to handle the request.
   void MaybeStartLoader(URLLoaderRequestHandler* handler,
                         StartLoaderCallback start_loader_callback) {
-    DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     if (start_loader_callback) {
       // |handler| wants to handle the request.
       DCHECK(handler);
@@ -485,7 +486,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // TODO(arthursonzogni): We might need to go through the rest of the
     // function once there are several types of URLLoader handling the
     // navigation, even in non network-service mode.
-    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       url_loader_->FollowRedirect();
       return;
     }
@@ -554,7 +555,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_download;
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       is_download = IsDownload(*response.get(), url_, url_chain_,
                                initiator_origin_, suggested_filename_);
       is_stream = false;
@@ -663,7 +664,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
-    if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
       return false;
 
     if (!default_loader_used_)
@@ -781,7 +782,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   AppCacheNavigationHandleCore* appcache_handle_core =
       appcache_handle ? appcache_handle->core() : nullptr;
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
         /* initial_handlers = */
