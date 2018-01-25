@@ -125,7 +125,7 @@ void PersistentRegion::TracePersistentNodes(Visitor* visitor,
 #endif
 }
 
-bool CrossThreadPersistentRegion::ShouldTracePersistentNode(
+bool CrossThreadPersistentRegions::ShouldTracePersistentNode(
     Visitor* visitor,
     PersistentNode* node) {
   CrossThreadPersistent<DummyGCBase>* persistent =
@@ -138,7 +138,7 @@ bool CrossThreadPersistentRegion::ShouldTracePersistentNode(
   return &visitor->Heap() == &ThreadState::FromObject(raw_object)->Heap();
 }
 
-void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
+void CrossThreadPersistentRegions::PrepareForThreadStateTermination(
     ThreadState* thread_state) {
   // For heaps belonging to a thread that's detaching, any cross-thread
   // persistents pointing into them needs to be disabled. Do that by clearing
@@ -175,7 +175,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 }
 
 #if defined(ADDRESS_SANITIZER)
-void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
+void CrossThreadPersistentRegions::UnpoisonCrossThreadPersistents() {
   MutexLocker lock(mutex_);
   int persistent_count = 0;
   for (PersistentNodeSlots* slots = persistent_region_->slots_; slots;

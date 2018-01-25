@@ -185,8 +185,8 @@ class PersistentBase {
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      CrossThreadPersistentRegion::LockScope persistent_lock(
-          ProcessHeap::GetCrossThreadPersistentRegion());
+      CrossThreadPersistentRegions::LockScope persistent_lock(
+          ProcessHeap::GetCrossThreadPersistentRegions());
       raw_ = ptr;
     } else {
       raw_ = ptr;
@@ -222,7 +222,7 @@ class PersistentBase {
         TraceMethodDelegate<PersistentBase,
                             &PersistentBase::TracePersistent>::Trampoline;
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      ProcessHeap::GetCrossThreadPersistentRegion().AllocatePersistentNode(
+      ProcessHeap::GetCrossThreadPersistentRegions().AllocatePersistentNode(
           persistent_node_, this, trace_callback);
       return;
     }
@@ -239,7 +239,7 @@ class PersistentBase {
   void Uninitialize() {
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
       if (AcquireLoad(reinterpret_cast<void* volatile*>(&persistent_node_)))
-        ProcessHeap::GetCrossThreadPersistentRegion().FreePersistentNode(
+        ProcessHeap::GetCrossThreadPersistentRegions().FreePersistentNode(
             persistent_node_);
       return;
     }
@@ -819,8 +819,8 @@ template <typename T>
 struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
   static blink::CrossThreadPersistent<T> Unwrap(
       const blink::CrossThreadWeakPersistent<T>& wrapped) {
-    blink::CrossThreadPersistentRegion::LockScope persistentLock(
-        blink::ProcessHeap::GetCrossThreadPersistentRegion());
+    blink::CrossThreadPersistentRegions::LockScope persistentLock(
+        blink::ProcessHeap::GetCrossThreadPersistentRegions());
     return blink::CrossThreadPersistent<T>(wrapped.Get());
   }
 };

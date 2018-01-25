@@ -83,7 +83,7 @@ class PLATFORM_EXPORT HeapAllocHooks {
   static FreeHook* free_hook_;
 };
 
-class CrossThreadPersistentRegion;
+class CrossThreadPersistentRegions;
 class HeapCompact;
 template <typename T>
 class Member;
@@ -124,7 +124,7 @@ class PLATFORM_EXPORT ProcessHeap {
  public:
   static void Init();
 
-  static CrossThreadPersistentRegion& GetCrossThreadPersistentRegion();
+  static CrossThreadPersistentRegions& GetCrossThreadPersistentRegions();
 
   static void IncreaseTotalAllocatedObjectSize(size_t delta) {
     AtomicAdd(&total_allocated_object_size_, static_cast<long>(delta));
