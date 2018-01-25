@@ -13,13 +13,21 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public final class CastCrashUploaderFactory {
     private static ScheduledExecutorService sExecutorService = null;
-
     public static CastCrashUploader createCastCrashUploader(String crashDumpPath, String uuid,
             String applicationFeedback, boolean uploadCrashToStaging) {
         if (sExecutorService == null) {
             sExecutorService = Executors.newScheduledThreadPool(1);
         }
-        return new CastCrashUploader(
-                sExecutorService, crashDumpPath, uuid, applicationFeedback, uploadCrashToStaging);
+        ElidedLogcatProvider logcatProvider = shouldUseRemoteServiceLogs()
+                ? new ExternalServiceDeviceLogcatProvider()
+                : new AndroidAppLogcatProvider();
+        return new CastCrashUploader(sExecutorService, logcatProvider, crashDumpPath, uuid,
+                applicationFeedback, uploadCrashToStaging);
+    }
+
+    private static boolean shouldUseRemoteServiceLogs() {
+        return BuildConfig.USE_REMOTE_SERVICE_LOGCAT
+                && !BuildConfig.DEVICE_LOGS_PROVIDER_PACKAGE.equals("")
+                && !BuildConfig.DEVICE_LOGS_PROVIDER_CLASS.equals("");
     }
 }

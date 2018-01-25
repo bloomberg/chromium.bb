@@ -38,6 +38,15 @@ java_cpp_template("cast_shell_build_config_gen") {
 
   # Set the logcat extractor size in lines.
   defines += [ "_LOGCAT_EXTRACTOR_SIZE=${logcat_extractor_size}" ]
+
+  if (use_remote_service_logcat) {
+    defines += [ "_USE_REMOTE_SERVICE_LOGCAT" ]
+  }
+
+  # Component name which will provide the device logs
+  defines +=
+      [ "_DEVICE_LOGS_PROVIDER_PACKAGE=\"${device_logs_provider_package}\"" ]
+  defines += [ "_DEVICE_LOGS_PROVIDER_CLASS=\"${device_logs_provider_class}\"" ]
 }
 
 android_resources("cast_shell_android_resources") {
@@ -57,10 +66,21 @@ android_library("cast_intents_java") {
   java_files =
       [ "$java_src_dir/org/chromium/chromecast/shell/CastIntents.java" ]
 }
+android_aidl("logs_provider_aidl") {
+  java_src_dir = "//chromecast/browser/android/apk/src"
+  interface_file =
+      "$java_src_dir/org/chromium/chromecast/shell/logs_provider_service.aidl"
+
+  sources = [
+    "$java_src_dir/org/chromium/chromecast/shell/IDeviceLogsProvider.aidl",
+  ]
+}
 
 android_library("cast_shell_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
   java_files = [
+    "$java_src_dir/org/chromium/chromecast/shell/AndroidAppLogcatProvider.java",
+    "$java_src_dir/org/chromium/chromecast/shell/ExternalServiceDeviceLogcatProvider.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastApplication.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastBrowserHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastContentWindowAndroid.java",
@@ -75,12 +95,15 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsComponent.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
-    "$java_src_dir/org/chromium/chromecast/shell/LogcatExtractor.java",
+    "$java_src_dir/org/chromium/chromecast/shell/ElidedLogcatProvider.java",
   ]
 
   android_manifest_for_lint = cast_shell_android_manifest
 
-  srcjar_deps = [ ":cast_shell_build_config_gen" ]
+  srcjar_deps = [
+    ":cast_shell_build_config_gen",
+    ":logs_provider_aidl",
+  ]
 
   deps = [
     ":cast_audio_manager_java",
@@ -109,7 +132,7 @@ junit_binary("cast_shell_junit_tests") {
   java_files = [
     "junit/src/org/chromium/chromecast/shell/CastWebContentsComponentTest.java",
     "junit/src/org/chromium/chromecast/shell/LogcatElisionUnitTest.java",
-    "junit/src/org/chromium/chromecast/shell/LogcatExtractorUnitTest.java",
+    "junit/src/org/chromium/chromecast/shell/ElidedLogcatProviderUnitTest.java",
   ]
 
   srcjar_deps = [ ":cast_shell_build_config_gen" ]

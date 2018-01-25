@@ -19,28 +19,28 @@ import java.util.List;
 
 // TODO(sandv): Add test cases as need arises.
 /**
- * Tests for LogcatExtractor.
+ * Tests for LogcatProvider.
  *
  * Full testing of elision of PII is done in LogcatElisionUnitTest.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
-public class LogcatExtractorUnitTest {
+public class ElidedLogcatProviderUnitTest {
     @Test
     public void testEmptyLogcat() {
         List<String> lines = new ArrayList<String>();
-        assertEquals("", LogcatExtractor.getElidedLogcat(lines));
+        assertEquals("", ElidedLogcatProvider.elideLogcat(lines));
     }
 
     @Test
     public void testLogcatOfEmptyString() {
         List<String> lines = Arrays.asList("");
-        assertEquals("\n", LogcatExtractor.getElidedLogcat(lines));
+        assertEquals("\n", ElidedLogcatProvider.elideLogcat(lines));
     }
 
     @Test
     public void testJoinsLines() {
         List<String> lines = Arrays.asList("a", "b", "c");
-        assertEquals("a\nb\nc\n", LogcatExtractor.getElidedLogcat(lines));
+        assertEquals("a\nb\nc\n", ElidedLogcatProvider.elideLogcat(lines));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class LogcatExtractorUnitTest {
         List<String> lines = Arrays.asList("email me at someguy@mailservice.com",
                 "file bugs at crbug.com", "at android.content.Intent", "at java.util.ArrayList",
                 "mac address: AB-AB-AB-AB-AB-AB");
-        String elided = LogcatExtractor.getElidedLogcat(lines);
+        String elided = ElidedLogcatProvider.elideLogcat(lines);
         // PII like email addresses, web addresses, and MAC addresses are elided.
         assertThat(elided, not(containsString("someguy@mailservice.com")));
         assertThat(elided, not(containsString("crbug.com")));
