@@ -3369,3 +3369,4 @@ crbug.com/805788 [ Linux Win7 Win10 ] virtual/threaded/animations/responsive/vie
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
 crbug.com/805794 [ Linux ] virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Pass Failure ]
+crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Pass Timeout ]
