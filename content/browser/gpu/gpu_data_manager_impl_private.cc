@@ -392,7 +392,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
-  return (gpu_info_.basic_info_state != gpu::kCollectInfoNone &&
+  // Now we collect GPU info on the GPU side, so whatever returns is valid.
+  return (gpu_info_.basic_info_state != gpu::kCollectInfoNone ||
           gpu_info_.context_info_state != gpu::kCollectInfoNone);
 }
 
@@ -461,71 +462,26 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kSkipGpuDataLoading)) {
-    RunPostInitTasks();
-    return;
-  }
-
-  gpu::GPUInfo gpu_info;
-  const char* software_gl_implementation_name =
-      gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
-  const bool force_software_gl =
-      (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-       software_gl_implementation_name) ||
-      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests) ||
-      command_line->HasSwitch(switches::kHeadless);
-  if (force_software_gl) {
-    // If using the OSMesa GL implementation, use fake vendor and device ids to
-    // make sure it never gets blacklisted. This is better than simply
-    // cancelling GPUInfo gathering as it allows us to proceed with loading the
-    // blacklist below which may have non-device specific entries we want to
-    // apply anyways (e.g., OS version blacklisting).
-    gpu_info.gpu.vendor_id = 0xffff;
-    gpu_info.gpu.device_id = 0xffff;
-
-    // Also declare the driver_vendor to be <software GL> to be able to
-    // specify exceptions based on driver_vendor==<software GL> for some
-    // blacklist rules.
-    gpu_info.driver_vendor = software_gl_implementation_name;
-
-    // We are not going to call CollectBasicGraphicsInfo.
-    // So mark it as collected.
-    gpu_info.basic_info_state = gpu::kCollectInfoSuccess;
-  } else {
-    // Skip collecting the basic driver info if SetGpuInfo() is already called.
-    if (IsCompleteGpuInfoAvailable()) {
-      gpu_info = gpu_info_;
-    } else {
-      TRACE_EVENT0("startup",
-                   "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
-      gpu::CollectBasicGraphicsInfo(&gpu_info);
-    }
-  }
-#if defined(ARCH_CPU_X86_FAMILY)
-  if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id) {
-    gpu_info.context_info_state = gpu::kCollectInfoNonFatalFailure;
-#if defined(OS_WIN)
-    gpu_info.dx_diagnostics_info_state = gpu::kCollectInfoNonFatalFailure;
-#endif  // OS_WIN
-  }
-#endif  // ARCH_CPU_X86_FAMILY
 
 #if defined(OS_ANDROID)
   // TODO(zmo): Get rid of this on the browser side soon.
-  if (!force_software_gl &&
-      !command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
+  if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
+    // Skip collecting the basic driver info if SetGpuInfo() is already called.
+    if (!IsCompleteGpuInfoAvailable()) {
+      TRACE_EVENT0("startup",
+                   "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
+      gpu::CollectBasicGraphicsInfo(&gpu_info_);
+    }
+
     std::unique_ptr<gpu::GpuBlacklist> gpu_blacklist(
         gpu::GpuBlacklist::Create());
     std::set<int> features = gpu_blacklist->MakeDecision(
-        gpu::GpuControlList::kOsAndroid, "", gpu_info);
+        gpu::GpuControlList::kOsAndroid, "", gpu_info_);
     if (features.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) == 1)
       blacklist_accelerated_video_decode_ = true;
   }
 #endif
-
-  gpu_info_ = gpu_info;
-  UpdateGpuInfo(gpu_info);
 
   RunPostInitTasks();
 
@@ -576,82 +532,41 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     base::CommandLine* command_line) const {
   DCHECK(command_line);
+  const base::CommandLine* browser_command_line =
+      base::CommandLine::ForCurrentProcess();
 
   gpu::GpuPreferences gpu_prefs = GetGpuPreferencesFromCommandLine();
   UpdateGpuPreferences(&gpu_prefs);
   command_line->AppendSwitchASCII(switches::kGpuPreferences,
                                   gpu::GpuPreferencesToSwitchValue(gpu_prefs));
-  std::string use_gl =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL);
+
+  std::string use_gl;
   if (card_disabled_ && !swiftshader_disabled_ &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSoftwareRasterizer)) {
-    command_line->AppendSwitchASCII(
-        switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
-  } else if (!use_gl.empty()) {
+      !browser_command_line->HasSwitch(switches::kDisableSoftwareRasterizer)) {
+    use_gl = gl::kGLImplementationSwiftShaderForWebGLName;
+  } else {
+    use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
+  }
+  if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
 
+#if !defined(OS_MACOSX)
+  // MacOSX bots use real GPU in tests.
+  if (browser_command_line->HasSwitch(
+          switches::kOverrideUseSoftwareGLForTests) ||
+      browser_command_line->HasSwitch(switches::kHeadless)) {
+    // TODO(zmo): We should also pass in kUseGL here.
+    // See https://crbug.com/805204.
+    command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+  }
+#endif  // !OS_MACOSX
+
 #if defined(USE_OZONE)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDrmAtomic)) {
+  if (browser_command_line->HasSwitch(switches::kEnableDrmAtomic)) {
     command_line->AppendSwitch(switches::kEnableDrmAtomic);
   }
 #endif
-
-  // Pass GPU and driver information to GPU process. We try to avoid full GPU
-  // info collection at GPU process startup, but we need gpu vendor_id,
-  // device_id, driver_vendor, driver_version for deciding whether we need to
-  // collect full info (on Linux) and for crash reporting purpose.
-  command_line->AppendSwitchASCII(switches::kGpuVendorID,
-      base::StringPrintf("0x%04x", gpu_info_.gpu.vendor_id));
-  command_line->AppendSwitchASCII(switches::kGpuDeviceID,
-      base::StringPrintf("0x%04x", gpu_info_.gpu.device_id));
-  command_line->AppendSwitchASCII(switches::kGpuDriverVendor,
-      gpu_info_.driver_vendor);
-  command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
-      gpu_info_.driver_version);
-  command_line->AppendSwitchASCII(switches::kGpuDriverDate,
-      gpu_info_.driver_date);
-
-  gpu::GPUInfo::GPUDevice maybe_active_gpu_device;
-  if (gpu_info_.gpu.active)
-    maybe_active_gpu_device = gpu_info_.gpu;
-
-  std::string vendor_ids_str;
-  std::string device_ids_str;
-  for (const auto& device : gpu_info_.secondary_gpus) {
-    if (!vendor_ids_str.empty())
-      vendor_ids_str += ";";
-    if (!device_ids_str.empty())
-      device_ids_str += ";";
-    vendor_ids_str += base::StringPrintf("0x%04x", device.vendor_id);
-    device_ids_str += base::StringPrintf("0x%04x", device.device_id);
-
-    if (device.active)
-      maybe_active_gpu_device = device;
-  }
-
-  if (!vendor_ids_str.empty() && !device_ids_str.empty()) {
-    command_line->AppendSwitchASCII(switches::kGpuSecondaryVendorIDs,
-                                    vendor_ids_str);
-    command_line->AppendSwitchASCII(switches::kGpuSecondaryDeviceIDs,
-                                    device_ids_str);
-  }
-
-  if (maybe_active_gpu_device.active) {
-    command_line->AppendSwitchASCII(
-        switches::kGpuActiveVendorID,
-        base::StringPrintf("0x%04x", maybe_active_gpu_device.vendor_id));
-    command_line->AppendSwitchASCII(
-        switches::kGpuActiveDeviceID,
-        base::StringPrintf("0x%04x", maybe_active_gpu_device.device_id));
-  }
-
-  if (gpu_info_.amd_switchable) {
-    command_line->AppendSwitch(switches::kAMDSwitchable);
-  }
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(

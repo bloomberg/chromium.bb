@@ -17,18 +17,6 @@ namespace gpu {
 
 struct GPUInfo;
 
-// With provided command line, fill gpu_info->secondary_gpus with parsed
-// secondary vendor and device ids.
-GPU_EXPORT void ParseSecondaryGpuDevicesFromCommandLine(
-    const base::CommandLine& command_line,
-    GPUInfo* gpu_info);
-
-// Command line contains basic GPU info collected at browser startup time in
-// GpuDataManagerImplPrivate::Initialize().
-// TODO(zmo): Obsolete this.
-GPU_EXPORT void GetGpuInfoFromCommandLine(const base::CommandLine& command_line,
-                                          GPUInfo* gpu_info);
-
 // Set GPU feature status if hardware acceleration is disabled.
 GPU_EXPORT GpuFeatureInfo
 ComputeGpuFeatureInfoWithHardwareAccelerationDisabled();

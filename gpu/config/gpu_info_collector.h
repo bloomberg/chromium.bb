@@ -15,6 +15,10 @@ namespace angle {
 struct SystemInfo;
 }
 
+namespace base {
+class CommandLine;
+}
+
 namespace gpu {
 
 // Collects basic GPU info without creating a GL/DirectX context (and without
@@ -22,6 +26,12 @@ namespace gpu {
 // This is called at browser process startup time.
 // The subset each platform collects may be different.
 GPU_EXPORT CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info);
+
+// Similar to above, except it handles the case where the software renderer of
+// the platform is used.
+GPU_EXPORT CollectInfoResult
+CollectBasicGraphicsInfo(const base::CommandLine* command_line,
+                         GPUInfo* gpu_info);
 
 // Create a GL/DirectX context and collect related info.
 // This is called at GPU process startup time.

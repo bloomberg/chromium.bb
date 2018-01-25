@@ -6,9 +6,6 @@
 
 namespace switches {
 
-// Passes if it's AMD switchable dual GPUs from browser process to GPU process.
-const char kAMDSwitchable[] = "amd-switchable";
-
 // Disable workarounds for various GPU driver bugs.
 const char kDisableGpuDriverBugWorkarounds[] =
     "disable-gpu-driver-bug-workarounds";
@@ -29,36 +26,9 @@ const char kEnableOOPRasterization[] = "enable-oop-rasterization";
 // Passes encoded GpuPreferences to GPU process.
 const char kGpuPreferences[] = "gpu-preferences";
 
-// Passes active gpu vendor id from browser process to GPU process.
-const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
-
-// Passes active gpu device id from browser process to GPU process.
-const char kGpuActiveDeviceID[] = "gpu-active-device-id";
-
-// Passes gpu device_id from browser process to GPU process.
-const char kGpuDeviceID[] = "gpu-device-id";
-
-// Passes gpu driver_vendor from browser process to GPU process.
-const char kGpuDriverVendor[] = "gpu-driver-vendor";
-
-// Passes gpu driver_version from browser process to GPU process.
-const char kGpuDriverVersion[] = "gpu-driver-version";
-
-// Passes gpu driver_date from browser process to GPU process.
-const char kGpuDriverDate[] = "gpu-driver-date";
-
-// Passes secondary gpu vendor ids from browser process to GPU process.
-const char kGpuSecondaryVendorIDs[] = "gpu-secondary-vendor-ids";
-
-// Passes secondary gpu device ids from browser process to GPU process.
-const char kGpuSecondaryDeviceIDs[] = "gpu-secondary-device-ids";
-
 // Testing switch to not launch the gpu process for full gpu info collection.
 const char kGpuTestingNoCompleteInfoCollection[] =
     "gpu-no-complete-info-collection";
-
-// Passes gpu vendor_id from browser process to GPU process.
-const char kGpuVendorID[] = "gpu-vendor-id";
 
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";

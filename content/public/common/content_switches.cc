@@ -789,13 +789,6 @@ const char kSingleProcess[]                 = "single-process";
 // process consolidation, not isolation). You probably want this one.
 const char kSitePerProcess[]                = "site-per-process";
 
-// Skip gpu info collection, blacklist loading, and blacklist auto-update
-// scheduling at browser startup time.
-// Therefore, all GPU features are available, and about:gpu page shows empty
-// content. The switch is intended only for layout tests.
-// TODO(gab): Get rid of this switch entirely.
-const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
-
 // Skips reencoding bitmaps as PNGs when the encoded data is unavailable
 // during SKP capture.  This allows for obtaining an accurate sample of
 // the types of images on the web, rather than being weighted towards PNGs

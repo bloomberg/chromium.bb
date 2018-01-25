@@ -296,4 +296,3 @@ bool GPUTestBotConfig::GpuBlacklistedOnBot() {
 }
 
 }  // namespace gpu
-

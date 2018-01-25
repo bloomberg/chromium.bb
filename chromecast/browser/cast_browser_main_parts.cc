@@ -222,7 +222,6 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #if defined(OS_ANDROID)
     {switches::kDisableGLDrawingForTests, ""},
     {switches::kDisableGpuVsync, ""},
-    {switches::kSkipGpuDataLoading, ""},
     {switches::kDisableGpuCompositing, ""},
     {cc::switches::kDisableThreadedAnimation, ""},
 #endif  // defined(OS_ANDROID)
