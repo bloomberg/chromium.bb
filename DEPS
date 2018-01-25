@@ -135,7 +135,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '0e7663c0ec66d763f4e64321f95fa564e1aad3e5',
+  'catapult_revision': 'e99797e78121c49c9d18779fc87b8ab9e5b96c56',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
