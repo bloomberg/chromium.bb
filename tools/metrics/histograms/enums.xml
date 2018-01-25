@@ -25487,6 +25487,7 @@ from previous Chrome versions.
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
+  <int value="-1457775295" label="PasswordSearchMobile:disabled"/>
   <int value="-1456004000" label="VrShell:disabled"/>
   <int value="-1455852875" label="WebAuthentication:disabled"/>
   <int value="-1454397907" label="OptimizationHints:disabled"/>
@@ -25642,6 +25643,7 @@ from previous Chrome versions.
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
+  <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
   <int value="-1052782474" label="enable-cloud-devices"/>
   <int value="-1052415111" label="malware-interstitial-v2"/>
