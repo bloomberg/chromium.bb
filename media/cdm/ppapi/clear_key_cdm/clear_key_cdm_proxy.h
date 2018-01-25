@@ -18,6 +18,7 @@ class ClearKeyCdmProxy : public CdmProxy {
   ~ClearKeyCdmProxy() final;
 
   // CdmProxy implementation.
+  base::WeakPtr<CdmContext> GetCdmContext() final;
   void Initialize(Client* client, InitializeCB init_cb) final;
   void Process(Function function,
                uint32_t crypto_session_id,

@@ -259,6 +259,7 @@ source_set("unit_tests") {
       "mojo_cdm_allocator_unittest.cc",
       "mojo_cdm_file_io_unittest.cc",
       "mojo_cdm_helper_unittest.cc",
+      "mojo_cdm_proxy_unittest.cc",
     ]
 
     deps += [ "//media/cdm:cdm_api" ]

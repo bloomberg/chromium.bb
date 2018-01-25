@@ -61,7 +61,7 @@ void WaitFor(base::TimeDelta duration) {
 class MojoRendererTest : public ::testing::Test {
  public:
   MojoRendererTest()
-      : mojo_cdm_service_(&mojo_cdm_service_context_, &cdm_factory_),
+      : mojo_cdm_service_(&cdm_factory_, &mojo_cdm_service_context_),
         cdm_binding_(&mojo_cdm_service_) {
     std::unique_ptr<StrictMock<MockRenderer>> mock_renderer(
         new StrictMock<MockRenderer>());

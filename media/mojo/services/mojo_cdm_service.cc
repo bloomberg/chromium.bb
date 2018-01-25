@@ -32,16 +32,14 @@ using NewSessionMojoCdmPromise =
     MojoCdmPromise<void(mojom::CdmPromiseResultPtr, const std::string&),
                    std::string>;
 
-int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
-
-MojoCdmService::MojoCdmService(MojoCdmServiceContext* context,
-                               CdmFactory* cdm_factory)
-    : context_(context),
-      cdm_factory_(cdm_factory),
+MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
+                               MojoCdmServiceContext* context)
+    : cdm_factory_(cdm_factory),
+      context_(context),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
-  DCHECK(context_);
   DCHECK(cdm_factory_);
+  DCHECK(context_);
 }
 
 MojoCdmService::~MojoCdmService() {
@@ -157,9 +155,8 @@ void MojoCdmService::OnCdmCreated(
   }
 
   cdm_ = cdm;
-  cdm_id_ = next_cdm_id_++;
 
-  context_->RegisterCdm(cdm_id_, this);
+  cdm_id_ = context_->RegisterCdm(this);
   CdmManager::GetInstance()->RegisterCdm(cdm_id_, cdm);
 
   // If |cdm| has a decryptor, create the MojoDecryptorService

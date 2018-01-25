@@ -21,6 +21,9 @@ MojoCdmProxyService::MojoCdmProxyService(
 
 MojoCdmProxyService::~MojoCdmProxyService() {
   DVLOG(1) << __func__;
+
+  if (cdm_id_ != CdmContext::kInvalidCdmId)
+    context_->UnregisterCdmProxy(cdm_id_);
 }
 
 void MojoCdmProxyService::Initialize(
@@ -29,7 +32,9 @@ void MojoCdmProxyService::Initialize(
   DVLOG(2) << __func__;
   client_.Bind(std::move(client));
 
-  // TODO(xhwang): Register |this| in the |context| to implement SetCdm().
+  cdm_id_ = context_->RegisterCdmProxy(this);
+
+  // TODO(xhwang): Pass the CDM ID back to the client.
   cdm_proxy_->Initialize(this, std::move(callback));
 }
 
@@ -66,6 +71,11 @@ void MojoCdmProxyService::RemoveKey(uint32_t crypto_session_id,
 void MojoCdmProxyService::NotifyHardwareReset() {
   DVLOG(2) << __func__;
   client_->NotifyHardwareReset();
+}
+
+base::WeakPtr<CdmContext> MojoCdmProxyService::GetCdmContext() {
+  DVLOG(2) << __func__;
+  return cdm_proxy_->GetCdmContext();
 }
 
 }  // namespace media
