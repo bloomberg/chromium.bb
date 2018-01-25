@@ -134,6 +134,10 @@
   [self.toolbarCoordinator stop];
 }
 
+- (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  [self.toolbarCoordinator transitionToLocationBarFocusedState:focused];
+}
+
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {

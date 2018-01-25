@@ -28,6 +28,9 @@
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
 - (void)start;
 - (void)stop;
+// Coordinates the location bar focusing/defocusing. For example, initiates
+// transition to the expanded location bar state of the view controller.
+- (void)transitionToLocationBarFocusedState:(BOOL)focused;
 
 @end
 

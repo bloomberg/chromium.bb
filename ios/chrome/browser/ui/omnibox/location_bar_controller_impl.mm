@@ -328,7 +328,7 @@ ToolbarModel* LocationBarControllerImpl::GetToolbarModel() {
 }
 
 web::WebState* LocationBarControllerImpl::GetWebState() {
-  return [delegate_ getWebState];
+  return [delegate_ webState];
 }
 
 void LocationBarControllerImpl::InstallLocationIcon() {
