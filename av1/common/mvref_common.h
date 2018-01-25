@@ -488,12 +488,6 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                            int_mv *near_mv);
 #endif
 
-// This function keeps a mode count for a given MB/SB
-void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                           MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                           int_mv *mv_ref_list, int mi_row, int mi_col,
-                           int16_t *mode_context);
-
 #if CONFIG_EXT_WARPED_MOTION
 int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize);
 #endif  // CONFIG_EXT_WARPED_MOTION

@@ -985,11 +985,12 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                              int_mv *mv_ref_list, int mi_row, int mi_col,
                              find_mv_refs_sync sync, void *const data,
-                             int_mv zeromv) {
+                             int16_t *mode_context, int_mv zeromv) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   const int sb_mi_size = mi_size_wide[cm->sb_size];
   int i, refmv_count = 0;
   int different_ref_found = 0;
+  int context_counter = 0;
 
 #if CONFIG_MFMV
   (void)sync;
@@ -1088,7 +1089,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_INTRABC
       if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
 #endif  // CONFIG_INTRABC
-
+      // Keep counts for entropy encoding.
+      context_counter += mode_2_counter[candidate->mode];
       different_ref_found = 1;
 
       if (candidate->ref_frame[0] == ref_frame)
@@ -1211,65 +1213,10 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // !CONFIG_MFMV
 
 Done:
-  for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
-    mv_ref_list[i].as_int = zeromv.as_int;
-}
-
-// This function keeps a mode count for a given MB/SB
-void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                           MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
-                           int_mv *mv_ref_list, int mi_row, int mi_col,
-                           int16_t *mode_context) {
-  int i, refmv_count = 0;
-  int context_counter = 0;
-  const int bw = block_size_wide[mi->mbmi.sb_type];
-  const int bh = block_size_high[mi->mbmi.sb_type];
-  const TileInfo *const tile = &xd->tile;
-  POSITION mv_ref_search[2];
-  const int num_8x8_blocks_wide = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type];
-  const int num_8x8_blocks_high = num_8x8_blocks_high_lookup[mi->mbmi.sb_type];
-
-  mv_ref_search[0].row = num_8x8_blocks_high - 1;
-  mv_ref_search[0].col = -1;
-  mv_ref_search[1].row = -1;
-  mv_ref_search[1].col = num_8x8_blocks_wide - 1;
-
-  for (i = 0; i < 2; ++i) {
-    mv_ref_search[i].row *= 2;
-    mv_ref_search[i].col *= 2;
-  }
-
-  // Blank the reference vector list
-  memset(mv_ref_list, 0, sizeof(*mv_ref_list) * MAX_MV_REF_CANDIDATES);
-
-  // The nearest 2 blocks are examined only.
-  // If the size < 8x8, we get the mv from the bmi substructure;
-  for (i = 0; i < 2; ++i) {
-    const POSITION *const mv_ref = &mv_ref_search[i];
-    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_ref)) {
-      const MODE_INFO *const candidate_mi =
-          xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride];
-      const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-#if CONFIG_INTRABC
-      if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
-#endif  // CONFIG_INTRABC
-      // Keep counts for entropy encoding.
-      context_counter += mode_2_counter[candidate->mode];
-
-      if (candidate->ref_frame[0] == ref_frame) {
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 0, mv_ref->col),
-                        refmv_count, mv_ref_list, bw, bh, xd, Done);
-      } else if (candidate->ref_frame[1] == ref_frame) {
-        ADD_MV_REF_LIST(get_sub_block_mv(candidate_mi, 1, mv_ref->col),
-                        refmv_count, mv_ref_list, bw, bh, xd, Done);
-      }
-    }
-  }
-
-Done:
-
   if (mode_context)
     mode_context[ref_frame] = counter_to_context[context_counter];
+  for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
+    mv_ref_list[i].as_int = zeromv.as_int;
 }
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -1281,9 +1228,6 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int_mv zeromv[2];
   BLOCK_SIZE bsize = mi->mbmi.sb_type;
   MV_REFERENCE_FRAME rf[2];
-
-  av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col,
-                        compound_mode_context);
 
   if (!CONFIG_INTRABC || ref_frame != INTRA_FRAME) {
     av1_set_ref_frame(rf, ref_frame);
@@ -1313,7 +1257,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (ref_frame <= ALTREF_FRAME)
     find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col, sync,
-                     data, zeromv[0]);
+                     data, compound_mode_context, zeromv[0]);
 
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
 #if USE_CUR_GM_REFMV
