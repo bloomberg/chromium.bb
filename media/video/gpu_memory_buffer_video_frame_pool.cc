@@ -442,16 +442,11 @@ void CopyRowsToXR30Buffer(int first_row,
     const size_t u_plane_stride = source_frame->stride(VideoFrame::kUPlane) / 2;
     uint8_t* dest_ar30 = output + first_row * dest_stride;
 
-    // RGB textures need RGB as MatrixID.
     switch (color_space) {
       case COLOR_SPACE_HD_REC709:
         libyuv::H010ToAR30(y_plane, y_plane_stride, v_plane, v_plane_stride,
                            u_plane, u_plane_stride, dest_ar30, dest_stride,
                            width, rows);
-        source_frame->set_color_space(gfx::ColorSpace(
-            gfx::ColorSpace::PrimaryID::BT709,
-            gfx::ColorSpace::TransferID::BT709, gfx::ColorSpace::MatrixID::RGB,
-            gfx::ColorSpace::RangeID::LIMITED));
         break;
       case COLOR_SPACE_UNSPECIFIED:
       case COLOR_SPACE_JPEG:
@@ -459,10 +454,6 @@ void CopyRowsToXR30Buffer(int first_row,
         libyuv::I010ToAR30(y_plane, y_plane_stride, v_plane, v_plane_stride,
                            u_plane, u_plane_stride, dest_ar30, dest_stride,
                            width, rows);
-        source_frame->set_color_space(gfx::ColorSpace(
-            gfx::ColorSpace::PrimaryID::SMPTE170M,
-            gfx::ColorSpace::TransferID::SMPTE170M,
-            gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::LIMITED));
         break;
     }
   }
