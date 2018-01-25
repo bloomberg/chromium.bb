@@ -8,58 +8,54 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "content/browser/media/capture/frame_sink_video_capture_device.h"
 #include "content/common/content_export.h"
-#include "media/capture/content/screen_capture_device_core.h"
-#include "media/capture/video/video_capture_device.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
-// A virtualized VideoCaptureDevice that captures the displayed contents of a
-// WebContents (i.e., the composition of an entire render frame tree), producing
-// a stream of video frames. As such, WebContentsVideoCaptureDevice is only
-// supported on platforms that use the Chromium compositor, have a
-// content::RenderWidgetHostView implementation that supports frame subscription
-// (via BeginFrameSubscription()), and can perform read-back into
-// media::VideoFrames (i.e.,
-// RenderWidgetHostViewBase::CopyFromSurfaceToVideoFrame() is functional).
+// Captures the displayed contents of a WebContents, producing a stream of video
+// frames.
 //
-// An instance is created by providing a device_id.  The device_id contains
-// information necessary for finding a WebContents instance.  From then on,
-// WebContentsVideoCaptureDevice will capture from the RenderWidgetHost that
-// encompasses the currently active RenderFrameHost tree for that that
-// WebContents instance.  As the RenderFrameHost tree mutates (e.g., due to page
-// navigations, or crashes/reloads), capture will continue without interruption.
+// Generally, Create() is called with a device ID string that contains
+// information necessary for finding a WebContents instance. Thereafter, this
+// capture device will capture from the frame sink corresponding to the main
+// frame of the RenderFrameHost tree for that WebContents instance. As the
+// RenderFrameHost tree mutates (e.g., due to page navigations, crashes, or
+// reloads), capture will continue without interruption.
 class CONTENT_EXPORT WebContentsVideoCaptureDevice
-    : public media::VideoCaptureDevice {
+    : public FrameSinkVideoCaptureDevice,
+      public base::SupportsWeakPtr<WebContentsVideoCaptureDevice> {
  public:
-  // Create a WebContentsVideoCaptureDevice instance from the given
-  // |device_id|.  Returns NULL if |device_id| is invalid.
-  static std::unique_ptr<media::VideoCaptureDevice> Create(
-      const std::string& device_id);
-
+  WebContentsVideoCaptureDevice(int render_process_id,
+                                int main_render_frame_id);
   ~WebContentsVideoCaptureDevice() override;
 
-  // VideoCaptureDevice implementation.
-  void AllocateAndStart(const media::VideoCaptureParams& params,
-                        std::unique_ptr<Client> client) override;
-  void RequestRefreshFrame() override;
-  void MaybeSuspend() override;
-  void Resume() override;
-  void StopAndDeAllocate() override;
-  void OnUtilizationReport(int frame_feedback_id, double utilization) override;
+  // Creates a WebContentsVideoCaptureDevice instance from the given
+  // |device_id|. Returns null if |device_id| is invalid.
+  static std::unique_ptr<WebContentsVideoCaptureDevice> Create(
+      const std::string& device_id);
 
  private:
-  WebContentsVideoCaptureDevice(
-      int render_process_id,
-      int main_render_frame_id,
-      bool enable_auto_throttling);
+  // Monitors the WebContents instance and notifies the base class any time the
+  // frame sink or main render frame's view changes.
+  class FrameTracker;
 
-  const std::unique_ptr<media::ScreenCaptureDeviceCore> core_;
+  // FrameSinkVideoCaptureDevice overrides: These increment/decrement the
+  // WebContents's capturer count, which causes the embedder to be notified.
+  void WillStart() final;
+  void DidStop() final;
+
+  // A helper that runs on the UI thread to monitor changes to the
+  // RenderFrameHost tree during the lifetime of a WebContents instance, and
+  // posts notifications back to update the target frame sink.
+  const std::unique_ptr<FrameTracker, BrowserThread::DeleteOnUIThread> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };
-
 
 }  // namespace content
 

@@ -118,6 +118,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   }
 
   capture_params_ = params;
+  WillStart();
   DCHECK(!receiver_);
   receiver_ = std::move(receiver);
 
@@ -127,7 +128,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CursorRenderer::SetNeedsRedrawCallback,
-                     base::Unretained(cursor_renderer_.get()),
+                     cursor_renderer_->GetWeakPtr(),
                      media::BindToCurrentLoop(base::BindRepeating(
                          &FrameSinkVideoCaptureDevice::RequestRefreshFrame,
                          weak_factory_.GetWeakPtr()))));
@@ -178,13 +179,13 @@ void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CursorRenderer::SetNeedsRedrawCallback,
-                     base::Unretained(cursor_renderer_.get()),
-                     base::RepeatingClosure()));
+                     cursor_renderer_->GetWeakPtr(), base::RepeatingClosure()));
 
   MaybeStopConsuming();
   capturer_.reset();
   if (receiver_) {
     receiver_.reset();
+    DidStop();
   }
 }
 
@@ -301,13 +302,16 @@ void FrameSinkVideoCaptureDevice::OnTargetChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = frame_sink_id;
-  if (capturer_) {
+  // TODO(crbug.com/754872): When the frame sink is invalid, the capturer should
+  // be told there is no target. This will require a mojo API change; and will
+  // be addressed in a soon-upcoming CL.
+  if (capturer_ && frame_sink_id.is_valid()) {
     capturer_->ChangeTarget(frame_sink_id);
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CursorRenderer::SetTargetView,
-                     base::Unretained(cursor_renderer_.get()), native_view));
+                     cursor_renderer_->GetWeakPtr(), native_view));
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
@@ -317,8 +321,7 @@ void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CursorRenderer::SetTargetView,
-                     base::Unretained(cursor_renderer_.get()),
-                     gfx::NativeView()));
+                     cursor_renderer_->GetWeakPtr(), gfx::NativeView()));
 
   OnFatalError("Capture target has been permanently lost.");
 }
@@ -327,6 +330,10 @@ void FrameSinkVideoCaptureDevice::SetCapturerCreatorForTesting(
     CapturerCreatorCallback creator) {
   capturer_creator_ = std::move(creator);
 }
+
+void FrameSinkVideoCaptureDevice::WillStart() {}
+
+void FrameSinkVideoCaptureDevice::DidStop() {}
 
 void FrameSinkVideoCaptureDevice::OnCapturerCreated(
     viz::mojom::FrameSinkVideoCapturerPtrInfo info) {

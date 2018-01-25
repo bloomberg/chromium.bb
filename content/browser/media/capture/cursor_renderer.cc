@@ -46,7 +46,6 @@ CursorRenderer::~CursorRenderer() {
 }
 
 base::WeakPtr<CursorRenderer> CursorRenderer::GetWeakPtr() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
   return weak_factory_.GetWeakPtr();
 }
 
