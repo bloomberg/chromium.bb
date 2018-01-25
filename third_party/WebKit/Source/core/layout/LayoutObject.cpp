@@ -113,8 +113,7 @@ static bool g_modify_layout_tree_structure_any_state = false;
 
 inline bool ShouldUseNewLayout(const ComputedStyle& style) {
   return RuntimeEnabledFeatures::LayoutNGEnabled() &&
-         !style.ForceLegacyLayout() &&
-         style.UserModify() == EUserModify::kReadOnly;
+         !style.ForceLegacyLayout();
 }
 
 template <typename Predicate>
