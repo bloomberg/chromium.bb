@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "components/multidevice/service/device_sync_impl.h"
 #include "components/multidevice/service/fake_device_sync.h"
 #include "components/multidevice/service/multidevice_service.h"
@@ -19,7 +21,7 @@ class FakeDeviceSyncFactory : public multidevice::DeviceSyncImpl::Factory {
   std::unique_ptr<device_sync::mojom::DeviceSync> BuildInstance(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref)
       override {
-    return base::MakeUnique<multidevice::FakeDeviceSync>();
+    return std::make_unique<multidevice::FakeDeviceSync>();
   }
 };
 

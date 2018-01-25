@@ -4,11 +4,11 @@
 
 #include "components/ntp_tiles/icon_cacher_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/flat_set.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -441,9 +441,9 @@ class IconCacherTestMostLikely : public IconCacherTestBase {
  protected:
   IconCacherTestMostLikely()
       : fetcher_for_large_icon_service_(
-            base::MakeUnique<::testing::StrictMock<MockImageFetcher>>()),
+            std::make_unique<::testing::StrictMock<MockImageFetcher>>()),
         fetcher_for_icon_cacher_(
-            base::MakeUnique<::testing::StrictMock<MockImageFetcher>>()) {
+            std::make_unique<::testing::StrictMock<MockImageFetcher>>()) {
     // Expect uninteresting calls here, |fetcher_for_icon_cacher_| is not
     // related to these tests. Keep it strict to make sure we do not use it in
     // any other way.

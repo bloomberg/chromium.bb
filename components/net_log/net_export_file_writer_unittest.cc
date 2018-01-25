@@ -167,7 +167,7 @@ void SetUpTestContextGetterWithQuicTimeoutInfo(
     int quic_idle_connection_timeout_seconds,
     scoped_refptr<net::TestURLRequestContextGetter>* context_getter) {
   std::unique_ptr<net::TestURLRequestContext> context =
-      base::MakeUnique<net::TestURLRequestContext>(true);
+      std::make_unique<net::TestURLRequestContext>(true);
   context->set_net_log(net_log);
 
   std::unique_ptr<net::HttpNetworkSession::Params> params(
@@ -188,7 +188,7 @@ void SetUpTestContextGetterWithRequest(
     net::URLRequest::Delegate* delegate,
     scoped_refptr<net::TestURLRequestContextGetter>* context_getter,
     std::unique_ptr<net::URLRequest>* request) {
-  auto context = base::MakeUnique<net::TestURLRequestContext>(true);
+  auto context = std::make_unique<net::TestURLRequestContext>(true);
   context->set_net_log(net_log);
   context->Init();
 
@@ -654,7 +654,7 @@ TEST_F(NetExportFileWriterTest, StopWithPolledDataAndContextGetter) {
   const char kDummyPolledDataPath[] = "dummy_path";
   const char kDummyPolledDataString[] = "dummy_info";
   std::unique_ptr<base::DictionaryValue> dummy_polled_data =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   dummy_polled_data->SetString(kDummyPolledDataPath, kDummyPolledDataString);
 
   // Create test context getter on |net_thread_| and wait for it to finish.

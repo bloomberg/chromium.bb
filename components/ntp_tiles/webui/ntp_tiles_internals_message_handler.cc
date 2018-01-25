@@ -5,6 +5,7 @@
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler.h"
 
 #include <array>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/favicon/core/favicon_service.h"
@@ -243,23 +243,23 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
 void NTPTilesInternalsMessageHandler::SendTiles(
     const NTPTilesVector& tiles,
     const FaviconResultMap& result_map) {
-  auto sites_list = base::MakeUnique<base::ListValue>();
+  auto sites_list = std::make_unique<base::ListValue>();
   for (const NTPTile& tile : tiles) {
-    auto entry = base::MakeUnique<base::DictionaryValue>();
+    auto entry = std::make_unique<base::DictionaryValue>();
     entry->SetString("title", tile.title);
     entry->SetString("url", tile.url.spec());
     entry->SetInteger("source", static_cast<int>(tile.source));
     entry->SetString("whitelistIconPath",
                      tile.whitelist_icon_path.LossyDisplayName());
 
-    auto icon_list = base::MakeUnique<base::ListValue>();
+    auto icon_list = std::make_unique<base::ListValue>();
     for (const auto& entry : kIconTypesAndNames) {
       FaviconResultMap::const_iterator it = result_map.find(
           FaviconResultMap::key_type(tile.url, entry.type_enum));
 
       if (it != result_map.end()) {
         const favicon_base::FaviconRawBitmapResult& result = it->second;
-        auto icon = base::MakeUnique<base::DictionaryValue>();
+        auto icon = std::make_unique<base::DictionaryValue>();
         icon->SetString("url", result.icon_url.spec());
         icon->SetString("type", entry.type_name);
         icon->SetBoolean("onDemand", !result.fetched_because_of_page_visit);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "components/multidevice/service/multidevice_service.h"
 #include "components/multidevice/service/device_sync_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -14,7 +16,7 @@ MultiDeviceService::MultiDeviceService() : weak_ptr_factory_(this) {}
 MultiDeviceService::~MultiDeviceService() {}
 
 void MultiDeviceService::OnStart() {
-  ref_factory_ = base::MakeUnique<service_manager::ServiceContextRefFactory>(
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context())));
   registry_.AddInterface<device_sync::mojom::DeviceSync>(

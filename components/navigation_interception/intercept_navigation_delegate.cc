@@ -4,10 +4,11 @@
 
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,7 +89,7 @@ InterceptNavigationDelegate* InterceptNavigationDelegate::Get(
 std::unique_ptr<content::NavigationThrottle>
 InterceptNavigationDelegate::CreateThrottleFor(
     content::NavigationHandle* handle) {
-  return base::MakeUnique<InterceptNavigationThrottle>(
+  return std::make_unique<InterceptNavigationThrottle>(
       handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread));
 }
 

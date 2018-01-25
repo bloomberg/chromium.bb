@@ -101,7 +101,7 @@ class MultiDeviceServiceTest : public service_manager::test::ServiceTest {
     device_sync::mojom::DeviceSyncObserverPtr device_sync_observer_ptr;
     for (int i = 0; i < num; i++) {
       device_sync_observer_ptr = device_sync::mojom::DeviceSyncObserverPtr();
-      observers_.emplace_back(base::MakeUnique<DeviceSyncObserverImpl>(
+      observers_.emplace_back(std::make_unique<DeviceSyncObserverImpl>(
           mojo::MakeRequest(&device_sync_observer_ptr)));
       device_sync_ptr_->AddObserver(std::move(device_sync_observer_ptr));
     }

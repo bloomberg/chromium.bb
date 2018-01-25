@@ -401,7 +401,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
   success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
   socket_data_providers.push_back(
-      (base::MakeUnique<net::StaticSocketDataProvider>(
+      (std::make_unique<net::StaticSocketDataProvider>(
           success_reads, arraysize(success_reads), nullptr, 0)));
   mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
 
