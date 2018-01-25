@@ -616,6 +616,12 @@ class ChromeSDKCommand(command.CliCommand):
     self.silent = True
 
   @staticmethod
+  def _PS1Prefix(board, version, chroot=None):
+    """Returns a string describing the sdk environment for use in PS1."""
+    chroot_star = '*' if chroot else ''
+    return '(sdk %s %s%s)' % (board, chroot_star, version)
+
+  @staticmethod
   def _CreatePS1(board, version, chroot=None):
     """Returns PS1 string that sets commandline and xterm window caption.
 
@@ -627,7 +633,6 @@ class ChromeSDKCommand(command.CliCommand):
       version: The SDK version.
       chroot: The path to the chroot, if set.
     """
-    custom = '*' if chroot else ''
     current_ps1 = cros_build_lib.RunCommand(
         ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False,
         capture_output=True).output.splitlines()
@@ -636,7 +641,8 @@ class ChromeSDKCommand(command.CliCommand):
     if not current_ps1:
       # Something went wrong, so use a fallback value.
       current_ps1 = r'\u@\h \w $ '
-    return '(sdk %s %s%s) %s' % (board, custom, version, current_ps1)
+    ps1_prefix = ChromeSDKCommand._PS1Prefix(board, version, chroot)
+    return '%s %s' % (ps1_prefix, current_ps1)
 
   def _FixGoldPath(self, var_contents, toolchain_path):
     """Point to the gold linker in the toolchain tarball.
@@ -923,6 +929,10 @@ class ChromeSDKCommand(command.CliCommand):
       full_version = self.sdk.GetFullVersion(sdk_ctx.version)
     env['PS1'] = self._CreatePS1(self.board, full_version,
                                  chroot=options.chroot)
+
+    # Set the useful part of PS1 for users with a custom PROMPT_COMMAND.
+    env['CROS_PS1_PREFIX'] = self._PS1Prefix(self.board, full_version,
+                                             chroot=options.chroot)
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
