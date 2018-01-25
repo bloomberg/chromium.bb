@@ -483,7 +483,15 @@ config("compiler") {
   # Currently disabled for nacl since its toolchain lacks this flag (too old).
   # TODO(zforman): Once nacl's toolchain is updated, remove check.
   if (is_clang && is_linux && strip_absolute_paths_from_debug_symbols) {
-    absolute_path = rebase_path("//.")
+    # This is resolved to path like "$HOME/chromium/src/out/Release".
+    # If debug option is given, clang includes $cwd in debug info.
+    # In such build, this flag generates reproducible obj files
+    # even we use build directory like "out/feature_a" and "out/feature_b" if
+    # we build same files with same compile flag other than this.
+    # Other paths are already givne in relative, no need to normalize it by
+    # using -fdebug-prefix-map.
+    absolute_path = rebase_path(root_out_dir)
+
     cflags += [ "-fdebug-prefix-map=$absolute_path=." ]
   }
 
