@@ -2409,12 +2409,12 @@ LayoutSize LayoutObject::OffsetFromAncestorContainer(
     DCHECK(next_container);
     if (!next_container)
       break;
-    // Table sections can have transforms but are not containers (they are
+    // Table sections/rows can have transforms but are not containers (they are
     // not derived from LayoutBlock). Allow them here. It is the responsibility
     // of calling code to correctly handle the fact that the value returned from
-    // this method does not account for the table section transform.
+    // this method does not account for the table part transform.
     DCHECK(!curr_container->HasTransformRelatedProperty() ||
-           curr_container->IsTableSection());
+           curr_container->IsTablePart());
     LayoutSize current_offset =
         curr_container->OffsetFromContainer(next_container);
     offset += current_offset;
