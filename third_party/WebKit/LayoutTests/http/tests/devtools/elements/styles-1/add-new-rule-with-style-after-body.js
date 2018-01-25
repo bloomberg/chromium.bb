@@ -41,9 +41,9 @@
     newProperty.nameElement.textContent = 'color';
     newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
     newProperty.valueElement.textContent = 'maroon';
+    ElementsTestRunner.waitForStyleCommitted(step3);
     newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    ElementsTestRunner.waitForStyles('inspected', step3);
-  }
+}
 
   function step3() {
     TestRunner.addResult('After adding new rule:');

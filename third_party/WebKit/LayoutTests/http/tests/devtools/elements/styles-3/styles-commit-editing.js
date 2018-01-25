@@ -29,7 +29,7 @@
       treeElement.nameElement.textContent = 'color';
       treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 
-      // Update incrementally, do not commit.
+    // Update incrementally, do not commit.
       treeElement.valueElement.textContent = 'rgb(/*';
       ElementsTestRunner.waitForStyleApplied(next);
       treeElement.kickFreeFlowStyleEditForTest();
@@ -39,7 +39,7 @@
       // Commit editing.
       treeElement.valueElement.textContent = 'green';
       treeElement.valueElement.firstChild.select();
-      TestRunner.addSniffer(Elements.StylePropertiesSection.prototype, '_afterUpdateFinishedForTest', next);
+      ElementsTestRunner.waitForStyleCommitted(next);
       treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
     },
 
@@ -52,7 +52,7 @@
       }
 
       // Test Styles pane editor looping.
-      TestRunner.addSniffer(Elements.StylePropertiesSection.prototype, '_afterUpdateFinishedForTest', next);
+      ElementsTestRunner.waitForStyleCommitted(next);
       blankTreeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
     },
 
