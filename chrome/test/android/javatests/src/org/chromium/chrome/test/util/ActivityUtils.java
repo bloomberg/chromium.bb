@@ -29,6 +29,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 /**
  * Collection of activity utilities.
@@ -105,6 +106,33 @@ public class ActivityUtils {
      */
     public static <T> T waitForActivity(Instrumentation instrumentation, Class<T> activityType,
             Runnable activityTrigger) {
+        Callable<Void> callableWrapper = new Callable<Void>() {
+            @Override
+            public Void call() {
+                activityTrigger.run();
+                return null;
+            }
+        };
+
+        try {
+            return waitForActivityWithTimeout(
+                    instrumentation, activityType, callableWrapper, ACTIVITY_START_TIMEOUT_MS);
+        } catch (Exception e) {
+            // We just ignore checked exceptions here since Runnables can't throw them.
+        }
+        return null;
+    }
+
+    /**
+     * Captures an activity of a particular type that is triggered from some action.
+     *
+     * @param <T> The type of activity to wait for.
+     * @param activityType The class type of the activity.
+     * @param activityTrigger The action that will trigger the new activity (run in this thread).
+     * @return The spawned activity.
+     */
+    public static <T> T waitForActivity(Instrumentation instrumentation, Class<T> activityType,
+            Callable<Void> activityTrigger) throws Exception {
         return waitForActivityWithTimeout(instrumentation, activityType, activityTrigger,
                 ACTIVITY_START_TIMEOUT_MS);
     }
@@ -118,11 +146,11 @@ public class ActivityUtils {
      * @return The spawned activity.
      */
     public static <T> T waitForActivityWithTimeout(Instrumentation instrumentation,
-            Class<T> activityType, Runnable activityTrigger, long timeOut) {
+            Class<T> activityType, Callable<Void> activityTrigger, long timeOut) throws Exception {
         ActivityMonitor monitor =
                 instrumentation.addMonitor(activityType.getCanonicalName(), null, false);
 
-        activityTrigger.run();
+        activityTrigger.call();
         instrumentation.waitForIdleSync();
         Activity activity = monitor.getLastActivity();
         if (activity == null) {
