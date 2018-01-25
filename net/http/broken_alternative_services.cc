@@ -95,6 +95,21 @@ bool BrokenAlternativeServices::IsAlternativeServiceBroken(
          broken_alternative_service_map_.end();
 }
 
+bool BrokenAlternativeServices::IsAlternativeServiceBroken(
+    const AlternativeService& alternative_service,
+    base::TimeTicks* brokenness_expiration) const {
+  DCHECK(brokenness_expiration != nullptr);
+  // Empty host means use host of origin, callers are supposed to substitute.
+  DCHECK(!alternative_service.host.empty());
+  auto map_it = broken_alternative_service_map_.find(alternative_service);
+  if (map_it == broken_alternative_service_map_.end()) {
+    return false;
+  }
+  auto list_it = map_it->second;
+  *brokenness_expiration = list_it->second;
+  return true;
+}
+
 bool BrokenAlternativeServices::WasAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
   DCHECK(!alternative_service.host.empty());

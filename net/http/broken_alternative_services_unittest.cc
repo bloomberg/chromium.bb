@@ -137,6 +137,46 @@ TEST_F(BrokenAlternativeServicesTest, ExpireBrokenAlternateProtocolMappings) {
       alternative_service));
 }
 
+TEST_F(BrokenAlternativeServicesTest, IsAlternativeServiceBroken) {
+  // Tests the IsAlternativeServiceBroken() methods.
+  AlternativeService alternative_service(kProtoQUIC, "foo", 443);
+  base::TimeTicks brokenness_expiration;
+
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(broken_services_.IsAlternativeServiceBroken(
+      alternative_service, &brokenness_expiration));
+
+  broken_services_.MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(
+      alternative_service, &brokenness_expiration));
+  EXPECT_EQ(
+      broken_services_clock_->NowTicks() + base::TimeDelta::FromMinutes(5),
+      brokenness_expiration);
+
+  // Fast forward time until |alternative_service|'s brokenness expires.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(5));
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(broken_services_.IsAlternativeServiceBroken(
+      alternative_service, &brokenness_expiration));
+
+  broken_services_.MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(broken_services_.IsAlternativeServiceBroken(
+      alternative_service, &brokenness_expiration));
+  EXPECT_EQ(
+      broken_services_clock_->NowTicks() + base::TimeDelta::FromMinutes(10),
+      brokenness_expiration);
+
+  broken_services_.ConfirmAlternativeService(alternative_service);
+  EXPECT_FALSE(
+      broken_services_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(broken_services_.IsAlternativeServiceBroken(
+      alternative_service, &brokenness_expiration));
+}
+
 TEST_F(BrokenAlternativeServicesTest, ExponentialBackoff) {
   // Tests the exponential backoff of the computed expiration delay when an
   // alt svc is marked broken. After being marked broken 10 times, the max

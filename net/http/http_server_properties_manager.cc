@@ -121,7 +121,8 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
       base::Unretained(this)));
   net_log_.BeginEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 
-  http_server_properties_impl_.reset(new HttpServerPropertiesImpl(clock_));
+  http_server_properties_impl_.reset(
+      new HttpServerPropertiesImpl(clock_, nullptr));
 }
 
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {

@@ -73,6 +73,12 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) const;
 
+  // Same as IsAlternativeServiceBroken() defined above, but will also set
+  // |brokenness_expiration| to when |alternative_service|'s brokenness will
+  // expire if this function returns true.
+  bool IsAlternativeServiceBroken(const AlternativeService& alternative_service,
+                                  base::TimeTicks* brokenness_expiration) const;
+
   // Returns true if MarkAlternativeServiceRecentlyBroken(alternative_service)
   // or MarkAlternativeServiceBroken(alternative_service) has been called and
   // ConfirmAlternativeService(alternative_service) has not been called
