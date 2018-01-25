@@ -69,7 +69,36 @@ a component. For example, unit tests will often require implementation details
 to be exported. Export symbols to make the build link the way you need it, and
 use GN’s public headers and visibility restrictions to define your public API.
 
-### Chrome’s pattern for exports
+Component library headers can use the `COMPONENT_EXPORT()` macro defined in
+`base/component_export.h` to annotate symbols which should be exported by
+the component. This macro takes a globally unique component name as an
+argument:
+
+```c++
+#include "base/component_export.h"
+
+class COMPONENT_EXPORT(YOUR_COMPONENT) YourClass { ... };
+
+COMPONENT_EXPORT(YOUR_COMPONENT) void SomeFunction();
+```
+
+When defining the target for your component, set:
+
+```python
+defines = [ "IS_YOUR_COMPONENT_IMPL" ]
+```
+
+This ensures that the corresponding `COMPONENT_EXPORT(YOUR_COMPONENT)`
+invocations result in symbols being marked for export when compiling the
+component target. All other targets which include the component's headers
+will not have defined `IS_YOUR_COMPONENT_IMPL`, so they will have the same
+symbols marked for import instead.
+
+## Chrome’s deprecated pattern for exports
+
+**NOTE**: This section is included for posterity, as many components in the tree
+still use this pattern for exports. New components should use
+`base/component_export.h` as described above.
 
 Write a header with the name `<component_name>_export.h`. Copy an [existing
 one](https://cs.chromium.org/chromium/src/ipc/ipc_export.h)
@@ -185,18 +214,18 @@ group("browser") {
 
 source_set("browser_impl") {
   visibility = [ ":*" ]  # Prevent accidental dependencies.
-  defines = [ "MYCOMPONENT_IMPLEMENTATION" ]
+  defines = [ "IS_MYCOMPONENT_IMPL" ]
   sources = [ ... ]
 }
 ```
 
 ## Common mistakes
 
-### Forgetting to mark a symbol with `*_EXPORT`
+### Forgetting or misspelling `COMPONENT_EXPORT(*)`
 
-If a function is not marked with your `*_EXPORT` annotation, other components
-won’t see the symbol when linking and you’ll get undefined symbols during
-linking:
+If a function is not marked with your `COMPONENT_EXPORT(FOO)` annotation or the
+component name (`FOO`) is misspelled, other components won’t see the symbol when
+linking and you’ll get undefined symbols during linking:
 
     some_file.obj : error LNK2001: unresolved external symbol <some definition>
 
@@ -204,7 +233,7 @@ This will only happen on Windows component builds, which makes the error more
 difficult to debug. However, if you see such an error only for Windows
 component builds, you know it’s this problem.
 
-### Not defining `*_IMPLEMENTATION` for code in your component
+### Not defining `IS_*_IMPL` for code in your component
 
 When code is compiled that sees a symbol marked with `__declspec(dllimport)`,
 it will expect to find that symbol in another shared library. If that symbol
@@ -213,13 +242,13 @@ ends up in the same shared library, you’ll see the error:
     some_file.obj : warning LNK4217: locally defined symbol
     <horrendous mangled name> imported in function <some definition>
 
-The solution is to make sure your `*_IMPLEMENTATION` define is set consistently
-for all code in the component. If your component links in source sets or static
-libraries, the `*_IMPLEMENTATION` macro must be set on those as well.
+The solution is to make sure your `IS_*_IMPL` define is set consistently for all
+code in the component. If your component links in source sets or static
+libraries, the `IS_*_IMPL` macro must be set on those as well.
 
-### Defining `*_IMPLEMENTATION` for code outside your component
+### Defining `IS_*_IMPL` for code outside your component
 
-If your `*_IMPLEMENTATION` macro is set for code compiled outside of the
+If your `IS_*_IMPL` macro is set for code compiled outside of the
 component, that code will expect the symbol to be in the current shared
 library, but it won’t be found. It won’t even go looking in other libraries and
 the result will be an undefined symbol:
@@ -230,7 +259,7 @@ the result will be an undefined symbol:
 
 If the source set or static library has any `*_EXPORT` macros and ends up both
 inside and outside of the component boundary, those symbols will fall under the
-cases above where `_IMPLEMENTATION` is inappropriately defined or inappropriately
+cases above where `IS_*_IMPL` is inappropriately defined or inappropriately
 undefined. Use GN visibility to make sure callers don’t screw up.
 
 ### Putting exported symbols in static libraries
