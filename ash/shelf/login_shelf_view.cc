@@ -222,6 +222,9 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
           mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
       break;
     case kCancel:
+      // If the Cancel button has focus, clear it. Otherwise the shelf within
+      // active session may still be focused.
+      GetFocusManager()->ClearFocus();
       Shell::Get()->login_screen_controller()->CancelAddUser();
       break;
     case kBrowseAsGuest:
