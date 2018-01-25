@@ -32,7 +32,7 @@ const char MediaEngagementScore::kHighScoreUpperThresholdParamName[] =
 
 namespace {
 
-const int kScoreMinVisitsParamDefault = 4;
+const int kScoreMinVisitsParamDefault = 20;
 const double kHighScoreLowerThresholdParamDefault = 0.2;
 const double kHighScoreUpperThresholdParamDefault = 0.3;
 
