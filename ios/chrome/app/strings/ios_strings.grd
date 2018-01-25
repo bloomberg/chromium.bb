@@ -1070,7 +1070,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Export Passwords...
       </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS_ALERT_MESSAGE" desc="The message of the alert displayed as a warning to the user who tapped on the button to export passwords. [iOS only]">
-        Your passwords will be visible to anyone who can see the exported file. Do not share this file with anyone.
+        Your passwords will be visible to anyone who can see the exported file.
       </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON" desc="Label of a confirmation dialog button which allows the user to cancel passwords export. [Length: 22em] [iOS only]">
         Cancel
