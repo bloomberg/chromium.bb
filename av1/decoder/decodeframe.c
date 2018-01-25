@@ -3444,7 +3444,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t **p_data_end, int startTile,
                                     int endTile, int initialize_flag) {
   AV1_COMMON *const cm = &pbi->common;
-  const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &pbi->mb;
 
   if (initialize_flag) setup_frame_info(pbi);
@@ -3452,6 +3451,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
 
 #if CONFIG_MONO_VIDEO
+  const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
   if (num_planes < 3) {
     const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
