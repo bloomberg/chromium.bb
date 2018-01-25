@@ -708,7 +708,7 @@ LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
 void MediaControlsImpl::MaybeShow() {
   panel_->SetIsWanted(true);
   panel_->SetIsDisplayed(true);
-  if (overlay_play_button_)
+  if (overlay_play_button_ && !is_paused_for_scrubbing_)
     overlay_play_button_->UpdateDisplayType();
   // Only make the controls visible if they won't get hidden by OnTimeUpdate.
   if (MediaElement().paused() || !ShouldHideMediaControls())
