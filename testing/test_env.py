@@ -5,10 +5,12 @@
 
 """Sets environment variables needed to run a chromium unit test."""
 
+import io
 import os
 import stat
 import subprocess
 import sys
+import time
 
 # This is hardcoded to be src/ relative to this script.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,7 +172,25 @@ def symbolize_snippets_in_json(cmd, env):
     raise subprocess.CalledProcessError(p.returncode, symbolize_command)
 
 
-def run_executable(cmd, env):
+def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
+  """ Run command and stream its stdout/stderr to the console & |stdoutfile|.
+  """
+  print('Running %r in %r (env: %r)' % (argv, cwd, env))
+  assert stdoutfile
+  with io.open(stdoutfile, 'w') as writer, io.open(stdoutfile, 'r', 1) as \
+      reader:
+    process = subprocess.Popen(argv, env=env, cwd=cwd, stdout=writer,
+        stderr=subprocess.STDOUT)
+    while process.poll() is None:
+      sys.stdout.write(reader.read())
+      time.sleep(0.1)
+    # Read the remaining.
+    sys.stdout.write(reader.read())
+    print('Command %r returned exit code %d' % (argv, process.returncode))
+    return process.returncode
+
+
+def run_executable(cmd, env, stdoutfile=None):
   """Runs an executable with:
     - CHROME_HEADLESS set to indicate that the test is running on a
       bot and shouldn't do anything interactive like show modal dialogs.
@@ -199,7 +219,7 @@ def run_executable(cmd, env):
   msan = '--msan=1' in cmd
   tsan = '--tsan=1' in cmd
   cfi_diag = '--cfi-diag=1' in cmd
-  if sys.platform in ['win32', 'cygwin']:
+  if stdoutfile or sys.platform in ['win32', 'cygwin']:
     # Symbolization works in-process on Windows even when sandboxed.
     use_symbolization_script = False
   else:
@@ -228,8 +248,11 @@ def run_executable(cmd, env):
   sys.stdout.flush()
   env.update(extra_env or {})
   try:
-    # See above comment regarding offline symbolization.
-    if use_symbolization_script:
+    if stdoutfile:
+      # Write to stdoutfile and poll to produce terminal output.
+      return run_command_with_output(cmd, env=env, stdoutfile=stdoutfile)
+    elif use_symbolization_script:
+      # See above comment regarding offline symbolization.
       # Need to pipe to the symbolizer script.
       p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
                             stderr=sys.stdout)

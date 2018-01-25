@@ -73,24 +73,6 @@ def run_command(argv, env=None, cwd=None):
   return rc
 
 
-def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
-  """ Run command and stream its stdout/stderr to the console & |stdoutfile|.
-  """
-  print 'Running %r in %r (env: %r)' % (argv, cwd, env)
-  assert stdoutfile
-  with io.open(stdoutfile, 'w') as writer, io.open(stdoutfile, 'r', 1) as \
-      reader:
-    process = subprocess.Popen(argv, env=env, cwd=cwd, stdout=writer,
-        stderr=subprocess.STDOUT)
-    while process.poll() is None:
-      sys.stdout.write(reader.read())
-      time.sleep(0.1)
-    # Read the remaining
-    sys.stdout.write(reader.read())
-    print 'Command %r returned exit code %d' % (argv, process.returncode)
-    return process.returncode
-
-
 def run_runtest(cmd_args, runtest_args):
   env = os.environ.copy()
   env['CHROME_HEADLESS'] = '1'

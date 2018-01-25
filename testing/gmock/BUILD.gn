@@ -17,6 +17,12 @@ source_set("gmock") {
     "//third_party/googletest:gmock",
   ]
 
+  # Allow Chromium targets depending on gmock to #include testing/gmock_mutant.h
+  # without triggering a `gn check` error.
+  public_deps = [
+    "//testing:gmock_mutant",
+  ]
+
   public_configs = [
     "//third_party/googletest:gmock_config",
     "//third_party/googletest:gtest_config",
