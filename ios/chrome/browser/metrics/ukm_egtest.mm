@@ -322,7 +322,27 @@ void SignOut() {
              @"Client ID was reset.");
 }
 
-// TODO(crbug.com/792933): Implement testIncognitoPlusRegular
+// Make sure opening a real tab after Incognito doesn't enable UKM.
+- (void)testIncognitoPlusRegular {
+  uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
+  chrome_test_util::CloseAllTabs();
+  [ChromeEarlGrey waitForMainTabCount:(0)];
+
+  OpenNewIncognitoTab();
+  AssertUKMEnabled(false);
+
+  // Opening another regular tab mustn't enable UKM.
+  OpenNewRegularTab();
+  AssertUKMEnabled(false);
+
+  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+  AssertUKMEnabled(true);
+
+  // Client ID should not have been reset.
+  GREYAssert(original_client_id == metrics::UkmEGTestHelper::client_id(),
+             @"Client ID was reset.");
+}
 
 // testOpenNonSync not needed, since there can't be multiple profiles.
 
