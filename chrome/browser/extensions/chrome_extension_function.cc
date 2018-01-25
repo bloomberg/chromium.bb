@@ -16,37 +16,38 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 
-ChromeUIThreadExtensionFunction::ChromeUIThreadExtensionFunction()
+ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction()
     : chrome_details_(this) {}
 
-Profile* ChromeUIThreadExtensionFunction::GetProfile() const {
+ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
+
+Profile* ChromeAsyncExtensionFunction::GetProfile() const {
   return Profile::FromBrowserContext(context_);
 }
 
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
-Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
+Browser* ChromeAsyncExtensionFunction::GetCurrentBrowser() {
   return chrome_details_.GetCurrentBrowser();
 }
 
 extensions::WindowController*
-ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
+ChromeAsyncExtensionFunction::GetExtensionWindowController() {
   return chrome_details_.GetExtensionWindowController();
 }
 
-void ChromeUIThreadExtensionFunction::SetError(const std::string& error) {
+void ChromeAsyncExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }
 
-content::WebContents*
-ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
+content::WebContents* ChromeAsyncExtensionFunction::GetAssociatedWebContents() {
   return chrome_details_.GetAssociatedWebContents();
 }
 
-const std::string& ChromeUIThreadExtensionFunction::GetError() const {
+const std::string& ChromeAsyncExtensionFunction::GetError() const {
   return error_.empty() ? UIThreadExtensionFunction::GetError() : error_;
 }
 
-void ChromeUIThreadExtensionFunction::SendResponse(bool success) {
+void ChromeAsyncExtensionFunction::SendResponse(bool success) {
   ResponseValue response;
   if (success) {
     response = ArgumentList(std::move(results_));
@@ -57,24 +58,16 @@ void ChromeUIThreadExtensionFunction::SendResponse(bool success) {
   Respond(std::move(response));
 }
 
-void ChromeUIThreadExtensionFunction::SetResult(
+void ChromeAsyncExtensionFunction::SetResult(
     std::unique_ptr<base::Value> result) {
   results_.reset(new base::ListValue());
   results_->Append(std::move(result));
 }
 
-void ChromeUIThreadExtensionFunction::SetResultList(
+void ChromeAsyncExtensionFunction::SetResultList(
     std::unique_ptr<base::ListValue> results) {
   results_ = std::move(results);
 }
-
-ChromeUIThreadExtensionFunction::~ChromeUIThreadExtensionFunction() {
-}
-
-ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction() {
-}
-
-ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
 
 ExtensionFunction::ResponseAction ChromeAsyncExtensionFunction::Run() {
   if (RunAsync())
