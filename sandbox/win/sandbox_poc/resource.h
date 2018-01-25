@@ -1,3 +1,10 @@
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SANDBOX_WIN_SANDBOX_POC_RESOURCE_H_
+#define SANDBOX_WIN_SANDBOX_POC_RESOURCE_H_
+
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by sandbox.rc
@@ -28,3 +35,5 @@
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
+
+#endif  // SANDBOX_WIN_SANDBOX_POC_RESOURCE_H_
