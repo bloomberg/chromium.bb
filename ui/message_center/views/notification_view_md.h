@@ -142,11 +142,11 @@ class NotificationInputDelegate {
   virtual ~NotificationInputDelegate() = default;
 };
 
-class NotificationInputMD : public views::Textfield,
-                            public views::TextfieldController {
+class NotificationInputTextfieldMD : public views::Textfield,
+                                     public views::TextfieldController {
  public:
-  NotificationInputMD(NotificationInputDelegate* delegate);
-  ~NotificationInputMD() override;
+  NotificationInputTextfieldMD(NotificationInputDelegate* delegate);
+  ~NotificationInputTextfieldMD() override;
 
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
@@ -161,7 +161,21 @@ class NotificationInputMD : public views::Textfield,
   // argument of ClickOnNotificationButtonWithReply.
   size_t index_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationInputMD);
+  DISALLOW_COPY_AND_ASSIGN(NotificationInputTextfieldMD);
+};
+
+class NotificationInputContainerMD : public views::View {
+ public:
+  NotificationInputContainerMD(NotificationInputDelegate* delegate);
+  ~NotificationInputContainerMD() override;
+
+  NotificationInputTextfieldMD* textfield() const { return textfield_; };
+
+ private:
+  NotificationInputTextfieldMD* const textfield_;
+  views::ImageView* const button_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationInputContainerMD);
 };
 
 // View that displays all current types of notification (web, basic, image, and
@@ -279,7 +293,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
-  NotificationInputMD* inline_reply_ = nullptr;
+  NotificationInputContainerMD* inline_reply_ = nullptr;
 
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
