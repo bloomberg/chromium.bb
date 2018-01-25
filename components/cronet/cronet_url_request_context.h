@@ -114,7 +114,7 @@ class CronetURLRequestContext {
   // Posts a task that might depend on the context being initialized
   // to the network thread.
   void PostTaskToNetworkThread(const base::Location& posted_from,
-                               const base::Closure& callback);
+                               base::OnceClosure callback);
 
   // Returns true if running on network thread.
   bool IsOnNetworkThread() const;
@@ -182,7 +182,7 @@ class CronetURLRequestContext {
 
     // Runs a task that might depend on the context being initialized.
     void RunTaskAfterContextInit(
-        const base::Closure& task_to_run_after_context_init);
+        base::OnceClosure task_to_run_after_context_init);
 
     // Serializes results of certificate verifications of |context_|'s
     // |cert_verifier|.
@@ -273,7 +273,7 @@ class CronetURLRequestContext {
     std::unique_ptr<base::DictionaryValue> effective_experimental_options_;
 
     // A queue of tasks that need to be run after context has been initialized.
-    base::queue<base::Closure> tasks_waiting_for_context_;
+    base::queue<base::OnceClosure> tasks_waiting_for_context_;
 
     // Task runner that runs network tasks.
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
