@@ -179,8 +179,12 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
            (virtual_core_keyboard_device_ == xiev->deviceid);
   }
 
-  if (event->evtype != XI_ButtonPress &&
-      event->evtype != XI_ButtonRelease &&
+  // Don't automatically accept XI_Enter or XI_Leave. They should be checked
+  // against the pointer_device_lookup_ to prevent handling for slave devices.
+  // This happens for unknown reasons when using xtest.
+  // https://crbug.com/683434.
+  if (event->evtype != XI_ButtonPress && event->evtype != XI_ButtonRelease &&
+      event->evtype != XI_Enter && event->evtype != XI_Leave &&
       event->evtype != XI_Motion) {
     return true;
   }
