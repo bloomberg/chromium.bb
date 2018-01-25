@@ -251,7 +251,7 @@ void JSONParser::EatWhitespaceAndComments() {
         // Don't increment line_number_ twice for "\r\n".
         if (!(*pos_ == '\n' && pos_ > start_pos_ && *(pos_ - 1) == '\r'))
           ++line_number_;
-        // Fall through.
+        FALLTHROUGH;
       case ' ':
       case '\t':
         NextChar();
