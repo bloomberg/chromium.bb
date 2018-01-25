@@ -28,8 +28,6 @@ enum class PermissionAction {
   DISMISSED = 2,
   IGNORED = 3,
   REVOKED = 4,
-  REENABLED = 5,
-  REQUESTED = 6,
 
   // Always keep this at the end.
   NUM,
