@@ -69,9 +69,6 @@ PermissionReport::Action PermissionActionForReport(PermissionAction action) {
       return PermissionReport::IGNORED;
     case PermissionAction::REVOKED:
       return PermissionReport::REVOKED;
-    case PermissionAction::REENABLED:
-    case PermissionAction::REQUESTED:
-      return PermissionReport::ACTION_UNSPECIFIED;
     case PermissionAction::NUM:
       break;
   }
