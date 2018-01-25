@@ -19,7 +19,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -50,7 +49,7 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     content::RenderThread::Get()->GetConnector()->BindInterface(
         content::mojom::kBrowserServiceName,
         mojo::MakeRequest(&safe_browsing_info_));
@@ -71,7 +70,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
 
   bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
+      base::FeatureList::IsEnabled(features::kNetworkService);
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
   bool is_frame_resource = content::IsResourceTypeFrame(resource_type);

@@ -56,7 +56,6 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/interfaces/constants.mojom.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
@@ -548,7 +547,7 @@ ServiceManagerContext::ServiceManagerContext() {
       base::ASCIIToUTF16("Data Decoder Service");
 
   bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
+      base::FeatureList::IsEnabled(features::kNetworkService);
   bool network_service_in_process =
       base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(

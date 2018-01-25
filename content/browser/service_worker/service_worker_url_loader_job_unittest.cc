@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -22,7 +23,6 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -490,7 +490,7 @@ class ServiceWorkerURLLoaderJobTest
   ~ServiceWorkerURLLoaderJobTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    feature_list_.InitAndEnableFeature(features::kNetworkService);
 
     // Create an active service worker.
     storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));

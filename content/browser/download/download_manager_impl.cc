@@ -54,6 +54,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -62,7 +63,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request_context.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
 
@@ -1065,7 +1065,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
         CreateResourceRequest(params.get());
     StoragePartitionImpl* storage_partition =

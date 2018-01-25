@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
@@ -22,7 +23,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
@@ -226,7 +226,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
   }
 
   void EnableServicification() {
-    feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
+    feature_list_.InitWithFeatures({features::kNetworkService}, {});
     ASSERT_TRUE(ServiceWorkerUtils::IsServicificationEnabled());
   }
 

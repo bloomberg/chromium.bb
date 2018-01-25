@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "content/shell/browser/shell.h"
@@ -17,7 +18,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
@@ -38,7 +38,7 @@ class StoragePartititionImplBrowsertest
  public:
   StoragePartititionImplBrowsertest() {
     if (GetParam() == NetworkServiceState::kEnabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+      feature_list_.InitAndEnableFeature(features::kNetworkService);
   }
   ~StoragePartititionImplBrowsertest() override {}
 

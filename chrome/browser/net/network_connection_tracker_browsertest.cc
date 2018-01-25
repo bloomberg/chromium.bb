@@ -11,13 +11,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/network_connection_tracker.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -77,11 +77,9 @@ class NetworkConnectionTrackerBrowserTest
  public:
   NetworkConnectionTrackerBrowserTest() : network_service_enabled_(GetParam()) {
     if (network_service_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          network::features::kNetworkService);
+      scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          network::features::kNetworkService);
+      scoped_feature_list_.InitAndDisableFeature(features::kNetworkService);
     }
   }
   ~NetworkConnectionTrackerBrowserTest() override {}

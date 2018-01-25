@@ -5,7 +5,7 @@
 #include "content/network/cors/cors_url_loader_factory.h"
 
 #include "content/network/cors/cors_url_loader.h"
-#include "services/network/public/cpp/features.h"
+#include "content/public/common/content_features.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS)) {
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
     loader_bindings_.AddBinding(
         std::make_unique<CORSURLLoader>(routing_id, request_id, options,
                                         resource_request, std::move(client),

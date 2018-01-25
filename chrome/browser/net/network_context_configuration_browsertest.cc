@@ -27,6 +27,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_constants.h"
@@ -43,7 +44,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
@@ -93,7 +93,7 @@ class NetworkContextConfigurationBrowserTest
 
   void SetUpInProcessBrowserTestFixture() override {
     if (GetParam().network_service_state != NetworkServiceState::kDisabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+      feature_list_.InitAndEnableFeature(features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {

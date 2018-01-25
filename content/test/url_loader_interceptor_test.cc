@@ -9,13 +9,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 namespace {
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, NoInterception) {
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;  // Depends on http://crbug.com/747130.
 
   bool seen = false;
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;  // Depends on http://crbug.com/747130.
 
   GURL url = GetPageURL();

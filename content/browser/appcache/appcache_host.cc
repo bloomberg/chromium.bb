@@ -16,7 +16,6 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
@@ -528,7 +527,7 @@ base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {
 }
 
 void AppCacheHost::MaybePassSubresourceFactory() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;
 
   // We already have a valid factory. This happens when the document was loaded

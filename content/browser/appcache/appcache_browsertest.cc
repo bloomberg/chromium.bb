@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -17,7 +18,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 namespace content {
 
 // This class currently enables the network service feature, which allows us to
@@ -25,8 +25,7 @@ namespace content {
 class AppCacheNetworkServiceBrowserTest : public ContentBrowserTest {
  public:
   AppCacheNetworkServiceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
+    scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
   }
 
   ~AppCacheNetworkServiceBrowserTest() override {}

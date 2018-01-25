@@ -33,6 +33,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -43,7 +44,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/WebKit/common/frame_policy.h"
@@ -471,7 +471,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
           render_frame_id, options))
     return;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     // TODO(jam): modify GetRequestContextForURL to work with network service.
     // Merge this with code path below for non-network service.
     cookie_manager_->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
@@ -513,7 +513,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
         net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
   }
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     // TODO(jam): modify GetRequestContextForURL to work with network service.
     // Merge this with code path below for non-network service.
     cookie_manager_->GetCookieList(
