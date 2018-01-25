@@ -746,7 +746,7 @@ LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
 const NGPhysicalBoxFragment* LayoutObject::EnclosingBlockFlowFragment() const {
   DCHECK(IsInline() || IsText());
   LayoutBlockFlow* const block_flow = EnclosingNGBlockFlow();
-  if (!block_flow || !block_flow->HasNGInlineNodeData())
+  if (!block_flow || !block_flow->ChildrenInline())
     return nullptr;
   // TODO(kojii): CurrentFragment isn't always available after layout clean.
   // Investigate why.
