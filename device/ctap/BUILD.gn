@@ -14,6 +14,8 @@ source_set("ctap") {
     "authenticator_make_credential_response.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
+    "ctap_authenticator_request_param.cc",
+    "ctap_authenticator_request_param.h",
     "ctap_constants.cc",
     "ctap_constants.h",
     "ctap_get_assertion_request_param.cc",

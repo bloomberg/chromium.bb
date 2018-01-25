@@ -26,7 +26,7 @@ class CTAPGetAssertionRequestParam : public CTAPRequestParam {
   CTAPGetAssertionRequestParam& operator=(CTAPGetAssertionRequestParam&& other);
   ~CTAPGetAssertionRequestParam() override;
 
-  base::Optional<std::vector<uint8_t>> SerializeToCBOR() const override;
+  base::Optional<std::vector<uint8_t>> Encode() const override;
   CTAPGetAssertionRequestParam& SetUserVerificationRequired(
       bool user_verfication_required);
   CTAPGetAssertionRequestParam& SetUserPresenceRequired(

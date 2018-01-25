@@ -30,8 +30,8 @@ CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::operator=(
 
 CTAPMakeCredentialRequestParam::~CTAPMakeCredentialRequestParam() = default;
 
-base::Optional<std::vector<uint8_t>>
-CTAPMakeCredentialRequestParam::SerializeToCBOR() const {
+base::Optional<std::vector<uint8_t>> CTAPMakeCredentialRequestParam::Encode()
+    const {
   cbor::CBORValue::MapValue cbor_map;
   cbor_map[cbor::CBORValue(1)] = cbor::CBORValue(client_data_hash_);
   cbor_map[cbor::CBORValue(2)] = rp_.ConvertToCBOR();
@@ -53,17 +53,11 @@ CTAPMakeCredentialRequestParam::SerializeToCBOR() const {
     cbor_map[cbor::CBORValue(9)] = cbor::CBORValue(*pin_protocol_);
   }
 
-  auto resident_key = resident_key_ ? cbor::CBORValue::SimpleValue::TRUE_VALUE
-                                    : cbor::CBORValue::SimpleValue::FALSE_VALUE;
-  auto user_verification_required =
-      user_verification_required_ ? cbor::CBORValue::SimpleValue::TRUE_VALUE
-                                  : cbor::CBORValue::SimpleValue::FALSE_VALUE;
-
   cbor::CBORValue::MapValue option_map;
   option_map[cbor::CBORValue(kResidentKeyMapKey)] =
-      cbor::CBORValue(resident_key);
+      cbor::CBORValue(resident_key_);
   option_map[cbor::CBORValue(kUserVerificationMapKey)] =
-      cbor::CBORValue(user_verification_required);
+      cbor::CBORValue(user_verification_required_);
   cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
 
   auto serialized_param =
