@@ -34,6 +34,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/media_feature_names.h"
+#include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -82,7 +83,7 @@ class CORE_EXPORT MediaQueryExp {
  public:
   // Returns an invalid MediaQueryExp if the arguments are invalid.
   static MediaQueryExp Create(const String& media_feature,
-                              const Vector<CSSParserToken, 4>&);
+                              CSSParserTokenRange&);
   static MediaQueryExp Invalid() {
     return MediaQueryExp(String(), MediaQueryExpValue());
   }
