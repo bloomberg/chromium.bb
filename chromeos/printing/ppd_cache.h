@@ -55,11 +55,10 @@ class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
   // |max_age| old.  |cb| will be invoked on the calling thread.
   virtual void Find(const std::string& key, FindCallback cb) = 0;
 
-  // Store |contents| at the the location indicated by |key|.  |cb| will be
-  // invoked on completion.
+  // Store |contents| at the the location indicated by |key|.  The
+  // file operation will complete asynchronously.
   virtual void Store(const std::string& key,
-                     const std::string& contents,
-                     const base::Closure& cb) = 0;
+                     const std::string& contents) = 0;
 
   // Store the given contents at the given key, and change the resulting
   // cache file's last modified date to be |age| before now.

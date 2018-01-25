@@ -920,7 +920,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       // Success.  Cache it and return it to the user.
       ppd_cache_->Store(
           PpdReferenceToCacheKey(ppd_resolution_queue_.front().reference),
-          contents, base::Bind(&base::DoNothing));
+          contents);
       FinishPpdResolution(std::move(entry.callback), contents,
                           PpdProvider::SUCCESS);
     }

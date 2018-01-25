@@ -146,14 +146,10 @@ class PpdCacheImpl : public PpdCache {
 
   // Store the given contents at the given key.  If cb is non-null, it will
   // be invoked on completion.
-  void Store(const std::string& key,
-             const std::string& contents,
-             const base::Closure& cb) override {
-    store_task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&StoreImpl, cache_base_dir_, key, contents,
-                   base::TimeDelta()),
-        cb);
+  void Store(const std::string& key, const std::string& contents) override {
+    store_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&StoreImpl, cache_base_dir_, key, contents,
+                              base::TimeDelta()));
   }
 
   void StoreForTesting(const std::string& key,
