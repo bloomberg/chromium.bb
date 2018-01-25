@@ -219,12 +219,6 @@
   return self.locationBarCoordinator;
 }
 
-- (void)updateToolbarState {
-  // TODO(crbug.com/803383): This should be done inside the location bar.
-  // Updates the omnibox.
-  [self.locationBarCoordinator updateOmniboxState];
-}
-
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
   web::NavigationItem* item =
       webState->GetNavigationManager()->GetVisibleItem();

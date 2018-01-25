@@ -5,6 +5,7 @@
 source_set("location_bar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "location_bar_consumer.h",
     "location_bar_coordinator.h",
     "location_bar_coordinator.mm",
     "location_bar_mediator.h",
@@ -61,6 +62,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "location_bar_coordinator_unittest.mm",
+    "location_bar_mediator_unittest.mm",
   ]
   deps = [
     ":location_bar",
@@ -69,7 +71,14 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui/toolbar/test",
+    "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/browser/web_state_list:test_support",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
+    "//third_party/ocmock",
     "//ui/base",
   ]
 }

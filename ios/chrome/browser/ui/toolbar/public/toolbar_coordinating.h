@@ -11,9 +11,6 @@
 
 @protocol ToolbarCoordinating<IncognitoViewControllerDelegate>
 
-// ToolbarController public interface.
-- (void)updateToolbarState;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_TOOLBAR_COORDINATING_H_

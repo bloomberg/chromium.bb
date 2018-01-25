@@ -60,7 +60,7 @@
 }
 
 - (void)updateToolbarState {
-  [self.toolbarCoordinator updateToolbarState];
+  // No op, the location bar mediator is taking care of this.
 }
 
 - (void)showPrerenderingAnimation {

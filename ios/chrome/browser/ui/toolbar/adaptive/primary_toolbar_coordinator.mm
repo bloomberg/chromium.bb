@@ -118,14 +118,6 @@
   // TODO(crbug.com/801082): implement this.
 }
 
-#pragma mark - ToolbarCoordinating
-
-- (void)updateToolbarState {
-  // TODO(crbug.com/803383): This should be done inside the location bar.
-  [self.locationBarCoordinator updateOmniboxState];
-  [super updateToolbarState];
-}
-
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {

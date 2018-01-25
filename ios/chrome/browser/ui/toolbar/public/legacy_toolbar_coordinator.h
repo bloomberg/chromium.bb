@@ -24,6 +24,7 @@
 - (void)currentPageLoadStarted;
 - (void)adjustToolbarHeight;
 - (CGRect)visibleOmniboxFrame;
+- (void)updateToolbarState;
 
 @end
 
