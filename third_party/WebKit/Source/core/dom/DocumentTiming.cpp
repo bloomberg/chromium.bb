@@ -27,36 +27,32 @@ void DocumentTiming::NotifyDocumentTimingChanged() {
 }
 
 void DocumentTiming::MarkDomLoading() {
-  dom_loading_ = CurrentTimeTicksInSeconds();
+  dom_loading_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domLoading",
-                                   TraceEvent::ToTraceTimestamp(dom_loading_),
-                                   "frame", GetFrame());
+                                   dom_loading_, "frame", GetFrame());
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkDomInteractive() {
-  dom_interactive_ = CurrentTimeTicksInSeconds();
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "blink.user_timing,rail", "domInteractive",
-      TraceEvent::ToTraceTimestamp(dom_interactive_), "frame", GetFrame());
+  dom_interactive_ = CurrentTimeTicks();
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domInteractive",
+                                   dom_interactive_, "frame", GetFrame());
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkDomContentLoadedEventStart() {
-  dom_content_loaded_event_start_ = CurrentTimeTicksInSeconds();
+  dom_content_loaded_event_start_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "domContentLoadedEventStart",
-      TraceEvent::ToTraceTimestamp(dom_content_loaded_event_start_), "frame",
-      GetFrame());
+      dom_content_loaded_event_start_, "frame", GetFrame());
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkDomContentLoadedEventEnd() {
-  dom_content_loaded_event_end_ = CurrentTimeTicksInSeconds();
+  dom_content_loaded_event_end_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "domContentLoadedEventEnd",
-      TraceEvent::ToTraceTimestamp(dom_content_loaded_event_end_), "frame",
-      GetFrame());
+      dom_content_loaded_event_end_, "frame", GetFrame());
   InteractiveDetector* interactive_detector(
       InteractiveDetector::From(*document_));
   if (interactive_detector) {
@@ -66,18 +62,16 @@ void DocumentTiming::MarkDomContentLoadedEventEnd() {
 }
 
 void DocumentTiming::MarkDomComplete() {
-  dom_complete_ = CurrentTimeTicksInSeconds();
+  dom_complete_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domComplete",
-                                   TraceEvent::ToTraceTimestamp(dom_complete_),
-                                   "frame", GetFrame());
+                                   dom_complete_, "frame", GetFrame());
   NotifyDocumentTimingChanged();
 }
 
 void DocumentTiming::MarkFirstLayout() {
-  first_layout_ = CurrentTimeTicksInSeconds();
+  first_layout_ = CurrentTimeTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstLayout",
-                                   TraceEvent::ToTraceTimestamp(first_layout_),
-                                   "frame", GetFrame());
+                                   first_layout_, "frame", GetFrame());
   NotifyDocumentTimingChanged();
 }
 

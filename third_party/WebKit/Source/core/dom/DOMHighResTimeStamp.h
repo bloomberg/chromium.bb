@@ -5,6 +5,8 @@
 #ifndef DOMHighResTimeStamp_h
 #define DOMHighResTimeStamp_h
 
+#include "platform/wtf/Time.h"
+
 namespace blink {
 
 typedef double DOMHighResTimeStamp;
@@ -16,6 +18,16 @@ inline DOMHighResTimeStamp ConvertSecondsToDOMHighResTimeStamp(double seconds) {
 inline double ConvertDOMHighResTimeStampToSeconds(
     DOMHighResTimeStamp milliseconds) {
   return milliseconds / 1000.0;
+}
+
+inline DOMHighResTimeStamp ConvertTimeTicksToDOMHighResTimeStamp(
+    TimeTicks time) {
+  return (time - TimeTicks()).InMillisecondsF();
+}
+
+inline DOMHighResTimeStamp ConvertTimeDeltaToDOMHighResTimeStamp(
+    TimeDelta delta) {
+  return delta.InMillisecondsF();
 }
 
 }  // namespace blink

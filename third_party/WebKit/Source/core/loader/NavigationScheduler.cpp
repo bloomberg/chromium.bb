@@ -96,13 +96,13 @@ void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, scheduled_clobber_abort_time_histogram,
       ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
-  double navigation_start = frame->Loader()
-                                .GetProvisionalDocumentLoader()
-                                ->GetTiming()
-                                .NavigationStart();
-  if (navigation_start) {
-    scheduled_clobber_abort_time_histogram.Count(CurrentTimeTicksInSeconds() -
-                                                 navigation_start);
+  TimeTicks navigation_start = frame->Loader()
+                                   .GetProvisionalDocumentLoader()
+                                   ->GetTiming()
+                                   .NavigationStart();
+  if (!navigation_start.is_null()) {
+    scheduled_clobber_abort_time_histogram.Count(
+        (CurrentTimeTicks() - navigation_start).InSecondsF());
   }
 }
 

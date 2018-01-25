@@ -89,7 +89,7 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
 
-PerformanceBase::PerformanceBase(double time_origin,
+PerformanceBase::PerformanceBase(TimeTicks time_origin,
                                  scoped_refptr<WebTaskRunner> task_runner)
     : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
       resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
@@ -112,9 +112,9 @@ PerformanceTiming* PerformanceBase::timing() const {
 }
 
 DOMHighResTimeStamp PerformanceBase::timeOrigin() const {
-  DCHECK(time_origin_ > 0.0);
+  DCHECK(!time_origin_.is_null());
   return GetUnixAtZeroMonotonic() +
-         ConvertSecondsToDOMHighResTimeStamp(time_origin_);
+         ConvertTimeTicksToDOMHighResTimeStamp(time_origin_);
 }
 
 PerformanceEntryVector PerformanceBase::getEntries() {
@@ -361,8 +361,8 @@ WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
         AllowsTimingRedirect(redirect_chain, final_response, destination_origin,
                              &context_for_use_counter);
 
-    result.last_redirect_end_time =
-        redirect_chain.back().GetResourceLoadTiming()->ReceiveHeadersEnd();
+    result.last_redirect_end_time = TimeTicksInSeconds(
+        redirect_chain.back().GetResourceLoadTiming()->ReceiveHeadersEnd());
 
     if (!result.allow_redirect_details) {
       // TODO(https://crbug.com/803913): There was previously a DCHECK that
@@ -371,7 +371,7 @@ WebResourceTimingInfo PerformanceBase::GenerateResourceTiming(
       // happen so test coverage can be added.
       if (ResourceLoadTiming* final_timing =
               final_response.GetResourceLoadTiming()) {
-        result.start_time = final_timing->RequestTime();
+        result.start_time = TimeTicksInSeconds(final_timing->RequestTime());
       }
     }
   } else {
@@ -403,7 +403,7 @@ void PerformanceBase::AddResourceTiming(const WebResourceTimingInfo& info,
     return;
 
   PerformanceEntry* entry =
-      PerformanceResourceTiming::Create(info, GetTimeOrigin(), initiator_type);
+      PerformanceResourceTiming::Create(info, time_origin_, initiator_type);
   NotifyObserversOfEntry(*entry);
   if (!IsResourceTimingBufferFull())
     AddResourceTimingBuffer(*entry);
@@ -417,17 +417,17 @@ void PerformanceBase::NotifyNavigationTimingToObservers() {
     NotifyObserversOfEntry(*navigation_timing_);
 }
 
-void PerformanceBase::AddFirstPaintTiming(double start_time) {
+void PerformanceBase::AddFirstPaintTiming(TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstPaint, start_time);
 }
 
-void PerformanceBase::AddFirstContentfulPaintTiming(double start_time) {
+void PerformanceBase::AddFirstContentfulPaintTiming(TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstContentfulPaint,
                  start_time);
 }
 
 void PerformanceBase::AddPaintTiming(PerformancePaintTiming::PaintType type,
-                                     double start_time) {
+                                     TimeTicks start_time) {
   if (!RuntimeEnabledFeatures::PerformancePaintTimingEnabled())
     return;
 
@@ -453,8 +453,8 @@ bool PerformanceBase::IsResourceTimingBufferFull() {
 }
 
 void PerformanceBase::AddLongTaskTiming(
-    double start_time,
-    double end_time,
+    TimeTicks start_time,
+    TimeTicks end_time,
     const String& name,
     const String& frame_src,
     const String& frame_id,
@@ -466,7 +466,8 @@ void PerformanceBase::AddLongTaskTiming(
   for (auto&& it : sub_task_attributions) {
     it->setHighResStartTime(
         MonotonicTimeToDOMHighResTimeStamp(it->startTime()));
-    it->setHighResDuration(ConvertSecondsToDOMHighResTimeStamp(it->duration()));
+    it->setHighResDuration(
+        ConvertTimeDeltaToDOMHighResTimeStamp(it->duration()));
   }
   PerformanceEntry* entry = PerformanceLongTaskTiming::Create(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
@@ -655,28 +656,29 @@ double PerformanceBase::ClampTimeResolution(double time_seconds) {
 
 // static
 DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-    double time_origin,
-    double monotonic_time,
+    TimeTicks time_origin,
+    TimeTicks monotonic_time,
     bool allow_negative_value) {
   // Avoid exposing raw platform timestamps.
-  if (!monotonic_time || !time_origin)
+  if (monotonic_time.is_null() || time_origin.is_null())
     return 0.0;
 
   double clamped_time_in_seconds =
-      ClampTimeResolution(monotonic_time) - ClampTimeResolution(time_origin);
+      ClampTimeResolution(TimeTicksInSeconds(monotonic_time)) -
+      ClampTimeResolution(TimeTicksInSeconds(time_origin));
   if (clamped_time_in_seconds < 0 && !allow_negative_value)
     return 0.0;
   return ConvertSecondsToDOMHighResTimeStamp(clamped_time_in_seconds);
 }
 
 DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-    double monotonic_time) const {
+    TimeTicks monotonic_time) const {
   return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time,
                                             false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceBase::now() const {
-  return MonotonicTimeToDOMHighResTimeStamp(CurrentTimeTicksInSeconds());
+  return MonotonicTimeToDOMHighResTimeStamp(CurrentTimeTicks());
 }
 
 ScriptValue PerformanceBase::toJSONForBinding(ScriptState* script_state) const {

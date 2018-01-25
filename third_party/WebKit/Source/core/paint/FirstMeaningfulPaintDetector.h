@@ -10,6 +10,7 @@
 #include "core/paint/PaintEvent.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
@@ -50,7 +51,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyPaint();
   void CheckNetworkStable();
   void ReportSwapTime(PaintEvent, WebLayerTreeView::SwapResult, double);
-  void NotifyFirstContentfulPaint(double swap_stamp);
+  void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
 
   void Trace(blink::Visitor*);
 
@@ -77,7 +78,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void Network2QuietTimerFired(TimerBase*);
   void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
-  void SetFirstMeaningfulPaint(double stamp, double swap_stamp);
+  void SetFirstMeaningfulPaint(TimeTicks stamp, TimeTicks swap_stamp);
 
   bool next_paint_is_meaningful_ = false;
   HadUserInput had_user_input_ = kNoUserInput;
@@ -85,16 +86,16 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
       kNoUserInput;
 
   Member<PaintTiming> paint_timing_;
-  double provisional_first_meaningful_paint_ = 0.0;
-  double provisional_first_meaningful_paint_swap_ = 0.0;
+  TimeTicks provisional_first_meaningful_paint_;
+  TimeTicks provisional_first_meaningful_paint_swap_;
   double max_significance_so_far_ = 0.0;
   double accumulated_significance_while_having_blank_text_ = 0.0;
   unsigned prev_layout_object_count_ = 0;
   bool seen_first_meaningful_paint_candidate_ = false;
   bool network0_quiet_reached_ = false;
   bool network2_quiet_reached_ = false;
-  double first_meaningful_paint0_quiet_ = 0.0;
-  double first_meaningful_paint2_quiet_ = 0.0;
+  TimeTicks first_meaningful_paint0_quiet_;
+  TimeTicks first_meaningful_paint2_quiet_;
   unsigned outstanding_swap_promise_count_ = 0;
   DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
   TaskRunnerTimer<FirstMeaningfulPaintDetector> network0_quiet_timer_;

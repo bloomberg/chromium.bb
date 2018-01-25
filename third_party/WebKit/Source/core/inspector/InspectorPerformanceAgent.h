@@ -10,6 +10,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Performance.h"
 #include "platform/scheduler/base/task_time_observer.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -62,12 +63,12 @@ class CORE_EXPORT InspectorPerformanceAgent final
 
   Member<InspectedFrames> inspected_frames_;
   bool enabled_ = false;
-  double layout_duration_ = 0;
-  double recalc_style_duration_ = 0;
-  double script_duration_ = 0;
-  double script_start_time_ = 0;
-  double task_duration_ = 0;
-  double task_start_time_ = 0;
+  TimeDelta layout_duration_;
+  TimeDelta recalc_style_duration_;
+  TimeDelta script_duration_;
+  TimeTicks script_start_time_;
+  TimeDelta task_duration_;
+  TimeTicks task_start_time_;
   unsigned long long layout_count_ = 0;
   unsigned long long recalc_style_count_ = 0;
   int script_call_depth_ = 0;

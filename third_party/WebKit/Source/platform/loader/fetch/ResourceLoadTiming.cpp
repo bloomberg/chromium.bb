@@ -8,23 +8,7 @@
 
 namespace blink {
 
-ResourceLoadTiming::ResourceLoadTiming()
-    : request_time_(0),
-      proxy_start_(0),
-      proxy_end_(0),
-      dns_start_(0),
-      dns_end_(0),
-      connect_start_(0),
-      connect_end_(0),
-      worker_start_(0),
-      worker_ready_(0),
-      send_start_(0),
-      send_end_(0),
-      receive_headers_end_(0),
-      ssl_start_(0),
-      ssl_end_(0),
-      push_start_(0),
-      push_end_(0) {}
+ResourceLoadTiming::ResourceLoadTiming() {}
 
 scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::Create() {
   return base::AdoptRef(new ResourceLoadTiming);
@@ -69,74 +53,74 @@ bool ResourceLoadTiming::operator!=(const ResourceLoadTiming& other) const {
   return !(*this == other);
 }
 
-void ResourceLoadTiming::SetDnsStart(double dns_start) {
+void ResourceLoadTiming::SetDnsStart(TimeTicks dns_start) {
   dns_start_ = dns_start;
 }
 
-void ResourceLoadTiming::SetRequestTime(double request_time) {
+void ResourceLoadTiming::SetRequestTime(TimeTicks request_time) {
   request_time_ = request_time;
 }
 
-void ResourceLoadTiming::SetProxyStart(double proxy_start) {
+void ResourceLoadTiming::SetProxyStart(TimeTicks proxy_start) {
   proxy_start_ = proxy_start;
 }
 
-void ResourceLoadTiming::SetProxyEnd(double proxy_end) {
+void ResourceLoadTiming::SetProxyEnd(TimeTicks proxy_end) {
   proxy_end_ = proxy_end;
 }
 
-void ResourceLoadTiming::SetDnsEnd(double dns_end) {
+void ResourceLoadTiming::SetDnsEnd(TimeTicks dns_end) {
   dns_end_ = dns_end;
 }
 
-void ResourceLoadTiming::SetConnectStart(double connect_start) {
+void ResourceLoadTiming::SetConnectStart(TimeTicks connect_start) {
   connect_start_ = connect_start;
 }
 
-void ResourceLoadTiming::SetConnectEnd(double connect_end) {
+void ResourceLoadTiming::SetConnectEnd(TimeTicks connect_end) {
   connect_end_ = connect_end;
 }
 
-void ResourceLoadTiming::SetWorkerStart(double worker_start) {
+void ResourceLoadTiming::SetWorkerStart(TimeTicks worker_start) {
   worker_start_ = worker_start;
 }
 
-void ResourceLoadTiming::SetWorkerReady(double worker_ready) {
+void ResourceLoadTiming::SetWorkerReady(TimeTicks worker_ready) {
   worker_ready_ = worker_ready;
 }
 
-void ResourceLoadTiming::SetSendStart(double send_start) {
+void ResourceLoadTiming::SetSendStart(TimeTicks send_start) {
   TRACE_EVENT_MARK_WITH_TIMESTAMP0("blink.user_timing", "requestStart",
-                                   TraceEvent::ToTraceTimestamp(send_start));
+                                   send_start);
   send_start_ = send_start;
 }
 
-void ResourceLoadTiming::SetSendEnd(double send_end) {
+void ResourceLoadTiming::SetSendEnd(TimeTicks send_end) {
   send_end_ = send_end;
 }
 
-void ResourceLoadTiming::SetReceiveHeadersEnd(double receive_headers_end) {
+void ResourceLoadTiming::SetReceiveHeadersEnd(TimeTicks receive_headers_end) {
   receive_headers_end_ = receive_headers_end;
 }
 
-void ResourceLoadTiming::SetSslStart(double ssl_start) {
+void ResourceLoadTiming::SetSslStart(TimeTicks ssl_start) {
   ssl_start_ = ssl_start;
 }
 
-void ResourceLoadTiming::SetSslEnd(double ssl_end) {
+void ResourceLoadTiming::SetSslEnd(TimeTicks ssl_end) {
   ssl_end_ = ssl_end;
 }
 
-void ResourceLoadTiming::SetPushStart(double push_start) {
+void ResourceLoadTiming::SetPushStart(TimeTicks push_start) {
   push_start_ = push_start;
 }
 
-void ResourceLoadTiming::SetPushEnd(double push_end) {
+void ResourceLoadTiming::SetPushEnd(TimeTicks push_end) {
   push_end_ = push_end;
 }
 
-double ResourceLoadTiming::CalculateMillisecondDelta(double time) const {
-  return time ? (time - request_time_) * 1000 : -1;
+double ResourceLoadTiming::CalculateMillisecondDelta(TimeTicks time) const {
+  return time.is_null() ? -1 : (time - request_time_).InMillisecondsF();
 }
 
 }  // namespace blink

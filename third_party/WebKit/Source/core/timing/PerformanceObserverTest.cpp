@@ -11,6 +11,7 @@
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceObserverInit.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +20,7 @@ namespace blink {
 class MockPerformanceBase : public PerformanceBase {
  public:
   explicit MockPerformanceBase(ScriptState* script_state)
-      : PerformanceBase(0,
+      : PerformanceBase(TimeTicks(),
                         ExecutionContext::From(script_state)
                             ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
   ~MockPerformanceBase() = default;

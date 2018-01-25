@@ -54,7 +54,7 @@ class PerformanceTest : public ::testing::Test {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
     performance_ = Performance::Create(page_holder_->GetDocument().domWindow());
-    performance_->time_origin_ = kTimeOrigin;
+    performance_->time_origin_ = TimeTicksFromSeconds(kTimeOrigin);
 
     // Create another dummy page holder and pretend this is the iframe.
     another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
@@ -174,7 +174,7 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
 
   auto* document_loader = page_holder->GetFrame().Loader().GetDocumentLoader();
   ASSERT_TRUE(document_loader);
-  document_loader->GetTiming().SetNavigationStart(CurrentTimeTicksInSeconds());
+  document_loader->GetTiming().SetNavigationStart(CurrentTimeTicks());
 
   EXPECT_EQ(&page_holder->GetFrame(), perf->GetFrame());
   EXPECT_EQ(&page_holder->GetFrame(), timing->GetFrame());

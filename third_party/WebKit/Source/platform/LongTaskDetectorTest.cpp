@@ -21,11 +21,11 @@ class TestLongTaskObserver :
   USING_GARBAGE_COLLECTED_MIXIN(TestLongTaskObserver);
 
  public:
-  double last_long_task_start = 0.0;
-  double last_long_task_end = 0.0;
+  TimeTicks last_long_task_start;
+  TimeTicks last_long_task_end;
 
   // LongTaskObserver implementation.
-  void OnLongTaskDetected(double start_time, double end_time) override {
+  void OnLongTaskDetected(TimeTicks start_time, TimeTicks end_time) override {
     last_long_task_start = start_time;
     last_long_task_end = end_time;
   }
@@ -36,9 +36,9 @@ class LongTaskDetectorTest : public ::testing::Test {
  public:
   // Public because it's executed on a task queue.
   void DummyTaskWithDuration(double duration_seconds) {
-    dummy_task_start_time_ = CurrentTimeTicksInSeconds();
+    dummy_task_start_time_ = CurrentTimeTicks();
     platform_->AdvanceClockSeconds(duration_seconds);
-    dummy_task_end_time_ = CurrentTimeTicksInSeconds();
+    dummy_task_end_time_ = CurrentTimeTicks();
   }
 
  protected:
@@ -48,9 +48,9 @@ class LongTaskDetectorTest : public ::testing::Test {
     // of tasks.
     platform_->RunForPeriodSeconds(1);
   }
-  double DummyTaskStartTime() { return dummy_task_start_time_; }
+  TimeTicks DummyTaskStartTime() { return dummy_task_start_time_; }
 
-  double DummyTaskEndTime() { return dummy_task_end_time_; }
+  TimeTicks DummyTaskEndTime() { return dummy_task_end_time_; }
 
   void SimulateTask(double duration_seconds) {
     PostCrossThreadTask(
@@ -64,18 +64,18 @@ class LongTaskDetectorTest : public ::testing::Test {
       platform_;
 
  private:
-  double dummy_task_start_time_ = 0.0;
-  double dummy_task_end_time_ = 0.0;
+  TimeTicks dummy_task_start_time_;
+  TimeTicks dummy_task_end_time_;
 };
 
 TEST_F(LongTaskDetectorTest, DeliversLongTaskNotificationOnlyWhenRegistered) {
   TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
   SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
-  EXPECT_EQ(long_task_observer->last_long_task_end, 0.0);
+  EXPECT_EQ(long_task_observer->last_long_task_end, TimeTicks());
 
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
   SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
-  double long_task_end_when_registered = DummyTaskEndTime();
+  TimeTicks long_task_end_when_registered = DummyTaskEndTime();
   EXPECT_EQ(long_task_observer->last_long_task_start, DummyTaskStartTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
             long_task_end_when_registered);
@@ -92,7 +92,7 @@ TEST_F(LongTaskDetectorTest, DoesNotGetNotifiedOfShortTasks) {
   TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
   SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds - 0.01);
-  EXPECT_EQ(long_task_observer->last_long_task_end, 0.0);
+  EXPECT_EQ(long_task_observer->last_long_task_end, TimeTicks());
 
   SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
   EXPECT_EQ(long_task_observer->last_long_task_end, DummyTaskEndTime());

@@ -189,7 +189,9 @@ void FetchEvent::OnNavigationPreloadComplete(
   // navigation preload request must be "other". But it may change when the spec
   // discussion is settled. https://github.com/w3c/resource-timing/issues/110
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "other", resource_response.GetResourceLoadTiming()->RequestTime(),
+      "other",
+      TimeTicksInSeconds(
+          resource_response.GetResourceLoadTiming()->RequestTime()),
       false /* is_main_resource */);
   info->SetNegativeAllowed(true);
   info->SetLoadFinishTime(completion_time);

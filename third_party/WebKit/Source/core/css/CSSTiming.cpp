@@ -21,12 +21,12 @@ CSSTiming& CSSTiming::From(Document& document) {
 }
 
 void CSSTiming::RecordAuthorStyleSheetParseTime(double seconds) {
-  if (!paint_timing_->FirstContentfulPaint())
+  if (paint_timing_->FirstContentfulPaint().is_null())
     parse_time_before_fcp_ += seconds;
 }
 
 void CSSTiming::RecordUpdateDuration(double seconds) {
-  if (!paint_timing_->FirstContentfulPaint())
+  if (paint_timing_->FirstContentfulPaint().is_null())
     update_time_before_fcp_ += seconds;
 }
 

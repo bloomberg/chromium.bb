@@ -132,8 +132,8 @@ unsigned long long PerformanceTiming::domainLookupStart() const {
   // This will be zero when a DNS request is not performed.  Rather than
   // exposing a special value that indicates no DNS, we "backfill" with
   // fetchStart.
-  double dns_start = timing->DnsStart();
-  if (dns_start == 0.0)
+  TimeTicks dns_start = timing->DnsStart();
+  if (dns_start.is_null())
     return fetchStart();
 
   return MonotonicTimeToIntegerMilliseconds(dns_start);
@@ -147,8 +147,8 @@ unsigned long long PerformanceTiming::domainLookupEnd() const {
   // This will be zero when a DNS request is not performed.  Rather than
   // exposing a special value that indicates no DNS, we "backfill" with
   // domainLookupStart.
-  double dns_end = timing->DnsEnd();
-  if (dns_end == 0.0)
+  TimeTicks dns_end = timing->DnsEnd();
+  if (dns_end.is_null())
     return domainLookupStart();
 
   return MonotonicTimeToIntegerMilliseconds(dns_end);
@@ -166,14 +166,14 @@ unsigned long long PerformanceTiming::connectStart() const {
   // connectStart will be zero when a network request is not made.  Rather than
   // exposing a special value that indicates no new connection, we "backfill"
   // with domainLookupEnd.
-  double connect_start = timing->ConnectStart();
-  if (connect_start == 0.0 || loader->GetResponse().ConnectionReused())
+  TimeTicks connect_start = timing->ConnectStart();
+  if (connect_start.is_null() || loader->GetResponse().ConnectionReused())
     return domainLookupEnd();
 
   // ResourceLoadTiming's connect phase includes DNS, however Navigation
   // Timing's connect phase should not. So if there is DNS time, trim it from
   // the start.
-  if (timing->DnsEnd() > 0.0 && timing->DnsEnd() > connect_start)
+  if (!timing->DnsEnd().is_null() && timing->DnsEnd() > connect_start)
     connect_start = timing->DnsEnd();
 
   return MonotonicTimeToIntegerMilliseconds(connect_start);
@@ -191,8 +191,8 @@ unsigned long long PerformanceTiming::connectEnd() const {
   // connectEnd will be zero when a network request is not made.  Rather than
   // exposing a special value that indicates no new connection, we "backfill"
   // with connectStart.
-  double connect_end = timing->ConnectEnd();
-  if (connect_end == 0.0 || loader->GetResponse().ConnectionReused())
+  TimeTicks connect_end = timing->ConnectEnd();
+  if (connect_end.is_null() || loader->GetResponse().ConnectionReused())
     return connectStart();
 
   return MonotonicTimeToIntegerMilliseconds(connect_end);
@@ -207,8 +207,8 @@ unsigned long long PerformanceTiming::secureConnectionStart() const {
   if (!timing)
     return 0;
 
-  double ssl_start = timing->SslStart();
-  if (ssl_start == 0.0)
+  TimeTicks ssl_start = timing->SslStart();
+  if (ssl_start.is_null())
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(ssl_start);
@@ -217,7 +217,7 @@ unsigned long long PerformanceTiming::secureConnectionStart() const {
 unsigned long long PerformanceTiming::requestStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
 
-  if (!timing || timing->SendStart() == 0.0)
+  if (!timing || timing->SendStart().is_null())
     return connectEnd();
 
   return MonotonicTimeToIntegerMilliseconds(timing->SendStart());
@@ -225,7 +225,7 @@ unsigned long long PerformanceTiming::requestStart() const {
 
 unsigned long long PerformanceTiming::responseStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing || timing->ReceiveHeadersEnd() == 0.0)
+  if (!timing || timing->ReceiveHeadersEnd().is_null())
     return requestStart();
 
   // FIXME: Response start needs to be the time of the first received byte.
@@ -557,21 +557,19 @@ ScriptValue PerformanceTiming::toJSONForBinding(
 }
 
 unsigned long long PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
-    double monotonic_seconds) const {
-  DCHECK_GE(monotonic_seconds, 0);
+    TimeTicks time) const {
   const DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0;
 
-  return ToIntegerMilliseconds(
-      timing->MonotonicTimeToPseudoWallTime(monotonic_seconds));
+  return ToIntegerMilliseconds(timing->MonotonicTimeToPseudoWallTime(time));
 }
 
-double PerformanceTiming::IntegerMillisecondsToMonotonicTime(
+TimeTicks PerformanceTiming::IntegerMillisecondsToMonotonicTime(
     unsigned long long integer_milliseconds) const {
   const DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
-    return 0;
+    return TimeTicks();
 
   return timing->PseudoWallTimeToMonotonicTime(
       ToDoubleSeconds(integer_milliseconds));

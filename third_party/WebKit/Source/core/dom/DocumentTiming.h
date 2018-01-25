@@ -27,6 +27,7 @@
 #define DocumentTiming_h
 
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -46,17 +47,17 @@ class DocumentTiming final {
   void MarkDomComplete();
   void MarkFirstLayout();
 
-  // These return monotonically-increasing seconds.
-  double DomLoading() const { return dom_loading_; }
-  double DomInteractive() const { return dom_interactive_; }
-  double DomContentLoadedEventStart() const {
+  // These return monotonically-increasing time.
+  TimeTicks DomLoading() const { return dom_loading_; }
+  TimeTicks DomInteractive() const { return dom_interactive_; }
+  TimeTicks DomContentLoadedEventStart() const {
     return dom_content_loaded_event_start_;
   }
-  double DomContentLoadedEventEnd() const {
+  TimeTicks DomContentLoadedEventEnd() const {
     return dom_content_loaded_event_end_;
   }
-  double DomComplete() const { return dom_complete_; }
-  double FirstLayout() const { return first_layout_; }
+  TimeTicks DomComplete() const { return dom_complete_; }
+  TimeTicks FirstLayout() const { return first_layout_; }
 
   void Trace(blink::Visitor*);
 
@@ -64,12 +65,12 @@ class DocumentTiming final {
   LocalFrame* GetFrame() const;
   void NotifyDocumentTimingChanged();
 
-  double dom_loading_ = 0.0;
-  double dom_interactive_ = 0.0;
-  double dom_content_loaded_event_start_ = 0.0;
-  double dom_content_loaded_event_end_ = 0.0;
-  double dom_complete_ = 0.0;
-  double first_layout_ = 0.0;
+  TimeTicks dom_loading_;
+  TimeTicks dom_interactive_;
+  TimeTicks dom_content_loaded_event_start_;
+  TimeTicks dom_content_loaded_event_end_;
+  TimeTicks dom_complete_;
+  TimeTicks first_layout_;
 
   Member<Document> document_;
 };

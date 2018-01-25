@@ -614,7 +614,8 @@ void FrameFetchContext::DispatchDidFinishLoading(
     InteractiveDetector* interactive_detector(
         InteractiveDetector::From(*document_));
     if (interactive_detector) {
-      interactive_detector->OnResourceLoadEnd(finish_time);
+      interactive_detector->OnResourceLoadEnd(
+          TimeTicksFromSeconds(finish_time));
     }
   }
 }

@@ -537,33 +537,35 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
       continue;
 
     DocumentLoadTiming& timing = loader->GetTiming();
-    double commit_timestamp = timing.ResponseEnd();
-    if (commit_timestamp) {
-      LifecycleEvent(frame, loader, "commit", commit_timestamp);
+    TimeTicks commit_timestamp = timing.ResponseEnd();
+    if (!commit_timestamp.is_null()) {
+      LifecycleEvent(frame, loader, "commit",
+                     TimeTicksInSeconds(commit_timestamp));
     }
 
-    double domcontentloaded_timestamp =
+    TimeTicks domcontentloaded_timestamp =
         document->GetTiming().DomContentLoadedEventEnd();
-    if (domcontentloaded_timestamp) {
+    if (!domcontentloaded_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "DOMContentLoaded",
-                     domcontentloaded_timestamp);
+                     TimeTicksInSeconds(domcontentloaded_timestamp));
     }
 
-    double load_timestamp = timing.LoadEventEnd();
-    if (load_timestamp) {
-      LifecycleEvent(frame, loader, "load", load_timestamp);
+    TimeTicks load_timestamp = timing.LoadEventEnd();
+    if (!load_timestamp.is_null()) {
+      LifecycleEvent(frame, loader, "load", TimeTicksInSeconds(load_timestamp));
     }
 
     IdlenessDetector* idleness_detector = frame->GetIdlenessDetector();
-    double network_almost_idle_timestamp =
+    TimeTicks network_almost_idle_timestamp =
         idleness_detector->GetNetworkAlmostIdleTime();
-    if (network_almost_idle_timestamp) {
+    if (!network_almost_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkAlmostIdle",
-                     network_almost_idle_timestamp);
+                     TimeTicksInSeconds(network_almost_idle_timestamp));
     }
-    double network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
-    if (network_idle_timestamp) {
-      LifecycleEvent(frame, loader, "networkIdle", network_idle_timestamp);
+    TimeTicks network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
+    if (!network_idle_timestamp.is_null()) {
+      LifecycleEvent(frame, loader, "networkIdle",
+                     TimeTicksInSeconds(network_idle_timestamp));
     }
   }
 

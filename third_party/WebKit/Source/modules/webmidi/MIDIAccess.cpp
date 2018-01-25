@@ -218,7 +218,8 @@ void MIDIAccess::SendMIDIData(unsigned port_index,
     // "now".  We need to translate it exactly to 0 seconds.
     time_stamp = 0;
   } else {
-    double document_start_time = loader->GetTiming().ReferenceMonotonicTime();
+    double document_start_time =
+        TimeTicksInSeconds(loader->GetTiming().ReferenceMonotonicTime());
     time_stamp = document_start_time + 0.001 * time_stamp_in_milliseconds;
   }
 

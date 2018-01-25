@@ -9,6 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -17,7 +18,7 @@ class PLATFORM_EXPORT LongTaskObserver : public GarbageCollectedMixin {
  public:
   virtual ~LongTaskObserver() = default;
 
-  virtual void OnLongTaskDetected(double start_time, double end_time) = 0;
+  virtual void OnLongTaskDetected(TimeTicks start_time, TimeTicks end_time) = 0;
 };
 
 // LongTaskDetector detects tasks longer than kLongTaskThreshold and notifies

@@ -159,6 +159,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/dtoa.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
@@ -3458,7 +3459,7 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
     double platform_time,
     ExceptionState& exception_state) {
   return document_->Loader()->GetTiming().MonotonicTimeToZeroBasedDocumentTime(
-      platform_time);
+      TimeTicksFromSeconds(platform_time));
 }
 
 String Internals::getScrollAnimationState(Node* node) const {

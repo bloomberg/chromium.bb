@@ -23,29 +23,29 @@ DocumentParserTiming& DocumentParserTiming::From(Document& document) {
 }
 
 void DocumentParserTiming::MarkParserStart() {
-  if (parser_detached_ || parser_start_ > 0.0)
+  if (parser_detached_ || !parser_start_.is_null())
     return;
-  DCHECK_EQ(parser_stop_, 0.0);
-  parser_start_ = CurrentTimeTicksInSeconds();
+  DCHECK(parser_stop_.is_null());
+  parser_start_ = CurrentTimeTicks();
   NotifyDocumentParserTimingChanged();
 }
 
 void DocumentParserTiming::MarkParserStop() {
-  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
+  if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;
-  parser_stop_ = CurrentTimeTicksInSeconds();
+  parser_stop_ = CurrentTimeTicks();
   NotifyDocumentParserTimingChanged();
 }
 
 void DocumentParserTiming::MarkParserDetached() {
-  DCHECK_GT(parser_start_, 0.0);
+  DCHECK(!parser_start_.is_null());
   parser_detached_ = true;
 }
 
 void DocumentParserTiming::RecordParserBlockedOnScriptLoadDuration(
     double duration,
     bool script_inserted_via_document_write) {
-  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
+  if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;
   parser_blocked_on_script_load_duration_ += duration;
   if (script_inserted_via_document_write)
@@ -56,7 +56,7 @@ void DocumentParserTiming::RecordParserBlockedOnScriptLoadDuration(
 void DocumentParserTiming::RecordParserBlockedOnScriptExecutionDuration(
     double duration,
     bool script_inserted_via_document_write) {
-  if (parser_detached_ || parser_start_ == 0.0 || parser_stop_ > 0.0)
+  if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;
   parser_blocked_on_script_execution_duration_ += duration;
   if (script_inserted_via_document_write)
