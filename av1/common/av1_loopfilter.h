@@ -105,9 +105,9 @@ struct AV1LfSyncData;
 
 // This function sets up the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col.
-void av1_setup_mask(struct AV1Common *const cm, const int mi_row,
-                    const int mi_col, MODE_INFO **mi_8x8,
-                    const int mode_info_stride, LOOP_FILTER_MASK *lfm);
+void av1_setup_mask(struct AV1Common *const cm, int mi_row, int mi_col,
+                    MODE_INFO **mi_8x8, int mode_info_stride,
+                    LOOP_FILTER_MASK *lfm);
 
 void av1_filter_block_plane_ss00_ver(struct AV1Common *const cm,
                                      struct macroblockd_plane *const plane,

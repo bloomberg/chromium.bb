@@ -1042,8 +1042,8 @@ static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
 // This function sets up the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col.
 // TODO(JBB): This function only works for yv12.
-void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
-                    MODE_INFO **mi, const int mode_info_stride,
+void av1_setup_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
+                    MODE_INFO **mi, int mode_info_stride,
                     LOOP_FILTER_MASK *lfm) {
 #if CONFIG_EXT_PARTITION
   assert(0 && "Not yet updated");
