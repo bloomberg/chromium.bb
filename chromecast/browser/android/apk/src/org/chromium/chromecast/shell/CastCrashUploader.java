@@ -20,8 +20,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,20 +42,21 @@ public final class CastCrashUploader {
     private static final String DUMP_FILE_REGEX = ".*\\.dmp\\d*";
 
     private final ScheduledExecutorService mExecutorService;
+    private final ElidedLogcatProvider mLogcatProvider;
     private final String mCrashDumpPath;
     private final String mCrashReportUploadUrl;
     private final String mUuid;
     private final String mApplicationFeedback;
-    private final Runnable mQueueAllCrashDumpUploadsRunnable =
-            () -> queueAllCrashDumpUploads(false);
+    private final Runnable mQueueAllCrashDumpUploadsRunnable = () -> queueAllCrashDumpUploads();
 
-    public CastCrashUploader(ScheduledExecutorService executorService, String crashDumpPath,
-            String uuid, String applicationFeedback, boolean uploadCrashToStaging) {
+    public CastCrashUploader(ScheduledExecutorService executorService,
+            ElidedLogcatProvider logcatProvider, String crashDumpPath, String uuid,
+            String applicationFeedback, boolean uploadCrashToStaging) {
         mExecutorService = executorService;
+        mLogcatProvider = logcatProvider;
         mCrashDumpPath = crashDumpPath;
         mUuid = uuid;
         mApplicationFeedback = applicationFeedback;
-
         mCrashReportUploadUrl = uploadCrashToStaging
                 ? "https://clients2.google.com/cr/staging_report"
                 : "https://clients2.google.com/cr/report";
@@ -93,47 +92,22 @@ public final class CastCrashUploader {
      * @param synchronous Whether or not this function should block on queued uploads
      * @param log Log to include, if any
      */
-    private void queueAllCrashDumpUploads(boolean synchronous) {
+    private void queueAllCrashDumpUploads() {
         if (mCrashDumpPath == null) return;
         Log.i(TAG, "Checking for crash dumps");
 
-        List<Future> tasks = new ArrayList<Future>();
-        File crashDumpDirectory = new File(mCrashDumpPath);
+        mLogcatProvider.getElidedLogcat((String logs) -> queueAllCrashDumpUploadsWithLogs(logs));
+    }
 
-        final String log = getLogs(crashDumpDirectory);
+    private void queueAllCrashDumpUploadsWithLogs(String logs) {
+        File crashDumpDirectory = new File(mCrashDumpPath);
 
         for (final File potentialDump : crashDumpDirectory.listFiles()) {
             String dumpName = potentialDump.getName();
             if (dumpName.matches(DUMP_FILE_REGEX)) {
-                tasks.add(mExecutorService.submit(() -> uploadCrashDump(potentialDump, log)));
+                mExecutorService.submit(() -> uploadCrashDump(potentialDump, logs));
             }
         }
-
-        // Wait on tasks, if necessary.
-        if (synchronous) {
-            for (Future task : tasks) {
-                // Wait on task. If thread received interrupt and should stop waiting, return.
-                if (!waitOnTask(task)) {
-                    return;
-                }
-            }
-        }
-    }
-
-    private String getLogs(File crashDumpDirectory) {
-        String log = null;
-        if (crashDumpDirectory.listFiles().length > 0) {
-            try {
-                Log.i(TAG, "Getting logcat");
-                log = LogcatExtractor.getElidedLogcat();
-                Log.d(TAG, "Log size" + log.length());
-                return log;
-
-            } catch (IOException | InterruptedException e) {
-                Log.e(TAG, "Getting logcat failed ", e);
-            }
-        }
-        return null;
     }
 
     /** Enqueues a background task to upload a single crash dump file. */
@@ -149,7 +123,7 @@ public final class CastCrashUploader {
             String dumpFirstLine = getFirstLine(dumpFileStream);
             String mimeBoundary = dumpFirstLine.substring(2);
 
-            if (log != null) {
+            if (!log.equals("")) {
                 Log.i(TAG, "Including log file");
                 StringBuilder logHeader = new StringBuilder();
                 logHeader.append(dumpFirstLine);

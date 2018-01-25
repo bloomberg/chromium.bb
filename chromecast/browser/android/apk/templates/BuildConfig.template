@@ -20,4 +20,16 @@ public class BuildConfig {
 
   // Set the number of lines for LogcatExtractor to send.
   public static final int LOGCAT_SIZE = _LOGCAT_EXTRACTOR_SIZE;
+
+  // If true, use a remote service to provde the logcat.
+  public static final boolean USE_REMOTE_SERVICE_LOGCAT =
+#if defined(_USE_REMOTE_SERVICE_LOGCAT)
+    true;
+#else
+    false;
+#endif
+
+  // Classpath of package name and class path of the remote service which will provide the logcat.
+  public static final String DEVICE_LOGS_PROVIDER_PACKAGE =  _DEVICE_LOGS_PROVIDER_PACKAGE;
+  public static final String DEVICE_LOGS_PROVIDER_CLASS = _DEVICE_LOGS_PROVIDER_CLASS;
 }
