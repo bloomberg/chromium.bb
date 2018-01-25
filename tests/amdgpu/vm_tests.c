@@ -55,7 +55,6 @@ CU_BOOL suite_vm_tests_enable(void)
 
 int suite_vm_tests_init(void)
 {
-	struct amdgpu_gpu_info gpu_info = {0};
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -98,10 +97,9 @@ static void amdgpu_vmid_reserve_test(void)
 	struct amdgpu_cs_ib_info ib_info;
 	struct amdgpu_cs_fence fence_status;
 	uint32_t expired, flags;
-	int i, r, instance;
+	int i, r;
 	amdgpu_bo_list_handle bo_list;
 	amdgpu_va_handle va_handle;
-	union drm_amdgpu_vm vm;
 	static uint32_t *ptr;
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);

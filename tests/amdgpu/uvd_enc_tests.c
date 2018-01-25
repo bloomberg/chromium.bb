@@ -247,8 +247,6 @@ static void free_resource(struct amdgpu_uvd_enc_bo *uvd_enc_bo)
 
 static void amdgpu_cs_uvd_enc_create(void)
 {
-	int len, r;
-
 	enc.width = 160;
 	enc.height = 128;
 
@@ -263,7 +261,7 @@ static void check_result(struct amdgpu_uvd_enc *enc)
 	uint64_t sum;
 	uint32_t s = 175602;
 	uint32_t *ptr, size;
-	int i, j, r;
+	int j, r;
 
 	r = amdgpu_bo_cpu_map(enc->fb.handle, (void **)&enc->fb.ptr);
 	CU_ASSERT_EQUAL(r, 0);
@@ -470,7 +468,6 @@ static void amdgpu_cs_uvd_enc_encode(void)
 
 static void amdgpu_cs_uvd_enc_destroy(void)
 {
-	struct amdgpu_uvd_enc_bo sw_ctx;
 	int len, r;
 
 	num_resources  = 0;

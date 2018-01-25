@@ -273,7 +273,7 @@ static void amdgpu_cs_uvd_create(void)
 
 static void amdgpu_cs_uvd_decode(void)
 {
-	const unsigned dpb_size = 15923584, ctx_size = 5287680, dt_size = 737280;
+	const unsigned dpb_size = 15923584, dt_size = 737280;
 	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, ctx_addr, dt_addr, it_addr;
 	struct amdgpu_bo_alloc_request req = {0};
 	amdgpu_bo_handle buf_handle;

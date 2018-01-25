@@ -681,7 +681,7 @@ static void amdgpu_command_submission_compute_nop(void)
 	struct amdgpu_cs_fence fence_status;
 	uint32_t *ptr;
 	uint32_t expired;
-	int i, r, instance;
+	int r, instance;
 	amdgpu_bo_list_handle bo_list;
 	amdgpu_va_handle va_handle;
 	struct drm_amdgpu_info_hw_ip info;
@@ -1473,7 +1473,7 @@ static void amdgpu_sync_dependency_test(void)
 	struct amdgpu_cs_ib_info ib_info;
 	struct amdgpu_cs_fence fence_status;
 	uint32_t expired;
-	int i, j, r, instance;
+	int i, j, r;
 	amdgpu_bo_list_handle bo_list;
 	amdgpu_va_handle va_handle;
 	static uint32_t *ptr;

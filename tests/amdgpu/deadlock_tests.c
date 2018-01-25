@@ -110,7 +110,6 @@ CU_BOOL suite_deadlock_tests_enable(void)
 
 int suite_deadlock_tests_init(void)
 {
-	struct amdgpu_gpu_info gpu_info = {0};
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -177,7 +176,7 @@ static void amdgpu_deadlock_helper(unsigned ip_type)
 	struct amdgpu_cs_ib_info ib_info;
 	struct amdgpu_cs_fence fence_status;
 	uint32_t expired;
-	int i, r, instance;
+	int i, r;
 	amdgpu_bo_list_handle bo_list;
 	amdgpu_va_handle va_handle;
 
