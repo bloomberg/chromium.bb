@@ -277,12 +277,6 @@ struct FixupCase {
   // a clean way to guess this isn't the new-and-exciting "user" scheme.
   {"user:passwd@www.google.com:8080/", "user:passwd@www.google.com:8080/"},
   // {"file:///c:/foo/bar%20baz.txt", "file:///C:/foo/bar%20baz.txt"},
-  {"ftp.google.com", "ftp://ftp.google.com/"},
-  {"    ftp.google.com", "ftp://ftp.google.com/"},
-  {"FTP.GooGle.com", "ftp://ftp.google.com/"},
-  {"ftpblah.google.com", "http://ftpblah.google.com/"},
-  {"ftp", "http://ftp/"},
-  {"google.ftp.com", "http://google.ftp.com/"},
   // URLs which end with 0x85 (NEL in ISO-8859).
   {"http://foo.com/s?q=\xd0\x85", "http://foo.com/s?q=%D0%85"},
   {"http://foo.com/s?q=\xec\x97\x85", "http://foo.com/s?q=%EC%97%85"},
