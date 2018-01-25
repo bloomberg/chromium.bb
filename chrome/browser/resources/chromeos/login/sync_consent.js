@@ -22,6 +22,22 @@ Polymer({
     },
 
     /**
+     * False until user sync prefs are known.
+     */
+    userPrefsKnown_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * True when sync preferences are managed.
+     */
+    isManaged_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * Name of currently active section.
      */
     activeSection_: {
@@ -70,7 +86,11 @@ Polymer({
    * @private
    */
   onSyncAllEnabledChanged_: function(event) {
+    if (this.syncAllEnabled_ == event.currentTarget.checked)
+      return;
+
     this.syncAllEnabled_ = event.currentTarget.checked;
+    chrome.send('syncEverythingChanged', [this.syncAllEnabled_]);
   },
 
   /**
@@ -79,5 +99,16 @@ Polymer({
    */
   onSettingsSaveAndContinue_: function() {
     chrome.send('login.SyncConsentScreen.userActed', ['save-and-continue']);
+  },
+
+  /**
+   * Modify UI state to match given user preferences.
+   * @param {boolean} sync_all_enabled Whether "sync everything" is enabled.
+   * @param {boolean} is_managed Whether sync preferences are managed.
+   */
+  onUserSyncPrefsKnown: function(sync_all_enabled, is_managed) {
+    this.isManaged_ = is_managed;
+    this.syncAllEnabled_ = sync_all_enabled;
+    this.userPrefsKnown_ = true;
   },
 });

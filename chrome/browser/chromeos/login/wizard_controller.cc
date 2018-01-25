@@ -582,6 +582,16 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  // Skip for non-regular users.
+  if (user_manager->IsLoggedInAsPublicAccount() ||
+      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
+       user_manager->GetActiveUser()->GetType() !=
+           user_manager::USER_TYPE_REGULAR)) {
+    ShowArcTermsOfServiceScreen();
+    return;
+  }
   VLOG(1) << "Showing Sync Consent screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
