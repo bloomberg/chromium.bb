@@ -4,7 +4,7 @@
 
 #include "net/quic/core/tls_handshaker.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
@@ -23,11 +23,12 @@ namespace {
 
 class SslIndexSingleton {
  public:
-  static SslIndexSingleton* GetInstance() {
-    return base::Singleton<SslIndexSingleton>::get();
+  static const SslIndexSingleton* GetInstance() {
+    static const base::NoDestructor<SslIndexSingleton> instance;
+    return instance.get();
   }
 
-  int HandshakerIndex() { return ssl_ex_data_index_handshaker_; }
+  int HandshakerIndex() const { return ssl_ex_data_index_handshaker_; }
 
  private:
   SslIndexSingleton() {
@@ -36,7 +37,7 @@ class SslIndexSingleton {
     CHECK_LE(0, ssl_ex_data_index_handshaker_);
   }
 
-  friend struct base::DefaultSingletonTraits<SslIndexSingleton>;
+  friend class base::NoDestructor<SslIndexSingleton>;
 
   int ssl_ex_data_index_handshaker_;
 
