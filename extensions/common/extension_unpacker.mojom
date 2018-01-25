@@ -34,8 +34,7 @@ interface ExtensionUnpacker {
          ManifestLocation location,
          int32 creation_flags)
       => (mojo.common.mojom.String16 error,
-          mojo.common.mojom.DictionaryValue? manifest,
-          mojo.common.mojom.ListValue? json_ruleset);
+          mojo.common.mojom.DictionaryValue? manifest);
 };
 
 [Native]

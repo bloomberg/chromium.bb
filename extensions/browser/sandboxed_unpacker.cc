@@ -326,7 +326,7 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SandboxedUnpacker::Unzip, this, link_free_crx_path));
+      base::BindOnce(&SandboxedUnpacker::Unzip, this, link_free_crx_path));
 }
 
 void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
@@ -351,7 +351,7 @@ void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SandboxedUnpacker::Unpack, this, extension_root_));
+      base::BindOnce(&SandboxedUnpacker::Unpack, this, extension_root_));
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {
@@ -398,7 +398,7 @@ void SandboxedUnpacker::UtilityProcessCrashed() {
 
   unpacker_io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &SandboxedUnpacker::ReportFailure, this,
           UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
           l10n_util::GetStringFUTF16(
@@ -420,7 +420,7 @@ void SandboxedUnpacker::Unzip(const base::FilePath& crx_path) {
 
   utility_process_mojo_client_->service()->Unzip(
       crx_path, unzipped_dir,
-      base::Bind(&SandboxedUnpacker::UnzipDone, this, unzipped_dir));
+      base::BindOnce(&SandboxedUnpacker::UnzipDone, this, unzipped_dir));
 }
 
 void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
@@ -431,7 +431,7 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
     utility_process_mojo_client_.reset();
     unpacker_io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SandboxedUnpacker::ReportFailure, this, UNZIP_FAILED,
             l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR)));
     return;
@@ -439,7 +439,7 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SandboxedUnpacker::Unpack, this, directory));
+      base::BindOnce(&SandboxedUnpacker::Unpack, this, directory));
 }
 
 void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
@@ -452,13 +452,12 @@ void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
   utility_process_mojo_client_->service()->Unpack(
       GetCurrentChannel(), GetCurrentFeatureSessionType(), directory,
       extension_id_, location_, creation_flags_,
-      base::Bind(&SandboxedUnpacker::UnpackDone, this));
+      base::BindOnce(&SandboxedUnpacker::UnpackDone, this));
 }
 
 void SandboxedUnpacker::UnpackDone(
     const base::string16& error,
-    std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   utility_process_mojo_client_.reset();
@@ -466,19 +465,17 @@ void SandboxedUnpacker::UnpackDone(
   if (!error.empty()) {
     unpacker_io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SandboxedUnpacker::UnpackExtensionFailed, this, error));
+        base::BindOnce(&SandboxedUnpacker::UnpackExtensionFailed, this, error));
     return;
   }
 
   unpacker_io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SandboxedUnpacker::UnpackExtensionSucceeded, this,
-                 base::Passed(&manifest), base::Passed(&json_ruleset)));
+      FROM_HERE, base::BindOnce(&SandboxedUnpacker::UnpackExtensionSucceeded,
+                                this, std::move(manifest)));
 }
 
 void SandboxedUnpacker::UnpackExtensionSucceeded(
-    std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   std::unique_ptr<base::DictionaryValue> final_manifest(
@@ -540,7 +537,7 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
       connector_.get(), data_decoder_identity_, extension_root_, image_paths,
       base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
       base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this,
-                     std::move(manifest), std::move(json_ruleset)));
+                     std::move(manifest)));
 }
 
 void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
@@ -551,7 +548,6 @@ void SandboxedUnpacker::ImageSanitizerDecodedImage(const base::FilePath& path,
 
 void SandboxedUnpacker::ImageSanitizationDone(
     std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset,
     ImageSanitizer::Status status,
     const base::FilePath& file_path_for_error) {
   // Release |image_sanitizer_|, it is not useful anymore and reference |this|.
@@ -562,7 +558,7 @@ void SandboxedUnpacker::ImageSanitizationDone(
 
   if (status == ImageSanitizer::Status::kSuccess) {
     // Next step is to sanitize the message catalogs.
-    ReadMessageCatalogs(std::move(manifest), std::move(json_ruleset));
+    ReadMessageCatalogs(std::move(manifest));
     return;
   }
 
@@ -609,11 +605,10 @@ void SandboxedUnpacker::ImageSanitizationDone(
 }
 
 void SandboxedUnpacker::ReadMessageCatalogs(
-    std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (LocaleInfo::GetDefaultLocale(extension_.get()).empty()) {
-    MessageCatalogsSanitized(std::move(manifest), std::move(json_ruleset),
+    MessageCatalogsSanitized(std::move(manifest),
                              JsonFileSanitizer::Status::kSuccess,
                              std::string());
     return;
@@ -627,35 +622,26 @@ void SandboxedUnpacker::ReadMessageCatalogs(
       extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
       base::BindOnce(&GetMessageCatalogPathsToBeSanitized, locales_path),
       base::BindOnce(&SandboxedUnpacker::SanitizeMessageCatalogs, this,
-                     std::move(manifest), std::move(json_ruleset)));
+                     std::move(manifest)));
 }
 
 void SandboxedUnpacker::SanitizeMessageCatalogs(
     std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset,
     const std::set<base::FilePath>& message_catalog_paths) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   json_file_sanitizer_ = JsonFileSanitizer::CreateAndStart(
       connector_.get(), data_decoder_identity_, message_catalog_paths,
       base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this,
-                     std::move(manifest), std::move(json_ruleset)));
+                     std::move(manifest)));
 }
 
 void SandboxedUnpacker::MessageCatalogsSanitized(
     std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::ListValue> json_ruleset,
     JsonFileSanitizer::Status status,
     const std::string& error_msg) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (status == JsonFileSanitizer::Status::kSuccess) {
-    // Index and persist ruleset for the Declarative Net Request API.
-    base::Optional<int> dnr_ruleset_checksum;
-    if (!IndexAndPersistRulesIfNeeded(std::move(json_ruleset),
-                                      &dnr_ruleset_checksum)) {
-      return;  // Failure was already reported.
-    }
-
-    ReportSuccess(std::move(manifest), dnr_ruleset_checksum);
+    ReadJSONRulesetIfNeeded(std::move(manifest));
     return;
   }
 
@@ -686,6 +672,65 @@ void SandboxedUnpacker::MessageCatalogsSanitized(
   ReportFailure(failure_reason, error);
 }
 
+void SandboxedUnpacker::ReadJSONRulesetIfNeeded(
+    std::unique_ptr<base::DictionaryValue> manifest) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+
+  const ExtensionResource* resource =
+      declarative_net_request::DNRManifestData::GetRulesetResource(
+          extension_.get());
+  if (!resource) {
+    ReadJSONRulesetDone(std::move(manifest), /*json_parser_ptr=*/nullptr,
+                        /*json_ruleset=*/nullptr, /*error=*/base::nullopt);
+    return;
+  }
+
+  std::string json_ruleset_data;
+  if (!base::ReadFileToString(resource->GetFilePath(), &json_ruleset_data)) {
+    ReportUnpackingError("JSON ruleset file does not exist.");
+    return;
+  }
+
+  data_decoder::mojom::JsonParserPtr json_parser_ptr;
+  connector_->BindInterface(data_decoder_identity_, &json_parser_ptr);
+  json_parser_ptr.set_connection_error_handler(
+      base::BindOnce(&SandboxedUnpacker::UtilityProcessCrashed, this));
+
+  auto* raw_json_parser_ptr = json_parser_ptr.get();
+  raw_json_parser_ptr->Parse(
+      json_ruleset_data,
+      base::BindOnce(&SandboxedUnpacker::ReadJSONRulesetDone, this,
+                     std::move(manifest), std::move(json_parser_ptr)));
+}
+
+void SandboxedUnpacker::ReadJSONRulesetDone(
+    std::unique_ptr<base::DictionaryValue> manifest,
+    data_decoder::mojom::JsonParserPtr json_parser_ptr_keep_alive,
+    std::unique_ptr<base::Value> json_ruleset,
+    const base::Optional<std::string>& error) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+
+  if (error) {
+    ReportUnpackingError(*error);
+    return;
+  }
+
+  if (json_ruleset && !json_ruleset->is_list()) {
+    ReportUnpackingError(manifest_errors::kDeclarativeNetRequestListNotPassed);
+    return;
+  }
+
+  // Index and persist ruleset for the Declarative Net Request API.
+  base::Optional<int> dnr_ruleset_checksum;
+  if (!IndexAndPersistRulesIfNeeded(
+          base::ListValue::From(std::move(json_ruleset)),
+          &dnr_ruleset_checksum)) {
+    return;  // Failure was already reported.
+  }
+
+  ReportSuccess(std::move(manifest), dnr_ruleset_checksum);
+}
+
 bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
     std::unique_ptr<base::ListValue> json_ruleset,
     base::Optional<int>* dnr_ruleset_checksum) {
@@ -698,22 +743,8 @@ bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
   base::DeleteFile(file_util::GetIndexedRulesetPath(extension_->path()),
                    true /*recursive*/);
 
-  const ExtensionResource* resource =
-      declarative_net_request::DNRManifestData::GetRulesetResource(
-          extension_.get());
-  // The extension did not provide a ruleset.
-  if (!resource)
+  if (!json_ruleset)
     return true;
-
-  // Now |json_ruleset| should be non-null. However, we have received this from
-  // the utility process, so it can't be trusted.
-  if (!json_ruleset) {
-    ReportFailure(
-        ERROR_PARSING_DNR_RULESET,
-        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-                                   ASCIIToUTF16("ERROR_PARSING_DNR_RULESET")));
-    return false;
-  }
 
   std::string error;
   std::vector<InstallWarning> warnings;
@@ -730,6 +761,12 @@ bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
   *dnr_ruleset_checksum = ruleset_checksum;
   extension_->AddInstallWarnings(warnings);
   return true;
+}
+
+void SandboxedUnpacker::ReportUnpackingError(base::StringPiece error) {
+  unpacker_io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxedUnpacker::UnpackExtensionFailed, this,
+                                base::UTF8ToUTF16(error)));
 }
 
 void SandboxedUnpacker::UnpackExtensionFailed(const base::string16& error) {
@@ -965,7 +1002,6 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
 
   return final_manifest.release();
 }
-
 
 void SandboxedUnpacker::Cleanup() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());

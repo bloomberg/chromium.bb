@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <tuple>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -16,21 +15,16 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
 #include "base/values.h"
-#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_utility_types.h"
-#include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
-#include "net/base/file_stream.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace extensions {
 
@@ -135,39 +129,11 @@ bool Unpacker::Run() {
   }
   extension->AddInstallWarnings(warnings);
 
-  return ReadJSONRulesetIfNeeded(extension.get());
-}
-
-bool Unpacker::ReadJSONRulesetIfNeeded(const Extension* extension) {
-  const ExtensionResource* resource =
-      declarative_net_request::DNRManifestData::GetRulesetResource(extension);
-  // The extension did not provide a ruleset.
-  if (!resource)
-    return true;
-
-  std::string error;
-  JSONFileValueDeserializer deserializer(resource->GetFilePath());
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, &error);
-  if (!root) {
-    SetError(error);
-    return false;
-  }
-
-  if (!root->is_list()) {
-    SetError(errors::kDeclarativeNetRequestListNotPassed);
-    return false;
-  }
-
-  parsed_json_ruleset_ = base::ListValue::From(std::move(root));
   return true;
 }
 
 void Unpacker::SetError(const std::string& error) {
-  SetUTF16Error(base::UTF8ToUTF16(error));
-}
-
-void Unpacker::SetUTF16Error(const base::string16& error) {
-  error_message_ = error;
+  error_message_ = base::UTF8ToUTF16(error);
 }
 
 }  // namespace extensions

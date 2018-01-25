@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 #include "extensions/browser/crx_file_info.h"
@@ -240,30 +241,34 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
   void UnpackDone(const base::string16& error,
-                  std::unique_ptr<base::DictionaryValue> manifest,
-                  std::unique_ptr<base::ListValue> json_ruleset);
-  void UnpackExtensionSucceeded(std::unique_ptr<base::DictionaryValue> manifest,
-                                std::unique_ptr<base::ListValue> json_ruleset);
+                  std::unique_ptr<base::DictionaryValue> manifest);
+  void UnpackExtensionSucceeded(
+      std::unique_ptr<base::DictionaryValue> manifest);
   void UnpackExtensionFailed(const base::string16& error);
 
+  void ReportUnpackingError(base::StringPiece error);
+
   void ImageSanitizationDone(std::unique_ptr<base::DictionaryValue> manifest,
-                             std::unique_ptr<base::ListValue> json_ruleset,
                              ImageSanitizer::Status status,
                              const base::FilePath& path);
   void ImageSanitizerDecodedImage(const base::FilePath& path, SkBitmap image);
 
-  void ReadMessageCatalogs(std::unique_ptr<base::DictionaryValue> manifest,
-                           std::unique_ptr<base::ListValue> json_ruleset);
+  void ReadMessageCatalogs(std::unique_ptr<base::DictionaryValue> manifest);
 
   void SanitizeMessageCatalogs(
       std::unique_ptr<base::DictionaryValue> manifest,
-      std::unique_ptr<base::ListValue> json_ruleset,
       const std::set<base::FilePath>& message_catalog_paths);
 
   void MessageCatalogsSanitized(std::unique_ptr<base::DictionaryValue> manifest,
-                                std::unique_ptr<base::ListValue> json_ruleset,
                                 JsonFileSanitizer::Status status,
                                 const std::string& error_msg);
+
+  void ReadJSONRulesetIfNeeded(std::unique_ptr<base::DictionaryValue> manifest);
+  void ReadJSONRulesetDone(
+      std::unique_ptr<base::DictionaryValue> manifest,
+      data_decoder::mojom::JsonParserPtr json_parser_ptr_keep_alive,
+      std::unique_ptr<base::Value> json_ruleset,
+      const base::Optional<std::string>& error);
 
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
