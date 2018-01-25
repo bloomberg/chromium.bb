@@ -423,6 +423,8 @@ def write_gn_ninja(path, root_gen_dir, options):
       continue
     if name == 'run_all_unittests.cc':
       continue
+    if name == 'test_with_scheduler.cc':
+      continue
     if name == 'gn_main.cc':
       continue
     full_path = os.path.join(GN_ROOT, name)
