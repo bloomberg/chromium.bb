@@ -31,18 +31,10 @@
           domAutomationController.send('could not show notification'));
       }
 
-      // Instantiates a new non-persistent notification with the given |title|
-      // and |options| and then forwards script result 'sync-ok', without
-      // waiting for a notification shown or error event.
-      function DisplayNonPersistentNotificationWithoutWaitingForEvent(title, options) {
-        const notification = new Notification(title, options || {});
-        domAutomationController.send('sync-ok');
-      }
-
       // Renews the registered Service Worker registration for this page, then
       // displays a notification on the activated ServiceWorkerRegistration.
       function DisplayPersistentNotification(title, options) {
-        options = options || { body: 'Hello, world!', 
+        options = options || { body: 'Hello, world!',
                                icon: 'icon.png' };
 
         GetActivatedServiceWorker('platform_notification_service.js',

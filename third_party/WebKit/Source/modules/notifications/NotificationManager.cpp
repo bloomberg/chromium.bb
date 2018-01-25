@@ -111,10 +111,11 @@ void NotificationManager::OnPermissionServiceConnectionError() {
 
 void NotificationManager::DisplayNonPersistentNotification(
     const WebNotificationData& notification_data,
-    std::unique_ptr<WebNotificationResources> notification_resources) {
+    std::unique_ptr<WebNotificationResources> notification_resources,
+    mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
-      notification_data, *notification_resources);
+      notification_data, *notification_resources, std::move(event_listener));
 }
 
 const mojom::blink::NotificationServicePtr&

@@ -9,12 +9,15 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
 
 namespace content {
 
-class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
+class CONTENT_EXPORT NotificationEventDispatcherImpl
+    : public NotificationEventDispatcher {
  public:
   // Returns the instance of the NotificationEventDispatcherImpl. Must be called
   // on the UI thread.
@@ -50,9 +53,24 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
                                          int renderer_id,
                                          int request_id);
 
+  // Registers |listener| to receive the show, click and close events of the
+  // non-persistent notification identified by |notification_id|.
+  void RegisterNonPersistentNotificationListener(
+      const std::string& notification_id,
+      blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info);
+
  private:
+  friend class NotificationEventDispatcherImplTest;
+  friend struct base::DefaultSingletonTraits<NotificationEventDispatcherImpl>;
+
   NotificationEventDispatcherImpl();
   ~NotificationEventDispatcherImpl() override;
+
+  // Removes all references to the listener registered to receive events
+  // from the non-persistent notification identified by |notification_id|.
+  // Should be called when the connection to this listener goes away.
+  void HandleConnectionErrorForNonPersistentNotificationListener(
+      const std::string& notification_id);
 
   // Notification Id -> renderer Id.
   std::map<std::string, int> renderer_ids_;
@@ -60,7 +78,9 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
   // Notification Id -> request Id.
   std::map<std::string, int> request_ids_;
 
-  friend struct base::DefaultSingletonTraits<NotificationEventDispatcherImpl>;
+  // Notification Id -> listener.
+  std::map<std::string, blink::mojom::NonPersistentNotificationListenerPtr>
+      non_persistent_notification_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationEventDispatcherImpl);
 };

@@ -40,11 +40,13 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/vibration/NavigatorVibration.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationDelegate.h"
+#include "public/platform/modules/notifications/notification_service.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
@@ -60,7 +62,8 @@ class MODULES_EXPORT Notification final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<Notification>,
       public ContextLifecycleObserver,
-      public WebNotificationDelegate {
+      public WebNotificationDelegate,
+      public mojom::blink::NonPersistentNotificationListener {
   USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -88,6 +91,11 @@ class MODULES_EXPORT Notification final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(show);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+
+  // NonPersistentNotificationListener interface.
+  void OnShow() override;
+  void OnClick() override;
+  void OnClose() override;
 
   // WebNotificationDelegate interface.
   void DispatchShowEvent() override;
@@ -179,6 +187,9 @@ class MODULES_EXPORT Notification final
   Member<AsyncMethodRunner<Notification>> prepare_show_method_runner_;
 
   Member<NotificationResourcesLoader> loader_;
+
+  mojo::Binding<mojom::blink::NonPersistentNotificationListener>
+      listener_binding_;
 };
 
 }  // namespace blink

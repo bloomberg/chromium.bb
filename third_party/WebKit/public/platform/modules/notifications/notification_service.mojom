@@ -8,6 +8,19 @@ import "mojo/common/string16.mojom";
 import "third_party/WebKit/public/platform/modules/notifications/notification.mojom";
 import "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom";
 
+// Interface for receiving events relating to non-persistent notifications.
+interface NonPersistentNotificationListener {
+  // Called when the notification has been shown.
+  OnShow();
+
+  // Called when the notification was clicked upon.
+  OnClick();
+
+  // Called when the notification was closed; either programatically, or by the
+  // developer calling Notification.close().
+  OnClose();
+};
+
 // Service through which Blink can request notifications to be shown, closed or
 // retrieved from the embedder.
 interface NotificationService {
@@ -17,7 +30,9 @@ interface NotificationService {
   [Sync] GetPermissionStatus() => (PermissionStatus status);
 
   // Shows a notification that is not associated with a service worker.
+  // Notifies |event_listener| when the notification is shown/clicked/closed.
   DisplayNonPersistentNotification(
         NotificationData notification_data,
-        NotificationResources notification_resources);
+        NotificationResources notification_resources,
+        NonPersistentNotificationListener event_listener);
 };

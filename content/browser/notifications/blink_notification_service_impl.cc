@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -39,7 +40,8 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
       resource_context_(resource_context),
       render_process_id_(render_process_id),
       origin_(origin),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(notification_context_);
   DCHECK(browser_context_);
@@ -76,7 +78,8 @@ void BlinkNotificationServiceImpl::OnConnectionError() {
 
 void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     const PlatformNotificationData& platform_notification_data,
-    const NotificationResources& notification_resources) {
+    const NotificationResources& notification_resources,
+    blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!Service())
     return;
@@ -92,13 +95,29 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
               origin_.GetURL(), platform_notification_data.tag, request_id,
               render_process_id_);
 
-  // Using base::Unretained is safe because Service() returns a singleton.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&PlatformNotificationService::DisplayNotification,
-                     base::Unretained(Service()), browser_context_,
-                     notification_id, origin_.GetURL(),
-                     platform_notification_data, notification_resources));
+      base::BindOnce(&BlinkNotificationServiceImpl::
+                         DisplayNonPersistentNotificationOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr(), notification_id,
+                     origin_.GetURL(), platform_notification_data,
+                     notification_resources,
+                     event_listener_ptr.PassInterface()));
+}
+
+void BlinkNotificationServiceImpl::DisplayNonPersistentNotificationOnUIThread(
+    const std::string& notification_id,
+    const GURL& origin,
+    const content::PlatformNotificationData& notification_data,
+    const content::NotificationResources& notification_resources,
+    blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info) {
+  NotificationEventDispatcherImpl* event_dispatcher =
+      NotificationEventDispatcherImpl::GetInstance();
+  event_dispatcher->RegisterNonPersistentNotificationListener(
+      notification_id, std::move(listener_ptr_info));
+
+  Service()->DisplayNotification(browser_context_, notification_id, origin,
+                                 notification_data, notification_resources);
 }
 
 }  // namespace content
