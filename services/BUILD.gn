@@ -32,7 +32,6 @@ service_test("services_unittests") {
       "//services/audio:tests",
       "//services/data_decoder:tests",
       "//services/device:tests",
-      "//services/network:tests",
       "//services/preferences:tests",
       "//services/proxy_resolver:tests",
       "//services/resource_coordinator:tests",
