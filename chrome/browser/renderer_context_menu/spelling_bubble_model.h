@@ -29,8 +29,8 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   void Accept() override;
   void Cancel() override;
   base::string16 GetLinkText() const override;
-  GURL GetLinkURL() const override;
-  void LinkClicked() override;
+  GURL GetHelpPageURL() const override;
+  void OpenHelpPage() override;
 
  private:
   // Set the profile preferences to enable or disable the feature.

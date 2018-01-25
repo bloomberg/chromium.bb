@@ -54,7 +54,7 @@ base::string16 TestConfirmBubbleModel::GetLinkText() const {
   return base::ASCIIToUTF16("Link");
 }
 
-void TestConfirmBubbleModel::LinkClicked() {
+void TestConfirmBubbleModel::OpenHelpPage() {
   if (link_clicked_)
     *link_clicked_ = true;
 }

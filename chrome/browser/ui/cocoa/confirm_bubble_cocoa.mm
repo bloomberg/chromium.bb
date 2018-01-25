@@ -128,7 +128,7 @@ const int kButtonHEdgeMargin = 7;
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  [controller_ linkClicked];
+  [controller_ openHelpPage];
   [self closeBubble];
   return YES;
 }
@@ -195,8 +195,7 @@ const int kButtonHEdgeMargin = 7;
     base::scoped_nsobject<NSAttributedString> whiteSpace(
         [[NSAttributedString alloc] initWithString:@" "]);
     [attributedMessage.get() appendAttributedString:whiteSpace.get()];
-    [attributes setObject:[controller_ linkURL]
-                   forKey:NSLinkAttributeName];
+    [attributes setObject:[controller_ helpPageURL] forKey:NSLinkAttributeName];
     base::scoped_nsobject<NSAttributedString> attributedLink(
         [[NSAttributedString alloc] initWithString:linkText
                                         attributes:attributes]);
