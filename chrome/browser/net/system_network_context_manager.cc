@@ -26,6 +26,7 @@
 #include "content/public/network/network_service.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_features.h"
+#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -37,7 +38,7 @@ void DisableQuicOnIOThread(
     safe_browsing::SafeBrowsingService* safe_browsing_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     content::GetNetworkServiceImpl()->DisableQuic();
   io_thread->DisableQuic();
 
@@ -52,7 +53,7 @@ base::LazyInstance<SystemNetworkContextManager>::Leaky
     g_system_network_context_manager = LAZY_INSTANCE_INITIALIZER;
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // SetUp should already have been called.
     DCHECK(io_thread_network_context_);
     return io_thread_network_context_.get();
@@ -84,7 +85,7 @@ void SystemNetworkContextManager::SetUp(
     network::mojom::NetworkContextRequest* network_context_request,
     network::mojom::NetworkContextParamsPtr* network_context_params,
     bool* is_quic_allowed) {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
     *network_context_params = CreateNetworkContextParams();
   } else {
@@ -114,7 +115,7 @@ void SystemNetworkContextManager::DisableQuic() {
   // Profiles will also have QUIC disabled (because both IOThread's
   // NetworkService and the network service, if enabled will disable QUIC).
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     content::GetNetworkService()->DisableQuic();
 
   IOThread* io_thread = g_browser_process->io_thread();

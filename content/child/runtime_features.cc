@@ -17,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -297,7 +298,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           features::kServiceWorkerScriptFullCodeCache));
 
   WebRuntimeFeatures::EnableNetworkService(
-      base::FeatureList::IsEnabled(features::kNetworkService));
+      base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::EnableGamepadExtensions(true);
@@ -321,7 +322,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kNotificationsWithMojo))
     WebRuntimeFeatures::EnableNotificationsWithMojo(true);
 
-  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS))
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
     WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
 
   if (base::FeatureList::IsEnabled(features::kOriginManifest))

@@ -47,10 +47,10 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 #if defined(OS_ANDROID)
@@ -473,7 +473,7 @@ void RenderFrameDevToolsAgentHost::GrantPolicy() {
   if (!frame_host_)
     return;
   uint32_t process_id = frame_host_->GetProcess()->GetID();
-  if (base::FeatureList::IsEnabled(features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     GetNetworkService()->SetRawHeadersAccess(process_id, true);
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
       process_id);
@@ -496,7 +496,7 @@ void RenderFrameDevToolsAgentHost::RevokePolicy() {
 
   // We are the last to disconnect from the renderer -> revoke permissions.
   if (!process_has_agents) {
-    if (base::FeatureList::IsEnabled(features::kNetworkService))
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
       GetNetworkService()->SetRawHeadersAccess(process_host->GetID(), false);
     ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
         process_host->GetID());

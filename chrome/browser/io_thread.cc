@@ -97,6 +97,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "url/url_constants.h"
 
@@ -800,7 +801,7 @@ void IOThread::ConstructSystemRequestContext() {
   if (!is_quic_allowed_on_init_)
     globals_->quic_disabled = true;
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     globals_->system_request_context_owner =
         std::move(builder)->Create(std::move(network_context_params_).get(),
                                    !is_quic_allowed_on_init_, net_log_);

@@ -26,12 +26,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +55,7 @@ class ProfileNetworkContextServiceBrowsertest
 
   void SetUpInProcessBrowserTestFixture() override {
     if (GetParam() == NetworkServiceState::kEnabled)
-      feature_list_.InitAndEnableFeature(features::kNetworkService);
+      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {
