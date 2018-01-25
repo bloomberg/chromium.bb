@@ -244,10 +244,7 @@ void SigninManager::DoSignOut(
     token_service_->RevokeAllCredentials();
   }
 
-  for (auto& observer : observer_list_) {
-    observer.GoogleSignedOut(account_id, username);
-    observer.GoogleSignedOut(account_info);
-  }
+  FireGoogleSignedOut(account_id, account_info);
 }
 
 void SigninManager::Initialize(PrefService* local_state) {
@@ -443,6 +440,14 @@ void SigninManager::FireGoogleSigninSucceeded() {
     observer.GoogleSigninSucceeded(account_id, email);
     observer.GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
     observer.GoogleSigninSucceededWithPassword(account_id, email, password_);
+  }
+}
+
+void SigninManager::FireGoogleSignedOut(const std::string& account_id,
+                                        const AccountInfo& account_info) {
+  for (auto& observer : observer_list_) {
+    observer.GoogleSignedOut(account_id, account_info.email);
+    observer.GoogleSignedOut(account_info);
   }
 }
 
