@@ -47,6 +47,11 @@ RendererWebSchedulerImpl::CreateWebViewScheduler(
           TimerThrottlingForBackgroundTabsEnabled()));
 }
 
+base::TimeTicks RendererWebSchedulerImpl::MonotonicallyIncreasingVirtualTime()
+    const {
+  return renderer_scheduler_->GetActiveTimeDomain()->Now();
+}
+
 RendererScheduler* RendererWebSchedulerImpl::GetRendererSchedulerForTest() {
   return renderer_scheduler_;
 }

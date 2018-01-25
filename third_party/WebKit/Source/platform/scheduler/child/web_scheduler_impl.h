@@ -51,6 +51,9 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   void RemovePendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType type) override {}
 
+  // Returns TimeTicks::Now() by default.
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;
+
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
 

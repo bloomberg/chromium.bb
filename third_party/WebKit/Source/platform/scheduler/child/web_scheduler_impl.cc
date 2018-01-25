@@ -88,5 +88,9 @@ WebSchedulerImpl::PauseScheduler() {
   return nullptr;
 }
 
+base::TimeTicks WebSchedulerImpl::MonotonicallyIncreasingVirtualTime() const {
+  return base::TimeTicks::Now();
+}
+
 }  // namespace scheduler
 }  // namespace blink

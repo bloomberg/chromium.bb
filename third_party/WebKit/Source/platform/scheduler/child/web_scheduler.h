@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 
 #include "base/location.h"
+#include "base/time/time.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -98,6 +99,10 @@ class PLATFORM_EXPORT WebScheduler {
   // Tells the scheduler that a navigation task is no longer pending.
   virtual void RemovePendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) = 0;
+
+  // Returns the current time recognized by the scheduler, which may perhaps
+  // be based on a real or virtual time domain. Used by Timer.
+  virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() const = 0;
 
   // Test helpers.
 
