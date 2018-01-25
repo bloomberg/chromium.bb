@@ -32,7 +32,7 @@ class TestConfirmBubbleModel : public ConfirmBubbleModel {
   void Accept() override;
   void Cancel() override;
   base::string16 GetLinkText() const override;
-  void LinkClicked() override;
+  void OpenHelpPage() override;
 
  private:
   bool* accept_clicked_;
@@ -77,7 +77,7 @@ base::string16 TestConfirmBubbleModel::GetLinkText() const {
   return base::ASCIIToUTF16("Link");
 }
 
-void TestConfirmBubbleModel::LinkClicked() {
+void TestConfirmBubbleModel::OpenHelpPage() {
   *link_clicked_ = true;
 }
 

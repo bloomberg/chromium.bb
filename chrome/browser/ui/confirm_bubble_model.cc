@@ -32,9 +32,8 @@ base::string16 ConfirmBubbleModel::GetLinkText() const {
   return base::string16();
 }
 
-GURL ConfirmBubbleModel::GetLinkURL() const {
+GURL ConfirmBubbleModel::GetHelpPageURL() const {
   return GURL();
 }
 
-void ConfirmBubbleModel::LinkClicked() {
-}
+void ConfirmBubbleModel::OpenHelpPage() {}

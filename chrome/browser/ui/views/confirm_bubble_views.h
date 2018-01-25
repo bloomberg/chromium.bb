@@ -9,22 +9,26 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class ConfirmBubbleModel;
 
-// A dialog (with the standard Title/(x)/[OK]/[Cancel] UI elements), as well as
-// a message Label and optional Link. The dialog ultimately appears like this:
+namespace views {
+class ImageButton;
+}
+
+// A dialog (with the standard Title/[OK]/[Cancel] UI elements), as well as
+// a message Label and help (?) button. The dialog ultimately appears like this:
 //   +------------------------+
-//   | Title              (x) |
+//   | Title                  |
 //   | Label                  |
-//   | Link     [OK] [Cancel] |
+//   | (?)      [OK] [Cancel] |
 //   +------------------------+
 //
 // TODO(msw): Remove this class or merge it with DialogDelegateView.
 class ConfirmBubbleViews : public views::DialogDelegateView,
-                           public views::LinkListener {
+                           public views::ButtonListener {
  public:
   explicit ConfirmBubbleViews(std::unique_ptr<ConfirmBubbleModel> model);
 
@@ -41,15 +45,16 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   // views::WidgetDelegate implementation.
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
-  // views::LinkListener implementation.
-  void LinkClicked(views::Link* source, int event_flags) override;
+  // views::ButtonListener implementation.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   // The model to customize this bubble view.
   std::unique_ptr<ConfirmBubbleModel> model_;
 
-  views::Link* link_;
+  views::ImageButton* help_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleViews);
 };

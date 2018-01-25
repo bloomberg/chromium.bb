@@ -32,15 +32,7 @@ class AskGoogleForSuggestionsDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AskGoogleForSuggestionsDialogTest);
 };
 
-#if !defined(OS_MACOSX)
-// Initially disabled except on Mac due to http://crbug.com/683808.
-#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
-#else
-#define MAYBE_InvokeUi_default InvokeUi_default
-#endif
-
 // Test that calls ShowUi("default").
-IN_PROC_BROWSER_TEST_F(AskGoogleForSuggestionsDialogTest,
-                       MAYBE_InvokeUi_default) {
+IN_PROC_BROWSER_TEST_F(AskGoogleForSuggestionsDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }

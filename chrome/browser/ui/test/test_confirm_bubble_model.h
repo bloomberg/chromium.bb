@@ -27,7 +27,7 @@ class TestConfirmBubbleModel : public ConfirmBubbleModel {
   void Accept() override;
   void Cancel() override;
   base::string16 GetLinkText() const override;
-  void LinkClicked() override;
+  void OpenHelpPage() override;
 
  private:
   bool* model_deleted_;

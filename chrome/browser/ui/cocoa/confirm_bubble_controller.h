@@ -35,7 +35,7 @@ class ConfirmBubbleModel;
 - (NSString*)title;
 - (NSString*)messageText;
 - (NSString*)linkText;
-- (NSString*)linkURL;
+- (NSString*)helpPageURL;
 - (NSString*)okButtonText;
 - (NSString*)cancelButtonText;
 - (BOOL)hasOkButton;
@@ -44,7 +44,7 @@ class ConfirmBubbleModel;
 // Handle actions from the ConfirmBubbleCocoa object.
 - (void)accept;
 - (void)cancel;
-- (void)linkClicked;
+- (void)openHelpPage;
 
 @end
 

@@ -50,10 +50,10 @@ class ConfirmBubbleModel {
   virtual base::string16 GetLinkText() const;
 
   // Returns the URL of the link to be displayed.
-  virtual GURL GetLinkURL() const;
+  virtual GURL GetHelpPageURL() const;
 
   // Called when the link is clicked.
-  virtual void LinkClicked();
+  virtual void OpenHelpPage();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleModel);
