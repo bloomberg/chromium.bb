@@ -327,34 +327,6 @@ std::pair<LayoutPoint, LayoutPoint> static GetLocalSelectionEndpoints(
   return {edge_top_in_layer, edge_bottom_in_layer};
 }
 
-// TODO(yoichio): Move the function body here to avoid forward declaration.
-static bool IsVisible(bool, const LocalCaretRect&);
-static CompositedSelectionBound PositionInGraphicsLayerBacking(
-    bool selection_start,
-    const PositionWithAffinity& position) {
-  const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
-  const LayoutObject* const layout_object = local_caret_rect.layout_object;
-  if (!layout_object)
-    return CompositedSelectionBound();
-
-  CompositedSelectionBound bound;
-  // Flipped blocks writing mode is not only vertical but also right to left.
-  if (!layout_object->Style()->IsHorizontalWritingMode()) {
-    bound.is_text_direction_rtl = layout_object->HasFlippedBlocksWritingMode();
-  }
-
-  LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
-  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
-      GetLocalSelectionEndpoints(selection_start, local_caret_rect);
-  bound.edge_top_in_layer =
-      LocalToInvalidationBackingPoint(edge_top_in_layer, *layout_object);
-  bound.edge_bottom_in_layer =
-      LocalToInvalidationBackingPoint(edge_bottom_in_layer, *layout_object);
-  bound.layer = GetGraphicsLayerBacking(*layout_object);
-  bound.hidden = !IsVisible(selection_start, local_caret_rect);
-  return bound;
-}
-
 static LayoutPoint GetSamplePointForVisibility(
     const LayoutPoint& edge_top_in_layer,
     const LayoutPoint& edge_bottom_in_layer) {
@@ -402,6 +374,32 @@ static bool IsVisible(bool selection_start,
     return false;
 
   return true;
+}
+
+static CompositedSelectionBound PositionInGraphicsLayerBacking(
+    bool selection_start,
+    const PositionWithAffinity& position) {
+  const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
+  const LayoutObject* const layout_object = local_caret_rect.layout_object;
+  if (!layout_object)
+    return CompositedSelectionBound();
+
+  CompositedSelectionBound bound;
+  // Flipped blocks writing mode is not only vertical but also right to left.
+  if (!layout_object->Style()->IsHorizontalWritingMode()) {
+    bound.is_text_direction_rtl = layout_object->HasFlippedBlocksWritingMode();
+  }
+
+  LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
+  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
+      GetLocalSelectionEndpoints(selection_start, local_caret_rect);
+  bound.edge_top_in_layer =
+      LocalToInvalidationBackingPoint(edge_top_in_layer, *layout_object);
+  bound.edge_bottom_in_layer =
+      LocalToInvalidationBackingPoint(edge_bottom_in_layer, *layout_object);
+  bound.layer = GetGraphicsLayerBacking(*layout_object);
+  bound.hidden = !IsVisible(selection_start, local_caret_rect);
+  return bound;
 }
 
 bool LayoutObjectContainsPosition(LayoutObject* target,
