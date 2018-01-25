@@ -612,10 +612,6 @@ const char kMHTMLSkipNostoreAll[]           = "skip-nostore-all";
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 
-// Mutes audio sent to the audio device so it is not audible during
-// automated testing.
-const char kMuteAudio[]                     = "mute-audio";
-
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 

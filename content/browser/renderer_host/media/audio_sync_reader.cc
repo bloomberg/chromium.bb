@@ -18,10 +18,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/public/common/content_switches.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_switches.h"
 
 using media::AudioBus;
 using media::AudioOutputBuffer;
@@ -47,10 +46,12 @@ void LogAudioGlitchResult(AudioGlitchResult result) {
 namespace content {
 
 AudioSyncReader::AudioSyncReader(
+    base::RepeatingCallback<void(const std::string&)> log_callback,
     const media::AudioParameters& params,
     std::unique_ptr<base::SharedMemory> shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket)
-    : shared_memory_(std::move(shared_memory)),
+    : log_callback_(std::move(log_callback)),
+      shared_memory_(std::move(shared_memory)),
       mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
       had_socket_error_(false),
@@ -113,30 +114,30 @@ AudioSyncReader::~AudioSyncReader() {
   renderer_missed_callback_count_ > 0 ?
       LogAudioGlitchResult(AUDIO_RENDERER_AUDIO_GLITCHES) :
       LogAudioGlitchResult(AUDIO_RENDERER_NO_AUDIO_GLITCHES);
-  std::string log_string = base::StringPrintf(
+  log_callback_.Run(base::StringPrintf(
       "ASR: number of detected audio glitches: %" PRIuS " out of %" PRIuS,
-      renderer_missed_callback_count_, renderer_callback_count_);
-  MediaStreamManager::SendMessageToNativeLog(log_string);
-  DVLOG(1) << log_string;
+      renderer_missed_callback_count_, renderer_callback_count_));
 }
 
 // static
 std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
+    base::RepeatingCallback<void(const std::string&)> log_callback,
     const media::AudioParameters& params,
     base::CancelableSyncSocket* foreign_socket) {
   base::CheckedNumeric<size_t> memory_size =
       media::ComputeAudioOutputBufferSizeChecked(params);
 
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-  std::unique_ptr<base::CancelableSyncSocket> socket(
-      new base::CancelableSyncSocket());
+  auto shared_memory = std::make_unique<base::SharedMemory>();
+  auto socket = std::make_unique<base::CancelableSyncSocket>();
 
   if (!memory_size.IsValid() ||
       !shared_memory->CreateAndMapAnonymous(memory_size.ValueOrDie()) ||
       !base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
     return nullptr;
   }
-  return std::make_unique<AudioSyncReader>(params, std::move(shared_memory),
+
+  return std::make_unique<AudioSyncReader>(std::move(log_callback), params,
+                                           std::move(shared_memory),
                                            std::move(socket));
 }
 
@@ -173,10 +174,11 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
     // amount of logs.
     if (!had_socket_error_) {
       had_socket_error_ = true;
-      const std::string error_message = "ASR: No room in socket buffer.";
-      PLOG(WARNING) << error_message;
-      MediaStreamManager::SendMessageToNativeLog(error_message);
-      TRACE_EVENT_INSTANT0("audio", "AudioSyncReader: No room in socket buffer",
+      static const char* socket_send_failure_message =
+          "ASR: No room in socket buffer.";
+      PLOG(WARNING) << socket_send_failure_message;
+      log_callback_.Run(socket_send_failure_message);
+      TRACE_EVENT_INSTANT0("audio", socket_send_failure_message,
                            TRACE_EVENT_SCOPE_THREAD);
     }
   } else {

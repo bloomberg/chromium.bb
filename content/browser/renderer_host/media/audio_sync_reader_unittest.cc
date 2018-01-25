@@ -6,13 +6,14 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,11 +23,14 @@ using ::testing::TestWithParam;
 
 namespace content {
 
+void NoLog(const std::string&) {}
+
 static_assert(
     std::is_unsigned<decltype(
         media::AudioOutputBufferParameters::bitstream_data_size)>::value,
     "If |bitstream_data_size| is ever made signed, add tests for negative "
     "buffer sizes.");
+
 enum OverflowTestCase {
   kZero,
   kNoOverflow,
@@ -44,7 +48,7 @@ class AudioSyncReaderBitstreamTest : public TestWithParam<OverflowTestCase> {
   ~AudioSyncReaderBitstreamTest() override {}
 
  private:
-  TestBrowserThreadBundle threads;
+  base::test::ScopedTaskEnvironment env_;
 };
 
 TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
@@ -57,8 +61,8 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
 
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   std::unique_ptr<media::AudioBus> output_bus = media::AudioBus::Create(params);
-  std::unique_ptr<AudioSyncReader> reader =
-      AudioSyncReader::Create(params, socket.get());
+  std::unique_ptr<AudioSyncReader> reader = AudioSyncReader::Create(
+      base::BindRepeating(&NoLog), params, socket.get());
   const base::SharedMemory* shmem = reader->shared_memory();
   media::AudioOutputBuffer* buffer =
       reinterpret_cast<media::AudioOutputBuffer*>(shmem->memory());
