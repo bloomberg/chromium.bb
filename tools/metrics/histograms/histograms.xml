@@ -58677,7 +58677,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>tdresser@chromium.org</owner>
   <summary>
     Measures Time to Interactive, a metric based on main thread and network
-    heurisitics to approximate the point in time when the page feels interactive
+    heuristics to approximate the point in time when the page feels interactive
     to the user. See https://goo.gl/TFw6xz for detailed explanation. This
     histogram uses First Meaningful Paint as the lower bound for quiescent
     windows.

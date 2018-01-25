@@ -1386,6 +1386,15 @@ be describing additional metrics about the same event.
       start to the time the load event is fired, for main frame documents.
     </summary>
   </metric>
+  <metric name="Experimental.NavigationToInteractive">
+    <summary>
+      Measures Time to Interactive, a metric based on main thread and network
+      heuristics to approximate the point in time when the page feels
+      interactive to the user. See https://goo.gl/TFw6xz for detailed
+      explanation. This histogram uses First Meaningful Paint as the lower bound
+      for quiescent windows. The unit of time is ms.
+    </summary>
+  </metric>
   <metric name="Experimental.PaintTiming.NavigationToFirstMeaningfulPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
