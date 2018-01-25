@@ -54,14 +54,13 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // sandbox host. See
   // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
   // This isn't the full list, values < 32 are reserved for methods called from
-  // Skia.
+  // Skia, and values < 64 are reserved for libc_interceptor.cc.
   enum LinuxSandboxIPCMethods {
-    METHOD_GET_FALLBACK_FONT_FOR_CHAR = 32,
-    METHOD_LOCALTIME = 33,
-    DEPRECATED_METHOD_GET_CHILD_WITH_INODE = 34,
-    METHOD_GET_STYLE_FOR_STRIKE = 35,
-    METHOD_MAKE_SHARED_MEMORY_SEGMENT = 36,
-    METHOD_MATCH_WITH_FALLBACK = 37,
+    METHOD_GET_FALLBACK_FONT_FOR_CHAR = 64,
+    DEPRECATED_METHOD_GET_CHILD_WITH_INODE,
+    METHOD_GET_STYLE_FOR_STRIKE,
+    METHOD_MAKE_SHARED_MEMORY_SEGMENT,
+    METHOD_MATCH_WITH_FALLBACK,
   };
 
   // These form a bitmask which describes the conditions of the Linux sandbox.
