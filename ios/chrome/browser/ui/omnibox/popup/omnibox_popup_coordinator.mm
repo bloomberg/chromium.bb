@@ -70,4 +70,10 @@
   _popupView.reset();
 }
 
+#pragma mark - Property accessor
+
+- (BOOL)hasResults {
+  return self.mediator.hasResults;
+}
+
 @end

@@ -1028,6 +1028,11 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
   return self.view;
 }
 
+- (UIView*)popupParentView {
+  NOTREACHED();
+  return nil;
+}
+
 #pragma mark -
 #pragma mark ToolbarViewDelegate methods.
 

@@ -154,6 +154,10 @@
   return self.viewController.view;
 }
 
+- (UIView*)popupParentView {
+  return self.viewController.view.superview;
+}
+
 #pragma mark - SideSwipeToolbarInteracting
 
 - (UIView*)toolbarView {

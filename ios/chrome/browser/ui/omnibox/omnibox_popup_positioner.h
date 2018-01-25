@@ -11,7 +11,11 @@
 
 // Returns the view the popup is anchored next to. Callers are responsible for
 // adding the popup as a sibling either above or below this view.
+// TODO(crbug.com/788705): Remove this method when removing legacy toolbar.
 - (UIView*)popupAnchorView;
+
+// View to which the popup view should be added as subview.
+- (UIView*)popupParentView;
 
 @end
 

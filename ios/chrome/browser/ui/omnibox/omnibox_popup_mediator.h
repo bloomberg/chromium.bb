@@ -35,6 +35,9 @@ class OmniboxPopupMediatorDelegate {
                         imageFetcher
                        delegate:(OmniboxPopupMediatorDelegate*)delegate;
 
+// Whether the mediator has results to show.
+@property(nonatomic, assign) BOOL hasResults;
+
 - (void)updateMatches:(const AutocompleteResult&)result
         withAnimation:(BOOL)animated;
 
