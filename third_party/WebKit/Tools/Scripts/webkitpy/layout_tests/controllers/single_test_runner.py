@@ -362,7 +362,7 @@ class SingleTestRunner(object):
                 return False
             if not self._is_render_tree(actual) and not self._is_layer_tree(actual):
                 return False
-            processed = actual.replace('LayoutNGBlockFlow', 'LayoutBlockFlow').replace('LayoutNGListItem', 'LayoutListItem')
+            processed = re.sub(r'LayoutNG(BlockFlow|ListItem|TableCell)', r'Layout\1', actual)
             return not self._port.do_text_results_differ(expected, processed)
 
         # LayoutNG name mismatch (e.g., LayoutBlockFlow vs. LayoutNGBlockFlow)
