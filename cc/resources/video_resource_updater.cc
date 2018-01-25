@@ -876,8 +876,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 << media::VideoPixelFormatToString(video_frame->format());
     return external_resources;
   }
-  if (external_resources.type == VideoFrameExternalResources::RGB_RESOURCE)
+  if (external_resources.type == VideoFrameExternalResources::RGB_RESOURCE ||
+      external_resources.type == VideoFrameExternalResources::RGBA_RESOURCE ||
+      external_resources.type ==
+          VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE) {
     resource_color_space = resource_color_space.GetAsFullRangeRGB();
+  }
 
   const size_t num_textures = video_frame->NumTextures();
   for (size_t i = 0; i < num_textures; ++i) {
