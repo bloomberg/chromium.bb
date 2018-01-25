@@ -45,7 +45,7 @@ install_headers(
 pkg.generate(
   name : 'libdrm_nouveau',
   libraries : libdrm_nouveau,
-  subdirs : ['.', 'nouveau'],
+  subdirs : ['.', 'libdrm', 'libdrm/nouveau'],
   version : meson.project_version(),
   requires_private : 'libdrm',
   description : 'Userspace interface to nouveau kernel DRM services',
