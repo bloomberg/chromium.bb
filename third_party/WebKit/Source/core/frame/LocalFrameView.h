@@ -273,7 +273,7 @@ class CORE_EXPORT LocalFrameView final
     return background_attachment_fixed_objects_.size();
   }
   bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
-  void InvalidateBackgroundAttachmentFixedObjects();
+  void InvalidateBackgroundAttachmentFixedDescendants(const LayoutObject&);
 
   void HandleLoadCompleted();
 

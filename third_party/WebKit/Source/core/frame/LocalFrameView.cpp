@@ -1692,8 +1692,12 @@ void LocalFrameView::ScrollContentsIfNeededRecursive() {
       [](LocalFrameView& frame_view) { frame_view.ScrollContentsIfNeeded(); });
 }
 
-void LocalFrameView::InvalidateBackgroundAttachmentFixedObjects() {
+void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendants(
+    const LayoutObject& object) {
   for (const auto& layout_object : background_attachment_fixed_objects_) {
+    if (object != GetLayoutView() && !layout_object->IsDescendantOf(&object))
+      continue;
+
     bool needs_scrolling_contents_layer_invalidation = false;
     if (layout_object->HasLayer()) {
       PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
@@ -1718,6 +1722,9 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedObjects() {
 
 bool LocalFrameView::HasBackgroundAttachmentFixedDescendants(
     const LayoutObject& object) const {
+  if (object == GetLayoutView())
+    return !background_attachment_fixed_objects_.IsEmpty();
+
   for (const auto* potential_descendant :
        background_attachment_fixed_objects_) {
     if (potential_descendant == &object)
@@ -1764,7 +1771,7 @@ bool LocalFrameView::ScrollContentsFastPath(const IntSize& scroll_delta) {
   if (!ContentsInCompositedLayer())
     return false;
 
-  InvalidateBackgroundAttachmentFixedObjects();
+  InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutView());
 
   if (!viewport_constrained_objects_ ||
       viewport_constrained_objects_->IsEmpty()) {
