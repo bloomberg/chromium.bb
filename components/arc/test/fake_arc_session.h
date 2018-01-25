@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_stop_reason.h"
 
@@ -22,9 +20,9 @@ class FakeArcSession : public ArcSession {
   ~FakeArcSession() override;
 
   // ArcSession overrides:
-  void Start(ArcInstanceMode request_mode) override;
+  void StartMiniInstance() override;
+  void RequestUpgrade() override;
   void Stop() override;
-  base::Optional<ArcInstanceMode> GetTargetMode() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
 
@@ -40,6 +38,10 @@ class FakeArcSession : public ArcSession {
   // Emulate Start() is suspended at some phase.
   void SuspendBoot();
 
+  // To emulate the mini-container starting. This can cause a failure if
+  // EnableBootFailureEmulation was called on this instance
+  void EmulateMiniContainerStart();
+
   // Returns true if the session is considered as running.
   bool is_running() const { return running_; }
 
@@ -52,7 +54,7 @@ class FakeArcSession : public ArcSession {
   ArcStopReason boot_failure_reason_;
 
   bool boot_suspended_ = false;
-  base::Optional<ArcInstanceMode> target_mode_;
+  bool upgrade_requested_ = false;
   bool running_ = false;
   bool stop_requested_ = false;
 

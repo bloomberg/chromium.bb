@@ -14,13 +14,14 @@ FakeArcSession::FakeArcSession() = default;
 
 FakeArcSession::~FakeArcSession() = default;
 
-void FakeArcSession::Start(ArcInstanceMode request_mode) {
-  target_mode_ = request_mode;
+void FakeArcSession::StartMiniInstance() {}
+
+void FakeArcSession::RequestUpgrade() {
+  upgrade_requested_ = true;
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
-      observer.OnSessionStopped(boot_failure_reason_, false);
-  } else if (!boot_suspended_ &&
-             target_mode_ == ArcInstanceMode::FULL_INSTANCE) {
+      observer.OnSessionStopped(boot_failure_reason_, false, true);
+  } else if (!boot_suspended_) {
     running_ = true;
   }
 }
@@ -28,10 +29,6 @@ void FakeArcSession::Start(ArcInstanceMode request_mode) {
 void FakeArcSession::Stop() {
   stop_requested_ = true;
   StopWithReason(ArcStopReason::SHUTDOWN);
-}
-
-base::Optional<ArcInstanceMode> FakeArcSession::GetTargetMode() {
-  return target_mode_;
 }
 
 bool FakeArcSession::IsStopRequested() {
@@ -46,7 +43,7 @@ void FakeArcSession::StopWithReason(ArcStopReason reason) {
   bool was_mojo_connected = running_;
   running_ = false;
   for (auto& observer : observer_list_)
-    observer.OnSessionStopped(reason, was_mojo_connected);
+    observer.OnSessionStopped(reason, was_mojo_connected, upgrade_requested_);
 }
 
 void FakeArcSession::EnableBootFailureEmulation(ArcStopReason reason) {
@@ -62,6 +59,17 @@ void FakeArcSession::SuspendBoot() {
   DCHECK(!boot_suspended_);
 
   boot_suspended_ = true;
+}
+
+// TODO(cmtm): Change this function so that it emulates both mini-container
+// startup and upgrade. With this change, we should also be able to get rid of
+// SuspendBoot since RequestUpgrade will no longer notify observers.
+void FakeArcSession::EmulateMiniContainerStart() {
+  if (boot_failure_emulation_enabled_) {
+    for (auto& observer : observer_list_)
+      observer.OnSessionStopped(boot_failure_reason_, false,
+                                upgrade_requested_);
+  }
 }
 
 // static
