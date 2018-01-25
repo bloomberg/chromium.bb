@@ -866,9 +866,6 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
       NOTREACHED();
       return base::string16();
   }
-
-  NOTREACHED();
-  return base::string16();
 }
 
 void SandboxedUnpacker::FailWithPackageError(FailureReason reason) {
