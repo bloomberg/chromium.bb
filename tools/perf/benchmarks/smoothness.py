@@ -162,15 +162,6 @@ class SmoothnessKeySilkCases(_Smoothness):
   def Name(cls):
     return 'smoothness.key_silk_cases'
 
-  def CreateStorySet(self, options):
-    stories = super(SmoothnessKeySilkCases, self).CreateStorySet(options)
-    # Page26 (befamous) is too noisy to be useful; crbug.com/461127
-    to_remove = [story for story in stories
-                 if isinstance(story, page_sets.key_silk_cases.Page26)]
-    for story in to_remove:
-      stories.RemoveStory(story)
-    return stories
-
 
 @benchmark.Owner(emails=['vmiura@chromium.org'])
 class SmoothnessGpuRasterizationTop25(_Smoothness):
