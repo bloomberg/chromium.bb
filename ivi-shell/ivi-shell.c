@@ -67,11 +67,6 @@ struct ivi_shell_surface
 	struct wl_list link;
 };
 
-struct ivi_shell_setting
-{
-	int developermode;
-};
-
 /*
  * Implementation of ivi_surface
  */
@@ -384,16 +379,24 @@ terminate_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 }
 
 static void
-init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
-	       const struct ivi_shell_setting *setting)
+init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell)
 {
+	struct weston_config *config = wet_get_config(compositor);
+	struct weston_config_section *section;
+	int developermode;
+
 	shell->compositor = compositor;
 
 	wl_list_init(&shell->ivi_surface_list);
 
 	weston_layer_init(&shell->input_panel_layer, compositor);
 
-	if (setting->developermode) {
+	section = weston_config_get_section(config, "ivi-shell", NULL, NULL);
+
+	weston_config_section_get_bool(section, "developermode",
+				       &developermode, 0);
+
+	if (developermode) {
 		weston_install_debug_key_binding(compositor, MODIFIER_SUPER);
 
 		weston_compositor_add_key_binding(compositor, KEY_BACKSPACE,
@@ -401,23 +404,6 @@ init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
 						  terminate_binding,
 						  compositor);
 	}
-}
-
-static int
-ivi_shell_setting_create(struct ivi_shell_setting *dest,
-			 struct weston_compositor *compositor,
-			 int *argc, char *argv[])
-{
-	int result = 0;
-	struct weston_config *config = wet_get_config(compositor);
-	struct weston_config_section *section;
-
-	section = weston_config_get_section(config, "ivi-shell", NULL, NULL);
-
-	weston_config_section_get_bool(section, "developermode",
-				       &dest->developermode, 0);
-
-	return result;
 }
 
 static void
@@ -483,17 +469,13 @@ wet_shell_init(struct weston_compositor *compositor,
 	       int *argc, char *argv[])
 {
 	struct ivi_shell *shell;
-	struct ivi_shell_setting setting = { };
 	int retval = -1;
 
 	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
 		return -1;
 
-	if (ivi_shell_setting_create(&setting, compositor, argc, argv) != 0)
-		return -1;
-
-	init_ivi_shell(compositor, shell, &setting);
+	init_ivi_shell(compositor, shell);
 
 	shell->destroy_listener.notify = shell_destroy;
 	wl_signal_add(&compositor->destroy_signal, &shell->destroy_listener);
