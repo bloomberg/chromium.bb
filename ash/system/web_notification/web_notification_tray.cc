@@ -92,10 +92,6 @@ class WebNotificationBubbleWrapper {
     init_params.max_height = bubble->max_height();
     init_params.bg_color = SkColorSetRGB(0xe7, 0xe7, 0xe7);
     init_params.show_by_click = show_by_click;
-    // The tray bubble widget is not activated by default (a user has to click
-    // somewhere on the notification), so |close_on_deactivate| does not work
-    // as intended. TrayBubbleWrapper takes care of it.
-    init_params.close_on_deactivate = false;
 
     views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
@@ -383,7 +379,8 @@ bool WebNotificationTray::ShowMessageCenter(bool show_by_click) {
 }
 
 void WebNotificationTray::HideMessageCenter() {
-  if (!IsMessageCenterVisible())
+  if ((switches::IsSidebarEnabled() && !IsMessageCenterVisible()) ||
+      (!switches::IsSidebarEnabled() && !message_center_bubble()))
     return;
 
   SetIsActive(false);
@@ -435,9 +432,6 @@ bool WebNotificationTray::IsMessageCenterVisible() const {
             ->sidebar();
     return sidebar && sidebar->IsVisible();
   } else {
-    DCHECK(!message_center_bubble() ||
-           message_center_bubble()->bubble()->IsVisible());
-
     return message_center_bubble() &&
            message_center_bubble()->bubble()->IsVisible();
   }
