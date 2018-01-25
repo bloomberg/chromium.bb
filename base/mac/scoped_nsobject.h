@@ -85,12 +85,12 @@ class scoped_nsprotocol
   using Traits = internal::ScopedNSProtocolTraits<NST>;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
-  explicit scoped_nsprotocol(
+  explicit constexpr scoped_nsprotocol(
       NST object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : ScopedTypeRef<NST, Traits>(object, policy) {}
 #else
-  explicit scoped_nsprotocol(NST object = Traits::InvalidValue())
+  explicit constexpr scoped_nsprotocol(NST object = Traits::InvalidValue())
       : ScopedTypeRef<NST, Traits>(object, base::scoped_policy::RETAIN) {}
 #endif
 
@@ -149,12 +149,12 @@ class scoped_nsobject : public scoped_nsprotocol<NST*> {
   using Traits = typename scoped_nsprotocol<NST*>::Traits;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
-  explicit scoped_nsobject(
+  explicit constexpr scoped_nsobject(
       NST* object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : scoped_nsprotocol<NST*>(object, policy) {}
 #else
-  explicit scoped_nsobject(NST* object = Traits::InvalidValue())
+  explicit constexpr scoped_nsobject(NST* object = Traits::InvalidValue())
       : scoped_nsprotocol<NST*>(object) {}
 #endif
 
@@ -198,12 +198,12 @@ class scoped_nsobject<id> : public scoped_nsprotocol<id> {
   using Traits = typename scoped_nsprotocol<id>::Traits;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
-  explicit scoped_nsobject(
+  explicit constexpr scoped_nsobject(
       id object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : scoped_nsprotocol<id>(object, policy) {}
 #else
-  explicit scoped_nsobject(id object = Traits::InvalidValue())
+  explicit constexpr scoped_nsobject(id object = Traits::InvalidValue())
       : scoped_nsprotocol<id>(object) {}
 #endif
 

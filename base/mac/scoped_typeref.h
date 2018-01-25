@@ -53,7 +53,7 @@ class ScopedTypeRef {
  public:
   typedef T element_type;
 
-  explicit ScopedTypeRef(
+  explicit constexpr ScopedTypeRef(
       __unsafe_unretained T object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : object_(object) {
