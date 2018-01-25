@@ -29,13 +29,9 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
 typedef GalleryBrowserTestBase<NOT_IN_GUEST_MODE> GalleryBrowserTest;
 typedef GalleryBrowserTestBase<IN_GUEST_MODE> GalleryBrowserTestInGuestMode;
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_OpenSingleImageOnDownloads DISABLED_OpenSingleImageOnDownloads
-#else
-#define MAYBE_OpenSingleImageOnDownloads OpenSingleImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_OpenSingleImageOnDownloads) {
+// http://crbug.com/804413
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       DISABLED_OpenSingleImageOnDownloads) {
   set_test_case_name("openSingleImageOnDownloads");
   StartTest();
 }
@@ -550,13 +546,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_StopStartSlideshowOnDrive DISABLED_StopStartSlideshowOnDrive
-#else
-#define MAYBE_StopStartSlideshowOnDrive StopStartSlideshowOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_StopStartSlideshowOnDrive) {
+// http://crbug.com/804413
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_StopStartSlideshowOnDrive) {
   set_test_case_name("stopStartSlideshowOnDrive");
   StartTest();
 }
