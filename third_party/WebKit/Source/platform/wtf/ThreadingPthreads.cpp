@@ -204,7 +204,7 @@ ThreadCondition::~ThreadCondition() {
   pthread_cond_destroy(&condition_);
 }
 
-void ThreadCondition::Wait(MutexBase& mutex) {
+void ThreadCondition::Wait(Mutex& mutex) {
   PlatformMutex& platform_mutex = mutex.Impl();
   int result = pthread_cond_wait(&condition_, &platform_mutex.internal_mutex_);
   DCHECK_EQ(result, 0);
@@ -213,7 +213,7 @@ void ThreadCondition::Wait(MutexBase& mutex) {
 #endif
 }
 
-bool ThreadCondition::TimedWait(MutexBase& mutex, double absolute_time) {
+bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
   if (absolute_time < CurrentTime())
     return false;
 
