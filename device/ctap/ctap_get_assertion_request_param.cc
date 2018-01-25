@@ -8,7 +8,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_writer.h"
-#include "device/ctap/ctap_request_command.h"
+#include "device/ctap/ctap_constants.h"
 
 namespace device {
 
@@ -48,17 +48,44 @@ CTAPGetAssertionRequestParam::SerializeToCBOR() const {
     cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(*pin_protocol_);
   }
 
+  auto user_presence = user_presence_required_
+                           ? cbor::CBORValue::SimpleValue::TRUE_VALUE
+                           : cbor::CBORValue::SimpleValue::FALSE_VALUE;
+  auto user_verification = user_verification_required_
+                               ? cbor::CBORValue::SimpleValue::TRUE_VALUE
+                               : cbor::CBORValue::SimpleValue::FALSE_VALUE;
+
+  cbor::CBORValue::MapValue option_map;
+  option_map[cbor::CBORValue(kUserPresenceMapKey)] =
+      cbor::CBORValue(user_presence);
+  option_map[cbor::CBORValue(kUserVerificationMapKey)] =
+      cbor::CBORValue(user_verification);
+  cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
+
   auto serialized_param =
       cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
-  if (!serialized_param) {
+  if (!serialized_param)
     return base::nullopt;
-  }
 
   std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
       CTAPRequestCommand::kAuthenticatorGetAssertion)});
   cbor_request.insert(cbor_request.end(), serialized_param->begin(),
                       serialized_param->end());
   return cbor_request;
+}
+
+CTAPGetAssertionRequestParam&
+CTAPGetAssertionRequestParam::SetUserVerificationRequired(
+    bool user_verification_required) {
+  user_verification_required_ = user_verification_required;
+  return *this;
+}
+
+CTAPGetAssertionRequestParam&
+CTAPGetAssertionRequestParam::SetUserPresenceRequired(
+    bool user_presence_required) {
+  user_presence_required_ = user_presence_required;
+  return *this;
 }
 
 CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::SetAllowList(
