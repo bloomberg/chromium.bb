@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef GPU_COMMAND_BUFFER_CLIENT_COMMAND_BUFFER_DIRECT_LOCKED_H_
+#define GPU_COMMAND_BUFFER_CLIENT_COMMAND_BUFFER_DIRECT_LOCKED_H_
+
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 
 namespace gpu {
@@ -50,3 +53,5 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
 };
 
 }  // namespace gpu
+
+#endif  // GPU_COMMAND_BUFFER_CLIENT_COMMAND_BUFFER_DIRECT_LOCKED_H_

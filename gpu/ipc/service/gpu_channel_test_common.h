@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef GPU_IPC_SERVICE_GPU_CHANNEL_TEST_COMMON_H_
+#define GPU_IPC_SERVICE_GPU_CHANNEL_TEST_COMMON_H_
+
 #include <memory>
 
 #include "base/memory/ref_counted.h"
@@ -50,3 +53,5 @@ class GpuChannelTestCommon : public testing::Test {
 };
 
 }  // namespace gpu
+
+#endif  // GPU_IPC_SERVICE_GPU_CHANNEL_TEST_COMMON_H_

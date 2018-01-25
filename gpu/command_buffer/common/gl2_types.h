@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef GPU_COMMAND_BUFFER_COMMON_GL2_TYPES_H_
+#define GPU_COMMAND_BUFFER_COMMON_GL2_TYPES_H_
+
 #include <KHR/khrplatform.h>
 
 // GL types are forward declared to avoid including the GL headers. The problem
@@ -28,3 +31,5 @@ typedef khronos_ssize_t GLsizeiptr;
 typedef struct __GLsync* GLsync;
 typedef int64_t GLint64;
 typedef uint64_t GLuint64;
+
+#endif  // GPU_COMMAND_BUFFER_COMMON_GL2_TYPES_H_
