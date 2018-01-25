@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace jingle_glue {
 
@@ -209,7 +209,8 @@ int FakeSSLClientSocket::DoSendClientHello() {
   int status = transport_socket_->Write(
       write_buf_.get(), write_buf_->BytesRemaining(),
       base::Bind(&FakeSSLClientSocket::OnSendClientHelloDone,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   if (status < net::OK) {
     return status;
   }

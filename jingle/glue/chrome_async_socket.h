@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
 
 namespace net {
@@ -36,7 +37,8 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   ChromeAsyncSocket(
       ResolvingClientSocketFactory* resolving_client_socket_factory,
       size_t read_buf_size,
-      size_t write_buf_size);
+      size_t write_buf_size,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Does not raise any signals.
   ~ChromeAsyncSocket() override;
@@ -202,6 +204,11 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   AsyncIOState write_state_;
   scoped_refptr<net::IOBufferWithSize> write_buf_;
   size_t write_end_;
+
+  // Network traffic annotation for downstream socket write. ChromeAsyncSocket
+  // is not reused, hence annotation can be added in constructor and used in all
+  // subsequent writes.
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<ChromeAsyncSocket> weak_ptr_factory_;
 
