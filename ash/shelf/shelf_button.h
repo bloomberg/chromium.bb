@@ -90,12 +90,12 @@ class ASH_EXPORT ShelfButton : public views::Button {
   bool ShouldEnterPushedState(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   void NotifyClick(const ui::Event& event) override;
-  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Sets the icon image with a shadow.
   void SetShadowedImage(const gfx::ImageSkia& bitmap);
 
  private:
+  class AppNotificationIndicatorView;
   class AppStatusIndicatorView;
 
   // Updates the parts of the button to reflect the current |state_| and
@@ -120,6 +120,10 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // Draws an indicator underneath the image to represent the state of the
   // application.
   AppStatusIndicatorView* indicator_;
+
+  // Draws an indicator in the top right corner of the image to represent an
+  // active notification.
+  AppNotificationIndicatorView* notification_indicator_;
 
   // The current application state, a bitfield of State enum values.
   int state_;
