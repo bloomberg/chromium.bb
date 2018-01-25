@@ -41,6 +41,21 @@
                         }];
 }
 
+#pragma mark - AdaptiveToolbarViewController
+
+- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
+  [super updateForSideSwipeSnapshotOnNTP:onNTP];
+  if (!onNTP)
+    return;
+
+  self.view.locationBarContainer.hidden = YES;
+}
+
+- (void)resetAfterSideSwipeSnapshot {
+  [super resetAfterSideSwipeSnapshot];
+  self.view.locationBarContainer.hidden = NO;
+}
+
 #pragma mark - UIViewController
 
 - (void)loadView {

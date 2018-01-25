@@ -131,7 +131,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
 @synthesize inSwipe = inSwipe_;
 @synthesize swipeDelegate = swipeDelegate_;
-@synthesize toolbarInteractionHandler = _toolbarInteractionHandler;
+@synthesize primaryToolbarInteractionHandler =
+    _primaryToolbarInteractionHandler;
+@synthesize secondaryToolbarSnapshotProvider =
+    _secondaryToolbarSnapshotProvider;
 @synthesize snapshotDelegate = snapshotDelegate_;
 @synthesize tabStripDelegate = tabStripDelegate_;
 
@@ -235,14 +238,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // edges, which will happen frequently with edge swipes from the right side.
   // Since the toolbar and the contentView can overlap, check the toolbar frame
   // first, and confirm the right gesture recognizer is firing.
-  CGRect toolbarFrame =
-      CGRectInset([self.toolbarInteractionHandler toolbarView].frame, -1, -1);
+  CGRect toolbarFrame = CGRectInset(
+      [self.primaryToolbarInteractionHandler toolbarView].frame, -1, -1);
   if (CGRectContainsPoint(toolbarFrame, location)) {
     if (![gesture isEqual:panGestureRecognizer_]) {
       return NO;
     }
 
-    return [self.toolbarInteractionHandler canBeginToolbarSwipe];
+    return [self.primaryToolbarInteractionHandler canBeginToolbarSwipe];
   }
 
   // Otherwise, only allow contentView touches with |swipeGestureRecognizer_|.
@@ -448,8 +451,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         rotateForward:[currentContentProvider_ rotateForwardIcon]];
     [pageSideSwipeView_ setTargetView:[swipeDelegate_ sideSwipeContentView]];
 
-    [gesture.view insertSubview:pageSideSwipeView_
-                   belowSubview:[self.toolbarInteractionHandler toolbarView]];
+    [gesture.view
+        insertSubview:pageSideSwipeView_
+         belowSubview:[self.primaryToolbarInteractionHandler toolbarView]];
   }
 
   __weak Tab* weakCurrentTab = [model_ currentTab];
@@ -508,8 +512,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       tabSideSwipeView_ = [[CardSideSwipeView alloc] initWithFrame:frame
                                                          topMargin:headerHeight
                                                              model:model_];
-      tabSideSwipeView_.toolbarInteractionHandler =
-          self.toolbarInteractionHandler;
+      tabSideSwipeView_.topToolbarSnapshotProvider =
+          self.primaryToolbarInteractionHandler;
+      tabSideSwipeView_.bottomToolbarSnapshotProvider =
+          self.secondaryToolbarSnapshotProvider;
+
       [tabSideSwipeView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                              UIViewAutoresizingFlexibleHeight];
       [tabSideSwipeView_ setDelegate:swipeDelegate_];

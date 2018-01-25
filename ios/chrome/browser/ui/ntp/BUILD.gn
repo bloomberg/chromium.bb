@@ -78,6 +78,18 @@ source_set("ntp_controller") {
   ]
 }
 
+source_set("util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ntp_util.h",
+    "ntp_util.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser",
+    "//ios/web/public",
+  ]
+}
+
 source_set("ntp_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

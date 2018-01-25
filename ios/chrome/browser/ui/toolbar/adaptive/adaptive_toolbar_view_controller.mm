@@ -35,6 +35,18 @@
 @synthesize dispatcher = _dispatcher;
 @synthesize loading = _loading;
 
+#pragma mark - Public
+
+- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
+  self.view.progressBar.hidden = YES;
+  // TODO(crbug.com/804848): Have the correct appearance on NTP.
+  // TODO(crbug.com/804850): Have the correct background color for incognito
+  // NTP.
+}
+
+- (void)resetAfterSideSwipeSnapshot {
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidAppear:(BOOL)animated {

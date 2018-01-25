@@ -10,12 +10,19 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_type.h"
 
 @class ToolbarButtonFactory;
+namespace web {
+class WebState;
+}
 
 // Protected interface of the AdaptiveToolbarCoordinator.
 @interface AdaptiveToolbarCoordinator (Subclassing)
 
 // Returns a button factory
 - (ToolbarButtonFactory*)buttonFactoryWithType:(ToolbarType)type;
+
+- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState;
+
+- (void)resetToolbarAfterSideSwipeSnapshot;
 
 @end
 

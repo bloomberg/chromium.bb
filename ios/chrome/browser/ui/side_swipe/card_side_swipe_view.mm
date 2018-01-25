@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
-#include "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
+#import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -49,17 +49,20 @@ const CGFloat kResizeFactor = 4;
 
 @interface SwipeView ()
 
+@property(nonatomic, strong) UIImageView* topToolbarSnapshot;
+@property(nonatomic, strong) UIImageView* bottomToolbarSnapshot;
+
 @property CGFloat topMargin;
-@property NSLayoutConstraint* toolbarHeightConstraint;
 @property NSLayoutConstraint* toolbarTopConstraint;
 
 @end
 
 @implementation SwipeView
 
+@synthesize topToolbarSnapshot = _topToolbarSnapshot;
+@synthesize bottomToolbarSnapshot = _bottomToolbarSnapshot;
 @synthesize topMargin = _topMargin;
 @synthesize toolbarTopConstraint = _toolbarTopConstraint;
-@synthesize toolbarHeightConstraint = _toolbarHeightConstraint;
 
 - (id)initWithFrame:(CGRect)frame topMargin:(CGFloat)topMargin {
   self = [super initWithFrame:frame];
@@ -71,8 +74,11 @@ const CGFloat kResizeFactor = 4;
     [image_ setContentMode:UIViewContentModeScaleAspectFill];
     [self addSubview:image_];
 
-    toolbarHolder_ = [[UIImageView alloc] initWithFrame:CGRectZero];
-    [self addSubview:toolbarHolder_];
+    _topToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [self addSubview:_topToolbarSnapshot];
+
+    _bottomToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
+    [self addSubview:_bottomToolbarSnapshot];
 
     shadowView_ = [[UIImageView alloc] initWithFrame:self.bounds];
     [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
@@ -88,21 +94,21 @@ const CGFloat kResizeFactor = 4;
                                  constraintEqualToAnchor:self.trailingAnchor]];
     }
 
-    _toolbarTopConstraint =
-        [[toolbarHolder_ topAnchor] constraintEqualToAnchor:self.topAnchor
-                                                   constant:-StatusBarHeight()];
-    _toolbarHeightConstraint = [[toolbarHolder_ heightAnchor]
-        constraintEqualToConstant:topMargin + StatusBarHeight()];
+    _toolbarTopConstraint = [[_topToolbarSnapshot topAnchor]
+        constraintEqualToAnchor:self.topAnchor
+                       constant:-StatusBarHeight()];
 
     [constraints addObjectsFromArray:@[
       [[image_ topAnchor] constraintEqualToAnchor:self.topAnchor
                                          constant:topMargin],
       [[image_ bottomAnchor] constraintEqualToAnchor:self.bottomAnchor],
-      _toolbarTopConstraint, _toolbarHeightConstraint,
+      _toolbarTopConstraint,
       [[shadowView_ topAnchor] constraintEqualToAnchor:self.topAnchor
                                               constant:topMargin],
       [[shadowView_ heightAnchor]
-          constraintEqualToConstant:kNewTabPageShadowHeight]
+          constraintEqualToConstant:kNewTabPageShadowHeight],
+      [_bottomToolbarSnapshot.bottomAnchor
+          constraintEqualToAnchor:self.bottomAnchor],
     ]];
 
     [NSLayoutConstraint activateConstraints:constraints];
@@ -133,13 +139,17 @@ const CGFloat kResizeFactor = 4;
   [self updateImageBoundsAndZoom];
 }
 
-- (void)setToolbarImage:(UIImage*)image isNewTabPage:(BOOL)isNewTabPage {
-  [toolbarHolder_ setImage:image];
+- (void)setTopToolbarImage:(UIImage*)image isNewTabPage:(BOOL)isNewTabPage {
+  [self.topToolbarSnapshot setImage:image];
   // Update constraints as StatusBarHeight changes depending on orientation.
   self.toolbarTopConstraint.constant = -StatusBarHeight();
-  self.toolbarHeightConstraint.constant = self.topMargin + StatusBarHeight();
-  [toolbarHolder_ setNeedsLayout];
+  [self.topToolbarSnapshot setNeedsLayout];
   [shadowView_ setHidden:isNewTabPage];
+}
+
+- (void)setBottomToolbarImage:(UIImage*)image {
+  [self.bottomToolbarSnapshot setImage:image];
+  [self.bottomToolbarSnapshot setNeedsLayout];
 }
 
 @end
@@ -161,7 +171,8 @@ const CGFloat kResizeFactor = 4;
 
 @synthesize backgroundTopConstraint = _backgroundTopConstraint_;
 @synthesize delegate = delegate_;
-@synthesize toolbarInteractionHandler = toolbarInteractionHandler_;
+@synthesize topToolbarSnapshotProvider = topToolbarSnapshotProvider_;
+@synthesize bottomToolbarSnapshotProvider = _bottomToolbarSnapshotProvider;
 @synthesize topMargin = topMargin_;
 
 - (id)initWithFrame:(CGRect)frame
@@ -257,9 +268,12 @@ const CGFloat kResizeFactor = 4;
   Tab* tab = [model_ tabAtIndex:index];
   BOOL isNTP =
       tab.webState->GetLastCommittedURL().host_piece() == kChromeUINewTabHost;
-  UIImage* toolbarView =
-      [self.toolbarInteractionHandler toolbarSideSwipeSnapshotForTab:tab];
-  [card setToolbarImage:toolbarView isNewTabPage:isNTP];
+  UIImage* topToolbarSnapshot =
+      [self.topToolbarSnapshotProvider toolbarSideSwipeSnapshotForTab:tab];
+  [card setTopToolbarImage:topToolbarSnapshot isNewTabPage:isNTP];
+  UIImage* bottomToolbarSnapshot =
+      [self.bottomToolbarSnapshotProvider toolbarSideSwipeSnapshotForTab:tab];
+  [card setBottomToolbarImage:bottomToolbarSnapshot];
 
   // Converting snapshotted images to grey takes too much time for single core
   // devices.  Instead, show the colored image for single core devices and the
@@ -421,8 +435,10 @@ const CGFloat kResizeFactor = 4;
       completion:^(BOOL finished) {
         [leftCard_ setImage:nil];
         [rightCard_ setImage:nil];
-        [leftCard_ setToolbarImage:nil isNewTabPage:NO];
-        [rightCard_ setToolbarImage:nil isNewTabPage:NO];
+        [leftCard_ setTopToolbarImage:nil isNewTabPage:NO];
+        [rightCard_ setTopToolbarImage:nil isNewTabPage:NO];
+        [leftCard_ setBottomToolbarImage:nil];
+        [rightCard_ setBottomToolbarImage:nil];
         [delegate_ sideSwipeViewDismissAnimationDidEnd:self];
       }];
 }
