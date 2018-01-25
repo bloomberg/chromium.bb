@@ -64,7 +64,8 @@ constexpr gfx::Size kLargeImageMinSize(328, 0);
 constexpr gfx::Size kLargeImageMaxSize(328, 218);
 constexpr gfx::Insets kLeftContentPadding(2, 4, 0, 4);
 constexpr gfx::Insets kLeftContentPaddingWithIcon(2, 4, 0, 12);
-constexpr gfx::Insets kNotificationInputPadding(0, 16, 0, 16);
+constexpr gfx::Insets kInputTextfieldPadding(16, 16, 16, 0);
+constexpr gfx::Insets kInputReplyButtonPadding(0, 14, 0, 14);
 constexpr gfx::Insets kSettingsRowPadding(8, 0, 0, 0);
 constexpr gfx::Insets kSettingsRadioButtonPadding(14, 18, 14, 18);
 constexpr gfx::Insets kSettingsButtonRowPadding(8);
@@ -85,10 +86,18 @@ const SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 const SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
 const SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
 
-// The text color and the background color of inline reply input field.
+// The background color of inline reply input field.
+const SkColor kInputContainerBackgroundColor = SkColorSetRGB(0x33, 0x67, 0xD6);
+
+// The text color of inline reply input field.
 const SkColor kInputTextColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 const SkColor kInputPlaceholderColor = SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
-const SkColor kInputBackgroundColor = SkColorSetRGB(0x33, 0x67, 0xD6);
+
+// The icon color of inline reply input field.
+const SkColor kInputReplyButtonColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+
+// The icon size of inline reply input field.
+constexpr int kInputReplyButtonSize = 20;
 
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
@@ -144,6 +153,20 @@ class ClickActivator : public ui::EventHandler {
   NotificationViewMD* const owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickActivator);
+};
+
+class NotificationInputReplyButtonMD : public views::ImageView {
+ public:
+  NotificationInputReplyButtonMD() {
+    SetImage(gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
+                                   kInputReplyButtonSize,
+                                   kInputReplyButtonColor));
+    SetBorder(views::CreateEmptyBorder(kInputReplyButtonPadding));
+  }
+  ~NotificationInputReplyButtonMD() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NotificationInputReplyButtonMD);
 };
 
 }  // anonymous namespace
@@ -356,21 +379,22 @@ NotificationButtonMD::CreateInkDropHighlight() const {
   return highlight;
 }
 
-// NotificationInputMD /////////////////////////////////////////////////////////
+// NotificationInputTextfieldMD ////////////////////////////////////////////////
 
-NotificationInputMD::NotificationInputMD(NotificationInputDelegate* delegate)
+NotificationInputTextfieldMD::NotificationInputTextfieldMD(
+    NotificationInputDelegate* delegate)
     : delegate_(delegate), index_(0) {
   set_controller(this);
   SetTextColor(kInputTextColor);
-  SetBackgroundColor(kInputBackgroundColor);
+  SetBackgroundColor(SK_ColorTRANSPARENT);
   set_placeholder_text_color(kInputPlaceholderColor);
-  SetBorder(views::CreateEmptyBorder(kNotificationInputPadding));
+  SetBorder(views::CreateEmptyBorder(kInputTextfieldPadding));
 }
 
-NotificationInputMD::~NotificationInputMD() = default;
+NotificationInputTextfieldMD::~NotificationInputTextfieldMD() = default;
 
-bool NotificationInputMD::HandleKeyEvent(views::Textfield* sender,
-                                         const ui::KeyEvent& event) {
+bool NotificationInputTextfieldMD::HandleKeyEvent(views::Textfield* sender,
+                                                  const ui::KeyEvent& event) {
   if (event.type() == ui::ET_KEY_PRESSED &&
       event.key_code() == ui::VKEY_RETURN) {
     delegate_->OnNotificationInputSubmit(index_, text());
@@ -379,7 +403,8 @@ bool NotificationInputMD::HandleKeyEvent(views::Textfield* sender,
   return event.type() == ui::ET_KEY_RELEASED;
 }
 
-void NotificationInputMD::set_placeholder(const base::string16& placeholder) {
+void NotificationInputTextfieldMD::set_placeholder(
+    const base::string16& placeholder) {
   if (placeholder.empty()) {
     set_placeholder_text(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_INLINE_REPLY_PLACEHOLDER));
@@ -387,6 +412,24 @@ void NotificationInputMD::set_placeholder(const base::string16& placeholder) {
     set_placeholder_text(placeholder);
   }
 }
+
+// NotificationInputContainerMD ////////////////////////////////////////////////
+
+NotificationInputContainerMD::NotificationInputContainerMD(
+    NotificationInputDelegate* delegate)
+    : textfield_(new NotificationInputTextfieldMD(delegate)),
+      button_(new NotificationInputReplyButtonMD()) {
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+  SetBackground(views::CreateSolidBackground(kInputContainerBackgroundColor));
+
+  AddChildView(textfield_);
+  layout->SetFlexForView(textfield_, 1);
+
+  AddChildView(button_);
+}
+
+NotificationInputContainerMD::~NotificationInputContainerMD() = default;
 
 // InlineSettingsRadioButton ///////////////////////////////////////////////////
 
@@ -511,10 +554,9 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   action_buttons_row_->SetVisible(false);
   actions_row_->AddChildView(action_buttons_row_);
 
-  // |inline_reply_| is a textfield for inline reply.
-  inline_reply_ = new NotificationInputMD(this);
+  // |inline_reply_| is a container for an inline textfield.
+  inline_reply_ = new NotificationInputContainerMD(this);
   inline_reply_->SetVisible(false);
-
   actions_row_->AddChildView(inline_reply_);
 
   CreateOrUpdateViews(notification);
@@ -667,8 +709,10 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
     if (sender != action_buttons_[i])
       continue;
     if (action_buttons_[i]->is_inline_reply()) {
-      inline_reply_->set_index(i);
-      inline_reply_->set_placeholder(action_buttons_[i]->placeholder());
+      inline_reply_->textfield()->set_index(i);
+      inline_reply_->textfield()->set_placeholder(
+          action_buttons_[i]->placeholder());
+      inline_reply_->textfield()->RequestFocus();
       inline_reply_->SetVisible(true);
       action_buttons_row_->SetVisible(false);
       Layout();

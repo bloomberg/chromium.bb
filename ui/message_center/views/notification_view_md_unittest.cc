@@ -501,7 +501,8 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   generator.ClickLeftButton();
   generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->inline_reply_->visible());
-  EXPECT_TRUE(notification_view()->inline_reply_->HasFocus());
+  EXPECT_TRUE(notification_view()->inline_reply_->textfield()->visible());
+  EXPECT_TRUE(notification_view()->inline_reply_->textfield()->HasFocus());
 
   // Type the text and submit.
   ui::KeyboardCode keycodes[] = {ui::VKEY_T, ui::VKEY_E, ui::VKEY_S, ui::VKEY_T,
