@@ -68,8 +68,9 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     scoped_refptr<WebRtcMediaStreamAdapterMap> map =
         new WebRtcMediaStreamAdapterMap(
-            dependency_factory_.get(),
-            new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get()));
+            dependency_factory_.get(), main_thread_,
+            new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
+                                                 main_thread_));
     observer_ = new WebRtcSetRemoteDescriptionObserverForTest();
     observer_handler_ = WebRtcSetRemoteDescriptionObserverHandler::Create(
         main_thread_, pc_, map, observer_);

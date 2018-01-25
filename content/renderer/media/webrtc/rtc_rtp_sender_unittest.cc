@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/webrtc/api/test/mock_rtpsender.h"
 
@@ -33,10 +34,11 @@ class RTCRtpSenderTest : public ::testing::Test {
  public:
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
-    main_thread_ = base::ThreadTaskRunnerHandle::Get();
+    main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     stream_map_ = new WebRtcMediaStreamAdapterMap(
-        dependency_factory_.get(),
-        new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get()));
+        dependency_factory_.get(), main_thread_,
+        new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
+                                             main_thread_));
     mock_webrtc_sender_ = new rtc::RefCountedObject<webrtc::MockRtpSender>();
   }
 

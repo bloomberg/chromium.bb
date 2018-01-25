@@ -78,6 +78,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapterMap
   // Must be invoked on the main thread.
   WebRtcMediaStreamAdapterMap(
       PeerConnectionDependencyFactory* const factory,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map);
 
   // Gets a new reference to the local stream adapter, or null if no such

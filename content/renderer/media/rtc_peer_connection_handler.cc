@@ -1302,10 +1302,12 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       is_closed_(false),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
-          new WebRtcMediaStreamTrackAdapterMap(dependency_factory_)),
+          new WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
+                                               task_runner)),
       stream_adapter_map_(new WebRtcMediaStreamAdapterMap(dependency_factory_,
+                                                          task_runner,
                                                           track_adapter_map_)),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   CHECK(client_);
   GetPeerConnectionHandlers()->insert(this);

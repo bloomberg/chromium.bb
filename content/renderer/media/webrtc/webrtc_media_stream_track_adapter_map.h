@@ -71,7 +71,8 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
   // Must be invoked on the main thread.
   WebRtcMediaStreamTrackAdapterMap(
-      PeerConnectionDependencyFactory* const factory);
+      PeerConnectionDependencyFactory* const factory,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread);
 
   // Gets a new reference to the local track adapter, or null if no such adapter
   // was found. When all references are destroyed the adapter is disposed and
