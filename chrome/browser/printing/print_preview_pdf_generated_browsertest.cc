@@ -369,8 +369,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
 
       total_height_in_pixels += height_in_pixels;
       gfx::Rect rect(width_in_pixels, height_in_pixels);
-      PdfRenderSettings settings(rect, gfx::Point(0, 0), kDpi, true,
-                                 PdfRenderSettings::Mode::NORMAL);
+      PdfRenderSettings settings(rect, gfx::Point(0, 0), gfx::Size(kDpi, kDpi),
+                                 true, PdfRenderSettings::Mode::NORMAL);
 
       int int_max = std::numeric_limits<int>::max();
       if (settings.area.width() > int_max / kColorChannels ||
@@ -386,7 +386,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
           pdf_data.data(), pdf_data.size(), i, page_bitmap_data.data(),
           settings.area.size().width(), settings.area.size().height(),
-          settings.dpi, settings.autorotate));
+          settings.dpi.width(), settings.dpi.height(), settings.autorotate));
       FillPng(&page_bitmap_data, width_in_pixels, max_width_in_pixels,
               settings.area.size().height());
       bitmap_data.insert(bitmap_data.end(),

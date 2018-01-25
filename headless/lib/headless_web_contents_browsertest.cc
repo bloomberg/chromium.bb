@@ -494,14 +494,14 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
 
       gfx::Rect rect(kPaperWidth * kDpi, kPaperHeight * kDpi);
       printing::PdfRenderSettings settings(
-          rect, gfx::Point(0, 0), kDpi, true,
+          rect, gfx::Point(0, 0), gfx::Size(kDpi, kDpi), true,
           printing::PdfRenderSettings::Mode::NORMAL);
       std::vector<uint8_t> page_bitmap_data(kColorChannels *
                                             settings.area.size().GetArea());
       EXPECT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
           pdf_data.data(), pdf_data.size(), i, page_bitmap_data.data(),
           settings.area.size().width(), settings.area.size().height(),
-          settings.dpi, settings.autorotate));
+          settings.dpi.width(), settings.dpi.height(), settings.autorotate));
       EXPECT_EQ(0x56, page_bitmap_data[0]);  // B
       EXPECT_EQ(0x34, page_bitmap_data[1]);  // G
       EXPECT_EQ(0x12, page_bitmap_data[2]);  // R

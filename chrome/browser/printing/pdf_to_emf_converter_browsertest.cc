@@ -107,7 +107,8 @@ IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestSuccess) {
 
   // A4 page format.
   PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 1700, 2200), gfx::Point(0, 0),
-                                 /*dpi=*/200, /*autorotate=*/false,
+                                 /*dpi=*/gfx::Size(200, 200),
+                                 /*autorotate=*/false,
                                  PdfRenderSettings::Mode::NORMAL);
 
   constexpr int kNumberOfPages = 3;

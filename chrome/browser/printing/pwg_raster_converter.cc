@@ -253,18 +253,31 @@ std::unique_ptr<PwgRasterConverter> PwgRasterConverter::CreateDefault() {
 PdfRenderSettings PwgRasterConverter::GetConversionSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
     const gfx::Size& page_size) {
-  int dpi = kDefaultPdfDpi;
+  gfx::Size dpi = gfx::Size(kDefaultPdfDpi, kDefaultPdfDpi);
   cloud_devices::printer::DpiCapability dpis;
   if (dpis.LoadFrom(printer_capabilities))
-    dpi = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
+    dpi = gfx::Size(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
 
-  const double scale = static_cast<double>(dpi) / kPointsPerInch;
+  bool page_is_landscape =
+      static_cast<double>(page_size.width()) / dpi.width() >
+      static_cast<double>(page_size.height()) / dpi.height();
+
+  // Pdfium assumes that page width is given in dpi.width(), and height in
+  // dpi.height(). If we rotate the page, we need to also swap the DPIs.
+  gfx::Size final_page_size = page_size;
+  if (page_is_landscape) {
+    final_page_size = gfx::Size(page_size.height(), page_size.width());
+    dpi = gfx::Size(dpi.height(), dpi.width());
+  }
+  double scale_x = static_cast<double>(dpi.width()) / kPointsPerInch;
+  double scale_y = static_cast<double>(dpi.height()) / kPointsPerInch;
 
   // Make vertical rectangle to optimize streaming to printer. Fix orientation
   // by autorotate.
-  gfx::Rect area(std::min(page_size.width(), page_size.height()) * scale,
-                 std::max(page_size.width(), page_size.height()) * scale);
-  return PdfRenderSettings(area, gfx::Point(0, 0), dpi, /*autorotate=*/true,
+  gfx::Rect area(final_page_size.width() * scale_x,
+                 final_page_size.height() * scale_y);
+  return PdfRenderSettings(area, gfx::Point(0, 0), dpi,
+                           /*autorotate=*/true,
                            PdfRenderSettings::Mode::NORMAL);
 }
 

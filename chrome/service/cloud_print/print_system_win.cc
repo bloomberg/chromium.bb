@@ -419,7 +419,9 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
     void RenderPDFPages(const base::FilePath& pdf_path) {
-      int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
+      gfx::Size printer_dpi =
+          gfx::Size(::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX),
+                    ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSY));
       int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
       int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
       gfx::Rect render_area(0, 0, dc_width, dc_height);
@@ -432,7 +434,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     void RenderPDFPagesInSandbox(
         const base::FilePath& pdf_path,
         const gfx::Rect& render_area,
-        int render_dpi,
+        const gfx::Size& render_dpi,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
       DCHECK(CurrentlyOnServiceIOThread());
       std::unique_ptr<ServiceUtilityProcessHost> utility_host(

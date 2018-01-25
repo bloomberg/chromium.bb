@@ -269,7 +269,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
   }
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
-  if (params.params.dpi && params.params.document_cookie) {
+  if (!params.params.dpi.IsEmpty() && params.params.document_cookie) {
 #if defined(OS_ANDROID)
     int file_descriptor;
     const base::string16& device_name = printer_query->settings().device_name();
