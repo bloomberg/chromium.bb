@@ -42,10 +42,10 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
     // If there is nothing to send, return early.
     return;
 
-  std::unique_ptr<Event> extension_event(
-      new Event(events::PASSWORDS_PRIVATE_ON_SAVED_PASSWORDS_LIST_CHANGED,
-                api::passwords_private::OnSavedPasswordsListChanged::kEventName,
-                cached_saved_password_parameters_->CreateDeepCopy()));
+  auto extension_event = std::make_unique<Event>(
+      events::PASSWORDS_PRIVATE_ON_SAVED_PASSWORDS_LIST_CHANGED,
+      api::passwords_private::OnSavedPasswordsListChanged::kEventName,
+      cached_saved_password_parameters_->CreateDeepCopy());
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
@@ -62,10 +62,10 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
     // If there is nothing to send, return early.
     return;
 
-  std::unique_ptr<Event> extension_event(new Event(
+  auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_PASSWORD_EXCEPTIONS_LIST_CHANGED,
       api::passwords_private::OnPasswordExceptionsListChanged::kEventName,
-      cached_password_exception_parameters_->CreateDeepCopy()));
+      cached_password_exception_parameters_->CreateDeepCopy());
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
@@ -76,13 +76,13 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
   params.index = index;
   params.plaintext_password = plaintext_password;
 
-  std::unique_ptr<base::ListValue> event_value(new base::ListValue);
+  auto event_value = std::make_unique<base::ListValue>();
   event_value->Append(params.ToValue());
 
-  std::unique_ptr<Event> extension_event(new Event(
+  auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_PLAINTEXT_PASSWORD_RETRIEVED,
       api::passwords_private::OnPlaintextPasswordRetrieved::kEventName,
-      std::move(event_value)));
+      std::move(event_value));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
@@ -93,13 +93,13 @@ void PasswordsPrivateEventRouter::OnPasswordsExportProgress(
   params.status = status;
   params.folder_name = std::make_unique<std::string>(std::move(folder_name));
 
-  std::unique_ptr<base::ListValue> event_value(new base::ListValue());
+  auto event_value = std::make_unique<base::ListValue>();
   event_value->Append(params.ToValue());
 
-  std::unique_ptr<Event> extension_event(new Event(
+  auto extension_event = std::make_unique<Event>(
       events::PASSWORDS_PRIVATE_ON_PASSWORDS_FILE_EXPORT_PROGRESS,
       api::passwords_private::OnPasswordsFileExportProgress::kEventName,
-      std::move(event_value)));
+      std::move(event_value));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
