@@ -91,7 +91,6 @@ crbug.com/805049 virtual/spv175/compositing/iframes/fixed-position-iframe.html [
 crbug.com/805049 virtual/spv175/paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 crbug.com/805049 virtual/spv175/paint/invalidation/compositing/fixed-scroll-in-empty-root-layer.html [ Failure ]
 crbug.com/805049 virtual/spv175/paint/invalidation/scroll/fixed-scroll-simple.html [ Failure ]
-crbug.com/805049 virtual/spv175/paint/overflow/fixed-background-scroll-in-frame.html [ Failure ]
 
 # spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
 crbug.com/417782 virtual/spv175/compositing/overflow/border-radius-composited-subframe.html [ Failure ]

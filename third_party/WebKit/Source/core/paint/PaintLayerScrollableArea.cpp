@@ -535,9 +535,11 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
       requires_paint_invalidation = false;
   }
 
+  if (requires_paint_invalidation || is_root_layer)
+    frame_view->InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutBox());
+
   if (!requires_paint_invalidation && is_root_layer) {
     // Some special invalidations for the root layer.
-    frame_view->InvalidateBackgroundAttachmentFixedObjects();
     if (frame_view->HasViewportConstrainedObjects()) {
       if (!frame_view->InvalidateViewportConstrainedObjects())
         requires_paint_invalidation = true;
