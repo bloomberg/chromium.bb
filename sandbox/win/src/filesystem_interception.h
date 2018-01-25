@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef SANDBOX_WIN_SRC_FILESYSTEM_INTERCEPTION_H_
+#define SANDBOX_WIN_SRC_FILESYSTEM_INTERCEPTION_H_
+
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_types.h"
-
-#ifndef SANDBOX_SRC_FILESYSTEM_INTERCEPTION_H__
-#define SANDBOX_SRC_FILESYSTEM_INTERCEPTION_H__
 
 namespace sandbox {
 
@@ -64,4 +64,4 @@ TargetNtSetInformationFile(NtSetInformationFileFunction orig_SetInformationFile,
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_FILESYSTEM_INTERCEPTION_H__
+#endif  // SANDBOX_WIN_SRC_FILESYSTEM_INTERCEPTION_H_

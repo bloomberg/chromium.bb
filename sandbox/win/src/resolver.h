@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef SANDBOX_WIN_SRC_RESOLVER_H_
+#define SANDBOX_WIN_SRC_RESOLVER_H_
+
 // Defines ResolverThunk, the interface for classes that perform interceptions.
 // For more details see
 // http://dev.chromium.org/developers/design-documents/sandbox .
@@ -10,9 +13,6 @@
 
 #include "base/macros.h"
 #include "sandbox/win/src/nt_internals.h"
-
-#ifndef SANDBOX_SRC_RESOLVER_H__
-#define SANDBOX_SRC_RESOLVER_H__
 
 namespace sandbox {
 
@@ -104,4 +104,4 @@ class ResolverThunk {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_RESOLVER_H__
+#endif  // SANDBOX_WIN_SRC_RESOLVER_H_
