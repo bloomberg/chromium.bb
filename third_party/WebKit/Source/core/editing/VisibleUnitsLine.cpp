@@ -164,15 +164,6 @@ Node* NextLeafWithSameEditability(Node* node, EditableType editable_type) {
   return nullptr;
 }
 
-InlineBox* FindRightNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
-  for (InlineBox* runner = root_box.FirstLeafChild(); runner;
-       runner = runner->NextLeafChild()) {
-    if (runner->GetLineLayoutItem().NonPseudoNode())
-      return runner;
-  }
-  return nullptr;
-}
-
 template <typename Strategy, typename Ordering>
 PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
@@ -237,10 +228,12 @@ struct VisualOrdering {
     // represented by a VisiblePosition. Use whatever follows instead.
     // TODO(editing-dev): We should consider text-direction of line to
     // find non-pseudo node.
-    InlineBox* const start_box = FindRightNonPseudoNodeInlineBox(root_box);
-    if (!start_box)
-      return {nullptr, nullptr};
-    return {start_box->GetLineLayoutItem().NonPseudoNode(), start_box};
+    for (InlineBox* inline_box = root_box.FirstLeafChild(); inline_box;
+         inline_box = inline_box->NextLeafChild()) {
+      if (inline_box->GetLineLayoutItem().NonPseudoNode())
+        return {inline_box->GetLineLayoutItem().NonPseudoNode(), inline_box};
+    }
+    return {nullptr, nullptr};
   }
 
   static std::pair<Node*, InlineBox*> EndNodeAndBoxOf(
