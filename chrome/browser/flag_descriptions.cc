@@ -1116,6 +1116,10 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
+const char kPasswordSearchMobileName[] = "Password search";
+const char kPasswordSearchMobileDescription[] =
+    "Search functionality in password settings.";
+
 const char kPermissionActionReportingName[] = "Permission Action Reporting";
 const char kPermissionActionReportingDescription[] =
     "Enables permission action reporting to Safe Browsing servers for opted in "
