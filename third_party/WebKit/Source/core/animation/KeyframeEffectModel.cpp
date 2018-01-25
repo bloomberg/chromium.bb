@@ -291,7 +291,7 @@ void KeyframeEffectModelBase::EnsureInterpolationEffectPopulated() const {
   interpolation_effect_.SetPopulated();
 }
 
-bool KeyframeEffectModelBase::IsReplaceOnly() {
+bool KeyframeEffectModelBase::IsReplaceOnly() const {
   EnsureKeyframeGroups();
   for (const auto& entry : *keyframe_groups_) {
     for (const auto& keyframe : entry.value->Keyframes()) {

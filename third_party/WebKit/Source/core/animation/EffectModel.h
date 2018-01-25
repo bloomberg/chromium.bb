@@ -64,6 +64,7 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
                       Vector<scoped_refptr<Interpolation>>&) const = 0;
 
   virtual bool Affects(const PropertyHandle&) const { return false; }
+  virtual bool AffectedByUnderlyingAnimations() const = 0;
   virtual bool IsTransformRelatedEffect() const { return false; }
   virtual bool IsKeyframeEffectModel() const { return false; }
 

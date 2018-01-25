@@ -74,7 +74,8 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
     friend class KeyframeEffectModelBase;
   };
 
-  bool IsReplaceOnly();
+  bool AffectedByUnderlyingAnimations() const final { return !IsReplaceOnly(); }
+  bool IsReplaceOnly() const;
 
   PropertyHandleSet Properties() const;
 
