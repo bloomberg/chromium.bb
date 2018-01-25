@@ -663,6 +663,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayResolutionTextBest", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_BEST},
       {"displayResolutionTextNative",
        IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
+      {"displayZoomValue", IDS_SETTINGS_DISPLAY_ZOOM_VALUE},
       {"displayScreenTitle", IDS_SETTINGS_DISPLAY_SCREEN},
       {"displayScreenExtended", IDS_SETTINGS_DISPLAY_SCREEN_EXTENDED},
       {"displayScreenPrimary", IDS_SETTINGS_DISPLAY_SCREEN_PRIMARY},
@@ -693,6 +694,10 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       "enableTouchCalibrationSetting",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableTouchCalibrationSetting));
+
+  html_source->AddBoolean("enableDisplayZoomSetting",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              chromeos::switches::kEnableDisplayZoomSetting));
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());

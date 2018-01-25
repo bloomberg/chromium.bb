@@ -153,6 +153,19 @@
         </settings-slider>
       </div>
 
+      <div class="settings-box indented two-line"
+          hidden$="[[!showDisplayZoomSetting_]]">
+        <div class="start text-area layout vertical">
+          <div>Display Size</div>
+          <div class="secondary layout self-start">
+            [[getDisplayZoomText_(selectedDisplay, selectedZoomPref_.value)]]
+          </div>
+        </div>
+        <settings-slider tick-values="[[zoomValues_]]"
+            pref="{{selectedZoomPref_}}" on-change="onSelectedZoomChange_">
+        </settings-slider>
+      </div>
+
       <template is="dom-if" if="[[!unifiedDesktopMode_]]" restamp>
         <div class="settings-box indented">
           <div id="displayOrientation" class="start text-area">
