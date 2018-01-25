@@ -96,8 +96,16 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   // what they are.
   void AbortCompilation() {
     ScriptState::Scope scope(script_state_.get());
-    builder_.Abort(V8ThrowException::CreateTypeError(
-        script_state_->GetIsolate(), "Could not download wasm module"));
+    if (!ScriptForbiddenScope::IsScriptForbidden()) {
+      builder_.Abort(V8ThrowException::CreateTypeError(
+          script_state_->GetIsolate(), "Could not download wasm module"));
+    } else {
+      // We are not allowed to execute a script, which indicates that we should
+      // not reject the promise of the streaming compilation. By passing no
+      // abort reason, we indicate the V8 side that the promise should not get
+      // rejected.
+      builder_.Abort(v8::Local<v8::Value>());
+    }
   }
   Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
