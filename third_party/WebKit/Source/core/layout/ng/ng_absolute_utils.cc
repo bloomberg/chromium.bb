@@ -486,11 +486,6 @@ void ComputeFullAbsoluteWithChildBlockSize(
     child_minmax = MinMaxSize{*child_block_size, *child_block_size};
   }
   if (style.IsHorizontalWritingMode()) {
-    if (child_minmax) {
-      LayoutUnit border_padding = VerticalBorderPadding(space, style);
-      child_minmax.value().min_size -= border_padding;
-      child_minmax.value().max_size -= border_padding;
-    }
     Optional<LayoutUnit> height;
     if (!style.Height().IsAuto()) {
       height = ResolveHeight(style.Height(), space, style, child_minmax,
@@ -498,21 +493,26 @@ void ComputeFullAbsoluteWithChildBlockSize(
     } else if (replaced_size.has_value()) {
       height = replaced_size.value().block_size;
     }
+    if (child_minmax) {
+      LayoutUnit border_padding = VerticalBorderPadding(space, style);
+      child_minmax.value().min_size -= border_padding;
+      child_minmax.value().max_size -= border_padding;
+    }
     ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
                             container_writing_mode, container_direction,
                             position);
   } else {
-    if (child_minmax) {
-      LayoutUnit border_padding = HorizontalBorderPadding(space, style);
-      child_minmax.value().min_size -= border_padding;
-      child_minmax.value().max_size -= border_padding;
-    }
     Optional<LayoutUnit> width;
     if (!style.Width().IsAuto()) {
       width = ResolveWidth(style.Width(), space, style, child_minmax,
                            LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       width = replaced_size.value().block_size;
+    }
+    if (child_minmax) {
+      LayoutUnit border_padding = HorizontalBorderPadding(space, style);
+      child_minmax.value().min_size -= border_padding;
+      child_minmax.value().max_size -= border_padding;
     }
     ComputeAbsoluteHorizontal(space, style, width, static_position,
                               child_minmax, container_writing_mode,
