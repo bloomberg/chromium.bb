@@ -26,8 +26,8 @@ CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::operator=(
 
 CTAPGetAssertionRequestParam::~CTAPGetAssertionRequestParam() = default;
 
-base::Optional<std::vector<uint8_t>>
-CTAPGetAssertionRequestParam::SerializeToCBOR() const {
+base::Optional<std::vector<uint8_t>> CTAPGetAssertionRequestParam::Encode()
+    const {
   cbor::CBORValue::MapValue cbor_map;
   cbor_map[cbor::CBORValue(1)] = cbor::CBORValue(rp_id_);
   cbor_map[cbor::CBORValue(2)] = cbor::CBORValue(client_data_hash_);
@@ -48,18 +48,11 @@ CTAPGetAssertionRequestParam::SerializeToCBOR() const {
     cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(*pin_protocol_);
   }
 
-  auto user_presence = user_presence_required_
-                           ? cbor::CBORValue::SimpleValue::TRUE_VALUE
-                           : cbor::CBORValue::SimpleValue::FALSE_VALUE;
-  auto user_verification = user_verification_required_
-                               ? cbor::CBORValue::SimpleValue::TRUE_VALUE
-                               : cbor::CBORValue::SimpleValue::FALSE_VALUE;
-
   cbor::CBORValue::MapValue option_map;
   option_map[cbor::CBORValue(kUserPresenceMapKey)] =
-      cbor::CBORValue(user_presence);
+      cbor::CBORValue(user_presence_required_);
   option_map[cbor::CBORValue(kUserVerificationMapKey)] =
-      cbor::CBORValue(user_verification);
+      cbor::CBORValue(user_verification_required_);
   cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
 
   auto serialized_param =

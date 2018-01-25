@@ -33,7 +33,7 @@ class CTAPMakeCredentialRequestParam : public CTAPRequestParam {
       CTAPMakeCredentialRequestParam&& that);
   ~CTAPMakeCredentialRequestParam() override;
 
-  base::Optional<std::vector<uint8_t>> SerializeToCBOR() const override;
+  base::Optional<std::vector<uint8_t>> Encode() const override;
   CTAPMakeCredentialRequestParam& SetUserVerificationRequired(
       bool user_verfication_required);
   CTAPMakeCredentialRequestParam& SetResidentKey(bool resident_key);
