@@ -205,8 +205,7 @@ class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
   """Project and Path related tests."""
 
   def _MockParseWorkonVariables(self, fake_projects, fake_srcpaths,
-                                fake_localnames, fake_subdirs,
-                                fake_ebuild_contents):
+                                fake_localnames, fake_ebuild_contents):
     """Mock the necessary calls, call GetSourcePath()."""
 
     def _isdir(path):
@@ -220,20 +219,18 @@ class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
           if path == os.path.join(self.tempdir, 'src', srcpath):
             return True
         else:
-          for localname, subdir in zip(fake_localnames, fake_subdirs):
-            if path == os.path.join(self.tempdir, localname, subdir):
+          for localname in fake_localnames:
+            if path == os.path.join(self.tempdir, localname):
               return False
-            elif path == os.path.join(self.tempdir, 'platform', localname,
-                                      subdir):
+            elif path == os.path.join(self.tempdir, 'platform', localname):
               return True
 
       raise Exception('unhandled path: %s' % path)
 
     def _FindCheckoutFromPath(path):
       """Mock function for manifest.FindCheckoutFromPath"""
-      for project, localname, subdir in zip(fake_projects, fake_localnames,
-                                            fake_subdirs):
-        if path == os.path.join(self.tempdir, 'platform', localname, subdir):
+      for project, localname in zip(fake_projects, fake_localnames):
+        if path == os.path.join(self.tempdir, 'platform', localname):
           return {'name': project}
       return {}
 
@@ -258,42 +255,34 @@ class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
     """Tests if ebuilds in a single item format are correctly parsed."""
     fake_project = 'my_project1'
     fake_localname = 'foo'
-    fake_subdir = 'bar'
     fake_ebuild_contents = """
 CROS_WORKON_PROJECT=%s
 CROS_WORKON_LOCALNAME=%s
-CROS_WORKON_SUBDIR=%s
-    """ % (fake_project, fake_localname, fake_subdir)
+    """ % (fake_project, fake_localname)
     project, subdir = self._MockParseWorkonVariables(
-        [fake_project], [], [fake_localname], [fake_subdir],
-        fake_ebuild_contents)
+        [fake_project], [], [fake_localname], fake_ebuild_contents)
     self.assertEquals(project, [fake_project])
     self.assertEquals(subdir, [os.path.join(
-        self.tempdir, 'platform', '%s/%s' % (fake_localname, fake_subdir))])
+        self.tempdir, 'platform', fake_localname)])
 
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
     fake_projects = ['my_project1', 'my_project2', 'my_project3']
     fake_localnames = ['foo', 'bar', 'bas']
-    fake_subdirs = ['sub1', 'sub2', 'sub3']
     # The test content is formatted using the same function that
     # formats ebuild output, ensuring that we can parse our own
     # products.
     fake_ebuild_contents = """
 CROS_WORKON_PROJECT=%s
 CROS_WORKON_LOCALNAME=%s
-CROS_WORKON_SUBDIR=%s
     """ % (portage_util.EBuild.FormatBashArray(fake_projects),
-           portage_util.EBuild.FormatBashArray(fake_localnames),
-           portage_util.EBuild.FormatBashArray(fake_subdirs))
+           portage_util.EBuild.FormatBashArray(fake_localnames))
     projects, subdirs = self._MockParseWorkonVariables(
-        fake_projects, [], fake_localnames, fake_subdirs, fake_ebuild_contents)
+        fake_projects, [], fake_localnames, fake_ebuild_contents)
     self.assertEquals(projects, fake_projects)
     fake_paths = [
-        os.path.realpath(os.path.join(
-            self.tempdir, 'platform',
-            '%s/%s' % (fake_localnames[i], fake_subdirs[i])))
-        for i in range(0, len(fake_projects))
+        os.path.realpath(os.path.join(self.tempdir, 'platform', x))
+        for x in fake_localnames
     ]
     self.assertEquals(subdirs, fake_paths)
 
@@ -302,7 +291,6 @@ CROS_WORKON_SUBDIR=%s
     fake_projects = ['my_project1', '', '']
     fake_srcpaths = ['', 'path/to/src', 'path/to/other/src']
     fake_localnames = ['foo', 'bar', 'bas']
-    fake_subdirs = ['sub1', 'sub2', 'sub3']
     # The test content is formatted using the same function that
     # formats ebuild output, ensuring that we can parse our own
     # products.
@@ -310,24 +298,19 @@ CROS_WORKON_SUBDIR=%s
 CROS_WORKON_PROJECT=%s
 CROS_WORKON_SRCPATH=%s
 CROS_WORKON_LOCALNAME=%s
-CROS_WORKON_SUBDIR=%s
     """ % (portage_util.EBuild.FormatBashArray(fake_projects),
            portage_util.EBuild.FormatBashArray(fake_srcpaths),
-           portage_util.EBuild.FormatBashArray(fake_localnames),
-           portage_util.EBuild.FormatBashArray(fake_subdirs))
+           portage_util.EBuild.FormatBashArray(fake_localnames))
     projects, subdirs = self._MockParseWorkonVariables(
-        fake_projects, fake_srcpaths, fake_localnames, fake_subdirs,
-        fake_ebuild_contents)
+        fake_projects, fake_srcpaths, fake_localnames, fake_ebuild_contents)
     self.assertEquals(projects, fake_projects)
     fake_paths = []
-    for srcpath, localname, subdir in zip(
-        fake_srcpaths, fake_localnames, fake_subdirs):
+    for srcpath, localname in zip(fake_srcpaths, fake_localnames):
       if srcpath:
-        path = os.path.realpath(os.path.join(
-            self.tempdir, 'src', srcpath))
+        path = os.path.realpath(os.path.join(self.tempdir, 'src', srcpath))
       else:
         path = os.path.realpath(os.path.join(
-            self.tempdir, 'platform', '%s/%s' % (localname, subdir)))
+            self.tempdir, 'platform', localname))
       fake_paths.append(path)
 
     self.assertEquals(subdirs, fake_paths)
