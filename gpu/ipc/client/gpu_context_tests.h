@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef GPU_IPC_CLIENT_GPU_CONTEXT_TESTS_H_
+#define GPU_IPC_CLIENT_GPU_CONTEXT_TESTS_H_
+
 // These tests are run twice:
 // Once in a gpu test with an in-process command buffer.
 // Once in a browsertest with an out-of-process command buffer and gpu-process.
@@ -197,3 +200,5 @@ CONTEXT_TEST_F(GpuFenceTest, BasicGpuFenceTest) {
 #endif  // defined(OS_ANDROID)
 
 };  // namespace
+
+#endif  // GPU_IPC_CLIENT_GPU_CONTEXT_TESTS_H_
