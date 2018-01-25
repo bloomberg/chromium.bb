@@ -151,10 +151,6 @@ crbug.com/246571 external/wpt/css/css-values/attr-px-valid.html [ WontFix ]
 # Failing WPT using ch unit in vertical orientation
 crbug.com/759914 external/wpt/css/css-values/ch-unit-002.html [ WontFix ]
 
-# Media queries do not support calc() for internal CSS length values
-crbug.com/421909 external/wpt/css/css-values/calc-in-media-queries-001.html [ WontFix ]
-crbug.com/421909 external/wpt/css/css-values/calc-in-media-queries-002.html [ WontFix ]
-
 # CSS2 tests that rely on undefined behaviors (height of line-height: normal).
 external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]

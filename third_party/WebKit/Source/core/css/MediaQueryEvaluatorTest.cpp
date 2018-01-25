@@ -89,9 +89,11 @@ MediaQueryEvaluatorTestCase g_viewport_test_cases[] = {
     {"(min-height: 501px)", 0},
     {"(min-height: 500.02px)", 0},
     {"(max-height: 500px)", 1},
+    {"(max-height: calc(500px))", 1},
     {"(max-height: 499.98px)", 0},
     {"(max-height: 499px)", 0},
     {"(height: 500px)", 1},
+    {"(height: calc(500px))", 1},
     {"(height: 500.001px)", 1},
     {"(height: 499.999px)", 1},
     {"(height: 500.02px)", 0},
@@ -102,6 +104,7 @@ MediaQueryEvaluatorTestCase g_viewport_test_cases[] = {
     {"(width: whatisthis)", 0},
     {"screen and (min-width: 400px) and (max-width: 700px)", 1},
     {"(max-aspect-ratio: 4294967296/1)", 1},
+    {"(max-aspect-ratio: calc(4294967296) / calc(1)", 1},
     {"(min-aspect-ratio: 1/4294967295)", 1},
     {nullptr, 0}  // Do not remove the terminator line.
 };

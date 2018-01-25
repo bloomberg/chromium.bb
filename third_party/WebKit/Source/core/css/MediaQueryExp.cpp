@@ -29,7 +29,7 @@
 
 #include "core/css/MediaQueryExp.h"
 
-#include "core/css/parser/CSSParserToken.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Decimal.h"
 #include "platform/runtime_enabled_features.h"
@@ -74,11 +74,11 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   return false;
 }
 
-static inline bool FeatureWithValidPositiveLength(const String& media_feature,
-                                                  const CSSParserToken& token) {
-  if (!(CSSPrimitiveValue::IsLength(token.GetUnitType()) ||
-        (token.GetType() == kNumberToken && token.NumericValue() == 0)) ||
-      token.NumericValue() < 0)
+static inline bool FeatureWithValidPositiveLength(
+    const String& media_feature,
+    const CSSPrimitiveValue* value) {
+  if (!(value->IsLength() ||
+        (value->IsNumber() && value->GetDoubleValue() == 0)))
     return false;
 
   return media_feature == heightMediaFeature ||
@@ -96,12 +96,14 @@ static inline bool FeatureWithValidPositiveLength(const String& media_feature,
 }
 
 static inline bool FeatureWithValidDensity(const String& media_feature,
-                                           const CSSParserToken& token) {
-  if ((token.GetUnitType() != CSSPrimitiveValue::UnitType::kDotsPerPixel &&
-       token.GetUnitType() != CSSPrimitiveValue::UnitType::kDotsPerInch &&
-       token.GetUnitType() !=
+                                           const CSSPrimitiveValue* value) {
+  if ((value->TypeWithCalcResolved() !=
+           CSSPrimitiveValue::UnitType::kDotsPerPixel &&
+       value->TypeWithCalcResolved() !=
+           CSSPrimitiveValue::UnitType::kDotsPerInch &&
+       value->TypeWithCalcResolved() !=
            CSSPrimitiveValue::UnitType::kDotsPerCentimeter) ||
-      token.NumericValue() <= 0)
+      value->GetDoubleValue() <= 0)
     return false;
 
   return media_feature == resolutionMediaFeature ||
@@ -109,12 +111,8 @@ static inline bool FeatureWithValidDensity(const String& media_feature,
          media_feature == maxResolutionMediaFeature;
 }
 
-static inline bool FeatureWithPositiveInteger(const String& media_feature,
-                                              const CSSParserToken& token) {
-  if (token.GetNumericValueType() != kIntegerValueType ||
-      token.NumericValue() < 0)
-    return false;
-
+static inline bool FeatureExpectingPositiveInteger(
+    const String& media_feature) {
   return media_feature == colorMediaFeature ||
          media_feature == maxColorMediaFeature ||
          media_feature == minColorMediaFeature ||
@@ -126,9 +124,16 @@ static inline bool FeatureWithPositiveInteger(const String& media_feature,
          media_feature == minMonochromeMediaFeature;
 }
 
+static inline bool FeatureWithPositiveInteger(const String& media_feature,
+                                              const CSSPrimitiveValue* value) {
+  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger)
+    return false;
+  return FeatureExpectingPositiveInteger(media_feature);
+}
+
 static inline bool FeatureWithPositiveNumber(const String& media_feature,
-                                             const CSSParserToken& token) {
-  if (token.GetType() != kNumberToken || token.NumericValue() < 0)
+                                             const CSSPrimitiveValue* value) {
+  if (!value->IsNumber())
     return false;
 
   return media_feature == transform3dMediaFeature ||
@@ -138,9 +143,9 @@ static inline bool FeatureWithPositiveNumber(const String& media_feature,
 }
 
 static inline bool FeatureWithZeroOrOne(const String& media_feature,
-                                        const CSSParserToken& token) {
-  if (token.GetNumericValueType() != kIntegerValueType ||
-      !(token.NumericValue() == 1 || !token.NumericValue()))
+                                        const CSSPrimitiveValue* value) {
+  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger ||
+      !(value->GetDoubleValue() == 1 || !value->GetDoubleValue()))
     return false;
 
   return media_feature == gridMediaFeature;
@@ -218,75 +223,63 @@ MediaQueryExp::MediaQueryExp(const String& media_feature,
                              const MediaQueryExpValue& exp_value)
     : media_feature_(media_feature), exp_value_(exp_value) {}
 
-MediaQueryExp MediaQueryExp::Create(
-    const String& media_feature,
-    const Vector<CSSParserToken, 4>& token_list) {
+MediaQueryExp MediaQueryExp::Create(const String& media_feature,
+                                    CSSParserTokenRange& range) {
   DCHECK(!media_feature.IsNull());
 
   MediaQueryExpValue exp_value;
   String lower_media_feature =
       AttemptStaticStringCreation(media_feature.LowerASCII());
 
+  CSSPrimitiveValue* value = CSSPropertyParserHelpers::ConsumeInteger(range, 0);
+  if (!value && !FeatureExpectingPositiveInteger(lower_media_feature) &&
+      !FeatureWithAspectRatio(lower_media_feature))
+    value =
+        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+  if (!value)
+    value = CSSPropertyParserHelpers::ConsumeLength(range, kHTMLStandardMode,
+                                                    kValueRangeNonNegative);
+  if (!value)
+    value = CSSPropertyParserHelpers::ConsumeResolution(range);
   // Create value for media query expression that must have 1 or more values.
-  if (token_list.size() == 0 && FeatureWithoutValue(lower_media_feature)) {
-    // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
-  } else if (token_list.size() == 1) {
-    CSSParserToken token = token_list.front();
+  if (value) {
+    if (FeatureWithAspectRatio(lower_media_feature)) {
+      if (value->TypeWithCalcResolved() !=
+              CSSPrimitiveValue::UnitType::kInteger ||
+          value->GetDoubleValue() == 0)
+        return Invalid();
+      if (!CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range))
+        return Invalid();
+      CSSPrimitiveValue* denominator =
+          CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+      if (!denominator)
+        return Invalid();
 
-    if (token.GetType() == kIdentToken) {
-      CSSValueID ident = token.Id();
-      if (!FeatureWithValidIdent(lower_media_feature, ident))
-        return Invalid();
-      exp_value.id = ident;
-      exp_value.is_id = true;
-    } else if (token.GetType() == kNumberToken ||
-               token.GetType() == kPercentageToken ||
-               token.GetType() == kDimensionToken) {
-      // Check for numeric token types since it is only safe for these types to
-      // call numericValue.
-      if (FeatureWithValidDensity(lower_media_feature, token) ||
-          FeatureWithValidPositiveLength(lower_media_feature, token)) {
-        // Media features that must have non-negative <density>, ie. dppx, dpi
-        // or dpcm, or Media features that must have non-negative <length> or
-        // number value.
-        exp_value.value = token.NumericValue();
-        exp_value.unit = token.GetUnitType();
-        exp_value.is_value = true;
-      } else if (FeatureWithPositiveInteger(lower_media_feature, token) ||
-                 FeatureWithPositiveNumber(lower_media_feature, token) ||
-                 FeatureWithZeroOrOne(lower_media_feature, token)) {
-        // Media features that must have non-negative integer value,
-        // or media features that must have non-negative number value,
-        // or media features that must have (0|1) value.
-        exp_value.value = token.NumericValue();
+      exp_value.numerator = clampTo<unsigned>(value->GetDoubleValue());
+      exp_value.denominator = clampTo<unsigned>(denominator->GetDoubleValue());
+      exp_value.is_ratio = true;
+    } else if (FeatureWithValidDensity(lower_media_feature, value) ||
+               FeatureWithValidPositiveLength(lower_media_feature, value) ||
+               FeatureWithPositiveInteger(lower_media_feature, value) ||
+               FeatureWithPositiveNumber(lower_media_feature, value) ||
+               FeatureWithZeroOrOne(lower_media_feature, value)) {
+      exp_value.value = value->GetDoubleValue();
+      if (value->IsNumber())
         exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-        exp_value.is_value = true;
-      } else {
-        return Invalid();
-      }
+      else
+        exp_value.unit = value->TypeWithCalcResolved();
+      exp_value.is_value = true;
     } else {
       return Invalid();
     }
-  } else if (token_list.size() == 3 &&
-             FeatureWithAspectRatio(lower_media_feature)) {
-    // TODO(timloh): <ratio> is supposed to allow whitespace around the '/'
-    // Applicable to device-aspect-ratio and aspect-ratio.
-    const CSSParserToken& numerator = token_list[0];
-    const CSSParserToken& delimiter = token_list[1];
-    const CSSParserToken& denominator = token_list[2];
-    if (delimiter.GetType() != kDelimiterToken || delimiter.Delimiter() != '/')
+  } else if (CSSIdentifierValue* ident = CSSPropertyParserHelpers::ConsumeIdent(range)) {
+    CSSValueID ident_id = ident->GetValueID();
+    if (!FeatureWithValidIdent(lower_media_feature, ident_id))
       return Invalid();
-    if (numerator.GetType() != kNumberToken || numerator.NumericValue() <= 0 ||
-        numerator.GetNumericValueType() != kIntegerValueType)
-      return Invalid();
-    if (denominator.GetType() != kNumberToken ||
-        denominator.NumericValue() <= 0 ||
-        denominator.GetNumericValueType() != kIntegerValueType)
-      return Invalid();
-
-    exp_value.numerator = clampTo<unsigned>(numerator.NumericValue());
-    exp_value.denominator = clampTo<unsigned>(denominator.NumericValue());
-    exp_value.is_ratio = true;
+    exp_value.id = ident_id;
+    exp_value.is_id = true;
+  } else if (FeatureWithoutValue(lower_media_feature)) {
+    // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
   } else {
     return Invalid();
   }
