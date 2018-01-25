@@ -727,8 +727,12 @@ void TestPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
 }
 void TestPlatformDisplay::SetViewportSize(const gfx::Size& size) {}
 void TestPlatformDisplay::SetTitle(const base::string16& title) {}
-void TestPlatformDisplay::SetCapture() {}
-void TestPlatformDisplay::ReleaseCapture() {}
+void TestPlatformDisplay::SetCapture() {
+  has_capture_ = true;
+}
+void TestPlatformDisplay::ReleaseCapture() {
+  has_capture_ = false;
+}
 void TestPlatformDisplay::SetCursor(const ui::CursorData& cursor) {
   *cursor_storage_ = cursor;
 }

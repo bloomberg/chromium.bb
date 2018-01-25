@@ -304,7 +304,7 @@ const Display* DisplayManager::GetDisplayContaining(
   return nullptr;
 }
 
-Display* DisplayManager::GetDisplayById(int64_t display_id) {
+const Display* DisplayManager::GetDisplayById(int64_t display_id) const {
   for (Display* display : displays_) {
     if (display->GetId() == display_id)
       return display;
@@ -331,6 +331,10 @@ WindowManagerDisplayRoot* DisplayManager::GetWindowManagerDisplayRoot(
   return const_cast<WindowManagerDisplayRoot*>(
       const_cast<const DisplayManager*>(this)->GetWindowManagerDisplayRoot(
           window));
+}
+
+bool DisplayManager::InUnifiedDisplayMode() const {
+  return GetDisplayById(display::kUnifiedDisplayId) != nullptr;
 }
 
 WindowId DisplayManager::GetAndAdvanceNextRootId() {
