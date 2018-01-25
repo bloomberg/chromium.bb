@@ -94,14 +94,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
                           int mi_row, int mi_col);
 
-#if CONFIG_TXK_SEL
-int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                            int block, int blk_row, int blk_col,
-                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                            const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
-                            int use_fast_coef_costing, RD_STATS *rd_stats);
-#endif
-
 int av1_optimize_txb(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int blk_row,
                      int blk_col, int block, TX_SIZE tx_size, TXB_CTX *txb_ctx,
                      int fast_mode, int *rate_cost);
