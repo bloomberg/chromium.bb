@@ -242,7 +242,7 @@ ThreadCondition::ThreadCondition() {
 
 ThreadCondition::~ThreadCondition() {}
 
-void ThreadCondition::Wait(MutexBase& mutex) {
+void ThreadCondition::Wait(Mutex& mutex) {
   PlatformMutex& platform_mutex = mutex.Impl();
   BOOL result = SleepConditionVariableCS(
       &condition_, &platform_mutex.internal_mutex_, INFINITE);
@@ -250,7 +250,7 @@ void ThreadCondition::Wait(MutexBase& mutex) {
   ++platform_mutex.recursion_count_;
 }
 
-bool ThreadCondition::TimedWait(MutexBase& mutex, double absolute_time) {
+bool ThreadCondition::TimedWait(Mutex& mutex, double absolute_time) {
   DWORD interval = AbsoluteTimeToWaitTimeoutInterval(absolute_time);
 
   if (!interval) {

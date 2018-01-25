@@ -130,12 +130,12 @@ class WTF_EXPORT ThreadCondition final {
   ThreadCondition();
   ~ThreadCondition();
 
-  void Wait(MutexBase&);
+  void Wait(Mutex&);
   // Returns true if the condition was signaled before absoluteTime, false if
   // the absoluteTime was reached or is in the past.
   // The absoluteTime is in seconds, starting on January 1, 1970. The time is
   // assumed to use the same time zone as WTF::currentTime().
-  bool TimedWait(MutexBase&, double absolute_time);
+  bool TimedWait(Mutex&, double absolute_time);
   void Signal();
   void Broadcast();
 
