@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
 
@@ -164,8 +165,8 @@ NavigationThrottle::ThrottleCheckResult
 TargetHandler::Throttle::WillProcessResponse() {
   if (!target_handler_)
     return PROCEED;
-  agent_host_ =
-      target_handler_->auto_attacher_.AutoAttachToFrame(navigation_handle());
+  agent_host_ = target_handler_->auto_attacher_.AutoAttachToFrame(
+      static_cast<NavigationHandleImpl*>(navigation_handle()));
   if (!agent_host_.get())
     return PROCEED;
   target_handler_->auto_attached_sessions_[agent_host_.get()]->SetThrottle(
@@ -224,10 +225,6 @@ Response TargetHandler::Disable() {
 
 void TargetHandler::DidCommitNavigation() {
   auto_attacher_.UpdateServiceWorkers();
-}
-
-void TargetHandler::RenderFrameHostChanged() {
-  auto_attacher_.UpdateFrames();
 }
 
 std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(

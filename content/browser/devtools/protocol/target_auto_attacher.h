@@ -11,7 +11,7 @@
 
 namespace content {
 
-class NavigationHandle;
+class NavigationHandleImpl;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -31,11 +31,10 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   void SetAttachToFrames(bool attach_to_frames);
 
   void UpdateServiceWorkers();
-  void UpdateFrames();
   void AgentHostClosed(DevToolsAgentHost* host);
 
   bool ShouldThrottleFramesNavigation();
-  DevToolsAgentHost* AutoAttachToFrame(NavigationHandle* navigation_handle);
+  DevToolsAgentHost* AutoAttachToFrame(NavigationHandleImpl* navigation_handle);
 
  private:
   using Hosts = base::flat_set<scoped_refptr<DevToolsAgentHost>>;
@@ -51,6 +50,8 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
+
+  void UpdateFrames();
 
   AttachCallback attach_callback_;
   DetachCallback detach_callback_;

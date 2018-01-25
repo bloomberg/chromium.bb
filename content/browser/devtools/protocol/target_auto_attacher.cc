@@ -141,26 +141,40 @@ void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
 }
 
 bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
-  return auto_attach_ && attach_to_frames_ && wait_for_debugger_on_start_;
+  return auto_attach_ && attach_to_frames_;
 }
 
 DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
-    NavigationHandle* navigation_handle) {
+    NavigationHandleImpl* navigation_handle) {
   if (!ShouldThrottleFramesNavigation())
     return nullptr;
-  if (!navigation_handle->GetRenderFrameHost() ||
-      !navigation_handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
-    return nullptr;
-  }
+
+  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
+  RenderFrameHostImpl* new_host = navigation_handle->GetRenderFrameHost();
   scoped_refptr<DevToolsAgentHost> agent_host =
-      RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
-          static_cast<NavigationHandleImpl*>(navigation_handle)
-              ->frame_tree_node());
-  if (auto_attached_hosts_.find(agent_host) != auto_attached_hosts_.end())
+      RenderFrameDevToolsAgentHost::FindForDangling(frame_tree_node);
+
+  bool old_cross_process = !!agent_host;
+  bool new_cross_process = new_host && new_host->IsCrossProcessSubframe();
+
+  if (old_cross_process == new_cross_process)
     return nullptr;
-  attach_callback_.Run(agent_host.get(), true /* waiting_for_debugger */);
-  auto_attached_hosts_.insert(agent_host);
-  return agent_host.get();
+
+  if (new_cross_process) {
+    agent_host =
+        RenderFrameDevToolsAgentHost::GetOrCreateForDangling(frame_tree_node);
+    DCHECK(auto_attached_hosts_.find(agent_host) == auto_attached_hosts_.end());
+    attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
+    auto_attached_hosts_.insert(agent_host);
+    return wait_for_debugger_on_start_ ? agent_host.get() : nullptr;
+  }
+
+  DCHECK(old_cross_process);
+  auto it = auto_attached_hosts_.find(agent_host);
+  DCHECK(it != auto_attached_hosts_.end());
+  auto_attached_hosts_.erase(it);
+  detach_callback_.Run(agent_host.get());
+  return nullptr;
 }
 
 void TargetAutoAttacher::ReattachServiceWorkers(bool waiting_for_debugger) {

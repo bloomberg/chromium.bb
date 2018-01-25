@@ -133,6 +133,12 @@ RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
 }
 
 // static
+scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::FindForDangling(
+    FrameTreeNode* frame_tree_node) {
+  return FindAgentHost(frame_tree_node);
+}
+
+// static
 bool DevToolsAgentHost::HasFor(WebContents* web_contents) {
   FrameTreeNode* node =
       static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
@@ -513,9 +519,6 @@ void RenderFrameDevToolsAgentHost::DidStartNavigation(
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  for (auto* target : protocol::TargetHandler::ForAgentHost(this))
-    target->RenderFrameHostChanged();
-
   if (old_host != frame_host_)
     return;
 
