@@ -42,12 +42,6 @@ static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
 #endif
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
-extern void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
-                                 const uint8_t *limit, const uint8_t *thresh);
-
-extern void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
-                                   const uint8_t *limit, const uint8_t *thresh);
-
 extern void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p,
                                           const uint8_t *blimit,
                                           const uint8_t *limit,
@@ -2233,8 +2227,8 @@ static void av1_filter_block_plane_vert(
                                         params.mblim, params.lim,
                                         params.hev_thr, cm->bit_depth);
           else
-            aom_lpf_vertical_6_c(p, dst_stride, params.mblim, params.lim,
-                                 params.hev_thr);
+            aom_lpf_vertical_6(p, dst_stride, params.mblim, params.lim,
+                               params.hev_thr);
           break;
 #endif
         // apply 8-tap filtering
@@ -2261,13 +2255,8 @@ static void av1_filter_block_plane_vert(
                                        cm->bit_depth);
 #endif
           else
-#if CONFIG_DEBLOCK_13TAP
-            aom_lpf_vertical_16_c(p, dst_stride, params.mblim, params.lim,
-                                  params.hev_thr);
-#else
             aom_lpf_vertical_16(p, dst_stride, params.mblim, params.lim,
                                 params.hev_thr);
-#endif
           break;
         // no filtering
         default: break;
@@ -2335,8 +2324,8 @@ static void av1_filter_block_plane_horz(
                                           params.mblim, params.lim,
                                           params.hev_thr, cm->bit_depth);
           else
-            aom_lpf_horizontal_6_c(p, dst_stride, params.mblim, params.lim,
-                                   params.hev_thr);
+            aom_lpf_horizontal_6(p, dst_stride, params.mblim, params.lim,
+                                 params.hev_thr);
           break;
 #endif
         // apply 8-tap filtering

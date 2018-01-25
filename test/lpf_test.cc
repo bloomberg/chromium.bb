@@ -37,20 +37,26 @@ const int number_of_iterations = 10000;
 
 const int kSpeedTestNum = 500000;
 
-typedef uint16_t Pixel;
-#define PIXEL_WIDTH 16
+#define LOOP_PARAM \
+  int p, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh
+#define DUAL_LOOP_PARAM                                                      \
+  int p, const uint8_t *blimit0, const uint8_t *limit0,                      \
+      const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, \
+      const uint8_t *thresh1
 
-typedef void (*loop_op_t)(Pixel *s, int p, const uint8_t *blimit,
-                          const uint8_t *limit, const uint8_t *thresh, int bd);
-typedef void (*dual_loop_op_t)(Pixel *s, int p, const uint8_t *blimit0,
-                               const uint8_t *limit0, const uint8_t *thresh0,
-                               const uint8_t *blimit1, const uint8_t *limit1,
-                               const uint8_t *thresh1, int bd);
+typedef void (*loop_op_t)(uint8_t *s, LOOP_PARAM);
+typedef void (*dual_loop_op_t)(uint8_t *s, DUAL_LOOP_PARAM);
+typedef void (*hbdloop_op_t)(uint16_t *s, LOOP_PARAM, int bd);
+typedef void (*hbddual_loop_op_t)(uint16_t *s, DUAL_LOOP_PARAM, int bd);
 
-typedef std::tr1::tuple<loop_op_t, loop_op_t, int> loop8_param_t;
-typedef std::tr1::tuple<dual_loop_op_t, dual_loop_op_t, int> dualloop8_param_t;
+typedef std::tr1::tuple<hbdloop_op_t, hbdloop_op_t, int> hbdloop_param_t;
+typedef std::tr1::tuple<hbddual_loop_op_t, hbddual_loop_op_t, int>
+    hbddual_loop_param_t;
+typedef std::tr1::tuple<loop_op_t, loop_op_t, int> loop_param_t;
+typedef std::tr1::tuple<dual_loop_op_t, dual_loop_op_t, int> dual_loop_param_t;
 
-void InitInput(Pixel *s, Pixel *ref_s, ACMRandom *rnd, const uint8_t limit,
+template <typename Pixel_t, int PIXEL_WIDTH_t>
+void InitInput(Pixel_t *s, Pixel_t *ref_s, ACMRandom *rnd, const uint8_t limit,
                const int mask, const int32_t p, const int i) {
   uint16_t tmp_s[kNumCoeffs];
 
@@ -117,13 +123,14 @@ uint8_t GetHevThresh(ACMRandom *rnd) {
   return static_cast<uint8_t>(rnd->PseudoUniform(MAX_LOOP_FILTER + 1) >> 4);
 }
 
-class Loop8Test6Param : public ::testing::TestWithParam<loop8_param_t> {
+template <typename func_type_t, typename params_t>
+class LoopTestParam : public ::testing::TestWithParam<params_t> {
  public:
-  virtual ~Loop8Test6Param() {}
+  virtual ~LoopTestParam() {}
   virtual void SetUp() {
-    loopfilter_op_ = GET_PARAM(0);
-    ref_loopfilter_op_ = GET_PARAM(1);
-    bit_depth_ = GET_PARAM(2);
+    loopfilter_op_ = std::tr1::get<0>(this->GetParam());
+    ref_loopfilter_op_ = std::tr1::get<1>(this->GetParam());
+    bit_depth_ = std::tr1::get<2>(this->GetParam());
     mask_ = (1 << bit_depth_) - 1;
   }
 
@@ -132,319 +139,318 @@ class Loop8Test6Param : public ::testing::TestWithParam<loop8_param_t> {
  protected:
   int bit_depth_;
   int mask_;
-  loop_op_t loopfilter_op_;
-  loop_op_t ref_loopfilter_op_;
+  func_type_t loopfilter_op_;
+  func_type_t ref_loopfilter_op_;
 };
 
-class Loop8Test9Param : public ::testing::TestWithParam<dualloop8_param_t> {
- public:
-  virtual ~Loop8Test9Param() {}
-  virtual void SetUp() {
-    loopfilter_op_ = GET_PARAM(0);
-    ref_loopfilter_op_ = GET_PARAM(1);
-    bit_depth_ = GET_PARAM(2);
-    mask_ = (1 << bit_depth_) - 1;
-  }
-
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
-
- protected:
-  int bit_depth_;
-  int mask_;
-  dual_loop_op_t loopfilter_op_;
-  dual_loop_op_t ref_loopfilter_op_;
+void call_filter(uint16_t *s, LOOP_PARAM, int bd, hbdloop_op_t op) {
+  op(s, p, blimit, limit, thresh, bd);
+}
+void call_filter(uint8_t *s, LOOP_PARAM, int bd, loop_op_t op) {
+  (void)bd;
+  op(s, p, blimit, limit, thresh);
+}
+void call_dualfilter(uint16_t *s, DUAL_LOOP_PARAM, int bd,
+                     hbddual_loop_op_t op) {
+  op(s, p, blimit0, limit0, thresh0, blimit1, limit1, thresh1, bd);
+}
+void call_dualfilter(uint8_t *s, DUAL_LOOP_PARAM, int bd, dual_loop_op_t op) {
+  (void)bd;
+  op(s, p, blimit0, limit0, thresh0, blimit1, limit1, thresh1);
 };
 
-TEST_P(Loop8Test6Param, OperationCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = number_of_iterations;
-  const int32_t p = kNumCoeffs / 32;
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, s[kNumCoeffs]);
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, ref_s[kNumCoeffs]);
-  int err_count_total = 0;
-  int first_failure = -1;
-  for (int i = 0; i < count_test_block; ++i) {
-    int err_count = 0;
-    uint8_t tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    InitInput(s, ref_s, &rnd, *limit, mask_, p, i);
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(
-        loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_));
+typedef LoopTestParam<hbdloop_op_t, hbdloop_param_t> Loop8Test6Param_hbd;
+typedef LoopTestParam<loop_op_t, loop_param_t> Loop8Test6Param_lbd;
+typedef LoopTestParam<hbddual_loop_op_t, hbddual_loop_param_t>
+    Loop8Test9Param_hbd;
+typedef LoopTestParam<dual_loop_op_t, dual_loop_param_t> Loop8Test9Param_lbd;
 
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      err_count += ref_s[j] != s[j];
-    }
-    if (err_count && !err_count_total) {
-      first_failure = i;
-    }
-    err_count_total += err_count;
-  }
-  EXPECT_EQ(0, err_count_total)
-      << "Error: Loop8Test6Param, C output doesn't match SSE2 "
-         "loopfilter output. "
+#define OPCHECK(a, b)                                                          \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                               \
+  const int count_test_block = number_of_iterations;                           \
+  const int32_t p = kNumCoeffs / 32;                                           \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                        \
+  DECLARE_ALIGNED(b, a, ref_s[kNumCoeffs]);                                    \
+  int err_count_total = 0;                                                     \
+  int first_failure = -1;                                                      \
+  for (int i = 0; i < count_test_block; ++i) {                                 \
+    int err_count = 0;                                                         \
+    uint8_t tmp = GetOuterThresh(&rnd);                                        \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,     \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };   \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    InitInput<a, b>(s, ref_s, &rnd, *limit, mask_, p, i);                      \
+    call_filter(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_,       \
+                ref_loopfilter_op_);                                           \
+    ASM_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
+                                         thresh, bit_depth_, loopfilter_op_)); \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      err_count += ref_s[j] != s[j];                                           \
+    }                                                                          \
+    if (err_count && !err_count_total) {                                       \
+      first_failure = i;                                                       \
+    }                                                                          \
+    err_count_total += err_count;                                              \
+  }                                                                            \
+  EXPECT_EQ(0, err_count_total)                                                \
+      << "Error: Loop8Test6Param, C output doesn't match SIMD "                \
+         "loopfilter output. "                                                 \
       << "First failed at test case " << first_failure;
-}
 
-TEST_P(Loop8Test6Param, ValueCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = number_of_iterations;
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, s[kNumCoeffs]);
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, ref_s[kNumCoeffs]);
-  int err_count_total = 0;
-  int first_failure = -1;
+TEST_P(Loop8Test6Param_hbd, OperationCheck) { OPCHECK(uint16_t, 16); }
+TEST_P(Loop8Test6Param_lbd, OperationCheck) { OPCHECK(uint8_t, 8); }
 
-  // NOTE: The code in av1_loopfilter.c:update_sharpness computes mblim as a
-  // function of sharpness_lvl and the loopfilter lvl as:
-  // block_inside_limit = lvl >> ((sharpness_lvl > 0) + (sharpness_lvl > 4));
-  // ...
-  // memset(lfi->lfthr[lvl].mblim, (2 * (lvl + 2) + block_inside_limit),
-  //        SIMD_WIDTH);
-  // This means that the largest value for mblim will occur when sharpness_lvl
-  // is equal to 0, and lvl is equal to its greatest value (MAX_LOOP_FILTER).
-  // In this case block_inside_limit will be equal to MAX_LOOP_FILTER and
-  // therefore mblim will be equal to (2 * (lvl + 2) + block_inside_limit) =
-  // 2 * (MAX_LOOP_FILTER + 2) + MAX_LOOP_FILTER = 3 * MAX_LOOP_FILTER + 4
-
-  for (int i = 0; i < count_test_block; ++i) {
-    int err_count = 0;
-    uint8_t tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    int32_t p = kNumCoeffs / 32;
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      s[j] = rnd.Rand16() & mask_;
-      ref_s[j] = s[j];
-    }
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(
-        loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_));
-
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      err_count += ref_s[j] != s[j];
-    }
-    if (err_count && !err_count_total) {
-      first_failure = i;
-    }
-    err_count_total += err_count;
-  }
-  EXPECT_EQ(0, err_count_total)
-      << "Error: Loop8Test6Param, C output doesn't match SSE2 "
-         "loopfilter output. "
+#define VALCHECK(a, b)                                                         \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                               \
+  const int count_test_block = number_of_iterations;                           \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                        \
+  DECLARE_ALIGNED(b, a, ref_s[kNumCoeffs]);                                    \
+  int err_count_total = 0;                                                     \
+  int first_failure = -1;                                                      \
+  for (int i = 0; i < count_test_block; ++i) {                                 \
+    int err_count = 0;                                                         \
+    uint8_t tmp = GetOuterThresh(&rnd);                                        \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,     \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };   \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    int32_t p = kNumCoeffs / 32;                                               \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      s[j] = rnd.Rand16() & mask_;                                             \
+      ref_s[j] = s[j];                                                         \
+    }                                                                          \
+    call_filter(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_,       \
+                ref_loopfilter_op_);                                           \
+    ASM_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
+                                         thresh, bit_depth_, loopfilter_op_)); \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      err_count += ref_s[j] != s[j];                                           \
+    }                                                                          \
+    if (err_count && !err_count_total) {                                       \
+      first_failure = i;                                                       \
+    }                                                                          \
+    err_count_total += err_count;                                              \
+  }                                                                            \
+  EXPECT_EQ(0, err_count_total)                                                \
+      << "Error: Loop8Test6Param, C output doesn't match SIMD "                \
+         "loopfilter output. "                                                 \
       << "First failed at test case " << first_failure;
-}
 
-TEST_P(Loop8Test6Param, DISABLED_Speed) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = kSpeedTestNum;
-  const int32_t bd = bit_depth_;
-  DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
+TEST_P(Loop8Test6Param_hbd, ValueCheck) { VALCHECK(uint16_t, 16); }
+TEST_P(Loop8Test6Param_lbd, ValueCheck) { VALCHECK(uint8_t, 8); }
 
-  uint8_t tmp = GetOuterThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetInnerThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                 tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetHevThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-
-  int32_t p = kNumCoeffs / 32;
-  for (int j = 0; j < kNumCoeffs; ++j) {
-    s[j] = rnd.Rand16() & mask_;
+#define SPEEDCHECK(a, b)                                                      \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                              \
+  const int count_test_block = kSpeedTestNum;                                 \
+  const int32_t bd = bit_depth_;                                              \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                       \
+  uint8_t tmp = GetOuterThresh(&rnd);                                         \
+  DECLARE_ALIGNED(16, const uint8_t,                                          \
+                  blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,     \
+                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };   \
+  tmp = GetInnerThresh(&rnd);                                                 \
+  DECLARE_ALIGNED(16, const uint8_t,                                          \
+                  limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,      \
+                                 tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };    \
+  tmp = GetHevThresh(&rnd);                                                   \
+  DECLARE_ALIGNED(16, const uint8_t,                                          \
+                  thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,     \
+                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };   \
+  int32_t p = kNumCoeffs / 32;                                                \
+  for (int j = 0; j < kNumCoeffs; ++j) {                                      \
+    s[j] = rnd.Rand16() & mask_;                                              \
+  }                                                                           \
+  for (int i = 0; i < count_test_block; ++i) {                                \
+    call_filter(s + 8 + p * 8, p, blimit, limit, thresh, bd, loopfilter_op_); \
   }
 
-  for (int i = 0; i < count_test_block; ++i) {
-    loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bd);
-  }
-}
+TEST_P(Loop8Test6Param_hbd, DISABLED_Speed) { SPEEDCHECK(uint16_t, 16); }
+TEST_P(Loop8Test6Param_lbd, DISABLED_Speed) { SPEEDCHECK(uint8_t, 8); }
 
-TEST_P(Loop8Test9Param, OperationCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = number_of_iterations;
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, s[kNumCoeffs]);
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, ref_s[kNumCoeffs]);
-  int err_count_total = 0;
-  int first_failure = -1;
-  for (int i = 0; i < count_test_block; ++i) {
-    int err_count = 0;
-    uint8_t tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    int32_t p = kNumCoeffs / 32;
-    const uint8_t limit = *limit0 < *limit1 ? *limit0 : *limit1;
-    InitInput(s, ref_s, &rnd, limit, mask_, p, i);
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
-                       limit1, thresh1, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
-                                            thresh0, blimit1, limit1, thresh1,
-                                            bit_depth_));
-
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      err_count += ref_s[j] != s[j];
-    }
-    if (err_count && !err_count_total) {
-      first_failure = i;
-    }
-    err_count_total += err_count;
-  }
-  EXPECT_EQ(0, err_count_total)
-      << "Error: Loop8Test9Param, C output doesn't match SSE2 "
-         "loopfilter output. "
+#define OPCHECKd(a, b)                                                         \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                               \
+  const int count_test_block = number_of_iterations;                           \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                        \
+  DECLARE_ALIGNED(b, a, ref_s[kNumCoeffs]);                                    \
+  int err_count_total = 0;                                                     \
+  int first_failure = -1;                                                      \
+  for (int i = 0; i < count_test_block; ++i) {                                 \
+    int err_count = 0;                                                         \
+    uint8_t tmp = GetOuterThresh(&rnd);                                        \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetOuterThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    int32_t p = kNumCoeffs / 32;                                               \
+    const uint8_t limit = *limit0 < *limit1 ? *limit0 : *limit1;               \
+    InitInput<a, b>(s, ref_s, &rnd, limit, mask_, p, i);                       \
+    call_dualfilter(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
+                    limit1, thresh1, bit_depth_, ref_loopfilter_op_);          \
+    ASM_REGISTER_STATE_CHECK(                                                  \
+        call_dualfilter(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
+                        limit1, thresh1, bit_depth_, loopfilter_op_));         \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      err_count += ref_s[j] != s[j];                                           \
+    }                                                                          \
+    if (err_count && !err_count_total) {                                       \
+      first_failure = i;                                                       \
+    }                                                                          \
+    err_count_total += err_count;                                              \
+  }                                                                            \
+  EXPECT_EQ(0, err_count_total)                                                \
+      << "Error: Loop8Test9Param, C output doesn't match SIMD "                \
+         "loopfilter output. "                                                 \
       << "First failed at test case " << first_failure;
-}
 
-TEST_P(Loop8Test9Param, ValueCheck) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = number_of_iterations;
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, s[kNumCoeffs]);
-  DECLARE_ALIGNED(PIXEL_WIDTH, Pixel, ref_s[kNumCoeffs]);
-  int err_count_total = 0;
-  int first_failure = -1;
-  for (int i = 0; i < count_test_block; ++i) {
-    int err_count = 0;
-    uint8_t tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetOuterThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetInnerThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = GetHevThresh(&rnd);
-    DECLARE_ALIGNED(16, const uint8_t,
-                    thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    int32_t p = kNumCoeffs / 32;  // TODO(pdlf) can we have non-square here?
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      s[j] = rnd.Rand16() & mask_;
-      ref_s[j] = s[j];
-    }
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
-                       limit1, thresh1, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
-                                            thresh0, blimit1, limit1, thresh1,
-                                            bit_depth_));
+TEST_P(Loop8Test9Param_hbd, OperationCheck) { OPCHECKd(uint16_t, 16); }
+TEST_P(Loop8Test9Param_lbd, OperationCheck) { OPCHECKd(uint8_t, 8); }
 
-    for (int j = 0; j < kNumCoeffs; ++j) {
-      err_count += ref_s[j] != s[j];
-    }
-    if (err_count && !err_count_total) {
-      first_failure = i;
-    }
-    err_count_total += err_count;
-  }
-  EXPECT_EQ(0, err_count_total)
-      << "Error: Loop8Test9Param, C output doesn't match SSE2"
-         "loopfilter output. "
+#define VALCHECKd(a, b)                                                        \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                               \
+  const int count_test_block = number_of_iterations;                           \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                        \
+  DECLARE_ALIGNED(b, a, ref_s[kNumCoeffs]);                                    \
+  int err_count_total = 0;                                                     \
+  int first_failure = -1;                                                      \
+  for (int i = 0; i < count_test_block; ++i) {                                 \
+    int err_count = 0;                                                         \
+    uint8_t tmp = GetOuterThresh(&rnd);                                        \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetOuterThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    tmp = GetInnerThresh(&rnd);                                                \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+    tmp = GetHevThresh(&rnd);                                                  \
+    DECLARE_ALIGNED(16, const uint8_t,                                         \
+                    thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+    int32_t p = kNumCoeffs / 32;                                               \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      s[j] = rnd.Rand16() & mask_;                                             \
+      ref_s[j] = s[j];                                                         \
+    }                                                                          \
+    call_dualfilter(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
+                    limit1, thresh1, bit_depth_, ref_loopfilter_op_);          \
+    ASM_REGISTER_STATE_CHECK(                                                  \
+        call_dualfilter(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
+                        limit1, thresh1, bit_depth_, loopfilter_op_));         \
+    for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+      err_count += ref_s[j] != s[j];                                           \
+    }                                                                          \
+    if (err_count && !err_count_total) {                                       \
+      first_failure = i;                                                       \
+    }                                                                          \
+    err_count_total += err_count;                                              \
+  }                                                                            \
+  EXPECT_EQ(0, err_count_total)                                                \
+      << "Error: Loop8Test9Param, C output doesn't match SIMD "                \
+         "loopfilter output. "                                                 \
       << "First failed at test case " << first_failure;
-}
 
-TEST_P(Loop8Test9Param, DISABLED_Speed) {
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const int count_test_block = kSpeedTestNum;
-  DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
+TEST_P(Loop8Test9Param_hbd, ValueCheck) { VALCHECKd(uint16_t, 16); }
+TEST_P(Loop8Test9Param_lbd, ValueCheck) { VALCHECKd(uint8_t, 8); }
 
-  uint8_t tmp = GetOuterThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetInnerThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetHevThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetOuterThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetInnerThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = GetHevThresh(&rnd);
-  DECLARE_ALIGNED(16, const uint8_t,
-                  thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
-                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  int32_t p = kNumCoeffs / 32;  // TODO(pdlf) can we have non-square here?
-  for (int j = 0; j < kNumCoeffs; ++j) {
-    s[j] = rnd.Rand16() & mask_;
+#define SPEEDCHECKd(a, b)                                                    \
+  ACMRandom rnd(ACMRandom::DeterministicSeed());                             \
+  const int count_test_block = kSpeedTestNum;                                \
+  DECLARE_ALIGNED(b, a, s[kNumCoeffs]);                                      \
+  uint8_t tmp = GetOuterThresh(&rnd);                                        \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+  tmp = GetInnerThresh(&rnd);                                                \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+  tmp = GetHevThresh(&rnd);                                                  \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+  tmp = GetOuterThresh(&rnd);                                                \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+  tmp = GetInnerThresh(&rnd);                                                \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,    \
+                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };  \
+  tmp = GetHevThresh(&rnd);                                                  \
+  DECLARE_ALIGNED(16, const uint8_t,                                         \
+                  thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,   \
+                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp }; \
+  int32_t p = kNumCoeffs / 32;                                               \
+  for (int j = 0; j < kNumCoeffs; ++j) {                                     \
+    s[j] = rnd.Rand16() & mask_;                                             \
+  }                                                                          \
+  for (int i = 0; i < count_test_block; ++i) {                               \
+    call_dualfilter(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,     \
+                    limit1, thresh1, bit_depth_, loopfilter_op_);            \
   }
 
-  for (int i = 0; i < count_test_block; ++i) {
-    const int32_t bd = bit_depth_;
-    loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1, limit1,
-                   thresh1, bd);
-  }
-}
+TEST_P(Loop8Test9Param_hbd, DISABLED_Speed) { SPEEDCHECKd(uint16_t, 16); }
+TEST_P(Loop8Test9Param_lbd, DISABLED_Speed) { SPEEDCHECKd(uint8_t, 8); }
 
 using std::tr1::make_tuple;
 
 #if HAVE_SSE2
 
-const loop8_param_t kHbdLoop8Test6[] = {
+const hbdloop_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_sse2, &aom_highbd_lpf_horizontal_4_c,
              8),
   make_tuple(&aom_highbd_lpf_vertical_4_sse2, &aom_highbd_lpf_vertical_4_c, 8),
+#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
+  make_tuple(&aom_highbd_lpf_horizontal_6_sse2, &aom_highbd_lpf_horizontal_6_c,
+             8),
+  make_tuple(&aom_highbd_lpf_vertical_6_sse2, &aom_highbd_lpf_vertical_6_c, 8),
+#endif
   make_tuple(&aom_highbd_lpf_horizontal_8_sse2, &aom_highbd_lpf_horizontal_8_c,
              8),
 #if !CONFIG_DEBLOCK_13TAP
@@ -508,13 +514,37 @@ const loop8_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 12)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
+INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param_hbd,
                         ::testing::ValuesIn(kHbdLoop8Test6));
+
+const loop_param_t kLoop8Test6[] = {
+  make_tuple(&aom_lpf_horizontal_4_sse2, &aom_lpf_horizontal_4_c, 8),
+  make_tuple(&aom_lpf_horizontal_8_sse2, &aom_lpf_horizontal_8_c, 8),
+#if CONFIG_DEBLOCK_13TAP
+  make_tuple(&aom_lpf_horizontal_6_sse2, &aom_lpf_horizontal_6_c, 8),
+  make_tuple(&aom_lpf_vertical_6_sse2, &aom_lpf_vertical_6_c, 8),
+#endif
+  make_tuple(&aom_lpf_horizontal_16_sse2, &aom_lpf_horizontal_16_c, 8),
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
+  make_tuple(&aom_lpf_horizontal_16_dual_sse2, &aom_lpf_horizontal_16_dual_c,
+             8),
+#endif
+  make_tuple(&aom_lpf_vertical_4_sse2, &aom_lpf_vertical_4_c, 8),
+  make_tuple(&aom_lpf_vertical_8_sse2, &aom_lpf_vertical_8_c, 8),
+  make_tuple(&aom_lpf_vertical_16_sse2, &aom_lpf_vertical_16_c, 8),
+#if !CONFIG_DEBLOCK_13TAP
+  make_tuple(&aom_lpf_vertical_16_dual_sse2, &aom_lpf_vertical_16_dual_c, 8)
+#endif
+};
+
+INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param_lbd,
+                        ::testing::ValuesIn(kLoop8Test6));
+
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-const loop8_param_t kHbdLoop8Test6Avx2[] = {
+const hbddual_loop_param_t kHbdLoop8Test9Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
              &aom_highbd_lpf_horizontal_16_dual_c, 8),
   make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
@@ -529,14 +559,24 @@ const loop8_param_t kHbdLoop8Test6Avx2[] = {
              &aom_highbd_lpf_vertical_16_dual_c, 12)
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
-                        ::testing::ValuesIn(kHbdLoop8Test6Avx2));
-
+INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param_hbd,
+                        ::testing::ValuesIn(kHbdLoop8Test9Avx2));
 #endif
+#endif
+
+#if HAVE_AVX2 && (!CONFIG_PARALLEL_DEBLOCKING)
+INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
+                        ::testing::Values(
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
+                            make_tuple(&aom_lpf_horizontal_16_dual_avx2,
+                                       &aom_lpf_horizontal_16_dual_c, 8),
+#endif
+                            make_tuple(&aom_lpf_horizontal_16_avx2,
+                                       &aom_lpf_horizontal_16_c, 8)));
 #endif
 
 #if HAVE_SSE2
-const dualloop8_param_t kHbdLoop8Test9[] = {
+const hbddual_loop_param_t kHbdLoop8Test9[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_sse2,
              &aom_highbd_lpf_horizontal_4_dual_c, 8),
   make_tuple(&aom_highbd_lpf_horizontal_8_dual_sse2,
@@ -563,12 +603,24 @@ const dualloop8_param_t kHbdLoop8Test9[] = {
              &aom_highbd_lpf_vertical_8_dual_c, 12)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param,
+INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_hbd,
                         ::testing::ValuesIn(kHbdLoop8Test9));
+
+#if !CONFIG_PARALLEL_DEBLOCKING
+const hbddual_loop_param_t kLoop8Test9[] = {
+  make_tuple(&aom_lpf_horizontal_4_dual_sse2, &aom_lpf_horizontal_4_dual_c, 8),
+  make_tuple(&aom_lpf_horizontal_8_dual_sse2, &aom_lpf_horizontal_8_dual_c, 8),
+  make_tuple(&aom_lpf_vertical_4_dual_sse2, &aom_lpf_vertical_4_dual_c, 8),
+  make_tuple(&aom_lpf_vertical_8_dual_sse2, &aom_lpf_vertical_8_dual_c, 8)
+};
+
+INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_lbd,
+                        ::testing::ValuesIn(kLoop8Test9));
+#endif
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
-const dualloop8_param_t kHbdLoop8Test9Avx2[] = {
+const hbddual_loop_param_t kHbdLoop8Test9Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_avx2,
              &aom_highbd_lpf_horizontal_4_dual_c, 8),
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_avx2,
@@ -595,8 +647,7 @@ const dualloop8_param_t kHbdLoop8Test9Avx2[] = {
              &aom_highbd_lpf_vertical_8_dual_c, 12),
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param,
+INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param_hbd,
                         ::testing::ValuesIn(kHbdLoop8Test9Avx2));
 #endif
-
 }  // namespace
