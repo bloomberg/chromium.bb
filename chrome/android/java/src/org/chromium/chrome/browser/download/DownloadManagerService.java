@@ -115,6 +115,8 @@ public class DownloadManagerService
             "application/pkix-cert",
             "application/x-wifi-config"));
 
+    private static final Set<String> sFirstSeenDownloadIds = new HashSet<String>();
+
     private static DownloadManagerService sDownloadManagerService;
     private static boolean sIsNetworkListenerDisabled;
     private static boolean sIsNetworkMetered;
@@ -607,6 +609,7 @@ public class DownloadManagerService
                 progress.mIsUpdated = true;
                 progress.mIsSupportedMimeType = isSupportedMimeType;
                 mDownloadProgressMap.put(id, progress);
+                sFirstSeenDownloadIds.add(id);
                 DownloadUmaStatsEntry entry = getUmaStatsEntry(downloadItem.getId());
                 if (entry == null) {
                     addUmaStatsEntry(new DownloadUmaStatsEntry(
@@ -636,21 +639,22 @@ public class DownloadManagerService
             case DOWNLOAD_STATUS_COMPLETE:
             case DOWNLOAD_STATUS_FAILED:
             case DOWNLOAD_STATUS_CANCELLED:
-                recordDownloadFinishedUMA(downloadStatus, downloadItem.getId(),
-                        downloadItem.getDownloadInfo().getBytesReceived());
-                clearDownloadRetryCount(downloadItem.getId(), true);
-                clearDownloadRetryCount(downloadItem.getId(), false);
+                recordDownloadFinishedUMA(
+                        downloadStatus, id, downloadItem.getDownloadInfo().getBytesReceived());
+                clearDownloadRetryCount(id, true);
+                clearDownloadRetryCount(id, false);
                 updateNotification(progress);
+                sFirstSeenDownloadIds.remove(id);
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
-                entry = getUmaStatsEntry(downloadItem.getId());
+                entry = getUmaStatsEntry(id);
                 entry.numInterruptions++;
                 updateBytesReceived(entry, bytesReceived);
                 storeUmaEntries();
                 updateNotification(progress);
                 break;
             case DOWNLOAD_STATUS_IN_PROGRESS:
-                entry = getUmaStatsEntry(downloadItem.getId());
+                entry = getUmaStatsEntry(id);
                 if (entry.isPaused != downloadItem.getDownloadInfo().isPaused()
                         || updateBytesReceived(entry, bytesReceived)) {
                     entry.isPaused = downloadItem.getDownloadInfo().isPaused();
@@ -903,10 +907,14 @@ public class DownloadManagerService
         recordDownloadResumption(uma);
         if (progress == null) {
             assert !item.getDownloadInfo().isPaused();
+            // If the download was not resumed before, the browser must have been killed while the
+            // download is active.
+            if (!sFirstSeenDownloadIds.contains(item.getId())) {
+                sFirstSeenDownloadIds.add(item.getId());
+                recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_BROWSER_KILLED);
+            }
             updateDownloadProgress(item, DOWNLOAD_STATUS_IN_PROGRESS);
             progress = mDownloadProgressMap.get(item.getId());
-            // If progress is null, the browser must have been killed while the download is active.
-            recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_BROWSER_KILLED);
         }
         if (hasUserGesture) {
             // If user manually resumes a download, update the connection type that the download
@@ -1235,6 +1243,7 @@ public class DownloadManagerService
     private void removeDownloadProgress(String guid) {
         mDownloadProgressMap.remove(guid);
         removeAutoResumableDownload(guid);
+        sFirstSeenDownloadIds.remove(guid);
     }
 
     @Override
