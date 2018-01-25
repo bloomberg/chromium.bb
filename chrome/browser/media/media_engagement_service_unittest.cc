@@ -312,10 +312,10 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   // and we will ensure it has the same score. origin2 will have a score
   // that is zero and will remain zero. origin3 will have a score
   // and will be cleared. origin4 will have a normal score.
-  SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 4);
+  SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 14);
   SetScores(origin2, 2, 1);
   SetScores(origin3, 2, 1);
-  SetScores(origin4, MediaEngagementScore::GetScoreMinVisits(), 2);
+  SetScores(origin4, MediaEngagementScore::GetScoreMinVisits(), 10);
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = GetReferenceTime() - base::TimeDelta::FromDays(1);
@@ -336,14 +336,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   history->AddPage(origin3a, yesterday_afternoon, history::SOURCE_BROWSED);
 
   // Check that the scores are valid at the beginning.
-  ExpectScores(origin1, 2.0 / 3.0,
-               MediaEngagementScore::GetScoreMinVisits() + 2, 4, TimeNotSet());
+  ExpectScores(origin1, 7.0 / 11.0,
+               MediaEngagementScore::GetScoreMinVisits() + 2, 14, TimeNotSet());
   EXPECT_TRUE(GetActualScore(origin1));
   ExpectScores(origin2, 0.0, 2, 1, TimeNotSet());
   EXPECT_FALSE(GetActualScore(origin2));
   ExpectScores(origin3, 0.0, 2, 1, TimeNotSet());
   EXPECT_FALSE(GetActualScore(origin3));
-  ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 2,
+  ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                TimeNotSet());
   EXPECT_TRUE(GetActualScore(origin4));
 
@@ -362,13 +362,13 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // should have a score that is zero but it's visits and playbacks should
     // have decreased. origin3 should have had a decrease in the number of
     // visits. origin4 should have the old score.
-    ExpectScores(origin1, 0.5, MediaEngagementScore::GetScoreMinVisits(), 2,
+    ExpectScores(origin1, 0.6, MediaEngagementScore::GetScoreMinVisits(), 12,
                  TimeNotSet());
     EXPECT_TRUE(GetActualScore(origin1));
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     EXPECT_FALSE(GetActualScore(origin2));
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
-    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 2,
+    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
 
     histogram_tester.ExpectTotalCount(
@@ -376,7 +376,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0, 2);
     histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 17, 1);
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 4, 1);
   }
 
   {
@@ -396,17 +396,17 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin1's score should have changed but the rest should remain the same.
-    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1, 1,
-                 TimeNotSet());
+    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1,
+                 11, TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
-    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 2,
+    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
 
     histogram_tester.ExpectTotalCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
     histogram_tester.ExpectBucketCount(
-        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 50, 1);
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 60, 1);
   }
 
   {
@@ -428,11 +428,11 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // origin3's score should be removed but the rest should remain the same.
     std::map<GURL, double> scores = GetScoreMapForTesting();
     EXPECT_TRUE(scores.find(origin3) == scores.end());
-    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1, 1,
-                 TimeNotSet());
+    ExpectScores(origin1, 0.0, MediaEngagementScore::GetScoreMinVisits() - 1,
+                 11, TimeNotSet());
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
-    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 2,
+    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
                  TimeNotSet());
 
     histogram_tester.ExpectTotalCount(
@@ -495,11 +495,12 @@ TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
   GURL url2("https://www.google.co.uk");
   GURL url3("https://www.example.com");
 
-  SetScores(url1, 6, 5);
-  SetScores(url2, 6, 3);
+  SetScores(url1, 24, 20);
+  SetScores(url2, 24, 12);
   RecordVisitAndPlaybackAndAdvanceClock(url3);
-  ExpectScores(url1, 5.0 / 6.0, 6, 5, TimeNotSet());
-  ExpectScores(url2, 0.5, 6, 3, TimeNotSet());
+
+  ExpectScores(url1, 5.0 / 6.0, 24, 20, TimeNotSet());
+  ExpectScores(url2, 0.5, 24, 12, TimeNotSet());
   ExpectScores(url3, 0.0, 1, 1, Now());
 
   base::HistogramTester histogram_tester;
@@ -523,8 +524,8 @@ TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
   GURL url2("https://www.google.co.uk");
   GURL url3("https://www.example.com");
 
-  SetScores(url1, 6, 5);
-  SetScores(url2, 6, 1);
+  SetScores(url1, 20, 15);
+  SetScores(url2, 20, 4);
 
   EXPECT_TRUE(HasHighEngagement(url1));
   EXPECT_FALSE(HasHighEngagement(url2));

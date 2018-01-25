@@ -187,7 +187,7 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        BypassAutoplayHighEngagement) {
-  SetScores(PrimaryOrigin(), 7, 7);
+  SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 }
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        BypassAutoplayFrameHighEngagement) {
-  SetScores(PrimaryOrigin(), 7, 7);
+  SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_test.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
   ExpectAutoplayAllowed();
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        DoNotBypassAutoplayFrameLowEngagement) {
-  SetScores(SecondaryOrigin(), 7, 7);
+  SetScores(SecondaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_test.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
   ExpectAutoplayDenied();
@@ -230,13 +230,13 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        ClearEngagementOnNavigation) {
-  SetScores(PrimaryOrigin(), 7, 7);
+  SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 
   LoadTestPageSecondaryOrigin("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
-  SetScores(SecondaryOrigin(), 7, 7);
+  SetScores(SecondaryOrigin(), 20, 20);
 
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 // Test have high score threshold.
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        HasHighScoreThreshold) {
-  SetScores(PrimaryOrigin(), 10, 8);
-  SetScores(PrimaryOrigin(), 10, 5);
+  SetScores(PrimaryOrigin(), 20, 16);
+  SetScores(PrimaryOrigin(), 20, 10);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 }
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayAllowed();
 
   // If we now have a high MEI score we should still be allowed to autoplay.
-  SetScores(PrimaryOrigin(), 10, 10);
+  SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayDenied();
 
   // If we now have a high MEI score we should now be allowed to autoplay.
-  SetScores(PrimaryOrigin(), 10, 10);
+  SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
                        PreloadedDataAndHighVisits) {
   // Autoplay should be denied due to a low score.
-  SetScores(PrimaryOrigin(), 10, 0);
+  SetScores(PrimaryOrigin(), 20, 0);
   LoadTestPage("engagement_autoplay_test.html");
   ExpectAutoplayDenied();
 
