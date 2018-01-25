@@ -13,13 +13,13 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/child/child_thread_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -480,7 +480,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         }
         break;
       case WebHTTPBody::Element::kTypeBlob: {
-        if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+        if (base::FeatureList::IsEnabled(features::kNetworkService)) {
           if (!blob_registry.is_bound()) {
             if (ChildThreadImpl::current()) {
               ChildThreadImpl::current()->GetConnector()->BindInterface(

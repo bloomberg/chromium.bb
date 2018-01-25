@@ -100,6 +100,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -130,7 +131,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -975,7 +975,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                                             base::Closure closure) {
     // TODO(jam): use the URLLoaderInterceptor for the non-network service path
     // once http://crbug.com/740130 is fixed.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       DCHECK(!interceptor_);
       interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
           base::BindLambdaForTesting(

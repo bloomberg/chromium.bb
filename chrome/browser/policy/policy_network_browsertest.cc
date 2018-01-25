@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/test_root_certs.h"
@@ -37,7 +38,6 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -104,7 +104,7 @@ scoped_refptr<net::URLRequestContextGetter> system_request_context() {
 }
 
 bool IsQuicEnabledForSystem() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     return IsQuicEnabled(
         g_browser_process->system_network_context_manager()->GetContext());
   }
@@ -317,7 +317,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     // To avoid any races between sending future requests and disabling QUIC in
     // the network process, flush the NetworkService Mojo interface, which is
     // the one that has the DisableQuic() method.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    if (base::FeatureList::IsEnabled(features::kNetworkService))
       content::FlushNetworkServiceInstanceForTesting();
   }
 

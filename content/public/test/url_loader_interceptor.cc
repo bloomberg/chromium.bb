@@ -10,8 +10,8 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 
 namespace content {
@@ -163,7 +163,7 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback,
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (intercept_subresources_ &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
         &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
         base::Unretained(this)));
@@ -185,7 +185,7 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (intercept_subresources_ &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(
         RenderFrameHostImpl::CreateNetworkFactoryCallback());
   }
@@ -261,14 +261,14 @@ void URLLoaderInterceptor::InitializeOnIOThread(base::OnceClosure closure) {
   // Once http://crbug.com/747130 is fixed, the codepath above will work for
   // the non-network service code path.
   if (intercept_frame_requests_ &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
     URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
         base::BindRepeating(&URLLoaderInterceptor::GetNetworkFactoryCallback,
                             base::Unretained(this)));
   }
 
   if (intercept_subresources_ &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      !base::FeatureList::IsEnabled(features::kNetworkService)) {
     rmf_interceptor_ = std::make_unique<Interceptor>(
         this, base::BindRepeating([]() {
           return ResourceMessageFilter::GetCurrentForTesting()->child_id();
@@ -291,13 +291,13 @@ void URLLoaderInterceptor::ShutdownOnIOThread(base::OnceClosure closure) {
   subresource_wrappers_.clear();
 
   if (intercept_frame_requests_ &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
     URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
         URLLoaderFactoryGetter::GetNetworkFactoryCallback());
   }
 
   if (intercept_subresources_ &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      !base::FeatureList::IsEnabled(features::kNetworkService)) {
     ResourceMessageFilter::SetNetworkFactoryForTesting(nullptr);
   }
 

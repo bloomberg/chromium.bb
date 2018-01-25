@@ -8,8 +8,6 @@ static_library("cpp") {
   sources = [
     "cors/cors.cc",
     "cors/cors.h",
-    "features.cc",
-    "features.h",
     "loader_util.cc",
     "loader_util.h",
     "mutable_network_traffic_annotation_tag_struct_traits.h",

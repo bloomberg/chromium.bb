@@ -90,7 +90,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
@@ -2116,7 +2115,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   // cross-site, which will lead to a committed net error.
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
   bool network_service =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
+      base::FeatureList::IsEnabled(features::kNetworkService);
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
   if (network_service) {
     url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(

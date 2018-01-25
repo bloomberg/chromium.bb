@@ -169,6 +169,10 @@ const base::Feature kMemoryCoordinator {
   "MemoryCoordinator", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables the network service.
+const base::Feature kNetworkService{"NetworkService",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -208,6 +212,10 @@ const base::Feature kOriginManifest{"OriginManifest",
 // Origin Trials for controlling access to feature/API experiments.
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Out of Blink CORS
+const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether a download can be handled by parallel jobs.
 const base::Feature kParallelDownloading{
@@ -256,6 +264,10 @@ const base::Feature kPepper3DImageChromium {
 // Generate V8 full code cache for PWAs.
 const base::Feature kPWAFullCodeCache{"PWAFullCodeCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Port some content::ResourceScheduler functionalities to renderer.
+const base::Feature kRendererSideResourceScheduler{
+    "RendererSideResourceScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{

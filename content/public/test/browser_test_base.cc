@@ -28,6 +28,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/service_manager_connection.h"
@@ -39,7 +40,6 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -418,7 +418,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
   const testing::TestInfo* const test_info =
       testing::UnitTest::GetInstance()->current_test_info();
   bool network_service =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
+      base::FeatureList::IsEnabled(features::kNetworkService);
   // ProcessTransferAfterError is the only browser test which needs to modify
   // the host rules (when not using the network service).
   if (network_service ||

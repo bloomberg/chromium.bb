@@ -11,12 +11,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/network/cors/cors_url_loader_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,7 +93,7 @@ class CORSURLLoaderTest : public testing::Test {
  protected:
   // testing::Test implementation.
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(network::features::kOutOfBlinkCORS);
+    feature_list_.InitAndEnableFeature(features::kOutOfBlinkCORS);
   }
 
   void CreateLoaderAndStart(const GURL& origin,

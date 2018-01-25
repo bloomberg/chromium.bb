@@ -46,7 +46,6 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using prerender::test_utils::DestructionWaiter;
@@ -322,7 +321,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   GURL prefetch_script = src_server()->GetURL(kPrefetchScript);
 
   bool use_interceptor_for_frame_requests =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
+      base::FeatureList::IsEnabled(features::kNetworkService);
   if (!use_interceptor_for_frame_requests) {
     // Until http://crbug.com/747130 is fixed, navigation requests won't go
     // through URLLoader.
@@ -494,7 +493,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
   });
 
   bool use_interceptor = false;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     use_interceptor = true;
   } else {
     // Until http://crbug.com/747130 is fixed, navigation requests won't go

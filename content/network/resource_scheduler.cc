@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/common/content_features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -28,7 +29,6 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/public/cpp/features.h"
 #include "url/scheme_host_port.h"
 
 namespace content {
@@ -414,7 +414,7 @@ class ResourceScheduler::Client {
         resource_scheduler_(resource_scheduler),
         weak_ptr_factory_(this) {
     if (base::FeatureList::IsEnabled(
-            network::features::kRendererSideResourceScheduler)) {
+            features::kRendererSideResourceScheduler)) {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.
@@ -486,7 +486,7 @@ class ResourceScheduler::Client {
   void DeprecatedOnNavigate() {
     deprecated_has_html_body_ = false;
     if (base::FeatureList::IsEnabled(
-            network::features::kRendererSideResourceScheduler)) {
+            features::kRendererSideResourceScheduler)) {
       // When kRendererSideResourceScheduler is enabled, "layout blocking"
       // concept is moved to the renderer side, so the shceduler works always
       // with the normal mode.

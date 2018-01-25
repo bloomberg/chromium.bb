@@ -55,6 +55,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -77,7 +78,6 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -455,7 +455,7 @@ class DNSErrorPageTest : public ErrorPageTest {
   friend LinkDoctorInterceptor;
 
   DNSErrorPageTest() {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    if (!base::FeatureList::IsEnabled(features::kNetworkService))
       return;
 
     url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
@@ -563,7 +563,7 @@ class DNSErrorPageTest : public ErrorPageTest {
     UIThreadSearchTermsData search_terms_data(browser()->profile());
     search_term_url_ = GURL(search_terms_data.GoogleBaseURLValue());
 
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
       std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
           new LinkDoctorInterceptor(this));
 
@@ -1208,7 +1208,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
   void InstallInterceptor(const GURL& url, int32_t requests_to_fail) {
     requests_ = failures_ = 0;
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       url_loader_interceptor_ =
           std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
               [](int32_t requests_to_fail, int32_t* requests, int32_t* failures,
@@ -1377,7 +1377,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
  public:
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       url_loader_interceptor_ =
           std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
               [](content::URLLoaderInterceptor::RequestParams* params) {
@@ -1397,7 +1397,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   }
 
   void TearDownOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       url_loader_interceptor_.reset();
     } else {
       BrowserThread::PostTask(

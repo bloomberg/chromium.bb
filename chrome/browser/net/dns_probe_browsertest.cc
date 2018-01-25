@@ -28,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -39,7 +40,6 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job.h"
-#include "services/network/public/cpp/features.h"
 
 using base::Bind;
 using base::BindOnce;
@@ -511,7 +511,7 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
       BindOnce(&DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread,
                Unretained(helper_), g_browser_process->io_thread()));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     // Just instantiating this helper is enough to respond to
     // http(s)://mock.failed.request requests.
     url_loader_interceptor_ =

@@ -47,6 +47,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -56,7 +57,6 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
-#include "services/network/public/cpp/features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -185,7 +185,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     // SetUpOnMainThread(), because during a session restore the restored tab
     // comes up before SetUpOnMainThread().  Note that at this point, we do not
     // have a profile.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
           base::BindLambdaForTesting(
               [&](content::URLLoaderInterceptor::RequestParams* params) {

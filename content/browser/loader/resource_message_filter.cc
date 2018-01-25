@@ -16,7 +16,7 @@
 #include "content/network/cors/cors_url_loader_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
-#include "services/network/public/cpp/features.h"
+#include "content/public/common/content_features.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -146,7 +146,7 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   requester_info_->set_filter(GetWeakPtr());
   url_loader_factory_ = std::make_unique<URLLoaderFactoryImpl>(requester_info_);
 
-  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS)) {
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
     url_loader_factory_ =
         std::make_unique<CORSURLLoaderFactory>(std::move(url_loader_factory_));
   }

@@ -142,7 +142,6 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -374,7 +373,7 @@ void NotifyResourceSchedulerOfNavigation(
 }
 
 bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+  return base::FeatureList::IsEnabled(features::kNetworkService) &&
          !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kSingleProcess);
@@ -3532,7 +3531,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
       (!is_same_document || is_first_navigation)) {
     subresource_loader_factories =
         std::make_unique<URLLoaderFactoryBundleInfo>();
@@ -3620,7 +3619,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
   // It is imperative that cross-document navigations always provide a set of
   // subresource ULFs when the Network Service is enabled.
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+  DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService) ||
          is_same_document || !is_first_navigation ||
          subresource_loader_factories);
 
@@ -4116,7 +4115,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 }
 
 void RenderFrameHostImpl::OnNetworkServiceConnectionError() {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
   DCHECK(network_service_connection_error_handler_holder_.is_bound() &&
          network_service_connection_error_handler_holder_.encountered_error());
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
