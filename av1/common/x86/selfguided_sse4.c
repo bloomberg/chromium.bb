@@ -462,21 +462,21 @@ static __m128i cross_sum_fast_odd_not_last(const int32_t *buf, int stride) {
 // xl    x   xr
 //
 // Pixels are weighted like this:
-//  6    8    6
+//  4    6    4
 //  0    0    0
-//  14   16   14
+//  16   18   16
 //
 // buf points to x
 //
-// sixes = xtl + xtr
-// eights = xt
-// fourteens = xl + xr
-// sixteens = x
-// cross_sum = 6 * sixes + 8 * eights + 14 * fourteens + 16 * sixteens
-//           = 8 * (sixes + eights) + 16 * (sixteens + fourteens)
-//              - 2 * (sixes + fourteens)
-//           = (sixes + eights) << 3 + (sixteens + fourteens) << 4
-//              - (sixes + fourteens) << 1
+// fours = xtl + xtr
+// sixes = xt
+// sixteens = xl + xr
+// eighteens = x
+// cross_sum = 4 * fours + 6 * sixes + 16 * sixteens + 18 * eighteens
+//           = 4 * (fours + sixes) + 16 * (sixteens + eighteens)
+//              + 2 * (sixes + eighteens)
+//           = (fours + sixes) << 2 + (sixteens + eighteens) << 4
+//              + (sixes + eighteens) << 1
 static __m128i cross_sum_fast_odd_last(const int32_t *buf, int stride) {
   const int two_stride = 2 * stride;
   const __m128i xtl = xx_loadu_128(buf - 1 - two_stride);
@@ -486,19 +486,19 @@ static __m128i cross_sum_fast_odd_last(const int32_t *buf, int stride) {
   const __m128i x = xx_loadu_128(buf);
   const __m128i xr = xx_loadu_128(buf + 1);
 
-  const __m128i sixes = _mm_add_epi32(xtl, xtr);
-  const __m128i eights = xt;
-  const __m128i fourteens = _mm_add_epi32(xl, xr);
-  const __m128i sixteens = x;
+  const __m128i fours = _mm_add_epi32(xtl, xtr);
+  const __m128i sixes = xt;
+  const __m128i sixteens = _mm_add_epi32(xl, xr);
+  const __m128i eighteens = x;
 
-  const __m128i sixes_plus_eights = _mm_add_epi32(sixes, eights);
-  const __m128i sixteens_plus_fourteens = _mm_add_epi32(sixteens, fourteens);
-  const __m128i sixes_plus_fourteens = _mm_add_epi32(sixes, fourteens);
+  const __m128i fours_plus_sixes = _mm_add_epi32(fours, sixes);
+  const __m128i sixteens_plus_eighteens = _mm_add_epi32(sixteens, eighteens);
+  const __m128i sixes_plus_eighteens = _mm_add_epi32(sixes, eighteens);
 
-  return _mm_sub_epi32(
-      _mm_add_epi32(_mm_slli_epi32(sixes_plus_eights, 3),
-                    _mm_slli_epi32(sixteens_plus_fourteens, 4)),
-      _mm_slli_epi32(sixes_plus_fourteens, 1));
+  return _mm_add_epi32(
+      _mm_add_epi32(_mm_slli_epi32(fours_plus_sixes, 2),
+                    _mm_slli_epi32(sixteens_plus_eighteens, 4)),
+      _mm_slli_epi32(sixes_plus_eighteens, 1));
 }
 
 // The final filter for selfguided restoration. Computes a weighted average
