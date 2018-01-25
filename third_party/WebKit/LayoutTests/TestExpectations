@@ -3391,3 +3391,4 @@ crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui
 # Sheriff failures 2018-01-23
 # Flaking on linux_chromium_rel_ng
 crbug.com/804709 [ Linux ] virtual/gpu/fast/canvas/canvas-fillPath-shadow.html [ Pass Failure ]
+crbug.com/805788 [ Linux Win7 Win10 ] virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Pass Timeout ]
