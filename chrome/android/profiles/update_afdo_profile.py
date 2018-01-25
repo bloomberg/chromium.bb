@@ -18,7 +18,7 @@ import argparse
 import os
 import subprocess
 import sys
-import urllib
+import urllib2
 
 GS_BASE_URL = 'https://storage.googleapis.com/chromeos-prebuilt/afdo-job/llvm'
 PROFILE_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
@@ -73,8 +73,13 @@ def RetrieveProfile(desired_profile_name, out_path):
   # vpython is > python 2.7.9, so we can expect urllib to validate HTTPS certs
   # properly.
   compressed_path = out_path + '.bz2'
-  profile = urllib.urlretrieve(GS_BASE_URL + '/' + desired_profile_name,
-                               filename=compressed_path)
+  u = urllib2.urlopen(GS_BASE_URL + '/' + desired_profile_name)
+  with open(compressed_path, 'wb') as f:
+    while True:
+      buf = u.read(4096)
+      if not buf:
+        break
+      f.write(buf)
 
   # NOTE: we can't use Python's bzip module, since it doesn't support
   # multi-stream bzip files. It will silently succeed and give us a garbage
