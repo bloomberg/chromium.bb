@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -20,6 +20,18 @@
 #include "media/audio/audio_output_controller.h"
 
 namespace content {
+
+namespace {
+
+// Safe to call from any thread.
+void LogMessage(int stream_id, const std::string& message) {
+  std::string out_message =
+      base::StringPrintf("[stream_id=%d] %s", stream_id, message.c_str());
+  content::MediaStreamManager::SendMessageToNativeLog(out_message);
+  DVLOG(1) << out_message;
+}
+
+}  // namespace
 
 const float kSilenceThresholdDBFS = -72.24719896f;
 // Desired polling frequency.  Note: If this is set too low, short-duration
@@ -81,11 +93,7 @@ void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerError() {
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnLog(
     base::StringPiece message) {
-  const std::string out_message =
-      base::StringPrintf("[stream_id=%d] %.*s", stream_id_,
-                         static_cast<int>(message.size()), message.data());
-  content::MediaStreamManager::SendMessageToNativeLog(out_message);
-  DVLOG(1) << out_message;
+  LogMessage(stream_id_, message.as_string());
 }
 
 std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
@@ -101,7 +109,8 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     media::mojom::AudioOutputStreamObserverPtr observer,
     const std::string& output_device_id) {
   auto socket = std::make_unique<base::CancelableSyncSocket>();
-  auto reader = AudioSyncReader::Create(params, socket.get());
+  auto reader = AudioSyncReader::Create(
+      base::BindRepeating(&LogMessage, stream_id), params, socket.get());
   if (!reader)
     return nullptr;
 

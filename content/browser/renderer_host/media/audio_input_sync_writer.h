@@ -46,14 +46,17 @@ class CONTENT_EXPORT AudioInputSyncWriter
 
   // Create() automatically initializes the AudioInputSyncWriter correctly,
   // and should be strongly preferred over calling the constructor directly!
-  AudioInputSyncWriter(std::unique_ptr<base::SharedMemory> shared_memory,
-                       std::unique_ptr<base::CancelableSyncSocket> socket,
-                       uint32_t shared_memory_segment_count,
-                       const media::AudioParameters& params);
+  AudioInputSyncWriter(
+      base::RepeatingCallback<void(const std::string&)> log_callback,
+      std::unique_ptr<base::SharedMemory> shared_memory,
+      std::unique_ptr<base::CancelableSyncSocket> socket,
+      uint32_t shared_memory_segment_count,
+      const media::AudioParameters& params);
 
   ~AudioInputSyncWriter() override;
 
   static std::unique_ptr<AudioInputSyncWriter> Create(
+      base::RepeatingCallback<void(const std::string&)> log_callback,
       uint32_t shared_memory_segment_count,
       const media::AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
@@ -79,9 +82,6 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // threshold logs info about that.
   void CheckTimeSinceLastWrite();
 
-  // Virtual function for native logging to be able to override in tests.
-  virtual void AddToNativeLog(const std::string& message);
-
   // Push |data| and metadata to |audio_buffer_fifo_|. Returns true if
   // successful. Logs error and returns false if the fifo already reached the
   // maximum size.
@@ -104,6 +104,8 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // Updates counters and returns true if successful. Logs error and returns
   // false if failure.
   bool SignalDataWrittenAndUpdateCounters();
+
+  const base::RepeatingCallback<void(const std::string&)> log_callback_;
 
   // Socket used to signal that audio data is ready.
   const std::unique_ptr<base::CancelableSyncSocket> socket_;

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -46,11 +48,10 @@ void NotifyProcessHostStreamRemoved(int render_process_id) {
 }
 
 // Safe to call from any thread.
-void LogMessage(int stream_id, base::StringPiece message) {
+void LogMessage(int stream_id, const std::string& message) {
   const std::string out_message =
-      base::StringPrintf("[stream_id=%d] %.*s", stream_id,
-                         static_cast<int>(message.size()), message.data());
-  content::MediaStreamManager::SendMessageToNativeLog(out_message);
+      base::StringPrintf("[stream_id=%d] %s", stream_id, message.c_str());
+  MediaStreamManager::SendMessageToNativeLog(out_message);
   DVLOG(1) << out_message;
 }
 
@@ -81,7 +82,7 @@ class AudioInputDelegateImpl::ControllerEventHandler
   }
 
   void OnLog(base::StringPiece message) override {
-    LogMessage(stream_id_, message);
+    LogMessage(stream_id_, message.as_string());
   }
 
   void OnMuted(bool is_muted) override {
@@ -133,7 +134,8 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
   auto foreign_socket = std::make_unique<base::CancelableSyncSocket>();
 
   std::unique_ptr<AudioInputSyncWriter> writer = AudioInputSyncWriter::Create(
-      shared_memory_count, possibly_modified_parameters, foreign_socket.get());
+      base::BindRepeating(&LogMessage, stream_id), shared_memory_count,
+      possibly_modified_parameters, foreign_socket.get());
 
   if (!writer) {
     LogMessage(stream_id, "Failed to set up sync writer.");

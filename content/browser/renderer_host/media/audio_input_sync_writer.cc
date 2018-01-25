@@ -13,8 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/public/browser/browser_thread.h"
 
 using media::AudioBus;
 using media::AudioInputBuffer;
@@ -50,11 +48,13 @@ AudioInputSyncWriter::OverflowData& AudioInputSyncWriter::OverflowData::
 operator=(AudioInputSyncWriter::OverflowData&& other) = default;
 
 AudioInputSyncWriter::AudioInputSyncWriter(
+    base::RepeatingCallback<void(const std::string&)> log_callback,
     std::unique_ptr<base::SharedMemory> shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket,
     uint32_t shared_memory_segment_count,
     const media::AudioParameters& params)
-    : socket_(std::move(socket)),
+    : log_callback_(std::move(log_callback)),
+      socket_(std::move(socket)),
       shared_memory_(std::move(shared_memory)),
       shared_memory_segment_size_(
           (CHECK(shared_memory_segment_count > 0),
@@ -128,12 +128,12 @@ AudioInputSyncWriter::~AudioInputSyncWriter() {
   std::string log_string = base::StringPrintf(
       "AISW: number of detected audio glitches: %" PRIuS " out of %" PRIuS,
       write_error_count_, write_count_);
-  MediaStreamManager::SendMessageToNativeLog(log_string);
-  DVLOG(1) << log_string;
+  log_callback_.Run(log_string);
 }
 
 // static
 std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
+    base::RepeatingCallback<void(const std::string&)> log_callback,
     uint32_t shared_memory_segment_count,
     const media::AudioParameters& params,
     base::CancelableSyncSocket* foreign_socket) {
@@ -164,8 +164,8 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
   }
 
   return std::make_unique<AudioInputSyncWriter>(
-      std::move(shared_memory), std::move(socket), shared_memory_segment_count,
-      params);
+      std::move(log_callback), std::move(shared_memory), std::move(socket),
+      shared_memory_segment_count, params);
 }
 
 void AudioInputSyncWriter::Write(const AudioBus* data,
@@ -255,16 +255,11 @@ void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
   }
   const std::string log_message = oss.str();
   if (!log_message.empty()) {
-    AddToNativeLog(log_message);
-    DVLOG(1) << log_message;
+    log_callback_.Run(log_message);
   }
 
   last_write_time_ = base::Time::Now();
 #endif
-}
-
-void AudioInputSyncWriter::AddToNativeLog(const std::string& message) {
-  MediaStreamManager::SendMessageToNativeLog(message);
 }
 
 bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
@@ -282,23 +277,22 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
                          "AudioInputSyncWriter::PushDataToFifo - overflow",
                          TRACE_EVENT_SCOPE_THREAD);
     if (write_error_count_ <= 50 && write_error_count_ % 10 == 0) {
-      const std::string error_message = "AISW: No room in fifo.";
+      static const char* error_message = "AISW: No room in fifo.";
       LOG(WARNING) << error_message;
-      AddToNativeLog(error_message);
+      log_callback_.Run(error_message);
       if (write_error_count_ == 50) {
-        const std::string cap_error_message =
+        static const char* cap_error_message =
             "AISW: Log cap reached, suppressing further fifo overflow logs.";
         LOG(WARNING) << cap_error_message;
-        AddToNativeLog(cap_error_message);
+        log_callback_.Run(error_message);
       }
     }
     return false;
   }
 
   if (overflow_data_.empty()) {
-    const std::string message = "AISW: Starting to use fifo.";
-    DVLOG(1) << message;
-    AddToNativeLog(message);
+    static const char* message = "AISW: Starting to use fifo.";
+    log_callback_.Run(message);
   }
 
   // Push data to fifo.
@@ -342,9 +336,8 @@ bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
   overflow_data_.erase(overflow_data_.begin(), data_it);
 
   if (overflow_data_.empty()) {
-    const std::string message = "AISW: Fifo emptied.";
-    DVLOG(1) << message;
-    AddToNativeLog(message);
+    static const char* message = "AISW: Fifo emptied.";
+    log_callback_.Run(message);
   }
 
   return !write_error;
@@ -375,9 +368,9 @@ bool AudioInputSyncWriter::SignalDataWrittenAndUpdateCounters() {
     // amount of logs.
     if (!had_socket_error_) {
       had_socket_error_ = true;
-      const std::string error_message = "AISW: No room in socket buffer.";
+      static const char* error_message = "AISW: No room in socket buffer.";
       PLOG(WARNING) << error_message;
-      AddToNativeLog(error_message);
+      log_callback_.Run(error_message);
       TRACE_EVENT_INSTANT0("audio",
                            "AudioInputSyncWriter: No room in socket buffer",
                            TRACE_EVENT_SCOPE_THREAD);

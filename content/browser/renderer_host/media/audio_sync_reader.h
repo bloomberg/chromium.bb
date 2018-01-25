@@ -8,12 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -39,14 +40,17 @@ class CONTENT_EXPORT AudioSyncReader
  public:
   // Create() automatically initializes the AudioSyncReader correctly,
   // and should be strongly preferred over calling the constructor directly!
-  AudioSyncReader(const media::AudioParameters& params,
-                  std::unique_ptr<base::SharedMemory> shared_memory,
-                  std::unique_ptr<base::CancelableSyncSocket> socket);
+  AudioSyncReader(
+      base::RepeatingCallback<void(const std::string&)> log_callback,
+      const media::AudioParameters& params,
+      std::unique_ptr<base::SharedMemory> shared_memory,
+      std::unique_ptr<base::CancelableSyncSocket> socket);
 
   ~AudioSyncReader() override;
 
   // Returns null on failure.
   static std::unique_ptr<AudioSyncReader> Create(
+      base::RepeatingCallback<void(const std::string&)> log_callback,
       const media::AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
@@ -65,6 +69,8 @@ class CONTENT_EXPORT AudioSyncReader
   // Blocks until data is ready for reading or a timeout expires.  Returns false
   // if an error or timeout occurs.
   bool WaitUntilDataIsReady();
+
+  const base::RepeatingCallback<void(const std::string&)> log_callback_;
 
   std::unique_ptr<base::SharedMemory> shared_memory_;
 
