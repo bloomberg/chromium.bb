@@ -226,6 +226,7 @@ Refer to README.md for content description and update process.
  <item id="web_history_query" hash_code="17400350" type="1" second_id="110307337" content_hash_code="36075147" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="5" file_path="components/history/core/browser/browsing_history_service.cc"/>
  <item id="web_history_service" hash_code="110307337" type="2" content_hash_code="16140045" os_list="linux,windows" semantics_fields="1,5" policy_fields="-2,4" file_path="components/history/core/browser/web_history_service.cc"/>
  <item id="webrtc_log_upload" hash_code="62443804" type="0" content_hash_code="33661169" os_list="linux,windows" file_path="chrome/browser/media/webrtc/webrtc_log_uploader.cc"/>
+ <item id="websocket_basic_stream" hash_code="51586722" type="0" content_hash_code="68121427" os_list="linux,windows" file_path="net/websockets/websocket_basic_stream.cc"/>
  <item id="websocket_stream" hash_code="17188928" type="0" content_hash_code="7250776" os_list="linux,windows" file_path="net/websockets/websocket_stream.cc"/>
  <item id="webstore_data_fetcher" hash_code="26302604" type="0" content_hash_code="24000746" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_data_fetcher.cc"/>
  <item id="webstore_install_helper" hash_code="25921771" type="0" content_hash_code="10206361" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_install_helper.cc"/>

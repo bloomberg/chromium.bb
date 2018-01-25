@@ -30,6 +30,7 @@
 
 namespace {
 
+// Please refer to the comment in class header if the usage changes.
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("websocket_stream", R"(
         semantics {

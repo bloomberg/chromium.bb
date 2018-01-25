@@ -43447,6 +43447,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="50816767" label="lib_address_input"/>
   <int value="50859288" label="cloud_print_proxy"/>
   <int value="51164680" label="profile_avatar"/>
+  <int value="51586722" label="websocket_basic_stream"/>
   <int value="52821843" label="geo_language_provider"/>
   <int value="53695122" label="credenential_avatar"/>
   <int value="54836939" label="cryptauth_enrollment_flow_finish"/>
@@ -43517,6 +43518,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="97199008" label="doodle_fetcher"/>
   <int value="97978464" label="gaia_auth_fetch_for_uber"/>
   <int value="98123737" label="devtools_interceptor"/>
+  <int value="98658519" label="accounts_image_fetcher"/>
   <int value="99279418" label="rlz_ping"/>
   <int value="100545943" label="webui_content_scripts_download"/>
   <int value="101725581" label="cros_recovery_image_download"/>
