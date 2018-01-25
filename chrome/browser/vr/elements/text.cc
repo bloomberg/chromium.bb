@@ -121,6 +121,13 @@ class TextTexture : public UiTexture {
     SetAndDirty(&cursor_position_, position);
   }
 
+  int GetCursorPositionFromPoint(const gfx::PointF& point) const {
+    DCHECK_EQ(lines().size(), 1u);
+    gfx::Point pixel_position(point.x() * GetDrawnSize().width(),
+                              point.y() * GetDrawnSize().height());
+    return lines().front()->FindCursorPosition(pixel_position).caret_pos();
+  }
+
   void SetShadowsEnabled(bool enabled) {
     SetAndDirty(&shadows_enabled_, enabled);
   }
@@ -137,7 +144,7 @@ class TextTexture : public UiTexture {
   // the texture is modified here.
   void LayOutText();
 
-  const std::vector<std::unique_ptr<gfx::RenderText>>& lines() {
+  const std::vector<std::unique_ptr<gfx::RenderText>>& lines() const {
     return lines_;
   }
 
@@ -221,6 +228,10 @@ gfx::RectF Text::GetCursorBounds() const {
   return gfx::RectF(
       bounds.CenterPoint().x() * scale, bounds.CenterPoint().y() * scale,
       bounds.height() * scale * kCursorWidthRatio, bounds.height() * scale);
+}
+
+int Text::GetCursorPositionFromPoint(const gfx::PointF& point) const {
+  return texture_->GetCursorPositionFromPoint(point);
 }
 
 void Text::SetShadowsEnabled(bool enabled) {

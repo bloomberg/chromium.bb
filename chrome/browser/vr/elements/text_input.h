@@ -33,6 +33,7 @@ class TextInput : public UiElement {
             OnInputEditedCallback input_edit_callback);
   ~TextInput() override;
 
+  void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
   void OnFocusChanged(bool focused) override;
   void OnInputEdited(const TextInputInfo& info) override;
@@ -64,6 +65,7 @@ class TextInput : public UiElement {
  private:
   void LayOutChildren() final;
   bool SetCursorBlinkState(const base::TimeTicks& time);
+  void ResetCursorBlinkCycle();
 
   OnFocusChangedCallback focus_changed_callback_;
   OnInputEditedCallback input_edit_callback_;
@@ -72,6 +74,7 @@ class TextInput : public UiElement {
   TextInputInfo text_info_;
   bool focused_ = false;
   bool cursor_visible_ = false;
+  base::TimeTicks cursor_blink_start_ticks_;
 
   Text* hint_element_ = nullptr;
   Text* text_element_ = nullptr;
