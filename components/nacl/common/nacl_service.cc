@@ -4,10 +4,10 @@
 
 #include "components/nacl/common/nacl_service.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
@@ -102,14 +102,14 @@ void NaClService::OnBindInterface(
 std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojo::ScopedMessagePipeHandle* ipc_channel) {
-  auto ipc_support = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
+  auto ipc_support = std::make_unique<mojo::edk::ScopedIPCSupport>(
       std::move(io_task_runner),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
   auto invitation = EstablishMojoConnection();
   IPC::mojom::ChannelBootstrapPtr bootstrap;
   *ipc_channel = mojo::MakeRequest(&bootstrap).PassMessagePipe();
-  auto context = base::MakeUnique<service_manager::ServiceContext>(
-      base::MakeUnique<NaClService>(bootstrap.PassInterface(),
+  auto context = std::make_unique<service_manager::ServiceContext>(
+      std::make_unique<NaClService>(bootstrap.PassInterface(),
                                     std::move(ipc_support)),
       ConnectToServiceManager(invitation.get()));
   return context;

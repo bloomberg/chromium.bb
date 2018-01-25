@@ -4,6 +4,7 @@
 
 #include "components/network_time/network_time_tracker.h"
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 #include <utility>
@@ -11,7 +12,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -197,7 +197,7 @@ void RecordFetchValidHistogram(bool valid) {
 // static
 void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
-                                   base::MakeUnique<base::DictionaryValue>());
+                                   std::make_unique<base::DictionaryValue>());
   registry->RegisterBooleanPref(prefs::kNetworkTimeQueriesEnabled, true);
 }
 

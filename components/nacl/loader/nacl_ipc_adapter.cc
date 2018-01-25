@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/task_runner_util.h"
 #include "base/tuple.h"
@@ -696,7 +695,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
 
   struct NaClDesc* desc =
       NaClDescCreateWithFilePathMetadata(handle, file_path_str.c_str());
-  rewritten_msg->AddDescriptor(base::MakeUnique<NaClDescWrapper>(desc));
+  rewritten_msg->AddDescriptor(std::make_unique<NaClDescWrapper>(desc));
   {
     base::AutoLock lock(lock_);
     SaveMessage(*new_msg, std::move(rewritten_msg));

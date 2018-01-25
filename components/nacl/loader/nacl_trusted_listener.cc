@@ -4,7 +4,8 @@
 
 #include "components/nacl/loader/nacl_trusted_listener.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -34,7 +35,7 @@ class NaClExitControlImpl : public nacl::mojom::NaClExitControl {
 };
 
 void CreateExitControl(nacl::mojom::NaClExitControlRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<NaClExitControlImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<NaClExitControlImpl>(),
                           std::move(request));
 }
 

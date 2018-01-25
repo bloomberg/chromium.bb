@@ -10,6 +10,7 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 
+#include <memory>
 #include <set>
 
 #include "base/command_line.h"
@@ -18,7 +19,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -132,9 +132,9 @@ namespace nacl {
 void AddNaClZygoteForkDelegates(
     std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
   delegates->push_back(
-      base::MakeUnique<NaClForkDelegate>(false /* nonsfi_mode */));
+      std::make_unique<NaClForkDelegate>(false /* nonsfi_mode */));
   delegates->push_back(
-      base::MakeUnique<NaClForkDelegate>(true /* nonsfi_mode */));
+      std::make_unique<NaClForkDelegate>(true /* nonsfi_mode */));
 }
 
 NaClForkDelegate::NaClForkDelegate(bool nonsfi_mode)

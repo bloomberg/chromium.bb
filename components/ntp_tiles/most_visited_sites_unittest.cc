@@ -16,7 +16,6 @@
 #include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -367,7 +366,7 @@ class PopularSitesFactoryForTest {
   }
 
   std::unique_ptr<PopularSites> New() {
-    return base::MakeUnique<PopularSitesImpl>(
+    return std::make_unique<PopularSitesImpl>(
         prefs_,
         /*template_url_service=*/nullptr,
         /*variations_service=*/nullptr, url_request_context_.get(),
@@ -432,7 +431,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
   void RecreateMostVisitedSites() {
     // We use StrictMock to make sure the object is not used unless Popular
     // Sites is enabled.
-    auto icon_cacher = base::MakeUnique<StrictMock<MockIconCacher>>();
+    auto icon_cacher = std::make_unique<StrictMock<MockIconCacher>>();
     icon_cacher_ = icon_cacher.get();
 
     if (IsPopularSitesEnabledViaVariations()) {
@@ -463,7 +462,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
 
     EXPECT_CALL(*icon_cacher, StartFetchMostLikely(_, _)).Times(AtLeast(0));
 
-    most_visited_sites_ = base::MakeUnique<MostVisitedSites>(
+    most_visited_sites_ = std::make_unique<MostVisitedSites>(
         &pref_service_, mock_top_sites_, &mock_suggestions_service_,
         popular_sites_factory_.New(), std::move(icon_cacher),
         /*supervisor=*/nullptr);
@@ -486,7 +485,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
   }
 
   FakeHomePageClient* RegisterNewHomePageClient() {
-    auto home_page_client = base::MakeUnique<FakeHomePageClient>();
+    auto home_page_client = std::make_unique<FakeHomePageClient>();
     FakeHomePageClient* raw_client_ptr = home_page_client.get();
     most_visited_sites_->SetHomePageClient(std::move(home_page_client));
     return raw_client_ptr;

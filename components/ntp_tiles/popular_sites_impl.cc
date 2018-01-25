@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -216,10 +217,10 @@ void SetDefaultResourceForSite(int index,
 // Creates the list of popular sites based on a snapshot available for mobile.
 std::unique_ptr<base::ListValue> DefaultPopularSites() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return base::MakeUnique<base::ListValue>();
+  return std::make_unique<base::ListValue>();
 #else
   if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
-    return base::MakeUnique<base::ListValue>();
+    return std::make_unique<base::ListValue>();
   }
   std::unique_ptr<base::ListValue> sites =
       base::ListValue::From(base::JSONReader::Read(

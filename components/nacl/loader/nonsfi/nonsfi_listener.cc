@@ -4,12 +4,12 @@
 
 #include "components/nacl/loader/nonsfi/nonsfi_listener.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -108,7 +108,7 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
       params.manifest_service_channel_handle);
   ppapi::StartUpPlugin();
 
-  trusted_listener_ = base::MakeUnique<NaClTrustedListener>(
+  trusted_listener_ = std::make_unique<NaClTrustedListener>(
       mojo::MakeProxy(nacl::mojom::NaClRendererHostPtrInfo(
           mojo::ScopedMessagePipeHandle(
               params.trusted_service_channel_handle.mojo_handle),

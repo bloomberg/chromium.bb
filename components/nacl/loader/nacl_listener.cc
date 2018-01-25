@@ -18,7 +18,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -337,7 +336,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
           manifest_service_handle)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 
-  trusted_listener_ = base::MakeUnique<NaClTrustedListener>(
+  trusted_listener_ = std::make_unique<NaClTrustedListener>(
       std::move(renderer_host), io_thread_.task_runner().get());
   struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
   if (args == NULL) {
