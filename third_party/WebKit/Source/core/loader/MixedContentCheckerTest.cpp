@@ -187,4 +187,34 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
       SecurityViolationReportingPolicy::kSuppressReporting));
 }
 
+TEST(MixedContentCheckerTest, DetectMixedFavicon) {
+  MixedContentCheckerMockLocalFrameClient* client =
+      new MixedContentCheckerMockLocalFrameClient;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
+  dummy_page_holder->GetFrame().GetSettings()->SetAllowRunningOfInsecureContent(
+      false);
+
+  KURL main_resource_url("https://example.test/");
+  KURL http_favicon_url("http://example.test/favicon.png");
+  KURL https_favicon_url("https://example.test/favicon.png");
+
+  dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
+      SecurityOrigin::Create(main_resource_url));
+
+  // Test that a mixed content favicon is correctly blocked.
+  EXPECT_TRUE(MixedContentChecker::ShouldBlockFetch(
+      &dummy_page_holder->GetFrame(), WebURLRequest::kRequestContextFavicon,
+      network::mojom::RequestContextFrameType::kNone,
+      ResourceRequest::RedirectStatus::kNoRedirect, http_favicon_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+
+  // Test that a secure favicon is not blocked.
+  EXPECT_FALSE(MixedContentChecker::ShouldBlockFetch(
+      &dummy_page_holder->GetFrame(), WebURLRequest::kRequestContextFavicon,
+      network::mojom::RequestContextFrameType::kNone,
+      ResourceRequest::RedirectStatus::kNoRedirect, https_favicon_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+}
+
 }  // namespace blink

@@ -39,7 +39,6 @@ WebMixedContentContextType WebMixedContent::ContextTypeFromRequestContext(
   switch (context) {
     // "Optionally-blockable" mixed content
     case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextFavicon:
     case WebURLRequest::kRequestContextImage:
     case WebURLRequest::kRequestContextVideo:
       return WebMixedContentContextType::kOptionallyBlockable;
@@ -56,6 +55,7 @@ WebMixedContentContextType WebMixedContent::ContextTypeFromRequestContext(
     case WebURLRequest::kRequestContextCSPReport:
     case WebURLRequest::kRequestContextEmbed:
     case WebURLRequest::kRequestContextEventSource:
+    case WebURLRequest::kRequestContextFavicon:
     case WebURLRequest::kRequestContextFetch:
     case WebURLRequest::kRequestContextFont:
     case WebURLRequest::kRequestContextForm:
