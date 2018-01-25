@@ -41,7 +41,6 @@ constexpr int kStatusIndicatorMaxAnimationSeconds = 10;
 constexpr int kStatusIndicatorOffsetFromBottom = 3;
 constexpr int kStatusIndicatorRadiusDip = 2;
 constexpr int kNotificationIndicatorRadiusDip = 7;
-constexpr int kNotificationIndicatorOffset = 12;
 constexpr SkColor kIndicatorBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 constexpr SkColor kIndicatorColor = SK_ColorWHITE;
 
@@ -134,6 +133,51 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
 }  // namespace
 
 namespace ash {
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfButton::AppNotificationIndicatorView
+
+// The indicator which is activated when the app corresponding with this
+// ShelfButton recieves a notification.
+class ShelfButton::AppNotificationIndicatorView : public views::View {
+ public:
+  explicit AppNotificationIndicatorView(SkColor indicator_color)
+      : indicator_color_(indicator_color) {}
+
+  ~AppNotificationIndicatorView() override {}
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    gfx::ScopedCanvas scoped(canvas);
+
+    canvas->SaveLayerAlpha(SK_AlphaOPAQUE);
+
+    DCHECK_EQ(width(), height());
+    DCHECK_EQ(kNotificationIndicatorRadiusDip, width() / 2);
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    const int kStrokeWidthPx = 1;
+    gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
+    center.Scale(dsf);
+
+    // Fill the center.
+    cc::PaintFlags flags;
+    flags.setColor(indicator_color_);
+    flags.setAntiAlias(true);
+    canvas->DrawCircle(
+        center, dsf * kNotificationIndicatorRadiusDip - kStrokeWidthPx, flags);
+
+    // Stroke the border.
+    flags.setColor(SkColorSetA(SK_ColorBLACK, 0x4D));
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    canvas->DrawCircle(
+        center, dsf * kNotificationIndicatorRadiusDip - kStrokeWidthPx / 2.0f,
+        flags);
+  }
+
+ private:
+  const SkColor indicator_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppNotificationIndicatorView);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfButton::AppStatusIndicatorView
@@ -229,6 +273,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       shelf_view_(shelf_view),
       icon_view_(new views::ImageView()),
       indicator_(new AppStatusIndicatorView()),
+      notification_indicator_(nullptr),
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr),
       is_touchable_app_context_menu_enabled_(
@@ -245,7 +290,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
   };
   icon_shadows_.assign(kShadows, kShadows + arraysize(kShadows));
 
-  // TODO: refactor the layers so each button doesn't require 2.
+  // TODO: refactor the layers so each button doesn't require 3.
   icon_view_->SetPaintToLayer();
   icon_view_->layer()->SetFillsBoundsOpaquely(false);
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
@@ -255,6 +300,13 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
 
   AddChildView(indicator_);
   AddChildView(icon_view_);
+  if (is_touchable_app_context_menu_enabled_) {
+    notification_indicator_ = new AppNotificationIndicatorView(kIndicatorColor);
+    notification_indicator_->SetPaintToLayer();
+    notification_indicator_->layer()->SetFillsBoundsOpaquely(false);
+    notification_indicator_->SetVisible(false);
+    AddChildView(notification_indicator_);
+  }
 
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
@@ -307,7 +359,7 @@ void ShelfButton::AddState(State state) {
       indicator_->ShowAttention(true);
 
     if (is_touchable_app_context_menu_enabled_ && (state & STATE_NOTIFICATION))
-      SchedulePaint();
+      notification_indicator_->SetVisible(true);
 
     if (state & STATE_DRAGGING)
       ScaleAppIcon(true);
@@ -322,7 +374,7 @@ void ShelfButton::ClearState(State state) {
       indicator_->ShowAttention(false);
 
     if (is_touchable_app_context_menu_enabled_ && (state & STATE_NOTIFICATION))
-      SchedulePaint();
+      notification_indicator_->SetVisible(false);
 
     if (state & STATE_DRAGGING)
       ScaleAppIcon(false);
@@ -446,8 +498,16 @@ void ShelfButton::Layout() {
   gfx::Rect icon_view_bounds =
       gfx::Rect(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
                 icon_width, icon_height);
-  // The indicator should be aligned with the icon, not the icon + shadow.
+
+  // The indicators should be aligned with the icon, not the icon + shadow.
   gfx::Point indicator_midpoint = icon_view_bounds.CenterPoint();
+  if (is_touchable_app_context_menu_enabled_) {
+    notification_indicator_->SetBoundsRect(
+        gfx::Rect(icon_view_bounds.right() - kNotificationIndicatorRadiusDip,
+                  icon_view_bounds.y(), kNotificationIndicatorRadiusDip * 2,
+                  kNotificationIndicatorRadiusDip * 2));
+  }
+
   icon_view_bounds.Inset(insets_shadows);
   icon_view_bounds.AdjustToFit(gfx::Rect(size()));
   icon_view_->SetBoundsRect(icon_view_bounds);
@@ -562,41 +622,6 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
   if (listener_)
     listener_->ButtonPressed(this, event, GetInkDrop());
-}
-
-void ShelfButton::PaintButtonContents(gfx::Canvas* canvas) {
-  // TODO(newcomer): Implement the notification indicator as a view because
-  // PaintButtonContents always paints behind the icon
-  // (https://crbug.com/803629).
-  if (!is_touchable_app_context_menu_enabled_)
-    return;
-
-  if (~state_ & STATE_NOTIFICATION)
-    return;
-
-  gfx::ScopedCanvas scoped(canvas);
-
-  canvas->SaveLayerAlpha(SK_AlphaOPAQUE);
-
-  const float dsf = canvas->UndoDeviceScaleFactor();
-  const int kStrokeWidthPx = 1;
-  gfx::PointF center = gfx::RectF(GetLocalBounds()).top_right();
-  center.Offset(-kNotificationIndicatorOffset, kNotificationIndicatorOffset);
-  center.Scale(dsf);
-
-  // Fill the center.
-  cc::PaintFlags flags;
-  flags.setColor(kIndicatorColor);
-  flags.setAntiAlias(true);
-  canvas->DrawCircle(
-      center, dsf * kNotificationIndicatorRadiusDip - kStrokeWidthPx, flags);
-
-  // Stroke the border.
-  flags.setColor(kIndicatorBorderColor);
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  canvas->DrawCircle(
-      center, dsf * kNotificationIndicatorRadiusDip - kStrokeWidthPx / 2.0f,
-      flags);
 }
 
 void ShelfButton::UpdateState() {
