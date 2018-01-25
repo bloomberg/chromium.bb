@@ -640,19 +640,21 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout()) {
     // Form controls are not supported yet.
-    if (!style.ForceLegacyLayout() && element &&
-        element->ShouldForceLegacyLayout()) {
+    if (element && element->ShouldForceLegacyLayout()) {
       style.SetForceLegacyLayout(true);
     }
 
     // TODO(layout-dev): Once LayoutNG handles inline content editable, we
     // should get rid of following code fragment.
-    else if (style.UserModify() != EUserModify::kReadOnly &&
-             style.Display() == EDisplay::kInline &&
-             parent_style.UserModify() == EUserModify::kReadOnly) {
-      style.SetDisplay(EDisplay::kInlineBlock);
+    else if (style.UserModify() != EUserModify::kReadOnly) {
+      style.SetForceLegacyLayout(true);
+
+      if (style.Display() == EDisplay::kInline &&
+          parent_style.UserModify() == EUserModify::kReadOnly) {
+        style.SetDisplay(EDisplay::kInlineBlock);
+      }
     }
   }
 }
