@@ -5,21 +5,29 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
 
+import org.junit.Assert;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.net.CronetTestCommon.CronetTestCommonCallback;
+import org.chromium.base.PathUtils;
 import org.chromium.net.impl.CronetEngineBase;
+import org.chromium.net.impl.JavaCronetEngine;
+import org.chromium.net.impl.JavaCronetProvider;
+import org.chromium.net.impl.UserAgent;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 
 /**
@@ -29,7 +37,16 @@ import java.net.URLStreamHandlerFactory;
  * one for tests under org.chromium.net.urlconnection, one for test under
  * org.chromium.net
  */
-public class CronetTestRule implements CronetTestCommonCallback, TestRule {
+public class CronetTestRule implements TestRule {
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_test";
+
+    private CronetTestFramework mCronetTestFramework;
+
+    // {@code true} when test is being run against system HttpURLConnection implementation.
+    private boolean mTestingSystemHttpURLConnection;
+    private boolean mTestingJavaImpl = false;
+    private StrictMode.VmPolicy mOldVmPolicy;
+
     /**
      * Name of the file that contains the test server certificate in PEM format.
      */
@@ -41,8 +58,6 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
     public static final String SERVER_KEY_PKCS8_PEM = "quic-leaf-cert.key.pkcs8.pem";
 
     private static final String TAG = CronetTestRule.class.getSimpleName();
-
-    private final CronetTestCommon mTestCommon;
 
     /**
      * Creates and holds pointer to CronetEngine.
@@ -59,12 +74,16 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
         }
     }
 
-    public static Context getContext() {
-        return InstrumentationRegistry.getTargetContext();
+    int getMaximumAvailableApiLevel() {
+        // Prior to M59 the ApiVersion.getMaximumAvailableApiLevel API didn't exist
+        if (ApiVersion.getCronetVersion().compareTo("59") < 0) {
+            return 3;
+        }
+        return ApiVersion.getMaximumAvailableApiLevel();
     }
 
-    public CronetTestRule() {
-        mTestCommon = new CronetTestCommon(this);
+    public static Context getContext() {
+        return InstrumentationRegistry.getTargetContext();
     }
 
     @Override
@@ -83,24 +102,24 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
      * Returns {@code true} when test is being run against system HttpURLConnection implementation.
      */
     public boolean testingSystemHttpURLConnection() {
-        return mTestCommon.testingSystemHttpURLConnection();
+        return mTestingSystemHttpURLConnection;
     }
 
     /**
      * Returns {@code true} when test is being run against the java implementation of CronetEngine.
      */
     public boolean testingJavaImpl() {
-        return mTestCommon.testingJavaImpl();
+        return mTestingJavaImpl;
     }
 
     // TODO(yolandyan): refactor this using parameterize framework
     private void runBase(Statement base, Description desc) throws Throwable {
-        mTestCommon.setTestingSystemHttpURLConnection(false);
-        mTestCommon.setTestingJavaImpl(false);
+        setTestingSystemHttpURLConnection(false);
+        setTestingJavaImpl(false);
         String packageName = desc.getTestClass().getPackage().getName();
 
         // Find the API version required by the test.
-        int requiredApiVersion = mTestCommon.getMaximumAvailableApiLevel();
+        int requiredApiVersion = getMaximumAvailableApiLevel();
         for (Annotation a : desc.getTestClass().getAnnotations()) {
             if (a instanceof RequiresMinApi) {
                 requiredApiVersion = ((RequiresMinApi) a).value();
@@ -114,19 +133,18 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
             }
         }
 
-        if (requiredApiVersion > mTestCommon.getMaximumAvailableApiLevel()) {
+        if (requiredApiVersion > getMaximumAvailableApiLevel()) {
             Log.i(TAG,
                     desc.getMethodName() + " skipped because it requires API " + requiredApiVersion
-                            + " but only API " + mTestCommon.getMaximumAvailableApiLevel()
-                            + " is present.");
+                            + " but only API " + getMaximumAvailableApiLevel() + " is present.");
         } else if (packageName.equals("org.chromium.net.urlconnection")) {
             try {
                 if (desc.getAnnotation(CompareDefaultWithCronet.class) != null) {
                     // Run with the default HttpURLConnection implementation first.
-                    mTestCommon.setTestingSystemHttpURLConnection(true);
+                    setTestingSystemHttpURLConnection(true);
                     base.evaluate();
                     // Use Cronet's implementation, and run the same test.
-                    mTestCommon.setTestingSystemHttpURLConnection(false);
+                    setTestingSystemHttpURLConnection(false);
                     base.evaluate();
                 } else {
                     // For all other tests.
@@ -139,7 +157,7 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
             try {
                 base.evaluate();
                 if (desc.getAnnotation(OnlyRunNativeCronet.class) == null) {
-                    mTestCommon.setTestingJavaImpl(true);
+                    setTestingJavaImpl(true);
                     base.evaluate();
                 }
             } catch (Throwable e) {
@@ -151,15 +169,48 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
     }
 
     void setUp() throws Exception {
-        mTestCommon.setUp();
+        System.loadLibrary("cronet_tests");
+        ContextUtils.initApplicationContext(getContext().getApplicationContext());
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        prepareTestStorage(getContext());
+        mOldVmPolicy = StrictMode.getVmPolicy();
+        // Only enable StrictMode testing after leaks were fixed in crrev.com/475945
+        if (getMaximumAvailableApiLevel() >= 7) {
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                                           .detectLeakedClosableObjects()
+                                           .penaltyLog()
+                                           .penaltyDeath()
+                                           .build());
+        }
     }
 
     void tearDown() throws Exception {
-        mTestCommon.tearDown();
+        try {
+            // Run GC and finalizers a few times to pick up leaked closeables
+            for (int i = 0; i < 10; i++) {
+                System.gc();
+                System.runFinalization();
+            }
+            System.gc();
+            System.runFinalization();
+        } finally {
+            StrictMode.setVmPolicy(mOldVmPolicy);
+        }
     }
 
+    /**
+     * Starts the CronetTest framework.
+     */
     public CronetTestFramework startCronetTestFramework() {
-        return mTestCommon.startCronetTestFramework();
+        mCronetTestFramework = new CronetTestFramework(getContext());
+        if (testingJavaImpl()) {
+            ExperimentalCronetEngine.Builder builder = createJavaEngineBuilder();
+            builder.setUserAgent(UserAgent.from(getContext()));
+            mCronetTestFramework.mCronetEngine = (CronetEngineBase) builder.build();
+            // Make sure that the instantiated engine is JavaCronetEngine.
+            assert mCronetTestFramework.mCronetEngine.getClass() == JavaCronetEngine.class;
+        }
+        return mCronetTestFramework;
     }
 
     /**
@@ -169,19 +220,38 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
      * @return the {@code CronetEngine.Builder} that builds Java-based {@code Cronet engine}.
      */
     public ExperimentalCronetEngine.Builder createJavaEngineBuilder() {
-        return mTestCommon.createJavaEngineBuilder();
+        return (ExperimentalCronetEngine.Builder) new JavaCronetProvider(getContext())
+                .createBuilder();
     }
 
     public void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {
-        mTestCommon.assertResponseEquals(expected, actual);
+        Assert.assertEquals(expected.getAllHeaders(), actual.getAllHeaders());
+        Assert.assertEquals(expected.getAllHeadersAsList(), actual.getAllHeadersAsList());
+        Assert.assertEquals(expected.getHttpStatusCode(), actual.getHttpStatusCode());
+        Assert.assertEquals(expected.getHttpStatusText(), actual.getHttpStatusText());
+        Assert.assertEquals(expected.getUrlChain(), actual.getUrlChain());
+        Assert.assertEquals(expected.getUrl(), actual.getUrl());
+        // Transferred bytes and proxy server are not supported in pure java
+        if (!testingJavaImpl()) {
+            Assert.assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
+            Assert.assertEquals(expected.getProxyServer(), actual.getProxyServer());
+            // This is a place where behavior intentionally differs between native and java
+            Assert.assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());
+        }
     }
 
     public static void assertContains(String expectedSubstring, String actualString) {
-        CronetTestCommon.assertContains(expectedSubstring, actualString);
+        Assert.assertNotNull(actualString);
+        if (!actualString.contains(expectedSubstring)) {
+            Assert.fail("String [" + actualString + "] doesn't contain substring ["
+                    + expectedSubstring + "]");
+        }
     }
 
     public CronetEngine.Builder enableDiskCache(CronetEngine.Builder cronetEngineBuilder) {
-        return mTestCommon.enableDiskCache(cronetEngineBuilder);
+        cronetEngineBuilder.setStoragePath(getTestStorage(getContext()));
+        cronetEngineBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
+        return cronetEngineBuilder;
     }
 
     /**
@@ -189,7 +259,9 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
      * during setUp() and is installed by {@link runTest()} as the default when Cronet is tested.
      */
     public void setStreamHandlerFactory(CronetEngine cronetEngine) {
-        mTestCommon.setStreamHandlerFactory(cronetEngine);
+        if (!testingSystemHttpURLConnection()) {
+            URL.setURLStreamHandlerFactory(cronetEngine.createURLStreamHandlerFactory());
+        }
     }
 
     /**
@@ -235,12 +307,11 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
      * Prepares the path for the test storage (http cache, QUIC server info).
      */
     public static void prepareTestStorage(Context context) {
-        CronetTestCommon.prepareTestStorage(context);
-    }
-
-    @Override
-    public Context getContextForTestCommon() {
-        return getContext();
+        File storage = new File(getTestStorageDirectory());
+        if (storage.exists()) {
+            Assert.assertTrue(recursiveDelete(storage));
+        }
+        ensureTestStorageExists();
     }
 
     /**
@@ -248,6 +319,44 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
      * Also ensures it exists.
      */
     public static String getTestStorage(Context context) {
-        return CronetTestCommon.getTestStorage();
+        ensureTestStorageExists();
+        return getTestStorageDirectory();
+    }
+
+    /**
+     * Returns the path for the test storage (http cache, QUIC server info).
+     * NOTE: Does not ensure it exists; tests should use {@link #getTestStorage}.
+     */
+    private static String getTestStorageDirectory() {
+        return PathUtils.getDataDirectory() + "/test_storage";
+    }
+
+    /**
+     * Ensures test storage directory exists, i.e. creates one if it does not exist.
+     */
+    private static void ensureTestStorageExists() {
+        File storage = new File(getTestStorageDirectory());
+        if (!storage.exists()) {
+            Assert.assertTrue(storage.mkdir());
+        }
+    }
+
+    private static boolean recursiveDelete(File path) {
+        if (path.isDirectory()) {
+            for (File c : path.listFiles()) {
+                if (!recursiveDelete(c)) {
+                    return false;
+                }
+            }
+        }
+        return path.delete();
+    }
+
+    private void setTestingSystemHttpURLConnection(boolean value) {
+        mTestingSystemHttpURLConnection = value;
+    }
+
+    private void setTestingJavaImpl(boolean value) {
+        mTestingJavaImpl = value;
     }
 }
