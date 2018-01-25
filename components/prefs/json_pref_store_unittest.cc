@@ -26,7 +26,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store_unittest.h"

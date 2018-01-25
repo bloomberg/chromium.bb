@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"

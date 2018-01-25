@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

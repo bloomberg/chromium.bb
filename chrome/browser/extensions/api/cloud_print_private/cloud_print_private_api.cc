@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"

@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"

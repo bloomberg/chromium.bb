@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"

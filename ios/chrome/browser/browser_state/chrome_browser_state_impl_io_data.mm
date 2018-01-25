@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/json_pref_store.h"

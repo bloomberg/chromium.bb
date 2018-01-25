@@ -4,7 +4,6 @@
 
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"

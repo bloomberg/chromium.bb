@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/browser_sync/browser_sync_switches.h"

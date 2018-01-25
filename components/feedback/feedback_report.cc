@@ -11,7 +11,6 @@
 #include "base/guid.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 
 namespace {
 

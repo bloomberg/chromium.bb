@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon/ios/favicon_url_util.h"
 #include "ios/web/public/browser_state.h"

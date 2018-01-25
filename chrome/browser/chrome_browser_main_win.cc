@@ -29,7 +29,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"

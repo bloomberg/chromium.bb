@@ -20,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/sys_byteorder.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "net/socket/socket_descriptor.h"

@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/app_data_migrator.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"

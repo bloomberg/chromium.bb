@@ -24,7 +24,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"

@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/sys_info.h"
 #include "base/test/scoped_path_override.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"

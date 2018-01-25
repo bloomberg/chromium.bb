@@ -15,7 +15,6 @@
 #include "ash/system/power/power_status.h"
 #include "ash/window_manager.h"
 #include "base/bind.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"

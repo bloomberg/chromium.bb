@@ -12,7 +12,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 
 namespace base {
 class FilePath;

@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
