@@ -7,7 +7,6 @@ Running: addFileMapping
 Binding created: {
        network: http://127.0.0.1:8000/devtools/persistence/resources/foo.js
     fileSystem: file:///var/www/devtools/persistence/resources/foo.js
-    exactMatch: false
 }
 
 Running: addFileSystemRevision
