@@ -1454,10 +1454,6 @@ const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
 // last visited the options window.
 const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
 
-// Integer that specifies if the first run bubble should be shown.
-// This preference is only registered by the first-run procedure.
-const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
-
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
 const char kLastKnownIntranetRedirectOrigin[] = "browser.last_redirect_origin";

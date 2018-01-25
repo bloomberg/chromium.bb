@@ -103,8 +103,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
-#else
-#include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
 
 #if defined(USE_AURA)

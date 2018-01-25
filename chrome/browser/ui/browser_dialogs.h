@@ -135,10 +135,6 @@ void ShowPWAInstallDialog(content::WebContents* web_contents,
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color);
 
-// Shows the first-run bubble. This function should only be called when the
-// template URL service is ready.
-void ShowFirstRunBubble(Browser* browser);
-
 #if defined(OS_MACOSX)
 
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.

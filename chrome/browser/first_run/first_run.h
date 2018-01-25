@@ -47,21 +47,6 @@ enum AutoImportState {
   AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED = 1 << 2,
 };
 
-enum FirstRunBubbleMetric {
-  FIRST_RUN_BUBBLE_SHOWN = 0,       // The search engine bubble was shown.
-  FIRST_RUN_BUBBLE_CHANGE_INVOKED,  // The bubble's "Change" was invoked.
-  NUM_FIRST_RUN_BUBBLE_METRICS
-};
-
-// Options for the first run bubble. The default is FIRST_RUN_BUBBLE_DONT_SHOW.
-// FIRST_RUN_BUBBLE_SUPPRESS is stronger in that FIRST_RUN_BUBBLE_SHOW should
-// never be set once FIRST_RUN_BUBBLE_SUPPRESS is set.
-enum FirstRunBubbleOptions {
-  FIRST_RUN_BUBBLE_DONT_SHOW,
-  FIRST_RUN_BUBBLE_SUPPRESS,
-  FIRST_RUN_BUBBLE_SHOW,
-};
-
 enum ProcessMasterPreferencesResult {
   FIRST_RUN_PROCEED = 0,  // Proceed with first run.
   EULA_EXIT_NOW,          // Should immediately exit due to EULA flow.
@@ -119,13 +104,6 @@ void CreateSentinelIfNeeded();
 // permission on the sequence it is first called on.
 base::Time GetFirstRunSentinelCreationTime();
 
-// Sets the kShowFirstRunBubbleOption local state pref so that the browser
-// shows the bubble once the main message loop gets going (or refrains from
-// showing the bubble, if |show_bubble| is not FIRST_RUN_BUBBLE_SHOW).
-// Once FIRST_RUN_BUBBLE_SUPPRESS is set, no other value can be set.
-// Returns false if the pref service could not be retrieved.
-bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option);
-
 // Sets a flag that will cause ShouldShowWelcomePage to return true
 // exactly once, so that the browser loads the welcome tab once the
 // message loop gets going.
@@ -155,9 +133,6 @@ void SetShouldDoPersonalDataManagerFirstRun();
 // This will return true only once, the first time it is called after
 // SetShouldDoPersonalDataManagerFirstRun() is called.
 bool ShouldDoPersonalDataManagerFirstRun();
-
-// Log a metric for the "FirstRun.SearchEngineBubble" histogram.
-void LogFirstRunMetric(FirstRunBubbleMetric metric);
 
 // Automatically imports items requested by |profile|'s configuration (sum of
 // policies and master prefs). Also imports bookmarks from file if

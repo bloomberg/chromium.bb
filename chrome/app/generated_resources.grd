@@ -6592,17 +6592,6 @@ I don't think this site should be blocked!
         </message>
       </if>
 
-      <!-- First run bubble popup -->
-      <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
-        You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>
-      </message>
-      <message name="IDS_FR_BUBBLE_SUBTEXT" desc="Text under the title for the bubble">
-        Type to search or enter a URL to navigate - everything just works.
-      </message>
-      <message name="IDS_FR_BUBBLE_CHANGE" desc="Text for the change button on the bubble">
-        Change
-      </message>
-
       <!-- Sad Tab Strings -->
       <message name="IDS_CRASHED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
         Help our engineers investigate and fix this crash. List exact steps if you can. No detail is too small!

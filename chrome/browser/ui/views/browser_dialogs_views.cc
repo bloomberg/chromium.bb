@@ -16,8 +16,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
-#else
-#include "chrome/browser/ui/views/first_run_bubble.h"
 #endif  // OS_CHROMEOS
 
 // This file provides definitions of desktop browser dialog-creation methods for
@@ -68,12 +66,6 @@ void HideTaskManager() {
   task_manager::TaskManagerView::Hide();
 }
 #endif
-
-void ShowFirstRunBubble(Browser* browser) {
-#if !defined(OS_CHROMEOS)
-  FirstRunBubble::Show(browser);
-#endif  // OS_CHROMEOS
-}
 
 }  // namespace chrome
 

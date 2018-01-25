@@ -29,7 +29,6 @@ translated_xibs = [
   "ExtensionInstallPromptNoWarnings.xib",
   "ExtensionInstallPromptWebstoreData.xib",
   "ExtensionInstalledBubble.xib",
-  "FirstRunBubble.xib",
   "HttpAuthLoginSheet.xib",
   "HungRendererDialog.xib",
   "MainMenu.xib",

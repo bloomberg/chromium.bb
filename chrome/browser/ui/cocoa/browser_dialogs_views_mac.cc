@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/extensions/extension_installed_bubble_view.h"
-#include "chrome/browser/ui/views/first_run_bubble.h"
 #include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
@@ -145,10 +144,6 @@ void ShowUpdateChromeDialogViews(gfx::NativeWindow parent) {
 void ShowImportLockDialogViews(gfx::NativeWindow parent,
                                const base::Callback<void(bool)>& callback) {
   return ImportLockDialogView::Show(parent, callback);
-}
-
-void ShowFirstRunBubbleViews(Browser* browser) {
-  return FirstRunBubble::Show(browser);
 }
 
 void ShowPasswordReuseWarningDialog(
