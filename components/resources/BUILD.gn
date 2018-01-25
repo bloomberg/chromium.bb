@@ -19,8 +19,6 @@ group("resources") {
 grit("components_resources") {
   source = "components_resources.grd"
 
-  # TODO(hashimoto): Remove this line.
-  output_name = "components_resources_new"
   outputs = [
     "grit/components_resources.h",
     "components_resources.pak",
@@ -44,8 +42,6 @@ grit("components_resources") {
 grit("components_scaled_resources") {
   source = "components_scaled_resources.grd"
 
-  # TODO(hashimoto): Remove this line.
-  output_name = "components_scaled_resources_new"
   outputs = [
     "grit/components_scaled_resources.h",
     "grit/components_scaled_resources_map.cc",
