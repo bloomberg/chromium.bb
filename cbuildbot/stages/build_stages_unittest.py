@@ -681,4 +681,4 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
     search_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
                                    'SearchAllBuilds')
-    search_mock.assertNotCalled()
+    search_mock.assert_not_called()

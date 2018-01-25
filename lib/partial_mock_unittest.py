@@ -102,6 +102,24 @@ class ListContainsTest(cros_test_lib.TestCase):
     self.assertTrue(partial_mock.ListContains(['foo'], [u'foo']))
 
 
+class HasStringTest(cros_test_lib.TestCase):
+  """Unittests for HasString."""
+  def testEqual(self):
+    self.assertTrue(
+        partial_mock.HasString('substring') ==
+        'sentence with substring...')
+    self.assertTrue(
+        partial_mock.HasString('tr') == 'it should be true')
+    self.assertTrue(
+        partial_mock.HasString('') == 'match any string')
+
+  def testUneuqal(self):
+    self.assertFalse(
+        partial_mock.HasString('not there') == 'typo no there')
+    self.assertFalse(
+        partial_mock.HasString('Uppercase matters') == 'uppercase matters')
+
+
 class MockedCallResultsTest(cros_test_lib.TestCase):
   """Test MockedCallResults functionality."""
 

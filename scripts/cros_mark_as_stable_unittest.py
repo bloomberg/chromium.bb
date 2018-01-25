@@ -114,9 +114,8 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
     """Make sure random exit errors are not ignored"""
     self.rc.AddCmdResult(partial_mock.In('emerge'), returncode=123)
     with parallel_unittest.ParallelMock():
-      self.assertRaises(cros_build_lib.RunCommandError,
-                        cros_mark_as_stable.CleanStalePackages,
-                        '.', (), ['no/pkg'])
+      with self.assertRaises(cros_build_lib.RunCommandError):
+        cros_mark_as_stable.CleanStalePackages('.', (), ['no/pkg'])
 
 
 class GitBranchTest(cros_test_lib.MockTestCase):
@@ -137,17 +136,17 @@ class GitBranchTest(cros_test_lib.MockTestCase):
     """Test init with no previous branch existing."""
     self.PatchObject(self._branch, 'Exists', return_value=False)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.rc_mock.assert_call(mock.call(
+    self.rc_mock.assert_called_with(
         ['repo', 'start', self._branch_name, '.'],
-        print_cmd=False, cwd='.', capture_output=True))
+        print_cmd=False, cwd='.', capture_output=True)
 
   def testCheckoutNoCreate(self):
     """Test init with previous branch existing."""
     self.PatchObject(self._branch, 'Exists', return_value=True)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.rc_mock.assert_call(mock.call(
+    self.rc_mock.assert_called_with(
         ['git', 'checkout', '-f', self._branch_name],
-        print_cmd=False, cwd='.', capture_output=True))
+        print_cmd=False, cwd='.', capture_output=True)
 
   def testExists(self):
     """Test if branch exists that is created."""

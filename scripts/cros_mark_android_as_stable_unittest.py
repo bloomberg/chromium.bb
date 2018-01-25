@@ -538,7 +538,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         mock.call(package_dir, ['add', self.new]),
         mock.call(package_dir, ['add', 'Manifest']),
     ])
-    commit_mock.assert_call(mock.call('latest', package_dir))
+    commit_mock.assert_called_with(partial_mock.HasString('latest'),
+                                   package_dir)
     self.assertEqual(
         version_atom,
         '%s-%s-r1' % (

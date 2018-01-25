@@ -150,6 +150,22 @@ class Ignore(Comparator):
     return '<IgnoreArg>'
 
 
+class HasString(str):
+  """A substring matcher for mock assertion.
+
+  It overrides str's '==' operator so that
+  HasString('substring') == 'A sentence with substring'
+
+  It is used for mock.assert_called_with(). Note that it is not a Comparator.
+
+  Usage:
+    some_mock.assert_called_with(
+        partial_mock.HasString('need_this_keyword'))
+  """
+  def __eq__(self, target):
+    return self in target
+
+
 def _RecursiveCompare(lhs, rhs):
   """Compare parameter specs recursively.
 
