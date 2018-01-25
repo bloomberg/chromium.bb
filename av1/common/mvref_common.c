@@ -985,12 +985,11 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                              int_mv *mv_ref_list, int mi_row, int mi_col,
                              find_mv_refs_sync sync, void *const data,
-                             int16_t *mode_context, int_mv zeromv) {
+                             int_mv zeromv) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   const int sb_mi_size = mi_size_wide[cm->sb_size];
   int i, refmv_count = 0;
   int different_ref_found = 0;
-  int context_counter = 0;
 
 #if CONFIG_MFMV
   (void)sync;
@@ -1089,8 +1088,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_INTRABC
       if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
 #endif  // CONFIG_INTRABC
-      // Keep counts for entropy encoding.
-      context_counter += mode_2_counter[candidate->mode];
+
       different_ref_found = 1;
 
       if (candidate->ref_frame[0] == ref_frame)
@@ -1213,8 +1211,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // !CONFIG_MFMV
 
 Done:
-  if (mode_context)
-    mode_context[ref_frame] = counter_to_context[context_counter];
   for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
     mv_ref_list[i].as_int = zeromv.as_int;
 }
@@ -1312,7 +1308,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (ref_frame <= ALTREF_FRAME)
     find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, mi_row, mi_col, sync,
-                     data, mode_context, zeromv[0]);
+                     data, zeromv[0]);
 
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
 #if USE_CUR_GM_REFMV
