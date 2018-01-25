@@ -1008,9 +1008,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // 'RunScript("DisplayNonPersistentNotification(...' once the show event is
   // implemented via mojo, here and elsewhere in this test.
   RunScriptAndWaitForNotificationAdded(
-      "DisplayNonPersistentNotificationWithoutWaitingForEvent('Title')",
-      &script_result);
-  EXPECT_EQ("sync-ok", script_result);
+      "DisplayNonPersistentNotification('Title')", &script_result);
+  EXPECT_EQ("ok", script_result);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications(false /* is_persistent */);
@@ -1038,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // Now, test the non-default values.
 
   RunScriptAndWaitForNotificationAdded(
-      R"(DisplayNonPersistentNotificationWithoutWaitingForEvent('Title2', {
+      R"(DisplayNonPersistentNotification('Title2', {
           body: 'Contents',
           tag: 'replace-id',
           dir: 'rtl',
@@ -1055,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
           ]
         }))",
       &script_result);
-  EXPECT_EQ("sync-ok", script_result);
+  EXPECT_EQ("ok", script_result);
 
   notifications = GetDisplayedNotifications(false /* is_persistent */);
   ASSERT_EQ(2u, notifications.size());
@@ -1091,11 +1090,11 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
   // identical ids.
 
   RunScriptAndWaitForNotificationAdded(
-      R"(DisplayNonPersistentNotificationWithoutWaitingForEvent('Title3', {
+      R"(DisplayNonPersistentNotification('Title3', {
           tag: 'replace-id'
         }))",
       &script_result);
-  EXPECT_EQ("sync-ok", script_result);
+  EXPECT_EQ("ok", script_result);
 
   notifications = GetDisplayedNotifications(false /* is_persistent */);
   ASSERT_EQ(2u, notifications.size());

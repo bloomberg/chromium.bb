@@ -7,5 +7,6 @@ include_rules = [
     "+modules/permissions",
     "+modules/serviceworkers",
     "+modules/vibration",
+    "+mojo/public/cpp/bindings",
     "+skia/ext",
 ]

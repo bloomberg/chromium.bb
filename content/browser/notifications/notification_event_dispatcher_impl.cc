@@ -419,19 +419,54 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotification(
     int request_id) {
   if (request_ids_.count(notification_id) &&
       request_ids_[notification_id] != request_id) {
-    // Notify close for a previously displayed notification with the same
-    // request id, this can happen when replacing a non-persistent notification
-    // with the same tag since from the JS point of view there will be two
-    // notification objects and the old one needs to receive the close event.
-    // TODO(miguelg) this is probably not the right layer to do this.
+    // Dispatch the close event for any previously displayed notification with
+    // the same notification id. This happens whenever a non-persistent
+    // notification is replaced (by creating another with the same tag), since
+    // from the JavaScript point of view there will be two notification objects,
+    // and the old one needs to receive a close event before the new one
+    // receives a show event.
     DispatchNonPersistentCloseEvent(notification_id);
   }
   renderer_ids_[notification_id] = renderer_id;
   request_ids_[notification_id] = request_id;
 }
 
+void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
+    const std::string& notification_id,
+    blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info) {
+  if (non_persistent_notification_listeners_.count(notification_id)) {
+    // Dispatch the close event for any previously displayed notification with
+    // the same notification id. This happens whenever a non-persistent
+    // notification is replaced (by creating another with the same tag), since
+    // from the JavaScript point of view there will be two notification objects,
+    // and the old one needs to receive a close event before the new one
+    // receives a show event.
+    DispatchNonPersistentCloseEvent(notification_id);
+  }
+
+  blink::mojom::NonPersistentNotificationListenerPtr listener_ptr(
+      std::move(listener_ptr_info));
+
+  // Observe connection errors, which occur when the JavaScript object or the
+  // renderer hosting them goes away. (For example through navigation.) The
+  // listener gets freed together with |this|, thus the Unretained is safe.
+  listener_ptr.set_connection_error_handler(base::BindOnce(
+      &NotificationEventDispatcherImpl::
+          HandleConnectionErrorForNonPersistentNotificationListener,
+      base::Unretained(this), notification_id));
+
+  non_persistent_notification_listeners_.emplace(notification_id,
+                                                 std::move(listener_ptr));
+}
+
 void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
     const std::string& notification_id) {
+  if (non_persistent_notification_listeners_.count(notification_id)) {
+    non_persistent_notification_listeners_[notification_id]->OnShow();
+    return;
+  }
+  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
+  // fully migrated to mojo for non-persistent notifications.
   if (!renderer_ids_.count(notification_id))
     return;
   DCHECK(request_ids_.count(notification_id));
@@ -447,6 +482,12 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
     const std::string& notification_id) {
+  if (non_persistent_notification_listeners_.count(notification_id)) {
+    non_persistent_notification_listeners_[notification_id]->OnClick();
+    return;
+  }
+  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
+  // fully migrated to mojo for non-persistent notifications.
   if (!renderer_ids_.count(notification_id))
     return;
   DCHECK(request_ids_.count(notification_id));
@@ -465,6 +506,13 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
     const std::string& notification_id) {
+  if (non_persistent_notification_listeners_.count(notification_id)) {
+    non_persistent_notification_listeners_[notification_id]->OnClose();
+    non_persistent_notification_listeners_.erase(notification_id);
+    return;
+  }
+  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
+  // fully migrated to mojo for non-persistent notifications.
   if (!renderer_ids_.count(notification_id))
     return;
   DCHECK(request_ids_.count(notification_id));
@@ -495,6 +543,13 @@ void NotificationEventDispatcherImpl::RendererGone(int renderer_id) {
       iter++;
     }
   }
+}
+
+void NotificationEventDispatcherImpl::
+    HandleConnectionErrorForNonPersistentNotificationListener(
+        const std::string& notification_id) {
+  DCHECK(non_persistent_notification_listeners_.count(notification_id));
+  non_persistent_notification_listeners_.erase(notification_id);
 }
 
 }  // namespace content

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_BLINK_NOTIFICATION_SERVICE_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -36,11 +37,19 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
   void GetPermissionStatus(GetPermissionStatusCallback callback) override;
   void DisplayNonPersistentNotification(
       const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources) override;
+      const NotificationResources& notification_resources,
+      blink::mojom::NonPersistentNotificationListenerPtr listener_ptr) override;
 
  private:
   // Called when an error is detected on binding_.
   void OnConnectionError();
+
+  void DisplayNonPersistentNotificationOnUIThread(
+      const std::string& notification_id,
+      const GURL& origin,
+      const content::PlatformNotificationData& notification_data,
+      const content::NotificationResources& notification_resources,
+      blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info);
 
   // The notification context that owns this service instance.
   PlatformNotificationContextImpl* notification_context_;
@@ -55,6 +64,8 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
   url::Origin origin_;
 
   mojo::Binding<blink::mojom::NotificationService> binding_;
+
+  base::WeakPtrFactory<BlinkNotificationServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkNotificationServiceImpl);
 };
