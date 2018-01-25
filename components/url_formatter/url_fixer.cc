@@ -434,12 +434,9 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
         (*text)[semicolon] = ';';
     }
     if (!found_scheme) {
-      // Couldn't determine the scheme, so just pick one.
+      // Couldn't determine the scheme, so just default to http.
       parts->scheme.reset();
-      scheme =
-          base::StartsWith(*text, "ftp.", base::CompareCase::INSENSITIVE_ASCII)
-              ? url::kFtpScheme
-              : url::kHttpScheme;
+      scheme = url::kHttpScheme;
     }
   }
 
