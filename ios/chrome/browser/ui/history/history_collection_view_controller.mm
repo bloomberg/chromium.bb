@@ -221,6 +221,17 @@ const CGFloat kSeparatorInset = 10;
   [self.collectionView addGestureRecognizer:longPressRecognizer];
 }
 
+// Since contentInsetAdjustmentBehavior is
+// UIScrollViewContentInsetAdjustmentNever on iOS11, update the horizontal
+// insets manually to respect the safeArea.
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  UIEdgeInsets collectionContentInsets = self.collectionView.contentInset;
+  collectionContentInsets.left = self.view.safeAreaInsets.left;
+  collectionContentInsets.right = self.view.safeAreaInsets.right;
+  self.collectionView.contentInset = collectionContentInsets;
+}
+
 - (BOOL)isEditing {
   return self.editor.isEditing;
 }
