@@ -128,6 +128,38 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     return observer.WaitAndGetFailureReason();
   }
 
+  // Runs test to verify that a modified extension resource (background.js)
+  // causes ContentVerifyJob to fail with HASH_MISMATCH. The string
+  // |content_to_append_for_mismatch| is appended to the resource for
+  // modification.
+  void RunContentMismatchTest(
+      const std::string& content_to_append_for_mismatch) {
+    base::FilePath unzipped_path;
+    base::FilePath test_dir_base = GetTestPath(
+        base::FilePath(FILE_PATH_LITERAL("with_verified_contents")));
+    scoped_refptr<Extension> extension = UnzipToTempDirAndLoad(
+        test_dir_base.AppendASCII("source_all.zip"), &unzipped_path);
+    ASSERT_TRUE(extension.get());
+    // Make sure there is a verified_contents.json file there as this test
+    // cannot fetch it.
+    EXPECT_TRUE(base::PathExists(
+        file_util::GetVerifiedContentsPath(extension->path())));
+
+    const base::FilePath::CharType kResource[] =
+        FILE_PATH_LITERAL("background.js");
+    base::FilePath existent_resource_path(kResource);
+    {
+      // Make sure modified background.js fails content verification.
+      std::string modified_contents;
+      base::ReadFileToString(unzipped_path.Append(base::FilePath(kResource)),
+                             &modified_contents);
+      modified_contents.append(content_to_append_for_mismatch);
+      EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+                RunContentVerifyJob(*extension.get(), existent_resource_path,
+                                    modified_contents));
+    }
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
 
@@ -222,30 +254,15 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
 
 // Tests that content modification causes content verification failure.
 TEST_F(ContentVerifyJobUnittest, ContentMismatch) {
-  base::FilePath unzipped_path;
-  base::FilePath test_dir_base =
-      GetTestPath(base::FilePath(FILE_PATH_LITERAL("with_verified_contents")));
-  scoped_refptr<Extension> extension = UnzipToTempDirAndLoad(
-      test_dir_base.AppendASCII("source_all.zip"), &unzipped_path);
-  ASSERT_TRUE(extension.get());
-  // Make sure there is a verified_contents.json file there as this test cannot
-  // fetch it.
-  EXPECT_TRUE(
-      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
+  RunContentMismatchTest("console.log('modified');");
+}
 
-  const base::FilePath::CharType kResource[] =
-      FILE_PATH_LITERAL("background.js");
-  base::FilePath existent_resource_path(kResource);
-  {
-    // Make sure modified background.js fails content verification.
-    std::string modified_contents;
-    base::ReadFileToString(unzipped_path.Append(base::FilePath(kResource)),
-                           &modified_contents);
-    modified_contents.append("console.log('modified');");
-    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
-              RunContentVerifyJob(*extension.get(), existent_resource_path,
-                                  modified_contents));
-  }
+// Similar to ContentMismatch, but uses a file size > 4k.
+// Regression test for https://crbug.com/804630.
+TEST_F(ContentVerifyJobUnittest, ContentMismatchWithLargeFile) {
+  std::string content_larger_than_block_size(
+      extension_misc::kContentVerificationDefaultBlockSize + 1, ';');
+  RunContentMismatchTest(content_larger_than_block_size);
 }
 
 // Tests that extension resources that are originally 0 byte behave correctly
