@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
-<link rel="import" href="../paper-material/paper-material-shared-styles.html">
+<link rel="import" href="../paper-styles/element-styles/paper-material-styles.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 
@@ -47,6 +47,7 @@ Custom property | Description | Default
 `--paper-fab-mini` | Mixin applied to a mini button | `{}`
 `--paper-fab-disabled` | Mixin applied to a disabled button | `{}`
 `--paper-fab-iron-icon` | Mixin applied to the iron-icon within the button | `{}`
+`--paper-fab-label` | Mixin applied to the label within the button | `{}`
 
 @group Paper Elements
 @demo demo/index.html
@@ -54,12 +55,12 @@ Custom property | Description | Default
 
 </head><body><dom-module id="paper-fab">
   <template strip-whitespace="">
-    <style include="paper-material-shared-styles">
+    <style include="paper-material-styles">
       :host {
-        @apply(--layout-vertical);
-        @apply(--layout-center-center);
+        @apply --layout-vertical;
+        @apply --layout-center-center;
 
-        background: var(--paper-fab-background, --accent-color);
+        background: var(--paper-fab-background, var(--accent-color));
         border-radius: 50%;
         box-sizing: border-box;
         color: var(--text-primary-color);
@@ -77,7 +78,7 @@ Custom property | Description | Default
         -webkit-tap-highlight-color: rgba(0,0,0,0);
         -webkit-tap-highlight-color: transparent;
 
-        @apply(--paper-fab);
+        @apply --paper-fab;
       }
 
       [hidden] {
@@ -89,18 +90,18 @@ Custom property | Description | Default
         height: 40px;
         padding: 8px;
 
-        @apply(--paper-fab-mini);
+        @apply --paper-fab-mini;
       }
 
       :host([disabled]) {
-        color: var(--paper-fab-disabled-text, --paper-grey-500);
-        background: var(--paper-fab-disabled-background, --paper-grey-300);
+        color: var(--paper-fab-disabled-text, var(--paper-grey-500));
+        background: var(--paper-fab-disabled-background, var(--paper-grey-300));
 
-        @apply(--paper-fab-disabled);
+        @apply --paper-fab-disabled;
       }
 
       iron-icon {
-        @apply(--paper-fab-iron-icon);
+        @apply --paper-fab-iron-icon;
       }
 
       span {
@@ -109,10 +110,32 @@ Custom property | Description | Default
         overflow: hidden;
         text-overflow: ellipsis;
         text-align: center;
+
+        @apply --paper-fab-label;
       }
 
       :host(.keyboard-focus) {
-        background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
+        background: var(--paper-fab-keyboard-focus-background, var(--paper-pink-900));
+      }
+
+      :host([elevation="1"]) {
+        @apply --paper-material-elevation-1;
+      }
+
+      :host([elevation="2"]) {
+        @apply --paper-material-elevation-2;
+      }
+
+      :host([elevation="3"]) {
+        @apply --paper-material-elevation-3;
+      }
+
+      :host([elevation="4"]) {
+        @apply --paper-material-elevation-4;
+      }
+
+      :host([elevation="5"]) {
+        @apply --paper-material-elevation-5;
       }
     </style>
 
