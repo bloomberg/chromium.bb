@@ -38,6 +38,13 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                 // which always exists.
                 const DisplayItemClient* layer_display_item_client = nullptr);
 
+  // This is for SPv175 when a new painting has nothing changed. A chunk may
+  // have property tree state escaping the layer and it may need raster
+  // invalidation even if there is no change in painting of this layer.
+  // A test case is
+  // paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html.
+  void GenerateForPropertyChanges(const Vector<const PaintChunk*>&);
+
   bool Matches(const PaintChunk& paint_chunk) const {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
            paint_chunk.Matches(paint_chunks_info_[0].id);

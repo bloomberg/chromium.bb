@@ -326,11 +326,21 @@ void GraphicsLayer::PaintRecursivelyInternal() {
 
 void GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
-  if (!PaintWithoutCommit(interest_rect, disabled_mode))
-    return;
+  if (!PaintWithoutCommit(interest_rect, disabled_mode)) {
+    // Generate raster invalidation if needed for chunks with property tree
+    // state escaping this layer's state. See the function for more details.
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+      EnsureRasterInvalidator().GenerateForPropertyChanges(AllChunkPointers());
 
-  DVLOG(2) << "Painted GraphicsLayer: " << DebugName()
-           << " interest_rect=" << InterestRect().ToString();
+    return;
+  }
+
+#if DCHECK_IS_ON()
+  if (VLOG_IS_ON(2)) {
+    LOG(ERROR) << "Painted GraphicsLayer: " << DebugName()
+               << " interest_rect=" << InterestRect().ToString();
+  }
+#endif
 
   GetPaintController().CommitNewDisplayItems();
 
