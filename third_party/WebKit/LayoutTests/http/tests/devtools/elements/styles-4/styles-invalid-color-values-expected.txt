@@ -150,6 +150,15 @@ color: rgb(1 1 1/ 1)
   rgb: rgb(1, 1, 1)
   hsl: hsl(0, 0%, 0%)
 
+color: rgba(1.5 1.5 1.5)
+  simple: true
+  original: rgba(1.5 1.5 1.5)
+  hex: #020202
+  hexa: #020202ff
+  shorthexa: null
+  rgb: rgba(1.5 1.5 1.5)
+  hsl: hsl(0, 0%, 1%)
+
 color: hsl(-120, 100%, 50%)
   simple: true
   original: hsl(-120, 100%, 50%)
@@ -297,15 +306,11 @@ SUCCESS: parsed invalid color rgb(a,b,c) to null
 
 SUCCESS: parsed invalid color rgb(a,b,c,d) to null
 
-SUCCESS: parsed invalid color rgb(1,1,1.2) to null
-
 SUCCESS: parsed invalid color rgba(0 0 0 1%) to null
 
 SUCCESS: parsed invalid color rgba(0,0,0,) to null
 
 SUCCESS: parsed invalid color rgba(0 0, 0) to null
-
-SUCCESS: parsed invalid color rgba(1.0 1.0 1.0) to null
 
 SUCCESS: parsed invalid color rgba(1 1 1 / ) to null
 

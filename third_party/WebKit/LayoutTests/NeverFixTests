@@ -1809,16 +1809,6 @@ external/wpt/css/css-color/lch-005.html [ WontFix ]
 external/wpt/css/css-color/lch-006.html [ WontFix ]
 external/wpt/css/css-color/lch-007.html [ WontFix ]
 
-# New rgb() and rgba() syntax not supported. https://crbug.com/788707
-external/wpt/css/css-color/rgb-002.html [ WontFix ]
-external/wpt/css/css-color/rgb-004.html [ WontFix ]
-external/wpt/css/css-color/rgb-006.html [ WontFix ]
-external/wpt/css/css-color/rgb-008.html [ WontFix ]
-external/wpt/css/css-color/rgba-002.html [ WontFix ]
-external/wpt/css/css-color/rgba-004.html [ WontFix ]
-external/wpt/css/css-color/rgba-006.html [ WontFix ]
-external/wpt/css/css-color/rgba-008.html [ WontFix ]
-
 # Failures on the initial import of css-color. Test suite had many other bugs,
 # so these may also be incorrect tests, but probably some real issues too.
 external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-1-c.xht [ WontFix ]
@@ -1826,9 +1816,6 @@ external/wpt/css/css-color/t32-opacity-offscreen-multiple-boxes-2-c.xht [ WontFi
 external/wpt/css/css-color/t422-rgba-onscreen-b.xht [ WontFix ]
 external/wpt/css/css-color/t422-rgba-onscreen-multiple-boxes-c.xht [ WontFix ]
 external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ WontFix ]
-
-# Percentages are rounded incorrectly in rgb
-external/wpt/css/css-color/color-resolving.html [ WontFix ]
 
 # https://github.com/w3c/web-platform-tests/issues/8547
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ WontFix ]

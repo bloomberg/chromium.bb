@@ -41,9 +41,9 @@
     {string: '#ABCDEFAA', format: cf.HEXA}, {string: 'rgb(1, 2, 3)', format: cf.RGB},
     {string: 'rgba(1, 2, 3, 0.2)', format: cf.RGB}, {string: 'rgb(1, 2, 3, 0.2)', format: cf.RGB},
     {string: 'rgb(1 2 3 / 20%)', format: cf.RGB}, {string: 'rgbA(1 2 3)', format: cf.RGB},
-    {string: 'hsl(1, 100%, 50%)', format: cf.HSL}, {string: 'hsl(1 100% 50%)', format: cf.HSL},
-    {string: 'hsla(1, 100%, 50%, 0.2)', format: cf.HSLA}, {string: 'hsl(1 100% 50% / 20%)', format: cf.HSL},
-    {string: 'hsL(1deg  100% 50%  /  20%)', format: cf.HSL}
+    {string: 'rgba(1.5 2.6 3.1)', format: cf.RGB}, {string: 'hsl(1, 100%, 50%)', format: cf.HSL},
+    {string: 'hsl(1 100% 50%)', format: cf.HSL}, {string: 'hsla(1, 100%, 50%, 0.2)', format: cf.HSLA},
+    {string: 'hsl(1 100% 50% / 20%)', format: cf.HSL}, {string: 'hsL(1deg  100% 50%  /  20%)', format: cf.HSL}
   ];
 
   TestRunner.addResult('--- Testing colorString()');

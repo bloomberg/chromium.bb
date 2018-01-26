@@ -159,4 +159,30 @@ TEST(CSSParserFastPathsTest, ParseColorWithNewSyntax) {
   EXPECT_EQ(nullptr, value);
 }
 
+TEST(CSSParserFastPathsTest, ParseColorWithDecimal) {
+  CSSValue* value = CSSParserFastPaths::ParseColor("rgba(0.0, 0.0, 0.0, 1.0)",
+                                                   kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value =
+      CSSParserFastPaths::ParseColor("rgb(0.0, 0.0, 0.0)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value =
+      CSSParserFastPaths::ParseColor("rgb(0.0 , 0.0,0.0)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("rgb(254.5, 254.5, 254.5)",
+                                         kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kWhite, ToCSSColorValue(*value).Value());
+}
+
 }  // namespace blink

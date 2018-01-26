@@ -2476,8 +2476,6 @@ crbug.com/709227 external/wpt/console/console-timeline-timelineEnd-historical.an
 crbug.com/709227 external/wpt/html/browsers/history/the-location-interface/per-global.window.html [ Failure ]
 crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillStyle.parse.css-color-4-rgb-1.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillStyle.parse.css-color-4-rgba-1.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.arc.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.closed.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.curve.worker.html [ Failure ]
