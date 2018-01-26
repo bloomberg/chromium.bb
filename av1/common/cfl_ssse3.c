@@ -146,7 +146,9 @@ static INLINE __m128i highbd_clamp_epi16(__m128i u, __m128i zero, __m128i max) {
 
 static INLINE void cfl_predict_hbd(__m128i *dst, __m128i *src,
                                    __m128i alpha_q12, __m128i alpha_sign,
-                                   __m128i dc_q0, __m128i zero, __m128i max) {
+                                   __m128i dc_q0, int bd) {
+  const __m128i max = highbd_max_epi16(bd);
+  const __m128i zero = _mm_setzero_si128();
   __m128i res = predict_unclipped(src, alpha_q12, alpha_sign, dc_q0);
   _mm_storeu_si128(dst, highbd_clamp_epi16(res, zero, max));
 }
@@ -159,25 +161,25 @@ static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
   const __m128i alpha_q12 = _mm_slli_epi16(_mm_abs_epi16(alpha_sign), 9);
   const __m128i dc_q0 = width == 4 ? _mm_loadl_epi64((__m128i *)dst)
                                    : _mm_load_si128((__m128i *)dst);
-  const __m128i max = highbd_max_epi16(bd);
-  const __m128i zero = _mm_setzero_si128();
   do {
     if (width == 4) {
+      const __m128i max = highbd_max_epi16(bd);
+      const __m128i zero = _mm_setzero_si128();
       __m128i res = predict_unclipped((__m128i *)(pred_buf_q3), alpha_q12,
                                       alpha_sign, dc_q0);
       _mm_storel_epi64((__m128i *)dst, highbd_clamp_epi16(res, zero, max));
     } else {
       cfl_predict_hbd((__m128i *)dst, (__m128i *)pred_buf_q3, alpha_q12,
-                      alpha_sign, dc_q0, zero, max);
+                      alpha_sign, dc_q0, bd);
     }
     if (width >= 16)
       cfl_predict_hbd((__m128i *)(dst + 8), (__m128i *)(pred_buf_q3 + 8),
-                      alpha_q12, alpha_sign, dc_q0, zero, max);
+                      alpha_q12, alpha_sign, dc_q0, bd);
     if (width == 32) {
       cfl_predict_hbd((__m128i *)(dst + 16), (__m128i *)(pred_buf_q3 + 16),
-                      alpha_q12, alpha_sign, dc_q0, zero, max);
+                      alpha_q12, alpha_sign, dc_q0, bd);
       cfl_predict_hbd((__m128i *)(dst + 24), (__m128i *)(pred_buf_q3 + 24),
-                      alpha_q12, alpha_sign, dc_q0, zero, max);
+                      alpha_q12, alpha_sign, dc_q0, bd);
     }
     dst += dst_stride;
     pred_buf_q3 += CFL_BUF_LINE;
