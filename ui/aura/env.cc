@@ -27,6 +27,7 @@
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 namespace aura {
@@ -193,6 +194,8 @@ void Env::Init() {
   // instead of checking flags here.
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
+  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+
   ui::OzonePlatform::InitializeForUI(params);
   gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
 #endif

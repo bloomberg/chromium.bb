@@ -187,6 +187,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
+#if defined(USE_OZONE)
+  void InitOzone();
+#endif  // defined(USE_OZONE)
+
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;

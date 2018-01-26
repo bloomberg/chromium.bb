@@ -87,6 +87,13 @@ class QueueingConnectionFilter : public ConnectionFilter {
                                  weak_factory_.GetWeakPtr()));
   }
 
+  void AddInterfaces() {
+#if defined(USE_OZONE)
+    ui::OzonePlatform::GetInstance()->AddInterfaces(
+        &registry_with_source_info_);
+#endif
+  }
+
  private:
   struct PendingRequest {
     std::string interface_name;
@@ -99,6 +106,11 @@ class QueueingConnectionFilter : public ConnectionFilter {
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
+    if (registry_with_source_info_.TryBindInterface(
+            interface_name, interface_pipe, source_info)) {
+      return;
+    }
+
     if (registry_->CanBindInterface(interface_name)) {
       if (released_) {
         registry_->BindInterface(interface_name, std::move(*interface_pipe));
@@ -126,6 +138,9 @@ class QueueingConnectionFilter : public ConnectionFilter {
   bool released_ = false;
   std::vector<std::unique_ptr<PendingRequest>> pending_requests_;
   std::unique_ptr<service_manager::BinderRegistry> registry_;
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_with_source_info_;
 
   base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_;
 
@@ -208,6 +223,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
       std::make_unique<QueueingConnectionFilter>(GetIOTaskRunner(),
                                                  std::move(registry));
   release_pending_requests_closure_ = filter->GetReleaseCallback();
+
+  filter->AddInterfaces();
   GetServiceManagerConnection()->AddConnectionFilter(std::move(filter));
 
   StartServiceManagerConnection();
