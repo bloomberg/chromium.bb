@@ -131,10 +131,8 @@ File* DataObjectItem::GetAsFile() const {
         mojom::ClipboardBuffer::kStandard);
     if (blob_info.size() < 0)
       return nullptr;
-    return File::Create(
-        "image.png", CurrentTimeMS(),
-        BlobDataHandle::Create(blob_info.Uuid(), blob_info.GetType(),
-                               blob_info.size()));
+    return File::Create("image.png", CurrentTimeMS(),
+                        blob_info.GetBlobHandle());
   }
 
   return nullptr;

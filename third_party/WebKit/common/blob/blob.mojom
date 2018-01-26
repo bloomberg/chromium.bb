@@ -45,3 +45,14 @@ interface Blob {
   // identify the blob.
   GetInternalUUID() => (string uuid);
 };
+
+// Struct wrapping a Blob interface pointer.
+// TODO(mek): Once https://crbug.com/696107 is implemented all usage of this
+// struct can be replaced with a simple Blob interface pointer with handle
+// properties for the other attributes.
+struct SerializedBlob {
+  string uuid;
+  string content_type;
+  uint64 size;
+  Blob blob;
+};

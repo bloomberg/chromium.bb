@@ -25,6 +25,7 @@
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -67,6 +68,14 @@ class BlobHandleImpl : public BlobHandle {
   ~BlobHandleImpl() override {}
 
   std::string GetUUID() override { return handle_->uuid(); }
+
+  blink::mojom::BlobPtr PassBlob() override {
+    blink::mojom::BlobPtr result;
+    storage::BlobImpl::Create(
+        base::MakeUnique<storage::BlobDataHandle>(*handle_),
+        MakeRequest(&result));
+    return result;
+  }
 
  private:
   std::unique_ptr<storage::BlobDataHandle> handle_;

@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/common/string16.mojom";
+import "third_party/WebKit/common/blob/blob.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
@@ -51,9 +52,7 @@ interface ClipboardHost {
   ReadRtf(blink.mojom.ClipboardBuffer buffer) => (string result);
 
   [Sync]
-  ReadImage(blink.mojom.ClipboardBuffer buffer) => (string blob_uuid,
-                                                    string mime_type,
-                                                    int64 size);
+  ReadImage(blink.mojom.ClipboardBuffer buffer) => (SerializedBlob? blob);
 
   [Sync]
   ReadCustomData(blink.mojom.ClipboardBuffer buffer,
