@@ -427,9 +427,6 @@ if test "x$AMDGPU" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_TEGRA, [test "x$TEGRA" = xyes])
-if test "x$TEGRA" = xyes; then
-	AC_DEFINE(HAVE_TEGRA, 1, [Have Tegra support])
-fi
 
 AM_CONDITIONAL(HAVE_VC4, [test "x$VC4" = xyes])
 if test "x$VC4" = xyes; then

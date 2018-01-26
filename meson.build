@@ -254,7 +254,7 @@ endif
 foreach t : [[with_intel, 'INTEL'], [with_vmwgfx, 'VMWGFX'],
              [with_nouveau, 'NOUVEAU'],
              [with_exynos, 'EXYNOS'], [with_freedreno, 'FREEDRENO'],
-             [with_tegra, 'TEGRA'], [with_vc4, 'VC4'],
+             [with_vc4, 'VC4'],
              [with_etnaviv, 'ETNAVIV'], [with_radeon, 'RADEON']]
   if t[0]
     config.set10('HAVE_@0@'.format(t[1]), true)
