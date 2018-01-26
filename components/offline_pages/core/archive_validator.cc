@@ -14,14 +14,29 @@
 
 namespace offline_pages {
 
+ArchiveValidator::ArchiveValidator() {
+  secure_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
+}
+
+ArchiveValidator::~ArchiveValidator() = default;
+
+void ArchiveValidator::Update(const char* input, size_t len) {
+  secure_hash_->Update(input, len);
+}
+
+std::string ArchiveValidator::Finish() {
+  std::string digest(crypto::kSHA256Length, 0);
+  secure_hash_->Finish(&(digest[0]), digest.size());
+  return digest;
+}
+
 // static
 std::string ArchiveValidator::ComputeDigest(const base::FilePath& file_path) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
     return std::string();
 
-  std::unique_ptr<crypto::SecureHash> secure_hash(
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  ArchiveValidator archive_validator;
 
   const int kMaxBufferSize = 1024;
   std::vector<char> buffer(kMaxBufferSize);
@@ -29,14 +44,12 @@ std::string ArchiveValidator::ComputeDigest(const base::FilePath& file_path) {
   do {
     bytes_read = file.ReadAtCurrentPos(buffer.data(), kMaxBufferSize);
     if (bytes_read > 0)
-      secure_hash->Update(buffer.data(), bytes_read);
+      archive_validator.Update(buffer.data(), bytes_read);
   } while (bytes_read > 0);
   if (bytes_read < 0)
     return std::string();
 
-  std::string result_bytes(crypto::kSHA256Length, 0);
-  secure_hash->Finish(&result_bytes[0], result_bytes.size());
-  return result_bytes;
+  return archive_validator.Finish();
 }
 
 // static

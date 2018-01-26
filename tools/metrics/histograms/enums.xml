@@ -31628,6 +31628,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="Digest mismatch on flaky network"/>
   <int value="18" label="Digest mismatch on prohibitively slow network"/>
   <int value="19" label="Digest mismatch on connected network"/>
+  <int value="20" label="File not found"/>
 </enum>
 
 <enum name="OfflinePagesBackgroundImmediateStartStatus">
