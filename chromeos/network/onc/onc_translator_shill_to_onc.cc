@@ -700,6 +700,14 @@ void ShillToONCTranslator::TranslateEap() {
     onc_object_->SetKey(::onc::client_cert::kClientCertPKCS11Id,
                         base::Value(shill_cert_id));
   }
+
+  bool use_login_password = false;
+  if (shill_dictionary_->GetBooleanWithoutPathExpansion(
+          shill::kEapUseLoginPasswordProperty, &use_login_password) &&
+      use_login_password) {
+    onc_object_->SetKey(::onc::eap::kPassword,
+                        base::Value(::onc::substitutes::kPasswordField));
+  }
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(

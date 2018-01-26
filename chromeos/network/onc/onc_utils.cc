@@ -359,6 +359,13 @@ class OncMaskValues : public Mapper {
       bool* found_unknown_field,
       bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
+      // If it's the password field and the substitution string is used, don't
+      // mask it.
+      if (&object_signature == &kEAPSignature && field_name == eap::kPassword &&
+          onc_value.GetString() == substitutes::kPasswordField) {
+        return Mapper::MapField(field_name, object_signature, onc_value,
+                                found_unknown_field, error);
+      }
       return std::unique_ptr<base::Value>(new base::Value(mask_));
     } else {
       return Mapper::MapField(field_name, object_signature, onc_value,

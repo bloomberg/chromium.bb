@@ -72,7 +72,11 @@ INSTANTIATE_TEST_CASE_P(
         std::make_pair("cellular.onc", "shill_cellular.json"),
         std::make_pair("wimax.onc", "shill_wimax.json"),
         std::make_pair("third_party_vpn.onc", "shill_third_party_vpn.json"),
-        std::make_pair("arc_vpn.onc", "shill_arc_vpn.json")));
+        std::make_pair("arc_vpn.onc", "shill_arc_vpn.json"),
+        std::make_pair("wifi_eap_ttls_with_password_variable.onc",
+                       "shill_wifi_eap_ttls_with_password_variable.json"),
+        std::make_pair("wifi_eap_ttls_with_hardcoded_password.onc",
+                       "shill_wifi_eap_ttls_with_hardcoded_password.json")));
 
 // First parameter: Filename of source Shill json.
 // Second parameter: Filename of expected translated ONC network part.
@@ -142,7 +146,13 @@ INSTANTIATE_TEST_CASE_P(
         std::make_pair("shill_wimax_with_state.json",
                        "translation_of_shill_wimax_with_state.onc"),
         std::make_pair("shill_output_third_party_vpn.json",
-                       "third_party_vpn.onc")));
+                       "third_party_vpn.onc"),
+        std::make_pair(
+            "shill_wifi_eap_ttls_with_password_variable.json",
+            "translation_of_shill_wifi_eap_ttls_with_password_variable.onc"),
+        std::make_pair(
+            "shill_wifi_eap_ttls_with_hardcoded_password.json",
+            "translation_of_shill_wifi_eap_ttls_with_hardcoded_password.onc")));
 
 }  // namespace onc
 }  // namespace chromeos
