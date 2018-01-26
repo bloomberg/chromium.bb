@@ -1608,7 +1608,7 @@ static void amdgpu_sync_dependency_test(void)
 	j = i;
 	ptr[i++] = PACKET3(PACKET3_WRITE_DATA, 3);
 	ptr[i++] = WRITE_DATA_DST_SEL(5) | WR_CONFIRM;
-	ptr[i++] = 0xfffffffc & ib_result_mc_address + DATA_OFFSET * 4;
+	ptr[i++] =          0xfffffffc & (ib_result_mc_address + DATA_OFFSET * 4);
 	ptr[i++] = (0xffffffff00000000 & (ib_result_mc_address + DATA_OFFSET * 4)) >> 32;
 	ptr[i++] = 99;
 
