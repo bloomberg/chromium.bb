@@ -80,6 +80,10 @@ const int kReloadMenuCommands[]  = {
   [self setAttachedMenu:menu_];
 }
 
+- (BOOL)shouldMirrorInRTL {
+  return NO;
+}
+
 - (void)invalidatePendingReloadTimer {
   [pendingReloadTimer_ invalidate];
   pendingReloadTimer_ = nil;
