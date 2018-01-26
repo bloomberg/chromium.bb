@@ -602,10 +602,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   }
 }
 
-static bool ComputeMaskParameters(IntRect& mask_clip,
-                                  ColorFilter& mask_color_filter,
-                                  const LayoutObject& object,
-                                  const LayoutPoint& paint_offset) {
+static bool ComputeMaskParameters(const LayoutObject& object,
+                                  const LayoutPoint& paint_offset,
+                                  IntRect& mask_clip,
+                                  ColorFilter& mask_color_filter) {
   DCHECK(object.IsBoxModelObject() || object.IsSVGChild());
   const ComputedStyle& style = object.StyleRef();
 
@@ -621,6 +621,7 @@ static bool ComputeMaskParameters(IntRect& mask_clip,
                             : kColorFilterNone;
     return true;
   }
+
   if (!style.HasMask())
     return false;
 
@@ -637,6 +638,8 @@ static bool ComputeMaskParameters(IntRect& mask_clip,
     // Either way here we are only interested in the bounding box of them.
     DCHECK(object.IsLayoutInline());
     maximum_mask_region = ToLayoutInline(object).LinesBoundingBox();
+    if (object.HasFlippedBlocksWritingMode())
+      object.ContainingBlock()->FlipForWritingMode(maximum_mask_region);
   }
   if (style.HasMaskBoxImageOutsets())
     maximum_mask_region.Expand(style.MaskBoxImageOutsets());
@@ -719,7 +722,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       IntRect mask_clip;
       ColorFilter mask_color_filter;
       bool has_mask = ComputeMaskParameters(
-          mask_clip, mask_color_filter, object_, context_.current.paint_offset);
+          object_, context_.current.paint_offset, mask_clip, mask_color_filter);
       if (has_mask &&
           // TODO(crbug.com/768691): Remove the following condition after mask
           // clip doesn't fail fast/borders/inline-mask-overlay-image-outset-
