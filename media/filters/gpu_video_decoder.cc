@@ -407,7 +407,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   switch (state_) {
     case kDecoderDrained:
       state_ = kNormal;
-      // Fall-through.
+      FALLTHROUGH;
     case kNormal:
       break;
     case kDrainingDecoder:

@@ -203,6 +203,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         // which case the press should simply be dropped.
         if (pinch_event_sent_ || scroll_event_sent_)
           return;
+        break;
       default:
         break;
     };

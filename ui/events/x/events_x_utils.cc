@@ -635,6 +635,7 @@ int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev) {
         default:
           break;
       }
+      break;
     }
     default:
       break;

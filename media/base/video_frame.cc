@@ -830,7 +830,7 @@ size_t VideoFrame::BitDepth() const {
   switch (format_) {
     case media::PIXEL_FORMAT_UNKNOWN:
       NOTREACHED();
-    // Fall through!
+      FALLTHROUGH;
     case media::PIXEL_FORMAT_I420:
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_I422:
