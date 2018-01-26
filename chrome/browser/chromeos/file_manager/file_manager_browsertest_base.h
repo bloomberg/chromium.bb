@@ -20,13 +20,15 @@
 #define DISABLE_SLOW_FILESAPP_TESTS
 #endif
 
+class NotificationDisplayServiceTester;
+
 namespace file_manager {
 
 enum GuestMode { NOT_IN_GUEST_MODE, IN_GUEST_MODE, IN_INCOGNITO };
 
-class LocalTestVolume;
 class DriveTestVolume;
 class FakeTestVolume;
+class LocalTestVolume;
 
 // The base test class.
 class FileManagerBrowserTestBase : public ExtensionApiTest {
@@ -72,6 +74,7 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
       create_drive_integration_service_;
   std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 };
 
 }  // namespace file_manager
