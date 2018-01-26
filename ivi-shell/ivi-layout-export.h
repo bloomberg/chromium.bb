@@ -102,7 +102,7 @@ struct ivi_layout_layer_properties
 	int32_t dest_width;
 	int32_t dest_height;
 	enum wl_output_transform orientation;
-	uint32_t visibility;
+	bool visibility;
 	int32_t transition_type;
 	uint32_t transition_duration;
 	double start_alpha;
