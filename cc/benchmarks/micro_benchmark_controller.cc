@@ -27,14 +27,16 @@ namespace {
 std::unique_ptr<MicroBenchmark> CreateBenchmark(
     const std::string& name,
     std::unique_ptr<base::Value> value,
-    const MicroBenchmark::DoneCallback& callback) {
+    MicroBenchmark::DoneCallback callback) {
   if (name == "invalidation_benchmark") {
-    return std::make_unique<InvalidationBenchmark>(std::move(value), callback);
+    return std::make_unique<InvalidationBenchmark>(std::move(value),
+                                                   std::move(callback));
   } else if (name == "rasterize_and_record_benchmark") {
     return std::make_unique<RasterizeAndRecordBenchmark>(std::move(value),
-                                                         callback);
+                                                         std::move(callback));
   } else if (name == "unittest_only_benchmark") {
-    return std::make_unique<UnittestOnlyBenchmark>(std::move(value), callback);
+    return std::make_unique<UnittestOnlyBenchmark>(std::move(value),
+                                                   std::move(callback));
   }
   return nullptr;
 }
@@ -54,9 +56,9 @@ MicroBenchmarkController::~MicroBenchmarkController() = default;
 int MicroBenchmarkController::ScheduleRun(
     const std::string& micro_benchmark_name,
     std::unique_ptr<base::Value> value,
-    const MicroBenchmark::DoneCallback& callback) {
-  std::unique_ptr<MicroBenchmark> benchmark =
-      CreateBenchmark(micro_benchmark_name, std::move(value), callback);
+    MicroBenchmark::DoneCallback callback) {
+  std::unique_ptr<MicroBenchmark> benchmark = CreateBenchmark(
+      micro_benchmark_name, std::move(value), std::move(callback));
   if (benchmark.get()) {
     int id = GetNextIdAndIncrement();
     benchmark->set_id(id);

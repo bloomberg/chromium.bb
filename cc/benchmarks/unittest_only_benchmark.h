@@ -14,7 +14,7 @@ namespace cc {
 class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
  public:
   UnittestOnlyBenchmark(std::unique_ptr<base::Value> value,
-                        const DoneCallback& callback);
+                        DoneCallback callback);
   ~UnittestOnlyBenchmark() override;
 
   void DidUpdateLayers(LayerTreeHost* layer_tree_host) override;

@@ -15,8 +15,8 @@
 
 namespace cc {
 
-MicroBenchmark::MicroBenchmark(const DoneCallback& callback)
-    : callback_(callback),
+MicroBenchmark::MicroBenchmark(DoneCallback callback)
+    : callback_(std::move(callback)),
       is_done_(false),
       processed_for_benchmark_impl_(false),
       id_(0) {}
@@ -30,7 +30,7 @@ bool MicroBenchmark::IsDone() const {
 void MicroBenchmark::DidUpdateLayers(LayerTreeHost* layer_tree_host) {}
 
 void MicroBenchmark::NotifyDone(std::unique_ptr<base::Value> result) {
-  callback_.Run(std::move(result));
+  std::move(callback_).Run(std::move(result));
   is_done_ = true;
 }
 

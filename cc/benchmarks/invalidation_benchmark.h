@@ -22,7 +22,7 @@ class LayerTreeHost;
 class CC_EXPORT InvalidationBenchmark : public MicroBenchmark {
  public:
   explicit InvalidationBenchmark(std::unique_ptr<base::Value> value,
-                                 const MicroBenchmark::DoneCallback& callback);
+                                 MicroBenchmark::DoneCallback callback);
   ~InvalidationBenchmark() override;
 
   // Implements MicroBenchmark interface.

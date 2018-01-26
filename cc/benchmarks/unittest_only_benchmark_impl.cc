@@ -12,8 +12,8 @@ namespace cc {
 UnittestOnlyBenchmarkImpl::UnittestOnlyBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
     base::Value* settings,
-    const DoneCallback& callback)
-    : MicroBenchmarkImpl(callback, origin_task_runner) {}
+    DoneCallback callback)
+    : MicroBenchmarkImpl(std::move(callback), origin_task_runner) {}
 
 UnittestOnlyBenchmarkImpl::~UnittestOnlyBenchmarkImpl() = default;
 
