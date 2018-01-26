@@ -50,11 +50,12 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView;
 import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationView.OnNavigationItemSelectedListener;
-import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.ui.UiUtils;
 
@@ -801,8 +802,9 @@ public class BottomSheetContentController
             throw new RuntimeException("Attempting to show invalid content in bottom sheet.");
         }
 
-        final ViewAnchoredTextBubble helpBubble =
-                new ViewAnchoredTextBubble(getContext(), mBottomSheet, stringId, stringId);
+        ViewRectProvider rectProvider = new ViewRectProvider(mBottomSheet);
+        final TextBubble helpBubble =
+                new TextBubble(getContext(), mBottomSheet, stringId, stringId, rectProvider);
         helpBubble.setDismissOnTouchInteraction(true);
 
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
@@ -829,7 +831,7 @@ public class BottomSheetContentController
                 if (state != BottomSheet.SHEET_STATE_HALF || mHelpBubbleShown) return;
                 int inset = getContext().getResources().getDimensionPixelSize(
                         R.dimen.bottom_sheet_help_bubble_inset);
-                helpBubble.setInsetPx(0, inset, 0, inset);
+                rectProvider.setInsetPx(0, inset, 0, inset);
                 helpBubble.show();
                 mHelpBubbleShown = true;
             }

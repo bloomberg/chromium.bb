@@ -1333,6 +1333,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
   "java/src/org/chromium/chrome/browser/widget/AlertDialogEditText.java",
   "java/src/org/chromium/chrome/browser/widget/AlwaysDismissedDialog.java",
+  "java/src/org/chromium/chrome/browser/widget/AnchoredPopupWindow.java",
   "java/src/org/chromium/chrome/browser/widget/BoundedLinearLayout.java",
   "java/src/org/chromium/chrome/browser/widget/ClipDrawableProgressBar.java",
   "java/src/org/chromium/chrome/browser/widget/CompatibilityTextInputLayout.java",
@@ -1360,6 +1361,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/PulseInterpolator.java",
   "java/src/org/chromium/chrome/browser/widget/RadioButtonLayout.java",
   "java/src/org/chromium/chrome/browser/widget/RadioButtonWithDescription.java",
+  "java/src/org/chromium/chrome/browser/widget/RectProvider.java",
   "java/src/org/chromium/chrome/browser/widget/RoundedIconGenerator.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailDiskStorage.java",
   "java/src/org/chromium/chrome/browser/widget/ThumbnailGenerator.java",
@@ -1374,6 +1376,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/ToolbarProgressBarAnimatingView.java",
   "java/src/org/chromium/chrome/browser/widget/VerticallyFixedEditText.java",
   "java/src/org/chromium/chrome/browser/widget/ViewHighlighter.java",
+  "java/src/org/chromium/chrome/browser/widget/ViewRectProvider.java",
   "java/src/org/chromium/chrome/browser/widget/ViewResourceFrameLayout.java",
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelAdapter.java",
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelListItem.java",
@@ -1420,7 +1423,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableListToolbar.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/ArrowBubbleDrawable.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/TextBubble.java",
-  "java/src/org/chromium/chrome/browser/widget/textbubble/ViewAnchoredTextBubble.java",
 ]
 
 chrome_vr_java_sources = [

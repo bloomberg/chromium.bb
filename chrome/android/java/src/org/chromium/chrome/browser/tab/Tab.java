@@ -94,9 +94,10 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.widget.AnchoredPopupWindow;
 import org.chromium.chrome.browser.widget.PulseDrawable;
+import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
-import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -1731,10 +1732,11 @@ public class Tab
 
         if (!(getActivity() instanceof ChromeTabbedActivity)) return;
 
-        ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(getActivity(),
-                getActivity().getToolbarManager().getMenuButton(),
-                R.string.iph_data_saver_detail_text,
-                R.string.iph_data_saver_detail_accessibility_text);
+        View anchorView = getActivity().getToolbarManager().getMenuButton();
+        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        TextBubble textBubble =
+                new TextBubble(getActivity(), anchorView, R.string.iph_data_saver_detail_text,
+                        R.string.iph_data_saver_detail_accessibility_text, rectProvider);
         textBubble.setDismissOnTouchInteraction(true);
         getActivity().getAppMenuHandler().setMenuHighlight(R.id.app_menu_footer);
         textBubble.addOnDismissListener(new OnDismissListener() {
@@ -1751,7 +1753,7 @@ public class Tab
         });
         int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
-        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+        rectProvider.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
                 FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
         textBubble.show();
     }
@@ -3382,6 +3384,8 @@ public class Tab
 
     @CalledByNative
     private void showMediaDownloadInProductHelp(int x, int y, int width, int height) {
+        Rect rect = new Rect(x, y, x + width, y + height);
+
         // If we are not currently showing the widget, ask the tracker if we can show it.
         if (mDownloadIPHBubble == null) {
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
@@ -3395,7 +3399,7 @@ public class Tab
 
             mDownloadIPHBubble = new TextBubble(getApplicationContext(),
                     mContentViewCore.getContainerView(), R.string.iph_media_download_text,
-                    R.string.iph_media_download_accessibility_text);
+                    R.string.iph_media_download_accessibility_text, rect);
             mDownloadIPHBubble.setDismissOnTouchInteraction(true);
             mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {
                 @Override
@@ -3410,9 +3414,7 @@ public class Tab
             });
         }
 
-        Rect rect = new Rect(x, y, x + width, y + height);
-        mDownloadIPHBubble.setAnchorRect(rect);
-        mDownloadIPHBubble.setPreferredOrientation(TextBubble.Orientation.BELOW);
+        mDownloadIPHBubble.setPreferredOrientation(AnchoredPopupWindow.Orientation.BELOW);
         mDownloadIPHBubble.show();
         createPulse(rect);
     }
