@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/testdriver.js"></script>
-<script src="../../../resources/testdriver-vendor.js"></script>
-<script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script src="/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(function() {
-  return getTwoHealthThermometerServicesDevice({
-      filters: [{services: ['health_thermometer']}],
-      optionalServices: ['generic_access']})
+const test_desc = 'Find all services in a device.';
+
+bluetooth_test(() => getTwoHealthThermometerServicesDevice({
+  filters: [{services: ['health_thermometer']}],
+  optionalServices: ['generic_access']
+})
     .then(({device}) => device.gatt.getPrimaryServices())
     .then(services => {
       // Expect three service instances.
@@ -23,6 +25,5 @@ bluetooth_test(function() {
 
       assert_true(uuid_set.has(BluetoothUUID.getService('generic_access')));
       assert_true(uuid_set.has(BluetoothUUID.getService('health_thermometer')));
-    });
-}, 'Find all services in a device.');
+    }), test_desc);
 </script>
