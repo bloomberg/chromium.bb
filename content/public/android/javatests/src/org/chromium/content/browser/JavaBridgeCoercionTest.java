@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
+import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
 
 import java.io.File;
 
