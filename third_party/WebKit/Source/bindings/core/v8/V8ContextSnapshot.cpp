@@ -168,8 +168,8 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
                                           .As<v8::Object>();
-    V8Window::install_runtime_enabled_features_function_(
-        isolate, world, window_wrapper, prototype, interface);
+    V8Window::InstallRuntimeEnabledFeatures(isolate, world, window_wrapper,
+                                            prototype, interface);
     type->InstallConditionalFeatures(context, world, window_wrapper, prototype,
                                      interface,
                                      type->domTemplate(isolate, world));
