@@ -169,6 +169,7 @@ Bug(none) virtual/mouseevent_fractional/fast/events/attribute-listener-cloned-fr
 
 # The parent or opener frame might be out-of-process:
 crbug.com/805310 http/tests/devtools/network/oopif-content.js [ Crash Failure ]
+crbug.com/805310 http/tests/devtools/oopif/oopif-targets.js [ Crash Failure ]
 
 # Plugin throttle is not implemented.
 crbug.com/764474 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html [ Failure ]
