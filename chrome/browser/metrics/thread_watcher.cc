@@ -434,25 +434,28 @@ void ThreadWatcherList::ParseCommandLine(
   // Initialize |unresponsive_threshold| to a default value.
   *unresponsive_threshold = kUnresponsiveCount;
 
+  const version_info::Channel channel = chrome::GetChannel();
+
   // Increase the unresponsive_threshold on the Stable and Beta channels to
   // reduce the number of crashes due to ThreadWatcher.
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::STABLE) {
-    *unresponsive_threshold *= 4;
-  } else if (channel == version_info::Channel::BETA) {
-    *unresponsive_threshold *= 2;
-  }
+  // TODO: Bring this back when re-enabling beyond Canary?
+  // if (channel == version_info::Channel::STABLE) {
+  //   *unresponsive_threshold *= 4;
+  // } else if (channel == version_info::Channel::BETA) {
+  //   *unresponsive_threshold *= 2;
+  // }
 
   uint32_t crash_seconds = *unresponsive_threshold * kUnresponsiveSeconds;
   std::string crash_on_hang_thread_names;
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_thread_names =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
-  } else if (channel != version_info::Channel::STABLE) {
-    // Default to crashing the browser if UI or IO threads are not responsive
-    // except in stable channel.
-    crash_on_hang_thread_names =
-        base::StringPrintf("UI:%d,IO:%d", crash_seconds, crash_seconds);
+  } else if (channel == version_info::Channel::CANARY) {
+    // Default to crashing the browser if IO thread is not responsive.
+    // TODO: Bring this back on Dev/Beta channel and on UI thread once issues
+    // uncovered by https://crbug.com/804345's resolution stabilize (e.g.
+    // https://crbug.com/806174).
+    crash_on_hang_thread_names = base::StringPrintf("IO:%d", crash_seconds);
   }
 
   ParseCommandLineCrashOnHangThreads(crash_on_hang_thread_names,
