@@ -677,6 +677,11 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
     // Set to zero to make sure we do not use the previous encoded frame stats
     mbmi->skip = 0;
+
+#if CONFIG_EXT_SKIP
+    // Reset skip mode flag.
+    mbmi->skip_mode = 0;
+#endif
   }
 
   x->skip_chroma_rd =
