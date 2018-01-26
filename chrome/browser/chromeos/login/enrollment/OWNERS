@@ -1,4 +1,4 @@
-per-file auto_enrollment_controller.*=atwilson@chromium.org
-per-file auto_enrollment_controller.*=bartfab@chromium.org
-per-file auto_enrollment_controller.*=emaxx@chromium.org
-per-file auto_enrollment_controller.*=tnagel@chromium.org
+atwilson@chromium.org
+bartfab@chromium.org
+emaxx@chromium.org
+tnagel@chromium.org
