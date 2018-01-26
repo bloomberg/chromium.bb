@@ -65,7 +65,7 @@ struct fd_device * fd_device_new(int fd)
 
 		dev = msm_device_new(fd);
 		dev->version = version->version_minor;
-#ifdef HAVE_FREEDRENO_KGSL
+#if HAVE_FREEDRENO_KGSL
 	} else if (!strcmp(version->name, "kgsl")) {
 		DEBUG_MSG("kgsl DRM device");
 		dev = kgsl_device_new(fd);

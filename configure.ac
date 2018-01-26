@@ -395,6 +395,8 @@ fi
 AM_CONDITIONAL(HAVE_FREEDRENO_KGSL, [test "x$FREEDRENO_KGSL" = xyes])
 if test "x$FREEDRENO_KGSL" = xyes; then
 	AC_DEFINE(HAVE_FREEDRENO_KGSL, 1, [Have freedreno support for KGSL kernel interface])
+else
+	AC_DEFINE(HAVE_FREEDRENO_KGSL, 0)
 fi
 
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
