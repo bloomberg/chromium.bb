@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import argparse
 import distutils.version
+import multiprocessing
 import os
 import re
 
@@ -49,6 +50,11 @@ class VM(object):
 
     self.qemu_path = opts.qemu_path
     self.qemu_bios_path = opts.qemu_bios_path
+    self.qemu_m = opts.qemu_m
+    self.qemu_cpu = opts.qemu_cpu
+    self.qemu_smp = opts.qemu_smp
+    if self.qemu_smp == 0:
+      self.qemu_smp = min(8, multiprocessing.cpu_count)
     self.enable_kvm = opts.enable_kvm
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
@@ -244,12 +250,14 @@ class VM(object):
       qemu_args += ['-L', self.qemu_bios_path]
 
     qemu_args += [
-        '-m', '2G', '-smp', '4', '-vga', 'virtio', '-daemonize',
-        '-usbdevice', 'tablet',
+        '-m', self.qemu_m, '-smp', str(self.qemu_smp), '-vga', 'virtio',
+        '-daemonize', '-usbdevice', 'tablet',
         '-pidfile', self.pidfile,
         '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
         '-serial', 'file:%s' % self.kvm_serial,
         '-mon', 'chardev=control_pipe',
+        # Append 'check' to warn if the requested CPU is not fully supported.
+        '-cpu', self.qemu_cpu + ',check',
         # Qemu-vlans are used by qemu to separate out network traffic on the
         # slirp network bridge. qemu forwards traffic on a slirp vlan to all
         # ports conected on that vlan. By default, slirp ports are on vlan
@@ -405,6 +413,14 @@ class VM(object):
                         help='Format of the VM image (raw, qcow2, ...).')
     parser.add_argument('--qemu-path', type='path',
                         help='Path of qemu binary to launch with --start.')
+    parser.add_argument('--qemu-m', type=str, default='8G',
+                        help='Memory argument that will be passed to qemu.')
+    parser.add_argument('--qemu-smp', type=int, default='0',
+                        help='SMP argument that will be passed to qemu. (0 '
+                             'means auto-detection.)')
+    parser.add_argument('--qemu-cpu', type=str,
+                        default='Haswell-noTSX,-invpcid,-tsc-deadline',
+                        help='CPU argument that will be passed to qemu.')
     parser.add_argument('--qemu-bios-path', type='path',
                         help='Path of directory with qemu bios files.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
