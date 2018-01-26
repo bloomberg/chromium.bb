@@ -378,9 +378,6 @@ if test "x$EXYNOS" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_FREEDRENO, [test "x$FREEDRENO" = xyes])
-if test "x$FREEDRENO" = xyes; then
-	AC_DEFINE(HAVE_FREEDRENO, 1, [Have freedreno support])
-fi
 
 if test "x$FREEDRENO_KGSL" = xyes; then
 	if test "x$FREEDRENO" != xyes; then
