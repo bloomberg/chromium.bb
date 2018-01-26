@@ -195,8 +195,8 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
   UpdateSecurityLevel();
   const OmniboxState* state = static_cast<OmniboxState*>(
       web_contents->GetUserData(&OmniboxState::kKey));
-  model()->RestoreState(controller()->GetToolbarModel()->GetFormattedFullURL(),
-                        state ? &state->model_state : NULL);
+  model()->RestoreState(controller()->GetURLForDisplay(),
+                        state ? &state->model_state : nullptr);
   if (state) {
     // This assumes that the omnibox has already been focused or blurred as
     // appropriate; otherwise, a subsequent OnFocus() or OnBlur() call could
@@ -217,8 +217,8 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 void OmniboxViewViews::Update() {
   const security_state::SecurityLevel old_security_level = security_level_;
   UpdateSecurityLevel();
-  if (model()->SetPermanentText(
-          controller()->GetToolbarModel()->GetFormattedFullURL())) {
+
+  if (model()->SetPermanentText(controller()->GetURLForDisplay())) {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
@@ -831,8 +831,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
 
 void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
-  model()->SetPermanentText(
-      controller()->GetToolbarModel()->GetFormattedFullURL());
+  model()->SetPermanentText(controller()->GetURLForDisplay());
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
