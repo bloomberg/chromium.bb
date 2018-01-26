@@ -466,6 +466,8 @@ if test "x$CAIRO" = xyes; then
 		AC_MSG_ERROR([Cairo support required but not present])
 	fi
 	AC_DEFINE(HAVE_CAIRO, 1, [Have Cairo support])
+else
+	AC_DEFINE(HAVE_CAIRO, 0)
 fi
 AC_MSG_RESULT([$CAIRO])
 AM_CONDITIONAL(HAVE_CAIRO, [test "x$CAIRO" = xyes])

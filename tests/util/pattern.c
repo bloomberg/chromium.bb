@@ -34,7 +34,7 @@
 
 #include <drm_fourcc.h>
 
-#ifdef HAVE_CAIRO
+#if HAVE_CAIRO
 #include <cairo.h>
 #include <math.h>
 #endif
@@ -546,7 +546,7 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 static void make_pwetty(void *data, unsigned int width, unsigned int height,
 			unsigned int stride, uint32_t format)
 {
-#ifdef HAVE_CAIRO
+#if HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_format_t cairo_format;
