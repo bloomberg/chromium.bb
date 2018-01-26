@@ -251,14 +251,17 @@ if cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));'
   config.set10('HAVE_VISIBILITY', true)
 endif
 
-foreach t : [[with_intel, 'INTEL'], [with_vmwgfx, 'VMWGFX'],
-             [with_nouveau, 'NOUVEAU'],
+foreach t : [
              [with_exynos, 'EXYNOS'],
-             [with_vc4, 'VC4'],
              [with_freedreno_kgsl, 'FREEDRENO_KGSL'],
+             [with_intel, 'INTEL'],
+             [with_nouveau, 'NOUVEAU'],
+             [with_radeon, 'RADEON'],
+             [with_vc4, 'VC4'],
+             [with_vmwgfx, 'VMWGFX'],
              [dep_cairo.found(), 'CAIRO'],
              [dep_valgrind.found(), 'VALGRIND'],
-             [with_radeon, 'RADEON']]
+            ]
   config.set10('HAVE_@0@'.format(t[1]), t[0])
 endforeach
 if with_freedreno_kgsl and not with_freedreno
