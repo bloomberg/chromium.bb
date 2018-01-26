@@ -11,6 +11,8 @@ static_library("assist_ranker") {
     "base_predictor.h",
     "binary_classifier_predictor.cc",
     "binary_classifier_predictor.h",
+    "example_preprocessing.cc",
+    "example_preprocessing.h",
     "fake_ranker_model_loader.cc",
     "fake_ranker_model_loader.h",
     "generic_logistic_regression_inference.cc",
@@ -47,6 +49,7 @@ source_set("unit_tests") {
   sources = [
     "base_predictor_unittest.cc",
     "binary_classifier_predictor_unittest.cc",
+    "example_preprocessing_unittest.cc",
     "generic_logistic_regression_inference_unittest.cc",
     "ranker_example_util_unittest.cc",
     "ranker_model_loader_impl_unittest.cc",
