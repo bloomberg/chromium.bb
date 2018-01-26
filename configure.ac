@@ -509,6 +509,8 @@ if test "x$VALGRIND" = "xyes"; then
 		AC_MSG_ERROR([Valgrind support required but not present])
 	fi
 	AC_DEFINE([HAVE_VALGRIND], 1, [Use valgrind intrinsics to suppress false warnings])
+else
+	AC_DEFINE([HAVE_VALGRIND], 0)
 fi
 
 AC_MSG_RESULT([$VALGRIND])

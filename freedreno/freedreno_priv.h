@@ -200,7 +200,7 @@ offset_bytes(void *end, void *start)
 	return ((char *)end) - ((char *)start);
 }
 
-#ifdef HAVE_VALGRIND
+#if HAVE_VALGRIND
 #  include <memcheck.h>
 
 /*

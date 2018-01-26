@@ -257,16 +257,13 @@ foreach t : [[with_intel, 'INTEL'], [with_vmwgfx, 'VMWGFX'],
              [with_vc4, 'VC4'],
              [with_freedreno_kgsl, 'FREEDRENO_KGSL'],
              [dep_cairo.found(), 'CAIRO'],
+             [dep_valgrind.found(), 'VALGRIND'],
              [with_radeon, 'RADEON']]
   config.set10('HAVE_@0@'.format(t[1]), t[0])
 endforeach
 if with_freedreno_kgsl and not with_freedreno
   error('cannot enable freedreno-kgsl without freedreno support')
 endif
-if dep_valgrind.found()
-  config.set10('HAVE_VALGRIND', true)
-endif
-
 config.set10('_GNU_SOURCE', true)
 config_file = configure_file(
   configuration : config,
