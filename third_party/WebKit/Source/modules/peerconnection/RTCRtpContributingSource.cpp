@@ -18,19 +18,11 @@ RTCRtpContributingSource::RTCRtpContributingSource(
   DCHECK(receiver_);
 }
 
-void RTCRtpContributingSource::UpdateMembers(
-    const WebRTCRtpContributingSource& webContributingSource) {
-  timestamp_ms_ = webContributingSource.TimestampMs();
-  DCHECK_EQ(webContributingSource.Source(), source_);
-}
-
-double RTCRtpContributingSource::timestamp() {
-  receiver_->UpdateSourcesIfNeeded();
+double RTCRtpContributingSource::timestamp() const {
   return timestamp_ms_;
 }
 
 uint32_t RTCRtpContributingSource::source() const {
-  // Skip |receiver_->UpdateSourcesIfNeeded()|, |source_| is a constant.
   return source_;
 }
 

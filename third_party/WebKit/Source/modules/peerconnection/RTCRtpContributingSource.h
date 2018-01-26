@@ -21,10 +21,8 @@ class RTCRtpContributingSource final : public ScriptWrappable {
 
  public:
   RTCRtpContributingSource(RTCRtpReceiver*, const WebRTCRtpContributingSource&);
-  // The source's source ID must match |source|.
-  void UpdateMembers(const WebRTCRtpContributingSource&);
 
-  double timestamp();
+  double timestamp() const;
   uint32_t source() const;
 
   virtual void Trace(blink::Visitor*);
