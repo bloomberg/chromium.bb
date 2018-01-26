@@ -470,10 +470,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutUnit ConvertStyleLogicalHeightToComputedHeight(
       const Length& style_logical_height) const;
 
-  LayoutRect OverflowClipRect(
-      const LayoutPoint& location,
-      OverlayScrollbarClipBehavior =
-          kIgnorePlatformOverlayScrollbarSize) const override;
+  void CalculateOverflowClipRect(const LayoutPoint& location,
+                                 OverlayScrollbarClipBehavior,
+                                 LayoutRect&) const override;
 
   void AddOverflowFromChildren() override;
 

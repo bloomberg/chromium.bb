@@ -1046,11 +1046,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // control clips or contain: paint.
   virtual bool ShouldClipOverflow() const;
 
-  // Returns the intersection of all overflow clips which apply.
-  virtual LayoutRect OverflowClipRect(
+  // Returns same value as ApplyOverflowClipRect sets on its third argument.
+  LayoutRect OverflowClipRect(
       const LayoutPoint& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
   LayoutRect ClipRect(const LayoutPoint& location) const;
+
+  // Sets |clip_rect| to be equal to the bounds of the element, intersected
+  // with all overflow clips which aply.
+  virtual void CalculateOverflowClipRect(const LayoutPoint& location,
+                                         OverlayScrollbarClipBehavior,
+                                         LayoutRect& clip_rect) const;
 
   // Returns the combination of overflow clip, contain: paint clip and CSS clip
   // for this object.
