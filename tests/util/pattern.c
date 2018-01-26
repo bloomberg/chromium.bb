@@ -823,8 +823,8 @@ static void fill_tiles(const struct util_format_info *info, void *planes[3],
 	}
 }
 
-static void fill_plain(const struct util_format_info *info, void *planes[3],
-		       unsigned int width, unsigned int height,
+static void fill_plain(void *planes[3],
+		       unsigned int height,
 		       unsigned int stride)
 {
 	memset(planes[0], 0x77, stride * height);
@@ -860,7 +860,7 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 		return fill_smpte(info, planes, width, height, stride);
 
 	case UTIL_PATTERN_PLAIN:
-		return fill_plain(info, planes, width, height, stride);
+		return fill_plain(planes, height, stride);
 
 	default:
 		printf("Error: unsupported test pattern %u.\n", pattern);
