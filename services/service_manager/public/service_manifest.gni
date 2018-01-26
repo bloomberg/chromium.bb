@@ -106,7 +106,7 @@ template("service_manifest") {
       args += [ "--pretty" ]
     }
 
-    if (defined(invoker.overlays)) {
+    if (defined(invoker.overlays) && invoker.overlays != []) {
       args += [ "--overlays" ]
       foreach(manifest_target, invoker.overlays) {
         manifest_target_dir = get_label_info(manifest_target, "target_gen_dir")

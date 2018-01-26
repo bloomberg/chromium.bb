@@ -23,6 +23,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 
 public_app_shared_sources = [
@@ -215,12 +216,22 @@ service_manifest("plugin_manifest") {
   source = "mojo/content_plugin_manifest.json"
 }
 
+service_manifest("context_snapshot_manifest") {
+  source = "mojo/context_snapshot_manifest.json"
+}
+
 service_manifest("renderer_manifest") {
   name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
+  if (use_v8_context_snapshot) {
+    overlays = [ ":context_snapshot_manifest" ]
+  }
 }
 
 service_manifest("utility_manifest") {
   name = "content_utility"
   source = "mojo/content_utility_manifest.json"
+  if (use_v8_context_snapshot) {
+    overlays = [ ":context_snapshot_manifest" ]
+  }
 }

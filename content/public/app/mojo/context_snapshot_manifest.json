@@ -1,0 +1,9 @@
+{
+  "required_files" : {
+    "v8_context_snapshot_data" : [{
+      "path": "v8_context_snapshot.bin",
+      "platform": "linux"
+    }]
+  }
+}
+

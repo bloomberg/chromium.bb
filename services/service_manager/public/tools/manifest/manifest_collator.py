@@ -18,6 +18,12 @@ _MANIFEST_OVERLAY_OVERRIDE_KEYS = [
   "display_name",
 ]
 
+# Keys which are merged with content from manifest overlays
+_MANIFEST_OVERLAY_MERGE_KEYS = [
+  "interface_provider_specs",
+  "required_files",
+]
+
 eater_relative = "../../../../../../tools/json_comment_eater"
 eater_relative = os.path.join(os.path.abspath(__file__), eater_relative)
 sys.path.insert(0, os.path.normpath(eater_relative))
@@ -53,8 +59,10 @@ def MergeDicts(left, right):
 
 
 def MergeManifestOverlay(manifest, overlay):
-  MergeDicts(manifest["interface_provider_specs"],
-             overlay["interface_provider_specs"])
+
+  for key in _MANIFEST_OVERLAY_MERGE_KEYS:
+    if key in overlay:
+      MergeDicts(manifest[key], overlay[key])
 
   if "services" in overlay:
     if "services" not in manifest:
