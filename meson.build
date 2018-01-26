@@ -203,7 +203,7 @@ if cc.has_function('open_memstream')
 endif
 
 warn_c_args = []
-foreach a : ['-Wall', '-Wextra', '-Wsign-compare', 
+foreach a : ['-Wall', '-Wextra', '-Wsign-compare', '-Wundef',
              '-Werror-implicit-function-declaration', '-Wpointer-arith',
              '-Wwrite-strings', '-Wstrict-prototypes', '-Wmissing-prototypes',
              '-Wmissing-declarations', '-Wnested-externs', '-Wpacked',
