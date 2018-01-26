@@ -153,13 +153,12 @@ WebBlobInfo WebClipboardImpl::ReadImage(mojom::ClipboardBuffer buffer) {
   if (!IsValidBufferType(buffer))
     return WebBlobInfo();
 
-  WTF::String blob_uuid;
-  WTF::String type;
-  int64_t size = -1;
-  clipboard_->ReadImage(buffer, &blob_uuid, &type, &size);
-  if (size < 0)
+  mojom::blink::SerializedBlobPtr blob;
+  clipboard_->ReadImage(buffer, &blob);
+  if (!blob)
     return WebBlobInfo();
-  return WebBlobInfo(blob_uuid, type, size);
+  return WebBlobInfo(blob->uuid, blob->content_type, blob->size,
+                     blob->blob.PassHandle());
 }
 
 WebString WebClipboardImpl::ReadCustomData(mojom::ClipboardBuffer buffer,

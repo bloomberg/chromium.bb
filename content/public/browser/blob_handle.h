@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BLOB_HANDLE_H_
 
 #include <string>
+#include "third_party/WebKit/common/blob/blob.mojom.h"
 
 namespace content {
 
@@ -15,6 +16,7 @@ class BlobHandle {
  public:
   virtual ~BlobHandle() {}
   virtual std::string GetUUID() = 0;
+  virtual blink::mojom::BlobPtr PassBlob() = 0;
 
  protected:
   BlobHandle() {}
