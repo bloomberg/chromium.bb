@@ -15,6 +15,8 @@ const char kVmConciergeServiceName[] = "org.chromium.VmConcierge";
 const char kStartVmMethod[] = "StartVm";
 const char kStopVmMethod[] = "StopVm";
 const char kStopAllVmsMethod[] = "StopAllVms";
+const char kGetVmInfoMethod[] = "GetVmInfo";
+const char kStartLxdMethod[] = "StartLxd";
 
 }  // namespace concierge
 }  // namespace vm_tools

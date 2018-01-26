@@ -37,6 +37,21 @@ message DiskImage {
 
   // If true, the disk image will be mounted writable.
   bool writable = 6;
+
+  // If true, the disk image will be mounted.
+  bool do_mount = 7;
+}
+
+// Information about a particular VM.
+message VmInfo {
+  // The IPv4 address assigned to the VM, in network byte order.
+  fixed32 ipv4_address = 1;
+
+  // The process ID of the main crosvm process for the VM.
+  int32 pid = 2;
+
+  // The virtual socket context id assigned to the VM.
+  int64 cid = 3;
 }
 
 // Information that must be included with every StartVm dbus message.
@@ -60,17 +75,11 @@ message StartVmResponse {
   // |cid| will have non-default values only if this is true.
   bool success = 1;
 
-  // The IPv4 address assigned to the VM, in network byte order.
-  fixed32 ipv4_address = 2;
-
-  // The process ID of the main crosvm process for the VM.
-  int32 pid = 3;
-
-  // The virtual socket context id assigned to the VM.
-  int64 cid = 4;
-
   // If the VM failed to start, the reason for the failure.
-  string failure_reason = 5;
+  string failure_reason = 2;
+
+  // Information about the VM that was started, if successful.
+  VmInfo vm_info = 3;
 }
 
 // Information that must be included with every StopVm dbus message.
@@ -85,5 +94,35 @@ message StopVmResponse {
   bool success = 1;
 
   // The failure_reason if the requested VM could not be stopped.
+  string failure_reason = 2;
+}
+
+// Request for information about the VM.
+message GetVmInfoRequest {
+  // The name of the VM to query.
+  string name = 1;
+}
+
+// Response sent back by vm_concierge for a GetVmInfo dbus message.
+message GetVmInfoResponse {
+  // If true, the requested VM exists and info was returned.
+  bool success = 1;
+
+  // Information about the VM that was requested.
+  VmInfo vm_info = 2;
+}
+
+// Information that must be included with every StartLxd dbus message.
+message StartLxdRequest {
+  // The name of the VM to start lxd for.
+  string name = 1;
+}
+
+// Response sent back by vm_concierge when it received a StartLxd message.
+message StartLxdResponse {
+  // If true, the requested VM has started lxd.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not start lxd.
   string failure_reason = 2;
 }
