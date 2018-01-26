@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -224,6 +225,20 @@ void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
                               service_name, message_size, is_cellular));
 }
 
+// Check the AsyncDns field trial and return true if it should be enabled. On
+// Android this includes checking the Android version in the field trial.
+bool ShouldEnableAsyncDns() {
+  bool feature_can_be_enabled = true;
+#if defined(OS_ANDROID)
+  int min_sdk =
+      base::GetFieldTrialParamByFeatureAsInt(features::kAsyncDns, "min_sdk", 0);
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < min_sdk)
+    feature_can_be_enabled = false;
+#endif
+  return feature_can_be_enabled &&
+         base::FeatureList::IsEnabled(features::kAsyncDns);
+}
+
 }  // namespace
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -345,9 +360,8 @@ IOThread::IOThread(
           local_state,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
-  local_state->SetDefaultPrefValue(
-      prefs::kBuiltInDnsClientEnabled,
-      base::Value(base::FeatureList::IsEnabled(features::kAsyncDns)));
+  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
+                                   base::Value(ShouldEnableAsyncDns()));
 
   dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
                            local_state,
