@@ -79,6 +79,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       // allowed as an exception.
       if (other.type() == ui::ET_GESTURE_PINCH_BEGIN)
         break;
+      FALLTHROUGH;
     case ui::ET_GESTURE_SCROLL_UPDATE:
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SWIPE:

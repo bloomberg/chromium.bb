@@ -104,6 +104,7 @@ gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
       break;
     case PrimaryID::SMPTEST432_1:
       primary_id = gfx::ColorSpace::PrimaryID::SMPTEST432_1;
+      break;
     case PrimaryID::EBU_3213_E:
       // TODO(uzair.jaleel) Need to check this once.
       primary_id = gfx::ColorSpace::PrimaryID::INVALID;

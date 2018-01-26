@@ -376,7 +376,7 @@ bool PaintShader::IsValid() const {
           start_degrees_ >= end_degrees_) {
         return false;
       }
-    // Fallthrough.
+      FALLTHROUGH;
     case Type::kLinearGradient:
     case Type::kRadialGradient:
     case Type::kTwoPointConicalGradient:
@@ -428,7 +428,7 @@ bool PaintShader::operator==(const PaintShader& other) const {
         return false;
       if (!PaintOp::AreEqualEvenIfNaN(end_degrees_, other.end_degrees_))
         return false;
-    // Fallthrough.
+      FALLTHROUGH;
     case Type::kLinearGradient:
     case Type::kRadialGradient:
     case Type::kTwoPointConicalGradient:

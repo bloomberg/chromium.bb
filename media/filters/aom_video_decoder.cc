@@ -101,6 +101,7 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
       // TODO(dalecurtis): We'll need to add support for these to handle the
       // full range of expected AOM content.
       NOTIMPLEMENTED();
+      break;
 
     default:
       break;
