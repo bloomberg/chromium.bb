@@ -361,7 +361,7 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
                 std::max(descendant.offset_to_container_box.top +
                              descendant.fragment->Size().height -
                              value.start_fragment_union_rect.offset.top,
-                         value.start_fragment_union_rect.size.width);
+                         value.start_fragment_union_rect.size.height);
           }
           if (value.end_linebox_fragment == linebox) {
             value.end_fragment_union_rect.size.width =
