@@ -1144,7 +1144,18 @@ weston_xkb_info_destroy(struct weston_xkb_info *xkb_info);
 WL_EXPORT void
 weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
-	/* XXX: What about keyboard->resource_list? */
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, &keyboard->resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_resource_for_each(resource, &keyboard->focus_resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_list_remove(&keyboard->resource_list);
+	wl_list_remove(&keyboard->focus_resource_list);
 
 	xkb_state_unref(keyboard->xkb_state.state);
 	if (keyboard->xkb_info)
@@ -2479,7 +2490,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	 * focused */
 	wl_list_insert(&keyboard->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &keyboard_interface,
-				       seat, unbind_resource);
+				       keyboard, unbind_resource);
 
 	if (wl_resource_get_version(cr) >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION) {
 		wl_keyboard_send_repeat_info(cr,
