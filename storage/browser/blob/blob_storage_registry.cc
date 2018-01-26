@@ -12,28 +12,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "storage/browser/blob/blob_entry.h"
+#include "storage/browser/blob/blob_url_utils.h"
 #include "url/gurl.h"
 
 namespace storage {
-
-namespace {
-// We can't use GURL directly for these hash fragment manipulations
-// since it doesn't have specific knowlege of the BlobURL format. GURL
-// treats BlobURLs as if they were PathURLs which don't support hash
-// fragments.
-
-bool BlobUrlHasRef(const GURL& url) {
-  return url.spec().find('#') != std::string::npos;
-}
-
-GURL ClearBlobUrlRef(const GURL& url) {
-  size_t hash_pos = url.spec().find('#');
-  if (hash_pos == std::string::npos)
-    return url;
-  return GURL(url.spec().substr(0, hash_pos));
-}
-
-}  // namespace
 
 BlobStorageRegistry::BlobStorageRegistry() = default;
 
@@ -76,7 +58,7 @@ const BlobEntry* BlobStorageRegistry::GetEntry(const std::string& uuid) const {
 
 bool BlobStorageRegistry::CreateUrlMapping(const GURL& blob_url,
                                            const std::string& uuid) {
-  DCHECK(!BlobUrlHasRef(blob_url));
+  DCHECK(!BlobUrlUtils::UrlHasFragment(blob_url));
   if (blob_map_.find(uuid) == blob_map_.end() || IsURLMapped(blob_url))
     return false;
   url_to_uuid_[blob_url] = uuid;
@@ -85,7 +67,7 @@ bool BlobStorageRegistry::CreateUrlMapping(const GURL& blob_url,
 
 bool BlobStorageRegistry::DeleteURLMapping(const GURL& blob_url,
                                            std::string* uuid) {
-  DCHECK(!BlobUrlHasRef(blob_url));
+  DCHECK(!BlobUrlUtils::UrlHasFragment(blob_url));
   auto found = url_to_uuid_.find(blob_url);
   if (found == url_to_uuid_.end())
     return false;
@@ -101,8 +83,7 @@ bool BlobStorageRegistry::IsURLMapped(const GURL& blob_url) const {
 
 BlobEntry* BlobStorageRegistry::GetEntryFromURL(const GURL& url,
                                                 std::string* uuid) {
-  auto found =
-      url_to_uuid_.find(BlobUrlHasRef(url) ? ClearBlobUrlRef(url) : url);
+  auto found = url_to_uuid_.find(BlobUrlUtils::ClearUrlFragment(url));
   if (found == url_to_uuid_.end())
     return nullptr;
   BlobEntry* entry = GetEntry(found->second);

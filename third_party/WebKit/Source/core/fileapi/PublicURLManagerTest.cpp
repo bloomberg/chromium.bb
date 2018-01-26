@@ -116,6 +116,11 @@ TEST_F(PublicURLManagerTest, RegisterNonMojoBlob) {
   url_manager().Revoke(KURL(url));
   EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
       execution_context_->GetSecurityOrigin()));
+  url_store_binding_.FlushForTesting();
+  // Even though this was not a mojo blob, the PublicURLManager might not know
+  // that, so still expect a revocation on the mojo interface.
+  ASSERT_EQ(1u, url_store_.revocations.size());
+  EXPECT_EQ(url, url_store_.revocations[0]);
 }
 
 TEST_F(PublicURLManagerTest, RegisterMojoBlob) {
@@ -135,6 +140,35 @@ TEST_F(PublicURLManagerTest, RegisterMojoBlob) {
   url_manager().Revoke(KURL(url));
   EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
       execution_context_->GetSecurityOrigin()));
+  url_store_binding_.FlushForTesting();
+  ASSERT_EQ(1u, url_store_.revocations.size());
+  EXPECT_EQ(url, url_store_.revocations[0]);
+}
+
+TEST_F(PublicURLManagerTest, RevokeValidNonRegisteredURL) {
+  execution_context_->SetURL(KURL("http://example.com/foo/bar"));
+  execution_context_->SetUpSecurityContext();
+
+  KURL url = KURL("blob:http://example.com/id");
+  url_manager().Revoke(url);
+  url_store_binding_.FlushForTesting();
+  ASSERT_EQ(1u, url_store_.revocations.size());
+  EXPECT_EQ(url, url_store_.revocations[0]);
+}
+
+TEST_F(PublicURLManagerTest, RevokeInvalidURL) {
+  execution_context_->SetURL(KURL("http://example.com/foo/bar"));
+  execution_context_->SetUpSecurityContext();
+
+  KURL invalid_scheme_url = KURL("blb:http://example.com/id");
+  KURL fragment_url = KURL("blob:http://example.com/id#fragment");
+  KURL invalid_origin_url = KURL("blob:http://foobar.com/id");
+  url_manager().Revoke(invalid_scheme_url);
+  url_manager().Revoke(fragment_url);
+  url_manager().Revoke(invalid_origin_url);
+  url_store_binding_.FlushForTesting();
+  // Both should have been silently ignored.
+  EXPECT_TRUE(url_store_.revocations.IsEmpty());
 }
 
 }  // namespace blink

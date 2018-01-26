@@ -93,6 +93,7 @@ class BlobURLStoreImplTest : public testing::Test {
   const std::string kId = "id";
   const GURL kValidUrl = GURL("blob:id");
   const GURL kInvalidUrl = GURL("bolb:id");
+  const GURL kFragmentUrl = GURL("blob:id#fragment");
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -143,6 +144,15 @@ TEST_F(BlobURLStoreImplTest, RegisterCantCommit) {
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
+TEST_F(BlobURLStoreImplTest, RegisterUrlFragment) {
+  BlobPtr blob = CreateBlobFromString(kId, "hello world");
+
+  BlobURLStorePtr url_store = CreateURLStore();
+  RegisterURL(url_store.get(), std::move(blob), kFragmentUrl);
+  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kFragmentUrl));
+  EXPECT_EQ(1u, bad_messages_.size());
+}
+
 TEST_F(BlobURLStoreImplTest, ImplicitRevoke) {
   const GURL kValidUrl2("blob:id2");
   BlobPtr blob = CreateBlobFromString(kId, "hello world");
@@ -175,6 +185,29 @@ TEST_F(BlobURLStoreImplTest, RevokeThroughDifferentURLStore) {
   EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
 }
 
+TEST_F(BlobURLStoreImplTest, RevokeInvalidScheme) {
+  BlobURLStorePtr url_store = CreateURLStore();
+  url_store->Revoke(kInvalidUrl);
+  url_store.FlushForTesting();
+  EXPECT_EQ(1u, bad_messages_.size());
+}
+
+TEST_F(BlobURLStoreImplTest, RevokeCantCommit) {
+  delegate_.can_commit_url_result = false;
+
+  BlobURLStorePtr url_store = CreateURLStore();
+  url_store->Revoke(kValidUrl);
+  url_store.FlushForTesting();
+  EXPECT_EQ(1u, bad_messages_.size());
+}
+
+TEST_F(BlobURLStoreImplTest, RevokeURLWithFragment) {
+  BlobURLStorePtr url_store = CreateURLStore();
+  url_store->Revoke(kFragmentUrl);
+  url_store.FlushForTesting();
+  EXPECT_EQ(1u, bad_messages_.size());
+}
+
 TEST_F(BlobURLStoreImplTest, Resolve) {
   BlobPtr blob = CreateBlobFromString(kId, "hello world");
 
@@ -184,12 +217,24 @@ TEST_F(BlobURLStoreImplTest, Resolve) {
   blob = ResolveURL(&url_store, kValidUrl);
   ASSERT_TRUE(blob);
   EXPECT_EQ(kId, UUIDFromBlob(blob.get()));
+  blob = ResolveURL(&url_store, kFragmentUrl);
+  ASSERT_TRUE(blob);
+  EXPECT_EQ(kId, UUIDFromBlob(blob.get()));
 }
 
 TEST_F(BlobURLStoreImplTest, ResolveNonExistentURL) {
   BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
 
   BlobPtr blob = ResolveURL(&url_store, kValidUrl);
+  EXPECT_FALSE(blob);
+  blob = ResolveURL(&url_store, kFragmentUrl);
+  EXPECT_FALSE(blob);
+}
+
+TEST_F(BlobURLStoreImplTest, ResolveInvalidURL) {
+  BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
+
+  BlobPtr blob = ResolveURL(&url_store, kInvalidUrl);
   EXPECT_FALSE(blob);
 }
 
