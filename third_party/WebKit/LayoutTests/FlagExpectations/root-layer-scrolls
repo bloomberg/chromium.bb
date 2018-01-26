@@ -12,8 +12,6 @@ crbug.com/417782 fast/loader/scroll-position-restored-on-back-at-load-event.html
 crbug.com/417782 fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
 crbug.com/417782 fast/overflow/overflow-clamp-after-visible-rect-resize.html [ Failure ]
 crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]
-crbug.com/417782 fast/spatial-navigation/snav-iframe-with-offscreen-focusable-element.html [ Failure ]
-crbug.com/417782 fast/spatial-navigation/snav-use-visual-viewport.html [ Failure ]
 crbug.com/417782 html/dialog/form-method-dialog.html [ Crash ]
 crbug.com/417782 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Failure ]

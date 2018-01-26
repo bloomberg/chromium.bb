@@ -3724,8 +3724,7 @@ LayoutRect LocalFrameView::AbsoluteToRootFrame(
   LayoutPoint point_in_frame(layout_rect.Location());
   // With RLS turned on, this will be a no-op.
   point_in_frame -= LayoutSize(ScrollOffsetInt());
-  LayoutRect rect_in_root_frame(point_in_frame, layout_rect.Size());
-  return rect_in_root_frame;
+  return LayoutRect(ConvertToRootFrame(point_in_frame), layout_rect.Size());
 }
 
 IntRect LocalFrameView::RootFrameToDocument(const IntRect& rect_in_root_frame) {

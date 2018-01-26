@@ -123,7 +123,7 @@ struct FocusCandidate {
   Member<Node> focusable_node;
   Member<Node> enclosing_scrollable_box;
   double distance;
-  LayoutRect rect;
+  LayoutRect rect_in_root_frame;
   bool is_offscreen;
   bool is_offscreen_after_scrolling;
 };
@@ -142,8 +142,7 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
 void DistanceDataForNode(WebFocusType,
                          const FocusCandidate& current,
                          FocusCandidate&);
-LayoutRect NodeRectInAbsoluteCoordinates(const Node*, bool ignore_border = false);
-LayoutRect FrameRectInAbsoluteCoordinates(const LocalFrame*);
+LayoutRect NodeRectInRootFrame(const Node*, bool ignore_border = false);
 LayoutRect VirtualRectForDirection(WebFocusType,
                                    const LayoutRect& starting_rect,
                                    LayoutUnit width = LayoutUnit());
