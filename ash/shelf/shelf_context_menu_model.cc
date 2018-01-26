@@ -103,45 +103,44 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
     menu->push_back(std::move(auto_hide));
   }
 
-  // Only allow alignment and wallpaper modifications by the owner or user.
+  // Only allow shelf alignment modifications by the owner or user.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
-  if (status != LoginStatus::USER && status != LoginStatus::OWNER)
-    return;
+  if (status == LoginStatus::USER || status == LoginStatus::OWNER) {
+    const ShelfAlignment alignment = GetShelfAlignmentPref(prefs, display_id);
+    mojom::MenuItemPtr alignment_menu(mojom::MenuItem::New());
+    alignment_menu->type = ui::MenuModel::TYPE_SUBMENU;
+    alignment_menu->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_MENU;
+    alignment_menu->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_POSITION);
+    alignment_menu->submenu = MenuItemList();
+    alignment_menu->enabled = !is_tablet_mode;
 
-  const ShelfAlignment alignment = GetShelfAlignmentPref(prefs, display_id);
-  mojom::MenuItemPtr alignment_menu(mojom::MenuItem::New());
-  alignment_menu->type = ui::MenuModel::TYPE_SUBMENU;
-  alignment_menu->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_MENU;
-  alignment_menu->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_POSITION);
-  alignment_menu->submenu = MenuItemList();
-  alignment_menu->enabled = !is_tablet_mode;
+    mojom::MenuItemPtr left(mojom::MenuItem::New());
+    left->type = ui::MenuModel::TYPE_RADIO;
+    left->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_LEFT;
+    left->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT);
+    left->checked = alignment == SHELF_ALIGNMENT_LEFT;
+    left->enabled = true;
+    alignment_menu->submenu->push_back(std::move(left));
 
-  mojom::MenuItemPtr left(mojom::MenuItem::New());
-  left->type = ui::MenuModel::TYPE_RADIO;
-  left->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_LEFT;
-  left->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT);
-  left->checked = alignment == SHELF_ALIGNMENT_LEFT;
-  left->enabled = true;
-  alignment_menu->submenu->push_back(std::move(left));
+    mojom::MenuItemPtr bottom(mojom::MenuItem::New());
+    bottom->type = ui::MenuModel::TYPE_RADIO;
+    bottom->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_BOTTOM;
+    bottom->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_BOTTOM);
+    bottom->checked = alignment == SHELF_ALIGNMENT_BOTTOM ||
+                      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED;
+    bottom->enabled = true;
+    alignment_menu->submenu->push_back(std::move(bottom));
 
-  mojom::MenuItemPtr bottom(mojom::MenuItem::New());
-  bottom->type = ui::MenuModel::TYPE_RADIO;
-  bottom->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_BOTTOM;
-  bottom->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_BOTTOM);
-  bottom->checked = alignment == SHELF_ALIGNMENT_BOTTOM ||
-                    alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED;
-  bottom->enabled = true;
-  alignment_menu->submenu->push_back(std::move(bottom));
+    mojom::MenuItemPtr right(mojom::MenuItem::New());
+    right->type = ui::MenuModel::TYPE_RADIO;
+    right->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_RIGHT;
+    right->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT);
+    right->checked = alignment == SHELF_ALIGNMENT_RIGHT;
+    right->enabled = true;
+    alignment_menu->submenu->push_back(std::move(right));
 
-  mojom::MenuItemPtr right(mojom::MenuItem::New());
-  right->type = ui::MenuModel::TYPE_RADIO;
-  right->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_RIGHT;
-  right->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT);
-  right->checked = alignment == SHELF_ALIGNMENT_RIGHT;
-  right->enabled = true;
-  alignment_menu->submenu->push_back(std::move(right));
-
-  menu->push_back(std::move(alignment_menu));
+    menu->push_back(std::move(alignment_menu));
+  }
 
   if (Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
     mojom::MenuItemPtr wallpaper(mojom::MenuItem::New());
