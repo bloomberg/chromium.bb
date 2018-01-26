@@ -53,13 +53,6 @@ camera.views.Camera = function(context, router) {
   this.mediaRecorder_ = null;
 
   /**
-   * TODO(yuli): Replace with a toggle button.
-   * @type {boolean}
-   * @private
-   */
-  this.toggleRecChecked_ = false;
-
-  /**
    * Last frame time, used to detect new frames of <video>.
    * @type {number}
    * @private
@@ -93,11 +86,18 @@ camera.views.Camera = function(context, router) {
   this.tickSound_ = document.createElement('audio');
 
   /**
-   * Recording sound player.
+   * Record-start sound player.
    * @type {Audio}
    * @private
    */
-  this.recordingSound_ = document.createElement('audio');
+  this.recordStartSound_ = document.createElement('audio');
+
+  /**
+   * Record-end sound player.
+   * @type {Audio}
+   * @private
+   */
+  this.recordEndSound_ = document.createElement('audio');
 
   /**
    * Canvas element with the current frame downsampled to small resolution, to
@@ -555,6 +555,8 @@ camera.views.Camera = function(context, router) {
   // TODO(mtomasz): Move managing window controls to main.js.
   window.addEventListener('keydown', this.onWindowKeyDown_.bind(this));
 
+  document.querySelector('#toggle-record').addEventListener(
+      'click', this.onToggleRecordClicked_.bind(this));
   document.querySelector('#toggle-timer').addEventListener(
       'keypress', this.onToggleTimerKeyPress_.bind(this));
   document.querySelector('#toggle-timer').addEventListener(
@@ -563,6 +565,10 @@ camera.views.Camera = function(context, router) {
       'keypress', this.onToggleMultiKeyPress_.bind(this));
   document.querySelector('#toggle-multi').addEventListener(
       'click', this.onToggleMultiClicked_.bind(this));
+  document.querySelector('#toggle-mic').addEventListener(
+      'keypress', this.onToggleMicKeyPress_.bind(this));
+  document.querySelector('#toggle-mic').addEventListener(
+      'click', this.onToggleMicClicked_.bind(this));
   document.querySelector('#toggle-camera').addEventListener(
       'click', this.onToggleCameraClicked_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
@@ -571,10 +577,10 @@ camera.views.Camera = function(context, router) {
       'click', this.onToggleMirrorClicked_.bind(this));
 
   // Load the shutter, tick, and recording sound.
-  // TODO(yuli): Replace the recording sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
   this.tickSound_.src = '../sounds/tick.ogg';
-  this.recordingSound_.src = '../sounds/tick.ogg';
+  this.recordStartSound_.src = '../sounds/record_start.ogg';
+  this.recordEndSound_.src = '../sounds/record_end.ogg';
 };
 
 /**
@@ -745,7 +751,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
               this.setCurrentEffect_(values.effectIndex);
             else
               this.setCurrentEffect_(0);
-            document.querySelector('#toggle-timer').checked = values.toggleTimer;
+            document.querySelector('#toggle-timer').checked =
+                values.toggleTimer;
             document.querySelector('#toggle-multi').checked =
                 values.toggleMulti;
             this.legacyMirroringToggle_ = values.toggleMirror;
@@ -943,6 +950,18 @@ camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
 };
 
 /**
+ * Handles pressing a key on the microphone switch for video-recording.
+ * @param {Event} event Key press event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMicKeyPress_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+  if (camera.util.getShortcutIdentifier(event) == 'Enter')
+    document.querySelector('#toggle-mic').click();
+};
+
+/**
  * Handles pressing a key on the mirror switch.
  * @param {Event} event Key press event.
  * @private
@@ -985,6 +1004,22 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
 };
 
 /**
+ * Handles clicking on the microphone switch for video-recording.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMicClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+
+  var enabled = document.querySelector('#toggle-mic').checked;
+  this.stream_.getAudioTracks()[0].enabled = enabled;
+  this.showToastMessage_(
+      chrome.i18n.getMessage(enabled ? 'toggleMicActiveMessage' :
+                                       'toggleMicInactiveMessage'));
+};
+
+/**
  * Handles clicking on the toggle camera switch.
  * @param {Event} event Click event.
  * @private
@@ -1013,6 +1048,58 @@ camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
     if (this.stream_)
       this.stream_.getVideoTracks()[0].stop();
   }.bind(this));
+};
+
+/**
+ * Handles clicking on the video-recording switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+
+  var label;
+  var recordEnabled;
+  var toggleRecord = document.querySelector('#toggle-record');
+  if (toggleRecord.classList.contains('toggle-off')) {
+    recordEnabled = false;
+    toggleRecord.classList.remove('toggle-off');
+    label = 'toggleRecordOnButton';
+  } else {
+    recordEnabled = true;
+    toggleRecord.classList.add('toggle-off');
+    label = 'toggleRecordOffButton';
+  }
+  toggleRecord.setAttribute('i18n-label', label);
+  toggleRecord.setAttribute('aria-label', chrome.i18n.getMessage(label));
+
+  var takePictureButton = document.querySelector('#take-picture');
+  if (recordEnabled) {
+    takePictureButton.classList.add('motion-picture');
+    label = 'recordVideoButton';
+  } else {
+    takePictureButton.classList.remove('motion-picture');
+    label = 'takePictureButton';
+  }
+  takePictureButton.setAttribute('i18n-label', label);
+  takePictureButton.setAttribute('aria-label', chrome.i18n.getMessage(label));
+
+  // Disable effects as recording with effects is not supported yet.
+  var toggleFilters = document.querySelector('#toolbar #filters-toggle');
+  toggleFilters.disabled = recordEnabled;
+  this.mainProcessor_.effectDisabled = recordEnabled;
+  this.mainPreviewProcessor_.effectDisabled = recordEnabled;
+  this.mainFastProcessor_.effectDisabled = recordEnabled;
+  if (toggleFilters.disabled) {
+    this.setExpanded_(false);
+  }
+
+  document.querySelector('#toggle-multi').hidden = recordEnabled;
+  document.querySelector('#toggle-mic').hidden = !recordEnabled;
+  this.updateMic_(recordEnabled);
+  this.showToastMessage_(chrome.i18n.getMessage(recordEnabled ?
+      'toggleRecordingActiveMessage' : 'toggleTakingPictureActiveMessage'));
 };
 
 /**
@@ -1104,6 +1191,26 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
 
   toggleMirror.checked = enabled;
   document.body.classList.toggle('mirror', enabled);
+};
+
+/**
+ * Updates the microphone either set automatically or by user.
+ *
+ * @param {boolean} active True to set microphone active, false to inactive.
+ * @private
+ */
+camera.views.Camera.prototype.updateMic_ = function(active) {
+  var toggleMic = document.querySelector('#toggle-mic');
+
+  // Enable the microphone switch only if there is an audio track.
+  var track = this.stream_ && this.stream_.getAudioTracks()[0];
+  toggleMic.disabled = (track == null);
+  if (toggleMic.disabled) {
+    toggleMic.checked = false;
+  } else {
+    toggleMic.checked = active;
+    track.enabled = active;
+  }
 };
 
 /**
@@ -1243,29 +1350,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
 
-  // TODO(yuli): Replace the recording key with a toggle and change the
-  // take-picture button icon when the recording toggle is checked.
-  if (this.keyBuffer_.indexOf('REC') !== -1 &&
-      !this.mediaRecorderRecording_()) {
-    this.toggleRecChecked_ = this.mediaRecorder_ && !this.toggleRecChecked_;
-
-    // Disable effects as recording with effects is not supported yet.
-    var toggleFilters = document.querySelector('#toolbar #filters-toggle');
-    toggleFilters.disabled = this.toggleRecChecked_;
-    this.mainProcessor_.effectDisabled = this.toggleRecChecked_;
-    this.mainPreviewProcessor_.effectDisabled = this.toggleRecChecked_;
-    this.mainFastProcessor_.effectDisabled = this.toggleRecChecked_;
-    if (toggleFilters.disabled) {
-      this.setExpanded_(false);
-    }
-
-    // TODO(yuli): Replace the toggle-multi with toggle-mutemic for recording.
-    document.querySelector('#toggle-multi').hidden = this.toggleRecChecked_;
-    this.showToastMessage_(chrome.i18n.getMessage(this.toggleRecChecked_ ?
-        'toggleRecActiveMessage' : 'toggleRecInactiveMessage'));
-    this.keyBuffer_ = '';
-  }
-
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Left':
       this.setCurrentEffect_(
@@ -1358,7 +1442,9 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
     clearTimeout(this.collapseTimer_);
     this.collapseTimer_ = null;
   }
-  if (expanded) {
+  // Don't expand to show the effects if they are not supported.
+  if (!document.querySelector('#toolbar #filters-toggle').disabled &&
+      expanded) {
     var isRibbonHovered =
         document.querySelector('#toolbar').webkitMatchesSelector(':hover');
     if (!isRibbonHovered && !this.performanceTestTimer_) {
@@ -1574,28 +1660,39 @@ camera.views.Camera.prototype.takePicture_ = function() {
 
   var toggleTimer = document.querySelector('#toggle-timer');
   var toggleMulti = document.querySelector('#toggle-multi');
+  var toggleRecord = document.querySelector('#toggle-record');
+  var recordEnabled = toggleRecord.classList.contains('toggle-off');
 
-  // TODO(yuli): Disable toggle-recording button.
   toggleTimer.disabled = true;
   toggleMulti.disabled = true;
+  toggleRecord.disabled = true;
   document.querySelector('#take-picture').disabled = true;
 
   var tickCounter = toggleTimer.checked ? 6 : 1;
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
-      var multiEnabled = !this.toggleRecChecked_ && toggleMulti.checked;
+      var multiEnabled = !recordEnabled && toggleMulti.checked;
       var multiShotCounter = 3;
       var takePicture = function() {
-        this.takePictureImmediately_();
-        if (multiEnabled) {
-          multiShotCounter--;
-          if (multiShotCounter)
-            return;
-        }
-        // Don't end recording until another take-picture click.
-        if (!this.toggleRecChecked_)
+        if (recordEnabled) {
+          // Play a sound before recording started, and don't end recording
+          // until another take-picture click.
+          this.recordStartSound_.onended = function() {
+            this.takePictureImmediately_(true);
+          }.bind(this);
+          this.recordStartSound_.currentTime = 0;
+          this.recordStartSound_.play();
+        } else {
+          this.takePictureImmediately_(false);
+
+          if (multiEnabled) {
+            multiShotCounter--;
+            if (multiShotCounter)
+              return;
+          }
           this.endTakePicture_();
+        }
       }.bind(this);
       takePicture();
       if (multiEnabled)
@@ -1637,14 +1734,19 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
   toggleTimer.disabled = false;
   document.querySelector('#take-picture').disabled = false;
   document.querySelector('#toggle-multi').disabled = false;
+  document.querySelector('#toggle-record').disabled =
+      (this.mediaRecorder_ == null);
 };
 
 /**
  * Takes the still picture or starts to take the motion picture immediately,
  * and saves and puts to the album with a nice animation when it's done.
+ *
+ * @param {boolean} motionPicture True to start video recording, false to take
+ *     a still picture.
  * @private
  */
-camera.views.Camera.prototype.takePictureImmediately_ = function() {
+camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) {
   if (!this.running_) {
     return;
   }
@@ -1652,7 +1754,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
   // Lock refreshing for smoother experience.
   this.taking_ = true;
 
-  var takePicture = function(motionPicture) {
+  setTimeout(function() {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
     this.mainCanvas_.toBlob(function(blob) {
       // Create a picture preview animation.
@@ -1666,6 +1768,9 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
           this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
         }
       }.bind(this));
+      if (motionPicture) {
+        img.classList.add('motion-picture');
+      }
 
       // Create the fly-away animation with the image.
       var albumButton = document.querySelector('#toolbar #album-enter');
@@ -1720,10 +1825,6 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
         // Animate the album button.
         camera.util.setAnimationClass(albumButton, albumButton, 'flash');
 
-        // Play a shutter sound.
-        this.shutterSound_.currentTime = 0;
-        this.shutterSound_.play();
-
         // Add to DOM.
         picturePreview.appendChild(img);
 
@@ -1742,14 +1843,17 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
           }
         }.bind(this);
 
-        var takeButton = document.querySelector('#take-picture');
+        var takePictureButton = document.querySelector('#take-picture');
         this.mediaRecorder_.onstop = function(event) {
-          takeButton.classList.remove('flash');
+          takePictureButton.classList.remove('flash');
           // Add the motion picture after the recording is ended.
           // TODO(yuli): Handle insufficient storage.
           var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
           recordedChunks = [];
           if (recordedBlob.size) {
+            // Play a video-record-ended sound.
+            this.recordEndSound_.currentTime = 0;
+            this.recordEndSound_.play();
             // TODO(yuli): Use the preview image's blob to create video's
             // thumbnail to save time.
             addPicture(recordedBlob, camera.models.Gallery.PictureType.MOTION);
@@ -1766,24 +1870,16 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
 
         // Re-enable the take-picture button to stop recording later and flash
         // the take-picture button until the recording is stopped.
-        takeButton.disabled = false;
-        takeButton.classList.add('flash');
+        takePictureButton.disabled = false;
+        takePictureButton.classList.add('flash');
       } else {
+        // Play a shutter sound.
+        this.shutterSound_.currentTime = 0;
+        this.shutterSound_.play();
         addPicture(blob, camera.models.Gallery.PictureType.STILL);
       }
     }.bind(this), 'image/jpeg');
-  }.bind(this);
-
-  if (this.toggleRecChecked_) {
-    // Play a sound before recording started.
-    this.recordingSound_.currentTime = 0;
-    this.recordingSound_.onended = function() {
-      setTimeout(function() { takePicture(true) }, 0);
-    }.bind(this);
-    this.recordingSound_.play();
-  } else {
-    setTimeout(function() { takePicture(false) }, 0);
-  }
+  }.bind(this), 0);
 };
 
 /**
@@ -1876,13 +1972,8 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
     }
   }
   try {
-    // TODO(yuli): Add a mute-microphone toggle.
-    var muteMic = function(mute) {
-      stream.getAudioTracks()[0].enabled = !mute;
-    };
     return new MediaRecorder(stream, options);
   } catch (e) {
-    // TODO(yuli): Disable the recording toggle.
     console.error('Unable to create MediaRecorder: ' + e + '. mimeType: ' +
         options.mimeType);
     return null;
@@ -1933,6 +2024,10 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
         }
       }.bind(this), 100);
       this.mediaRecorder_ = this.createMediaRecorder_(stream);
+      document.querySelector('#toggle-record').disabled =
+          (this.mediaRecorder_ == null);
+      // Disable audio stream unless it's for video recording.
+      this.updateMic_(false);
       this.capturing_ = true;
       var onAnimationFrame = function() {
         if (!this.running_)
@@ -2236,6 +2331,7 @@ camera.views.Camera.prototype.start_ = function() {
       camera.views.Camera.RESOLUTIONS.forEach(function(resolution) {
         if (deviceId) {
           constraintsCandidates.push({
+            audio: true,  // Need to capture audio for recording video.
             video: {
               deviceId: { exact: deviceId },
               width: { min: resolution[0] },
@@ -2245,6 +2341,7 @@ camera.views.Camera.prototype.start_ = function() {
         } else {
           // As a default camera use the one which is facing the user.
           constraintsCandidates.push({
+            audio: true,  // Need to capture audio for recording video.
             video: {
               width: { min: resolution[0] },
               height: { min: resolution[1] },

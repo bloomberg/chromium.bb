@@ -442,6 +442,12 @@ body.mirror #effects li canvas {
   width: 73px;
 }
 
+#buttons #take-picture.motion-picture {
+  background-image: -webkit-image-set(
+      url(../images/camera_button_video.png) 1x,
+      url(../images/2x/camera_button_video.png) 2x);
+}
+
 #buttons #take-picture:hover {
   background-position: 0 -37px;
 }
@@ -459,7 +465,7 @@ body.mirror #effects li canvas {
   position: relative;
 }
 
-#buttons #take-picture:focus:after {
+#buttons #take-picture:focus::after {
   border: 2px solid rgba(229, 151, 0, 0.5);
   border-radius: 20px;
   bottom: -2px;
@@ -505,12 +511,30 @@ body.mirror #effects li canvas {
   width: 32px;
 }
 
+.buttons #toggle-mic {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+      url(../images/camera_button_mic.png) 1x,
+      url(../images/2x/camera_button_mic.png) 2x);
+  height: 32px;
+  width: 32px;
+}
+
 .buttons #toggle-camera {
   background-image: -webkit-image-set(
       url(../images/camera_button_toggle.png) 1x,
       url(../images/2x/camera_button_toggle.png) 2x);
   height: 32px;
   width: 32px;
+}
+
+.buttons #toggle-record {
+  background-image: -webkit-image-set(
+      url(../images/camera_button_record.png) 1x,
+      url(../images/2x/camera_button_record.png) 2x);
+  height: 32px;
+  width: 32px;
+  background-position: 0 0;
 }
 
 .buttons #toggle-mirror {
@@ -523,9 +547,11 @@ body.mirror #effects li canvas {
 }
 
 .buttons #toggle-timer.animate,
+.buttons #toggle-record.toggle-off,
 .buttons #toggle-timer:not(:checked),
 .buttons #toggle-multi:not(:checked),
-.buttons #toggle-mirror:not(:checked) {
+.buttons #toggle-mirror:not(:checked),
+.buttons #toggle-mic:not(:checked) {
   background-position: 0 -32px;
 }
 
@@ -576,6 +602,11 @@ body:not(.has-error) #toolbar.expanded {
   -webkit-transform: scale(1.2) !important;  /* Override the inline style. */
   transition: opacity 1s, -webkit-transform 250ms;
   z-index: 1;
+}
+
+
+#picture-preview img.motion-picture {
+  border-color: gray;
 }
 
 #camera,
@@ -720,18 +751,39 @@ body.performance-test * {
   padding: 15px;
 }
 
-#album img {
+#album div.media-wrapper {
   -webkit-app-region: no-drag;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 8px;
   transition: -webkit-transform 50ms;
   vertical-align: middle;
+  display: inline-block;
+  position: relative;
   width: 220px;
 }
 
-#album img.selected {
+#album div.media-wrapper img {
+  width: 100%;
+}
+
+#album div.media-wrapper.selected {
   outline: 4px solid rgb(66, 129, 244);
   outline-offset: -4px;
+}
+
+#album div.media-wrapper.motion-picture::after {
+  background-image: -webkit-image-set(
+      url(../images/album_video_overlay.png) 1x,
+      url(../images/2x/album_video_overlay.png) 2x);
+  background-repeat: no-repeat;
+  background-position: center;
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
 #browser {
@@ -845,14 +897,19 @@ body.album #album {
   }
 
   /* Reset styles to default on the album view. */
-  #album img,
-  #album img.selected {
+  #album div.media-wrapper,
+  #album div.media-wrapper.selected {
     -webkit-transform: scale(1);
     border: none;
     box-shadow: none;
     height: auto;
     max-width: 30%;
     outline: none;
+  }
+
+  /* Hide the overlay icons to print video thumbnial images. */
+  #album div.media-wrapper.motion-picture::after {
+    background-image: none;
   }
 }
 

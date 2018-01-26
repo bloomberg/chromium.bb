@@ -173,6 +173,10 @@
     "message": "Take a picture",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Record video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Toggle timer",
     "description": "Label for the button to toggle the countdown timer."
@@ -181,9 +185,29 @@
     "message": "Toggle multi-shot",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMicButton": {
+    "message": "Toggle microphone",
+    "description": "Label for the button to toggle the microphone for video recording."
+  },
   "toggleCameraButton": {
     "message": "Toggle camera",
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+   "message": "Toggle on recording video",
+   "description": "Label for the button to toggle on recording video."
+  },
+  "toggleRecordOffButton": {
+   "message": "Toggle on taking picture",
+   "description": "Label for the button to toggle on taking picture."
+  },
+  "toggleRecordingActiveMessage": {
+    "message": "Recording video active",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "toggleTakingPictureActiveMessage": {
+    "message": "Taking picture active",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Toggle mirroring",
@@ -213,13 +237,13 @@
     "message": "Mirroring inactive",
     "description": "Message shown when inactivating the preview mirroring."
   },
-  "toggleRecActiveMessage": {
-    "message": "Recording active",
-    "description": "Message shown when activating the video recording feature."
+  "toggleMicActiveMessage": {
+    "message": "Microphone active",
+    "description": "Message shown when unmuting the microphone for video recording."
   },
-  "toggleRecInactiveMessage": {
-    "message": "Recording inactive",
-    "description": "Message shown when inactivating the video recording feature."
+  "toggleMicInactiveMessage": {
+    "message": "Microphone inactive",
+    "description": "Message shown when muting the microphone for video recording."
   },
   "dialogYesButton": {
     "message": "Yes",
