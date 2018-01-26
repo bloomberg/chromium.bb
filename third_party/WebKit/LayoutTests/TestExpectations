@@ -1267,6 +1267,7 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/multi-t
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
+crbug.com/806357 [ Win Debug ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-adjustment_click_target.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
