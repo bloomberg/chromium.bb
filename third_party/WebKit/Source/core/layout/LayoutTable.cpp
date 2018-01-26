@@ -1473,19 +1473,21 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
   return LayoutUnit(-1);
 }
 
-LayoutRect LayoutTable::OverflowClipRect(
+void LayoutTable::CalculateOverflowClipRect(
     const LayoutPoint& location,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
+    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
+    LayoutRect& rect) const {
   if (ShouldCollapseBorders()) {
     // Though the outer halves of the collapsed borders are considered as the
     // the border area of the table by means of the box model, they are actually
     // contents of the table and should not be clipped off. The overflow clip
     // rect is BorderBoxRect() + location.
-    return LayoutRect(location, Size());
+    rect = LayoutRect(location, Size());
+    return;
   }
 
-  LayoutRect rect =
-      LayoutBlock::OverflowClipRect(location, overlay_scrollbar_clip_behavior);
+  LayoutBlock::CalculateOverflowClipRect(location,
+                                         overlay_scrollbar_clip_behavior, rect);
 
   // If we have a caption, expand the clip to include the caption.
   // FIXME: Technically this is wrong, but it's virtually impossible to fix this
@@ -1503,8 +1505,6 @@ LayoutRect LayoutTable::OverflowClipRect(
       rect.SetX(location.X());
     }
   }
-
-  return rect;
 }
 
 bool LayoutTable::NodeAtPoint(HitTestResult& result,

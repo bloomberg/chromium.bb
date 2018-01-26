@@ -153,10 +153,10 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
                      MapCoordinatesFlags mode = 0) const override;
 
   LayoutRect ViewRect() const override;
-  LayoutRect OverflowClipRect(
-      const LayoutPoint& location,
-      OverlayScrollbarClipBehavior =
-          kIgnorePlatformOverlayScrollbarSize) const override;
+
+  void CalculateOverflowClipRect(const LayoutPoint& location,
+                                 OverlayScrollbarClipBehavior,
+                                 LayoutRect&) const override;
 
   void CalculateScrollbarModes(ScrollbarMode& h_mode,
                                ScrollbarMode& v_mode) const;

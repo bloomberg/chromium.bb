@@ -624,19 +624,20 @@ LayoutRect LayoutView::ViewRect() const {
   return LayoutRect();
 }
 
-LayoutRect LayoutView::OverflowClipRect(
+void LayoutView::CalculateOverflowClipRect(
     const LayoutPoint& location,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  LayoutRect rect = ViewRect();
-  if (rect.IsEmpty())
-    return LayoutBox::OverflowClipRect(location,
-                                       overlay_scrollbar_clip_behavior);
+    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
+    LayoutRect& rect) const {
+  rect = ViewRect();
+  if (rect.IsEmpty()) {
+    LayoutBox::CalculateOverflowClipRect(location,
+                                         overlay_scrollbar_clip_behavior, rect);
+    return;
+  }
 
   rect.SetLocation(location);
   if (HasOverflowClip())
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
-
-  return rect;
 }
 
 void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
