@@ -78,7 +78,7 @@ void BaseDateTimeView::UpdateText() {
 
 void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_TIME;
+  node_data->role = ax::mojom::Role::kTime;
 }
 
 BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)
@@ -116,7 +116,7 @@ void BaseDateTimeView::UpdateTextInternal(const base::Time& now) {
                     base::ASCIIToUTF16(", ") +
                     base::TimeFormatFriendlyDate(now));
 
-  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {

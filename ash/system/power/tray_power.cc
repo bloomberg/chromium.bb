@@ -106,7 +106,7 @@ class PowerTrayView : public TrayItemView {
   // Overridden from views::View.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(accessible_name_);
-    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->role = ax::mojom::Role::kButton;
   }
 
   void UpdateStatus(bool battery_alert) {
@@ -115,7 +115,7 @@ class PowerTrayView : public TrayItemView {
 
     if (battery_alert) {
       accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
-      NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+      NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
     }
   }
 

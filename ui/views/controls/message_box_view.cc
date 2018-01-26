@@ -136,7 +136,7 @@ void MessageBoxView::SetLink(const base::string16& text,
 }
 
 void MessageBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_ALERT;
+  node_data->role = ax::mojom::Role::kAlert;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ void MessageBoxView::ViewHierarchyChanged(
     if (prompt_field_)
       prompt_field_->SelectAll(true);
 
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 

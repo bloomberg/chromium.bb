@@ -57,7 +57,7 @@ class ASH_EXPORT AshTouchExplorationManager
   void PlayPassthroughEarcon() override;
   void PlayExitScreenEarcon() override;
   void PlayEnterScreenEarcon() override;
-  void HandleAccessibilityGesture(ui::AXGesture gesture) override;
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
 
   // display::DisplayObserver overrides:
   void OnDisplayMetricsChanged(const display::Display& display,

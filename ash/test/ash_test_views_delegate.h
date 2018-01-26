@@ -15,7 +15,7 @@ class TestAccessibilityEventDelegate {
   TestAccessibilityEventDelegate() {}
   virtual ~TestAccessibilityEventDelegate() {}
   virtual void NotifyAccessibilityEvent(views::View* view,
-                                        ui::AXEvent event_type) = 0;
+                                        ax::mojom::Event event_type) = 0;
 };
 
 // Ash specific ViewsDelegate. In addition to creating a TestWebContents this
@@ -37,7 +37,7 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
   void NotifyAccessibilityEvent(views::View* view,
-                                ui::AXEvent event_type) override;
+                                ax::mojom::Event event_type) override;
   views::TestViewsDelegate::ProcessMenuAcceleratorResult
   ProcessAcceleratorWhileMenuShowing(
       const ui::Accelerator& accelerator) override;

@@ -41,7 +41,7 @@ gfx::Size Separator::CalculatePreferredSize() const {
 }
 
 void Separator::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_SPLITTER;
+  node_data->role = ax::mojom::Role::kSplitter;
 }
 
 void Separator::OnPaint(gfx::Canvas* canvas) {

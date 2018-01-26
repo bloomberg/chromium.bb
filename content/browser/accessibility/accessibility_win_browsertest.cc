@@ -116,8 +116,9 @@ AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() {
 void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
     const std::string& html,
     ui::AXMode accessibility_mode) {
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), accessibility_mode, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         accessibility_mode,
+                                         ax::mojom::Event::kLoadComplete);
   GURL html_data_url("data:text/html," + html);
   NavigateToURL(shell(), html_data_url);
   waiter.WaitForNotification();
@@ -173,9 +174,9 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   ASSERT_HRESULT_SUCCEEDED(input.CopyTo(input_text->GetAddressOf()));
 
   // Set the caret on the last character.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   std::wstring caret_offset = base::UTF16ToWide(base::IntToString16(
       static_cast<int>(CONTENTS_LENGTH - 1)));
   ExecuteScript(std::wstring(
@@ -225,9 +226,9 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_HRESULT_SUCCEEDED(textarea.CopyTo(textarea_text->GetAddressOf()));
 
   // Set the caret on the last character.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   std::wstring caret_offset = base::UTF16ToWide(base::IntToString16(
       static_cast<int>(CONTENTS_LENGTH - 1)));
   ExecuteScript(std::wstring(
@@ -735,8 +736,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Set focus to the radio group.
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_FOCUS));
+      new AccessibilityNotificationWaiter(shell()->web_contents(),
+                                          ui::kAXModeComplete,
+                                          ax::mojom::Event::kFocus));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -747,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Set the active descendant of the radio group
   waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_FOCUS));
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus));
   ExecuteScript(
       L"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
   waiter->WaitForNotification();
@@ -778,9 +780,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check the checkbox.
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(shell()->web_contents(),
-                                          ui::kAXModeComplete,
-                                          ui::AX_EVENT_CHECKED_STATE_CHANGED));
+      new AccessibilityNotificationWaiter(
+          shell()->web_contents(), ui::kAXModeComplete,
+          ax::mojom::Event::kCheckedStateChanged));
   ExecuteScript(L"document.body.children[0].checked=true");
   waiter->WaitForNotification();
 
@@ -807,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(shell()->web_contents(),
                                           ui::kAXModeComplete,
-                                          ui::AX_EVENT_CHILDREN_CHANGED));
+                                          ax::mojom::Event::kChildrenChanged));
   ExecuteScript(L"document.body.innerHTML='<b>new text</b>'");
   waiter->WaitForNotification();
 
@@ -833,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(shell()->web_contents(),
                                           ui::kAXModeComplete,
-                                          ui::AX_EVENT_CHILDREN_CHANGED));
+                                          ax::mojom::Event::kChildrenChanged));
   ExecuteScript(L"document.body.children[0].style.visibility='visible'");
   waiter->WaitForNotification();
 
@@ -864,8 +866,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Focus the div in the document
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(
-          shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_FOCUS));
+      new AccessibilityNotificationWaiter(shell()->web_contents(),
+                                          ui::kAXModeComplete,
+                                          ax::mojom::Event::kFocus));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -877,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Focus the document accessible. This will un-focus the current node.
   waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_BLUR));
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kBlur));
   Microsoft::WRL::ComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.Get(), reinterpret_cast<IAccessible*>(NULL));
@@ -913,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   std::unique_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(shell()->web_contents(),
                                           ui::kAXModeComplete,
-                                          ui::AX_EVENT_VALUE_CHANGED));
+                                          ax::mojom::Event::kValueChanged));
   ExecuteScript(L"document.body.children[0].value='new value'");
   waiter->WaitForNotification();
 
@@ -1150,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                          ui::AXMode::kNativeAPIs |
                                              ui::AXMode::kWebContents |
                                              ui::AXMode::kScreenReader,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+                                         ax::mojom::Event::kLoadComplete);
   EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
       0, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
   // X and y coordinates should be available without
@@ -1183,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
       paragraph->accLocation(&prev_x, &prev_y, &width, &height, childid_self));
   AccessibilityNotificationWaiter location_changed_waiter(
       shell()->web_contents(), ui::kAXModeComplete,
-      ui::AX_EVENT_LOCATION_CHANGED);
+      ax::mojom::Event::kLocationChanged);
   EXPECT_HRESULT_SUCCEEDED(
       paragraph->scrollToPoint(IA2_COORDTYPE_PARENT_RELATIVE, 0, 0));
   location_changed_waiter.WaitForNotification();
@@ -1213,9 +1216,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(CONTENTS_LENGTH - 1, caret_offset);
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   caret_offset = 0;
   hr = input_text->setCaretOffset(caret_offset);
   EXPECT_EQ(S_OK, hr);
@@ -1236,9 +1239,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(CONTENTS_LENGTH - 1, caret_offset);
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   caret_offset = 0;
   hr = textarea_text->setCaretOffset(caret_offset);
   EXPECT_EQ(S_OK, hr);
@@ -1260,9 +1263,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelection) {
   // There is no selection, just a caret.
   EXPECT_EQ(E_INVALIDARG, hr);
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   start_offset = 0;
   end_offset = CONTENTS_LENGTH;
   EXPECT_HRESULT_FAILED(input_text->setSelection(1, start_offset, end_offset));
@@ -1299,9 +1302,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
   // There is no selection, just a caret.
   EXPECT_EQ(E_INVALIDARG, hr);
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_TEXT_SELECTION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
   start_offset = 0;
   end_offset = CONTENTS_LENGTH;
   EXPECT_HRESULT_FAILED(
@@ -1339,7 +1342,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
-      ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED);
+      ax::mojom::Event::kDocumentSelectionChanged);
   LONG start_offset = 0;
   LONG end_offset = n_characters;
   EXPECT_HRESULT_FAILED(
@@ -1955,8 +1958,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   image_name.Release();
   // Cllicking the image will change its name.
   EXPECT_HRESULT_SUCCEEDED(image_action->doAction(0));
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_TEXT_CHANGED);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kTextChanged);
   waiter.WaitForNotification();
   EXPECT_HRESULT_SUCCEEDED(
       image->get_accName(childid_self, image_name.Receive()));
@@ -1981,8 +1985,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   web_contents_view_aura->set_init_rwhv_with_null_parent_for_testing(true);
 
   // Navigate to a new page and wait for the accessibility tree to load.
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   NavigateToURL(shell(), embedded_test_server()->GetURL(
       "/accessibility/html/article.html"));
   waiter.WaitForNotification();
@@ -2003,8 +2008,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   NavigateToURL(shell(), embedded_test_server()->GetURL(
                              "/accessibility/html/table-spans.html"));
   waiter.WaitForNotification();
@@ -2139,9 +2145,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
 
   // Call scrollTo on the first target. Ensure it ends up very near the
   // center of the window.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ui::AX_EVENT_SCROLL_POSITION_CHANGED);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
   ASSERT_HRESULT_SUCCEEDED(target->scrollTo(IA2_SCROLL_TYPE_ANYWHERE));
   waiter.WaitForNotification();
 
@@ -2157,9 +2163,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
 
   // Now call scrollTo on the second target. Ensure it ends up very near the
   // center of the window.
-  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                          ui::kAXModeComplete,
-                                          ui::AX_EVENT_SCROLL_POSITION_CHANGED);
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
   ASSERT_HRESULT_SUCCEEDED(target2->scrollTo(IA2_SCROLL_TYPE_ANYWHERE));
   waiter2.WaitForNotification();
 

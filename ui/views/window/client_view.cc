@@ -75,7 +75,7 @@ const char* ClientView::GetClassName() const {
 }
 
 void ClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_CLIENT;
+  node_data->role = ax::mojom::Role::kClient;
 }
 
 void ClientView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

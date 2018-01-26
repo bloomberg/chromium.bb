@@ -52,8 +52,8 @@ void AXRootObjWrapper::GetChildren(
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = unique_id_.Get();
-  out_node_data->role = ui::AX_ROLE_DESKTOP;
-  out_node_data->AddStringAttribute(ui::AX_ATTR_CHROME_CHANNEL,
+  out_node_data->role = ax::mojom::Role::kDesktop;
+  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChromeChannel,
                                     chrome::GetChannelString());
 }
 

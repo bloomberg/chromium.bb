@@ -130,7 +130,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // WidgetDelegate overrides:
   bool ShouldHandleSystemCommands() const override;
-  ui::AXRole GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
 
   // Overridden from views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;

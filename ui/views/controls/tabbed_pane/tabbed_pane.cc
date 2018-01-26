@@ -62,7 +62,7 @@ class TabLabel : public Label {
     // ignored, but Tabs only mark the currently selected tab as
     // keyboard-focusable. This means all unselected Tabs expose their children
     // to the a11y tree. To fix, manually ignore the children.
-    data->role = ui::AX_ROLE_IGNORED;
+    data->role = ax::mojom::Role::kIgnored;
   }
 };
 
@@ -231,19 +231,19 @@ void Tab::SetState(TabState tab_state) {
 }
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
-  data->role = ui::AX_ROLE_TAB;
+  data->role = ax::mojom::Role::kTab;
   data->SetName(title()->text());
-  data->AddState(ui::AX_STATE_SELECTABLE);
+  data->AddState(ax::mojom::State::kSelectable);
   if (selected())
-    data->AddState(ui::AX_STATE_SELECTED);
+    data->AddState(ax::mojom::State::kSelected);
 }
 
 bool Tab::HandleAccessibleAction(const ui::AXActionData& action_data) {
-  if (action_data.action != ui::AX_ACTION_SET_SELECTION || !enabled())
+  if (action_data.action != ax::mojom::Action::kSetSelection || !enabled())
     return false;
 
   // It's not clear what should happen if a tab is 'deselected', so the
-  // AX_ACTION_SET_SELECTION action will always select the tab.
+  // ax::mojom::Action::kSetSelection action will always select the tab.
   tabbed_pane_->SelectTab(this);
   return true;
 }
@@ -252,10 +252,10 @@ void Tab::OnFocus() {
   OnStateChanged();
   // When the tab gains focus, send an accessibility event indicating that the
   // contents are focused. When the tab loses focus, whichever new View ends up
-  // with focus will send an AX_EVENT_FOCUS of its own, so there's no need to
-  // send one in OnBlur().
+  // with focus will send an ax::mojom::Event::kFocus of its own, so there's no
+  // need to send one in OnBlur().
   if (contents())
-    contents()->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+    contents()->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
   SchedulePaint();
 }
 
@@ -716,7 +716,7 @@ const char* TabbedPane::GetClassName() const {
 }
 
 void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TAB_LIST;
+  node_data->role = ax::mojom::Role::kTabList;
 }
 
 }  // namespace views

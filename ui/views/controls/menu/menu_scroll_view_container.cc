@@ -259,7 +259,7 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
 void MenuScrollViewContainer::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Get the name from the submenu view.
   content_view_->GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_MENU_BAR;
+  node_data->role = ax::mojom::Role::kMenuBar;
 }
 
 void MenuScrollViewContainer::OnBoundsChanged(

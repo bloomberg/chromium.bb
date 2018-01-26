@@ -206,7 +206,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_DESCRIPTION, "Description");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                          "Description");
   Init(root);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -223,7 +224,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_VALUE, "Value");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kValue, "Value");
   Init(root);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -240,7 +241,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_KEY_SHORTCUTS, "Shortcut");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
+                          "Shortcut");
   Init(root);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -259,16 +261,16 @@ TEST_F(AXPlatformNodeWinTest,
        TestIAccessibleSelectionListBoxOptionNothingSelected) {
   AXNodeData list;
   list.id = 0;
-  list.role = AX_ROLE_LIST_BOX;
+  list.role = ax::mojom::Role::kListBox;
 
   AXNodeData list_item_1;
   list_item_1.id = 1;
-  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_1.role = ax::mojom::Role::kListBoxOption;
   list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
-  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_2.role = ax::mojom::Role::kListBoxOption;
   list_item_2.SetName("Name2");
 
   list.child_ids.push_back(list_item_1.id);
@@ -288,17 +290,17 @@ TEST_F(AXPlatformNodeWinTest,
        TestIAccessibleSelectionListBoxOptionOneSelected) {
   AXNodeData list;
   list.id = 0;
-  list.role = AX_ROLE_LIST_BOX;
+  list.role = ax::mojom::Role::kListBox;
 
   AXNodeData list_item_1;
   list_item_1.id = 1;
-  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_1.AddState(AX_STATE_SELECTED);
+  list_item_1.role = ax::mojom::Role::kListBoxOption;
+  list_item_1.AddState(ax::mojom::State::kSelected);
   list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
-  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_2.role = ax::mojom::Role::kListBoxOption;
   list_item_2.SetName("Name2");
 
   list.child_ids.push_back(list_item_1.id);
@@ -320,23 +322,23 @@ TEST_F(AXPlatformNodeWinTest,
        TestIAccessibleSelectionListBoxOptionMultipleSelected) {
   AXNodeData list;
   list.id = 0;
-  list.role = AX_ROLE_LIST_BOX;
+  list.role = ax::mojom::Role::kListBox;
 
   AXNodeData list_item_1;
   list_item_1.id = 1;
-  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_1.AddState(AX_STATE_SELECTED);
+  list_item_1.role = ax::mojom::Role::kListBoxOption;
+  list_item_1.AddState(ax::mojom::State::kSelected);
   list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
-  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.AddState(AX_STATE_SELECTED);
+  list_item_2.role = ax::mojom::Role::kListBoxOption;
+  list_item_2.AddState(ax::mojom::State::kSelected);
   list_item_2.SetName("Name2");
 
   AXNodeData list_item_3;
   list_item_3.id = 3;
-  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_3.role = ax::mojom::Role::kListBoxOption;
   list_item_3.SetName("Name3");
 
   list.child_ids.push_back(list_item_1.id);
@@ -413,7 +415,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableRowOneSelected) {
   AXTreeUpdate update = Build3X3Table();
 
   // 5 == table_row_1
-  update.nodes[5].AddState(AX_STATE_SELECTED);
+  update.nodes[5].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -441,8 +443,8 @@ TEST_F(AXPlatformNodeWinTest,
 
   // 5 == table_row_1
   // 9 == table_row_2
-  update.nodes[5].AddState(AX_STATE_SELECTED);
-  update.nodes[9].AddState(AX_STATE_SELECTED);
+  update.nodes[5].AddState(ax::mojom::State::kSelected);
+  update.nodes[9].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -503,7 +505,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableCellOneSelected) {
   AXTreeUpdate update = Build3X3Table();
 
   // 7 == table_cell_1
-  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -541,8 +543,8 @@ TEST_F(AXPlatformNodeWinTest,
 
   // 11 == table_cell_3
   // 12 == table_cell_4
-  update.nodes[11].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -619,17 +621,17 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
 
   ScopedVariant role;
 
-  child.role = AX_ROLE_ALERT;
+  child.role = ax::mojom::Role::kAlert;
   child_node->SetData(child);
   EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_ALERT, V_I4(role.ptr()));
 
-  child.role = AX_ROLE_BUTTON;
+  child.role = ax::mojom::Role::kButton;
   child_node->SetData(child);
   EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_PUSHBUTTON, V_I4(role.ptr()));
 
-  child.role = AX_ROLE_POP_UP_BUTTON;
+  child.role = ax::mojom::Role::kPopUpButton;
   child_node->SetData(child);
   EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_BUTTONMENU, V_I4(role.ptr()));
@@ -676,11 +678,11 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   root.child_ids.push_back(3);
 
   AXNodeData button;
-  button.role = AX_ROLE_BUTTON;
+  button.role = ax::mojom::Role::kButton;
   button.id = 2;
 
   AXNodeData checkbox;
-  checkbox.role = AX_ROLE_CHECK_BOX;
+  checkbox.role = ax::mojom::Role::kCheckBox;
   checkbox.id = 3;
 
   Init(root, button, checkbox);
@@ -809,16 +811,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
 TEST_F(AXPlatformNodeWinTest, TestAccNavigate) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   AXNodeData child1;
   child1.id = 2;
-  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.role = ax::mojom::Role::kStaticText;
   root.child_ids.push_back(2);
 
   AXNodeData child2;
   child2.id = 3;
-  child2.role = AX_ROLE_STATIC_TEXT;
+  child2.role = ax::mojom::Role::kStaticText;
   root.child_ids.push_back(3);
 
   Init(root, child1, child2);
@@ -1003,12 +1005,12 @@ TEST_F(AXPlatformNodeWinTest,
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {
   AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 2000, 2000);
 
   AXNodeData child1;
   child1.id = 2;
-  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.role = ax::mojom::Role::kStaticText;
   child1.location = gfx::RectF(10, 10, 10, 10);
   root.child_ids.push_back(2);
 
@@ -1055,12 +1057,12 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollTo) {
   AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 2000, 2000);
 
   AXNodeData child1;
   child1.id = 2;
-  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.role = ax::mojom::Role::kStaticText;
   child1.location = gfx::RectF(10, 10, 10, 10);
   root.child_ids.push_back(2);
 
@@ -1373,8 +1375,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellGetRowHeaderCells) {
   long number_cells;
   EXPECT_EQ(S_OK, cell->get_rowHeaderCells(&cell_accessibles, &number_cells));
 
-  // Since we do not have AX_ATTR_TABLE_CELL_ROW_INDEX set, the evaluated row
-  // will be 0.  In this case, we do not expect any row headers.
+  // Since we do not have ax::mojom::IntAttribute::kTableCellRowIndex set, the
+  // evaluated row will be 0.  In this case, we do not expect any row headers.
   EXPECT_EQ(number_cells, 0);
 }
 
@@ -1430,20 +1432,21 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   // specific COM/BrowserAccessibility knowledge.
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   std::vector<int32_t> describedby_ids = {1, 2, 3};
-  root.AddIntListAttribute(AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
+                           describedby_ids);
 
   AXNodeData child1;
   child1.id = 2;
-  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.role = ax::mojom::Role::kStaticText;
 
   root.child_ids.push_back(2);
 
   AXNodeData child2;
   child2.id = 3;
-  child2.role = AX_ROLE_STATIC_TEXT;
+  child2.role = ax::mojom::Role::kStaticText;
 
   root.child_ids.push_back(3);
 
@@ -1538,27 +1541,28 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
 TEST_F(AXPlatformNodeWinTest, TestRelationTargetsOfType) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
-  root.AddIntAttribute(AX_ATTR_DETAILS_ID, 2);
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
 
   AXNodeData child1;
   child1.id = 2;
-  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.role = ax::mojom::Role::kStaticText;
 
   root.child_ids.push_back(2);
 
   AXNodeData child2;
   child2.id = 3;
-  child2.role = AX_ROLE_STATIC_TEXT;
+  child2.role = ax::mojom::Role::kStaticText;
   std::vector<int32_t> labelledby_ids = {1, 4};
-  child2.AddIntListAttribute(AX_ATTR_LABELLEDBY_IDS, labelledby_ids);
+  child2.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                             labelledby_ids);
 
   root.child_ids.push_back(3);
 
   AXNodeData child3;
   child3.id = 4;
-  child3.role = AX_ROLE_STATIC_TEXT;
-  child3.AddIntAttribute(AX_ATTR_DETAILS_ID, 2);
+  child3.role = ax::mojom::Role::kStaticText;
+  child3.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
 
   root.child_ids.push_back(4);
 
@@ -1643,7 +1647,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenOne) {
   AXTreeUpdate update = Build3X3Table();
 
   // 7 == table_cell_1
-  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
   Init(update);
 
   ComPtr<IAccessibleTableCell> cell = GetCellInTable();
@@ -1668,10 +1672,10 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenMany) {
   // 8 == table_cell_2
   // 11 == table_cell_3
   // 12 == table_cell_4
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1714,9 +1718,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[3].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1741,16 +1745,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[3].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[4].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1793,9 +1797,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1820,16 +1824,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[10].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1853,8 +1857,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1882,8 +1886,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildrenZeroMax) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1907,8 +1911,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsZero) {
 
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1936,9 +1940,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[3].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -1967,16 +1971,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[3].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[4].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2026,9 +2030,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2056,16 +2060,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[10].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2094,9 +2098,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsColumnSelected) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[3].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[11].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2130,9 +2134,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2166,9 +2170,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].AddState(AX_STATE_SELECTED);
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[6].AddState(ax::mojom::State::kSelected);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[8].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2231,8 +2235,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].AddState(AX_STATE_SELECTED);
-  update.nodes[12].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(ax::mojom::State::kSelected);
+  update.nodes[12].AddState(ax::mojom::State::kSelected);
 
   Init(update);
 
@@ -2261,9 +2265,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetGroupPosition) {
   AXNodeData root;
   root.id = 1;
-  root.AddIntAttribute(AX_ATTR_HIERARCHICAL_LEVEL, 1);
-  root.AddIntAttribute(AX_ATTR_SET_SIZE, 1);
-  root.AddIntAttribute(AX_ATTR_POS_IN_SET, 1);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 1);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 1);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
   Init(root);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -2281,7 +2285,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetGroupPosition) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_ROLE_DESCRIPTION, "extended role");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                          "extended role");
   Init(root);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -2294,12 +2299,12 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
   AXNodeData root;
   root.id = 0;
-  root.role = AX_ROLE_STATIC_TEXT;
+  root.role = ax::mojom::Role::kStaticText;
   root.child_ids.push_back(1);
 
   AXNodeData node;
   node.id = 1;
-  node.role = AX_ROLE_STATIC_TEXT;
+  node.role = ax::mojom::Role::kStaticText;
   node.SetName("Name");
 
   Init(root, node);

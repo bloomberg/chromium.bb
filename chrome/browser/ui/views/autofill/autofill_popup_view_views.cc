@@ -44,7 +44,7 @@ class AutofillPopupChildView : public views::View {
 
   // views::Views implementation
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_MENU_ITEM;
+    node_data->role = ax::mojom::Role::kMenuItem;
     node_data->SetName(suggestion_.value);
   }
 
@@ -68,14 +68,14 @@ AutofillPopupViewViews::~AutofillPopupViewViews() {}
 
 void AutofillPopupViewViews::Show() {
   DoShow();
-  NotifyAccessibilityEvent(ui::AX_EVENT_MENU_START, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
 }
 
 void AutofillPopupViewViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = NULL;
   DoHide();
-  NotifyAccessibilityEvent(ui::AX_EVENT_MENU_END, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
 }
 
 void AutofillPopupViewViews::OnSuggestionsChanged() {
@@ -119,7 +119,7 @@ void AutofillPopupViewViews::OnSelectedRowChanged(
   if (current_row_selection) {
     DCHECK_LT(*current_row_selection, child_count());
     child_at(*current_row_selection)
-        ->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
 }
 
@@ -243,7 +243,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 }
 
 void AutofillPopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_MENU;
+  node_data->role = ax::mojom::Role::kMenu;
   node_data->SetName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }

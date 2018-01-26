@@ -27,10 +27,9 @@ class AccessibilityNotificationWaiter {
   explicit AccessibilityNotificationWaiter(WebContents* web_contents);
   AccessibilityNotificationWaiter(WebContents* web_contents,
                                   ui::AXMode accessibility_mode,
-                                  ui::AXEvent event);
-  AccessibilityNotificationWaiter(
-      RenderFrameHostImpl* frame_host,
-       ui::AXEvent event);
+                                  ax::mojom::Event event);
+  AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
+                                  ax::mojom::Event event);
   ~AccessibilityNotificationWaiter();
 
   void ListenToAdditionalFrame(RenderFrameHostImpl* frame_host);
@@ -57,7 +56,7 @@ class AccessibilityNotificationWaiter {
  private:
   // Callback from RenderViewHostImpl.
   void OnAccessibilityEvent(content::RenderFrameHostImpl* rfhi,
-                            ui::AXEvent event,
+                            ax::mojom::Event event,
                             int event_target_id);
 
   // Helper function to determine if the accessibility tree in
@@ -65,7 +64,7 @@ class AccessibilityNotificationWaiter {
   bool IsAboutBlank();
 
   RenderFrameHostImpl* frame_host_;
-  ui::AXEvent event_to_wait_for_;
+  ax::mojom::Event event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   int event_target_id_;
   RenderFrameHostImpl* event_render_frame_host_;

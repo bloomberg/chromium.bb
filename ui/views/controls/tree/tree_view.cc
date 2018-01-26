@@ -272,8 +272,8 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
     controller_->OnTreeViewSelectionChanged(this);
 
   if (changed) {
-    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
 }
 
@@ -425,13 +425,13 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
 }
 
 void TreeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TREE;
-  node_data->SetRestriction(ui::AX_RESTRICTION_READ_ONLY);
+  node_data->role = ax::mojom::Role::kTree;
+  node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
   if (!selected_node_)
     return;
 
   // Get selected item info.
-  node_data->role = ui::AX_ROLE_TREE_ITEM;
+  node_data->role = ax::mojom::Role::kTreeItem;
   node_data->SetName(selected_node_->model_node()->GetTitle());
 }
 

@@ -118,11 +118,11 @@ AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
 void AXAuraObjCache::OnFocusedViewChanged() {
   View* view = GetFocusedView();
   if (view)
-    view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+    view->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
-                               ui::AXEvent event_type) {
+                               ax::mojom::Event event_type) {
   if (delegate_)
     delegate_->OnEvent(aura_obj, event_type);
 }

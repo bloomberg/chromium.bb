@@ -497,7 +497,7 @@ int BrowserActionsContainer::OnPerformDrop(
 }
 
 void BrowserActionsContainer::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_GROUP;
+  node_data->role = ax::mojom::Role::kGroup;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_EXTENSIONS));
 }
 

@@ -28,7 +28,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
   std::string IntAttrToString(const BrowserAccessibility& node,
-                              ui::AXIntAttribute attr,
+                              ax::mojom::IntAttribute attr,
                               int value) const;
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,

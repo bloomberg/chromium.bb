@@ -26,7 +26,7 @@ void FindAllHostsOfWebContentsWithAXTreeID(
     std::vector<views::AXAuraObjWrapper*>* web_hosts) {
   ui::AXNodeData node_data;
   tree->SerializeNode(node, &node_data);
-  if (node_data.GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID) ==
+  if (node_data.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId) ==
       target_ax_tree_id) {
     web_hosts->push_back(node);
   }
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
   if (web_hosts.size() == 1) {
     ui::AXNodeData node_data;
     tree->SerializeNode(web_hosts[0], &node_data);
-    EXPECT_EQ(ui::AX_ROLE_WEB_VIEW, node_data.role);
+    EXPECT_EQ(ax::mojom::Role::kWebView, node_data.role);
   } else {
     for (size_t i = 0; i < web_hosts.size(); i++) {
       ui::AXNodeData node_data;

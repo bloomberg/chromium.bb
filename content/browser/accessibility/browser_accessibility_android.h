@@ -155,7 +155,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsIframe() const;
   bool ShouldExposeValueAsName() const;
 
-  int CountChildrenWithRole(ui::AXRole role) const;
+  int CountChildrenWithRole(ax::mojom::Role role) const;
 
   static size_t CommonPrefixLength(const base::string16 a,
                                    const base::string16 b);

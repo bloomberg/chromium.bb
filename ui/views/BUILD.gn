@@ -464,7 +464,7 @@ jumbo_component("views") {
     ":views_vector_icons",
     "//base",
     "//components/vector_icons",
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/ime",
     "//ui/compositor",

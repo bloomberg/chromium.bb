@@ -266,7 +266,7 @@ class AccessibilityManager
 
   // Forward an accessibility gesture from the touch exploration controller
   // to ChromeVox.
-  // TODO(warx): |gesture| comes from ui::ToString() on a ui::AXGesture.
+  // TODO(warx): |gesture| comes from ui::ToString() on a ax::mojom::Gesture.
   void HandleAccessibilityGesture(const std::string& gesture);
 
   // Update the touch exploration controller so that synthesized

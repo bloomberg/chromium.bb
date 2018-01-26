@@ -130,7 +130,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
 
   // Subclasses override these methods to send native event notifications.
   virtual void FireFocusEvent(BrowserAccessibility* node);
-  virtual void FireBlinkEvent(ui::AXEvent event_type,
+  virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node) {}
   virtual void FireGeneratedEvent(AXEventGenerator::Event event_type,
                                   BrowserAccessibility* node) {}
@@ -313,9 +313,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   // Sets |out_is_before| to true if |object1| comes before |object2|
   // in tree order (pre-order traversal), and false if the objects are the
   // same or not in the same tree.
-  static ui::AXTreeOrder CompareNodes(
-      const BrowserAccessibility& object1,
-      const BrowserAccessibility& object2);
+  static ax::mojom::TreeOrder CompareNodes(const BrowserAccessibility& object1,
+                                           const BrowserAccessibility& object2);
 
   static std::vector<const BrowserAccessibility*> FindTextOnlyObjectsInRange(
       const BrowserAccessibility& start_object,

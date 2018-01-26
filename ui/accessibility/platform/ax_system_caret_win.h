@@ -50,9 +50,9 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegate {
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
-  std::set<int32_t> GetReverseRelations(AXIntAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
                                         int32_t dst_id) override;
-  std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) override;
 
   AXPlatformNodeWin* caret_;

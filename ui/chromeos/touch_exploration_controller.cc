@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -675,7 +675,7 @@ void TouchExplorationController::SendSimulatedClickOrTap() {
   // If we got an anchor point from ChromeVox, send a double-tap gesture
   // and let ChromeVox handle the click.
   if (anchor_point_state_ == ANCHOR_POINT_EXPLICITLY_SET) {
-    delegate_->HandleAccessibilityGesture(ui::AX_GESTURE_CLICK);
+    delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kClick);
     return;
   }
   SendSimulatedTap();
@@ -784,7 +784,7 @@ ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
     return ui::EVENT_REWRITE_DISCARD;
 
   if (type == ui::ET_TOUCH_RELEASED) {
-    delegate_->HandleAccessibilityGesture(ui::AX_GESTURE_TAP_2);
+    delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kTap2);
     SET_STATE(NO_FINGERS_DOWN);
     return ui::EVENT_REWRITE_DISCARD;
   }
@@ -966,20 +966,20 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   if (VLOG_on_)
     VLOG(1) << "\nSwipe with " << num_fingers << " fingers.";
 
-  ui::AXGesture gesture = ui::AX_GESTURE_NONE;
+  ax::mojom::Gesture gesture = ax::mojom::Gesture::kNone;
   if (event_details.swipe_left()) {
     switch (num_fingers) {
       case 1:
-        gesture = ui::AX_GESTURE_SWIPE_LEFT_1;
+        gesture = ax::mojom::Gesture::kSwipeLeft1;
         break;
       case 2:
-        gesture = ui::AX_GESTURE_SWIPE_LEFT_2;
+        gesture = ax::mojom::Gesture::kSwipeLeft2;
         break;
       case 3:
-        gesture = ui::AX_GESTURE_SWIPE_LEFT_3;
+        gesture = ax::mojom::Gesture::kSwipeLeft3;
         break;
       case 4:
-        gesture = ui::AX_GESTURE_SWIPE_LEFT_4;
+        gesture = ax::mojom::Gesture::kSwipeLeft4;
         break;
       default:
         break;
@@ -987,16 +987,16 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   } else if (event_details.swipe_up()) {
     switch (num_fingers) {
       case 1:
-        gesture = ui::AX_GESTURE_SWIPE_UP_1;
+        gesture = ax::mojom::Gesture::kSwipeUp1;
         break;
       case 2:
-        gesture = ui::AX_GESTURE_SWIPE_UP_2;
+        gesture = ax::mojom::Gesture::kSwipeUp2;
         break;
       case 3:
-        gesture = ui::AX_GESTURE_SWIPE_UP_3;
+        gesture = ax::mojom::Gesture::kSwipeUp3;
         break;
       case 4:
-        gesture = ui::AX_GESTURE_SWIPE_UP_4;
+        gesture = ax::mojom::Gesture::kSwipeUp4;
         break;
       default:
         break;
@@ -1004,16 +1004,16 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   } else if (event_details.swipe_right()) {
     switch (num_fingers) {
       case 1:
-        gesture = ui::AX_GESTURE_SWIPE_RIGHT_1;
+        gesture = ax::mojom::Gesture::kSwipeRight1;
         break;
       case 2:
-        gesture = ui::AX_GESTURE_SWIPE_RIGHT_2;
+        gesture = ax::mojom::Gesture::kSwipeRight2;
         break;
       case 3:
-        gesture = ui::AX_GESTURE_SWIPE_RIGHT_3;
+        gesture = ax::mojom::Gesture::kSwipeRight3;
         break;
       case 4:
-        gesture = ui::AX_GESTURE_SWIPE_RIGHT_4;
+        gesture = ax::mojom::Gesture::kSwipeRight4;
         break;
       default:
         break;
@@ -1021,23 +1021,23 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   } else if (event_details.swipe_down()) {
     switch (num_fingers) {
       case 1:
-        gesture = ui::AX_GESTURE_SWIPE_DOWN_1;
+        gesture = ax::mojom::Gesture::kSwipeDown1;
         break;
       case 2:
-        gesture = ui::AX_GESTURE_SWIPE_DOWN_2;
+        gesture = ax::mojom::Gesture::kSwipeDown2;
         break;
       case 3:
-        gesture = ui::AX_GESTURE_SWIPE_DOWN_3;
+        gesture = ax::mojom::Gesture::kSwipeDown3;
         break;
       case 4:
-        gesture = ui::AX_GESTURE_SWIPE_DOWN_4;
+        gesture = ax::mojom::Gesture::kSwipeDown4;
         break;
       default:
         break;
     }
   }
 
-  if (gesture != ui::AX_GESTURE_NONE)
+  if (gesture != ax::mojom::Gesture::kNone)
     delegate_->HandleAccessibilityGesture(gesture);
 }
 

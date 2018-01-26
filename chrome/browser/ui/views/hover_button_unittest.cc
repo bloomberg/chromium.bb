@@ -99,7 +99,8 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
     ui::AXNodeData data;
     button->GetAccessibleNodeData(&data);
     std::string accessible_name;
-    data.GetStringAttribute(ui::AX_ATTR_NAME, &accessible_name);
+    data.GetStringAttribute(ax::mojom::StringAttribute::kName,
+                            &accessible_name);
 
     // The accessible name should always be the title and subtitle concatenated
     // by \n.
@@ -141,7 +142,8 @@ TEST_F(HoverButtonTest, CustomTooltip) {
     ui::AXNodeData data;
     button->GetAccessibleNodeData(&data);
     std::string accessible_name;
-    data.GetStringAttribute(ui::AX_ATTR_NAME, &accessible_name);
+    data.GetStringAttribute(ax::mojom::StringAttribute::kName,
+                            &accessible_name);
 
     // The accessible name should always be the title and subtitle concatenated
     // by \n.

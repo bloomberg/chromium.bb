@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -127,12 +127,12 @@ class AuraLinuxApplication
 
   bool ShouldIgnoreHoveredStateForTesting() override { return false; }
 
-  std::set<int32_t> GetReverseRelations(ui::AXIntAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
                                         int32_t dst_id) override {
     return std::set<int32_t>();
   }
 
-  std::set<int32_t> GetReverseRelations(ui::AXIntListAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) override {
     return std::set<int32_t>();
   }
@@ -141,11 +141,11 @@ class AuraLinuxApplication
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 
   AuraLinuxApplication() {
-    data_.role = ui::AX_ROLE_APPLICATION;
+    data_.role = ax::mojom::Role::kApplication;
     platform_node_ = ui::AXPlatformNode::Create(this);
     if (ViewsDelegate::GetInstance()) {
       data_.AddStringAttribute(
-          ui::AX_ATTR_NAME,
+          ax::mojom::StringAttribute::kName,
           ViewsDelegate::GetInstance()->GetApplicationName());
     }
     ui::AXPlatformNodeAuraLinux::SetApplication(platform_node_);

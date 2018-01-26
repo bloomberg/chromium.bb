@@ -87,7 +87,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectName) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDescription) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_DESCRIPTION, "Description");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                          "Description");
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -111,7 +112,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   Init(root, child);
   AXNode* child_node = GetRootNode()->children()[0];
 
-  child.role = AX_ROLE_ALERT;
+  child.role = ax::mojom::Role::kAlert;
   child_node->SetData(child);
   AtkObject* child_obj(AtkObjectFromNode(child_node));
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
@@ -119,7 +120,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   EXPECT_EQ(ATK_ROLE_ALERT, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
 
-  child.role = AX_ROLE_BUTTON;
+  child.role = ax::mojom::Role::kButton;
   child_node->SetData(child);
   child_obj = AtkObjectFromNode(child_node);
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
@@ -127,7 +128,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
   EXPECT_EQ(ATK_ROLE_PUSH_BUTTON, atk_object_get_role(child_obj));
   g_object_unref(child_obj);
 
-  child.role = AX_ROLE_CANVAS;
+  child.role = ax::mojom::Role::kCanvas;
   child_node->SetData(child);
   child_obj = AtkObjectFromNode(child_node);
   ASSERT_TRUE(ATK_IS_OBJECT(child_obj));
@@ -139,8 +140,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectRole) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectState) {
   AXNodeData root;
   root.id = 1;
-  root.AddState(AX_STATE_DEFAULT);
-  root.AddState(AX_STATE_EXPANDED);
+  root.AddState(ax::mojom::State::kDefault);
+  root.AddState(ax::mojom::State::kExpanded);
 
   Init(root);
 
@@ -165,11 +166,11 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectChildAndParent) {
   root.child_ids.push_back(3);
 
   AXNodeData button;
-  button.role = AX_ROLE_BUTTON;
+  button.role = ax::mojom::Role::kButton;
   button.id = 2;
 
   AXNodeData checkbox;
-  checkbox.role = AX_ROLE_CHECK_BOX;
+  checkbox.role = ax::mojom::Role::kCheckBox;
   checkbox.id = 3;
 
   Init(root, button, checkbox);
@@ -291,7 +292,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_WINDOW;
+  root.role = ax::mojom::Role::kWindow;
   root.location = gfx::RectF(10, 40, 800, 600);
   root.child_ids.push_back(2);
 
@@ -380,8 +381,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetCurrentValue) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_SLIDER;
-  root.AddFloatAttribute(AX_ATTR_VALUE_FOR_RANGE, 5.0);
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 5.0);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -402,8 +403,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetCurrentValue) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMaximumValue) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_SLIDER;
-  root.AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 5.0);
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, 5.0);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -424,8 +425,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMaximumValue) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumValue) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_SLIDER;
-  root.AddFloatAttribute(AX_ATTR_MIN_VALUE_FOR_RANGE, 5.0);
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange, 5.0);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -446,8 +447,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumValue) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_SLIDER;
-  root.AddFloatAttribute(AX_ATTR_STEP_VALUE_FOR_RANGE, 5.0);
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange, 5.0);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -472,8 +473,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkHyperlink) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_LINK;
-  root.AddStringAttribute(AX_ATTR_URL, "http://foo.com");
+  root.role = ax::mojom::Role::kLink;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kUrl, "http://foo.com");
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());

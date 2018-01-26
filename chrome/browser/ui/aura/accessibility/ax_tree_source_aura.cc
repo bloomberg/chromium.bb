@@ -36,7 +36,7 @@ bool AXTreeSourceAura::HandleAccessibleAction(const ui::AXActionData& action) {
 
   // In Views, we only support setting the selection within a single node,
   // not across multiple nodes like on the web.
-  if (action.action == ui::AX_ACTION_SET_SELECTION) {
+  if (action.action == ax::mojom::Action::kSetSelection) {
     if (action.anchor_node_id != action.focus_node_id) {
       NOTREACHED();
       return false;
@@ -121,19 +121,20 @@ void AXTreeSourceAura::SerializeNode(AXAuraObjWrapper* node,
     out_data->offset_container_id = parent->GetUniqueId().Get();
   }
 
-  if (out_data->role == ui::AX_ROLE_WEB_VIEW) {
+  if (out_data->role == ax::mojom::Role::kWebView) {
     views::View* view = static_cast<views::AXViewObjWrapper*>(node)->view();
     content::WebContents* contents =
         static_cast<views::WebView*>(view)->GetWebContents();
     content::RenderFrameHost* rfh = contents->GetMainFrame();
     if (rfh) {
       int ax_tree_id = rfh->GetAXTreeID();
-      out_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, ax_tree_id);
+      out_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                ax_tree_id);
     }
-  } else if (out_data->role == ui::AX_ROLE_WINDOW ||
-             out_data->role == ui::AX_ROLE_DIALOG) {
+  } else if (out_data->role == ax::mojom::Role::kWindow ||
+             out_data->role == ax::mojom::Role::kDialog) {
     // Add clips children flag by default to these roles.
-    out_data->AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
   }
 }
 

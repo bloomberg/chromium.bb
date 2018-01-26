@@ -217,7 +217,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState image_state,
@@ -279,9 +279,9 @@ void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // accessible toggle button.
   if ((toggled_ && !images_[ButtonState::STATE_NORMAL].isNull()) ||
       (!toggled_ && !alternate_images_[ButtonState::STATE_NORMAL].isNull())) {
-    node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-    node_data->SetCheckedState(toggled_ ? ui::AX_CHECKED_STATE_TRUE
-                                        : ui::AX_CHECKED_STATE_FALSE);
+    node_data->role = ax::mojom::Role::kToggleButton;
+    node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
   }
 }
 

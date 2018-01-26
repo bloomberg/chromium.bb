@@ -116,7 +116,7 @@ class MessageCenterScrollView : public views::ScrollView {
  private:
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_DIALOG;
+    node_data->role = ax::mojom::Role::kDialog;
     node_data->SetName(owner_->GetButtonBarTitle());
   }
 
@@ -259,7 +259,7 @@ void MessageCenterView::OnLockStateChanged(bool locked) {
   is_locked_ = locked;
   Update(true /* animate */);
   // Refresh a11y information, because accessible name of the view changes.
-  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
@@ -670,7 +670,7 @@ void MessageCenterView::UpdateNotification(const std::string& id) {
   }
 
   // Notify accessibility that the contents have changed.
-  view->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+  view->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
 void MessageCenterView::NotifyAnimationState(bool animating) {

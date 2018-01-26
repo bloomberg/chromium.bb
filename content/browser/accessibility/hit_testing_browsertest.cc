@@ -26,7 +26,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
  protected:
   BrowserAccessibility* HitTestAndWaitForResultWithEvent(
       const gfx::Point& point,
-      ui::AXEvent event_to_fire) {
+      ax::mojom::Event event_to_fire) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     FrameTree* frame_tree = web_contents->GetFrameTree();
@@ -38,7 +38,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     for (FrameTreeNode* node : frame_tree->Nodes())
       event_waiter.ListenToAdditionalFrame(node->current_frame_host());
     ui::AXActionData action_data;
-    action_data.action = ui::AX_ACTION_HIT_TEST;
+    action_data.action = ax::mojom::Action::kHitTest;
     action_data.target_point =
         UseZoomForDSFEnabled()
             ? ScaleToRoundedPoint(point, manager->device_scale_factor())
@@ -56,7 +56,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   }
 
   BrowserAccessibility* HitTestAndWaitForResult(const gfx::Point& point) {
-    return HitTestAndWaitForResultWithEvent(point, ui::AX_EVENT_HOVER);
+    return HitTestAndWaitForResultWithEvent(point, ax::mojom::Event::kHover);
   }
 
   BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
@@ -71,7 +71,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     // Each call to CachingAsyncHitTest results in at least one HOVER
     // event received. Block until we receive it.
     AccessibilityNotificationWaiter hover_waiter(
-        shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_HOVER);
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
     for (FrameTreeNode* node : frame_tree->Nodes())
       hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
     BrowserAccessibility* result = manager->CachingAsyncHitTest(screen_point);
@@ -85,8 +85,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Load the page.
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   const char url_str[] =
       "data:text/html,"
       "<!doctype html>"
@@ -102,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   BrowserAccessibility* hit_node = HitTestAndWaitForResult(gfx::Point(-1, -1));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea, hit_node->GetRole());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
@@ -111,8 +112,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-coordinates.html"));
   NavigateToURL(shell(), url);
@@ -131,37 +133,40 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   BrowserAccessibility* hit_node;
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 50));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
-  ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 305) -> div in first iframe
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 305));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 350));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
-  ASSERT_EQ("Ordinary Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Ordinary Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 455) -> "Scrolled Button"
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 455));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
-  ASSERT_EQ("Scrolled Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Scrolled Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 505) -> div in second iframe
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 
   // (50, 505) -> div in second iframe
   // but with a different event
-  hit_node =
-      HitTestAndWaitForResultWithEvent(gfx::Point(50, 505), ui::AX_EVENT_ALERT);
+  hit_node = HitTestAndWaitForResultWithEvent(gfx::Point(50, 505),
+                                              ax::mojom::Event::kAlert);
   ASSERT_NE(hit_node, nullptr);
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
@@ -170,8 +175,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   GURL url(embedded_test_server()->GetURL(
       "/accessibility/hit_testing/hit_testing.html"));
   NavigateToURL(shell(), url);
@@ -193,39 +199,42 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   BrowserAccessibility* hit_node;
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 305) -> div in first iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
-  ASSERT_EQ("Ordinary Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Ordinary Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 455) -> "Scrolled Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
+  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
-  ASSERT_EQ("Scrolled Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Scrolled Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 505) -> div in second iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 }
 
 }  // namespace content

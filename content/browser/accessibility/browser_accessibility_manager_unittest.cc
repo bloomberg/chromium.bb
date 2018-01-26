@@ -90,17 +90,17 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   ui::AXNodeData button;
   button.id = 2;
   button.SetName("Button");
-  button.role = ui::AX_ROLE_BUTTON;
+  button.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
-  checkbox.role = ui::AX_ROLE_CHECK_BOX;
+  checkbox.role = ax::mojom::Role::kCheckBox;
 
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -164,22 +164,22 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   ui::AXNodeData tree1_child1;
   tree1_child1.id = 2;
   tree1_child1.SetName("Child1");
-  tree1_child1.role = ui::AX_ROLE_BUTTON;
+  tree1_child1.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_child2;
   tree1_child2.id = 3;
   tree1_child2.SetName("Child2");
-  tree1_child2.role = ui::AX_ROLE_BUTTON;
+  tree1_child2.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_child3;
   tree1_child3.id = 4;
   tree1_child3.SetName("Child3");
-  tree1_child3.role = ui::AX_ROLE_BUTTON;
+  tree1_child3.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.SetName("Document");
-  tree1_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  tree1_root.role = ax::mojom::Role::kRootWebArea;
   tree1_root.child_ids.push_back(2);
   tree1_root.child_ids.push_back(3);
   tree1_root.child_ids.push_back(4);
@@ -195,12 +195,12 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   ui::AXNodeData tree2_child0;
   tree2_child0.id = 5;
   tree2_child0.SetName("Child0");
-  tree2_child0.role = ui::AX_ROLE_BUTTON;
+  tree2_child0.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree2_root;
   tree2_root.id = 1;
   tree2_root.SetName("DocumentChanged");
-  tree2_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  tree2_root.role = ax::mojom::Role::kRootWebArea;
   tree2_root.child_ids.push_back(5);
   tree2_root.child_ids.push_back(2);
   tree2_root.child_ids.push_back(3);
@@ -241,7 +241,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   std::vector<AXEventNotificationDetails> params;
   params.push_back(AXEventNotificationDetails());
   AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  msg->event_type = ax::mojom::Event::kChildrenChanged;
   msg->update.nodes.push_back(tree2_root);
   msg->update.nodes.push_back(tree2_child0);
   msg->id = tree2_root.id;
@@ -293,40 +293,40 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   ui::AXNodeData tree1_grandchild1;
   tree1_grandchild1.id = 4;
   tree1_grandchild1.SetName("GrandChild1");
-  tree1_grandchild1.role = ui::AX_ROLE_BUTTON;
+  tree1_grandchild1.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_child1;
   tree1_child1.id = 3;
   tree1_child1.SetName("Child1");
-  tree1_child1.role = ui::AX_ROLE_BUTTON;
+  tree1_child1.role = ax::mojom::Role::kButton;
   tree1_child1.child_ids.push_back(4);
 
   ui::AXNodeData tree1_grandchild2;
   tree1_grandchild2.id = 6;
   tree1_grandchild2.SetName("GrandChild1");
-  tree1_grandchild2.role = ui::AX_ROLE_BUTTON;
+  tree1_grandchild2.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_child2;
   tree1_child2.id = 5;
   tree1_child2.SetName("Child2");
-  tree1_child2.role = ui::AX_ROLE_BUTTON;
+  tree1_child2.role = ax::mojom::Role::kButton;
   tree1_child2.child_ids.push_back(6);
 
   ui::AXNodeData tree1_grandchild3;
   tree1_grandchild3.id = 8;
   tree1_grandchild3.SetName("GrandChild3");
-  tree1_grandchild3.role = ui::AX_ROLE_BUTTON;
+  tree1_grandchild3.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree1_child3;
   tree1_child3.id = 7;
   tree1_child3.SetName("Child3");
-  tree1_child3.role = ui::AX_ROLE_BUTTON;
+  tree1_child3.role = ax::mojom::Role::kButton;
   tree1_child3.child_ids.push_back(8);
 
   ui::AXNodeData tree1_container;
   tree1_container.id = 2;
   tree1_container.SetName("Container");
-  tree1_container.role = ui::AX_ROLE_GROUP;
+  tree1_container.role = ax::mojom::Role::kGroup;
   tree1_container.child_ids.push_back(3);
   tree1_container.child_ids.push_back(5);
   tree1_container.child_ids.push_back(7);
@@ -334,7 +334,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   ui::AXNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.SetName("Document");
-  tree1_root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  tree1_root.role = ax::mojom::Role::kRootWebArea;
   tree1_root.child_ids.push_back(2);
 
   // Tree 2:
@@ -352,18 +352,18 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   ui::AXNodeData tree2_grandchild0;
   tree2_grandchild0.id = 9;
   tree2_grandchild0.SetName("GrandChild0");
-  tree2_grandchild0.role = ui::AX_ROLE_BUTTON;
+  tree2_grandchild0.role = ax::mojom::Role::kButton;
 
   ui::AXNodeData tree2_child0;
   tree2_child0.id = 10;
   tree2_child0.SetName("Child0");
-  tree2_child0.role = ui::AX_ROLE_BUTTON;
+  tree2_child0.role = ax::mojom::Role::kButton;
   tree2_child0.child_ids.push_back(9);
 
   ui::AXNodeData tree2_container;
   tree2_container.id = 2;
   tree2_container.SetName("Container");
-  tree2_container.role = ui::AX_ROLE_GROUP;
+  tree2_container.role = ax::mojom::Role::kGroup;
   tree2_container.child_ids.push_back(10);
   tree2_container.child_ids.push_back(3);
   tree2_container.child_ids.push_back(5);
@@ -406,7 +406,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   std::vector<AXEventNotificationDetails> params;
   params.push_back(AXEventNotificationDetails());
   AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  msg->event_type = ax::mojom::Event::kChildrenChanged;
   msg->update.nodes.push_back(tree2_container);
   msg->update.nodes.push_back(tree2_child0);
   msg->update.nodes.push_back(tree2_grandchild0);
@@ -465,7 +465,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
   ui::AXNodeData tree1_1;
   tree1_1.id = 1;
-  tree1_1.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  tree1_1.role = ax::mojom::Role::kRootWebArea;
   tree1_1.child_ids.push_back(2);
   tree1_1.child_ids.push_back(3);
 
@@ -504,7 +504,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   std::vector<AXEventNotificationDetails> params;
   params.push_back(AXEventNotificationDetails());
   AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  msg->event_type = ax::mojom::Event::kChildrenChanged;
   msg->update.nodes.push_back(tree2_1);
   msg->update.nodes.push_back(tree2_4);
   msg->update.nodes.push_back(tree2_5);
@@ -528,7 +528,7 @@ TEST(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
 
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
   root.child_ids.push_back(2);
 
@@ -546,7 +546,7 @@ TEST(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
 
   ui::AXNodeData root2;
   root2.id = 1;
-  root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root2.role = ax::mojom::Role::kRootWebArea;
   root2.child_ids.push_back(2);
   root2.child_ids.push_back(3);
 
@@ -582,22 +582,22 @@ TEST(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
 TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("Hello, world.");
-  static_text.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text.role = ax::mojom::Role::kStaticText;
   static_text.location = gfx::RectF(100, 100, 29, 18);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("Hello, ");
-  inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.location = gfx::RectF(100, 100, 29, 9);
-  inline_text1.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
@@ -607,15 +607,15 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   character_offsets1.push_back(29);  // 5
   character_offsets1.push_back(29);  // 6 (note that the space has no width)
   inline_text1.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets1);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
   static_text.child_ids.push_back(3);
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 4;
   inline_text2.SetName("world.");
-  inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.location = gfx::RectF(100, 109, 28, 9);
-  inline_text2.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(5);
   character_offsets2.push_back(10);
@@ -624,7 +624,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   character_offsets2.push_back(25);
   character_offsets2.push_back(28);
   inline_text2.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets2);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets2);
   static_text.child_ids.push_back(4);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
@@ -666,42 +666,42 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
 TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("ABC");
-  static_text.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text.role = ax::mojom::Role::kStaticText;
   static_text.location = gfx::RectF(0, 20, 33, 9);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("ABC");
-  inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.location = gfx::RectF(0, 20, 33, 9);
-  inline_text1.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets { 10, 21, 33 };
   inline_text1.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
   static_text.child_ids.push_back(3);
 
   ui::AXNodeData static_text2;
   static_text2.id = 4;
   static_text2.SetName("ABC");
-  static_text2.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text2.role = ax::mojom::Role::kStaticText;
   static_text2.location = gfx::RectF(10, 40, 33, 9);
   root.child_ids.push_back(4);
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 5;
   inline_text2.SetName("ABC");
-  inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.location = gfx::RectF(10, 40, 33, 9);
-  inline_text2.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   inline_text2.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
   static_text2.child_ids.push_back(5);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
@@ -773,42 +773,42 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("123abc");
-  static_text.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text.role = ax::mojom::Role::kStaticText;
   static_text.location = gfx::RectF(100, 100, 60, 20);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("123");
-  inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.location = gfx::RectF(100, 100, 30, 20);
-  inline_text1.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(10);  // 0
   character_offsets1.push_back(20);  // 1
   character_offsets1.push_back(30);  // 2
   inline_text1.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets1);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
   static_text.child_ids.push_back(3);
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 4;
   inline_text2.SetName("abc");
-  inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.location = gfx::RectF(130, 100, 30, 20);
-  inline_text2.SetTextDirection(ui::AX_TEXT_DIRECTION_RTL);
+  inline_text2.SetTextDirection(ax::mojom::TextDirection::kRtl);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(10);
   character_offsets2.push_back(20);
   character_offsets2.push_back(30);
   inline_text2.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets2);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets2);
   static_text.child_ids.push_back(4);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
@@ -846,30 +846,30 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
 TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.AddIntAttribute(ui::AX_ATTR_SCROLL_X, 25);
-  root.AddIntAttribute(ui::AX_ATTR_SCROLL_Y, 50);
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 25);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 50);
   root.location = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("ABC");
-  static_text.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text.role = ax::mojom::Role::kStaticText;
   static_text.location = gfx::RectF(100, 100, 16, 9);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text;
   inline_text.id = 3;
   inline_text.SetName("ABC");
-  inline_text.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text.role = ax::mojom::Role::kInlineTextBox;
   inline_text.location = gfx::RectF(100, 100, 16, 9);
-  inline_text.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
   character_offsets1.push_back(16);  // 2
   inline_text.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets1);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
   static_text.child_ids.push_back(3);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
@@ -895,13 +895,13 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
 TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
   root.location = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData div;
   div.id = 2;
-  div.role = ui::AX_ROLE_GENERIC_CONTAINER;
+  div.role = ax::mojom::Role::kGenericContainer;
   div.location = gfx::RectF(100, 100, 100, 20);
   div.child_ids.push_back(3);
   div.child_ids.push_back(4);
@@ -910,46 +910,46 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   ui::AXNodeData static_text1;
   static_text1.id = 3;
   static_text1.SetName("AB");
-  static_text1.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text1.role = ax::mojom::Role::kStaticText;
   static_text1.location = gfx::RectF(100, 100, 40, 20);
   static_text1.child_ids.push_back(6);
 
   ui::AXNodeData img;
   img.id = 4;
   img.SetName("Test image");
-  img.role = ui::AX_ROLE_IMAGE;
+  img.role = ax::mojom::Role::kImage;
   img.location = gfx::RectF(140, 100, 20, 20);
 
   ui::AXNodeData static_text2;
   static_text2.id = 5;
   static_text2.SetName("CD");
-  static_text2.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text2.role = ax::mojom::Role::kStaticText;
   static_text2.location = gfx::RectF(160, 100, 40, 20);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 6;
   inline_text1.SetName("AB");
-  inline_text1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.location = gfx::RectF(100, 100, 40, 20);
-  inline_text1.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(20);  // 0
   character_offsets1.push_back(40);  // 1
   inline_text1.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets1);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 7;
   inline_text2.SetName("CD");
-  inline_text2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.location = gfx::RectF(160, 100, 40, 20);
-  inline_text2.SetTextDirection(ui::AX_TEXT_DIRECTION_LTR);
+  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(20);  // 0
   character_offsets2.push_back(40);  // 1
   inline_text2.AddIntListAttribute(
-      ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets2);
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets2);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
@@ -983,7 +983,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
 TEST(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData node2;
   node2.id = 2;
@@ -1047,43 +1047,43 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
   EXPECT_EQ(root_accessible,
             manager->PreviousInTreeOrder(node2_accessible, true));
 
-  EXPECT_EQ(ui::AX_TREE_ORDER_EQUAL,
-            BrowserAccessibilityManager::CompareNodes(
-                *root_accessible, *root_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kEqual,
+            BrowserAccessibilityManager::CompareNodes(*root_accessible,
+                                                      *root_accessible));
 
-  EXPECT_EQ(ui::AX_TREE_ORDER_BEFORE,
-            BrowserAccessibilityManager::CompareNodes(
-                *node2_accessible, *node3_accessible));
-  EXPECT_EQ(ui::AX_TREE_ORDER_AFTER,
-            BrowserAccessibilityManager::CompareNodes(
-                *node3_accessible, *node2_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kBefore,
+            BrowserAccessibilityManager::CompareNodes(*node2_accessible,
+                                                      *node3_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kAfter,
+            BrowserAccessibilityManager::CompareNodes(*node3_accessible,
+                                                      *node2_accessible));
 
-  EXPECT_EQ(ui::AX_TREE_ORDER_BEFORE,
-            BrowserAccessibilityManager::CompareNodes(
-                *node2_accessible, *node4_accessible));
-  EXPECT_EQ(ui::AX_TREE_ORDER_AFTER,
-            BrowserAccessibilityManager::CompareNodes(
-                *node4_accessible, *node2_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kBefore,
+            BrowserAccessibilityManager::CompareNodes(*node2_accessible,
+                                                      *node4_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kAfter,
+            BrowserAccessibilityManager::CompareNodes(*node4_accessible,
+                                                      *node2_accessible));
 
-  EXPECT_EQ(ui::AX_TREE_ORDER_BEFORE,
-            BrowserAccessibilityManager::CompareNodes(
-                *node3_accessible, *node4_accessible));
-  EXPECT_EQ(ui::AX_TREE_ORDER_AFTER,
-            BrowserAccessibilityManager::CompareNodes(
-                *node4_accessible, *node3_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kBefore,
+            BrowserAccessibilityManager::CompareNodes(*node3_accessible,
+                                                      *node4_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kAfter,
+            BrowserAccessibilityManager::CompareNodes(*node4_accessible,
+                                                      *node3_accessible));
 
-  EXPECT_EQ(ui::AX_TREE_ORDER_BEFORE,
-            BrowserAccessibilityManager::CompareNodes(
-                *root_accessible, *node2_accessible));
-  EXPECT_EQ(ui::AX_TREE_ORDER_AFTER,
-            BrowserAccessibilityManager::CompareNodes(
-                *node2_accessible, *root_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kBefore,
+            BrowserAccessibilityManager::CompareNodes(*root_accessible,
+                                                      *node2_accessible));
+  EXPECT_EQ(ax::mojom::TreeOrder::kAfter,
+            BrowserAccessibilityManager::CompareNodes(*node2_accessible,
+                                                      *root_accessible));
 }
 
 TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData node2;
   node2.id = 2;
@@ -1091,7 +1091,7 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 
   ui::AXNodeData text1;
   text1.id = 3;
-  text1.role = ui::AX_ROLE_STATIC_TEXT;
+  text1.role = ax::mojom::Role::kStaticText;
   root.child_ids.push_back(3);
 
   ui::AXNodeData node3;
@@ -1100,7 +1100,7 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 
   ui::AXNodeData text2;
   text2.id = 5;
-  text2.role = ui::AX_ROLE_STATIC_TEXT;
+  text2.role = ax::mojom::Role::kStaticText;
   node3.child_ids.push_back(5);
 
   ui::AXNodeData node4;
@@ -1109,7 +1109,7 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 
   ui::AXNodeData text3;
   text3.id = 7;
-  text3.role = ui::AX_ROLE_STATIC_TEXT;
+  text3.role = ax::mojom::Role::kStaticText;
   node3.child_ids.push_back(7);
 
   ui::AXNodeData node5;
@@ -1118,7 +1118,7 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 
   ui::AXNodeData text4;
   text4.id = 9;
-  text4.role = ui::AX_ROLE_LINE_BREAK;
+  text4.role = ax::mojom::Role::kLineBreak;
   node5.child_ids.push_back(9);
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
@@ -1184,49 +1184,49 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
 TEST(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData div;
   div.id = 2;
-  div.role = ui::AX_ROLE_GENERIC_CONTAINER;
+  div.role = ax::mojom::Role::kGenericContainer;
   root.child_ids.push_back(div.id);
 
   ui::AXNodeData button;
   button.id = 3;
-  button.role = ui::AX_ROLE_BUTTON;
+  button.role = ax::mojom::Role::kButton;
   div.child_ids.push_back(button.id);
 
   ui::AXNodeData button_text;
   button_text.id = 4;
-  button_text.role = ui::AX_ROLE_STATIC_TEXT;
+  button_text.role = ax::mojom::Role::kStaticText;
   button_text.SetName("Button");
   button.child_ids.push_back(button_text.id);
 
   ui::AXNodeData line_break;
   line_break.id = 5;
-  line_break.role = ui::AX_ROLE_LINE_BREAK;
+  line_break.role = ax::mojom::Role::kLineBreak;
   line_break.SetName("\n");
   div.child_ids.push_back(line_break.id);
 
   ui::AXNodeData paragraph;
   paragraph.id = 6;
-  paragraph.role = ui::AX_ROLE_PARAGRAPH;
+  paragraph.role = ax::mojom::Role::kParagraph;
   root.child_ids.push_back(paragraph.id);
 
   ui::AXNodeData paragraph_text;
   paragraph_text.id = 7;
-  paragraph_text.role = ui::AX_ROLE_STATIC_TEXT;
+  paragraph_text.role = ax::mojom::Role::kStaticText;
   paragraph.child_ids.push_back(paragraph_text.id);
 
   ui::AXNodeData paragraph_line1;
   paragraph_line1.id = 8;
-  paragraph_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line1.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line1.SetName("Hello ");
   paragraph_text.child_ids.push_back(paragraph_line1.id);
 
   ui::AXNodeData paragraph_line2;
   paragraph_line2.id = 9;
-  paragraph_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line2.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line2.SetName("world.");
   paragraph_text.child_ids.push_back(paragraph_line2.id);
 
@@ -1327,50 +1327,50 @@ TEST(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
 TEST(BrowserAccessibilityManagerTest, TestGetTextForRange) {
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData div;
   div.id = 2;
-  div.role = ui::AX_ROLE_GENERIC_CONTAINER;
+  div.role = ax::mojom::Role::kGenericContainer;
   root.child_ids.push_back(div.id);
 
   ui::AXNodeData button;
   button.id = 3;
-  button.role = ui::AX_ROLE_BUTTON;
+  button.role = ax::mojom::Role::kButton;
   div.child_ids.push_back(button.id);
 
   ui::AXNodeData button_text;
   button_text.id = 4;
-  button_text.role = ui::AX_ROLE_STATIC_TEXT;
+  button_text.role = ax::mojom::Role::kStaticText;
   button_text.SetName("Button");
   button.child_ids.push_back(button_text.id);
 
   ui::AXNodeData line_break;
   line_break.id = 5;
-  line_break.role = ui::AX_ROLE_LINE_BREAK;
+  line_break.role = ax::mojom::Role::kLineBreak;
   line_break.SetName("\n");
   div.child_ids.push_back(line_break.id);
 
   ui::AXNodeData paragraph;
   paragraph.id = 6;
-  paragraph.role = ui::AX_ROLE_PARAGRAPH;
+  paragraph.role = ax::mojom::Role::kParagraph;
   root.child_ids.push_back(paragraph.id);
 
   ui::AXNodeData paragraph_text;
   paragraph_text.id = 7;
-  paragraph_text.role = ui::AX_ROLE_STATIC_TEXT;
+  paragraph_text.role = ax::mojom::Role::kStaticText;
   paragraph_text.SetName("Hello world.");
   paragraph.child_ids.push_back(paragraph_text.id);
 
   ui::AXNodeData paragraph_line1;
   paragraph_line1.id = 8;
-  paragraph_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line1.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line1.SetName("Hello ");
   paragraph_text.child_ids.push_back(paragraph_line1.id);
 
   ui::AXNodeData paragraph_line2;
   paragraph_line2.id = 9;
-  paragraph_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line2.role = ax::mojom::Role::kInlineTextBox;
   paragraph_line2.SetName("world.");
   paragraph_text.child_ids.push_back(paragraph_line2.id);
 
@@ -1494,7 +1494,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   // Create a really simple tree with one root node and one focused child.
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
 
   ui::AXNodeData node2;
@@ -1513,13 +1513,13 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
   root2.id = 3;
-  root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root2.role = ax::mojom::Role::kRootWebArea;
 
   std::vector<AXEventNotificationDetails> events2;
   events2.push_back(AXEventNotificationDetails());
   events2[0].update = MakeAXTreeUpdate(root2);
   events2[0].id = -1;
-  events2[0].event_type = ui::AX_EVENT_NONE;
+  events2[0].event_type = ax::mojom::Event::kNone;
   manager->OnAccessibilityEvents(events2);
 
   // Make sure that the focused node was updated to the new root and
@@ -1532,7 +1532,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   // Create a really simple tree with one root node and one focused child.
   ui::AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(4);
@@ -1559,7 +1559,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
   root2.id = 3;
-  root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root2.role = ax::mojom::Role::kRootWebArea;
 
   // Make an update the explicitly clears the previous root.
   std::vector<AXEventNotificationDetails> events2;
@@ -1567,7 +1567,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   events2[0].update = MakeAXTreeUpdate(root2);
   events2[0].update.node_id_to_clear = 1;
   events2[0].id = -1;
-  events2[0].event_type = ui::AX_EVENT_NONE;
+  events2[0].event_type = ax::mojom::Event::kNone;
   manager->OnAccessibilityEvents(events2);
 
   // Make sure that the focused node was updated to the new root and

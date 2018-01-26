@@ -28,7 +28,7 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::AXContentIntAttribute,
                           content::AX_CONTENT_INT_ATTRIBUTE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(ui::AXAction, ui::AX_ACTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Action, ax::mojom::Action::kLast)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::AXActionData)
   IPC_STRUCT_TRAITS_MEMBER(action)
@@ -100,13 +100,13 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   IPC_STRUCT_MEMBER(content::AXContentTreeUpdate, update)
 
   // Type of event.
-  IPC_STRUCT_MEMBER(ui::AXEvent, event_type)
+  IPC_STRUCT_MEMBER(ax::mojom::Event, event_type)
 
   // ID of the node that the event applies to.
   IPC_STRUCT_MEMBER(int, id)
 
   // The source of this event.
-  IPC_STRUCT_MEMBER(ui::AXEventFrom, event_from)
+  IPC_STRUCT_MEMBER(ax::mojom::EventFrom, event_from)
 
   // ID of the action request triggering this event.
   IPC_STRUCT_MEMBER(int, action_request_id)
@@ -156,7 +156,7 @@ IPC_MESSAGE_ROUTED1(AccessibilityMsg_PerformAction,
 // it fires an accessibility event of type |event_to_fire| on the target.
 IPC_MESSAGE_ROUTED3(AccessibilityMsg_HitTest,
                     gfx::Point /* location to test */,
-                    ui::AXEvent /* event to fire */,
+                    ax::mojom::Event /* event to fire */,
                     int /* action request id */)
 
 // Tells the render view that a AccessibilityHostMsg_Events
@@ -216,7 +216,7 @@ IPC_MESSAGE_ROUTED5(AccessibilityHostMsg_ChildFrameHitTestResult,
                     gfx::Point /* location tested */,
                     int /* routing id of child frame */,
                     int /* browser plugin instance id of child frame */,
-                    ui::AXEvent /* event to fire */)
+                    ax::mojom::Event /* event to fire */)
 
 // Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was
 // passed to the request will be returned in |callback_id|, along with

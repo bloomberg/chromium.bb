@@ -11,7 +11,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,11 +32,11 @@ struct AXSnapshotNodeAndroid {
       bool show_password);
 
   // Returns a fake Android view class that is a closest
-  // approximation of the AXRole.
-  AX_EXPORT static const char* AXRoleToAndroidClassName(AXRole role,
+  // approximation of the ax::mojom::Role.
+  AX_EXPORT static const char* AXRoleToAndroidClassName(ax::mojom::Role role,
                                                         bool has_parent);
 
-  AX_EXPORT static bool AXRoleIsLink(AXRole role);
+  AX_EXPORT static bool AXRoleIsLink(ax::mojom::Role role);
 
   AX_EXPORT static base::string16 AXUrlBaseText(base::string16 url);
 

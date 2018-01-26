@@ -430,7 +430,8 @@ void AppListView::InitChildWidgets() {
   // that hitting search+right could move ChromeVox focus across search box to
   // other elements in app list view.
   search_box_widget_->GetNativeWindow()->SetProperty(
-      ui::kAXRoleOverride, static_cast<ui::AXRole>(ui::AX_ROLE_GROUP));
+      ui::kAXRoleOverride,
+      static_cast<ax::mojom::Role>(ax::mojom::Role::kGroup));
 
   // The search box will not naturally receive focus by itself (because it is in
   // a separate widget). Create this SearchBoxFocusHost in the main widget to
@@ -769,7 +770,7 @@ void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
     state_announcement_ = l10n_util::GetStringUTF16(
         IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT);
   }
-  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   state_announcement_ = base::string16();
 }
 
@@ -946,11 +947,11 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-ui::AXRole AppListView::GetAccessibleWindowRole() const {
-  // Default role of root view is AX_ROLE_WINDOW which traps ChromeVox focus
-  // within the root view. Assign AX_ROLE_GROUP here to allow the focus to move
-  // from elements in app list view to search box.
-  return ui::AX_ROLE_GROUP;
+ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
+  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
+  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
+  // the focus to move from elements in app list view to search box.
+  return ax::mojom::Role::kGroup;
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -984,7 +985,7 @@ void AppListView::Layout() {
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(state_announcement_);
-  node_data->role = ui::AX_ROLE_DESKTOP;
+  node_data->role = ax::mojom::Role::kDesktop;
 }
 
 void AppListView::OnKeyEvent(ui::KeyEvent* event) {

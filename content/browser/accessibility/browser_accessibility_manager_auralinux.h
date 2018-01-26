@@ -27,7 +27,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
 
   // Implementation of BrowserAccessibilityManager methods.
   void FireFocusEvent(BrowserAccessibility* node) override;
-  void FireBlinkEvent(ui::AXEvent event_type,
+  void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
   void FireGeneratedEvent(AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;

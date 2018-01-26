@@ -18,9 +18,11 @@ TEST(ProgressBarTest, Accessibility) {
 
   ui::AXNodeData node_data;
   bar.GetAccessibleNodeData(&node_data);
-  EXPECT_EQ(ui::AX_ROLE_PROGRESS_INDICATOR, node_data.role);
-  EXPECT_EQ(base::string16(), node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-  EXPECT_FALSE(node_data.HasIntAttribute(ui::AX_ATTR_RESTRICTION));
+  EXPECT_EQ(ax::mojom::Role::kProgressIndicator, node_data.role);
+  EXPECT_EQ(base::string16(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_FALSE(
+      node_data.HasIntAttribute(ax::mojom::IntAttribute::kRestriction));
 }
 
 // Test that default colors can be overridden. Used by Chromecast.

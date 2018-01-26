@@ -293,7 +293,7 @@ void OpaqueBrowserFrameView::ActivationChanged(bool active) {
 // OpaqueBrowserFrameView, views::View overrides:
 
 void OpaqueBrowserFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TITLE_BAR;
+  node_data->role = ax::mojom::Role::kTitleBar;
 }
 
 void OpaqueBrowserFrameView::OnNativeThemeChanged(

@@ -10,106 +10,106 @@ namespace extensions {
 
 namespace {
 
-// Convert from AXEvent to api::automation::EventType.
-api::automation::EventType ToAutomationEvent(ui::AXEvent event_type) {
+// Convert from ax::mojom::Event to api::automation::EventType.
+api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
   switch (event_type) {
-    case ui::AX_EVENT_NONE:
+    case ax::mojom::Event::kNone:
       return api::automation::EVENT_TYPE_NONE;
-    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
+    case ax::mojom::Event::kActiveDescendantChanged:
       return api::automation::EVENT_TYPE_ACTIVEDESCENDANTCHANGED;
-    case ui::AX_EVENT_ALERT:
+    case ax::mojom::Event::kAlert:
       return api::automation::EVENT_TYPE_ALERT;
-    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
+    case ax::mojom::Event::kAriaAttributeChanged:
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
-    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
+    case ax::mojom::Event::kAutocorrectionOccured:
       return api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED;
-    case ui::AX_EVENT_BLUR:
+    case ax::mojom::Event::kBlur:
       return api::automation::EVENT_TYPE_BLUR;
-    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
+    case ax::mojom::Event::kCheckedStateChanged:
       return api::automation::EVENT_TYPE_CHECKEDSTATECHANGED;
-    case ui::AX_EVENT_CHILDREN_CHANGED:
+    case ax::mojom::Event::kChildrenChanged:
       return api::automation::EVENT_TYPE_CHILDRENCHANGED;
-    case ui::AX_EVENT_CLICKED:
+    case ax::mojom::Event::kClicked:
       return api::automation::EVENT_TYPE_CLICKED;
-    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED:
+    case ax::mojom::Event::kDocumentSelectionChanged:
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
-    case ui::AX_EVENT_EXPANDED_CHANGED:
+    case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
-    case ui::AX_EVENT_FOCUS:
+    case ax::mojom::Event::kFocus:
       return api::automation::EVENT_TYPE_FOCUS;
-    case ui::AX_EVENT_HIDE:
+    case ax::mojom::Event::kHide:
       return api::automation::EVENT_TYPE_HIDE;
-    case ui::AX_EVENT_HIT_TEST_RESULT:
+    case ax::mojom::Event::kHitTestResult:
       return api::automation::EVENT_TYPE_HITTESTRESULT;
-    case ui::AX_EVENT_HOVER:
+    case ax::mojom::Event::kHover:
       return api::automation::EVENT_TYPE_HOVER;
-    case ui::AX_EVENT_IMAGE_FRAME_UPDATED:
+    case ax::mojom::Event::kImageFrameUpdated:
       return api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED;
-    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
+    case ax::mojom::Event::kInvalidStatusChanged:
       return api::automation::EVENT_TYPE_INVALIDSTATUSCHANGED;
-    case ui::AX_EVENT_LAYOUT_COMPLETE:
+    case ax::mojom::Event::kLayoutComplete:
       return api::automation::EVENT_TYPE_LAYOUTCOMPLETE;
-    case ui::AX_EVENT_LIVE_REGION_CREATED:
+    case ax::mojom::Event::kLiveRegionCreated:
       return api::automation::EVENT_TYPE_LIVEREGIONCREATED;
-    case ui::AX_EVENT_LIVE_REGION_CHANGED:
+    case ax::mojom::Event::kLiveRegionChanged:
       return api::automation::EVENT_TYPE_LIVEREGIONCHANGED;
-    case ui::AX_EVENT_LOAD_COMPLETE:
+    case ax::mojom::Event::kLoadComplete:
       return api::automation::EVENT_TYPE_LOADCOMPLETE;
-    case ui::AX_EVENT_LOCATION_CHANGED:
+    case ax::mojom::Event::kLocationChanged:
       return api::automation::EVENT_TYPE_LOCATIONCHANGED;
-    case ui::AX_EVENT_MEDIA_STARTED_PLAYING:
+    case ax::mojom::Event::kMediaStartedPlaying:
       return api::automation::EVENT_TYPE_MEDIASTARTEDPLAYING;
-    case ui::AX_EVENT_MEDIA_STOPPED_PLAYING:
+    case ax::mojom::Event::kMediaStoppedPlaying:
       return api::automation::EVENT_TYPE_MEDIASTOPPEDPLAYING;
-    case ui::AX_EVENT_MENU_END:
+    case ax::mojom::Event::kMenuEnd:
       return api::automation::EVENT_TYPE_MENUEND;
-    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
+    case ax::mojom::Event::kMenuListItemSelected:
       return api::automation::EVENT_TYPE_MENULISTITEMSELECTED;
-    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
+    case ax::mojom::Event::kMenuListValueChanged:
       return api::automation::EVENT_TYPE_MENULISTVALUECHANGED;
-    case ui::AX_EVENT_MENU_POPUP_END:
+    case ax::mojom::Event::kMenuPopupEnd:
       return api::automation::EVENT_TYPE_MENUPOPUPEND;
-    case ui::AX_EVENT_MENU_POPUP_START:
+    case ax::mojom::Event::kMenuPopupStart:
       return api::automation::EVENT_TYPE_MENUPOPUPSTART;
-    case ui::AX_EVENT_MENU_START:
+    case ax::mojom::Event::kMenuStart:
       return api::automation::EVENT_TYPE_MENUSTART;
-    case ui::AX_EVENT_MOUSE_CANCELED:
+    case ax::mojom::Event::kMouseCanceled:
       return api::automation::EVENT_TYPE_MOUSECANCELED;
-    case ui::AX_EVENT_MOUSE_DRAGGED:
+    case ax::mojom::Event::kMouseDragged:
       return api::automation::EVENT_TYPE_MOUSEDRAGGED;
-    case ui::AX_EVENT_MOUSE_MOVED:
+    case ax::mojom::Event::kMouseMoved:
       return api::automation::EVENT_TYPE_MOUSEMOVED;
-    case ui::AX_EVENT_MOUSE_PRESSED:
+    case ax::mojom::Event::kMousePressed:
       return api::automation::EVENT_TYPE_MOUSEPRESSED;
-    case ui::AX_EVENT_MOUSE_RELEASED:
+    case ax::mojom::Event::kMouseReleased:
       return api::automation::EVENT_TYPE_MOUSERELEASED;
-    case ui::AX_EVENT_ROW_COLLAPSED:
+    case ax::mojom::Event::kRowCollapsed:
       return api::automation::EVENT_TYPE_ROWCOLLAPSED;
-    case ui::AX_EVENT_ROW_COUNT_CHANGED:
+    case ax::mojom::Event::kRowCountChanged:
       return api::automation::EVENT_TYPE_ROWCOUNTCHANGED;
-    case ui::AX_EVENT_ROW_EXPANDED:
+    case ax::mojom::Event::kRowExpanded:
       return api::automation::EVENT_TYPE_ROWEXPANDED;
-    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+    case ax::mojom::Event::kScrollPositionChanged:
       return api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED;
-    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
+    case ax::mojom::Event::kScrolledToAnchor:
       return api::automation::EVENT_TYPE_SCROLLEDTOANCHOR;
-    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
+    case ax::mojom::Event::kSelectedChildrenChanged:
       return api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED;
-    case ui::AX_EVENT_SELECTION:
+    case ax::mojom::Event::kSelection:
       return api::automation::EVENT_TYPE_SELECTION;
-    case ui::AX_EVENT_SELECTION_ADD:
+    case ax::mojom::Event::kSelectionAdd:
       return api::automation::EVENT_TYPE_SELECTIONADD;
-    case ui::AX_EVENT_SELECTION_REMOVE:
+    case ax::mojom::Event::kSelectionRemove:
       return api::automation::EVENT_TYPE_SELECTIONREMOVE;
-    case ui::AX_EVENT_SHOW:
+    case ax::mojom::Event::kShow:
       return api::automation::EVENT_TYPE_SHOW;
-    case ui::AX_EVENT_TEXT_CHANGED:
+    case ax::mojom::Event::kTextChanged:
       return api::automation::EVENT_TYPE_TEXTCHANGED;
-    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
+    case ax::mojom::Event::kTextSelectionChanged:
       return api::automation::EVENT_TYPE_TEXTSELECTIONCHANGED;
-    case ui::AX_EVENT_TREE_CHANGED:
+    case ax::mojom::Event::kTreeChanged:
       return api::automation::EVENT_TYPE_TREECHANGED;
-    case ui::AX_EVENT_VALUE_CHANGED:
+    case ax::mojom::Event::kValueChanged:
       return api::automation::EVENT_TYPE_VALUECHANGED;
   }
 
@@ -227,8 +227,8 @@ void AutomationAXTreeWrapper::OnNodeDataWillChange(
     const ui::AXNodeData& old_node_data,
     const ui::AXNodeData& new_node_data) {
   AXEventGenerator::OnNodeDataWillChange(tree, old_node_data, new_node_data);
-  if (old_node_data.GetStringAttribute(ui::AX_ATTR_NAME) !=
-      new_node_data.GetStringAttribute(ui::AX_ATTR_NAME))
+  if (old_node_data.GetStringAttribute(ax::mojom::StringAttribute::kName) !=
+      new_node_data.GetStringAttribute(ax::mojom::StringAttribute::kName))
     text_changed_node_ids_.push_back(new_node_data.id);
 }
 

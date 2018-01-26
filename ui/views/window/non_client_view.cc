@@ -201,7 +201,7 @@ void NonClientView::ViewHierarchyChanged(
 }
 
 void NonClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_CLIENT;
+  node_data->role = ax::mojom::Role::kClient;
   node_data->SetName(accessible_name_);
 }
 
@@ -319,7 +319,7 @@ void NonClientFrameView::ActivationChanged(bool active) {
 }
 
 void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_CLIENT;
+  node_data->role = ax::mojom::Role::kClient;
 }
 
 const char* NonClientFrameView::GetClassName() const {

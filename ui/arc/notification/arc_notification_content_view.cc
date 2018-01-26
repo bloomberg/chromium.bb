@@ -701,7 +701,7 @@ views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {
 
 bool ArcNotificationContentView::HandleAccessibleAction(
     const ui::AXActionData& action_data) {
-  if (item_ && action_data.action == ui::AX_ACTION_DO_DEFAULT) {
+  if (item_ && action_data.action == ax::mojom::Action::kDoDefault) {
     item_->ToggleExpansion();
     return true;
   }
@@ -711,13 +711,13 @@ bool ArcNotificationContentView::HandleAccessibleAction(
 void ArcNotificationContentView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   if (surface_ && surface_->GetAXTreeId() != -1) {
-    node_data->role = ui::AX_ROLE_CLIENT;
-    node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID,
+    node_data->role = ax::mojom::Role::kClient;
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
                                surface_->GetAXTreeId());
   } else {
-    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->role = ax::mojom::Role::kButton;
     node_data->AddStringAttribute(
-        ui::AX_ATTR_ROLE_DESCRIPTION,
+        ax::mojom::StringAttribute::kRoleDescription,
         l10n_util::GetStringUTF8(
             IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
   }
@@ -766,11 +766,11 @@ void ArcNotificationContentView::OnNotificationSurfaceAdded(
 
   SetSurface(surface);
 
-  // Notify AX_EVENT_CHILDREN_CHANGED to force AXNodeData of this view updated.
-  // As order of OnNotificationSurfaceAdded call is not guaranteed, we are
-  // dispatching the event in both ArcNotificationContentView and
+  // Notify ax::mojom::Event::kChildrenChanged to force AXNodeData of this view
+  // updated. As order of OnNotificationSurfaceAdded call is not guaranteed, we
+  // are dispatching the event in both ArcNotificationContentView and
   // ArcAccessibilityHelperBridge.
-  NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
 void ArcNotificationContentView::OnNotificationSurfaceRemoved(

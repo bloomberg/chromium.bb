@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -64,7 +64,7 @@ class AX_EXPORT AXPlatformNode {
 
   // Fire a platform-specific notification that an event has occurred on
   // this object.
-  virtual void NotifyAccessibilityEvent(AXEvent event_type) = 0;
+  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) = 0;
 
   // Return this object's delegate.
   virtual AXPlatformNodeDelegate* GetDelegate() const = 0;

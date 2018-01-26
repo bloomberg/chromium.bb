@@ -10,7 +10,7 @@
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -60,7 +60,7 @@ void NightLightToggleButton::Toggle() {
   DCHECK(switches::IsNightLightEnabled());
   Shell::Get()->night_light_controller()->Toggle();
   Update();
-  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
 }
 
 void NightLightToggleButton::Update() {
@@ -77,9 +77,9 @@ void NightLightToggleButton::Update() {
 void NightLightToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   const bool is_enabled = Shell::Get()->night_light_controller()->GetEnabled();
   node_data->SetName(GetNightLightTooltipText(is_enabled));
-  node_data->role = ui::AX_ROLE_TOGGLE_BUTTON;
-  node_data->SetCheckedState(is_enabled ? ui::AX_CHECKED_STATE_TRUE
-                                        : ui::AX_CHECKED_STATE_FALSE);
+  node_data->role = ax::mojom::Role::kToggleButton;
+  node_data->SetCheckedState(is_enabled ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
 }
 
 }  // namespace ash

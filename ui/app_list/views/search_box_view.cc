@@ -445,11 +445,11 @@ void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   event->SetHandled();
 }
 
-ui::AXRole SearchBoxView::GetAccessibleWindowRole() const {
-  // Default role of root view is AX_ROLE_WINDOW which traps ChromeVox focus
-  // within the root view. Assign AX_ROLE_GROUP here to allow the focus to move
-  // from elements in search box to app list view.
-  return ui::AX_ROLE_GROUP;
+ax::mojom::Role SearchBoxView::GetAccessibleWindowRole() const {
+  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
+  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
+  // the focus to move from elements in search box to app list view.
+  return ax::mojom::Role::kGroup;
 }
 
 bool SearchBoxView::ShouldAdvanceFocusToTopLevelWidget() const {

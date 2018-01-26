@@ -163,7 +163,7 @@ bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 
 void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Label::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_LINK;
+  node_data->role = ax::mojom::Role::kLink;
 }
 
 void Link::OnEnabledChanged() {

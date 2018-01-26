@@ -219,7 +219,7 @@ void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
 
 void PublicAccountUserDetails::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_STATIC_TEXT;
+  node_data->role = ax::mojom::Role::kStaticText;
   node_data->SetName(text_);
 }
 
@@ -309,7 +309,7 @@ void UserCardView::SetSuppressCaptureIcon(bool suppressed) {
 }
 
 void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_STATIC_TEXT;
+  node_data->role = ax::mojom::Role::kStaticText;
   std::vector<base::string16> labels;
 
   // Construct the name by concatenating descendants' names.
@@ -321,8 +321,8 @@ void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     if (view != this) {
       ui::AXNodeData descendant_data;
       view->GetAccessibleNodeData(&descendant_data);
-      base::string16 label =
-          descendant_data.GetString16Attribute(ui::AX_ATTR_NAME);
+      base::string16 label = descendant_data.GetString16Attribute(
+          ax::mojom::StringAttribute::kName);
       // If we find a non-empty name, use that and don't descend further into
       // the tree.
       if (!label.empty()) {

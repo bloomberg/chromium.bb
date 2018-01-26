@@ -8,16 +8,17 @@
 #include <stdint.h>
 
 #include "third_party/WebKit/public/web/WebAXObject.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace content {
 
-// Convert a Blink WebAXRole to an AXRole defined in ui/accessibility.
-ui::AXRole AXRoleFromBlink(blink::WebAXRole role);
+// Convert a Blink WebAXRole to an ax::mojom::Role defined in ui/accessibility.
+ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role);
 
-// Convert a Blink WebAXEvent to an AXEvent defined in ui/accessibility.
-ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
+// Convert a Blink WebAXEvent to an ax::mojom::Event defined in
+// ui/accessibility.
+ax::mojom::Event AXEventFromBlink(blink::WebAXEvent event);
 
 // Provides a conversion between the WebAXObject state
 // accessors and a state bitmask stored in an AXNodeData.
@@ -25,34 +26,35 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
 // in AXNodeData instead.)
 void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst);
 
-ui::AXDefaultActionVerb AXDefaultActionVerbFromBlink(
+ax::mojom::DefaultActionVerb AXDefaultActionVerbFromBlink(
     blink::WebAXDefaultActionVerb action_verb);
 
-ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type);
+ax::mojom::MarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type);
 
-ui::AXTextDirection AXTextDirectionFromBlink(
+ax::mojom::TextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction);
 
-ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
+ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
 
-ui::AXAriaCurrentState AXAriaCurrentStateFromBlink(
+ax::mojom::AriaCurrentState AXAriaCurrentStateFromBlink(
     blink::WebAXAriaCurrentState aria_current_state);
 
-ui::AXInvalidState AXInvalidStateFromBlink(
+ax::mojom::InvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state);
 
-ui::AXCheckedState AXCheckedStateFromBlink(
+ax::mojom::CheckedState AXCheckedStateFromBlink(
     blink::WebAXCheckedState checked_state);
 
-ui::AXSortDirection AXSortDirectionFromBlink(
+ax::mojom::SortDirection AXSortDirectionFromBlink(
     blink::WebAXSortDirection sort_direction);
 
-ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from);
+ax::mojom::NameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from);
 
-ui::AXDescriptionFrom AXDescriptionFromFromBlink(
+ax::mojom::DescriptionFrom AXDescriptionFromFromBlink(
     blink::WebAXDescriptionFrom description_from);
 
-ui::AXTextAffinity AXTextAffinityFromBlink(blink::WebAXTextAffinity affinity);
+ax::mojom::TextAffinity AXTextAffinityFromBlink(
+    blink::WebAXTextAffinity affinity);
 
 }  // namespace content
 

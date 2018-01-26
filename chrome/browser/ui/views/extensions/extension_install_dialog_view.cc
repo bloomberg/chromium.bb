@@ -65,7 +65,7 @@ class RatingsView : public views::View {
   ~RatingsView() override {}
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_STATIC_TEXT;
+    node_data->role = ax::mojom::Role::kStaticText;
     base::string16 accessible_text;
     if (rating_count_ == 0) {
       accessible_text = l10n_util::GetStringUTF16(
@@ -95,7 +95,7 @@ class RatingStar : public views::ImageView {
 
   // views::ImageView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_IGNORED;
+    node_data->role = ax::mojom::Role::kIgnored;
   }
 
  private:
@@ -112,7 +112,7 @@ class RatingLabel : public views::Label {
 
   // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_IGNORED;
+    node_data->role = ax::mojom::Role::kIgnored;
   }
 
  private:

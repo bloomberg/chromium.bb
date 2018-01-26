@@ -62,7 +62,7 @@ void BubbleIconView::OnBubbleCreated(LocationBarBubbleDelegateView* bubble) {
 
 void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   image_->GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->role = ax::mojom::Role::kButton;
 }
 
 bool BubbleIconView::GetTooltipText(const gfx::Point& p,

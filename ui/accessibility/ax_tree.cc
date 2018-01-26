@@ -219,8 +219,10 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     int scroll_x = 0;
     int scroll_y = 0;
-    if (container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &scroll_x) &&
-        container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &scroll_y)) {
+    if (container->data().GetIntAttribute(ax::mojom::IntAttribute::kScrollX,
+                                          &scroll_x) &&
+        container->data().GetIntAttribute(ax::mojom::IntAttribute::kScrollY,
+                                          &scroll_y)) {
       bounds.Offset(-scroll_x, -scroll_y);
     }
 
@@ -231,7 +233,8 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // Calculate the clipped bounds to determine offscreen state.
     gfx::RectF clipped = bounds;
     // If this is the root web area, make sure we clip the node to fit.
-    if (container->data().GetBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN)) {
+    if (container->data().GetBoolAttribute(
+            ax::mojom::BoolAttribute::kClipsChildren)) {
       if (!intersection.IsEmpty()) {
         // We can simply clip it to the container.
         clipped = intersection;
@@ -258,7 +261,8 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     if (clip_bounds)
       bounds = clipped;
 
-    if (container->data().GetBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN) &&
+    if (container->data().GetBoolAttribute(
+            ax::mojom::BoolAttribute::kClipsChildren) &&
         intersection.IsEmpty() && !clipped.IsEmpty()) {
       // If it is offscreen with respect to its parent, and the node itself is
       // not empty, label it offscreen.
@@ -283,7 +287,7 @@ gfx::RectF AXTree::GetTreeBounds(const AXNode* node,
   return RelativeToTreeBounds(node, gfx::RectF(), offscreen, clip_bounds);
 }
 
-std::set<int32_t> AXTree::GetReverseRelations(AXIntAttribute attr,
+std::set<int32_t> AXTree::GetReverseRelations(ax::mojom::IntAttribute attr,
                                               int32_t dst_id) const {
   DCHECK(IsNodeIdIntAttribute(attr));
 
@@ -298,7 +302,7 @@ std::set<int32_t> AXTree::GetReverseRelations(AXIntAttribute attr,
   return std::set<int32_t>();
 }
 
-std::set<int32_t> AXTree::GetReverseRelations(AXIntListAttribute attr,
+std::set<int32_t> AXTree::GetReverseRelations(ax::mojom::IntListAttribute attr,
                                               int32_t dst_id) const {
   DCHECK(IsNodeIdIntListAttribute(attr));
 
@@ -535,15 +539,15 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
     delegate_->OnRoleChanged(this, node, old_data.role, new_data.role);
 
   if (old_data.state != new_data.state) {
-    for (int32_t i = static_cast<int32_t>(AX_STATE_NONE) + 1;
-         i <= static_cast<int32_t>(AX_STATE_LAST); ++i) {
-      AXState state = static_cast<AXState>(i);
+    for (int32_t i = static_cast<int32_t>(ax::mojom::State::kNone) + 1;
+         i <= static_cast<int32_t>(ax::mojom::State::kLast); ++i) {
+      ax::mojom::State state = static_cast<ax::mojom::State>(i);
       if (old_data.HasState(state) != new_data.HasState(state))
         delegate_->OnStateChanged(this, node, state, new_data.HasState(state));
     }
   }
 
-  auto string_callback = [this, node](AXStringAttribute attr,
+  auto string_callback = [this, node](ax::mojom::StringAttribute attr,
                                       const std::string& old_string,
                                       const std::string& new_string) {
     delegate_->OnStringAttributeChanged(this, node, attr, old_string,
@@ -553,14 +557,15 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
                                new_data.string_attributes, std::string(),
                                string_callback);
 
-  auto bool_callback = [this, node](AXBoolAttribute attr, const bool& old_bool,
+  auto bool_callback = [this, node](ax::mojom::BoolAttribute attr,
+                                    const bool& old_bool,
                                     const bool& new_bool) {
     delegate_->OnBoolAttributeChanged(this, node, attr, new_bool);
   };
   CallIfAttributeValuesChanged(old_data.bool_attributes,
                                new_data.bool_attributes, false, bool_callback);
 
-  auto float_callback = [this, node](AXFloatAttribute attr,
+  auto float_callback = [this, node](ax::mojom::FloatAttribute attr,
                                      const float& old_float,
                                      const float& new_float) {
     delegate_->OnFloatAttributeChanged(this, node, attr, old_float, new_float);
@@ -568,15 +573,15 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   CallIfAttributeValuesChanged(old_data.float_attributes,
                                new_data.float_attributes, 0.0f, float_callback);
 
-  auto int_callback = [this, node](AXIntAttribute attr, const int& old_int,
-                                   const int& new_int) {
+  auto int_callback = [this, node](ax::mojom::IntAttribute attr,
+                                   const int& old_int, const int& new_int) {
     delegate_->OnIntAttributeChanged(this, node, attr, old_int, new_int);
   };
   CallIfAttributeValuesChanged(old_data.int_attributes, new_data.int_attributes,
                                0, int_callback);
 
   auto intlist_callback = [this, node](
-                              AXIntListAttribute attr,
+                              ax::mojom::IntListAttribute attr,
                               const std::vector<int32_t>& old_intlist,
                               const std::vector<int32_t>& new_intlist) {
     delegate_->OnIntListAttributeChanged(this, node, attr, old_intlist,
@@ -587,7 +592,7 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
                                std::vector<int32_t>(), intlist_callback);
 
   auto stringlist_callback =
-      [this, node](AXStringListAttribute attr,
+      [this, node](ax::mojom::StringListAttribute attr,
                    const std::vector<std::string>& old_stringlist,
                    const std::vector<std::string>& new_stringlist) {
         delegate_->OnStringListAttributeChanged(this, node, attr,
@@ -601,8 +606,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
 void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
   const AXNodeData& old_data = node->data();
   int id = new_data.id;
-  auto int_callback = [this, node, id](AXIntAttribute attr, const int& old_int,
-                                       const int& new_int) {
+  auto int_callback = [this, node, id](ax::mojom::IntAttribute attr,
+                                       const int& old_int, const int& new_int) {
     if (!IsNodeIdIntAttribute(attr))
       return;
 
@@ -613,7 +618,7 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
                                0, int_callback);
 
   auto intlist_callback = [this, node, id](
-                              AXIntListAttribute attr,
+                              ax::mojom::IntListAttribute attr,
                               const std::vector<int32_t>& old_intlist,
                               const std::vector<int32_t>& new_intlist) {
     if (!IsNodeIdIntListAttribute(attr))

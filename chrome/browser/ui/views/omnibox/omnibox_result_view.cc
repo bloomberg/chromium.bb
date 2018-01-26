@@ -305,7 +305,7 @@ void OmniboxResultView::OnSelected() {
   // The text is also accessible via text/value change events in the omnibox but
   // this selection event allows the screen reader to get more details about the
   // list and the user's position within it.
-  NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
@@ -372,22 +372,25 @@ void OmniboxResultView::OnMouseExited(const ui::MouseEvent& event) {
 
 void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Get the label without the ", n of m" positional text appended.
-  // The positional info is provided via AX_ATTR_POS_IN_SET/SET_SIZE
-  // and providing it via text as well would result in duplicate announcements.
+  // The positional info is provided via
+  // ax::mojom::IntAttribute::kPosInSet/SET_SIZE and providing it via text as
+  // well would result in duplicate announcements.
   node_data->SetName(
       AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents));
 
-  node_data->role = ui::AX_ROLE_LIST_BOX_OPTION;
-  node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, model_index_ + 1);
-  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, model_->child_count());
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                             model_index_ + 1);
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                             model_->child_count());
 
-  node_data->AddState(ui::AX_STATE_SELECTABLE);
+  node_data->AddState(ax::mojom::State::kSelectable);
   switch (GetState()) {
     case SELECTED:
-      node_data->AddState(ui::AX_STATE_SELECTED);
+      node_data->AddState(ax::mojom::State::kSelected);
       break;
     case HOVERED:
-      node_data->AddState(ui::AX_STATE_HOVERED);
+      node_data->AddState(ax::mojom::State::kHovered);
       break;
     default:
       break;

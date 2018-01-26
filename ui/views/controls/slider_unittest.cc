@@ -129,8 +129,9 @@ class SliderTest : public views::ViewsTestBase {
     bool has_value_changed() { return has_value_changed_; }
 
    private:
-    void NotifyAccessibilityEvent(View* view, ui::AXEvent event_type) override {
-      if (event_type == ui::AX_EVENT_VALUE_CHANGED)
+    void NotifyAccessibilityEvent(View* view,
+                                  ax::mojom::Event event_type) override {
+      if (event_type == ax::mojom::Event::kValueChanged)
         has_value_changed_ = true;
     }
 

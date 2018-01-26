@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -36,7 +36,7 @@ const char* STATE_OFFSCREEN = "offscreen";
 
 uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
-  if (node.HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+  if (node.HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId))
     return node.PlatformChildCount();
   else
     return node.InternalChildCount();
@@ -45,16 +45,17 @@ uint32_t AccessibilityTreeFormatterBlink::ChildCount(
 BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
     const BrowserAccessibility& node,
     uint32_t i) const {
-  if (node.HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+  if (node.HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId))
     return node.PlatformGetChild(i);
   else
     return node.InternalGetChild(i);
 }
 
-// TODO(aleventhal) Convert ax enums to friendly strings, e.g. AXCheckedState.
+// TODO(aleventhal) Convert ax enums to friendly strings, e.g.
+// ax::mojom::CheckedState.
 std::string AccessibilityTreeFormatterBlink::IntAttrToString(
     const BrowserAccessibility& node,
-    ui::AXIntAttribute attr,
+    ax::mojom::IntAttribute attr,
     int value) const {
   if (ui::IsNodeIdIntAttribute(attr)) {
     // Relation
@@ -63,66 +64,66 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
   }
 
   switch (attr) {
-    case ui::AX_ATTR_ARIA_CURRENT_STATE:
-      return ui::ToString(static_cast<ui::AXAriaCurrentState>(value));
-    case ui::AX_ATTR_CHECKED_STATE:
-      return ui::ToString(static_cast<ui::AXCheckedState>(value));
-    case ui::AX_ATTR_DEFAULT_ACTION_VERB:
-      return ui::ToString(static_cast<ui::AXDefaultActionVerb>(value));
-    case ui::AX_ATTR_DESCRIPTION_FROM:
-      return ui::ToString(static_cast<ui::AXDescriptionFrom>(value));
-    case ui::AX_ATTR_INVALID_STATE:
-      return ui::ToString(static_cast<ui::AXInvalidState>(value));
-    case ui::AX_ATTR_NAME_FROM:
-      return ui::ToString(static_cast<ui::AXNameFrom>(value));
-    case ui::AX_ATTR_RESTRICTION:
-      return ui::ToString(static_cast<ui::AXRestriction>(value));
-    case ui::AX_ATTR_SORT_DIRECTION:
-      return ui::ToString(static_cast<ui::AXSortDirection>(value));
-    case ui::AX_ATTR_TEXT_DIRECTION:
-      return ui::ToString(static_cast<ui::AXTextDirection>(value));
+    case ax::mojom::IntAttribute::kAriaCurrentState:
+      return ui::ToString(static_cast<ax::mojom::AriaCurrentState>(value));
+    case ax::mojom::IntAttribute::kCheckedState:
+      return ui::ToString(static_cast<ax::mojom::CheckedState>(value));
+    case ax::mojom::IntAttribute::kDefaultActionVerb:
+      return ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(value));
+    case ax::mojom::IntAttribute::kDescriptionFrom:
+      return ui::ToString(static_cast<ax::mojom::DescriptionFrom>(value));
+    case ax::mojom::IntAttribute::kInvalidState:
+      return ui::ToString(static_cast<ax::mojom::InvalidState>(value));
+    case ax::mojom::IntAttribute::kNameFrom:
+      return ui::ToString(static_cast<ax::mojom::NameFrom>(value));
+    case ax::mojom::IntAttribute::kRestriction:
+      return ui::ToString(static_cast<ax::mojom::Restriction>(value));
+    case ax::mojom::IntAttribute::kSortDirection:
+      return ui::ToString(static_cast<ax::mojom::SortDirection>(value));
+    case ax::mojom::IntAttribute::kTextDirection:
+      return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
     // No pretty printing necessary for these:
-    case ui::AX_ATTR_ACTIVEDESCENDANT_ID:
-    case ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX:
-    case ui::AX_ATTR_ARIA_CELL_ROW_INDEX:
-    case ui::AX_ATTR_ARIA_COLUMN_COUNT:
-    case ui::AX_ATTR_ARIA_ROW_COUNT:
-    case ui::AX_ATTR_BACKGROUND_COLOR:
-    case ui::AX_ATTR_CHILD_TREE_ID:
-    case ui::AX_ATTR_COLOR:
-    case ui::AX_ATTR_COLOR_VALUE:
-    case ui::AX_ATTR_DETAILS_ID:
-    case ui::AX_ATTR_ERRORMESSAGE_ID:
-    case ui::AX_ATTR_HIERARCHICAL_LEVEL:
-    case ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID:
-    case ui::AX_ATTR_MEMBER_OF_ID:
-    case ui::AX_ATTR_NEXT_FOCUS_ID:
-    case ui::AX_ATTR_NEXT_ON_LINE_ID:
-    case ui::AX_ATTR_POS_IN_SET:
-    case ui::AX_ATTR_PREVIOUS_FOCUS_ID:
-    case ui::AX_ATTR_PREVIOUS_ON_LINE_ID:
-    case ui::AX_ATTR_SCROLL_X:
-    case ui::AX_ATTR_SCROLL_X_MAX:
-    case ui::AX_ATTR_SCROLL_X_MIN:
-    case ui::AX_ATTR_SCROLL_Y:
-    case ui::AX_ATTR_SCROLL_Y_MAX:
-    case ui::AX_ATTR_SCROLL_Y_MIN:
-    case ui::AX_ATTR_SET_SIZE:
-    case ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX:
-    case ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN:
-    case ui::AX_ATTR_TABLE_CELL_ROW_INDEX:
-    case ui::AX_ATTR_TABLE_CELL_ROW_SPAN:
-    case ui::AX_ATTR_TABLE_COLUMN_COUNT:
-    case ui::AX_ATTR_TABLE_COLUMN_HEADER_ID:
-    case ui::AX_ATTR_TABLE_COLUMN_INDEX:
-    case ui::AX_ATTR_TABLE_HEADER_ID:
-    case ui::AX_ATTR_TABLE_ROW_COUNT:
-    case ui::AX_ATTR_TABLE_ROW_HEADER_ID:
-    case ui::AX_ATTR_TABLE_ROW_INDEX:
-    case ui::AX_ATTR_TEXT_SEL_END:
-    case ui::AX_ATTR_TEXT_SEL_START:
-    case ui::AX_ATTR_TEXT_STYLE:
-    case ui::AX_INT_ATTRIBUTE_NONE:
+    case ax::mojom::IntAttribute::kActivedescendantId:
+    case ax::mojom::IntAttribute::kAriaCellColumnIndex:
+    case ax::mojom::IntAttribute::kAriaCellRowIndex:
+    case ax::mojom::IntAttribute::kAriaColumnCount:
+    case ax::mojom::IntAttribute::kAriaRowCount:
+    case ax::mojom::IntAttribute::kBackgroundColor:
+    case ax::mojom::IntAttribute::kChildTreeId:
+    case ax::mojom::IntAttribute::kColor:
+    case ax::mojom::IntAttribute::kColorValue:
+    case ax::mojom::IntAttribute::kDetailsId:
+    case ax::mojom::IntAttribute::kErrormessageId:
+    case ax::mojom::IntAttribute::kHierarchicalLevel:
+    case ax::mojom::IntAttribute::kInPageLinkTargetId:
+    case ax::mojom::IntAttribute::kMemberOfId:
+    case ax::mojom::IntAttribute::kNextFocusId:
+    case ax::mojom::IntAttribute::kNextOnLineId:
+    case ax::mojom::IntAttribute::kPosInSet:
+    case ax::mojom::IntAttribute::kPreviousFocusId:
+    case ax::mojom::IntAttribute::kPreviousOnLineId:
+    case ax::mojom::IntAttribute::kScrollX:
+    case ax::mojom::IntAttribute::kScrollXMax:
+    case ax::mojom::IntAttribute::kScrollXMin:
+    case ax::mojom::IntAttribute::kScrollY:
+    case ax::mojom::IntAttribute::kScrollYMax:
+    case ax::mojom::IntAttribute::kScrollYMin:
+    case ax::mojom::IntAttribute::kSetSize:
+    case ax::mojom::IntAttribute::kTableCellColumnIndex:
+    case ax::mojom::IntAttribute::kTableCellColumnSpan:
+    case ax::mojom::IntAttribute::kTableCellRowIndex:
+    case ax::mojom::IntAttribute::kTableCellRowSpan:
+    case ax::mojom::IntAttribute::kTableColumnCount:
+    case ax::mojom::IntAttribute::kTableColumnHeaderId:
+    case ax::mojom::IntAttribute::kTableColumnIndex:
+    case ax::mojom::IntAttribute::kTableHeaderId:
+    case ax::mojom::IntAttribute::kTableRowCount:
+    case ax::mojom::IntAttribute::kTableRowHeaderId:
+    case ax::mojom::IntAttribute::kTableRowIndex:
+    case ax::mojom::IntAttribute::kTextSelEnd:
+    case ax::mojom::IntAttribute::kTextSelStart:
+    case ax::mojom::IntAttribute::kTextStyle:
+    case ax::mojom::IntAttribute::kNone:
       break;
   }
 
@@ -161,9 +162,10 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
   dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
 
-  for (int32_t state_index = static_cast<int32_t>(ui::AX_STATE_NONE);
-       state_index <= static_cast<int32_t>(ui::AX_STATE_LAST); ++state_index) {
-    auto state = static_cast<ui::AXState>(state_index);
+  for (int32_t state_index = static_cast<int32_t>(ax::mojom::State::kNone);
+       state_index <= static_cast<int32_t>(ax::mojom::State::kLast);
+       ++state_index) {
+    auto state = static_cast<ax::mojom::State>(state_index);
     if (node.HasState(state))
       dict->SetBoolean(ui::ToString(state), true);
   }
@@ -171,45 +173,49 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   if (offscreen)
     dict->SetBoolean(STATE_OFFSCREEN, true);
 
-  for (int32_t attr_index = static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_LAST);
+  for (int32_t attr_index =
+           static_cast<int32_t>(ax::mojom::StringAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::StringAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXStringAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::StringAttribute>(attr_index);
     if (node.HasStringAttribute(attr))
       dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
   }
 
-  for (int32_t attr_index = static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_LAST);
+  for (int32_t attr_index =
+           static_cast<int32_t>(ax::mojom::IntAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXIntAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
     if (node.HasIntAttribute(attr)) {
       int value = node.GetIntAttribute(attr);
       dict->SetString(ui::ToString(attr), IntAttrToString(node, attr, value));
     }
   }
 
-  for (int32_t attr_index = static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_LAST);
+  for (int32_t attr_index =
+           static_cast<int32_t>(ax::mojom::FloatAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::FloatAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::FloatAttribute>(attr_index);
     if (node.HasFloatAttribute(attr) && isfinite(node.GetFloatAttribute(attr)))
       dict->SetDouble(ui::ToString(attr), node.GetFloatAttribute(attr));
   }
 
-  for (int32_t attr_index = static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_LAST);
+  for (int32_t attr_index =
+           static_cast<int32_t>(ax::mojom::BoolAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::BoolAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXBoolAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::BoolAttribute>(attr_index);
     if (node.HasBoolAttribute(attr))
       dict->SetBoolean(ui::ToString(attr), node.GetBoolAttribute(attr));
   }
 
   for (int32_t attr_index =
-           static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_LAST);
+           static_cast<int32_t>(ax::mojom::IntListAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::IntListAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXIntListAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::IntListAttribute>(attr_index);
     if (node.HasIntListAttribute(attr)) {
       std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
@@ -242,10 +248,11 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   std::vector<std::string> actions_strings;
-  for (int32_t action_index = static_cast<int32_t>(ui::AX_ACTION_NONE) + 1;
-       action_index <= static_cast<int32_t>(ui::AX_ACTION_LAST);
+  for (int32_t action_index =
+           static_cast<int32_t>(ax::mojom::Action::kNone) + 1;
+       action_index <= static_cast<int32_t>(ax::mojom::Action::kLast);
        ++action_index) {
-    auto action = static_cast<ui::AXAction>(action_index);
+    auto action = static_cast<ax::mojom::Action>(action_index);
     if (node.HasAction(action))
       actions_strings.push_back(ui::ToString(action));
   }
@@ -272,9 +279,10 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   dict.GetString("internalRole", &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
-  for (int state_index = static_cast<int32_t>(ui::AX_STATE_NONE);
-       state_index <= static_cast<int32_t>(ui::AX_STATE_LAST); ++state_index) {
-    auto state = static_cast<ui::AXState>(state_index);
+  for (int state_index = static_cast<int32_t>(ax::mojom::State::kNone);
+       state_index <= static_cast<int32_t>(ax::mojom::State::kLast);
+       ++state_index) {
+    auto state = static_cast<ax::mojom::State>(state_index);
     const base::Value* value;
     if (!dict.Get(ui::ToString(state), &value))
       continue;
@@ -320,10 +328,10 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (dict.GetBoolean("transform", &transform) && transform)
     WriteAttribute(false, "transform", &line);
 
-  for (int attr_index = static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_STRING_ATTRIBUTE_LAST);
+  for (int attr_index = static_cast<int32_t>(ax::mojom::StringAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::StringAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXStringAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::StringAttribute>(attr_index);
     std::string string_value;
     if (!dict.GetString(ui::ToString(attr), &string_value))
       continue;
@@ -333,10 +341,10 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_INT_ATTRIBUTE_LAST);
+  for (int attr_index = static_cast<int32_t>(ax::mojom::IntAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXIntAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
     std::string string_value;
     if (!dict.GetString(ui::ToString(attr), &string_value))
       continue;
@@ -346,10 +354,10 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_BOOL_ATTRIBUTE_LAST);
+  for (int attr_index = static_cast<int32_t>(ax::mojom::BoolAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::BoolAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXBoolAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::BoolAttribute>(attr_index);
     bool bool_value;
     if (!dict.GetBoolean(ui::ToString(attr), &bool_value))
       continue;
@@ -359,10 +367,10 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
                    &line);
   }
 
-  for (int attr_index = static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_FLOAT_ATTRIBUTE_LAST);
+  for (int attr_index = static_cast<int32_t>(ax::mojom::FloatAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::FloatAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::FloatAttribute>(attr_index);
     double float_value;
     if (!dict.GetDouble(ui::ToString(attr), &float_value))
       continue;
@@ -371,10 +379,11 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  for (int attr_index = static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_NONE);
-       attr_index <= static_cast<int32_t>(ui::AX_INT_LIST_ATTRIBUTE_LAST);
+  for (int attr_index =
+           static_cast<int32_t>(ax::mojom::IntListAttribute::kNone);
+       attr_index <= static_cast<int32_t>(ax::mojom::IntListAttribute::kLast);
        ++attr_index) {
-    auto attr = static_cast<ui::AXIntListAttribute>(attr_index);
+    auto attr = static_cast<ax::mojom::IntListAttribute>(attr_index);
     const base::ListValue* value;
     if (!dict.GetList(ui::ToString(attr), &value))
       continue;

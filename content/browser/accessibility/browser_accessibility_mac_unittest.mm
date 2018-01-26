@@ -38,8 +38,9 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     root_.id = 1000;
     root_.location.set_width(500);
     root_.location.set_height(100);
-    root_.role = ui::AX_ROLE_ROOT_WEB_AREA;
-    root_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "HelpText");
+    root_.role = ax::mojom::Role::kRootWebArea;
+    root_.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                             "HelpText");
     root_.child_ids.push_back(1001);
     root_.child_ids.push_back(1002);
 
@@ -48,14 +49,14 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     child1.SetName("Child1");
     child1.location.set_width(250);
     child1.location.set_height(100);
-    child1.role = ui::AX_ROLE_BUTTON;
+    child1.role = ax::mojom::Role::kButton;
 
     ui::AXNodeData child2;
     child2.id = 1002;
     child2.location.set_x(250);
     child2.location.set_width(250);
     child2.location.set_height(100);
-    child2.role = ui::AX_ROLE_HEADING;
+    child2.role = ax::mojom::Role::kHeading;
 
     manager_.reset(new BrowserAccessibilityManagerMac(
         MakeAXTreeUpdate(root_, child1, child2), nullptr));
@@ -69,7 +70,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     root_.SetValue(value);
     AXEventNotificationDetails param;
     param.update.nodes.push_back(root_);
-    param.event_type = ui::AX_EVENT_VALUE_CHANGED;
+    param.event_type = ax::mojom::Event::kValueChanged;
     param.id = root_.id;
     std::vector<AXEventNotificationDetails> events{param};
     manager_->OnAccessibilityEvents(events);

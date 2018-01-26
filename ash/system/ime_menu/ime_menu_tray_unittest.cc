@@ -110,9 +110,9 @@ class ImeMenuTrayTest : public AshTestBase {
       // Tests that the checked IME is the current IME.
       ui::AXNodeData node_data;
       ime.first->GetAccessibleNodeData(&node_data);
-      const auto checked_state = static_cast<ui::AXCheckedState>(
-          node_data.GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
-      if (checked_state == ui::AX_CHECKED_STATE_TRUE)
+      const auto checked_state = static_cast<ax::mojom::CheckedState>(
+          node_data.GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+      if (checked_state == ax::mojom::CheckedState::kTrue)
         EXPECT_EQ(expected_current_ime.id, ime.second);
     }
   }

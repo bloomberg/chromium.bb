@@ -45,12 +45,13 @@ TEST_F(AshTouchExplorationManagerTest, HandleAccessibilityGesture) {
   TestAccessibilityControllerClient client;
   a11y_controller->SetClient(client.CreateInterfacePtrAndBind());
 
-  touch_exploration_manager.HandleAccessibilityGesture(ui::AX_GESTURE_CLICK);
+  touch_exploration_manager.HandleAccessibilityGesture(
+      ax::mojom::Gesture::kClick);
   a11y_controller->FlushMojoForTest();
   EXPECT_EQ("click", client.last_a11y_gesture());
 
   touch_exploration_manager.HandleAccessibilityGesture(
-      ui::AX_GESTURE_SWIPE_LEFT_1);
+      ax::mojom::Gesture::kSwipeLeft1);
   a11y_controller->FlushMojoForTest();
   EXPECT_EQ("swipeLeft1", client.last_a11y_gesture());
 }

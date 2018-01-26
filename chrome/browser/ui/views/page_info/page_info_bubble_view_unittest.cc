@@ -76,7 +76,7 @@ class PageInfoBubbleViewTestApi {
       ui::AXNodeData data;
       view_->cookie_button_->GetAccessibleNodeData(&data);
       std::string name;
-      data.GetStringAttribute(ui::AX_ATTR_NAME, &name);
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
       return base::ASCIIToUTF16(name);
     }
     EXPECT_TRUE(view_->cookie_link_legacy_);

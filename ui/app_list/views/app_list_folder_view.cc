@@ -115,7 +115,7 @@ AppListFolderView::~AppListFolderView() {
 void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
   accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDS_APP_LIST_FOLDER_OPEN_FOLDER_ACCESSIBILE_NAME);
-  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 
   folder_item_ = folder;
   items_grid_view_->SetItemList(folder_item_->item_list());
@@ -317,7 +317,7 @@ void AppListFolderView::HideViewImmediately() {
 void AppListFolderView::CloseFolderPage() {
   accessible_name_ = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME);
-  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 
   GiveBackFocusToSearchBox();
   if (items_grid_view()->dragging())
@@ -335,7 +335,7 @@ void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
 }
 
 void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
+  node_data->role = ax::mojom::Role::kGenericContainer;
   node_data->SetName(accessible_name_);
 }
 

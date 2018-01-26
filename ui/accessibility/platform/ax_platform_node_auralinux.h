@@ -70,14 +70,14 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AtkHyperlink* GetAtkHyperlink();
 
   // Misc helpers
-  void GetFloatAttributeInGValue(AXFloatAttribute attr, GValue* value);
+  void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
 
   // Event helpers
   void OnFocused();
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
+  void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;

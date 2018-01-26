@@ -18,7 +18,7 @@
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "extensions/common/stack_frame.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -83,13 +83,13 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
   IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
 
   // Type of event.
-  IPC_STRUCT_MEMBER(ui::AXEvent, event_type)
+  IPC_STRUCT_MEMBER(ax::mojom::Event, event_type)
 
   // ID of the node that the event applies to.
   IPC_STRUCT_MEMBER(int, id)
 
   // The source of this event.
-  IPC_STRUCT_MEMBER(ui::AXEventFrom, event_from)
+  IPC_STRUCT_MEMBER(ax::mojom::EventFrom, event_from)
 
   // The mouse location in screen coordinates.
   IPC_STRUCT_MEMBER(gfx::Point, mouse_location)

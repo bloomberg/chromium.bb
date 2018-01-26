@@ -63,6 +63,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/test_clipboard.h"
@@ -629,7 +630,7 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
   std::map<int32_t, int> id_to_indentation;
   bool found_embedded_object = false;
   for (auto& node : ax_tree.nodes) {
-    if (node.role == ui::AX_ROLE_EMBEDDED_OBJECT)
+    if (node.role == ax::mojom::Role::kEmbeddedObject)
       found_embedded_object = true;
     if (!found_embedded_object)
       continue;
@@ -638,7 +639,8 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
     ax_tree_dump += std::string(2 * indent, ' ');
     ax_tree_dump += ui::ToString(node.role);
 
-    std::string name = node.GetStringAttribute(ui::AX_ATTR_NAME);
+    std::string name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
     base::ReplaceChars(name, "\r\n", "", &name);
     if (!name.empty())
       ax_tree_dump += " '" + name + "'";

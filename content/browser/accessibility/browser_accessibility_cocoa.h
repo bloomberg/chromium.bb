@@ -55,7 +55,7 @@ struct AXTextEdit {
 
 // Convenience method to get the internal, cross-platform role
 // from browserAccessibility_.
-- (ui::AXRole)internalRole;
+- (ax::mojom::Role)internalRole;
 
 // Convenience method to get the BrowserAccessibilityDelegate from
 // the manager.

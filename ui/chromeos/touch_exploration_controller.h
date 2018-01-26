@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
@@ -64,7 +64,7 @@ class TouchExplorationControllerDelegate {
 
   // Called when the user performed an accessibility gesture while in touch
   // accessibility mode, that should be forwarded to ChromeVox.
-  virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;
+  virtual void HandleAccessibilityGesture(ax::mojom::Gesture gesture) = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to

@@ -106,8 +106,8 @@ void ConflictingModuleView::ShowBubble() {
   bubble_shown.SetValue(bubble_shown.GetValue() + 1);
 }
 
-ui::AXRole ConflictingModuleView::GetAccessibleWindowRole() const {
-  return ui::AX_ROLE_ALERT_DIALOG;
+ax::mojom::Role ConflictingModuleView::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kAlertDialog;
 }
 
 void ConflictingModuleView::OnWidgetClosing(views::Widget* widget) {

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
 
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
 void NonAccessibleImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->AddState(ui::AX_STATE_INVISIBLE);
+  node_data->AddState(ax::mojom::State::kInvisible);
 }

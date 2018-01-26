@@ -205,7 +205,7 @@ void AccessiblePaneView::SetVisible(bool flag) {
 }
 
 void AccessiblePaneView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_PANE;
+  node_data->role = ax::mojom::Role::kPane;
 }
 
 void AccessiblePaneView::RequestFocus() {

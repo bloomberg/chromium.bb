@@ -65,9 +65,9 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.location = gfx::RectF(0, 0, 800, 600);
-  root.AddBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN, true);
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(6);
@@ -75,12 +75,12 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   ui::AXNodeData heading;
   heading.id = 2;
   heading.SetName("Heading");
-  heading.role = ui::AX_ROLE_HEADING;
+  heading.role = ax::mojom::Role::kHeading;
   heading.location = gfx::RectF(0, 0, 800, 50);
 
   ui::AXNodeData list;
   list.id = 3;
-  list.role = ui::AX_ROLE_LIST;
+  list.role = ax::mojom::Role::kList;
   list.location = gfx::RectF(0, 50, 500, 500);
   list.child_ids.push_back(4);
   list.child_ids.push_back(5);
@@ -88,19 +88,19 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   ui::AXNodeData list_item_1;
   list_item_1.id = 4;
   list_item_1.SetName("Autobots");
-  list_item_1.role = ui::AX_ROLE_LIST_ITEM;
+  list_item_1.role = ax::mojom::Role::kListItem;
   list_item_1.location = gfx::RectF(10, 10, 200, 30);
 
   ui::AXNodeData list_item_2;
   list_item_2.id = 5;
   list_item_2.SetName("Decepticons");
-  list_item_2.role = ui::AX_ROLE_LIST_ITEM;
+  list_item_2.role = ax::mojom::Role::kListItem;
   list_item_2.location = gfx::RectF(10, 40, 200, 60);
 
   ui::AXNodeData footer;
   footer.id = 6;
   footer.SetName("Footer");
-  footer.role = ui::AX_ROLE_FOOTER;
+  footer.role = ax::mojom::Role::kFooter;
   footer.location = gfx::RectF(0, 650, 100, 800);
 
   tree_.reset(new TestBrowserAccessibilityManager(
@@ -237,10 +237,10 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, CaseInsensitiveStringMatch) {
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, OnePredicate) {
   OneShotAccessibilityTreeSearch search(tree_->GetRoot());
-  search.AddPredicate([](BrowserAccessibility* start,
-                         BrowserAccessibility* current) {
-    return current->GetRole() == ui::AX_ROLE_LIST_ITEM;
-  });
+  search.AddPredicate(
+      [](BrowserAccessibility* start, BrowserAccessibility* current) {
+        return current->GetRole() == ax::mojom::Role::kListItem;
+      });
   ASSERT_EQ(2U, search.CountMatches());
   EXPECT_EQ(4, search.GetMatchAtIndex(0)->GetId());
   EXPECT_EQ(5, search.GetMatchAtIndex(1)->GetId());
@@ -248,11 +248,11 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, OnePredicate) {
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, TwoPredicates) {
   OneShotAccessibilityTreeSearch search(tree_->GetRoot());
-  search.AddPredicate([](BrowserAccessibility* start,
-                         BrowserAccessibility* current) {
-    return (current->GetRole() == ui::AX_ROLE_LIST ||
-            current->GetRole() == ui::AX_ROLE_LIST_ITEM);
-  });
+  search.AddPredicate(
+      [](BrowserAccessibility* start, BrowserAccessibility* current) {
+        return (current->GetRole() == ax::mojom::Role::kList ||
+                current->GetRole() == ax::mojom::Role::kListItem);
+      });
   search.AddPredicate([](BrowserAccessibility* start,
                          BrowserAccessibility* current) {
     return (current->GetId() % 2 == 1);

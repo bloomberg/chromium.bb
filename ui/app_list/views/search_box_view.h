@@ -98,7 +98,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   void OnKeyEvent(ui::KeyEvent* evetn) override;
 
   // Overridden from views::WidgetDelegate:
-  ui::AXRole GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   bool ShouldAdvanceFocusToTopLevelWidget() const override;
 
   // Overridden from views::ButtonListener:

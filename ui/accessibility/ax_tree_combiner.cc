@@ -80,7 +80,8 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
   int32_t tree_id = tree->tree_data.tree_id;
   for (size_t i = 0; i < tree->nodes.size(); ++i) {
     AXNodeData node = tree->nodes[i];
-    int32_t child_tree_id = node.GetIntAttribute(AX_ATTR_CHILD_TREE_ID);
+    int32_t child_tree_id =
+        node.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId);
 
     // Map the node's ID.
     node.id = MapId(tree_id, node.id);
@@ -94,13 +95,13 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
       node.offset_container_id = MapId(tree_id, node.offset_container_id);
 
     // Map other int attributes that refer to node IDs, and remove the
-    // AX_ATTR_CHILD_TREE_ID attribute.
+    // ax::mojom::IntAttribute::kChildTreeId attribute.
     for (size_t j = 0; j < node.int_attributes.size(); ++j) {
       auto& attr = node.int_attributes[j];
       if (IsNodeIdIntAttribute(attr.first))
         attr.second = MapId(tree_id, attr.second);
-      if (attr.first == AX_ATTR_CHILD_TREE_ID) {
-        attr.first = AX_INT_ATTRIBUTE_NONE;
+      if (attr.first == ax::mojom::IntAttribute::kChildTreeId) {
+        attr.first = ax::mojom::IntAttribute::kNone;
         attr.second = 0;
       }
     }

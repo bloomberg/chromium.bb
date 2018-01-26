@@ -572,7 +572,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
-    node_data->role = ui::AX_ROLE_SPLITTER;
+    node_data->role = ax::mojom::Role::kSplitter;
   }
 
  private:
@@ -1221,7 +1221,7 @@ void BookmarkBarView::VisibilityChanged(View* starting_from, bool is_visible) {
 }
 
 void BookmarkBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TOOLBAR;
+  node_data->role = ax::mojom::Role::kToolbar;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_BOOKMARKS));
 }
 

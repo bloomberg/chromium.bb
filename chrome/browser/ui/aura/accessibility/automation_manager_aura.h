@@ -53,7 +53,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // Handle an event fired upon a |View|.
   void HandleEvent(content::BrowserContext* context,
                    views::View* view,
-                   ui::AXEvent event_type);
+                   ax::mojom::Event event_type);
 
   void HandleAlert(content::BrowserContext* context, const std::string& text);
 
@@ -63,7 +63,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // views::AXAuraObjCache::Delegate implementation.
   void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;
   void OnEvent(views::AXAuraObjWrapper* aura_obj,
-               ui::AXEvent event_type) override;
+               ax::mojom::Event event_type) override;
 
  protected:
   AutomationManagerAura();
@@ -80,7 +80,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   void SendEvent(content::BrowserContext* context,
                  views::AXAuraObjWrapper* aura_obj,
-                 ui::AXEvent event_type);
+                 ax::mojom::Event event_type);
 
   void PerformHitTest(const ui::AXActionData& data);
 
@@ -98,7 +98,8 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   bool processing_events_;
 
-  std::vector<std::pair<views::AXAuraObjWrapper*, ui::AXEvent>> pending_events_;
+  std::vector<std::pair<views::AXAuraObjWrapper*, ax::mojom::Event>>
+      pending_events_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };

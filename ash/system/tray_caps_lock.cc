@@ -152,7 +152,7 @@ class CapsLockDefaultView : public ActionableView {
 
  private:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->role = ax::mojom::Role::kButton;
     node_data->SetName(text_label_->text());
   }
 

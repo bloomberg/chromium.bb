@@ -135,7 +135,7 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_WINDOW;
+    node_data->role = ax::mojom::Role::kWindow;
     node_data->SetName(window_title_->text());
   }
 

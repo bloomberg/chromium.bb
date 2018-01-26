@@ -503,7 +503,7 @@ void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
 }
 
 void NotifierSettingsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_LIST;
+  node_data->role = ax::mojom::Role::kList;
   node_data->SetName(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
 }

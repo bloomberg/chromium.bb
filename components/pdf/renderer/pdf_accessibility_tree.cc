@@ -80,7 +80,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
     return;
 
   doc_info_ = doc_info;
-  doc_node_ = CreateNode(ui::AX_ROLE_GROUP);
+  doc_node_ = CreateNode(ax::mojom::Role::kGroup);
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
@@ -101,11 +101,10 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   CHECK_GE(page_index, 0U);
   CHECK_LT(page_index, doc_info_.page_count);
 
-  ui::AXNodeData* page_node = CreateNode(ui::AX_ROLE_REGION);
+  ui::AXNodeData* page_node = CreateNode(ax::mojom::Role::kRegion);
   page_node->AddStringAttribute(
-      ui::AX_ATTR_NAME,
-      l10n_util::GetPluralStringFUTF8(
-          IDS_PDF_PAGE_INDEX, page_index + 1));
+      ax::mojom::StringAttribute::kName,
+      l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
 
   gfx::RectF page_bounds = ToRectF(page_info.bounds);
   page_node->location = page_bounds;
@@ -133,39 +132,43 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
 
     // If we don't have a paragraph, create one.
     if (!para_node) {
-      para_node = CreateNode(ui::AX_ROLE_PARAGRAPH);
+      para_node = CreateNode(ax::mojom::Role::kParagraph);
       page_node->child_ids.push_back(para_node->id);
 
       if (heading_font_size_threshold > 0 &&
           text_run.font_size > heading_font_size_threshold) {
-        para_node->role = ui::AX_ROLE_HEADING;
-        para_node->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, 2);
-        para_node->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "h2");
+        para_node->role = ax::mojom::Role::kHeading;
+        para_node->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                                   2);
+        para_node->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
+                                      "h2");
       }
 
       // This node is for the text inside the paragraph, it includes
       // the text of all of the text runs.
-      static_text_node = CreateNode(ui::AX_ROLE_STATIC_TEXT);
+      static_text_node = CreateNode(ax::mojom::Role::kStaticText);
       para_node->child_ids.push_back(static_text_node->id);
     }
 
     // Add this text run to the current static text node.
-    ui::AXNodeData* inline_text_box_node = CreateNode(
-        ui::AX_ROLE_INLINE_TEXT_BOX);
+    ui::AXNodeData* inline_text_box_node =
+        CreateNode(ax::mojom::Role::kInlineTextBox);
     static_text_node->child_ids.push_back(inline_text_box_node->id);
 
-    inline_text_box_node->AddStringAttribute(ui::AX_ATTR_NAME, chars_utf8);
+    inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                             chars_utf8);
     gfx::RectF text_run_bounds = ToGfxRectF(text_run.bounds);
     text_run_bounds += page_bounds.OffsetFromOrigin();
     inline_text_box_node->location = text_run_bounds;
-    inline_text_box_node->AddIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS,
-                                              char_offsets);
+    inline_text_box_node->AddIntListAttribute(
+        ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
 
     para_node->location.Union(inline_text_box_node->location);
     static_text_node->location.Union(inline_text_box_node->location);
 
     if (i == text_runs.size() - 1) {
-      static_text_node->AddStringAttribute(ui::AX_ATTR_NAME, static_text);
+      static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           static_text);
       break;
     }
 
@@ -174,7 +177,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     if (text_run.font_size != text_runs[i + 1].font_size ||
         (line_spacing_threshold > 0 &&
          line_spacing > line_spacing_threshold)) {
-      static_text_node->AddStringAttribute(ui::AX_ATTR_NAME, static_text);
+      static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           static_text);
       para_node = nullptr;
       static_text_node = nullptr;
       static_text.clear();
@@ -280,14 +284,14 @@ gfx::RectF PdfAccessibilityTree::ToRectF(const PP_Rect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
 
-ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
+ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   DCHECK(render_accessibility);
 
   ui::AXNodeData* node = new ui::AXNodeData();
   node->id = render_accessibility->GenerateAXID();
   node->role = role;
-  node->SetRestriction(ui::AX_RESTRICTION_READ_ONLY);
+  node->SetRestriction(ax::mojom::Restriction::kReadOnly);
 
   // All nodes other than the first one have coordinates relative to
   // the first node.

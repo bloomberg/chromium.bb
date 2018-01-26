@@ -86,7 +86,7 @@ class MockTouchExplorationControllerDelegate
   void PlayExitScreenEarcon() override { ++num_times_exit_screen_played_; }
   void PlayEnterScreenEarcon() override { ++num_times_enter_screen_played_; }
   void PlayTouchTypeEarcon() override { ++num_times_touch_type_sound_played_; }
-  void HandleAccessibilityGesture(ui::AXGesture gesture) override {
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override {
     last_gesture_ = gesture;
   }
 
@@ -98,7 +98,7 @@ class MockTouchExplorationControllerDelegate
   size_t NumTouchTypeSounds() const {
     return num_times_touch_type_sound_played_;
   }
-  ui::AXGesture GetLastGesture() const { return last_gesture_; }
+  ax::mojom::Gesture GetLastGesture() const { return last_gesture_; }
 
   void ResetCountersToZero() {
     num_times_adjust_sound_played_ = 0;
@@ -115,7 +115,7 @@ class MockTouchExplorationControllerDelegate
   size_t num_times_exit_screen_played_ = 0;
   size_t num_times_enter_screen_played_ = 0;
   size_t num_times_touch_type_sound_played_ = 0;
-  ui::AXGesture last_gesture_ = ui::AX_GESTURE_NONE;
+  ax::mojom::Gesture last_gesture_ = ax::mojom::Gesture::kNone;
 };
 
 }  // namespace
@@ -779,7 +779,7 @@ TEST_F(TouchExplorationTest, DoubleTapTiming) {
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
   ASSERT_EQ(0U, captured_events.size());
-  EXPECT_EQ(ui::AX_GESTURE_CLICK, delegate_.GetLastGesture());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
 }
 
 // If an explicit anchor point is set during touch exploration, double-tapping
@@ -818,7 +818,7 @@ TEST_F(TouchExplorationTest, DoubleTapWithExplicitAnchorPoint) {
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
   ASSERT_EQ(0U, captured_events.size());
   EXPECT_TRUE(IsInNoFingersDownState());
-  EXPECT_EQ(ui::AX_GESTURE_CLICK, delegate_.GetLastGesture());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
 }
 
 // Double-tapping where the user holds their finger down for the second time
@@ -1314,24 +1314,24 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
     int move_x;
     int move_y;
     int num_fingers;
-    ui::AXGesture expected_gesture;
+    ax::mojom::Gesture expected_gesture;
   } gestures_to_test[] = {
-      {-1, 0, 1, ui::AX_GESTURE_SWIPE_LEFT_1},
-      {0, -1, 1, ui::AX_GESTURE_SWIPE_UP_1},
-      {1, 0, 1, ui::AX_GESTURE_SWIPE_RIGHT_1},
-      {0, 1, 1, ui::AX_GESTURE_SWIPE_DOWN_1},
-      {-1, 0, 2, ui::AX_GESTURE_SWIPE_LEFT_2},
-      {0, -1, 2, ui::AX_GESTURE_SWIPE_UP_2},
-      {1, 0, 2, ui::AX_GESTURE_SWIPE_RIGHT_2},
-      {0, 1, 2, ui::AX_GESTURE_SWIPE_DOWN_2},
-      {-1, 0, 3, ui::AX_GESTURE_SWIPE_LEFT_3},
-      {0, -1, 3, ui::AX_GESTURE_SWIPE_UP_3},
-      {1, 0, 3, ui::AX_GESTURE_SWIPE_RIGHT_3},
-      {0, 1, 3, ui::AX_GESTURE_SWIPE_DOWN_3},
-      {-1, 0, 4, ui::AX_GESTURE_SWIPE_LEFT_4},
-      {0, -1, 4, ui::AX_GESTURE_SWIPE_UP_4},
-      {1, 0, 4, ui::AX_GESTURE_SWIPE_RIGHT_4},
-      {0, 1, 4, ui::AX_GESTURE_SWIPE_DOWN_4},
+      {-1, 0, 1, ax::mojom::Gesture::kSwipeLeft1},
+      {0, -1, 1, ax::mojom::Gesture::kSwipeUp1},
+      {1, 0, 1, ax::mojom::Gesture::kSwipeRight1},
+      {0, 1, 1, ax::mojom::Gesture::kSwipeDown1},
+      {-1, 0, 2, ax::mojom::Gesture::kSwipeLeft2},
+      {0, -1, 2, ax::mojom::Gesture::kSwipeUp2},
+      {1, 0, 2, ax::mojom::Gesture::kSwipeRight2},
+      {0, 1, 2, ax::mojom::Gesture::kSwipeDown2},
+      {-1, 0, 3, ax::mojom::Gesture::kSwipeLeft3},
+      {0, -1, 3, ax::mojom::Gesture::kSwipeUp3},
+      {1, 0, 3, ax::mojom::Gesture::kSwipeRight3},
+      {0, 1, 3, ax::mojom::Gesture::kSwipeDown3},
+      {-1, 0, 4, ax::mojom::Gesture::kSwipeLeft4},
+      {0, -1, 4, ax::mojom::Gesture::kSwipeUp4},
+      {1, 0, 4, ax::mojom::Gesture::kSwipeRight4},
+      {0, 1, 4, ax::mojom::Gesture::kSwipeDown4},
   };
 
   // This value was taken from gesture_recognizer_unittest.cc in a swipe
@@ -1343,7 +1343,7 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
     int move_x = gestures_to_test[i].move_x * distance;
     int move_y = gestures_to_test[i].move_y * distance;
     int num_fingers = gestures_to_test[i].num_fingers;
-    ui::AXGesture expected_gesture = gestures_to_test[i].expected_gesture;
+    ax::mojom::Gesture expected_gesture = gestures_to_test[i].expected_gesture;
 
     std::vector<gfx::Point> start_points;
     for (int j = 0; j < num_fingers; j++) {
@@ -1742,7 +1742,7 @@ TEST_F(TouchExplorationTest, TwoFingerTap) {
   generator_->ReleaseTouchId(2);
 
   EXPECT_EQ(0U, captured_events.size());
-  ASSERT_EQ(ui::AX_GESTURE_TAP_2, delegate_.GetLastGesture());
+  ASSERT_EQ(ax::mojom::Gesture::kTap2, delegate_.GetLastGesture());
 }
 
 // If the fingers are not released before the tap timer runs out, a control

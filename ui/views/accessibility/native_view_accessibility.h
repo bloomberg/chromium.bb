@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
@@ -25,7 +25,7 @@ class VIEWS_EXPORT NativeViewAccessibility {
   virtual ~NativeViewAccessibility() {}
 
   virtual gfx::NativeViewAccessible GetNativeObject() = 0;
-  virtual void NotifyAccessibilityEvent(ui::AXEvent event_type) = 0;
+  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) = 0;
 
  protected:
   NativeViewAccessibility() {}

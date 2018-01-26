@@ -153,9 +153,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
     view()
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
-    EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+    EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     EXPECT_EQ(base::StringPrintf("InstalledApp %d", i),
-              node_data.GetStringAttribute(ui::AX_ATTR_NAME));
+              node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   for (int i = kInstalledApps; i < expected_results; ++i) {
@@ -163,11 +163,11 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
     view()
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
-    EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+    EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     EXPECT_EQ(base::StringPrintf("PlayStoreApp %d, Star rating %d.0, Price %d",
                                  i - kInstalledApps, i + 1 - kInstalledApps,
                                  i - kInstalledApps),
-              node_data.GetStringAttribute(ui::AX_ATTR_NAME));
+              node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   ResetOpenResultCount();

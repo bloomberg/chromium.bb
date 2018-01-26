@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
 
 using blink::WebAXObject;
@@ -131,7 +132,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
     HandleAXEvent(WebAXObject::FromWebDocument(document),
-                  ui::AX_EVENT_LAYOUT_COMPLETE);
+                  ax::mojom::Event::kLayoutComplete);
   }
 }
 
@@ -171,8 +172,9 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
     // our new event.
     pending_events_.clear();
     auto webax_object = WebAXObject::FromWebDocument(document);
-    ui::AXEvent event = webax_object.IsLoaded() ? ui::AX_EVENT_LOAD_COMPLETE
-                                                : ui::AX_EVENT_LAYOUT_COMPLETE;
+    ax::mojom::Event event = webax_object.IsLoaded()
+                                 ? ax::mojom::Event::kLoadComplete
+                                 : ax::mojom::Event::kLayoutComplete;
     HandleAXEvent(webax_object, event);
   }
 }
@@ -224,7 +226,8 @@ void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
   if (node.IsNull()) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make Blink send this notification instead.
-    HandleAXEvent(WebAXObject::FromWebDocument(document), ui::AX_EVENT_BLUR);
+    HandleAXEvent(WebAXObject::FromWebDocument(document),
+                  ax::mojom::Event::kBlur);
   }
 }
 
@@ -245,7 +248,7 @@ void RenderAccessibilityImpl::DisableAccessibility() {
 }
 
 void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
-                                            ui::AXEvent event,
+                                            ax::mojom::Event event,
                                             int action_request_id) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
@@ -262,7 +265,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
       last_scroll_offset_ = scroll_offset;
       auto webax_object = WebAXObject::FromWebDocument(document);
       if (!obj.Equals(webax_object)) {
-        HandleAXEvent(webax_object, ui::AX_EVENT_LAYOUT_COMPLETE);
+        HandleAXEvent(webax_object, ax::mojom::Event::kLayoutComplete);
       }
     }
   }
@@ -270,29 +273,29 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
 #if defined(OS_ANDROID)
   // Force the newly focused node to be re-serialized so we include its
   // inline text boxes.
-  if (event == ui::AX_EVENT_FOCUS)
+  if (event == ax::mojom::Event::kFocus)
     serializer_.DeleteClientSubtree(obj);
 #endif
 
   // If some cell IDs have been added or removed, we need to update the whole
   // table.
   if (obj.Role() == blink::kWebAXRoleRow &&
-      event == ui::AX_EVENT_CHILDREN_CHANGED) {
+      event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject table_like_object = obj.ParentObject();
     if (!table_like_object.IsDetached()) {
       serializer_.DeleteClientSubtree(table_like_object);
-      HandleAXEvent(table_like_object, ui::AX_EVENT_CHILDREN_CHANGED);
+      HandleAXEvent(table_like_object, ax::mojom::Event::kChildrenChanged);
     }
   }
 
   // If a select tag is opened or closed, all the children must be updated
   // because their visibility may have changed.
   if (obj.Role() == blink::kWebAXRoleMenuListPopup &&
-      event == ui::AX_EVENT_CHILDREN_CHANGED) {
+      event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject popup_like_object = obj.ParentObject();
     if (!popup_like_object.IsDetached()) {
       serializer_.DeleteClientSubtree(popup_like_object);
-      HandleAXEvent(popup_like_object, ui::AX_EVENT_CHILDREN_CHANGED);
+      HandleAXEvent(popup_like_object, ax::mojom::Event::kChildrenChanged);
     }
   }
 
@@ -303,11 +306,11 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
 
   if (blink::WebUserGestureIndicator::IsProcessingUserGesture(
           render_frame_->GetWebFrame())) {
-    acc_event.event_from = ui::AX_EVENT_FROM_USER;
+    acc_event.event_from = ax::mojom::EventFrom::kUser;
   } else if (during_action_) {
-    acc_event.event_from = ui::AX_EVENT_FROM_ACTION;
+    acc_event.event_from = ax::mojom::EventFrom::kAction;
   } else {
-    acc_event.event_from = ui::AX_EVENT_FROM_PAGE;
+    acc_event.event_from = ax::mojom::EventFrom::kPage;
   }
 
   acc_event.action_request_id = action_request_id;
@@ -374,7 +377,7 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
     if (!node.IsNull() && node.IsElementNode()) {
       WebElement element = node.To<WebElement>();
       if (element.HasHTMLTagName("embed")) {
-        HandleAXEvent(obj, ui::AX_EVENT_CHILDREN_CHANGED);
+        HandleAXEvent(obj, ax::mojom::Event::kChildrenChanged);
         break;
       }
     }
@@ -421,7 +424,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // Loop over each event and generate an updated event message.
   for (size_t i = 0; i < src_events.size(); ++i) {
     AccessibilityHostMsg_EventParams& event = src_events[i];
-    if (event.event_type == ui::AX_EVENT_LAYOUT_COMPLETE)
+    if (event.event_type == ax::mojom::Event::kLayoutComplete)
       had_layout_complete_messages = true;
 
     auto obj = WebAXObject::FromWebDocumentByID(document, event.id);
@@ -556,68 +559,68 @@ void RenderAccessibilityImpl::OnPerformAction(
   auto focus = WebAXObject::FromWebDocumentByID(document, data.focus_node_id);
 
   switch (data.action) {
-    case ui::AX_ACTION_BLUR:
+    case ax::mojom::Action::kBlur:
       root.Focus();
       break;
-    case ui::AX_ACTION_DECREMENT:
+    case ax::mojom::Action::kDecrement:
       target.Decrement();
       break;
-    case ui::AX_ACTION_DO_DEFAULT:
+    case ax::mojom::Action::kDoDefault:
       target.Click();
       break;
-    case ui::AX_ACTION_GET_IMAGE_DATA:
+    case ax::mojom::Action::kGetImageData:
       OnGetImageData(target, data.target_rect.size());
       break;
-    case ui::AX_ACTION_HIT_TEST:
-      DCHECK(data.hit_test_event_to_fire != ui::AX_EVENT_NONE);
+    case ax::mojom::Action::kHitTest:
+      DCHECK(data.hit_test_event_to_fire != ax::mojom::Event::kNone);
       OnHitTest(data.target_point, data.hit_test_event_to_fire,
                 data.request_id);
       break;
-    case ui::AX_ACTION_INCREMENT:
+    case ax::mojom::Action::kIncrement:
       target.Increment();
       break;
-    case ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE:
+    case ax::mojom::Action::kScrollToMakeVisible:
       target.ScrollToMakeVisibleWithSubFocus(
           WebRect(data.target_rect.x(), data.target_rect.y(),
                   data.target_rect.width(), data.target_rect.height()));
       break;
-    case ui::AX_ACTION_SCROLL_TO_POINT:
+    case ax::mojom::Action::kScrollToPoint:
       target.ScrollToGlobalPoint(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
-    case ui::AX_ACTION_LOAD_INLINE_TEXT_BOXES:
+    case ax::mojom::Action::kLoadInlineTextBoxes:
       OnLoadInlineTextBoxes(target);
       break;
-    case ui::AX_ACTION_FOCUS:
+    case ax::mojom::Action::kFocus:
       target.Focus();
       break;
-    case ui::AX_ACTION_SET_SCROLL_OFFSET:
+    case ax::mojom::Action::kSetScrollOffset:
       target.SetScrollOffset(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
-    case ui::AX_ACTION_SET_SELECTION:
+    case ax::mojom::Action::kSetSelection:
       anchor.SetSelection(anchor, data.anchor_offset, focus, data.focus_offset);
-      HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
+      HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
       break;
-    case ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT:
+    case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
       target.SetSequentialFocusNavigationStartingPoint();
       break;
-    case ui::AX_ACTION_SET_VALUE:
+    case ax::mojom::Action::kSetValue:
       target.SetValue(blink::WebString::FromUTF16(data.value));
-      HandleAXEvent(target, ui::AX_EVENT_VALUE_CHANGED);
+      HandleAXEvent(target, ax::mojom::Event::kValueChanged);
       break;
-    case ui::AX_ACTION_SHOW_CONTEXT_MENU:
+    case ax::mojom::Action::kShowContextMenu:
       target.ShowContextMenu();
       break;
-    case ui::AX_ACTION_CUSTOM_ACTION:
-    case ui::AX_ACTION_REPLACE_SELECTED_TEXT:
-    case ui::AX_ACTION_SCROLL_BACKWARD:
-    case ui::AX_ACTION_SCROLL_FORWARD:
-    case ui::AX_ACTION_SCROLL_UP:
-    case ui::AX_ACTION_SCROLL_DOWN:
-    case ui::AX_ACTION_SCROLL_LEFT:
-    case ui::AX_ACTION_SCROLL_RIGHT:
-    case ui::AX_ACTION_NONE:
+    case ax::mojom::Action::kCustomAction:
+    case ax::mojom::Action::kReplaceSelectedText:
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+    case ax::mojom::Action::kNone:
       NOTREACHED();
       break;
   }
@@ -638,7 +641,7 @@ void RenderAccessibilityImpl::OnFatalError() {
 }
 
 void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
-                                        ui::AXEvent event_to_fire,
+                                        ax::mojom::Event event_to_fire,
                                         int action_request_id) {
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
@@ -690,7 +693,7 @@ void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
   serializer_.DeleteClientSubtree(obj);
 
   // Explicitly send a tree change update event now.
-  HandleAXEvent(obj, ui::AX_EVENT_TREE_CHANGED);
+  HandleAXEvent(obj, ax::mojom::Event::kTreeChanged);
 }
 
 void RenderAccessibilityImpl::OnGetImageData(
@@ -707,7 +710,7 @@ void RenderAccessibilityImpl::OnGetImageData(
     return;
 
   serializer_.DeleteClientSubtree(obj);
-  HandleAXEvent(obj, ui::AX_EVENT_IMAGE_FRAME_UPDATED);
+  HandleAXEvent(obj, ax::mojom::Event::kImageFrameUpdated);
 }
 
 void RenderAccessibilityImpl::OnReset(int reset_token) {
@@ -720,8 +723,9 @@ void RenderAccessibilityImpl::OnReset(int reset_token) {
     // Tree-only mode gets used by the automation extension API which requires a
     // load complete event to invoke listener callbacks.
     auto webax_object = WebAXObject::FromWebDocument(document);
-    ui::AXEvent evt = webax_object.IsLoaded() ? ui::AX_EVENT_LOAD_COMPLETE
-                                              : ui::AX_EVENT_LAYOUT_COMPLETE;
+    ax::mojom::Event evt = webax_object.IsLoaded()
+                               ? ax::mojom::Event::kLoadComplete
+                               : ax::mojom::Event::kLayoutComplete;
     HandleAXEvent(webax_object, evt);
   }
 }
@@ -733,7 +737,7 @@ void RenderAccessibilityImpl::OnDestruct() {
 void RenderAccessibilityImpl::AddPluginTreeToUpdate(
     AXContentTreeUpdate* update) {
   for (size_t i = 0; i < update->nodes.size(); ++i) {
-    if (update->nodes[i].role == ui::AX_ROLE_EMBEDDED_OBJECT) {
+    if (update->nodes[i].role == ax::mojom::Role::kEmbeddedObject) {
       const ui::AXNode* root = plugin_tree_source_->GetRoot();
       update->nodes[i].child_ids.push_back(root->id());
 

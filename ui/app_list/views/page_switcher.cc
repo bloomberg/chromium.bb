@@ -74,7 +74,7 @@ class PageSwitcherButton : public views::Button {
     selected_ = selected;
     SchedulePaint();
     if (selected)
-      NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+      NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 
   // Overridden from views::View:

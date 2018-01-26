@@ -70,7 +70,7 @@ void ResizeArea::OnMouseCaptureLost() {
 }
 
 void ResizeArea::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_SPLITTER;
+  node_data->role = ax::mojom::Role::kSplitter;
 }
 
 void ResizeArea::ReportResizeAmount(int resize_amount, bool last_update) {

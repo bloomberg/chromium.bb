@@ -92,7 +92,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   // a result of this function.
   std::unique_ptr<AccessibilityNotificationWaiter> waiter;
   waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_NONE));
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
 
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("go()"));
@@ -106,7 +106,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   // sentinel by calling AccessibilityHitTest and waiting for a HOVER
   // event in response.
   waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_HOVER));
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover));
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
   manager->HitTest(gfx::Point(0, 0));

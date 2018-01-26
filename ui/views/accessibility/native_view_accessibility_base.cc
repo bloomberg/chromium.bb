@@ -77,7 +77,7 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
 }
 
 void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
-    ui::AXEvent event_type) {
+    ax::mojom::Event event_type) {
   ax_node_->NotifyAccessibilityEvent(event_type);
 }
 
@@ -95,7 +95,7 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   // This will require ensuring that Chrome OS invalidates the whole
   // subtree when a View changes its visibility state.
   if (!view()->IsDrawn())
-    data_.AddState(ui::AX_STATE_INVISIBLE);
+    data_.AddState(ax::mojom::State::kInvisible);
 
   // Make sure this element is excluded from the a11y tree if there's a
   // focusable parent. All keyboard focusable elements should be leaf nodes.
@@ -106,7 +106,7 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   // accessibility tree. We need to replace this with a cross-platform
   // solution that works for ChromeVox, too, and move it to ViewAccessibility.
   if (IsViewUnfocusableChildOfFocusableAncestor(view()))
-    data_.role = ui::AX_ROLE_IGNORED;
+    data_.role = ax::mojom::Role::kIgnored;
 
   return data_;
 }
@@ -239,13 +239,13 @@ bool NativeViewAccessibilityBase::IsOffscreen() const {
 }
 
 std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
-    ui::AXIntAttribute attr,
+    ax::mojom::IntAttribute attr,
     int32_t dst_id) {
   return std::set<int32_t>();
 }
 
 std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
-    ui::AXIntListAttribute attr,
+    ax::mojom::IntListAttribute attr,
     int32_t dst_id) {
   return std::set<int32_t>();
 }

@@ -29,7 +29,8 @@ class InterstitialAccessibilityBrowserTest : public InProcessBrowserTest {
   std::string GetNameOfFocusedNode(content::WebContents* web_contents) {
     ui::AXNodeData focused_node_data =
         content::GetFocusedAccessibilityNodeInfo(web_contents);
-    return focused_node_data.GetStringAttribute(ui::AX_ATTR_NAME);
+    return focused_node_data.GetStringAttribute(
+        ax::mojom::StringAttribute::kName);
   }
 
  protected:

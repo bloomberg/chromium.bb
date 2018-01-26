@@ -12,7 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/base/ime/text_input_type.h"
@@ -36,8 +36,8 @@ NSString* const kTestTitle = @"Test textfield";
 
 class FlexibleRoleTestView : public View {
  public:
-  explicit FlexibleRoleTestView(ui::AXRole role) : role_(role) {}
-  void set_role(ui::AXRole role) { role_ = role; }
+  explicit FlexibleRoleTestView(ax::mojom::Role role) : role_(role) {}
+  void set_role(ax::mojom::Role role) { role_ = role; }
 
   // Add a child view and resize to fit the child.
   void FitBoundsToNewChild(View* view) {
@@ -60,7 +60,7 @@ class FlexibleRoleTestView : public View {
   }
 
  private:
-  ui::AXRole role_;
+  ax::mojom::Role role_;
   bool mouse_was_pressed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FlexibleRoleTestView);
@@ -133,7 +133,7 @@ class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
   }
 
   // Shorthand helpers to get a11y properties from A11yElementAtMidpoint().
-  NSString* AXRole() {
+  NSString* AXRoleString() {
     return AttributeValueAtMidpoint(NSAccessibilityRoleAttribute);
   }
   id AXParent() {
@@ -292,7 +292,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, FocusableElementsAreLeafNodes) {
   TestLabelButton* button = new TestLabelButton();
   button->SetSize(widget()->GetContentsView()->size());
   widget()->GetContentsView()->AddChildView(button);
-  EXPECT_NSEQ(NSAccessibilityButtonRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityButtonRole, AXRoleString());
   EXPECT_EQ(
       0u,
       [[button->GetNativeViewAccessible()
@@ -339,7 +339,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ChildrenAttribute) {
 
   // Check ignored children don't show up in the accessibility tree.
   widget()->GetContentsView()->AddChildView(
-      new FlexibleRoleTestView(ui::AX_ROLE_IGNORED));
+      new FlexibleRoleTestView(ax::mojom::Role::kIgnored));
   EXPECT_EQ(kNumChildren,
             [AttributeValueAtMidpoint(NSAccessibilityChildrenAttribute) count]);
 }
@@ -356,7 +356,8 @@ TEST_F(NativeWidgetMacAccessibilityTest, ParentAttribute) {
 
   // Views with non-Widget parents will have the role of the parent view.
   widget()->GetContentsView()->RemoveChildView(child);
-  FlexibleRoleTestView* parent = new FlexibleRoleTestView(ui::AX_ROLE_GROUP);
+  FlexibleRoleTestView* parent =
+      new FlexibleRoleTestView(ax::mojom::Role::kGroup);
   parent->FitBoundsToNewChild(child);
   widget()->GetContentsView()->AddChildView(parent);
   EXPECT_NSEQ(
@@ -364,7 +365,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ParentAttribute) {
       [AXParent() accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
 
   // Test an ignored role parent is skipped in favor of the grandparent.
-  parent->set_role(ui::AX_ROLE_IGNORED);
+  parent->set_role(ax::mojom::Role::kIgnored);
   EXPECT_NSEQ(
       NSAccessibilityWindowRole,
       [AXParent() accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
@@ -402,11 +403,12 @@ TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
 // Test view properties that should report the native NSWindow, and test
 // specific properties on that NSWindow.
 TEST_F(NativeWidgetMacAccessibilityTest, NativeWindowProperties) {
-  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_GROUP);
+  FlexibleRoleTestView* view =
+      new FlexibleRoleTestView(ax::mojom::Role::kGroup);
   view->SetSize(GetWidgetBounds().size());
   widget()->GetContentsView()->AddChildView(view);
   // Make sure it's |view| in the hit test by checking its accessibility role.
-  EXPECT_EQ(NSAccessibilityGroupRole, AXRole());
+  EXPECT_EQ(NSAccessibilityGroupRole, AXRoleString());
 
   NSWindow* window = widget()->GetNativeWindow();
   EXPECT_NSEQ(window, AttributeValueAtMidpoint(NSAccessibilityWindowAttribute));
@@ -439,7 +441,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldGenericAttributes) {
                      boolValue]);
 
   // NSAccessibilityTitleAttribute.
-  EXPECT_NSEQ(NSAccessibilityTextFieldRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityTextFieldRole, AXRoleString());
   EXPECT_NSEQ(kTestTitle, AXTitle());
   EXPECT_NSEQ(kTestStringValue, AXValue());
 
@@ -538,14 +540,15 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldEditableAttributes) {
 // Test writing accessibility attributes via an accessibility client for normal
 // Views.
 TEST_F(NativeWidgetMacAccessibilityTest, ViewWritableAttributes) {
-  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_GROUP);
+  FlexibleRoleTestView* view =
+      new FlexibleRoleTestView(ax::mojom::Role::kGroup);
   view->SetSize(GetWidgetBounds().size());
   widget()->GetContentsView()->AddChildView(view);
 
   // Make sure the accessibility object tested is the correct one.
   id ax_node = A11yElementAtMidpoint();
   EXPECT_TRUE(ax_node);
-  EXPECT_NSEQ(NSAccessibilityGroupRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityGroupRole, AXRoleString());
 
   // Make sure |view| is focusable, then focus/unfocus it.
   view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -721,12 +724,13 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextParameterizedAttributes) {
 
 // Test performing a 'click' on Views with clickable roles work.
 TEST_F(NativeWidgetMacAccessibilityTest, PressAction) {
-  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_BUTTON);
+  FlexibleRoleTestView* view =
+      new FlexibleRoleTestView(ax::mojom::Role::kButton);
   widget()->GetContentsView()->AddChildView(view);
   view->SetSize(GetWidgetBounds().size());
 
   id ax_node = A11yElementAtMidpoint();
-  EXPECT_NSEQ(NSAccessibilityButtonRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityButtonRole, AXRoleString());
 
   EXPECT_TRUE([[ax_node accessibilityActionNames]
       containsObject:NSAccessibilityPressAction]);
@@ -789,7 +793,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ProtectedTextfields) {
   // Explicit checks done without comparing to NSTextField.
   EXPECT_TRUE(
       [ax_node accessibilityIsAttributeSettable:NSAccessibilityValueAttribute]);
-  EXPECT_NSEQ(NSAccessibilityTextFieldRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityTextFieldRole, AXRoleString());
 
   NSString* kShownValue = @"•"
                           @"••••••••••••••••";
@@ -831,7 +835,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, Label) {
   id ax_node = A11yElementAtMidpoint();
   EXPECT_TRUE(ax_node);
 
-  EXPECT_NSEQ(NSAccessibilityStaticTextRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityStaticTextRole, AXRoleString());
   EXPECT_NSEQ(kTestStringValue, AXValue());
 
   // Title and description for StaticTextRole should always be empty.
@@ -891,7 +895,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, Combobox) {
   id ax_node = A11yElementAtMidpoint();
   EXPECT_TRUE(ax_node);
 
-  EXPECT_NSEQ(NSAccessibilityPopUpButtonRole, AXRole());
+  EXPECT_NSEQ(NSAccessibilityPopUpButtonRole, AXRoleString());
 
   // The initial value should be the first item in the menu.
   EXPECT_NSEQ(kTestStringValue, AXValue());

@@ -127,7 +127,7 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void ImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_IMAGE;
+  node_data->role = ax::mojom::Role::kImage;
   node_data->SetName(tooltip_text_);
 }
 

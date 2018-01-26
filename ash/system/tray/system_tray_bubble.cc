@@ -204,7 +204,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   CreateItemViews(login_status);
 
   if (bubble_view_->CanActivate()) {
-    bubble_view_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 }
 
