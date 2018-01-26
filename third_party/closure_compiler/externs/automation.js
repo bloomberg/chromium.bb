@@ -908,6 +908,13 @@ chrome.automation.AutomationNode.prototype.autoComplete;
 chrome.automation.AutomationNode.prototype.className;
 
 /**
+ * Marks this subtree as modal.
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-modal
+ */
+chrome.automation.AutomationNode.prototype.modal;
+
+/**
  * A map containing all HTML attributes and their values
  * @type {Object<string>}
  * @see https://developer.chrome.com/extensions/automation#type-htmlAttributes

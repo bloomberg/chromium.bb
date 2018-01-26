@@ -852,6 +852,7 @@ var boolAttributes = [
     'containerLiveAtomic',
     'containerLiveBusy',
     'liveAtomic',
+    'modal',
     'scrollable'
 ];
 
