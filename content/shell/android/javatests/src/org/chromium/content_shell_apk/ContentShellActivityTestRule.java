@@ -6,44 +6,58 @@ package org.chromium.content_shell_apk;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.app.Instrumentation;
+import android.annotation.TargetApi;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
+import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import org.junit.Assert;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellViewAndroidDelegate.OnCursorUpdateHelper;
-import org.chromium.content_shell_apk.ContentShellTestCommon.TestCommonCallback;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ActivityTestRule for ContentShellActivity.
  *
  * Test can use this ActivityTestRule to launch or get ContentShellActivity.
  */
-public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellActivity>
-        implements TestCommonCallback<ContentShellActivity> {
-    private final ContentShellTestCommon mDelegate;
-    private final boolean mLaunchActivity;
+public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellActivity> {
+    /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
+    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
 
     protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS = scaleTimeout(15);
+
+    private final boolean mLaunchActivity;
 
     public ContentShellActivityTestRule() {
         this(false, false);
@@ -52,12 +66,20 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     public ContentShellActivityTestRule(boolean initialTouchMode, boolean launchActivity) {
         super(ContentShellActivity.class, initialTouchMode, launchActivity);
         mLaunchActivity = launchActivity;
-        mDelegate = new ContentShellTestCommon(this);
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
+    @SuppressWarnings("deprecation")
     protected void beforeActivityLaunched() {
-        mDelegate.assertScreenIsOn();
+        PowerManager pm = (PowerManager) InstrumentationRegistry.getInstrumentation()
+                                  .getContext()
+                                  .getSystemService(Context.POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
+        } else {
+            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
+        }
     }
 
     /**
@@ -65,8 +87,17 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * The URL can be null, in which case will default to ContentShellActivity.DEFAULT_SHELL_URL.
      */
     public ContentShellActivity launchContentShellWithUrl(String url) {
-        Assert.assertFalse(mLaunchActivity);
-        return mDelegate.launchContentShellWithUrl(url);
+        Assert.assertFalse(
+                "Activity is already launched, setup the test rule to NOT auto-launch activity",
+                mLaunchActivity);
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (url != null) intent.setData(Uri.parse(url));
+        intent.setComponent(
+                new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                        ContentShellActivity.class));
+        return launchActivity(intent);
     }
 
     /**
@@ -75,36 +106,66 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * @param url Test url to load.
      */
     public ContentShellActivity launchContentShellWithUrlSync(String url) {
-        Assert.assertFalse(mLaunchActivity);
-        return mDelegate.launchContentShellWithUrlSync(url);
+        String isolatedTestFileUrl = UrlUtils.getIsolatedTestFileUrl(url);
+        ContentShellActivity activity = launchContentShellWithUrl(isolatedTestFileUrl);
+        Assert.assertNotNull(getActivity());
+        waitForActiveShellToBeDoneLoading();
+        Assert.assertEquals(
+                isolatedTestFileUrl, getContentViewCore().getWebContents().getLastCommittedUrl());
+        return activity;
     }
 
     /**
      * Returns the OnCursorUpdateHelper.
      */
     public OnCursorUpdateHelper getOnCursorUpdateHelper() throws ExecutionException {
-        return mDelegate.getOnCursorUpdateHelper();
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<OnCursorUpdateHelper>() {
+            @Override
+            public OnCursorUpdateHelper call() {
+                return getActivity()
+                        .getActiveShell()
+                        .getViewAndroidDelegate()
+                        .getOnCursorUpdateHelper();
+            }
+        });
     }
 
     /**
      * Returns the current ContentViewCore or null if there is no ContentView.
      */
     public ContentViewCoreImpl getContentViewCore() {
-        return (ContentViewCoreImpl) mDelegate.getContentViewCore();
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return (ContentViewCoreImpl) getActivity().getActiveShell().getContentViewCore();
+            });
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     /**
      * Returns the WebContents of this Shell.
      */
     public WebContents getWebContents() {
-        return mDelegate.getWebContents();
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return getActivity().getActiveShell().getWebContents();
+            });
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     /**
      * Returns the RenderCoordinates of the WebContents.
      */
     public RenderCoordinates getRenderCoordinates() {
-        return mDelegate.getRenderCoordinates();
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> { return ((WebContentsImpl) getWebContents()).getRenderCoordinates(); });
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     public JavascriptInjector getJavascriptInjector() {
@@ -118,7 +179,31 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * to wait is to use a TestCallbackHelperContainer after the initial load is completed.
      */
     public void waitForActiveShellToBeDoneLoading() {
-        mDelegate.waitForActiveShellToBeDoneLoading();
+        // Wait for the Content Shell to be initialized.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Shell shell = getActivity().getActiveShell();
+                // There are two cases here that need to be accounted for.
+                // The first is that we've just created a Shell and it isn't
+                // loading because it has no URL set yet.  The second is that
+                // we've set a URL and it actually is loading.
+                if (shell == null) {
+                    updateFailureReason("Shell is null.");
+                    return false;
+                }
+                if (shell.isLoading()) {
+                    updateFailureReason("Shell is still loading.");
+                    return false;
+                }
+                if (TextUtils.isEmpty(
+                            shell.getContentViewCore().getWebContents().getLastCommittedUrl())) {
+                    updateFailureReason("Shell's URL is empty or null.");
+                    return false;
+                }
+                return true;
+            }
+        }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -128,7 +213,18 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * @throws ExecutionException
      */
     public Shell loadNewShell(String url) throws ExecutionException {
-        return mDelegate.loadNewShell(url);
+        Shell shell = ThreadUtils.runOnUiThreadBlocking(new Callable<Shell>() {
+            @Override
+            public Shell call() {
+                getActivity().getShellManager().launchShell(url);
+                return getActivity().getActiveShell();
+            }
+        });
+        Assert.assertNotNull("Unable to create shell.", shell);
+        Assert.assertEquals("Active shell unexpected.", shell,
+                getActivity().getActiveShell());
+        waitForActiveShellToBeDoneLoading();
+        return shell;
     }
 
     /**
@@ -141,7 +237,13 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     public void loadUrl(NavigationController navigationController,
             TestCallbackHelperContainer callbackHelperContainer, LoadUrlParams params)
             throws Throwable {
-        mDelegate.loadUrl(navigationController, callbackHelperContainer, params);
+        handleBlockingCallbackAction(
+                callbackHelperContainer.getOnPageFinishedHelper(), new Runnable() {
+                    @Override
+                    public void run() {
+                        navigationController.loadUrl(params);
+                    }
+                });
     }
 
     /**
@@ -149,11 +251,14 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * is incremented.
      *
      * @param callbackHelper The callback helper that will be blocked on.
-     * @param action The action to be performed on the UI thread.
+     * @param uiThreadAction The action to be performed on the UI thread.
      */
-    public void handleBlockingCallbackAction(CallbackHelper callbackHelper, Runnable action)
+    public void handleBlockingCallbackAction(CallbackHelper callbackHelper, Runnable uiThreadAction)
             throws Throwable {
-        mDelegate.handleBlockingCallbackAction(callbackHelper, action);
+        int currentCallCount = callbackHelper.getCallCount();
+        runOnUiThread(uiThreadAction);
+        callbackHelper.waitForCallback(
+                currentCallCount, 1, WAIT_PAGE_LOADING_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     // TODO(aelias): This method needs to be removed once http://crbug.com/179511 is fixed.
@@ -163,7 +268,14 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * from the compositor and asserts that this happens.
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {
-        mDelegate.assertWaitForPageScaleFactorMatch(expectedScale);
+        final RenderCoordinates coord = getRenderCoordinates();
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(expectedScale, new Callable<Float>() {
+                    @Override
+                    public Float call() {
+                        return coord.getPageScaleFactor();
+                    }
+                }));
     }
 
     /**
@@ -171,7 +283,18 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * {@link ContentView}.
      */
     public void replaceContainerView() throws Throwable {
-        mDelegate.replaceContainerView();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ContentView cv = ContentView.createContentView(
+                        getActivity(), getContentViewCore());
+                ((ViewGroup) getContentViewCore().getContainerView().getParent()).addView(cv);
+                getContentViewCore().setContainerView(cv);
+                getContentViewCore().setContainerViewInternals(cv);
+                cv.requestFocus();
+            }
+        });
+
     }
 
     /**
@@ -183,44 +306,4 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface RerunWithUpdatedContainerView {}
-
-    @Override
-    public ContentShellActivity getActivityForTestCommon() {
-        return getActivity();
-    }
-
-    @Override
-    public Instrumentation getInstrumentationForTestCommon() {
-        return InstrumentationRegistry.getInstrumentation();
-    }
-
-    @Override
-    public ContentShellActivity launchActivityWithIntentForTestCommon(Intent t) {
-        return launchActivity(t);
-    }
-
-    @Override
-    public void runOnUiThreadForTestCommon(Runnable runnable) throws Throwable {
-        runOnUiThread(runnable);
-    }
-
-    @Override
-    public ContentViewCore getContentViewCoreForTestCommon() {
-        return getContentViewCore();
-    }
-
-    @Override
-    public WebContents getWebContentsForTestCommon() {
-        return getWebContents();
-    }
-
-    @Override
-    public void waitForActiveShellToBeDoneLoadingForTestCommon() {
-        waitForActiveShellToBeDoneLoading();
-    }
-
-    @Override
-    public ContentShellActivity launchContentShellWithUrlForTestCommon(String url) {
-        return launchContentShellWithUrl(url);
-    }
 }

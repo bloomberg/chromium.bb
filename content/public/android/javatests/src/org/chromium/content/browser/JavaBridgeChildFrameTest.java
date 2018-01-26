@@ -17,7 +17,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
+import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;

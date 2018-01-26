@@ -227,7 +227,7 @@ public class DialogOverlayImplTestRule extends ContentShellActivityTestRule {
                     }
                 };
 
-                getActivityForTestCommon().getActiveShell().setOverayModeChangedCallbackForTesting(
+                getActivity().getActiveShell().setOverayModeChangedCallbackForTesting(
                         overlayModeChanged);
             }
         }, desc);

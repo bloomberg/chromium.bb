@@ -29,7 +29,6 @@ public class JavaBridgeBareboneTest {
             new JavaBridgeActivityTestRule().shouldSetUp(false);
 
     private TestCallbackHelperContainer mTestCallbackHelperContainer;
-    private final JavaBridgeTestCommon mTestCommon = new JavaBridgeTestCommon(mActivityTestRule);
 
     @Before
     public void setUp() throws Exception {

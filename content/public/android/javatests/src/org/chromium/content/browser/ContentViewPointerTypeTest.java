@@ -69,7 +69,7 @@ public class ContentViewPointerTypeTest {
         final Rect rect = DOMUtils.getNodeBounds(mActivityTestRule.getWebContents(), nodeId);
         OnCursorUpdateHelper onCursorUpdateHelper = mActivityTestRule.getOnCursorUpdateHelper();
         int onCursorUpdateCount = onCursorUpdateHelper.getCallCount();
-        mActivityTestRule.runOnUiThreadForTestCommon(new Runnable() {
+        mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 RenderCoordinates coord = mActivityTestRule.getRenderCoordinates();
