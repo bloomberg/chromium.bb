@@ -138,6 +138,18 @@ class UkmBrowserTest : public SyncTest {
     if (service)
       service->UpdateSourceURL(source_id, GURL("http://example.com"));
   }
+  void BuildAndStoreUkmLog() {
+    auto* service = ukm_service();
+    DCHECK(service);
+    DCHECK(service->initialize_complete_);
+    service->Flush();
+    DCHECK(service->reporting_service_.ukm_log_store()->has_unsent_logs());
+  }
+  bool HasUnsentUkmLogs() {
+    auto* service = ukm_service();
+    DCHECK(service);
+    return service->reporting_service_.ukm_log_store()->has_unsent_logs();
+  }
 
  protected:
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
@@ -327,9 +339,13 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   uint64_t original_client_id = client_id();
   EXPECT_NE(0U, original_client_id);
 
-  metrics_consent.Update(false);
+  // Make sure there is a persistent log.
+  BuildAndStoreUkmLog();
+  EXPECT_TRUE(HasUnsentUkmLogs());
 
+  metrics_consent.Update(false);
   EXPECT_FALSE(ukm_enabled());
+  EXPECT_FALSE(HasUnsentUkmLogs());
 
   metrics_consent.Update(true);
 
