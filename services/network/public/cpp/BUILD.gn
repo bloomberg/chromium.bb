@@ -72,6 +72,23 @@ static_library("typemap_dependencies") {
   ]
 }
 
+component("network_features") {
+  public = [
+    "features.h",
+  ]
+
+  sources = [
+    "features.cc",
+    "features_export.h",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+
+  defines = [ "NETWORK_FEATURES_IMPLEMENTATION" ]
+}
+
 mojom("test_interfaces") {
   sources = [
     "network_traits_test_service.mojom",

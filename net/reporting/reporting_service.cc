@@ -62,6 +62,10 @@ class ReportingServiceImpl : public ReportingService {
     return context_->uploader()->RequestIsUpload(request);
   }
 
+  const ReportingPolicy& GetPolicy() const override {
+    return context_->policy();
+  }
+
  private:
   std::unique_ptr<ReportingContext> context_;
 
