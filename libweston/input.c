@@ -1199,8 +1199,18 @@ weston_touch_create(void)
 WL_EXPORT void
 weston_touch_destroy(struct weston_touch *touch)
 {
-	/* XXX: What about touch->resource_list? */
+	struct wl_resource *resource;
 
+	wl_resource_for_each(resource, &touch->resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_resource_for_each(resource, &touch->focus_resource_list) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_list_remove(&touch->resource_list);
+	wl_list_remove(&touch->focus_resource_list);
 	wl_list_remove(&touch->focus_view_listener.link);
 	wl_list_remove(&touch->focus_resource_listener.link);
 	free(touch);
@@ -2574,7 +2584,7 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 			       wl_resource_get_link(cr));
 	}
 	wl_resource_set_implementation(cr, &touch_interface,
-				       seat, unbind_resource);
+				       touch, unbind_resource);
 }
 
 static void
