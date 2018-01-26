@@ -386,6 +386,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int dirinit = 0;
       nhb = AOMMIN(MI_SIZE_64X64, cm->mi_cols - MI_SIZE_64X64 * fbc);
       nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * fbr);
+      int hb_step = 1;
+      int vb_step = 1;
 #if CONFIG_EXT_PARTITION
       BLOCK_SIZE bs = BLOCK_64X64;
       MB_MODE_INFO *const mbmi =
@@ -403,10 +405,14 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           mbmi->sb_type == BLOCK_128X32 || mbmi->sb_type == BLOCK_64X128 ||
           mbmi->sb_type == BLOCK_32X128)
         bs = mbmi->sb_type;
-      if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
+      if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32) {
         nhb = AOMMIN(MI_SIZE_128X128, cm->mi_cols - MI_SIZE_64X64 * fbc);
-      if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128)
+        hb_step = 2;
+      }
+      if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128) {
         nvb = AOMMIN(MI_SIZE_128X128, cm->mi_rows - MI_SIZE_64X64 * fbr);
+        vb_step = 2;
+      }
 #endif
       // No filtering if the entire filter block is skipped
       if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
@@ -432,9 +438,9 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           int yoff = CDEF_VBORDER * (fbr != 0);
           int xoff = CDEF_HBORDER * (fbc != 0);
           int ysize = (nvb << mi_high_l2[pli]) +
-                      CDEF_VBORDER * (fbr != nvfb - 1) + yoff;
+                      CDEF_VBORDER * (fbr + vb_step < nvfb) + yoff;
           int xsize = (nhb << mi_wide_l2[pli]) +
-                      CDEF_HBORDER * (fbc != nhfb - 1) + xoff;
+                      CDEF_HBORDER * (fbc + hb_step < nhfb) + xoff;
           sec_strength = gi % CDEF_SEC_STRENGTHS;
           copy_sb16_16(&in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
                        src[pli],
