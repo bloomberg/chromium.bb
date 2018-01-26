@@ -81,9 +81,16 @@ void CloseFds(const std::vector<int>& fds) {
   }
 }
 
-void RunTwoClosures(const base::Closure* first, const base::Closure* second) {
-  first->Run();
-  second->Run();
+base::OnceClosure ClosureFromTwoClosures(base::OnceClosure one,
+                                         base::OnceClosure two) {
+  return base::BindOnce(
+      [](base::OnceClosure one, base::OnceClosure two) {
+        if (!one.is_null())
+          std::move(one).Run();
+        if (!two.is_null())
+          std::move(two).Run();
+      },
+      std::move(one), std::move(two));
 }
 
 }  // namespace
@@ -198,12 +205,11 @@ static void ZygotePreSandboxInit() {
   }
 }
 
-static bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
+static bool CreateInitProcessReaper(
+    base::OnceClosure post_fork_parent_callback) {
   // The current process becomes init(1), this function returns from a
   // newly created process.
-  const bool init_created =
-      sandbox::CreateInitProcessReaper(post_fork_parent_callback);
-  if (!init_created) {
+  if (!sandbox::CreateInitProcessReaper(std::move(post_fork_parent_callback))) {
     LOG(ERROR) << "Error creating an init process to reap zombies";
     return false;
   }
@@ -213,7 +219,7 @@ static bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
 // Enter the setuid sandbox. This requires the current process to have been
 // created through the setuid sandbox.
 static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
-                             base::Closure* post_fork_parent_callback) {
+                             base::OnceClosure post_fork_parent_callback) {
   DCHECK(setuid_sandbox);
   DCHECK(setuid_sandbox->IsSuidSandboxChild());
 
@@ -241,7 +247,7 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
   if (getpid() == 1) {
     // The setuid sandbox has created a new PID namespace and we need
     // to assume the role of init.
-    CHECK(CreateInitProcessReaper(post_fork_parent_callback));
+    CHECK(CreateInitProcessReaper(std::move(post_fork_parent_callback)));
   }
 
   CHECK(service_manager::SandboxDebugHandling::SetDumpableStatusAndHandlers());
@@ -253,20 +259,18 @@ static void DropAllCapabilities(int proc_fd) {
 }
 
 static void EnterNamespaceSandbox(service_manager::SandboxLinux* linux_sandbox,
-                                  base::Closure* post_fork_parent_callback) {
+                                  base::OnceClosure post_fork_parent_callback) {
   linux_sandbox->EngageNamespaceSandbox(true /* from_zygote */);
   if (getpid() == 1) {
-    base::Closure drop_all_caps_callback =
-        base::Bind(&DropAllCapabilities, linux_sandbox->proc_fd());
-    base::Closure callback = base::Bind(
-        &RunTwoClosures, &drop_all_caps_callback, post_fork_parent_callback);
-    CHECK(CreateInitProcessReaper(&callback));
+    CHECK(CreateInitProcessReaper(ClosureFromTwoClosures(
+        base::BindOnce(DropAllCapabilities, linux_sandbox->proc_fd()),
+        std::move(post_fork_parent_callback))));
   }
 }
 
 static void EnterLayerOneSandbox(service_manager::SandboxLinux* linux_sandbox,
                                  const bool using_layer1_sandbox,
-                                 base::Closure* post_fork_parent_callback) {
+                                 base::OnceClosure post_fork_parent_callback) {
   DCHECK(linux_sandbox);
 
   ZygotePreSandboxInit();
@@ -281,10 +285,11 @@ static void EnterLayerOneSandbox(service_manager::SandboxLinux* linux_sandbox,
   sandbox::SetuidSandboxClient* setuid_sandbox =
       linux_sandbox->setuid_sandbox_client();
   if (setuid_sandbox->IsSuidSandboxChild()) {
-    CHECK(EnterSuidSandbox(setuid_sandbox, post_fork_parent_callback))
+    CHECK(
+        EnterSuidSandbox(setuid_sandbox, std::move(post_fork_parent_callback)))
         << "Failed to enter setuid sandbox";
   } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
-    EnterNamespaceSandbox(linux_sandbox, post_fork_parent_callback);
+    EnterNamespaceSandbox(linux_sandbox, std::move(post_fork_parent_callback));
   } else {
     CHECK(!using_layer1_sandbox);
   }
@@ -295,7 +300,6 @@ bool ZygoteMain(
     std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates) {
   sandbox::SetAmZygoteOrRenderer(true, GetSandboxFD());
 
-  std::vector<int> fds_to_close_post_fork;
   auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
@@ -335,21 +339,12 @@ bool ZygoteMain(
     fork_delegate->Init(GetSandboxFD(), using_layer1_sandbox);
   }
 
-  const std::vector<int> sandbox_fds_to_close_post_fork =
-      linux_sandbox->GetFileDescriptorsToClose();
-
-  fds_to_close_post_fork.insert(fds_to_close_post_fork.end(),
-                                sandbox_fds_to_close_post_fork.begin(),
-                                sandbox_fds_to_close_post_fork.end());
-  base::Closure post_fork_parent_callback =
-      base::Bind(&CloseFds, fds_to_close_post_fork);
-
   // Turn on the first layer of the sandbox if the configuration warrants it.
-  EnterLayerOneSandbox(linux_sandbox, using_layer1_sandbox,
-                       &post_fork_parent_callback);
+  EnterLayerOneSandbox(
+      linux_sandbox, using_layer1_sandbox,
+      base::BindOnce(CloseFds, linux_sandbox->GetFileDescriptorsToClose()));
 
   const int sandbox_flags = linux_sandbox->GetStatus();
-
   const bool setuid_sandbox_engaged =
       !!(sandbox_flags & service_manager::SandboxLinux::kSUID);
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);

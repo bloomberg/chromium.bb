@@ -12,13 +12,11 @@ namespace sandbox {
 
 // The current process will fork(). The parent will become a process reaper
 // like init(1). The child will continue normally (after this function
-// returns).
-// If not NULL, |post_fork_parent_callback| will run in the parent almost
-// immediately after fork().
-// Since this function calls fork(), it's very important that the caller has
-// only one thread running.
+// returns). If not empty, |post_fork_parent_callback| will run in the parent
+// almost immediately after fork(). Since this function calls fork(), it's very
+// important that the caller has only one thread running.
 SANDBOX_EXPORT bool CreateInitProcessReaper(
-    base::Closure* post_fork_parent_callback);
+    base::OnceClosure post_fork_parent_callback);
 
 }  // namespace sandbox.
 
