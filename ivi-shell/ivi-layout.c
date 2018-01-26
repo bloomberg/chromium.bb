@@ -1538,6 +1538,11 @@ ivi_layout_screen_add_layer(struct weston_output *output,
 
 	iviscrn = get_screen_from_output(output);
 
+	/*if layer is already assigned to screen make order of it dirty
+	 * we are going to remove it (in commit_screen_list)*/
+	if (addlayer->on_screen)
+		addlayer->on_screen->order.dirty = 1;
+
 	wl_list_remove(&addlayer->pending.link);
 	wl_list_insert(&iviscrn->pending.layer_list, &addlayer->pending.link);
 
