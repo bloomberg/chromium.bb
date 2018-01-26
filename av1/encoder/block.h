@@ -365,6 +365,8 @@ struct macroblock {
   int comp_idx_cost[COMP_INDEX_CONTEXTS][2];
   int comp_group_idx_cost[COMP_GROUP_IDX_CONTEXTS][2];
 #endif  // CONFIG_JNT_COMP
+  // Bit flags for pruning tx type search, tx split, etc.
+  int tx_search_prune[EXT_TX_SET_TYPES];
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
