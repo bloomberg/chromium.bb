@@ -951,6 +951,21 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         .Times(AnyNumber());
   }
 
+  void SendRstStream(QuicStreamId id,
+                     QuicRstStreamErrorCode error,
+                     QuicStreamOffset bytes_written) {
+    if (connection_.use_control_frame_manager()) {
+      std::unique_ptr<QuicRstStreamFrame> rst_stream =
+          QuicMakeUnique<QuicRstStreamFrame>(1, id, error, bytes_written);
+      if (connection_.SendControlFrame(QuicFrame(rst_stream.get()))) {
+        rst_stream.release();
+      }
+      connection_.OnStreamReset(id, error);
+      return;
+    }
+    connection_.SendRstStream(id, error, bytes_written);
+  }
+
   void ProcessAckPacket(QuicPacketNumber packet_number, QuicAckFrame* frame) {
     QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, packet_number - 1);
     ProcessFramePacket(QuicFrame(frame));
@@ -1748,7 +1763,7 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
 
   QuicByteCount packet_size =
       SendStreamDataToPeer(3, "foo", 0, NO_FIN, &original);  // 1st packet.
-  SendStreamDataToPeer(3, "bar", 0, NO_FIN, &second);        // 2nd packet.
+  SendStreamDataToPeer(3, "bar", 3, NO_FIN, &second);        // 2nd packet.
 
   QuicAckFrame frame = InitAckFrame({{second, second + 1}});
   // First nack triggers early retransmit.
@@ -1774,7 +1789,7 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
   // indicate the high water mark needs to be raised.
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA));
-  connection_.SendStreamDataWithString(3, "foo", 3, NO_FIN);
+  connection_.SendStreamDataWithString(3, "foo", 6, NO_FIN);
   // No ack sent.
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->stream_frames().size());
@@ -1784,7 +1799,7 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
   ProcessAckPacket(&frame2);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA));
-  connection_.SendStreamDataWithString(3, "foo", 3, NO_FIN);
+  connection_.SendStreamDataWithString(3, "foo", 9, NO_FIN);
   // Ack bundled.
   if (GetParam().no_stop_waiting) {
     EXPECT_EQ(2u, writer_->frame_count());
@@ -2378,9 +2393,8 @@ TEST_P(QuicConnectionTest, RetransmitOnNack) {
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _))
       .WillOnce(SetArgPointee<4>(lost_packets));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, second_packet_size - kQuicVersionSize, _))
-      .Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_FALSE(QuicPacketCreatorPeer::SendVersionInPacket(creator_));
   ProcessAckPacket(&nack_two);
 }
 
@@ -2392,15 +2406,7 @@ TEST_P(QuicConnectionTest, DoNotSendQueuedPacketForResetStream) {
   connection_.SendStreamDataWithString(stream_id, "foo", 0, NO_FIN);
 
   // Now that there is a queued packet, reset the stream.
-  if (connection_.use_control_frame_manager()) {
-    // This RST_STREAM_FRAME cannot be sent as writer is blocked.
-    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_ERROR_PROCESSING_STREAM,
-                                  14);
-    connection_.SendControlFrame(QuicFrame(&rst_stream));
-    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
-  }
+  SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 3);
 
   // Unblock the connection and verify that only the RST_STREAM is sent.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
@@ -2423,14 +2429,7 @@ TEST_P(QuicConnectionTest, SendQueuedPacketForQuicRstStreamNoError) {
   connection_.SendStreamDataWithString(stream_id, "foo", 0, NO_FIN);
 
   // Now that there is a queued packet, reset the stream.
-  if (connection_.use_control_frame_manager()) {
-    // This RST_STREAM_FRAME cannot be sent as writer is blocked.
-    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_STREAM_NO_ERROR, 14);
-    connection_.SendControlFrame(QuicFrame(&rst_stream));
-    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
-  }
+  SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 3);
 
   // Unblock the connection and verify that the RST_STREAM is sent and the data
   // packet is sent.
@@ -2454,13 +2453,7 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnNack) {
   SendStreamDataToPeer(stream_id, "fooos", 7, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  if (connection_.use_control_frame_manager()) {
-    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
-        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
-    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
-  }
+  SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 12);
 
   // Lose a packet and ensure it does not trigger retransmission.
   QuicAckFrame nack_two = ConstructAckFrame(last_packet, last_packet - 1);
@@ -2479,13 +2472,7 @@ TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnNack) {
   SendStreamDataToPeer(stream_id, "fooos", 7, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  if (connection_.use_control_frame_manager()) {
-    connection_.SendControlFrame(QuicFrame(
-        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
-    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
-  }
+  SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 12);
 
   // Lose a packet, ensure it triggers retransmission.
   QuicAckFrame nack_two = ConstructAckFrame(last_packet, last_packet - 1);
@@ -2505,13 +2492,7 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
   SendStreamDataToPeer(stream_id, "foo", 0, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  if (connection_.use_control_frame_manager()) {
-    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
-        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
-    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
-  }
+  SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 3);
 
   // Fire the RTO and verify that the RST_STREAM is resent, not stream data.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
@@ -2532,13 +2513,7 @@ TEST_P(QuicConnectionTest, CancelRetransmissionAlarmAfterResetStream) {
   // Cancel the stream.
   const QuicPacketNumber rst_packet = last_data_packet + 1;
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, rst_packet, _, _)).Times(1);
-  if (connection_.use_control_frame_manager()) {
-    connection_.SendControlFrame(QuicFrame(new QuicRstStreamFrame(
-        1, stream_id, QUIC_ERROR_PROCESSING_STREAM, 14)));
-    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
-  }
+  SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 3);
 
   // Ack the RST_STREAM frame (since it's retransmittable), but not the data
   // packet, which is no longer retransmittable since the stream was cancelled.
@@ -2563,13 +2538,7 @@ TEST_P(QuicConnectionTest, RetransmitForQuicRstStreamNoErrorOnRTO) {
   SendStreamDataToPeer(stream_id, "foo", 0, NO_FIN, &last_packet);
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  if (connection_.use_control_frame_manager()) {
-    connection_.SendControlFrame(QuicFrame(
-        new QuicRstStreamFrame(1, stream_id, QUIC_STREAM_NO_ERROR, 14)));
-    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
-  }
+  SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 3);
 
   // Fire the RTO and verify that the RST_STREAM is resent, the stream data
   // is sent.
@@ -2597,15 +2566,7 @@ TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessAckPacket(&ack);
 
-  if (connection_.use_control_frame_manager()) {
-    // This RST_STREAM_FRAME will be failed to write as writer is blocked.
-    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_ERROR_PROCESSING_STREAM,
-                                  14);
-    connection_.SendControlFrame(QuicFrame(&rst_stream));
-    connection_.OnStreamReset(stream_id, QUIC_ERROR_PROCESSING_STREAM);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 14);
-  }
+  SendRstStream(stream_id, QUIC_ERROR_PROCESSING_STREAM, 12);
 
   // Unblock the connection and verify that the RST_STREAM is sent but not the
   // second data packet nor a retransmit.
@@ -2641,14 +2602,7 @@ TEST_P(QuicConnectionTest, SendPendingRetransmissionForQuicRstStreamNoError) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessAckPacket(&ack);
 
-  if (connection_.use_control_frame_manager()) {
-    // This RST_STREAM_FRAME will be failed to sent as writer is blocked.
-    QuicRstStreamFrame rst_stream(1, stream_id, QUIC_STREAM_NO_ERROR, 14);
-    connection_.SendControlFrame(QuicFrame(&rst_stream));
-    connection_.OnStreamReset(stream_id, QUIC_STREAM_NO_ERROR);
-  } else {
-    connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
-  }
+  SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 12);
 
   // Unblock the connection and verify that the RST_STREAM is sent and the
   // second data packet or a retransmit is sent.
@@ -2713,7 +2667,7 @@ TEST_P(QuicConnectionTest, RetransmitNackedLargestObserved) {
 
   QuicByteCount packet_size =
       SendStreamDataToPeer(3, "foo", 0, NO_FIN, &original);  // 1st packet.
-  SendStreamDataToPeer(3, "bar", 0, NO_FIN, &second);        // 2nd packet.
+  SendStreamDataToPeer(3, "bar", 3, NO_FIN, &second);        // 2nd packet.
 
   QuicAckFrame frame = InitAckFrame({{second, second + 1}});
   // The first nack should retransmit the largest observed packet.
@@ -4256,10 +4210,11 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   connection_.SetFromConfig(config);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
   EXPECT_EQ(payload.size(),
-            connection_.SendStreamDataWithString(3, payload, 0, NO_FIN)
+            connection_.SendStreamDataWithString(3, payload, 1350, NO_FIN)
                 .bytes_consumed);
-  // Just like above, we save 8 bytes on payload, and 8 on truncation.
-  EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 8 * 2);
+  // Just like above, we save 8 bytes on payload, and 8 on truncation. -2
+  // because stream offset size is 2 instead of 0.
+  EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 8 * 2 - 2);
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAck) {

@@ -70,6 +70,17 @@ class QUIC_EXPORT_PRIVATE RttStats {
 
   QuicTime::Delta max_ack_delay() const { return max_ack_delay_; }
 
+  bool ignore_max_ack_delay() const { return ignore_max_ack_delay_; }
+
+  void set_ignore_max_ack_delay(bool ignore_max_ack_delay) {
+    ignore_max_ack_delay_ = ignore_max_ack_delay;
+  }
+
+  void set_initial_max_ack_delay(QuicTime::Delta initial_max_ack_delay) {
+    DCHECK(max_ack_delay_.IsZero());
+    max_ack_delay_ = std::max(max_ack_delay_, initial_max_ack_delay);
+  }
+
  private:
   friend class test::RttStatsPeer;
 
@@ -85,6 +96,8 @@ class QUIC_EXPORT_PRIVATE RttStats {
   // The maximum ack delay observed over the connection after excluding ack
   // delays that were too large to be included in an RTT measurement.
   QuicTime::Delta max_ack_delay_;
+  // Whether to ignore the peer's max ack delay.
+  bool ignore_max_ack_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(RttStats);
 };

@@ -103,6 +103,18 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
                  std::min(kMaxInitialRoundTripTimeUs,
                           config.GetInitialRoundTripTimeUsToSend())));
   }
+  if (GetQuicReloadableFlag(quic_max_ack_delay) &&
+      config.HasClientSentConnectionOption(kMAD0, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay, 1, 2);
+    rtt_stats_.set_ignore_max_ack_delay(true);
+  }
+  if (GetQuicReloadableFlag(quic_max_ack_delay) &&
+      config.HasClientSentConnectionOption(kMAD1, perspective_)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay, 2, 2);
+    rtt_stats_.set_initial_max_ack_delay(
+        QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs));
+  }
+
   // Configure congestion control.
   if (config.HasClientRequestedIndependentOption(kTBBR, perspective_)) {
     SetSendAlgorithm(kBBR);

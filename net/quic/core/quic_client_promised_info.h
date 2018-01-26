@@ -66,9 +66,11 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
   // validation requires the response headers (for the actual Vary
   // field list), the promise headers (taking the role of the "cached"
   // request), and the client request headers.
-  SpdyHeaderBlock* request_headers() { return request_headers_.get(); }
+  SpdyHeaderBlock* request_headers() { return &request_headers_; }
 
   SpdyHeaderBlock* response_headers() { return response_headers_.get(); }
+
+  // After validation, client will use this to access the pushed stream.
 
   QuicStreamId id() const { return id_; }
 
@@ -95,13 +97,13 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
   QuicSpdyClientSessionBase* session_;
   QuicStreamId id_;
   std::string url_;
-  std::unique_ptr<SpdyHeaderBlock> request_headers_;
+  SpdyHeaderBlock request_headers_;
   std::unique_ptr<SpdyHeaderBlock> response_headers_;
-  std::unique_ptr<SpdyHeaderBlock> client_request_headers_;
+  SpdyHeaderBlock client_request_headers_;
   QuicClientPushPromiseIndex::Delegate* client_request_delegate_;
 
-  // The promise will commit suicide eventually if it is not claimed
-  // by a GET first.
+  // The promise will commit suicide eventually if it is not claimed by a GET
+  // first.
   std::unique_ptr<QuicAlarm> cleanup_alarm_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientPromisedInfo);

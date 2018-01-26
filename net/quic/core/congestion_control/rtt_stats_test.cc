@@ -72,6 +72,7 @@ TEST_F(RttStatsTest, SmoothedRttMaxAckDelay) {
                        QuicTime::Delta::FromMilliseconds(50), QuicTime::Zero());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.latest_rtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats_.max_ack_delay());
   // Verify that large erroneous ack_delay does not change Smoothed RTT.
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
                        QuicTime::Delta::FromMilliseconds(300),
@@ -79,6 +80,39 @@ TEST_F(RttStatsTest, SmoothedRttMaxAckDelay) {
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
   EXPECT_EQ(QuicTime::Delta::FromMicroseconds(287500),
             rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats_.max_ack_delay());
+}
+
+TEST_F(RttStatsTest, SmoothedRttIgnoreAckDelay) {
+  SetQuicReloadableFlag(quic_max_ack_delay, true);
+  rtt_stats_.set_ignore_max_ack_delay(true);
+  // Verify that ack_delay is ignored in the first measurement.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.max_ack_delay());
+  // Verify that a plausible ack delay increases the max ack delay.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.max_ack_delay());
+  // Verify that Smoothed RTT includes max ack delay if it's reasonable.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Delta::FromMilliseconds(50), QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(300), rtt_stats_.smoothed_rtt());
+  // Verify that large erroneous ack_delay does not change Smoothed RTT.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
+                       QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(287500),
+            rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.max_ack_delay());
 }
 
 // Ensure that the potential rounding artifacts in EWMA calculation do not cause
