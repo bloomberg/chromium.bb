@@ -30,7 +30,8 @@ RttStats::RttStats()
       previous_srtt_(QuicTime::Delta::Zero()),
       mean_deviation_(QuicTime::Delta::Zero()),
       initial_rtt_us_(kInitialRttMs * kNumMicrosPerMilli),
-      max_ack_delay_(QuicTime::Delta::Zero()) {}
+      max_ack_delay_(QuicTime::Delta::Zero()),
+      ignore_max_ack_delay_(false) {}
 
 void RttStats::ExpireSmoothedMetrics() {
   mean_deviation_ = std::max(
@@ -62,6 +63,9 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
   QuicTime::Delta rtt_sample(send_delta);
   previous_srtt_ = smoothed_rtt_;
 
+  if (ignore_max_ack_delay_) {
+    ack_delay = QuicTime::Delta::Zero();
+  }
   // Correct for ack_delay if information received from the peer results in a
   // an RTT sample at least as large as min_rtt. Otherwise, only use the
   // send_delta.

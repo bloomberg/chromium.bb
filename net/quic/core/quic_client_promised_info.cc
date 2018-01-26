@@ -8,6 +8,7 @@
 
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/spdy/core/spdy_protocol.h"
 
 using std::string;
@@ -64,11 +65,11 @@ void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
     Reset(QUIC_UNAUTHORIZED_PROMISE_URL);
     return;
   }
-  request_headers_.reset(new SpdyHeaderBlock(headers.Clone()));
+  request_headers_ = headers.Clone();
 }
 
 void QuicClientPromisedInfo::OnResponseHeaders(const SpdyHeaderBlock& headers) {
-  response_headers_.reset(new SpdyHeaderBlock(headers.Clone()));
+  response_headers_ = QuicMakeUnique<SpdyHeaderBlock>(headers.Clone());
   if (client_request_delegate_) {
     // We already have a client request waiting.
     FinalValidation();
@@ -86,7 +87,7 @@ void QuicClientPromisedInfo::Reset(QuicRstStreamErrorCode error_code) {
 
 QuicAsyncStatus QuicClientPromisedInfo::FinalValidation() {
   if (!client_request_delegate_->CheckVary(
-          *client_request_headers_, *request_headers_, *response_headers_)) {
+          client_request_headers_, request_headers_, *response_headers_)) {
     Reset(QUIC_PROMISE_VARY_MISMATCH);
     return QUIC_FAILURE;
   }
@@ -124,8 +125,8 @@ QuicAsyncStatus QuicClientPromisedInfo::HandleClientRequest(
   }
 
   client_request_delegate_ = delegate;
-  client_request_headers_.reset(new SpdyHeaderBlock(request_headers.Clone()));
-  if (!response_headers_) {
+  client_request_headers_ = request_headers.Clone();
+  if (response_headers_ == nullptr) {
     return QUIC_PENDING;
   }
   return FinalValidation();

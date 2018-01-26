@@ -179,3 +179,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_control_frame_manager,
           false)
+
+// When true, allows two connection options to run experiments with using max
+// ack delay as described in QUIC IETF.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, false)
