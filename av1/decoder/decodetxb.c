@@ -82,19 +82,13 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant_QTX[mbmi->segment_id];
   tran_low_t *const tcoeffs = pd->dqcoeff;
-#if !CONFIG_DAALA_TX
   const int shift = av1_get_tx_scale(tx_size);
-#endif
 #if CONFIG_NEW_QUANT
 #if !CONFIG_AOM_QM
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // !CONFIG_AOM_QM
 
-#if CONFIG_DAALA_TX
-  const int nq_shift = 0;
-#else
   const int nq_shift = shift;
-#endif  // CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
@@ -283,9 +277,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_AOM_QM
 #else
         v = level * dequant[!!c];
-#if !CONFIG_DAALA_TX
         v = v >> shift;
-#endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
         tcoeffs[pos] = v;
       } else {
@@ -351,9 +343,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_AOM_QM
 #else
         t = *level * dequant[!!pos];
-#if !CONFIG_DAALA_TX
         t = t >> shift;
-#endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
         if (signs[pos]) t = -t;
         tcoeffs[pos] = clamp(t, min_value, max_value);
@@ -374,9 +364,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_AOM_QM
 #else
       t = t * dequant[!!pos];
-#if !CONFIG_DAALA_TX
       t = t >> shift;
-#endif  // !CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
       if (signs[pos]) t = -t;
       tcoeffs[pos] = clamp(t, min_value, max_value);

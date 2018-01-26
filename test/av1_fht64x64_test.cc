@@ -20,7 +20,7 @@
 #include "test/transform_test_base.h"
 #include "test/util.h"
 
-#if CONFIG_TX64X64 && !CONFIG_DAALA_TX
+#if CONFIG_TX64X64
 
 using libaom_test::ACMRandom;
 

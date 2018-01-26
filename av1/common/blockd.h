@@ -765,16 +765,6 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 #endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
-#if CONFIG_DAALA_TX_DST32
-  if (tx_size_sqr_up > TX_32X32)
-    return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
-  if (is_inter)
-    return (tx_size_sqr >= TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
-                                    : EXT_TX_SET_ALL16);
-  else
-    return (tx_size_sqr >= TX_16X16 ? EXT_TX_SET_DTT4_IDTX
-                                    : EXT_TX_SET_DTT4_IDTX_1DDCT);
-#endif
   if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (is_inter)
@@ -970,12 +960,8 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
     return DCT_DCT;
 
-#if CONFIG_DAALA_TX_DST32
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32)
-#else
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
       (txsize_sqr_map[tx_size] >= TX_32X32 && !is_inter_block(mbmi)))
-#endif
     return DCT_DCT;
   if (plane_type == PLANE_TYPE_Y) {
     return mbmi->tx_type;
@@ -1345,7 +1331,7 @@ static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
   if (tx_size == TX_16X64 || tx_size == TX_64X16) {
     return 512;
   }
-#endif  // CONFIG_TX64X64 && !CONFIG_DAALA_TX
+#endif  // CONFIG_TX64X64
   return tx_size_2d[tx_size];
 }
 

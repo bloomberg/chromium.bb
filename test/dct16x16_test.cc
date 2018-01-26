@@ -30,7 +30,6 @@
 
 using libaom_test::ACMRandom;
 
-#if !CONFIG_DAALA_TX
 namespace {
 
 const int kNumCoeffs = 256;
@@ -753,7 +752,6 @@ INSTANTIATE_TEST_CASE_P(SSE2, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_sse2,
                                                      &aom_idct16x16_256_add_c,
                                                      DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_DAALA_TX16
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
     ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
@@ -764,7 +762,5 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
                                  ADST_ADST, AOM_BITS_8)));
-#endif
 #endif  // HAVE_SSE2
 }  // namespace
-#endif  // !CONFIG_DAALA_TX

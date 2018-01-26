@@ -106,16 +106,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT && !CONFIG_AOM_QM
 
-#if !CONFIG_DAALA_TX
   int dq_shift = av1_get_tx_scale(tx_size);
-#endif
 
 #if CONFIG_NEW_QUANT
-#if CONFIG_DAALA_TX
-  int nq_shift = 0;
-#else
   int nq_shift = dq_shift;
-#endif  // CONFIG_DAALA_TX
 #endif  // CONFIG_NEW_QUANT
 
   band = *band_translate++;
@@ -192,11 +186,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, nq_shift);
 #endif  // CONFIG_AOM_QM
 #else
-#if !CONFIG_DAALA_TX
     v = (int)(((int64_t)val * dqv) >> dq_shift);
-#else
-    v = val * dqv;
-#endif
 #endif
 
     v = (int)check_range(av1_read_record_bit(xd->counts, r, ACCT_STR) ? -v : v,

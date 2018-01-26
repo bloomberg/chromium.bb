@@ -70,16 +70,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/tile_common.c"
     "${AOM_ROOT}/av1/common/tile_common.h")
 
-if (CONFIG_DAALA_TX)
-  set(AOM_AV1_COMMON_SOURCES
-      ${AOM_AV1_COMMON_SOURCES}
-      "${AOM_ROOT}/av1/common/daala_tx.c"
-      "${AOM_ROOT}/av1/common/daala_tx.h"
-      "${AOM_ROOT}/av1/common/daala_tx_kernels.h"
-      "${AOM_ROOT}/av1/common/daala_inv_txfm.c"
-      "${AOM_ROOT}/av1/common/daala_inv_txfm.h")
-endif ()
-
 set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/av1_dx_iface.c"
     "${AOM_ROOT}/av1/decoder/decodeframe.c"
@@ -165,13 +155,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/tokenize.c"
     "${AOM_ROOT}/av1/encoder/tokenize.h")
 
-if (CONFIG_DAALA_TX)
-  set(AOM_AV1_ENCODER_SOURCES
-      ${AOM_AV1_ENCODER_SOURCES}
-      "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.c"
-      "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.h")
-endif ()
-
 set(AOM_AV1_COMMON_INTRIN_SSE2
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")
 
@@ -186,12 +169,6 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1
 set(AOM_AV1_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
-if (CONFIG_DAALA_TX)
-  set(AOM_AV1_COMMON_INTRIN_AVX2
-      ${AOM_AV1_COMMON_INTRIN_AVX2}
-      "${AOM_ROOT}/av1/common/x86/daala_tx_kernels.h"
-      "${AOM_ROOT}/av1/common/x86/daala_inv_txfm_avx2.c")
-endif ()
 
 set(AOM_AV1_COMMON_INTRIN_MSA
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct16x16_msa.c"

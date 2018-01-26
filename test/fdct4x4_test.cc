@@ -29,7 +29,6 @@
 
 using libaom_test::ACMRandom;
 
-#if !CONFIG_DAALA_TX
 namespace {
 typedef void (*FdctFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*IdctFunc)(const tran_low_t *in, uint8_t *out, int stride);
@@ -245,7 +244,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, DCT_DCT,
                                  AOM_BITS_8, 16)));
 
-#if HAVE_SSE2 && !CONFIG_DAALA_TX4
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4WHT,
     ::testing::Values(make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, DCT_DCT,
@@ -254,7 +253,7 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_DCT, AOM_BITS_8, 16)));
 #endif
 
-#if HAVE_SSE2 && !CONFIG_DAALA_TX4
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
@@ -265,7 +264,6 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8, 16),
                       make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
                                  ADST_ADST, AOM_BITS_8, 16)));
-#endif  // HAVE_SSE2 && !CONFIG_DAALA_TX4
+#endif  // HAVE_SSE2
 
 }  // namespace
-#endif  // !CONFIG_DAALA_TX

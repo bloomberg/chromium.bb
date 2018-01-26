@@ -33,9 +33,6 @@
 #include "av1/encoder/encodetxb.h"
 #endif
 #include "av1/encoder/hybrid_fwd_txfm.h"
-#if CONFIG_DAALA_TX
-#include "av1/common/daala_inv_txfm.h"
-#endif
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 
@@ -143,14 +140,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
-#if CONFIG_DAALA_TX
-  // This is one of the few places where RDO is done on coeffs; it
-  // expects the coeffs to be in Q3/D11, so we need to scale them.
-  int depth_shift = (TX_COEFF_DEPTH - 11) * 2;
-  int depth_round = depth_shift > 1 ? (1 << depth_shift >> 1) : 0;
-#else
   const int shift = av1_get_tx_scale(tx_size);
-#endif
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
@@ -219,19 +209,14 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           tail_token_costs[band_cur][ctx_cur]);
       // accu_error does not change when x==0
     } else {
-/*  Computing distortion
- */
-// compute the distortion for the first candidate
-// and the distortion for quantizing to 0.
-#if CONFIG_DAALA_TX
-      int dx0 = coeff[rc];
-      const int64_t d0 = ((int64_t)dx0 * dx0 + depth_round) >> depth_shift;
-#else
+      /*  Computing distortion
+       */
+      // compute the distortion for the first candidate
+      // and the distortion for quantizing to 0.
       int dx0 = abs(coeff[rc]) * (1 << shift);
       dx0 >>= xd->bd - 8;
 
       const int64_t d0 = (int64_t)dx0 * dx0;
-#endif
       const int x_a = x - 2 * sz - 1;
       int dqv = dequant_ptr[rc != 0];
 #if CONFIG_AOM_QM
@@ -241,33 +226,15 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       }
 #endif  // CONFIG_AOM_QM
 
-#if CONFIG_DAALA_TX
-      int dx = dqcoeff[rc] - coeff[rc];
-      const int64_t d2 = ((int64_t)dx * dx + depth_round) >> depth_shift;
-#else
       int dx = (dqcoeff[rc] - coeff[rc]) * (1 << shift);
       dx = signed_shift_right(dx, xd->bd - 8);
       const int64_t d2 = (int64_t)dx * dx;
-#endif
 
       /* compute the distortion for the second candidate
        * x_a = x - 2 * sz + 1;
        */
       int64_t d2_a;
       if (x_a != 0) {
-#if CONFIG_DAALA_TX
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-        dx = av1_dequant_coeff_nuq(x_a, dqv, dq, rc != 0, 0) - coeff[rc];
-#else
-        dx = av1_dequant_coeff_nuq(x_a, dqv, dequant_val[rc != 0], 0) -
-             coeff[rc];
-#endif  // CONFIG_AOM_QM
-#else   // CONFIG_NEW_QUANT
-        dx -= (dqv + sz) ^ sz;
-#endif  // CONFIG_NEW_QUANT
-        d2_a = ((int64_t)dx * dx + depth_round) >> depth_shift;
-#else  // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
         dx = av1_dequant_coeff_nuq(x_a, dqv, dq, rc != 0, 0) -
@@ -281,7 +248,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
 #endif  // CONFIG_NEW_QUANT
         d2_a = (int64_t)dx * dx;
-#endif  // CONFIG_DAALA_TX
       } else {
         d2_a = d0;
       }
@@ -354,19 +320,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       int dqc_a = 0;
       if (best_x || best_eob_x) {
         if (x_a != 0) {
-#if CONFIG_DAALA_TX
-#if CONFIG_NEW_QUANT
-#if CONFIG_AOM_QM
-          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dq, rc != 0, 0);
-#else
-          dqc_a =
-              av1_dequant_abscoeff_nuq(abs(x_a), dqv, dequant_val[rc != 0], 0);
-#endif  // CONFIG_AOM_QM
-          if (sz) dqc_a = -dqc_a;
-#else
-          dqc_a = x_a * dqv;
-#endif  // CONFIG_NEW_QUANT
-#else   // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
           dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv, dq, rc != 0, shift);
@@ -381,7 +334,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           else
             dqc_a = (x_a * dqv) >> shift;
 #endif  // CONFIG_NEW_QUANT
-#endif  // CONFIG_DAALA_TX
         } else {
           dqc_a = 0;
         }
@@ -524,11 +476,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-#if CONFIG_DAALA_TX
-  qparam.log_scale = 0;
-#else
   qparam.log_scale = av1_get_tx_scale(tx_size);
-#endif
   qparam.tx_size = tx_size;
 #if CONFIG_NEW_QUANT
   qparam.dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
@@ -554,13 +502,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     const int n_coeffs = av1_get_max_eob(tx_size);
     if (LIKELY(!x->skip_block)) {
-#if CONFIG_DAALA_TX
-      quant_func_list[xform_quant_idx][1](coeff, n_coeffs, p, qcoeff, dqcoeff,
-                                          eob, scan_order, &qparam);
-#else
       quant_func_list[xform_quant_idx][txfm_param.is_hbd](
           coeff, n_coeffs, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
-#endif
     } else {
       av1_quantize_skip(n_coeffs, qcoeff, dqcoeff, eob);
     }
@@ -740,9 +683,6 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
     txfm_param.tx_set_type = get_ext_tx_set_type(
         txfm_param.tx_size, plane_bsize, is_inter_block(&xd->mi[0]->mbmi),
         cm->reduced_tx_set_used);
-#if CONFIG_DAALA_TX
-    daala_inv_txfm_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
-#else
     if (txfm_param.is_hbd) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
@@ -752,7 +692,6 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
     } else {
       av1_idct4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
     }
-#endif
   }
 }
 

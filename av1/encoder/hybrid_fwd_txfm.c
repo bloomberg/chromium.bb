@@ -15,9 +15,6 @@
 
 #include "av1/common/idct.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
-#if CONFIG_DAALA_TX
-#include "av1/encoder/daala_fwd_txfm.h"
-#else
 
 static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
@@ -27,84 +24,47 @@ static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
     return;
   }
 
-#if CONFIG_DAALA_TX4
-  // only C version has LGTs
-  av1_fht4x4_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht4x4(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_4x8(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
-#if (CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8)
-  av1_fht4x8_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht4x8(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_8x4(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
-#if (CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8)
-  av1_fht8x4_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht8x4(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_8x16(const int16_t *src_diff, tran_low_t *coeff,
                           int diff_stride, TxfmParam *txfm_param) {
-#if (CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
-  av1_fht8x16_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht8x16(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_16x8(const int16_t *src_diff, tran_low_t *coeff,
                           int diff_stride, TxfmParam *txfm_param) {
-#if (CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
-  av1_fht16x8_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht16x8(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_16x32(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
-  av1_fht16x32_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht16x32(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
-  av1_fht32x16_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht32x16(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_DAALA_TX8
-  av1_fht8x8_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht8x8(src_diff, coeff, diff_stride, txfm_param);
-#endif
 }
 
 static void fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_DAALA_TX16
-  av1_fht16x16_c(src_diff, coeff, diff_stride, txfm_param);
-#else
   av1_fht16x16(src_diff, coeff, diff_stride, txfm_param);
-#endif  // CONFIG_DAALA_TX16
 }
 
 static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
@@ -572,14 +532,10 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
   }
 }
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_DAALA_TXFM
 
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
                   TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-#if CONFIG_DAALA_TX
-  daala_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
-#else
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
 #if CONFIG_TX64X64
@@ -635,15 +591,11 @@ void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
       break;
     default: assert(0); break;
   }
-#endif
 }
 
 void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-#if CONFIG_DAALA_TX
-  daala_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
-#else
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
 #if CONFIG_TX64X64
@@ -707,5 +659,4 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
       break;
     default: assert(0); break;
   }
-#endif
 }

@@ -48,7 +48,7 @@ void highbd_fht32x32_ref(const int16_t *in, int32_t *out, int stride,
   av1_fwd_txfm2d_32x32_c(in, out, stride, tx_type, bd);
 }
 
-#if (HAVE_SSE2 || HAVE_AVX2) && !CONFIG_DAALA_TX32
+#if (HAVE_SSE2 || HAVE_AVX2)
 void dummy_inv_txfm(const tran_low_t *in, uint8_t *out, int stride,
                     const TxfmParam *txfm_param) {
   (void)in;
@@ -161,7 +161,7 @@ TEST_P(AV1HighbdTrans32x32HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2 && !CONFIG_DAALA_TX32
+#if HAVE_SSE2
 const Ht32x32Param kArrayHt32x32Param_sse2[] = {
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, DCT_DCT, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, ADST_DCT, AOM_BITS_8, 1024),
@@ -187,9 +187,9 @@ const Ht32x32Param kArrayHt32x32Param_sse2[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans32x32HT,
                         ::testing::ValuesIn(kArrayHt32x32Param_sse2));
-#endif  // HAVE_SSE2 && !CONFIG_DAALA_TX32
+#endif  // HAVE_SSE2
 
-#if HAVE_AVX2 && !CONFIG_DAALA_TX32
+#if HAVE_AVX2
 const Ht32x32Param kArrayHt32x32Param_avx2[] = {
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, DCT_DCT, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, ADST_DCT, AOM_BITS_8, 1024),
@@ -215,5 +215,5 @@ const Ht32x32Param kArrayHt32x32Param_avx2[] = {
 };
 INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans32x32HT,
                         ::testing::ValuesIn(kArrayHt32x32Param_avx2));
-#endif  // HAVE_AVX2 && !CONFIG_DAALA_TX32
+#endif  // HAVE_AVX2
 }  // namespace

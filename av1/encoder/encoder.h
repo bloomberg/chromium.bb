@@ -766,14 +766,6 @@ static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
 }
 
 // TODO(zoeliu): To set up cpi->oxcf.enable_auto_brf
-#if 0 && CONFIG_EXT_REFS
-static INLINE int is_bwdref_enabled(const AV1_COMP *const cpi) {
-  // NOTE(zoeliu): The enabling of bi-predictive frames depends on the use of
-  //               alt_ref, and now will be off when the alt_ref interval is
-  //               not sufficiently large.
-  return is_altref_enabled(cpi) && cpi->oxcf.enable_auto_brf;
-}
-#endif  // CONFIG_EXT_REFS
 
 static INLINE void set_ref_ptrs(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 MV_REFERENCE_FRAME ref0,
