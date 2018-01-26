@@ -3054,6 +3054,13 @@ TEST_F(
 }
 
 TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
+  // This test assumes that the behavior tested in
+  // LayoutTests/fast/forms/autocapitalize.html works properly and tests the
+  // following:
+  // - The autocapitalize IDL states map properly to WebTextInputFlags for
+  //   <input> elements, <textarea> elements, and editable regions
+  // - We ignore the value of the IDL attribute for password/email/URL inputs
+  //   and always send None for this case.
   Vector<std::pair<String, int>> element_and_expected_flags_pairs = {
       {"<input type='text'>", kWebTextInputFlagAutocapitalizeSentences},
       {"<input type='text' autocapitalize='none'>",

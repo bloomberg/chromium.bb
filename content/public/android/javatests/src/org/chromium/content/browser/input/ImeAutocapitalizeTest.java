@@ -64,6 +64,11 @@ public class ImeAutocapitalizeTest {
         Assert.assertEquals(EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES,
                 mRule.getConnectionFactory().getOutAttrs().inputType & autocapitalizeFlagMask);
 
+        // <input> element that inherits autocapitalize="none" from its parent <form> element.
+        mRule.focusElement("input_autocapitalize_inherit_none");
+        Assert.assertEquals(
+                0, mRule.getConnectionFactory().getOutAttrs().inputType & autocapitalizeFlagMask);
+
         // contenteditable <div> element with autocapitalize="characters".
         mRule.focusElement("div_autocapitalize_characters");
         Assert.assertEquals(EditorInfo.TYPE_TEXT_FLAG_CAP_CHARACTERS,
