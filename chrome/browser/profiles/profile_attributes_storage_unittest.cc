@@ -791,14 +791,7 @@ TEST_F(ProfileAttributesStorageTest, NothingToDownloadHighResAvatarTest) {
   EXPECT_EQ(0U, storage()->avatar_images_downloads_in_progress_.size());
 }
 
-// Flaky on Linux ASAN. http://crbug.com/794821.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_LoadAvatarFromDiskTest DISABLED_LoadAvatarFromDiskTest
-#else
-#define MAYBE_LoadAvatarFromDiskTest LoadAvatarFromDiskTest
-#endif
-
-TEST_F(ProfileAttributesStorageTest, MAYBE_LoadAvatarFromDiskTest) {
+TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   const size_t kIconIndex = 0;
   base::FilePath icon_path =
       profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
