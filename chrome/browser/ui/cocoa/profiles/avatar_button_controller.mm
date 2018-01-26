@@ -277,7 +277,7 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
               attributes:@{
                 NSForegroundColorAttributeName : foregroundColor,
                 NSParagraphStyleAttributeName : paragraphStyle,
-                NSKernAttributeName : [NSNumber numberWithFloat:kTitleKern]
+                NSKernAttributeName : @(kTitleKern),
               }]);
   [button_ setAttributedTitle:attributedTitle];
   [button_ sizeToFit];

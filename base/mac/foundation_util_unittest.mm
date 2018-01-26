@@ -164,16 +164,14 @@ TEST(FoundationUtilTest, CFCast) {
 TEST(FoundationUtilTest, ObjCCast) {
   ScopedNSAutoreleasePool pool;
 
-  id test_array = [NSArray array];
+  id test_array = @[];
   id test_array_mutable = [NSMutableArray array];
   id test_data = [NSData data];
   id test_data_mutable = [NSMutableData dataWithCapacity:10];
   id test_date = [NSDate date];
-  id test_dict =
-      [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:42]
-                                  forKey:@"meaning"];
+  id test_dict = @{ @"meaning" : @42 };
   id test_dict_mutable = [NSMutableDictionary dictionaryWithCapacity:10];
-  id test_number = [NSNumber numberWithInt:42];
+  id test_number = @42;
   id test_null = [NSNull null];
   id test_set = [NSSet setWithObject:@"string object"];
   id test_set_mutable = [NSMutableSet setWithCapacity:10];
