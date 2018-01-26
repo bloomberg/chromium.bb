@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "url/gurl.h"
@@ -46,12 +45,6 @@ bool IsIncludedInHoldbackFieldTrial();
 // The name of the Holdback experiment group, this can return an empty string if
 // not included in a group.
 std::string HoldbackFieldTrialGroup();
-
-// Returns true if this client is part of the field trial that should display
-// a promotion for the data reduction proxy on Android One devices. This is for
-// testing purposes and should not be called outside of tests.
-bool IsIncludedInAndroidOnePromoFieldTrialForTesting(
-    base::StringPiece build_fingerprint);
 
 // Returns the name of the Lo-Fi field trial.
 // TODO(ryansturm): crbug.com/759052 Cleanup once fully cutover to new blacklist
