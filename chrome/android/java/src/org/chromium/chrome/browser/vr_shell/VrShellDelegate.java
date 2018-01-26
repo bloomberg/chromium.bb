@@ -1039,6 +1039,12 @@ public class VrShellDelegate
     }
 
     private void setWindowModeForVr() {
+        // Decouple the compositor size from the view size, or we'll get an unnecessary resize due
+        // to the orientation change when entering VR, then another resize once VR has settled on
+        // the content size.
+        if (mActivity.getCompositorViewHolder() != null) {
+            mActivity.getCompositorViewHolder().onEnterVr();
+        }
         ScreenOrientationDelegateManager.setOrientationDelegate(this);
         mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -1075,6 +1081,9 @@ public class VrShellDelegate
                     mRestoreSystemUiVisibilityFlag);
         }
         mRestoreSystemUiVisibilityFlag = -1;
+        if (mActivity.getCompositorViewHolder() != null) {
+            mActivity.getCompositorViewHolder().onExitVr();
+        }
     }
 
     /* package */ boolean canEnterVr(Tab tab, boolean justCompletedDon) {
@@ -1458,12 +1467,11 @@ public class VrShellDelegate
         mAutopresentWebVr = false;
 
         if (!mInVr) return;
-        mInVr = false;
-
         if (mShowingDaydreamDoff) {
             onExitVrResult(true);
             return;
         }
+        mInVr = false;
 
         // Some Samsung devices change the screen density after exiting VR mode which causes
         // us to restart Chrome with the VR intent that originally started it. We don't want to

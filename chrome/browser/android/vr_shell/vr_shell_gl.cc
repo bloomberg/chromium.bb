@@ -258,11 +258,13 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   content_surface_ =
       base::MakeUnique<gl::ScopedJavaSurface>(content_surface_texture_.get());
-  browser_->ContentSurfaceCreated(content_surface_->j_surface().obj());
+  browser_->ContentSurfaceCreated(content_surface_->j_surface().obj(),
+                                  content_surface_texture_.get());
   content_overlay_surface_ = base::MakeUnique<gl::ScopedJavaSurface>(
       content_overlay_surface_texture_.get());
   browser_->ContentOverlaySurfaceCreated(
-      content_overlay_surface_->j_surface().obj());
+      content_overlay_surface_->j_surface().obj(),
+      content_overlay_surface_texture_.get());
 
   content_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
@@ -1245,14 +1247,6 @@ void VrShellGl::ContentBoundsChanged(int width, int height) {
 
 void VrShellGl::BufferBoundsChanged(const gfx::Size& content_buffer_size,
                                     const gfx::Size& overlay_buffer_size) {
-  if (content_surface_texture_.get()) {
-    content_surface_texture_->SetDefaultBufferSize(
-        content_buffer_size.width(), content_buffer_size.height());
-  }
-  if (content_overlay_surface_texture_.get()) {
-    content_overlay_surface_texture_->SetDefaultBufferSize(
-        overlay_buffer_size.width(), overlay_buffer_size.height());
-  }
   content_tex_buffer_size_ = content_buffer_size;
 }
 

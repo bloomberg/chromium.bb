@@ -48,8 +48,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
   base::WeakPtr<VrShellGl> GetVrShellGl();
 
   // GlBrowserInterface implementation (GL calling to VrShell).
-  void ContentSurfaceCreated(jobject surface) override;
-  void ContentOverlaySurfaceCreated(jobject surface) override;
+  void ContentSurfaceCreated(jobject surface,
+                             gl::SurfaceTexture* texture) override;
+  void ContentOverlaySurfaceCreated(jobject surface,
+                                    gl::SurfaceTexture* texture) override;
   void GvrDelegateReady(
       gvr::ViewerType viewer_type,
       device::mojom::VRDisplayFrameTransportOptionsPtr) override;

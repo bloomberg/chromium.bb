@@ -40,6 +40,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace gl {
+class SurfaceTexture;
+}
+
 namespace vr {
 class BrowserUiInterface;
 class ToolbarHelper;
@@ -143,20 +147,15 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void ContentWebContentsDestroyed();
 
-  void ContentSurfaceCreated(jobject surface);
-  void ContentOverlaySurfaceCreated(jobject surface);
+  void ContentSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
+  void ContentOverlaySurfaceCreated(jobject surface,
+                                    gl::SurfaceTexture* texture);
   void GvrDelegateReady(gvr::ViewerType viewer_type,
                         device::mojom::VRDisplayFrameTransportOptionsPtr);
 
   device::mojom::VRDisplayFrameTransportOptionsPtr
   GetVRDisplayFrameTransportOptions();
 
-  void OnPhysicalBackingSizeChanged(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents,
-      jint width,
-      jint height);
   void BufferBoundsChanged(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& object,
                            jint content_width,
@@ -285,6 +284,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   gfx::SizeF display_size_meters_;
   gfx::Size display_size_pixels_;
+
+  gl::SurfaceTexture* content_surface_texture_ = nullptr;
+  gl::SurfaceTexture* overlay_surface_texture_ = nullptr;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 
