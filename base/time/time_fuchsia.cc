@@ -28,7 +28,7 @@ ALWAYS_INLINE int64_t ZxTimeToMicroseconds(zx_time_t nanos) {
 
 namespace subtle {
 Time TimeNowIgnoringOverride() {
-  const zx_time_t nanos_since_unix_epoch = zx_time_get(ZX_CLOCK_UTC);
+  const zx_time_t nanos_since_unix_epoch = zx_clock_get(ZX_CLOCK_UTC);
   CHECK(nanos_since_unix_epoch != 0);
   // The following expression will overflow in the year 289938 A.D.:
   return Time() + TimeDelta::FromMicroseconds(
@@ -46,7 +46,7 @@ Time TimeNowFromSystemTimeIgnoringOverride() {
 
 namespace subtle {
 TimeTicks TimeTicksNowIgnoringOverride() {
-  const zx_time_t nanos_since_boot = zx_time_get(ZX_CLOCK_MONOTONIC);
+  const zx_time_t nanos_since_boot = zx_clock_get(ZX_CLOCK_MONOTONIC);
   CHECK(nanos_since_boot != 0);
   return TimeTicks() +
          TimeDelta::FromMicroseconds(ZxTimeToMicroseconds(nanos_since_boot));
@@ -83,7 +83,7 @@ zx_time_t TimeTicks::ToZxTime() const {
 
 namespace subtle {
 ThreadTicks ThreadTicksNowIgnoringOverride() {
-  const zx_time_t nanos_since_thread_started = zx_time_get(ZX_CLOCK_THREAD);
+  const zx_time_t nanos_since_thread_started = zx_clock_get(ZX_CLOCK_THREAD);
   CHECK(nanos_since_thread_started != 0);
   return ThreadTicks() + TimeDelta::FromMicroseconds(
                              ZxTimeToMicroseconds(nanos_since_thread_started));
