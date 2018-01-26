@@ -5784,6 +5784,7 @@ crbug.com/591099 paint/invalidation/background/view-background-from-body-2.html 
 crbug.com/591099 paint/invalidation/background/viewport-gradient-background-html-move-overflow.html [ Failure ]
 crbug.com/591099 paint/invalidation/background/viewport-gradient-background-html-resize-overflow.html [ Failure ]
 crbug.com/591099 paint/invalidation/background/viewport-gradient-background-html-resize.html [ Failure ]
+crbug.com/591099 paint/invalidation/body-background-not-propagated.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-layout-inline-children-replaced.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-no-inflow-children.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-shift-repaint.html [ Failure ]

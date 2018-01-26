@@ -247,6 +247,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // LocalFrameView or PaintLayerScrollableArea handle the scroll.
   ScrollResult Scroll(ScrollGranularity, const FloatSize&) override;
 
+  void StyleWillChange(StyleDifference,
+                       const ComputedStyle& new_style) override;
+
   LayoutRect DebugRect() const override;
 
  private:
