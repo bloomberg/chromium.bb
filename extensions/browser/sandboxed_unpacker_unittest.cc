@@ -26,12 +26,14 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/test/test_extensions_client.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -77,8 +79,15 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   base::FilePath temp_dir() const { return temp_dir_; }
   base::string16 unpack_err() const { return error_; }
 
+  void set_deleted_tracker(bool* deleted_tracker) {
+    deleted_tracker_ = deleted_tracker;
+  }
+
  private:
-  ~MockSandboxedUnpackerClient() override {}
+  ~MockSandboxedUnpackerClient() override {
+    if (deleted_tracker_)
+      *deleted_tracker_ = true;
+  }
 
   void OnUnpackSuccess(
       const base::FilePath& temp_dir,
@@ -99,6 +108,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   base::string16 error_;
   base::Closure quit_closure_;
   base::FilePath temp_dir_;
+  bool* deleted_tracker_ = nullptr;
 };
 
 class SandboxedUnpackerTest : public ExtensionsTest {
@@ -190,6 +200,27 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 
   base::string16 GetInstallError() const { return client_->unpack_err(); }
 
+  void ExpectInstallErrorContains(const std::string& error) {
+    std::string full_error = base::UTF16ToUTF8(client_->unpack_err());
+    EXPECT_TRUE(full_error.find(error) != std::string::npos)
+        << "Error message " << full_error << " does not contain " << error;
+  }
+
+  // Unpacks the package |package_name| and checks that |sandboxed_unpacker_|
+  // gets deleted.
+  void TestSandboxedUnpackerDeleted(const std::string& package_name,
+                                    bool expect_success) {
+    bool client_deleted = false;
+    client_->set_deleted_tracker(&client_deleted);
+    SetupUnpacker(package_name, "");
+    EXPECT_EQ(GetInstallError().empty(), expect_success);
+    // Remove our reference to |sandboxed_unpacker_|, it should get deleted
+    // since/ it's the last reference.
+    sandboxed_unpacker_ = nullptr;
+    // The SandboxedUnpacker should have been deleted and deleted the client.
+    EXPECT_TRUE(client_deleted);
+  }
+
  protected:
   data_decoder::TestDataDecoderService test_data_decoder_service_;
   base::ScopedTempDir extensions_dir_;
@@ -198,6 +229,47 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
 };
+
+TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
+  SetupUnpacker("empty_default_locale.crx", "");
+  ExpectInstallErrorContains(manifest_errors::kInvalidDefaultLocale);
+}
+
+TEST_F(SandboxedUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
+  SetupUnpacker("has_default_missing_locales.crx", "");
+  ExpectInstallErrorContains(manifest_errors::kLocalesTreeMissing);
+}
+
+TEST_F(SandboxedUnpackerTest, InvalidDefaultLocale) {
+  SetupUnpacker("invalid_default_locale.crx", "");
+  ExpectInstallErrorContains(manifest_errors::kInvalidDefaultLocale);
+}
+
+TEST_F(SandboxedUnpackerTest, MissingDefaultData) {
+  SetupUnpacker("missing_default_data.crx", "");
+  ExpectInstallErrorContains(manifest_errors::kLocalesNoDefaultMessages);
+}
+
+TEST_F(SandboxedUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
+  SetupUnpacker("missing_default_has_locales.crx", "");
+  ExpectInstallErrorContains(l10n_util::GetStringUTF8(
+      IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED));
+}
+
+TEST_F(SandboxedUnpackerTest, MissingMessagesFile) {
+  SetupUnpacker("missing_messages_file.crx", "");
+  EXPECT_TRUE(base::MatchPattern(
+      GetInstallError(),
+      base::ASCIIToUTF16("*") +
+          base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
+          base::ASCIIToUTF16("*_locales?en_US?messages.json'.")))
+      << GetInstallError();
+}
+
+TEST_F(SandboxedUnpackerTest, NoLocaleData) {
+  SetupUnpacker("no_locale_data.crx", "");
+  ExpectInstallErrorContains(manifest_errors::kLocalesNoDefaultMessages);
+}
 
 TEST_F(SandboxedUnpackerTest, ImageDecodingError) {
   const char kExpected[] = "Could not decode image: ";
@@ -279,6 +351,17 @@ TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
   SetupUnpacker("good_l10n.crx", "badhash");
   // Check that there is no error message.
   EXPECT_EQ(base::string16(), GetInstallError());
+}
+
+// SandboxedUnpacker is ref counted and is reference by callbacks and
+// InterfacePtrs. This tests that it gets deleted as expected (so that no extra
+// refs are left).
+TEST_F(SandboxedUnpackerTest, DeletedOnSuccess) {
+  TestSandboxedUnpackerDeleted("good_l10n.crx", /*expect_success=*/true);
+}
+
+TEST_F(SandboxedUnpackerTest, DeletedOnFailure) {
+  TestSandboxedUnpackerDeleted("bad_image.crx", /*expect_success=*/false);
 }
 
 class SandboxedUnpackerTestWithRealIOThread : public SandboxedUnpackerTest {

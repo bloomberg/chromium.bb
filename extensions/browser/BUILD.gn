@@ -611,6 +611,7 @@ source_set("unit_tests") {
     "//extensions/common",
     "//extensions/common/api",
     "//extensions/features",
+    "//extensions/strings",
     "//ipc:test_support",
     "//net:test_support",
     "//services/data_decoder/public/cpp:test_support",

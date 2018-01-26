@@ -9,8 +9,6 @@ assert(enable_extensions)
 
 source_set("utility") {
   sources = [
-    "unpacker.cc",
-    "unpacker.h",
     "utility_handler.cc",
     "utility_handler.h",
   ]
@@ -29,7 +27,7 @@ source_set("utility") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "unpacker_unittest.cc",
+    "utility_handler_unittest.cc",
   ]
   deps = [
     ":utility",
