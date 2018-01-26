@@ -76,7 +76,7 @@ int64_t MonotonicClockNow() {
 }
 #else
 int64_t MonotonicClockNow() {
-  return zx_time_get(ZX_CLOCK_MONOTONIC) / 1000;
+  return zx_clock_get(ZX_CLOCK_MONOTONIC) / 1000;
 }
 #endif
 
