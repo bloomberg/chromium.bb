@@ -426,6 +426,8 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
                                   bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  utility_process_mojo_client_.reset();
+
   if (!success) {
     utility_process_mojo_client_.reset();
     unpacker_io_task_runner_->PostTask(
@@ -444,33 +446,49 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& directory,
 void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  StartUtilityProcessIfNeeded();
-
   DCHECK(directory.DirName() == temp_dir_.GetPath());
 
-  utility_process_mojo_client_->service()->Unpack(
-      GetCurrentChannel(), GetCurrentFeatureSessionType(), directory,
-      extension_id_, location_, creation_flags_,
-      base::BindOnce(&SandboxedUnpacker::UnpackDone, this));
+  base::FilePath manifest_path = extension_root_.Append(kManifestFilename);
+  unpacker_io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SandboxedUnpacker::ParseJsonFile, this, manifest_path,
+          base::BindOnce(&SandboxedUnpacker::ReadManifestDone, this)));
 }
 
-void SandboxedUnpacker::UnpackDone(
-    const base::string16& error,
-    std::unique_ptr<base::DictionaryValue> manifest) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  utility_process_mojo_client_.reset();
-
-  if (!error.empty()) {
-    unpacker_io_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SandboxedUnpacker::UnpackExtensionFailed, this, error));
+void SandboxedUnpacker::ReadManifestDone(
+    std::unique_ptr<base::Value> manifest,
+    const base::Optional<std::string>& error) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  if (error) {
+    ReportUnpackingError(*error);
+    return;
+  }
+  if (!manifest || !manifest->is_dict()) {
+    ReportUnpackingError(manifest_errors::kInvalidManifest);
     return;
   }
 
-  unpacker_io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SandboxedUnpacker::UnpackExtensionSucceeded,
-                                this, std::move(manifest)));
+  std::unique_ptr<base::DictionaryValue> manifest_dict =
+      base::DictionaryValue::From(std::move(manifest));
+
+  std::string error_msg;
+  scoped_refptr<Extension> extension(
+      Extension::Create(extension_root_, location_, *manifest_dict,
+                        creation_flags_, extension_id_, &error_msg));
+  if (!extension) {
+    ReportUnpackingError(error_msg);
+    return;
+  }
+
+  std::vector<InstallWarning> warnings;
+  if (!file_util::ValidateExtension(extension.get(), &error_msg, &warnings)) {
+    ReportUnpackingError(error_msg);
+    return;
+  }
+  extension->AddInstallWarnings(warnings);
+
+  UnpackExtensionSucceeded(std::move(manifest_dict));
 }
 
 void SandboxedUnpacker::UnpackExtensionSucceeded(
@@ -673,32 +691,18 @@ void SandboxedUnpacker::ReadJSONRulesetIfNeeded(
       declarative_net_request::DNRManifestData::GetRulesetResource(
           extension_.get());
   if (!resource) {
-    ReadJSONRulesetDone(std::move(manifest), /*json_parser_ptr=*/nullptr,
+    ReadJSONRulesetDone(std::move(manifest),
                         /*json_ruleset=*/nullptr, /*error=*/base::nullopt);
     return;
   }
 
-  std::string json_ruleset_data;
-  if (!base::ReadFileToString(resource->GetFilePath(), &json_ruleset_data)) {
-    ReportUnpackingError("JSON ruleset file does not exist.");
-    return;
-  }
-
-  data_decoder::mojom::JsonParserPtr json_parser_ptr;
-  connector_->BindInterface(data_decoder_identity_, &json_parser_ptr);
-  json_parser_ptr.set_connection_error_handler(
-      base::BindOnce(&SandboxedUnpacker::UtilityProcessCrashed, this));
-
-  auto* raw_json_parser_ptr = json_parser_ptr.get();
-  raw_json_parser_ptr->Parse(
-      json_ruleset_data,
-      base::BindOnce(&SandboxedUnpacker::ReadJSONRulesetDone, this,
-                     std::move(manifest), std::move(json_parser_ptr)));
+  ParseJsonFile(resource->GetFilePath(),
+                base::BindOnce(&SandboxedUnpacker::ReadJSONRulesetDone, this,
+                               std::move(manifest)));
 }
 
 void SandboxedUnpacker::ReadJSONRulesetDone(
     std::unique_ptr<base::DictionaryValue> manifest,
-    data_decoder::mojom::JsonParserPtr json_parser_ptr_keep_alive,
     std::unique_ptr<base::Value> json_ruleset,
     const base::Optional<std::string>& error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
@@ -754,6 +758,22 @@ bool SandboxedUnpacker::IndexAndPersistRulesIfNeeded(
   *dnr_ruleset_checksum = ruleset_checksum;
   extension_->AddInstallWarnings(warnings);
   return true;
+}
+
+data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  if (!json_parser_ptr_) {
+    connector_->BindInterface(data_decoder_identity_, &json_parser_ptr_);
+    json_parser_ptr_.set_connection_error_handler(base::BindOnce(
+        &SandboxedUnpacker::ReportFailure, this,
+        UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+            ASCIIToUTF16("UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL")) +
+            ASCIIToUTF16(". ") +
+            l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROCESS_CRASHED)));
+  }
+  return json_parser_ptr_.get();
 }
 
 void SandboxedUnpacker::ReportUnpackingError(base::StringPiece error) {
@@ -943,6 +963,8 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
 void SandboxedUnpacker::ReportSuccess(
     std::unique_ptr<base::DictionaryValue> original_manifest,
     const base::Optional<int>& dnr_ruleset_checksum) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
   if (!crx_unpack_start_time_.is_null())
@@ -956,6 +978,8 @@ void SandboxedUnpacker::ReportSuccess(
                            std::move(original_manifest), extension_.get(),
                            install_icon_, dnr_ruleset_checksum);
   extension_ = NULL;
+
+  Cleanup();
 }
 
 base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
@@ -995,13 +1019,29 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
 
 void SandboxedUnpacker::Cleanup() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
-  if (!temp_dir_.Delete()) {
+  if (temp_dir_.IsValid() && !temp_dir_.Delete()) {
     LOG(WARNING) << "Can not delete temp directory at "
                  << temp_dir_.GetPath().value();
   }
   connector_.reset();
   image_sanitizer_.reset();
   json_file_sanitizer_.reset();
+  json_parser_ptr_.reset();
+}
+
+void SandboxedUnpacker::ParseJsonFile(
+    const base::FilePath& path,
+    data_decoder::mojom::JsonParser::ParseCallback callback) {
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+  std::string contents;
+  if (!base::ReadFileToString(path, &contents)) {
+    std::move(callback).Run(
+        /*value=*/nullptr,
+        /*error=*/base::Optional<std::string>("File doesn't exist."));
+    return;
+  }
+
+  GetJsonParserPtr()->Parse(contents, std::move(callback));
 }
 
 }  // namespace extensions

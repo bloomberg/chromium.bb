@@ -22,6 +22,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
+#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 class SkBitmap;
@@ -240,8 +241,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
-  void UnpackDone(const base::string16& error,
-                  std::unique_ptr<base::DictionaryValue> manifest);
+  void ReadManifestDone(std::unique_ptr<base::Value> manifest,
+                        const base::Optional<std::string>& error);
   void UnpackExtensionSucceeded(
       std::unique_ptr<base::DictionaryValue> manifest);
   void UnpackExtensionFailed(const base::string16& error);
@@ -264,11 +265,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                                 const std::string& error_msg);
 
   void ReadJSONRulesetIfNeeded(std::unique_ptr<base::DictionaryValue> manifest);
-  void ReadJSONRulesetDone(
-      std::unique_ptr<base::DictionaryValue> manifest,
-      data_decoder::mojom::JsonParserPtr json_parser_ptr_keep_alive,
-      std::unique_ptr<base::Value> json_ruleset,
-      const base::Optional<std::string>& error);
+  void ReadJSONRulesetDone(std::unique_ptr<base::DictionaryValue> manifest,
+                           std::unique_ptr<base::Value> json_ruleset,
+                           const base::Optional<std::string>& error);
 
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
@@ -290,6 +289,15 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool IndexAndPersistRulesIfNeeded(
       std::unique_ptr<base::ListValue> json_ruleset,
       base::Optional<int>* dnr_ruleset_checksum);
+
+  // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
+  data_decoder::mojom::JsonParser* GetJsonParserPtr();
+
+  // Parses the JSON file at |path| and invokes |callback| when done. |callback|
+  // is called with a null parameter if parsing failed.
+  // This must be called from the |unpacker_io_task_runner_|.
+  void ParseJsonFile(const base::FilePath& path,
+                     data_decoder::mojom::JsonParser::ParseCallback callback);
 
   // Connector to the ServiceManager required by the Unzip API.
   std::unique_ptr<service_manager::Connector> connector_;
@@ -349,6 +357,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // unpacking this extension share the same process, and so that no unrelated
   // data decoder operation use that process.
   service_manager::Identity data_decoder_identity_;
+
+  // The JSONParser interface pointer from the data decoder service.
+  data_decoder::mojom::JsonParserPtr json_parser_ptr_;
 
   // The ImageSanitizer used to clean-up images.
   std::unique_ptr<ImageSanitizer> image_sanitizer_;

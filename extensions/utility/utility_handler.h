@@ -7,6 +7,10 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
 
 namespace utility_handler {
@@ -15,6 +19,10 @@ void UtilityThreadStarted();
 
 void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
                                bool running_elevated);
+
+bool ShouldExtractFile(bool is_theme, const base::FilePath& file_path);
+
+bool IsManifestFile(const base::FilePath& file_path);
 
 }  // namespace utility_handler
 
