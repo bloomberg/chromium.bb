@@ -23,7 +23,7 @@ void DoNothingSignalHandler(int signal) {}
 
 }  // namespace
 
-bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
+bool CreateInitProcessReaper(base::OnceClosure post_fork_parent_callback) {
   int sync_fds[2];
   // We want to use send, so we can't use a pipe
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, sync_fds)) {
@@ -54,8 +54,9 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
     DPCHECK(!close_ret);
     close_ret = shutdown(sync_fds[1], SHUT_RD);
     DPCHECK(!close_ret);
-    if (post_fork_parent_callback)
-      post_fork_parent_callback->Run();
+    if (!post_fork_parent_callback.is_null())
+      std::move(post_fork_parent_callback).Run();
+
     // Tell the child to continue
     CHECK(HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) == 1);
     close_ret = IGNORE_EINTR(close(sync_fds[1]));
