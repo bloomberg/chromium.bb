@@ -85,6 +85,7 @@ vs-chromium-project.txt
 /chrome/app/theme/google_chrome
 /chrome/browser/autofill/internal
 /chrome/browser/chromeos/arc/voice_interaction/internal
+/chrome/browser/chromeos/assistant/internal
 /chrome/browser/chromeos/login/screenshot_testing/golden_screenshots/*.png
 /chrome/browser/chromeos/login/screenshot_testing/artifacts
 /chrome/browser/extensions/api/ledger/
