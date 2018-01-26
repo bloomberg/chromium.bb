@@ -358,16 +358,22 @@ AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" = xyes])
 if test "x$INTEL" = xyes; then
 	AC_DEFINE(HAVE_INTEL, 1, [Have intel support])
+else
+	AC_DEFINE(HAVE_INTEL, 0)
 fi
 
 AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
 if test "x$VMWGFX" = xyes; then
 	AC_DEFINE(HAVE_VMWGFX, 1, [Have vmwgfx kernel headers])
+else
+	AC_DEFINE(HAVE_VMWGFX, 0)
 fi
 
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 if test "x$NOUVEAU" = xyes; then
 	AC_DEFINE(HAVE_NOUVEAU, 1, [Have nouveau (nvidia) support])
+else
+	AC_DEFINE(HAVE_NOUVEAU, 0)
 fi
 
 AM_CONDITIONAL(HAVE_OMAP, [test "x$OMAP" = xyes])
@@ -375,6 +381,8 @@ AM_CONDITIONAL(HAVE_OMAP, [test "x$OMAP" = xyes])
 AM_CONDITIONAL(HAVE_EXYNOS, [test "x$EXYNOS" = xyes])
 if test "x$EXYNOS" = xyes; then
 	AC_DEFINE(HAVE_EXYNOS, 1, [Have EXYNOS support])
+else
+	AC_DEFINE(HAVE_EXYNOS, 0)
 fi
 
 AM_CONDITIONAL(HAVE_FREEDRENO, [test "x$FREEDRENO" = xyes])
@@ -392,6 +400,8 @@ fi
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
 if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
+else
+	AC_DEFINE(HAVE_RADEON, 0)
 fi
 
 if test "x$AMDGPU" != xno; then
@@ -421,6 +431,8 @@ if test "x$AMDGPU" = xyes; then
 	if test "x$have_cunit" = "xno"; then
 		AC_MSG_WARN([Could not find cunit library. Disabling amdgpu tests])
 	fi
+else
+	AC_DEFINE(HAVE_AMDGPU, 0)
 fi
 
 AM_CONDITIONAL(HAVE_TEGRA, [test "x$TEGRA" = xyes])
@@ -428,6 +440,8 @@ AM_CONDITIONAL(HAVE_TEGRA, [test "x$TEGRA" = xyes])
 AM_CONDITIONAL(HAVE_VC4, [test "x$VC4" = xyes])
 if test "x$VC4" = xyes; then
 	AC_DEFINE(HAVE_VC4, 1, [Have VC4 support])
+else
+	AC_DEFINE(HAVE_VC4, 0)
 fi
 
 AM_CONDITIONAL(HAVE_ETNAVIV, [test "x$ETNAVIV" = xyes])
