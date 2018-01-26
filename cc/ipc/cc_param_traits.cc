@@ -595,6 +595,35 @@ void ParamTraits<viz::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("])");
 }
 
+void ParamTraits<viz::FrameDeadline>::Write(base::Pickle* m,
+                                            const param_type& p) {
+  WriteParam(m, p.value());
+  WriteParam(m, p.use_default_lower_bound_deadline());
+}
+
+bool ParamTraits<viz::FrameDeadline>::Read(const base::Pickle* m,
+                                           base::PickleIterator* iter,
+                                           param_type* p) {
+  uint32_t value;
+  if (!ReadParam(m, iter, &value))
+    return false;
+
+  uint32_t use_default_lower_bound_deadline;
+  if (!ReadParam(m, iter, &use_default_lower_bound_deadline))
+    return false;
+
+  *p = viz::FrameDeadline(value, use_default_lower_bound_deadline);
+  return true;
+}
+
+void ParamTraits<viz::FrameDeadline>::Log(const param_type& p, std::string* l) {
+  l->append("viz::FrameDeadline(");
+  LogParam(p.value(), l);
+  l->append(", ");
+  LogParam(p.use_default_lower_bound_deadline(), l);
+  l->append(")");
+}
+
 void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
                                           const param_type& p) {
   DCHECK(p.is_valid());

@@ -36,6 +36,10 @@ class CC_EXPORT AppendQuadsData {
   // this CompositorFrame.
   base::Optional<uint32_t> deadline_in_frames;
 
+  // Indicates whether or not one of the layers wants to use the default
+  // activation deadline.
+  bool use_default_lower_bound_deadline = false;
+
   // This is the set of surface IDs that must have corresponding
   // active CompositorFrames so that this CompositorFrame can
   // activate.

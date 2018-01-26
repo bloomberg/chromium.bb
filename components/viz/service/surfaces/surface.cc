@@ -175,14 +175,21 @@ bool Surface::QueueFrame(
                   aggregated_damage_callback, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
-    base::Optional<uint32_t> deadline_in_frames =
-        GetPendingFrame().metadata.deadline_in_frames;
-    if (deadline_in_frames)
-      deadline_.Set(*deadline_in_frames);
+    base::Optional<FrameDeadline> deadline =
+        GetPendingFrame().metadata.deadline;
+    if (deadline) {
+      uint32_t deadline_in_frames = deadline->value();
+      if (deadline->use_default_lower_bound_deadline()) {
+        uint32_t default_deadline = surface_manager_->dependency_tracker()
+                                        ->number_of_frames_to_deadline();
+        deadline_in_frames = std::max(deadline_in_frames, default_deadline);
+      }
+      deadline_.Set(deadline_in_frames);
+    }
 
-    // Ask the surface manager to inform |this| when its dependencies are
-    // resolved.
-    surface_manager_->RequestSurfaceResolution(this);
+    // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
+    // are resolved.
+    surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
   }
 
   // Returns resources for the previous pending frame.

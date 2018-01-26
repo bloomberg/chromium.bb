@@ -78,6 +78,7 @@ viz_component("common") {
     "quads/debug_border_draw_quad.h",
     "quads/draw_quad.cc",
     "quads/draw_quad.h",
+    "quads/frame_deadline.h",
     "quads/largest_draw_quad.cc",
     "quads/largest_draw_quad.h",
     "quads/picture_draw_quad.cc",

@@ -32,7 +32,7 @@ struct CompositorFrameMetadata {
   Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
   array<SurfaceId> referenced_surfaces;
-  FrameDeadline? deadline_in_frames;
+  FrameDeadline? deadline;
   array<SurfaceId> activation_dependencies;
   uint32 content_source_id;
   BeginFrameAck begin_frame_ack;

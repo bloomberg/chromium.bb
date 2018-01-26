@@ -83,6 +83,8 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       append_quads_data->deadline_in_frames = std::max(
           *append_quads_data->deadline_in_frames, *deadline_in_frames_);
       deadline_in_frames_.reset();
+    } else {
+      append_quads_data->use_default_lower_bound_deadline = true;
     }
   }
 }

@@ -45,7 +45,7 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   return data.ReadSelection(&out->selection) &&
          data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces) &&
-         data.ReadDeadlineInFrames(&out->deadline_in_frames) &&
+         data.ReadDeadline(&out->deadline) &&
          data.ReadActivationDependencies(&out->activation_dependencies) &&
          data.ReadBeginFrameAck(&out->begin_frame_ack);
 }

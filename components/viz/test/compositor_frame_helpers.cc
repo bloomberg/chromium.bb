@@ -106,9 +106,9 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetActivationDependencies(
   return *this;
 }
 
-CompositorFrameBuilder& CompositorFrameBuilder::SetDeadlineInFrames(
-    base::Optional<uint32_t> deadline_in_frames) {
-  frame_->metadata.deadline_in_frames = deadline_in_frames;
+CompositorFrameBuilder& CompositorFrameBuilder::SetDeadline(
+    base::Optional<FrameDeadline> deadline) {
+  frame_->metadata.deadline = deadline;
   return *this;
 }
 
