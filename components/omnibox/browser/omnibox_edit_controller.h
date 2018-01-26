@@ -31,6 +31,11 @@ class OmniboxEditController {
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 
+  // Returns the text to display in the steady state, when the omnibox does not
+  // have focus. This may be a simplified version of the URL with destructive
+  // elisions applied - and is not suitable for editing.
+  base::string16 GetURLForDisplay();
+
  protected:
   OmniboxEditController();
   virtual ~OmniboxEditController();
