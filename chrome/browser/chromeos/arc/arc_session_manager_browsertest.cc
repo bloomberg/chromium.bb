@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -126,7 +125,6 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
-    ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));

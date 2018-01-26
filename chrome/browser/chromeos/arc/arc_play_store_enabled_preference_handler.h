@@ -10,30 +10,24 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class Profile;
 
 namespace arc {
 
 class ArcSessionManager;
-class ArcAuthNotification;
 
 // Observes Google Play Store enabled preference (whose key is "arc.enabled"
 // for historical reason), and controls ARC via ArcSessionManager.
-// In addition, this controls showing/hiding a notification to enable Google
-// Play Store.
-class ArcPlayStoreEnabledPreferenceHandler
-    : public sync_preferences::PrefServiceSyncableObserver {
+class ArcPlayStoreEnabledPreferenceHandler {
  public:
   ArcPlayStoreEnabledPreferenceHandler(Profile* profile,
                                        ArcSessionManager* arc_session_manager);
-  ~ArcPlayStoreEnabledPreferenceHandler() override;
+  ~ArcPlayStoreEnabledPreferenceHandler();
 
   // Starts observing Google Play Store enabled preference change.
   // Also, based on its initial value, this may start ArcSession, or may start
   // removing the data, as initial state.
-  // In addition, this triggers to show ArcAuthNotification, if necessary.
   void Start();
 
  private:
@@ -44,9 +38,6 @@ class ArcPlayStoreEnabledPreferenceHandler
   // ArcSupportHost's managed state.
   void UpdateArcSessionManager();
 
-  // sync_preferences::PrefServiceSyncableObserver:
-  void OnIsSyncingChanged() override;
-
   Profile* const profile_;
 
   // Owned by ArcServiceLauncher.
@@ -54,9 +45,6 @@ class ArcPlayStoreEnabledPreferenceHandler
 
   // Registrar used to monitor ARC enabled state.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Controls life-cycle of ARC auth notification.
-  std::unique_ptr<ArcAuthNotification> auth_notification_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcPlayStoreEnabledPreferenceHandler> weak_ptr_factory_;

@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -43,6 +42,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/display/types/display_constants.h"
 

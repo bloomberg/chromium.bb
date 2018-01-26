@@ -297,9 +297,6 @@ const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
-// Enables ARC OptIn flow in OOBE.
-const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
-
 // Enables using a random url for captive portal detection.
 const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 

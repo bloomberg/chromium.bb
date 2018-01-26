@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -106,7 +105,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
-    ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));

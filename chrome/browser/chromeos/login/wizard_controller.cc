@@ -1653,13 +1653,6 @@ bool WizardController::IsRemoraPairingOobe() const {
 }
 
 bool WizardController::ShouldShowArcTerms() const {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(chromeos::switches::kEnableArcOOBEOptIn)) {
-    VLOG(1) << "Skip ARC Terms of Service screen because ARC OOBE OptIn is "
-            << "disabled.";
-    return false;
-  }
   if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     VLOG(1) << "Skip ARC Terms of Service screen because user is not "
             << "logged in.";
