@@ -124,7 +124,7 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   // to be a service process of some sort registered with launchd.
   if (version) {
     *version = "0";
-    NSString* exe_path = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
+    NSString* exe_path = launchd_conf.get()[@LAUNCH_JOBKEY_PROGRAM];
     if (exe_path) {
       NSString* bundle_path = [[[exe_path stringByDeletingLastPathComponent]
                                 stringByDeletingLastPathComponent]
@@ -151,7 +151,7 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   }
   if (pid) {
     *pid = -1;
-    NSNumber* ns_pid = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PID];
+    NSNumber* ns_pid = launchd_conf.get()[@LAUNCH_JOBKEY_PID];
     if (ns_pid) {
      *pid = [ns_pid intValue];
     }
@@ -242,13 +242,12 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
                                   forKey:GetServiceProcessLaunchDSocketKey()];
 
   // See the man page for launchd.plist.
-  NSMutableDictionary* launchd_plist =
-      [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-        GetServiceProcessLaunchDLabel(), @LAUNCH_JOBKEY_LABEL,
-        program, @LAUNCH_JOBKEY_PROGRAM,
-        ns_args, @LAUNCH_JOBKEY_PROGRAMARGUMENTS,
-        sockets, @LAUNCH_JOBKEY_SOCKETS,
-        nil];
+  NSMutableDictionary* launchd_plist = [@{
+    @LAUNCH_JOBKEY_LABEL : GetServiceProcessLaunchDLabel(),
+    @LAUNCH_JOBKEY_PROGRAM : program,
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : ns_args,
+    @LAUNCH_JOBKEY_SOCKETS : sockets,
+  } mutableCopy];
 
   if (for_auto_launch) {
     // We want the service process to be able to exit if there are no services
@@ -256,15 +255,12 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
     // relaunch the service automatically in any other case than exiting
     // cleanly with a 0 return code.
     NSDictionary* keep_alive =
-        [NSDictionary
-           dictionaryWithObject:[NSNumber numberWithBool:NO]
-                         forKey:@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT];
-    NSDictionary* auto_launchd_plist =
-        [[NSDictionary alloc] initWithObjectsAndKeys:
-          [NSNumber numberWithBool:YES], @LAUNCH_JOBKEY_RUNATLOAD,
-          keep_alive, @LAUNCH_JOBKEY_KEEPALIVE,
-          @kServiceProcessSessionType, @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
-          nil];
+        @{ @LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT : @NO };
+    NSDictionary* auto_launchd_plist = @{
+      @LAUNCH_JOBKEY_RUNATLOAD : @YES,
+      @LAUNCH_JOBKEY_KEEPALIVE : keep_alive,
+      @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @kServiceProcessSessionType
+    };
     [launchd_plist addEntriesFromDictionary:auto_launchd_plist];
   }
   return reinterpret_cast<CFDictionaryRef>(launchd_plist);
@@ -293,7 +289,7 @@ bool ServiceProcessState::RemoveFromAutoRun() {
 bool ServiceProcessState::StateData::WatchExecutable() {
   base::mac::ScopedNSAutoreleasePool pool;
   NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(launchd_conf);
-  NSString* exe_path = [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
+  NSString* exe_path = ns_launchd_conf[@LAUNCH_JOBKEY_PROGRAM];
   if (!exe_path) {
     DLOG(ERROR) << "No " LAUNCH_JOBKEY_PROGRAM;
     return false;
@@ -409,11 +405,11 @@ void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
         NSURL* new_path = [executable_fsref_ filePathURL];
         DCHECK([new_path isFileURL]);
         NSString* ns_new_path = [new_path path];
-        [ns_plist setObject:ns_new_path forKey:@ LAUNCH_JOBKEY_PROGRAM];
-        base::scoped_nsobject<NSMutableArray> args([[ns_plist
-            objectForKey:@LAUNCH_JOBKEY_PROGRAMARGUMENTS] mutableCopy]);
-        [args replaceObjectAtIndex:0 withObject:ns_new_path];
-        [ns_plist setObject:args forKey:@ LAUNCH_JOBKEY_PROGRAMARGUMENTS];
+        ns_plist[@LAUNCH_JOBKEY_PROGRAM] = ns_new_path;
+        base::scoped_nsobject<NSMutableArray> args(
+            [ns_plist[@LAUNCH_JOBKEY_PROGRAMARGUMENTS] mutableCopy]);
+        args[0] = ns_new_path;
+        ns_plist[@LAUNCH_JOBKEY_PROGRAMARGUMENTS] = args;
         if (!Launchd::GetInstance()->WritePlistToFile(Launchd::User,
                                                       Launchd::Agent,
                                                       name,

@@ -88,7 +88,7 @@ bool IsBackgroundOnlyProcess() {
   // bundle dictionary.  It needs to look at the actual running .app's
   // Info.plist to access its LSUIElement property.
   NSDictionary* info_dictionary = [base::mac::MainBundle() infoDictionary];
-  return [[info_dictionary objectForKey:@"LSUIElement"] boolValue] != NO;
+  return [info_dictionary[@"LSUIElement"] boolValue] != NO;
 }
 
 FilePath PathForFrameworkBundleResource(CFStringRef resourceName) {
@@ -116,12 +116,12 @@ bool GetSearchPathDirectory(NSSearchPathDirectory directory,
                             NSSearchPathDomainMask domain_mask,
                             FilePath* result) {
   DCHECK(result);
-  NSArray* dirs =
+  NSArray<NSString*>* dirs =
       NSSearchPathForDirectoriesInDomains(directory, domain_mask, YES);
   if ([dirs count] < 1) {
     return false;
   }
-  *result = NSStringToFilePath([dirs objectAtIndex:0]);
+  *result = NSStringToFilePath(dirs[0]);
   return true;
 }
 
@@ -434,7 +434,7 @@ std::string GetValueFromDictionaryErrorMessage(
 NSString* FilePathToNSString(const FilePath& path) {
   if (path.empty())
     return nil;
-  return [NSString stringWithUTF8String:path.value().c_str()];
+  return @(path.value().c_str());  // @() does UTF8 conversion.
 }
 
 FilePath NSStringToFilePath(NSString* str) {

@@ -97,13 +97,13 @@ NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
       return nil;
     }
 
-    NSDictionary* tile_data = [app objectForKey:kDockTileDataKey];
+    NSDictionary* tile_data = app[kDockTileDataKey];
     if (![tile_data isKindOfClass:[NSDictionary class]]) {
       LOG(ERROR) << "tile_data not NSDictionary";
       return nil;
     }
 
-    NSDictionary* file_data = [tile_data objectForKey:kDockFileDataKey];
+    NSDictionary* file_data = tile_data[kDockFileDataKey];
     if (![file_data isKindOfClass:[NSDictionary class]]) {
       // Some apps (e.g. Dashboard) have no file data, but instead have a
       // special value for the tile-type key. For these, add an empty string to
