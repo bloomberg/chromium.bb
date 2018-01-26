@@ -338,7 +338,7 @@ AutomationPredicate.root = function(node) {
           (node.parent.root.role == Role.DESKTOP &&
            node.parent.role == Role.WEB_VIEW);
     default:
-      return false;
+      return !!node.modal;
   }
 };
 

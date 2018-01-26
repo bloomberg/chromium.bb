@@ -650,6 +650,9 @@
     // The name of the programmatic backing object.
     DOMString? className;
 
+    // Marks this subtree as modal.
+    boolean? modal;
+
     // A map containing all HTML attributes and their values
     // <jsexterns>@type {Object<string>}</jsexterns>
     object? htmlAttributes;
