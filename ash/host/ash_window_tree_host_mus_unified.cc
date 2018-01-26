@@ -31,20 +31,9 @@ class MusUnifiedEventTargeter : public aura::WindowTargeter {
 
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                       ui::Event* event) override {
-    if (root == src_root_) {
+    if (root == src_root_ && !event->target()) {
       delegate_->SetCurrentEventTargeterSourceHost(src_root_->GetHost());
 
-      if (event->IsLocatedEvent()) {
-        // Mus uses the event's root location (relative to the physical display)
-        // to find the target window's local coordinates, but it incorrectly
-        // assumes that the root location is relative to the unified display.
-        // Pass the root location (now relative to the unified display) into the
-        // event dispatch pipeline, that finds local coordinates for the target.
-        ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
-        located_event->set_location_f(located_event->root_location_f());
-      }
-      if (event->target())
-        ui::Event::DispatcherApi(event).set_target(nullptr);
       ignore_result(
           dst_root_->GetHost()->event_sink()->OnEventFromSource(event));
 
