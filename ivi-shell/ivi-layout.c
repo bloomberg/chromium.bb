@@ -27,7 +27,7 @@
  * Implementation of ivi-layout library. The actual view on ivi_screen is
  * not updated until ivi_layout_commit_changes is called. An overview from
  * calling API for updating properties of ivi_surface/ivi_layer to asking
- * compositor to compose them by using weston_compositor_schedule_repaint,
+ * compositor to compose them by using weston_view_schedule_repaint,
  * 0/ initialize this library by ivi_layout_init_with_compositor
  *    with (struct weston_compositor *ec) from ivi-shell.
  * 1/ When an API for updating properties of ivi_surface/ivi_layer, it updates
@@ -51,8 +51,8 @@
  * 4/ According properties, set transformation by using weston_matrix and
  *    weston_view per ivi_surfaces and ivi_layers in while loop.
  * 5/ Set damage and trigger transform by using weston_view_geometry_dirty.
- * 6/ Notify update of properties.
- * 7/ Trigger composition by weston_compositor_schedule_repaint.
+ * 6/ Schedule repaint for each view by using weston_view_schedule_repaint.
+ * 7/ Notify update of properties.
  *
  */
 #include "config.h"
@@ -577,13 +577,13 @@ update_prop(struct ivi_layout_view *ivi_view)
 			       &ivi_view->transform.link);
 
 		weston_view_set_transform_parent(ivi_view->view, NULL);
+		weston_view_geometry_dirty(ivi_view->view);
+		weston_view_update_transform(ivi_view->view);
 	}
 
 	ivisurf->update_count++;
 
-	weston_view_geometry_dirty(ivi_view->view);
-
-	weston_surface_damage(ivisurf->surface);
+	weston_view_schedule_repaint(ivi_view->view);
 }
 
 static void
@@ -1752,7 +1752,6 @@ ivi_layout_commit_changes(void)
 
 	commit_changes(layout);
 	send_prop(layout);
-	weston_compositor_schedule_repaint(layout->compositor);
 
 	return IVI_SUCCEEDED;
 }
