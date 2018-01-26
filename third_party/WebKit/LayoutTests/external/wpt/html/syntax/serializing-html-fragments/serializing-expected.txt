@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 236 tests; 224 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 236 tests; 228 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS innerHTML 0 
 PASS innerHTML 1 <a></a>
 PASS innerHTML 2 <a b="c"></a>
@@ -9,7 +9,7 @@ PASS innerHTML 5 <a b="&nbsp;"></a>
 PASS innerHTML 6 <a b="&quot;"></a>
 PASS innerHTML 7 <a b="<"></a>
 PASS innerHTML 8 <a b=">"></a>
-FAIL innerHTML 9 <svg xlink:href="a"></svg> assert_equals: expected "<svg xlink:href=\"a\"></svg>" but got "<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg>"
+PASS innerHTML 9 <svg xlink:href="a"></svg>
 PASS innerHTML 10 <svg xmlns:svg="test"></svg>
 PASS innerHTML 11 a
 PASS innerHTML 12 &amp;
@@ -37,7 +37,7 @@ PASS outerHTML 5 <span><a b="&nbsp;"></a></span>
 PASS outerHTML 6 <span><a b="&quot;"></a></span>
 PASS outerHTML 7 <span><a b="<"></a></span>
 PASS outerHTML 8 <span><a b=">"></a></span>
-FAIL outerHTML 9 <span><svg xlink:href="a"></svg></span> assert_equals: expected "<span><svg xlink:href=\"a\"></svg></span>" but got "<span><svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg></span>"
+PASS outerHTML 9 <span><svg xlink:href="a"></svg></span>
 PASS outerHTML 10 <span><svg xmlns:svg="test"></svg></span>
 PASS outerHTML 11 <span>a</span>
 PASS outerHTML 12 <span>&amp;</span>
@@ -57,13 +57,13 @@ PASS outerHTML 25 <span><!--data--></span>
 PASS outerHTML 26 <span><a><b><c></c></b><d>e</d><f><g>h</g></f></a></span>
 PASS outerHTML 27 <span b="c"></span>
 PASS innerHTML Attribute in the XML namespace
-FAIL innerHTML Attribute in the XML namespace with the prefix not set to xml: assert_equals: expected "<svg xml:foo=\"test\"></svg>" but got "<svg abc:foo=\"test\"></svg>"
+PASS innerHTML Attribute in the XML namespace with the prefix not set to xml:
 PASS innerHTML Non-'xmlns' attribute in the xmlns namespace
 PASS innerHTML 'xmlns' attribute in the xmlns namespace
 PASS innerHTML Attribute in non-standard namespace
 PASS innerHTML <span> starting with U+000A
 PASS outerHTML Attribute in the XML namespace
-FAIL outerHTML Attribute in the XML namespace with the prefix not set to xml: assert_equals: expected "<span><svg xml:foo=\"test\"></svg></span>" but got "<span><svg abc:foo=\"test\"></svg></span>"
+PASS outerHTML Attribute in the XML namespace with the prefix not set to xml:
 PASS outerHTML Non-'xmlns' attribute in the xmlns namespace
 PASS outerHTML 'xmlns' attribute in the xmlns namespace
 PASS outerHTML Attribute in non-standard namespace

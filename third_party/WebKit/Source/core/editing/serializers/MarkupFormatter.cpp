@@ -347,13 +347,6 @@ void MarkupFormatter::AppendCloseTag(StringBuilder& result,
   result.Append('>');
 }
 
-static inline bool AttributeIsInSerializedNamespace(
-    const Attribute& attribute) {
-  return attribute.NamespaceURI() == XMLNames::xmlNamespaceURI ||
-         attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI ||
-         attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI;
-}
-
 void MarkupFormatter::AppendAttribute(StringBuilder& result,
                                       const Element& element,
                                       const Attribute& attribute,
@@ -361,7 +354,15 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
   bool document_is_html = SerializeAsHTMLDocument(element);
 
   QualifiedName prefixed_name = attribute.GetName();
-  if (document_is_html && !AttributeIsInSerializedNamespace(attribute)) {
+  if (document_is_html) {
+    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+      if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
+        prefixed_name.SetPrefix(g_xmlns_atom);
+    } else if (attribute.NamespaceURI() == XMLNames::xmlNamespaceURI) {
+      prefixed_name.SetPrefix(g_xml_atom);
+    } else if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
+      prefixed_name.SetPrefix(g_xlink_atom);
+    }
     result.Append(' ');
     result.Append(prefixed_name.ToString());
   } else {
