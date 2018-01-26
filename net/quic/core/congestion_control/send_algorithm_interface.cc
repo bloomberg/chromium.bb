@@ -37,7 +37,8 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
                                initial_congestion_window,
                                max_congestion_window);
       }
-    // Fall back to CUBIC if PCC is disabled.
+      // Fall back to CUBIC if PCC is disabled.
+      FALLTHROUGH;
     case kCubicBytes:
       return new TcpCubicSenderBytes(
           clock, rtt_stats, false /* don't use Reno */,

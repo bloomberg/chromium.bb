@@ -138,7 +138,7 @@ QuicHttpHeadersQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPayload;
           continue;
         }
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kStartDecodingPriorityFields:
         status = state->StartDecodingStructureInPayload(&priority_fields_, db);
@@ -147,7 +147,7 @@ QuicHttpHeadersQuicHttpPayloadDecoder::ResumeDecodingPayload(
           return status;
         }
         state->listener()->OnHeadersPriority(priority_fields_);
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kReadPayload:
         avail = state->AvailablePayload(db);
@@ -160,7 +160,7 @@ QuicHttpHeadersQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPayload;
           return QuicHttpDecodeStatus::kDecodeInProgress;
         }
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kSkipPadding:
         // SkipPadding handles the OnPadding callback.

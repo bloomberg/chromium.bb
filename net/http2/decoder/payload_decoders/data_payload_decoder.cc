@@ -95,7 +95,7 @@ DecodeStatus DataPayloadDecoder::ResumeDecodingPayload(FrameDecoderState* state,
       if (status != DecodeStatus::kDecodeDone) {
         return status;
       }
-    // FALLTHROUGH_INTENDED
+      FALLTHROUGH;
 
     case PayloadState::kReadPayload:
       avail = state->AvailablePayload(db);
@@ -108,7 +108,7 @@ DecodeStatus DataPayloadDecoder::ResumeDecodingPayload(FrameDecoderState* state,
         payload_state_ = PayloadState::kReadPayload;
         return DecodeStatus::kDecodeInProgress;
       }
-    // FALLTHROUGH_INTENDED
+      FALLTHROUGH;
 
     case PayloadState::kSkipPadding:
       // SkipPadding handles the OnPadding callback.

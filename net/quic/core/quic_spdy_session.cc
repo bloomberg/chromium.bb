@@ -153,6 +153,7 @@ class QuicSpdySession::SpdyFramerVisitor
         if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
           break;
         }
+        FALLTHROUGH;
       default:
         CloseConnection(
             QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id),

@@ -815,6 +815,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                               &params->token_binding_key_param, nullptr)) {
           break;
         }
+        FALLTHROUGH;
       default:
         helper.Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
                     "Invalid Token Binding key parameter");

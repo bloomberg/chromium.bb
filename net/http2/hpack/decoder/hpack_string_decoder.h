@@ -85,17 +85,16 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
             // The length is split across decode buffers.
             return status;
           }
-        // We've finished decoding the length, which spanned one or more
-        // bytes. Approximately 17% of strings have a length that is greater
-        // than 126 bytes, and thus the length is encoded in more than one
-        // byte, and so doesn't get the benefit of the optimization in
-        // Start() for single byte lengths. But, we still expect that most
-        // of such strings will be contained entirely in a single decode
-        // buffer, and hence this fall through skips another trip through the
-        // switch above and more importantly skips setting the state_ variable
-        // again in those cases where we don't need it.
-
-        // FALLTHROUGH_INTENDED
+          // We've finished decoding the length, which spanned one or more
+          // bytes. Approximately 17% of strings have a length that is greater
+          // than 126 bytes, and thus the length is encoded in more than one
+          // byte, and so doesn't get the benefit of the optimization in
+          // Start() for single byte lengths. But, we still expect that most
+          // of such strings will be contained entirely in a single decode
+          // buffer, and hence this fall through skips another trip through the
+          // switch above and more importantly skips setting the state_ variable
+          // again in those cases where we don't need it.
+          FALLTHROUGH;
 
         case kDecodingString:
           DVLOG(2) << "kDecodingString: db->Remaining=" << db->Remaining()

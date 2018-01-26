@@ -103,7 +103,7 @@ QuicHttpDecodeStatus QuicHttpDataQuicHttpPayloadDecoder::ResumeDecodingPayload(
       if (status != QuicHttpDecodeStatus::kDecodeDone) {
         return status;
       }
-    // FALLTHROUGH_INTENDED;
+      FALLTHROUGH;
 
     case PayloadState::kReadPayload:
       avail = state->AvailablePayload(db);
@@ -116,7 +116,7 @@ QuicHttpDecodeStatus QuicHttpDataQuicHttpPayloadDecoder::ResumeDecodingPayload(
         payload_state_ = PayloadState::kReadPayload;
         return QuicHttpDecodeStatus::kDecodeInProgress;
       }
-    // FALLTHROUGH_INTENDED;
+      FALLTHROUGH;
 
     case PayloadState::kSkipPadding:
       // SkipPadding handles the OnPadding callback.

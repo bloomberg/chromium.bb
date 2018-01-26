@@ -232,7 +232,7 @@ void NetworkThrottleManagerImpl::OnThrottleDestroyed(ThrottleImpl* throttle) {
       DCHECK(throttle->queue_pointer() != outstanding_throttles_.end());
       DCHECK_EQ(throttle, *(throttle->queue_pointer()));
       outstanding_throttles_.erase(throttle->queue_pointer());
-    // Fall through
+      FALLTHROUGH;
     case ThrottleImpl::State::AGED:
       DCHECK(!throttle->start_time().is_null());
       lifetime_median_estimate_.AddSample(

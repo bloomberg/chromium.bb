@@ -101,7 +101,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           return status;
         }
         state_ = EntryDecoderState::kDecodedType;
-      // FALLTHROUGH_INTENDED
+        FALLTHROUGH;
 
       case EntryDecoderState::kDecodedType:
         // entry_type_decoder_ returned kDecodeDone, now need to decide how
@@ -128,7 +128,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           return status;
         }
         state_ = EntryDecoderState::kStartDecodingValue;
-      // FALLTHROUGH_INTENDED
+        FALLTHROUGH;
 
       case EntryDecoderState::kStartDecodingValue:
         DVLOG(1) << "kStartDecodingValue: db->Remaining=" << db->Remaining();

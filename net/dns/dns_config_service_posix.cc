@@ -307,7 +307,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
       case CONFIG_PARSE_POSIX_MISSING_OPTIONS:
       case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
         DCHECK(dns_config_.unhandled_options);
-        // Fall through.
+        FALLTHROUGH;
       case CONFIG_PARSE_POSIX_OK:
         success_ = true;
         break;

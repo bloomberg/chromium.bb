@@ -1327,7 +1327,7 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
         break;
       case TransportSecurityState::PKPStatus::BYPASSED:
         pkp_bypassed_ = true;
-      // Fall through.
+        FALLTHROUGH;
       case TransportSecurityState::PKPStatus::OK:
         // Do nothing.
         break;
