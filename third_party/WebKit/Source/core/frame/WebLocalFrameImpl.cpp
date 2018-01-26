@@ -615,7 +615,7 @@ bool WebLocalFrameImpl::HasVisibleContent() const {
 
 WebRect WebLocalFrameImpl::VisibleContentRect() const {
   if (LocalFrameView* view = GetFrameView())
-    return view->VisibleContentRect();
+    return view->LayoutViewportScrollableArea()->VisibleContentRect();
   return WebRect();
 }
 
