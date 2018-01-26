@@ -74,10 +74,12 @@ class InterfaceTemplateContextBuilder(object):
         name = '%s%s' % (v8_utilities.cpp_name(interface), 'Partial' if interface.is_partial else '')
 
         # Constructors
-        constructors = any(constructor.name == 'Constructor' for constructor in interface.constructors)
-        custom_constructors = interface.custom_constructors
-        html_constructor = 'HTMLConstructor' in interface.extended_attributes
-        has_constructor_callback = constructors or custom_constructors or html_constructor
+        has_constructor_callback = False
+        if not interface.is_partial:
+            constructors = any(constructor.name == 'Constructor' for constructor in interface.constructors)
+            custom_constructors = interface.custom_constructors
+            html_constructor = 'HTMLConstructor' in interface.extended_attributes
+            has_constructor_callback = constructors or custom_constructors or html_constructor
 
         attributes = []
         methods = []
