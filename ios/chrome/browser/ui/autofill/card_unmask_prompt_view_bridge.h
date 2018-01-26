@@ -13,6 +13,7 @@
 extern NSString* const kCardUnmaskPromptCollectionViewAccessibilityID;
 
 @class CardUnmaskPromptViewController;
+@class UIViewController;
 
 namespace autofill {
 
@@ -21,7 +22,10 @@ class CardUnmaskPromptController;
 // iOS implementation of the unmask prompt UI.
 class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
  public:
-  explicit CardUnmaskPromptViewBridge(CardUnmaskPromptController* controller);
+  // |base_view_controller| is a weak reference to the view controller used to
+  // present UI.
+  CardUnmaskPromptViewBridge(CardUnmaskPromptController* controller,
+                             UIViewController* base_view_controller);
   ~CardUnmaskPromptViewBridge() override;
 
   // CardUnmaskPromptView:
@@ -46,6 +50,9 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
  private:
   // The controller |this| queries for logic and state.
   CardUnmaskPromptController* controller_;  // weak
+
+  // Weak reference to the view controller used to present UI.
+  __weak UIViewController* base_view_controller_;
 
   base::WeakPtrFactory<CardUnmaskPromptViewBridge> weak_ptr_factory_;
 

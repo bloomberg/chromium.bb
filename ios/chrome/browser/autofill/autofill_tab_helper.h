@@ -11,6 +11,7 @@
 
 @class AutofillController;
 @protocol FormSuggestionProvider;
+@class UIViewController;
 
 namespace password_manager {
 class PasswordGenerationManager;
@@ -26,6 +27,9 @@ class AutofillTabHelper : public web::WebStateObserver,
   static void CreateForWebState(
       web::WebState* web_state,
       password_manager::PasswordGenerationManager* password_generation_manager);
+
+  // Sets a weak reference to the view controller used to present UI.
+  void SetBaseViewController(UIViewController* base_view_controller);
 
   // Returns an object that can provide suggestions from the PasswordController.
   // May return nil.

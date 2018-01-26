@@ -29,6 +29,11 @@ void AutofillTabHelper::CreateForWebState(
   }
 }
 
+void AutofillTabHelper::SetBaseViewController(
+    UIViewController* base_view_controller) {
+  [controller_ setBaseViewController:base_view_controller];
+}
+
 id<FormSuggestionProvider> AutofillTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }

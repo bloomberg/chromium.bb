@@ -63,6 +63,9 @@ passwordGenerationManager:
 - (void)sendAutofillTypePredictionsToRenderer:
     (const std::vector<autofill::FormStructure*>&)forms;
 
+// Sets a weak reference to the view controller used to present UI.
+- (void)setBaseViewController:(UIViewController*)baseViewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_CONTROLLER_H_

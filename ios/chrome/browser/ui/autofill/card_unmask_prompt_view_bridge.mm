@@ -53,8 +53,11 @@ namespace autofill {
 #pragma mark CardUnmaskPromptViewBridge
 
 CardUnmaskPromptViewBridge::CardUnmaskPromptViewBridge(
-    CardUnmaskPromptController* controller)
-    : controller_(controller), weak_ptr_factory_(this) {
+    CardUnmaskPromptController* controller,
+    UIViewController* base_view_controller)
+    : controller_(controller),
+      base_view_controller_(base_view_controller),
+      weak_ptr_factory_(this) {
   DCHECK(controller_);
 }
 
@@ -69,14 +72,9 @@ void CardUnmaskPromptViewBridge::Show() {
   [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
   [view_controller_
       setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
-  // Present the view controller.
-  // TODO(crbug.com/692525): Find an alternative to presenting the view
-  // controller on the root view controller.
-  UIViewController* rootController =
-      [UIApplication sharedApplication].keyWindow.rootViewController;
-  [rootController presentViewController:view_controller_
-                               animated:YES
-                             completion:nil];
+  [base_view_controller_ presentViewController:view_controller_
+                                      animated:YES
+                                    completion:nil];
 }
 
 void CardUnmaskPromptViewBridge::ControllerGone() {
