@@ -50,6 +50,7 @@ struct weston_test {
 	struct weston_layer layer;
 	struct weston_process process;
 	struct weston_seat seat;
+	bool is_seat_initialized;
 };
 
 struct weston_test_surface {
@@ -74,6 +75,22 @@ test_client_sigchld(struct weston_process *process, int status)
 	assert(status == 0);
 
 	wl_display_terminate(test->compositor->wl_display);
+}
+
+static int
+test_seat_init(struct weston_test *test)
+{
+	/* create our own seat */
+	weston_seat_init(&test->seat, test->compositor, "test-seat");
+	test->is_seat_initialized = true;
+
+	/* add devices */
+	weston_seat_init_pointer(&test->seat);
+	if (weston_seat_init_keyboard(&test->seat, NULL) < 0)
+		return -1;
+	weston_seat_init_touch(&test->seat);
+
+	return 0;
 }
 
 static struct weston_seat *
@@ -253,7 +270,10 @@ device_release(struct wl_client *client,
 	} else if (strcmp(device, "touch") == 0) {
 		weston_seat_release_touch(seat);
 	} else if (strcmp(device, "seat") == 0) {
+		assert(test->is_seat_initialized &&
+		       "Trying to release already released test seat");
 		weston_seat_release(seat);
+		test->is_seat_initialized = false;
 	} else {
 		assert(0 && "Unsupported device");
 	}
@@ -272,6 +292,10 @@ device_add(struct wl_client *client,
 		weston_seat_init_keyboard(seat, NULL);
 	} else if (strcmp(device, "touch") == 0) {
 		weston_seat_init_touch(seat);
+	} else if (strcmp(device, "seat") == 0) {
+		assert(!test->is_seat_initialized &&
+		       "Trying to add already added test seat");
+		test_seat_init(test);
 	} else {
 		assert(0 && "Unsupported device");
 	}
@@ -611,14 +635,8 @@ wet_module_init(struct weston_compositor *ec,
 			     test, bind_test) == NULL)
 		return -1;
 
-	/* create our own seat */
-	weston_seat_init(&test->seat, ec, "test-seat");
-
-	/* add devices */
-	weston_seat_init_pointer(&test->seat);
-	if (weston_seat_init_keyboard(&test->seat, NULL) < 0)
+	if (test_seat_init(test) == -1)
 		return -1;
-	weston_seat_init_touch(&test->seat);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_idle(loop, idle_launch_client, test);
