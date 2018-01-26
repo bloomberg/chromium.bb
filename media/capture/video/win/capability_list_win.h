@@ -17,22 +17,38 @@
 namespace media {
 
 struct CapabilityWin {
-  CapabilityWin(int index, const VideoCaptureFormat& format)
-      : stream_index(index), supported_format(format), info_header() {}
+  CapabilityWin(int media_type_index, const VideoCaptureFormat& format)
+      : media_type_index(media_type_index),
+        supported_format(format),
+        info_header(),
+        stream_index(0) {}
 
   // Used by VideoCaptureDeviceWin.
-  CapabilityWin(int index,
+  CapabilityWin(int media_type_index,
                 const VideoCaptureFormat& format,
                 const BITMAPINFOHEADER& info_header)
-      : stream_index(index),
+      : media_type_index(media_type_index),
         supported_format(format),
-        info_header(info_header) {}
+        info_header(info_header),
+        stream_index(0) {}
 
-  const int stream_index;
+  // Used by VideoCaptureDeviceMFWin.
+  CapabilityWin(int media_type_index,
+                const VideoCaptureFormat& format,
+                int stream_index)
+      : media_type_index(media_type_index),
+        supported_format(format),
+        info_header(),
+        stream_index(stream_index) {}
+
+  const int media_type_index;
   const VideoCaptureFormat supported_format;
 
   // |info_header| is only valid if DirectShow is used.
   const BITMAPINFOHEADER info_header;
+
+  // |stream_index| is only valid if MediaFoundation is used.
+  const int stream_index;
 };
 
 typedef std::list<CapabilityWin> CapabilityList;

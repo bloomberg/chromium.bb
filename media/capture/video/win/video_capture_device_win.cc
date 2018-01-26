@@ -526,7 +526,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   // Get the windows capability from the capture device.
   // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
   // FAILED macro can't be used.
-  hr = stream_config->GetStreamCaps(found_capability.stream_index,
+  hr = stream_config->GetStreamCaps(found_capability.media_type_index,
                                     media_type.Receive(), caps.get());
   if (hr != S_OK) {
     SetErrorState(FROM_HERE, "Failed to get capture device capabilities", hr);
