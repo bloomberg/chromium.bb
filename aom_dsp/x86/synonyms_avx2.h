@@ -42,4 +42,11 @@ static INLINE void yy_storeu_256(void *const a, const __m256i v) {
   _mm256_storeu_si256((__m256i *)a, v);
 }
 
+// Some compilers don't have _mm256_set_m128i defined in immintrin.h. We
+// therefore define an equivalent function using a different intrinsic.
+// ([ hi ], [ lo ]) -> [ hi ][ lo ]
+static INLINE __m256i yy_set_m128i(__m128i hi, __m128i lo) {
+  return _mm256_insertf128_si256(_mm256_castsi128_si256(lo), hi, 1);
+}
+
 #endif  // AOM_DSP_X86_SYNONYMS_AVX2_H_

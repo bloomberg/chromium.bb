@@ -20,23 +20,40 @@ using std::tr1::tuple;
 
 namespace {
 
-#if HAVE_SSE2
+#if HAVE_SSE2 || HAVE_AVX2
 TEST_P(AV1HiprecConvolveTest, CheckOutput) { RunCheckOutput(GET_PARAM(3)); }
-
+TEST_P(AV1HiprecConvolveTest, DISABLED_SpeedTest) {
+  RunSpeedTest(GET_PARAM(3));
+}
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, AV1HiprecConvolveTest,
                         libaom_test::AV1HiprecConvolve::BuildParams(
                             aom_convolve8_add_src_hip_sse2));
 #endif
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(AVX2, AV1HiprecConvolveTest,
+                        libaom_test::AV1HiprecConvolve::BuildParams(
+                            aom_convolve8_add_src_hip_avx2));
+#endif
+#endif
 
-#if HAVE_SSSE3
+#if HAVE_SSSE3 || HAVE_AVX2
 TEST_P(AV1HighbdHiprecConvolveTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(4));
 }
-
+TEST_P(AV1HighbdHiprecConvolveTest, DISABLED_SpeedTest) {
+  RunSpeedTest(GET_PARAM(4));
+}
+#if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdHiprecConvolveTest,
                         libaom_test::AV1HighbdHiprecConvolve::BuildParams(
                             aom_highbd_convolve8_add_src_hip_ssse3));
-
+#endif
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdHiprecConvolveTest,
+                        libaom_test::AV1HighbdHiprecConvolve::BuildParams(
+                            aom_highbd_convolve8_add_src_hip_avx2));
+#endif
 #endif
 
 }  // namespace

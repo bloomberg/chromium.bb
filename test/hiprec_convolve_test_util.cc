@@ -74,10 +74,10 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
   uint8_t *input_ = new uint8_t[h * w];
   uint8_t *input = input_;
 
-  // The convolve functions always write rows with widths that are multiples of
-  // 8.
-  // So to avoid a buffer overflow, we may need to pad rows to a multiple of 8.
-  int output_n = ((out_w + 7) & ~7) * out_h;
+  // The AVX2 convolve functions always write rows with widths that are
+  // multiples of 16. So to avoid a buffer overflow, we may need to pad
+  // rows to a multiple of 16.
+  int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
   uint8_t *output = new uint8_t[output_n];
   uint8_t *output2 = new uint8_t[output_n];
 
@@ -104,6 +104,70 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
           << "Pixel mismatch at index " << j << " = (" << (j % out_w) << ", "
           << (j / out_w) << ") on iteration " << i;
   }
+  delete[] input_;
+  delete[] output;
+  delete[] output2;
+}
+
+void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
+  const int w = 128, h = 128;
+  const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
+  const int num_iters = GET_PARAM(2) / 500;
+  int i, j, k;
+
+  uint8_t *input_ = new uint8_t[h * w];
+  uint8_t *input = input_;
+
+  // The AVX2 convolve functions always write rows with widths that are
+  // multiples of 16. So to avoid a buffer overflow, we may need to pad
+  // rows to a multiple of 16.
+  int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
+  uint8_t *output = new uint8_t[output_n];
+  uint8_t *output2 = new uint8_t[output_n];
+
+  // Generate random filter kernels
+  DECLARE_ALIGNED(16, InterpKernel, hkernel);
+  DECLARE_ALIGNED(16, InterpKernel, vkernel);
+
+  generate_kernels(&rnd_, hkernel, vkernel);
+
+  for (i = 0; i < h; ++i)
+    for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
+
+  aom_usec_timer ref_timer;
+  aom_usec_timer_start(&ref_timer);
+  for (i = 0; i < num_iters; ++i) {
+    for (j = 3; j < h - out_h - 4; j++) {
+      for (k = 3; k < w - out_w - 4; k++) {
+        aom_convolve8_add_src_hip_c(input + j * w + k, w, output, out_w,
+                                    hkernel, 16, vkernel, 16, out_w, out_h);
+      }
+    }
+  }
+  aom_usec_timer_mark(&ref_timer);
+  const int64_t ref_time = aom_usec_timer_elapsed(&ref_timer);
+
+  aom_usec_timer tst_timer;
+  aom_usec_timer_start(&tst_timer);
+  for (i = 0; i < num_iters; ++i) {
+    for (j = 3; j < h - out_h - 4; j++) {
+      for (k = 3; k < w - out_w - 4; k++) {
+        test_impl(input + j * w + k, w, output2, out_w, hkernel, 16, vkernel,
+                  16, out_w, out_h);
+      }
+    }
+  }
+  aom_usec_timer_mark(&tst_timer);
+  const int64_t tst_time = aom_usec_timer_elapsed(&tst_timer);
+
+  std::cout << "[          ] C time = " << ref_time / 1000
+            << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
+
+  EXPECT_GT(ref_time, tst_time)
+      << "Error: AV1HiprecConvolveTest.SpeedTest, SIMD slower than C.\n"
+      << "C time: " << ref_time << " us\n"
+      << "SIMD time: " << tst_time << " us\n";
+
   delete[] input_;
   delete[] output;
   delete[] output2;
@@ -143,10 +207,10 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
 
   uint16_t *input = new uint16_t[h * w];
 
-  // The convolve functions always write rows with widths that are multiples of
-  // 8.
-  // So to avoid a buffer overflow, we may need to pad rows to a multiple of 8.
-  int output_n = ((out_w + 7) & ~7) * out_h;
+  // The AVX2 convolve functions always write rows with widths that are
+  // multiples of 16. So to avoid a buffer overflow, we may need to pad
+  // rows to a multiple of 16.
+  int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
   uint16_t *output = new uint16_t[output_n];
   uint16_t *output2 = new uint16_t[output_n];
 
@@ -178,6 +242,76 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
           << "Pixel mismatch at index " << j << " = (" << (j % out_w) << ", "
           << (j / out_w) << ") on iteration " << i;
   }
+  delete[] input;
+  delete[] output;
+  delete[] output2;
+}
+
+void AV1HighbdHiprecConvolveTest::RunSpeedTest(
+    highbd_hiprec_convolve_func test_impl) {
+  const int w = 128, h = 128;
+  const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
+  const int num_iters = GET_PARAM(2) / 500;
+  const int bd = GET_PARAM(3);
+  int i, j, k;
+
+  uint16_t *input = new uint16_t[h * w];
+
+  // The AVX2 convolve functions always write rows with widths that are
+  // multiples of 16. So to avoid a buffer overflow, we may need to pad
+  // rows to a multiple of 16.
+  int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
+  uint16_t *output = new uint16_t[output_n];
+  uint16_t *output2 = new uint16_t[output_n];
+
+  // Generate random filter kernels
+  DECLARE_ALIGNED(16, InterpKernel, hkernel);
+  DECLARE_ALIGNED(16, InterpKernel, vkernel);
+
+  generate_kernels(&rnd_, hkernel, vkernel);
+
+  for (i = 0; i < h; ++i)
+    for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
+
+  uint8_t *input_ptr = CONVERT_TO_BYTEPTR(input);
+  uint8_t *output_ptr = CONVERT_TO_BYTEPTR(output);
+  uint8_t *output2_ptr = CONVERT_TO_BYTEPTR(output2);
+
+  aom_usec_timer ref_timer;
+  aom_usec_timer_start(&ref_timer);
+  for (i = 0; i < num_iters; ++i) {
+    for (j = 3; j < h - out_h - 4; j++) {
+      for (k = 3; k < w - out_w - 4; k++) {
+        aom_highbd_convolve8_add_src_hip_c(input_ptr + j * w + k, w, output_ptr,
+                                           out_w, hkernel, 16, vkernel, 16,
+                                           out_w, out_h, bd);
+      }
+    }
+  }
+  aom_usec_timer_mark(&ref_timer);
+  const int64_t ref_time = aom_usec_timer_elapsed(&ref_timer);
+
+  aom_usec_timer tst_timer;
+  aom_usec_timer_start(&tst_timer);
+  for (i = 0; i < num_iters; ++i) {
+    for (j = 3; j < h - out_h - 4; j++) {
+      for (k = 3; k < w - out_w - 4; k++) {
+        test_impl(input_ptr + j * w + k, w, output2_ptr, out_w, hkernel, 16,
+                  vkernel, 16, out_w, out_h, bd);
+      }
+    }
+  }
+  aom_usec_timer_mark(&tst_timer);
+  const int64_t tst_time = aom_usec_timer_elapsed(&tst_timer);
+
+  std::cout << "[          ] C time = " << ref_time / 1000
+            << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
+
+  EXPECT_GT(ref_time, tst_time)
+      << "Error: AV1HighbdHiprecConvolveTest.SpeedTest, SIMD slower than C.\n"
+      << "C time: " << ref_time << " us\n"
+      << "SIMD time: " << tst_time << " us\n";
+
   delete[] input;
   delete[] output;
   delete[] output2;

@@ -12,14 +12,15 @@
 #ifndef TEST_HIPREC_CONVOLVE_TEST_UTIL_H_
 #define TEST_HIPREC_CONVOLVE_TEST_UTIL_H_
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "./av1_rtcd.h"
-#include "./aom_dsp_rtcd.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
+#include "./aom_dsp_rtcd.h"
+#include "./av1_rtcd.h"
+#include "aom_ports/aom_timer.h"
 #include "av1/common/mv.h"
 
 namespace libaom_test {
@@ -48,6 +49,7 @@ class AV1HiprecConvolveTest
 
  protected:
   void RunCheckOutput(hiprec_convolve_func test_impl);
+  void RunSpeedTest(hiprec_convolve_func test_impl);
 
   libaom_test::ACMRandom rnd_;
 };
@@ -76,6 +78,7 @@ class AV1HighbdHiprecConvolveTest
 
  protected:
   void RunCheckOutput(highbd_hiprec_convolve_func test_impl);
+  void RunSpeedTest(highbd_hiprec_convolve_func test_impl);
 
   libaom_test::ACMRandom rnd_;
 };
