@@ -905,9 +905,9 @@ class CipdWrapperTestCase(BaseTestCase):
         self._cipd_root.add_package('b', 'bar_package', 'bar_version'),
         self._cipd_root.add_package('b', 'baz_package', 'baz_version'),
     ]
-    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'add_package')
-    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'clobber')
-    self.mox.StubOutWithMock(gclient_scm.CipdRoot, 'ensure')
+    self.mox.StubOutWithMock(self._cipd_root, 'add_package')
+    self.mox.StubOutWithMock(self._cipd_root, 'clobber')
+    self.mox.StubOutWithMock(self._cipd_root, 'ensure')
 
   def tearDown(self):
     BaseTestCase.tearDown(self)
@@ -939,8 +939,8 @@ class CipdWrapperTestCase(BaseTestCase):
     scm = self.createScmWithPackageThatSatisfies(
         lambda p: p.authority_for_root)
 
-    gclient_scm.CipdRoot.clobber()
-    gclient_scm.CipdRoot.ensure()
+    self._cipd_root.clobber()
+    self._cipd_root.ensure()
 
     self.mox.ReplayAll()
 
@@ -995,7 +995,7 @@ class CipdWrapperTestCase(BaseTestCase):
     scm = self.createScmWithPackageThatSatisfies(
         lambda p: p.authority_for_root)
 
-    gclient_scm.CipdRoot.ensure()
+    self._cipd_root.ensure()
 
     self.mox.ReplayAll()
 
