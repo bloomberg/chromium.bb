@@ -29,12 +29,12 @@
             android:enabled="false"
             android:exported="true"
             android:noHistory="true">
-            <!-- TODO(kevinp): suppress once crbug.com/501593 is fixed. -->
             <!--suppress AppIndexingError -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="*"/>
                 <data android:scheme="{{ APK_PACKAGE_NAME }}"/>
                 <data android:path="/oauthredirect/"/>
             </intent-filter>
