@@ -238,12 +238,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Tracking",
+                    "name": "EnabledTracking",
                     "params": {
                         "availability": "any",
-                        "event_trigger": "name:data_saver_detail_iph_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:data_saver_overview_opened;comparator:<=1;window:90;storage:360",
-                        "session_rate": "<0"
+                        "event_data_saved": "name:data_saved_page_load;comparator:>=1;window:90;storage:360",
+                        "event_trigger": "name:data_saver_detail_iph_would_have_triggered;comparator:==0;window:90;storage:360",
+                        "event_used": "name:data_saver_overview_opened;comparator:==0;window:90;storage:360",
+                        "session_rate": "==0",
+                        "tracking_only": "true"
                     },
                     "enable_features": [
                         "IPH_DataSaverDetail"
