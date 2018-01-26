@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/allocator/allocator_shim.h"
 #include "base/allocator/features.h"
 #include "base/atomicops.h"
 #include "base/bits.h"
@@ -28,75 +27,82 @@ const unsigned kMagicSignature = 0x14690ca5;
 const unsigned kDefaultAlignment = 16;
 const unsigned kSkipAllocatorFrames = 4;
 
+bool g_deterministic;
 Atomic32 g_running;
-Atomic32 g_deterministic;
 AtomicWord g_cumulative_counter = 0;
 AtomicWord g_threshold;
 AtomicWord g_sampling_interval = 128 * 1024;
 uint32_t g_last_sample_ordinal = 0;
 
-static void* AllocFn(const AllocatorDispatch* self,
-                     size_t size,
-                     void* context) {
-  SamplingNativeHeapProfiler::Sample sample;
-  if (LIKELY(!base::subtle::NoBarrier_Load(&g_running) ||
-             !SamplingNativeHeapProfiler::CreateAllocSample(size, &sample))) {
-    return self->next->alloc_function(self->next, size, context);
-  }
-  void* address =
-      self->next->alloc_function(self->next, size + kDefaultAlignment, context);
-  return SamplingNativeHeapProfiler::GetInstance()->RecordAlloc(
-      sample, address, kDefaultAlignment, kSkipAllocatorFrames);
+inline bool HasBeenSampledFastCheck(void* address) {
+  return address && reinterpret_cast<unsigned*>(address)[-1] == kMagicSignature;
 }
 
-static void* AllocZeroInitializedFn(const AllocatorDispatch* self,
-                                    size_t n,
-                                    size_t size,
-                                    void* context) {
-  SamplingNativeHeapProfiler::Sample sample;
-  if (LIKELY(
-          !base::subtle::NoBarrier_Load(&g_running) ||
-          !SamplingNativeHeapProfiler::CreateAllocSample(n * size, &sample))) {
+}  // namespace
+
+SamplingNativeHeapProfiler::Sample::Sample(size_t size,
+                                           size_t count,
+                                           unsigned ordinal,
+                                           unsigned offset)
+    : size(size), count(count), ordinal(ordinal), offset(offset) {}
+
+void* SamplingNativeHeapProfiler::AllocFn(const AllocatorDispatch* self,
+                                          size_t size,
+                                          void* context) {
+  size_t accumulated;
+  if (LIKELY(!ShouldRecordSample(size, &accumulated)))
+    return self->next->alloc_function(self->next, size, context);
+  void* address =
+      self->next->alloc_function(self->next, size + kDefaultAlignment, context);
+  return GetInstance()->RecordAlloc(accumulated, size, address,
+                                    kDefaultAlignment, kSkipAllocatorFrames);
+}
+
+// static
+void* SamplingNativeHeapProfiler::AllocZeroInitializedFn(
+    const AllocatorDispatch* self,
+    size_t n,
+    size_t size,
+    void* context) {
+  size_t accumulated;
+  if (LIKELY(!ShouldRecordSample(n * size, &accumulated))) {
     return self->next->alloc_zero_initialized_function(self->next, n, size,
                                                        context);
   }
   void* address = self->next->alloc_zero_initialized_function(
       self->next, 1, n * size + kDefaultAlignment, context);
-  return SamplingNativeHeapProfiler::GetInstance()->RecordAlloc(
-      sample, address, kDefaultAlignment, kSkipAllocatorFrames);
+  return GetInstance()->RecordAlloc(accumulated, n * size, address,
+                                    kDefaultAlignment, kSkipAllocatorFrames);
 }
 
-static void* AllocAlignedFn(const AllocatorDispatch* self,
-                            size_t alignment,
-                            size_t size,
-                            void* context) {
-  SamplingNativeHeapProfiler::Sample sample;
-  if (LIKELY(!base::subtle::NoBarrier_Load(&g_running) ||
-             !SamplingNativeHeapProfiler::CreateAllocSample(size, &sample))) {
+// static
+void* SamplingNativeHeapProfiler::AllocAlignedFn(const AllocatorDispatch* self,
+                                                 size_t alignment,
+                                                 size_t size,
+                                                 void* context) {
+  size_t accumulated;
+  if (LIKELY(!ShouldRecordSample(size, &accumulated))) {
     return self->next->alloc_aligned_function(self->next, alignment, size,
                                               context);
   }
   size_t offset = base::bits::Align(sizeof(kMagicSignature), alignment);
   void* address = self->next->alloc_aligned_function(self->next, alignment,
                                                      size + offset, context);
-  return SamplingNativeHeapProfiler::GetInstance()->RecordAlloc(
-      sample, address, offset, kSkipAllocatorFrames);
+  return GetInstance()->RecordAlloc(accumulated, size, address, offset,
+                                    kSkipAllocatorFrames);
 }
 
-static void* ReallocFn(const AllocatorDispatch* self,
-                       void* address,
-                       size_t size,
-                       void* context) {
+// static
+void* SamplingNativeHeapProfiler::ReallocFn(const AllocatorDispatch* self,
+                                            void* address,
+                                            size_t size,
+                                            void* context) {
   // Note: size == 0 actually performs free.
-  SamplingNativeHeapProfiler::Sample sample;
-  bool will_sample =
-      base::subtle::NoBarrier_Load(&g_running) &&
-      SamplingNativeHeapProfiler::CreateAllocSample(size, &sample);
+  size_t accumulated;
+  bool will_sample = ShouldRecordSample(size, &accumulated);
   char* client_address = reinterpret_cast<char*>(address);
-  if (UNLIKELY(address &&
-               reinterpret_cast<unsigned*>(address)[-1] == kMagicSignature)) {
-    address = SamplingNativeHeapProfiler::GetInstance()->RecordFree(address);
-  }
+  if (UNLIKELY(HasBeenSampledFastCheck(address)))
+    address = GetInstance()->RecordFree(address);
   intptr_t prev_offset = client_address - reinterpret_cast<char*>(address);
   bool was_sampled = prev_offset;
   if (LIKELY(!was_sampled && !will_sample))
@@ -105,8 +111,8 @@ static void* ReallocFn(const AllocatorDispatch* self,
   address = self->next->realloc_function(self->next, address, size_to_allocate,
                                          context);
   if (will_sample) {
-    return SamplingNativeHeapProfiler::GetInstance()->RecordAlloc(
-        sample, address, kDefaultAlignment, kSkipAllocatorFrames,
+    return GetInstance()->RecordAlloc(
+        accumulated, size, address, kDefaultAlignment, kSkipAllocatorFrames,
         client_address && prev_offset != kDefaultAlignment);
   }
   DCHECK(was_sampled && !will_sample);
@@ -114,59 +120,64 @@ static void* ReallocFn(const AllocatorDispatch* self,
   return address;
 }
 
-static void FreeFn(const AllocatorDispatch* self,
-                   void* address,
-                   void* context) {
-  if (UNLIKELY(address &&
-               reinterpret_cast<unsigned*>(address)[-1] == kMagicSignature)) {
-    address = SamplingNativeHeapProfiler::GetInstance()->RecordFree(address);
-  }
+// static
+void SamplingNativeHeapProfiler::FreeFn(const AllocatorDispatch* self,
+                                        void* address,
+                                        void* context) {
+  if (UNLIKELY(HasBeenSampledFastCheck(address)))
+    address = GetInstance()->RecordFree(address);
   self->next->free_function(self->next, address, context);
 }
 
-static size_t GetSizeEstimateFn(const AllocatorDispatch* self,
-                                void* address,
-                                void* context) {
+// static
+size_t SamplingNativeHeapProfiler::GetSizeEstimateFn(
+    const AllocatorDispatch* self,
+    void* address,
+    void* context) {
   size_t ret =
       self->next->get_size_estimate_function(self->next, address, context);
   return ret;
 }
 
-static unsigned BatchMallocFn(const AllocatorDispatch* self,
-                              size_t size,
-                              void** results,
-                              unsigned num_requested,
-                              void* context) {
+// static
+unsigned SamplingNativeHeapProfiler::BatchMallocFn(
+    const AllocatorDispatch* self,
+    size_t size,
+    void** results,
+    unsigned num_requested,
+    void* context) {
   CHECK(false) << "Not implemented.";
   return 0;
 }
 
-static void BatchFreeFn(const AllocatorDispatch* self,
-                        void** to_be_freed,
-                        unsigned num_to_be_freed,
-                        void* context) {
+// static
+void SamplingNativeHeapProfiler::BatchFreeFn(const AllocatorDispatch* self,
+                                             void** to_be_freed,
+                                             unsigned num_to_be_freed,
+                                             void* context) {
   CHECK(false) << "Not implemented.";
 }
 
-static void FreeDefiniteSizeFn(const AllocatorDispatch* self,
-                               void* ptr,
-                               size_t size,
-                               void* context) {
+// static
+void SamplingNativeHeapProfiler::FreeDefiniteSizeFn(
+    const AllocatorDispatch* self,
+    void* ptr,
+    size_t size,
+    void* context) {
   CHECK(false) << "Not implemented.";
 }
 
-AllocatorDispatch g_allocator_dispatch = {&AllocFn,
-                                          &AllocZeroInitializedFn,
-                                          &AllocAlignedFn,
-                                          &ReallocFn,
-                                          &FreeFn,
-                                          &GetSizeEstimateFn,
-                                          &BatchMallocFn,
-                                          &BatchFreeFn,
-                                          &FreeDefiniteSizeFn,
-                                          nullptr};
-
-}  // namespace
+AllocatorDispatch SamplingNativeHeapProfiler::allocator_dispatch_ = {
+    &AllocFn,
+    &AllocZeroInitializedFn,
+    &AllocAlignedFn,
+    &ReallocFn,
+    &FreeFn,
+    &GetSizeEstimateFn,
+    &BatchMallocFn,
+    &BatchFreeFn,
+    &FreeDefiniteSizeFn,
+    nullptr};
 
 // static
 void SamplingNativeHeapProfiler::InstallAllocatorHooksOnce() {
@@ -177,9 +188,9 @@ void SamplingNativeHeapProfiler::InstallAllocatorHooksOnce() {
 // static
 bool SamplingNativeHeapProfiler::InstallAllocatorHooks() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
+  base::allocator::InsertAllocatorDispatch(&allocator_dispatch_);
 #else
-  base::debug::Alias(&g_allocator_dispatch);
+  base::debug::Alias(&allocator_dispatch_);
   CHECK(false)
       << "Can't enable native sampling heap profiler without the shim.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -205,9 +216,10 @@ void SamplingNativeHeapProfiler::SetSamplingInterval(size_t sampling_interval) {
 }
 
 // static
-intptr_t SamplingNativeHeapProfiler::GetNextSampleInterval(uint64_t interval) {
-  if (UNLIKELY(base::subtle::NoBarrier_Load(&g_deterministic)))
-    return static_cast<intptr_t>(interval);
+size_t SamplingNativeHeapProfiler::GetNextSampleInterval(size_t interval) {
+  if (UNLIKELY(g_deterministic))
+    return interval;
+
   // We sample with a Poisson process, with constant average sampling
   // interval. This follows the exponential probability distribution with
   // parameter λ = 1/interval where |interval| is the average number of bytes
@@ -216,21 +228,24 @@ intptr_t SamplingNativeHeapProfiler::GetNextSampleInterval(uint64_t interval) {
   // next_sample = -ln(u) / λ
   double uniform = base::RandDouble();
   double value = -log(uniform) * interval;
-  intptr_t min_value = sizeof(intptr_t);
+  size_t min_value = sizeof(intptr_t);
   // We limit the upper bound of a sample interval to make sure we don't have
   // huge gaps in the sampling stream. Probability of the upper bound gets hit
   // is exp(-20) ~ 2e-9, so it should not skew the distibution.
-  intptr_t max_value = interval * 20;
+  size_t max_value = interval * 20;
   if (UNLIKELY(value < min_value))
     return min_value;
   if (UNLIKELY(value > max_value))
     return max_value;
-  return static_cast<intptr_t>(value);
+  return static_cast<size_t>(value);
 }
 
 // static
-bool SamplingNativeHeapProfiler::CreateAllocSample(size_t size,
-                                                   Sample* sample) {
+bool SamplingNativeHeapProfiler::ShouldRecordSample(size_t size,
+                                                    size_t* out_accumulated) {
+  if (UNLIKELY(!base::subtle::NoBarrier_Load(&g_running)))
+    return false;
+
   // Lock-free algorithm that adds the allocation size to the cumulative
   // counter. When the counter reaches threshold, it picks a single thread
   // that will record the sample and reset the counter.
@@ -246,15 +261,13 @@ bool SamplingNativeHeapProfiler::CreateAllocSample(size_t size,
   if (UNLIKELY(accumulated >= threshold + static_cast<AtomicWord>(size)))
     return false;
 
-  intptr_t next_interval =
+  DCHECK_NE(size, 0u);
+  size_t next_interval =
       GetNextSampleInterval(base::subtle::NoBarrier_Load(&g_sampling_interval));
   base::subtle::Release_Store(&g_threshold, next_interval);
-  accumulated =
+  *out_accumulated =
       base::subtle::NoBarrier_AtomicExchange(&g_cumulative_counter, 0);
 
-  DCHECK_NE(size, 0u);
-  sample->size = size;
-  sample->count = std::max<size_t>(1, (accumulated + size / 2) / size);
   return true;
 }
 
@@ -271,7 +284,8 @@ void SamplingNativeHeapProfiler::RecordStackTrace(Sample* sample,
       &addresses[std::max(count, static_cast<size_t>(skip_frames))]);
 }
 
-void* SamplingNativeHeapProfiler::RecordAlloc(Sample& sample,
+void* SamplingNativeHeapProfiler::RecordAlloc(size_t total_allocated,
+                                              size_t allocation_size,
                                               void* address,
                                               uint32_t offset,
                                               unsigned skip_frames,
@@ -283,13 +297,14 @@ void* SamplingNativeHeapProfiler::RecordAlloc(Sample& sample,
     return address;
   base::AutoLock lock(mutex_);
   entered_.Set(true);
-  sample.offset = offset;
+  size_t size = allocation_size;
+  size_t count = std::max<size_t>(1, (total_allocated + size / 2) / size);
+  Sample sample(size, count, ++g_last_sample_ordinal, offset);
   void* client_address = reinterpret_cast<char*>(address) + offset;
   if (preserve_data)
-    memmove(client_address, address, sample.size);
+    memmove(client_address, address, size);
   RecordStackTrace(&sample, skip_frames);
-  sample.ordinal = ++g_last_sample_ordinal;
-  samples_.insert(std::make_pair(client_address, sample));
+  samples_.insert(std::make_pair(client_address, std::move(sample)));
   if (offset)
     reinterpret_cast<unsigned*>(client_address)[-1] = kMagicSignature;
   entered_.Set(false);
@@ -316,7 +331,7 @@ SamplingNativeHeapProfiler* SamplingNativeHeapProfiler::GetInstance() {
 
 // static
 void SamplingNativeHeapProfiler::SuppressRandomnessForTest() {
-  base::subtle::Release_Store(&g_deterministic, true);
+  g_deterministic = true;
 }
 
 std::vector<SamplingNativeHeapProfiler::Sample>
