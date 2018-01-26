@@ -189,7 +189,9 @@ AC_CHECK_FUNCS([clock_gettime], [CLOCK_LIB=],
                              [AC_MSG_ERROR([Couldn't find clock_gettime])])])
 AC_SUBST([CLOCK_LIB])
 
-AC_CHECK_FUNCS([open_memstream], [HAVE_OPEN_MEMSTREAM=yes])
+AC_CHECK_FUNCS([open_memstream],
+               [AC_DEFINE([HAVE_OPEN_MEMSTREAM], 1, [Have open_memstream()])],
+               [AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0)])
 
 dnl Use lots of warning flags with with gcc and compatible compilers
 

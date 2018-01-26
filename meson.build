@@ -196,9 +196,7 @@ if cc.has_header_symbol('sys/sysmacros.h', 'major')
 elif cc.has_header_symbol('sys/mkdev.h', 'major')
   config.set10('MAJOR_IN_MKDEV', true)
 endif
-if cc.has_function('open_memstream')
-  config.set10('HAVE_OPEN_MEMSTREAM', true)
-endif
+config.set10('HAVE_OPEN_MEMSTREAM', cc.has_function('open_memstream'))
 
 warn_c_args = []
 foreach a : ['-Wall', '-Wextra', '-Wsign-compare', '-Werror=undef',
