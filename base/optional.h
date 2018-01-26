@@ -265,6 +265,58 @@ class OptionalBase {
   OptionalStorage<T> storage_;
 };
 
+// The following {Copy,Move}{Constructible,Assignable} structs are helpers to
+// implement constructor/assign-operator overloading. Specifically, if T is
+// is not movable but copyable, Optional<T>'s move constructor should not
+// participate in overload resolution. This inheritance trick implements that.
+template <bool is_copy_constructible>
+struct CopyConstructible {};
+
+template <>
+struct CopyConstructible<false> {
+  constexpr CopyConstructible() = default;
+  constexpr CopyConstructible(const CopyConstructible&) = delete;
+  constexpr CopyConstructible(CopyConstructible&&) = default;
+  CopyConstructible& operator=(const CopyConstructible&) = default;
+  CopyConstructible& operator=(CopyConstructible&&) = default;
+};
+
+template <bool is_move_constructible>
+struct MoveConstructible {};
+
+template <>
+struct MoveConstructible<false> {
+  constexpr MoveConstructible() = default;
+  constexpr MoveConstructible(const MoveConstructible&) = default;
+  constexpr MoveConstructible(MoveConstructible&&) = delete;
+  MoveConstructible& operator=(const MoveConstructible&) = default;
+  MoveConstructible& operator=(MoveConstructible&&) = default;
+};
+
+template <bool is_copy_assignable>
+struct CopyAssignable {};
+
+template <>
+struct CopyAssignable<false> {
+  constexpr CopyAssignable() = default;
+  constexpr CopyAssignable(const CopyAssignable&) = default;
+  constexpr CopyAssignable(CopyAssignable&&) = default;
+  CopyAssignable& operator=(const CopyAssignable&) = delete;
+  CopyAssignable& operator=(CopyAssignable&&) = default;
+};
+
+template <bool is_move_assignable>
+struct MoveAssignable {};
+
+template <>
+struct MoveAssignable<false> {
+  constexpr MoveAssignable() = default;
+  constexpr MoveAssignable(const MoveAssignable&) = default;
+  constexpr MoveAssignable(MoveAssignable&&) = default;
+  MoveAssignable& operator=(const MoveAssignable&) = default;
+  MoveAssignable& operator=(MoveAssignable&&) = delete;
+};
+
 }  // namespace internal
 
 // base::Optional is a Chromium version of the C++17 optional class:
@@ -279,12 +331,18 @@ class OptionalBase {
 // - No exceptions are thrown, because they are banned from Chromium.
 // - All the non-members are in the 'base' namespace instead of 'std'.
 template <typename T>
-class Optional : public internal::OptionalBase<T> {
+class Optional
+    : public internal::OptionalBase<T>,
+      public internal::CopyConstructible<std::is_copy_constructible<T>::value>,
+      public internal::MoveConstructible<std::is_move_constructible<T>::value>,
+      public internal::CopyAssignable<std::is_copy_constructible<T>::value &&
+                                      std::is_copy_assignable<T>::value>,
+      public internal::MoveAssignable<std::is_move_constructible<T>::value &&
+                                      std::is_move_assignable<T>::value> {
  public:
   using value_type = T;
 
   // Defer default/copy/move constructor implementation to OptionalBase.
-  // TODO(hidehiko): Implement conditional enabling.
   constexpr Optional() = default;
   constexpr Optional(const Optional& other) = default;
   constexpr Optional(Optional&& other) = default;
@@ -315,7 +373,6 @@ class Optional : public internal::OptionalBase<T> {
   ~Optional() = default;
 
   // Defer copy-/move- assign operator implementation to OptionalBase.
-  // TOOD(hidehiko): Implement conditional enabling.
   Optional& operator=(const Optional& other) = default;
   Optional& operator=(Optional&& other) = default;
 

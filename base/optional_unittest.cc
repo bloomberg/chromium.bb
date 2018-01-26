@@ -115,11 +115,29 @@ class DeletedDefaultConstructor {
   int foo_;
 };
 
-class DeletedCopyConstructor {
+class DeletedCopy {
  public:
-  explicit DeletedCopyConstructor(int foo) : foo_(foo) {}
-  DeletedCopyConstructor(const DeletedCopyConstructor&) = delete;
-  DeletedCopyConstructor(DeletedCopyConstructor&&) = default;
+  explicit DeletedCopy(int foo) : foo_(foo) {}
+  DeletedCopy(const DeletedCopy&) = delete;
+  DeletedCopy(DeletedCopy&&) = default;
+
+  DeletedCopy& operator=(const DeletedCopy&) = delete;
+  DeletedCopy& operator=(DeletedCopy&&) = default;
+
+  int foo() const { return foo_; }
+
+ private:
+  int foo_;
+};
+
+class DeletedMove {
+ public:
+  explicit DeletedMove(int foo) : foo_(foo) {}
+  DeletedMove(const DeletedMove&) = default;
+  DeletedMove(DeletedMove&&) = delete;
+
+  DeletedMove& operator=(const DeletedMove&) = default;
+  DeletedMove& operator=(DeletedMove&&) = delete;
 
   int foo() const { return foo_; }
 
@@ -279,8 +297,18 @@ TEST(OptionalTest, MoveConstructor) {
   // Even if copy constructor is deleted, move constructor needs to work.
   // Note that it couldn't be constexpr.
   {
-    Optional<DeletedCopyConstructor> first(in_place, 42);
-    Optional<DeletedCopyConstructor> second(std::move(first));
+    Optional<DeletedCopy> first(in_place, 42);
+    Optional<DeletedCopy> second(std::move(first));
+
+    EXPECT_TRUE(second.has_value());
+    EXPECT_EQ(42, second->foo());
+
+    EXPECT_TRUE(first.has_value());
+  }
+
+  {
+    Optional<DeletedMove> first(in_place, 42);
+    Optional<DeletedMove> second(std::move(first));
 
     EXPECT_TRUE(second.has_value());
     EXPECT_EQ(42, second->foo());
@@ -465,6 +493,26 @@ TEST(OptionalTest, AssignObject) {
     EXPECT_TRUE(a.value() == TestObject(3, 0.1));
     EXPECT_TRUE(a == b);
   }
+
+  {
+    Optional<DeletedMove> a(in_place, 42);
+    Optional<DeletedMove> b;
+    b = a;
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(!!b);
+    EXPECT_EQ(a->foo(), b->foo());
+  }
+
+  {
+    Optional<DeletedMove> a(in_place, 42);
+    Optional<DeletedMove> b(in_place, 1);
+    b = a;
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(!!b);
+    EXPECT_EQ(a->foo(), b->foo());
+  }
 }
 
 TEST(OptionalTest, AssignObject_rvalue) {
@@ -512,6 +560,26 @@ TEST(OptionalTest, AssignObject_rvalue) {
 
     EXPECT_EQ(TestObject::State::MOVE_ASSIGNED, a->state());
     EXPECT_EQ(TestObject::State::MOVED_FROM, b->state());
+  }
+
+  {
+    Optional<DeletedMove> a(in_place, 42);
+    Optional<DeletedMove> b;
+    b = std::move(a);
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(!!b);
+    EXPECT_EQ(42, b->foo());
+  }
+
+  {
+    Optional<DeletedMove> a(in_place, 42);
+    Optional<DeletedMove> b(in_place, 1);
+    b = std::move(a);
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(!!b);
+    EXPECT_EQ(42, b->foo());
   }
 }
 
