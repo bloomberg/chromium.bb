@@ -6,6 +6,7 @@ include_rules = [
   "+services/viz/public/interfaces",
   "+third_party/skia",
   "+ui/latency",
+  "+ui/ozone/public",
 ]
 
 specific_include_rules = {

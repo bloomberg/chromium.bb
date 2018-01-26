@@ -29,6 +29,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -206,6 +207,7 @@ bool GpuInit::InitializeAndStartSandbox(
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
   params.single_process = false;
+  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
@@ -324,7 +326,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo = switches::IsMusHostingViz();
+  params.using_mojo = switches::IsMusHostingViz() ||
+                      command_line->HasSwitch(switches::kEnableDrmMojo);
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
