@@ -21,7 +21,7 @@ class CC_EXPORT UnittestOnlyBenchmarkImpl : public MicroBenchmarkImpl {
   UnittestOnlyBenchmarkImpl(
       scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
       base::Value* settings,
-      const DoneCallback& callback);
+      DoneCallback callback);
   ~UnittestOnlyBenchmarkImpl() override;
 
   void DidCompleteCommit(LayerTreeHostImpl* host) override;

@@ -68,8 +68,8 @@ RecordingModeToPaintingControlSetting(RecordingSource::RecordingMode mode) {
 
 RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
     std::unique_ptr<base::Value> value,
-    const MicroBenchmark::DoneCallback& callback)
-    : MicroBenchmark(callback),
+    MicroBenchmark::DoneCallback callback)
+    : MicroBenchmark(std::move(callback)),
       record_repeat_count_(kDefaultRecordRepeatCount),
       settings_(std::move(value)),
       main_thread_benchmark_done_(false),

@@ -22,10 +22,10 @@ class LayerImpl;
 class PictureLayerImpl;
 class CC_EXPORT MicroBenchmarkImpl {
  public:
-  typedef base::Callback<void(std::unique_ptr<base::Value>)> DoneCallback;
+  using DoneCallback = base::OnceCallback<void(std::unique_ptr<base::Value>)>;
 
   explicit MicroBenchmarkImpl(
-      const DoneCallback& callback,
+      DoneCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner);
   virtual ~MicroBenchmarkImpl();
 

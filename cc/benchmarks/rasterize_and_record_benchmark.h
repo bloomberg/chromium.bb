@@ -27,9 +27,8 @@ class LayerTreeHost;
 
 class RasterizeAndRecordBenchmark : public MicroBenchmark {
  public:
-  explicit RasterizeAndRecordBenchmark(
-      std::unique_ptr<base::Value> value,
-      const MicroBenchmark::DoneCallback& callback);
+  explicit RasterizeAndRecordBenchmark(std::unique_ptr<base::Value> value,
+                                       MicroBenchmark::DoneCallback callback);
   ~RasterizeAndRecordBenchmark() override;
 
   // Implements MicroBenchmark interface.

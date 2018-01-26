@@ -26,7 +26,7 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
   explicit RasterizeAndRecordBenchmarkImpl(
       scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
       base::Value* value,
-      const MicroBenchmarkImpl::DoneCallback& callback);
+      MicroBenchmarkImpl::DoneCallback callback);
   ~RasterizeAndRecordBenchmarkImpl() override;
 
   // Implements MicroBenchmark interface.

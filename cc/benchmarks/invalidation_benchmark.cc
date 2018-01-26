@@ -29,8 +29,8 @@ const char* kDefaultInvalidationMode = "viewport";
 
 InvalidationBenchmark::InvalidationBenchmark(
     std::unique_ptr<base::Value> value,
-    const MicroBenchmark::DoneCallback& callback)
-    : MicroBenchmark(callback), seed_(0) {
+    MicroBenchmark::DoneCallback callback)
+    : MicroBenchmark(std::move(callback)), seed_(0) {
   base::DictionaryValue* settings = nullptr;
   value->GetAsDictionary(&settings);
   if (!settings)
