@@ -32,22 +32,36 @@ BASE_EXPORT void CompleteLazyInstance(subtle::AtomicWord* state,
                                       void (*destructor)(void*),
                                       void* destructor_arg);
 
-// If |state| is uninitialized (zero), constructs a value using |creator_func|,
-// stores it into |state| and registers |destructor| to be called with
-// |destructor_arg| as argument when the current AtExitManager goes out of
-// scope. Then, returns the value stored in |state|. It is safe to have
+}  // namespace internal
+
+namespace subtle {
+
+// If |state| is uninitialized (zero), constructs a value using
+// |creator_func(creator_arg)|, stores it into |state| and registers
+// |destructor(destructor_arg)| to be called when the current AtExitManager goes
+// out of scope. Then, returns the value stored in |state|. It is safe to have
 // concurrent calls to this function with the same |state|. |creator_func| may
 // return nullptr if it doesn't want to create an instance anymore (e.g. on
 // shutdown), it is from then on required to return nullptr to all callers (ref.
-// StaticMemorySingletonTraits). Callers need to synchronize before
-// |creator_func| may return a non-null instance again (ref.
+// StaticMemorySingletonTraits). In that case, callers need to synchronize
+// before |creator_func| may return a non-null instance again (ref.
 // StaticMemorySingletonTraits::ResurectForTesting()).
-template <typename CreatorFunc>
-void* GetOrCreateLazyPointer(subtle::AtomicWord* state,
-                             const CreatorFunc& creator_func,
+// Implementation note on |creator_func/creator_arg|. It makes for ugly adapters
+// but it avoids redundant template instantiations (e.g. saves 27KB in
+// chrome.dll) because linker is able to fold these for multiple Types but
+// couldn't with the more advanced CreatorFunc template type which in turn
+// improves code locality (and application startup) -- ref.
+// https://chromium-review.googlesource.com/c/chromium/src/+/530984/5/base/lazy_instance.h#140,
+// worsened by https://chromium-review.googlesource.com/c/chromium/src/+/868013
+// and caught then as https://crbug.com/804034.
+template <typename Type>
+Type* GetOrCreateLazyPointer(subtle::AtomicWord* state,
+                             Type* (*creator_func)(void*),
+                             void* creator_arg,
                              void (*destructor)(void*),
                              void* destructor_arg) {
   DCHECK(state);
+  DCHECK(creator_func);
 
   // If any bit in the created mask is true, the instance has already been
   // fully constructed.
@@ -60,18 +74,28 @@ void* GetOrCreateLazyPointer(subtle::AtomicWord* state,
   // has acquire memory ordering as a thread which sees |state| > creating needs
   // to acquire visibility over the associated data. Pairing Release_Store is in
   // CompleteLazyInstance().
-  if (!(subtle::Acquire_Load(state) & kLazyInstanceCreatedMask) &&
-      NeedsLazyInstance(state)) {
-    // This thread won the race and is now responsible for creating the instance
-    // and storing it back into |state|.
-    subtle::AtomicWord instance =
-        reinterpret_cast<subtle::AtomicWord>(creator_func());
-    CompleteLazyInstance(state, instance, destructor, destructor_arg);
+  subtle::AtomicWord instance = subtle::Acquire_Load(state);
+  if (!(instance & kLazyInstanceCreatedMask)) {
+    if (internal::NeedsLazyInstance(state)) {
+      // This thread won the race and is now responsible for creating the
+      // instance and storing it back into |state|.
+      instance =
+          reinterpret_cast<subtle::AtomicWord>((*creator_func)(creator_arg));
+      internal::CompleteLazyInstance(state, instance, destructor,
+                                     destructor_arg);
+    } else {
+      // This thread lost the race but now has visibility over the constructed
+      // instance (NeedsLazyInstance() doesn't return until the constructing
+      // thread releases the instance via CompleteLazyInstance()).
+      instance = subtle::Acquire_Load(state);
+      DCHECK(instance & kLazyInstanceCreatedMask);
+    }
   }
-  return reinterpret_cast<void*>(subtle::NoBarrier_Load(state));
+  return reinterpret_cast<Type*>(instance);
 }
 
-}  // namespace internal
+}  // namespace subtle
+
 }  // namespace base
 
 #endif  // BASE_LAZY_INSTANCE_INTERNAL_H_

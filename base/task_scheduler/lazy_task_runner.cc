@@ -62,30 +62,36 @@ LazyTaskRunner<SingleThreadTaskRunner, true>::Create() {
 }
 #endif
 
+// static
+template <typename TaskRunnerType, bool com_sta>
+TaskRunnerType* LazyTaskRunner<TaskRunnerType, com_sta>::CreateRaw(
+    void* void_self) {
+  auto self =
+      reinterpret_cast<LazyTaskRunner<TaskRunnerType, com_sta>*>(void_self);
+
+  scoped_refptr<TaskRunnerType> task_runner = self->Create();
+
+  // Acquire a reference to the TaskRunner. The reference will either
+  // never be released or be released in Reset(). The reference is not
+  // managed by a scoped_refptr because adding a scoped_refptr member to
+  // LazyTaskRunner would prevent its static initialization.
+  task_runner->AddRef();
+
+  // Reset this instance when the current
+  // ScopedLazyTaskRunnerListForTesting is destroyed, if any.
+  if (g_scoped_lazy_task_runner_list_for_testing) {
+    g_scoped_lazy_task_runner_list_for_testing->AddCallback(BindOnce(
+        &LazyTaskRunner<TaskRunnerType, com_sta>::Reset, Unretained(self)));
+  }
+
+  return task_runner.get();
+}
+
 template <typename TaskRunnerType, bool com_sta>
 scoped_refptr<TaskRunnerType> LazyTaskRunner<TaskRunnerType, com_sta>::Get() {
-  return WrapRefCounted(static_cast<TaskRunnerType*>(GetOrCreateLazyPointer(
-      &state_,
-      [this]() {
-        scoped_refptr<TaskRunnerType> task_runner = Create();
-
-        // Acquire a reference to the TaskRunner. The reference will either
-        // never be released or be released in Reset(). The reference is not
-        // managed by a scoped_refptr because adding a scoped_refptr member to
-        // LazyTaskRunner would prevent its static initialization.
-        task_runner->AddRef();
-
-        // Reset this instance when the current
-        // ScopedLazyTaskRunnerListForTesting is destroyed, if any.
-        if (g_scoped_lazy_task_runner_list_for_testing) {
-          g_scoped_lazy_task_runner_list_for_testing->AddCallback(
-              BindOnce(&LazyTaskRunner<TaskRunnerType, com_sta>::Reset,
-                       Unretained(this)));
-        }
-
-        return task_runner.get();
-      },
-      nullptr, nullptr)));
+  return WrapRefCounted(subtle::GetOrCreateLazyPointer(
+      &state_, &LazyTaskRunner<TaskRunnerType, com_sta>::CreateRaw,
+      reinterpret_cast<void*>(this), nullptr, nullptr));
 }
 
 template class LazyTaskRunner<SequencedTaskRunner, false>;

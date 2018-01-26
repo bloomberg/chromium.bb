@@ -161,9 +161,9 @@ class LazyInstance {
       ThreadRestrictions::AssertSingletonAllowed();
 #endif
 
-    return static_cast<Type*>(internal::GetOrCreateLazyPointer(
-        &private_instance_, [this]() { return Traits::New(private_buf_); },
-        Traits::kRegisterOnExit ? OnExit : nullptr, this));
+    return subtle::GetOrCreateLazyPointer(
+        &private_instance_, &Traits::New, private_buf_,
+        Traits::kRegisterOnExit ? OnExit : nullptr, this);
   }
 
   // Returns true if the lazy instance has been created.  Unlike Get() and
