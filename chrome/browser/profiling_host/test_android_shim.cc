@@ -31,13 +31,14 @@ jboolean TestAndroidShim::RunTestForMode(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& mode,
     jboolean dynamically_start_profiling,
-    jboolean pseudo_stacks) {
+    const base::android::JavaParamRef<jstring>& stack_mode) {
   profiling::ProfilingTestDriver driver;
   profiling::ProfilingTestDriver::Options options;
   options.mode = profiling::ProfilingProcessHost::ConvertStringToMode(
       base::android::ConvertJavaStringToUTF8(mode));
-  options.stack_mode = pseudo_stacks ? profiling::mojom::StackMode::PSEUDO
-                                     : profiling::mojom::StackMode::NATIVE;
+  options.stack_mode =
+      profiling::ProfilingProcessHost::ConvertStringToStackMode(
+          base::android::ConvertJavaStringToUTF8(stack_mode));
   options.profiling_already_started = !dynamically_start_profiling;
   return driver.RunTest(options);
 }

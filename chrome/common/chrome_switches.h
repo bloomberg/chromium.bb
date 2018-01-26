@@ -159,6 +159,7 @@ extern const char kMemlogModeRendererSampling[];
 extern const char kMemlogStackMode[];
 extern const char kMemlogStackModeMixed[];
 extern const char kMemlogStackModeNative[];
+extern const char kMemlogStackModeNativeWithThreadNames[];
 extern const char kMemlogStackModePseudo[];
 extern const char kMonitoringDestinationID[];
 extern const char kNetLogCaptureMode[];

@@ -5,6 +5,7 @@
 #include "base/android/jni_android.h"
 
 #include <stddef.h>
+#include <sys/prctl.h>
 
 #include <map>
 
@@ -38,9 +39,26 @@ namespace android {
 
 JNIEnv* AttachCurrentThread() {
   DCHECK(g_jvm);
-  JNIEnv* env = NULL;
-  jint ret = g_jvm->AttachCurrentThread(&env, NULL);
-  DCHECK_EQ(JNI_OK, ret);
+  JNIEnv* env = nullptr;
+  jint ret = g_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_2);
+  if (ret == JNI_EDETACHED || !env) {
+    JavaVMAttachArgs args;
+    args.version = JNI_VERSION_1_2;
+    args.group = nullptr;
+
+    // 16 is the maximum size for thread names on Android.
+    char thread_name[16];
+    int err = prctl(PR_GET_NAME, thread_name);
+    if (err < 0) {
+      DPLOG(ERROR) << "prctl(PR_GET_NAME)";
+      args.name = nullptr;
+    } else {
+      args.name = thread_name;
+    }
+
+    ret = g_jvm->AttachCurrentThread(&env, &args);
+    DCHECK_EQ(JNI_OK, ret);
+  }
   return env;
 }
 

@@ -168,7 +168,8 @@ void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
 
 // Inserts or retrieves the ID for a string in the string table.
 size_t AddOrGetString(const std::string& str, StringTable* string_table) {
-  auto result = string_table->emplace(str, string_table->size());
+  // The lowest ID should be 1. The chrome://tracing UI doesn't handle ID 0.
+  auto result = string_table->emplace(str, string_table->size() + 1);
   // "result.first" is an iterator into the map.
   return result.first->second;
 }
@@ -202,8 +203,9 @@ void FillContextStrings(const UniqueAllocationMap& allocations,
 
 size_t AddOrGetBacktraceNode(BacktraceNode node,
                              BacktraceTable* backtrace_table) {
+  // The lowest ID should be 1. The chrome://tracing UI doesn't handle ID 0.
   auto result =
-      backtrace_table->emplace(std::move(node), backtrace_table->size());
+      backtrace_table->emplace(std::move(node), backtrace_table->size() + 1);
   // "result.first" is an iterator into the map.
   return result.first->second;
 }

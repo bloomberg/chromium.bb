@@ -23,9 +23,9 @@ public class TestAndroidShim {
      *  rather than native stacks.
      */
     public boolean runTestForMode(
-            String mode, boolean dynamicallyStartProfiling, boolean pseudoStacks) {
+            String mode, boolean dynamicallyStartProfiling, String stackMode) {
         return nativeRunTestForMode(
-                mNativeTestAndroidShim, mode, dynamicallyStartProfiling, pseudoStacks);
+                mNativeTestAndroidShim, mode, dynamicallyStartProfiling, stackMode);
     }
 
     /**
@@ -43,5 +43,5 @@ public class TestAndroidShim {
     private native long nativeInit();
     private native void nativeDestroy(long nativeTestAndroidShim);
     private native boolean nativeRunTestForMode(long nativeTestAndroidShim, String mode,
-            boolean dynamicallyStartProfiling, boolean pseudoStacks);
+            boolean dynamicallyStartProfiling, String stackMode);
 }

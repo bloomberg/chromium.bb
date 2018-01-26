@@ -47,6 +47,11 @@ void ThreadIdNameManager::RegisterThread(PlatformThreadHandle::Handle handle,
       name_to_interned_name_[kDefaultName];
 }
 
+void ThreadIdNameManager::InstallSetNameCallback(SetNameCallback callback) {
+  AutoLock locked(lock_);
+  set_name_callback_ = std::move(callback);
+}
+
 void ThreadIdNameManager::SetName(PlatformThreadId id,
                                   const std::string& name) {
   std::string* leaked_str = nullptr;
@@ -62,6 +67,10 @@ void ThreadIdNameManager::SetName(PlatformThreadId id,
 
     ThreadIdToHandleMap::iterator id_to_handle_iter =
         thread_id_to_handle_.find(id);
+
+    if (set_name_callback_) {
+      set_name_callback_.Run(leaked_str->c_str());
+    }
 
     // The main thread of a process will not be created as a Thread object which
     // means there is no PlatformThreadHandler registered.

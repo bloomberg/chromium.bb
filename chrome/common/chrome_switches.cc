@@ -482,6 +482,7 @@ const char kMemlogModeRendererSampling[] = "renderer-sampling";
 const char kMemlogStackMode[] = "memlog-stack-mode";
 const char kMemlogStackModeMixed[] = "mixed";
 const char kMemlogStackModeNative[] = "native";
+const char kMemlogStackModeNativeWithThreadNames[] = "native-with-thread-names";
 const char kMemlogStackModePseudo[] = "pseudo";
 
 // Allows setting a different destination ID for connection-monitoring GCM
