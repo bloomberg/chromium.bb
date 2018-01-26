@@ -240,10 +240,14 @@ class Singleton {
       ThreadRestrictions::AssertSingletonAllowed();
 #endif
 
-    return static_cast<Type*>(internal::GetOrCreateLazyPointer(
-        &instance_, &Traits::New, Traits::kRegisterAtExit ? OnExit : nullptr,
-        nullptr));
+    return subtle::GetOrCreateLazyPointer(
+        &instance_, &CreatorFunc, nullptr,
+        Traits::kRegisterAtExit ? OnExit : nullptr, nullptr);
   }
+
+  // Internal method used as an adaptor for GetOrCreateLazyPointer(). Do not use
+  // outside of that use case.
+  static Type* CreatorFunc(void* /* creator_arg*/) { return Traits::New(); }
 
   // Adapter function for use with AtExit().  This should be called single
   // threaded, so don't use atomic operations.
