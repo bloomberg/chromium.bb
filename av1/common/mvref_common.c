@@ -478,8 +478,8 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
   if (rf[1] == NONE_FRAME) {
     int cur_frame_index = cm->cur_frame->cur_frame_offset;
     int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
-    int cur_offset_0 = cur_frame_index -
-                       cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+    int frame0_index = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+    int cur_offset_0 = cur_frame_index - frame0_index;
 
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
       if (prev_frame_mvs->mfmv0[i].as_int != INVALID_MV) {
@@ -524,11 +524,12 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
     // Process compound inter mode
     int cur_frame_index = cm->cur_frame->cur_frame_offset;
     int buf_idx_0 = cm->frame_refs[FWD_RF_OFFSET(rf[0])].idx;
-    int cur_offset_0 = cur_frame_index -
-                       cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+    int frame0_index = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
+
+    int cur_offset_0 = cur_frame_index - frame0_index;
     int buf_idx_1 = cm->frame_refs[FWD_RF_OFFSET(rf[1])].idx;
-    int cur_offset_1 = cur_frame_index -
-                       cm->buffer_pool->frame_bufs[buf_idx_1].cur_frame_offset;
+    int frame1_index = cm->buffer_pool->frame_bufs[buf_idx_1].cur_frame_offset;
+    int cur_offset_1 = cur_frame_index - frame1_index;
 
     for (int i = 0; i < MFMV_STACK_SIZE; ++i) {
       if (prev_frame_mvs->mfmv0[i].as_int != INVALID_MV) {
