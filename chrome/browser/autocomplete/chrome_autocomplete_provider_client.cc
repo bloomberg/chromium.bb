@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service_utils.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -223,6 +224,29 @@ ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
   builtins_to_provide.push_back(
       base::ASCIIToUTF16(chrome::kChromeUIVersionURL));
   return builtins_to_provide;
+}
+
+base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
+// The timestamp is currenly used only for contextual zero suggest suggestions
+// on desktop. Consider updating this if this will be used for mobile services.
+#if !defined(OS_ANDROID)
+  const Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
+  if (!active_browser)
+    return base::Time();
+
+  const content::WebContents* active_tab =
+      active_browser->tab_strip_model()->GetActiveWebContents();
+  if (!active_tab)
+    return base::Time();
+
+  const content::NavigationEntry* navigation =
+      active_tab->GetController().GetLastCommittedEntry();
+  if (!navigation)
+    return base::Time();
+
+  return navigation->GetTimestamp();
+#endif  // !defined(OS_ANDROID)
+  return base::Time();
 }
 
 bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {

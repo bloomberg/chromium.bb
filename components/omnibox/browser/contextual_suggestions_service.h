@@ -39,6 +39,9 @@ class ContextualSuggestionsService : public KeyedService {
   // experimental suggestions service. It's possible the non-experimental
   // service may decide to offer general-purpose suggestions.
   //
+  // |visit_time| is the time of the visit for the URL for which suggestions
+  // should be fetched.
+  //
   // |template_url_service| may be null, but some services may be disabled.
   //
   // |fetcher_delegate| is used to create a fetcher that is used to perform a
@@ -55,6 +58,7 @@ class ContextualSuggestionsService : public KeyedService {
   // instantiates |token_fetcher_|.
   void CreateContextualSuggestionsRequest(
       const std::string& current_url,
+      const base::Time& visit_time,
       const TemplateURLService* template_url_service,
       net::URLFetcherDelegate* fetcher_delegate,
       ContextualSuggestionsCallback callback);
@@ -112,6 +116,7 @@ class ContextualSuggestionsService : public KeyedService {
   // This function is called by CreateContextualSuggestionsRequest. See its
   // function definition for details on the parameters.
   void CreateExperimentalRequest(const std::string& current_url,
+                                 const base::Time& visit_time,
                                  const GURL& suggest_url,
                                  net::URLFetcherDelegate* fetcher_delegate,
                                  ContextualSuggestionsCallback callback);
