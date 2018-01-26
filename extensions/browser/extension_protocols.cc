@@ -72,6 +72,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -219,16 +220,6 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   }
 
   void GetResponseInfo(net::HttpResponseInfo* info) override {
-    // Set the mime type for the request. We do this here (rather than when we
-    // build the rest of the headers) because the mime type is retrieved only
-    // after URLRequestFileJob::Start() is called. Using an accurate mime type
-    // is necessary at least for modules, which enforce strict mime type
-    // requirements.
-    std::string mime_type;
-    bool found_mime_type = GetMimeType(&mime_type);
-    if (found_mime_type)
-      response_info_.headers->AddHeader("Content-Type: " + mime_type);
-
     *info = response_info_;
   }
 
@@ -328,7 +319,29 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
         content_security_policy_,
         send_cors_header_,
         *last_modified_time);
+    // Set the mime type for the request.
+    std::string mime_type;
+    bool found_mime_type = GetMimeType(&mime_type);
+    if (found_mime_type)
+      response_info_.headers->AddHeader("Content-Type: " + mime_type);
+
     URLRequestFileJob::Start();
+  }
+
+  bool GetMimeType(std::string* mime_type) const override {
+    base::FilePath::StringType file_extension = file_path_.Extension();
+    if (file_extension.empty())
+      return false;
+
+    // We use GetWellKnownMimeTypeFromExtension() to ensure that configurations
+    // that may have been set by other programs on a user's machine don't affect
+    // the mime type returned (in particular, JS should always be
+    // application/javascript). See https://crbug.com/797712. Using an accurate
+    // mime type is necessary at least for modules, which enforce strict mime
+    // type requirements.
+    return net::GetWellKnownMimeTypeFromExtension(
+        file_extension.substr(1),  // Trim leading '.'
+        mime_type);
   }
 
   scoped_refptr<ContentVerifyJob> verify_job_;
