@@ -318,6 +318,16 @@ void LocalTranslator::TranslateEAP() {
   SetClientCertProperties(client_cert::CONFIG_TYPE_EAP, onc_object_,
                           shill_dictionary_);
 
+  // Set shill::kEapUseLoginPasswordProperty according to whether or not the
+  // password substitution variable is set.
+  const base::Value* password_field =
+      onc_object_->FindKey(::onc::eap::kPassword);
+  if (password_field &&
+      password_field->GetString() == ::onc::substitutes::kPasswordField) {
+    shill_dictionary_->SetKey(shill::kEapUseLoginPasswordProperty,
+                              base::Value(true));
+  }
+
   CopyFieldsAccordingToSignature();
 }
 
