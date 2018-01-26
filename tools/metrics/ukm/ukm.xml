@@ -2583,4 +2583,31 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.UpdateTime">
+  <owner>chrishtr@chromium.org</owner>
+  <summary>
+    Records various rendering performance metrics (in microseconds).
+  </summary>
+  <metric name="Compositing">
+    <summary>
+      Time taken by the compositing phase in microseconds.
+    </summary>
+  </metric>
+  <metric name="Paint">
+    <summary>
+      Time taken by the compositing phase in microseconds.
+    </summary>
+  </metric>
+  <metric name="PrePaint">
+    <summary>
+      Time taken by the pre-paint phase in microseconds.
+    </summary>
+  </metric>
+  <metric name="StyleAndLayout">
+    <summary>
+      Time taken by the style and layout phases in microseconds.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>
