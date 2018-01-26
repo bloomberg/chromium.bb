@@ -3351,8 +3351,8 @@ crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 # This test has been flaky for some time on Win 7 (dgb)
 crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
 
-# This test is flaking on mac_chromium_rel_ng.
-crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Failure ]
+# This test is flaking (failing, crashing) on mac_chromium_rel_ng.
+crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
 
 # Sheriff failures 2018-01-19
 # This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
