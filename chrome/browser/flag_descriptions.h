@@ -339,6 +339,7 @@ extern const char kOOPHPStackModeName[];
 extern const char kOOPHPStackModeDescription[];
 extern const char kOOPHPStackModeMixed[];
 extern const char kOOPHPStackModeNative[];
+extern const char kOOPHPStackModeNativeWithThreadNames[];
 extern const char kOOPHPStackModePseudo[];
 
 extern const char kEnablePictureInPictureName[];

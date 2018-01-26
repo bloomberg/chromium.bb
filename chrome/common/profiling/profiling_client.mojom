@@ -6,8 +6,12 @@ module profiling.mojom;
 
 // The data that is recorded for an allocation stack.
 enum StackMode {
+  // Instruction addresses from unwinding the stack. Includes the thread name as
+  // the first frame.
+  NATIVE_WITH_THREAD_NAMES,
+
   // Instruction addresses from unwinding the stack.
-  NATIVE,
+  NATIVE_WITHOUT_THREAD_NAMES,
 
   // Uses trace events as identifiers.
   PSEUDO,

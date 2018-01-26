@@ -532,11 +532,13 @@ const char kOOPHPStackModeName[] =
 const char kOOPHPStackModeDescription[] =
     "By default, memlog heap dumps record native stacks, which requires a "
     "post-processing step to symbolize. Requires a custom build with frame "
-    "pointers to work on Android. It's also possible to record a pseudo stack "
-    "using trace events as identifiers. It's also possible to do a mix of "
-    "both.";
+    "pointers to work on Android. Native with thread names will add the thread "
+    "name as the first frame of each native stack. It's also possible to "
+    "record a pseudo stack using trace events as identifiers. It's also "
+    "possible to do a mix of both.";
 const char kOOPHPStackModeMixed[] = "Mixed";
 const char kOOPHPStackModeNative[] = "Native";
+const char kOOPHPStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kOOPHPStackModePseudo[] = "Trace events";
 
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";

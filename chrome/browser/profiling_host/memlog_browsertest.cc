@@ -54,7 +54,13 @@ class MemlogBrowserTest : public InProcessBrowserTest,
       if (GetParam().stack_mode == mojom::StackMode::PSEUDO) {
         command_line->AppendSwitchASCII(switches::kMemlogStackMode,
                                         switches::kMemlogStackModePseudo);
-      } else if (GetParam().stack_mode == mojom::StackMode::NATIVE) {
+      } else if (GetParam().stack_mode ==
+                 mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
+        command_line->AppendSwitchASCII(
+            switches::kMemlogStackMode,
+            switches::kMemlogStackModeNativeWithThreadNames);
+      } else if (GetParam().stack_mode ==
+                 mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES) {
         command_line->AppendSwitchASCII(switches::kMemlogStackMode,
                                         switches::kMemlogStackModeNative);
       } else if (GetParam().stack_mode == mojom::StackMode::MIXED) {
@@ -97,7 +103,7 @@ std::vector<TestParam> GetParams() {
 
   std::vector<mojom::StackMode> stack_modes;
   stack_modes.push_back(mojom::StackMode::MIXED);
-  stack_modes.push_back(mojom::StackMode::NATIVE);
+  stack_modes.push_back(mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES);
   stack_modes.push_back(mojom::StackMode::PSEUDO);
 
   for (const auto& mode : dynamic_start_modes) {
@@ -117,6 +123,10 @@ std::vector<TestParam> GetParams() {
       params.push_back({mode, stack_mode, true});
     }
   }
+
+  // Test thread names for native profiling.
+  params.push_back({ProfilingProcessHost::Mode::kBrowser,
+                    mojom::StackMode::NATIVE_WITH_THREAD_NAMES, false});
   return params;
 }
 
