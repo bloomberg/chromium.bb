@@ -366,7 +366,9 @@ void InputInjectorWin::Core::Stop() {
   }
 
   clipboard_.reset();
-  touch_injector_->Deinitialize();
+  if (touch_injector_) {
+    touch_injector_->Deinitialize();
+  }
 }
 
 InputInjectorWin::Core::~Core() {}
