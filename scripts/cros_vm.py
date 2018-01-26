@@ -36,6 +36,7 @@ class VM(object):
   """Class for managing a VM."""
 
   SSH_PORT = 9222
+  IMAGE_FORMAT = 'raw'
 
   def __init__(self, argv):
     """Initialize VM.
@@ -54,6 +55,7 @@ class VM(object):
     self.use_sudo = self.enable_kvm and not os.access('/dev/kvm', os.W_OK)
     self.display = opts.display
     self.image_path = opts.image_path
+    self.image_format = opts.image_format
     self.board = opts.board
     self.ssh_port = opts.ssh_port
     self.dry_run = opts.dry_run
@@ -256,8 +258,8 @@ class VM(object):
         '-net', 'nic,model=virtio,vlan=%d' % self.ssh_port,
         '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22,vlan=%d'
         % (self.ssh_port, self.ssh_port),
-        '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=raw'
-        % self.image_path,
+        '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=%s'
+        % (self.image_path, self.image_format),
     ]
     if self.enable_kvm:
       qemu_args.append('-enable-kvm')
@@ -399,6 +401,8 @@ class VM(object):
                         help='Stop the VM.')
     parser.add_argument('--image-path', type='path',
                         help='Path to VM image to launch with --start.')
+    parser.add_argument('--image-format', default=VM.IMAGE_FORMAT,
+                        help='Format of the VM image (raw, qcow2, ...).')
     parser.add_argument('--qemu-path', type='path',
                         help='Path of qemu binary to launch with --start.')
     parser.add_argument('--qemu-bios-path', type='path',
