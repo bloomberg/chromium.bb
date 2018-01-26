@@ -17,7 +17,7 @@
 
     // Each of these are valid
     'rgba(0,0,0,0.5)', 'rgb(0,0,0,50%)', 'rgb( 0  0   0   /   50%  )', 'rgb(1 1 1/1)', 'rgb(1 1 1/ 1)',
-    'hsl(-120, 100%, 50%)', 'hsl(-120deg, 100%, 50%)',
+    'rgba(1.5 1.5 1.5)', 'hsl(-120, 100%, 50%)', 'hsl(-120deg, 100%, 50%)',
     'hsl(-120, 200%, 200%)',         // clipped to hsl(240,100%,100%)
     'hsl(-120, -200%, -200%)',       // clipped to hsl(240,100%,100%)
     'hsla(-120, -200%, -200%, -5)',  // clipped to hsla(0,0%,0%,0)
@@ -31,8 +31,8 @@
 
   var invalidColors = [
     // An invalid color, eg a value for a shorthand like 'border' which can have a color
-    'none', '#00000', '#ggg', 'rgb(a,b,c)', 'rgb(a,b,c,d)', 'rgb(1,1,1.2)', 'rgba(0 0 0 1%)', 'rgba(0,0,0,)',
-    'rgba(0 0, 0)', 'rgba(1.0 1.0 1.0)', 'rgba(1 1 1 / )', 'rgb(1 1 / 1)', 'rgb(1 1/1)', 'hsl(0,0,0)', 'hsl(0%, 0%, 0%)',
+    'none', '#00000', '#ggg', 'rgb(a,b,c)', 'rgb(a,b,c,d)', 'rgba(0 0 0 1%)', 'rgba(0,0,0,)',
+    'rgba(0 0, 0)', 'rgba(1 1 1 / )', 'rgb(1 1 / 1)', 'rgb(1 1/1)', 'hsl(0,0,0)', 'hsl(0%, 0%, 0%)',
     'hsla(0,,0,1)', 'hsl(0, 0%, 0)', 'hsl(a,b,c)', 'hsla(0,0,0,0)', 'hsla(0 0% 0% 0)', 'hsla(0 turn, 0, 0, 0)', 'hsla'
   ];
 
