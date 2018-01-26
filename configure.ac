@@ -371,9 +371,6 @@ if test "x$NOUVEAU" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_OMAP, [test "x$OMAP" = xyes])
-if test "x$OMAP" = xyes; then
-	AC_DEFINE(HAVE_OMAP, 1, [Have OMAP support])
-fi
 
 AM_CONDITIONAL(HAVE_EXYNOS, [test "x$EXYNOS" = xyes])
 if test "x$EXYNOS" = xyes; then

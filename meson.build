@@ -252,7 +252,7 @@ if cc.compiles('''int foo_hidden(void) __attribute__((visibility(("hidden"))));'
 endif
 
 foreach t : [[with_intel, 'INTEL'], [with_vmwgfx, 'VMWGFX'],
-             [with_nouveau, 'NOUVEAU'], [with_omap, 'OMAP'],
+             [with_nouveau, 'NOUVEAU'],
              [with_exynos, 'EXYNOS'], [with_freedreno, 'FREEDRENO'],
              [with_tegra, 'TEGRA'], [with_vc4, 'VC4'],
              [with_etnaviv, 'ETNAVIV'], [with_radeon, 'RADEON']]
