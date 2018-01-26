@@ -735,6 +735,7 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
   // Immediately finish any active bounds animation.
   window->layer()->GetAnimator()->StopAnimatingProperty(
       ui::LayerAnimationElement::BOUNDS);
+  (*iter)->UpdateWindowDimensionsType();
   PositionWindows(false);
 }
 
@@ -955,10 +956,22 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   size_t i = 0;
   for (const auto& window : window_list_) {
     const gfx::Rect target_bounds = window->GetTargetBoundsInScreen();
-    const int width =
-        std::max(1, gfx::ToFlooredInt(target_bounds.width() *
-                                      window->GetItemScale(item_size)) +
-                        2 * kWindowMargin);
+    int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() *
+                                              window->GetItemScale(item_size)) +
+                                2 * kWindowMargin);
+    switch (window->GetWindowDimensionsType()) {
+      case ScopedTransformOverviewWindow::GridWindowFillMode::kLetterBoxed:
+        width = ScopedTransformOverviewWindow::kExtremeWindowRatioThreshold *
+                height;
+        break;
+      case ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed:
+        width = height /
+                ScopedTransformOverviewWindow::kExtremeWindowRatioThreshold;
+        break;
+      default:
+        break;
+    }
+
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
       if (*min_right > left)
