@@ -2787,7 +2787,6 @@ if (is_android) {
       "//third_party/ub-uiautomator:ub_uiautomator_java",
     ]
     java_files = [
-      "test/android/javatests/src/org/chromium/base/test/BaseActivityInstrumentationTestCase.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4ClassRunner.java",
