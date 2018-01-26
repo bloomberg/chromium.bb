@@ -207,8 +207,8 @@ foreach a : ['-Wall', '-Wextra', '-Wsign-compare',
              '-Werror-implicit-function-declaration', '-Wpointer-arith',
              '-Wwrite-strings', '-Wstrict-prototypes', '-Wmissing-prototypes',
              '-Wmissing-declarations', '-Wnested-externs', '-Wpacked',
-             '-Wswitch-enum', '-Wmissing-format-attribute', 
-             '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow', 
+             '-Wswitch-enum', '-Wmissing-format-attribute',
+             '-Wstrict-aliasing=2', '-Winit-self', '-Winline', '-Wshadow',
              '-Wdeclaration-after-statement', '-Wold-style-definition']
   if cc.has_argument(a)
     warn_c_args += a
@@ -216,7 +216,7 @@ foreach a : ['-Wall', '-Wextra', '-Wsign-compare',
 endforeach
 # GCC will never error for -Wno-*, so check for -W* then add -Wno-* to the list
 # of options
-foreach a : ['unused-parameter', 'attributes', 'long-long', 
+foreach a : ['unused-parameter', 'attributes', 'long-long',
              'missing-field-initializers']
   if cc.has_argument('-W@0@'.format(a))
     warn_c_args += '-Wno-@0@'.format(a)
@@ -320,7 +320,7 @@ pkg.generate(
   version : meson.project_version(),
   description : 'Userspace interface to kernel DRM services',
 )
- 
+
 if with_libkms
   subdir('libkms')
 endif
