@@ -431,9 +431,6 @@ if test "x$VC4" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_ETNAVIV, [test "x$ETNAVIV" = xyes])
-if test "x$ETNAVIV" = xyes; then
-	AC_DEFINE(HAVE_ETNAVIV, 1, [Have etnaviv support])
-fi
 
 AM_CONDITIONAL(HAVE_INSTALL_TESTS, [test "x$INSTALL_TESTS" = xyes])
 
