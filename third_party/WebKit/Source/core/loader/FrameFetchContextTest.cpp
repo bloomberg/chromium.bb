@@ -63,6 +63,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 
 namespace blink {
 
@@ -559,15 +560,36 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
 // Verify that client hints are not attched when the resources do not belong to
 // a secure context.
 TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsInsecureContext) {
+  WebRuntimeFeatures::EnableClientHintsPersistent(false);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", false, "");
-  ClientHintsPreferences preferences;
-  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
-  document->GetClientHintsPreferences().UpdateFrom(preferences);
-  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
-  ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "4");
-  ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
-  ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
-  ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+
+  {
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(
+        mojom::WebClientHintsType::kDeviceMemory);
+    document->GetClientHintsPreferences().UpdateFrom(preferences);
+    ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+    ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "4");
+    ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+  }
+
+  {
+    // Verify that client hints are not attched when the resources do not belong
+    // to a secure context and the persistent client hint features is enabled.
+    WebRuntimeFeatures::EnableClientHintsPersistent(true);
+    ExpectHeader("http://www.example.com/1.gif", "Device-Memory", false, "");
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(
+        mojom::WebClientHintsType::kDeviceMemory);
+    document->GetClientHintsPreferences().UpdateFrom(preferences);
+    ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+    ExpectHeader("http://www.example.com/1.gif", "Device-Memory", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+  }
 }
 
 // Verify that client hints are attched when the resources belong to a local
@@ -615,15 +637,28 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints) {
 }
 
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHintsInsecureTransport) {
+  WebRuntimeFeatures::EnableClientHintsPersistent(false);
   ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
-  ClientHintsPreferences preferences;
-  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
-  document->GetClientHintsPreferences().UpdateFrom(preferences);
-  ExpectHeader("http://www.example.com/1.gif", "DPR", true, "1");
-  dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
-  ExpectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
-  ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
-  ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+
+  {
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+    document->GetClientHintsPreferences().UpdateFrom(preferences);
+    ExpectHeader("http://www.example.com/1.gif", "DPR", true, "1");
+    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
+    ExpectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
+    ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+  }
+
+  {
+    WebRuntimeFeatures::EnableClientHintsPersistent(true);
+    ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
+    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
+    ExpectHeader("http://www.example.com/1.gif", "DPR", false, "  ");
+    ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
+  }
 }
 
 TEST_F(FrameFetchContextHintsTest, MonitorResourceWidthHints) {
