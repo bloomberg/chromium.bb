@@ -395,6 +395,7 @@ component("bluetooth") {
     } else {  # !use_dbus
       sources += [ "bluetooth_adapter_stub.cc" ]
       if (is_linux) {
+        defines += [ "LINUX_WITHOUT_DBUS" ]
         sources += [
           "dbus/dbus_bluez_manager_wrapper_linux.h",
           "dbus/dbus_bluez_manager_wrapper_stub_linux.cc",
