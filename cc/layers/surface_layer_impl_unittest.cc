@@ -108,6 +108,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
     EXPECT_EQ(2u, data.deadline_in_frames);
+    EXPECT_FALSE(data.use_default_lower_bound_deadline);
   }
 
   // Update the fallback to an invalid viz::SurfaceInfo. The
@@ -124,6 +125,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
     // The deadline is reset after the first CompositorFrame submission with the
     // new dependency.
     EXPECT_EQ(base::nullopt, data.deadline_in_frames);
+    EXPECT_TRUE(data.use_default_lower_bound_deadline);
   }
 
   // Update the fallback viz::SurfaceInfo and re-emit DrawQuads.
@@ -136,6 +138,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
     EXPECT_EQ(base::nullopt, data.deadline_in_frames);
+    EXPECT_TRUE(data.use_default_lower_bound_deadline);
   }
 
   ASSERT_EQ(3u, render_pass->quad_list.size());
@@ -162,6 +165,51 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   EXPECT_EQ(surface_id2, surface_draw_quad3->fallback_surface_id);
 }
 
+// This test verifies that if one SurfaceLayerImpl has a deadline
+// and the other uses the default then AppendQuadsData is populated
+// correctly.
+TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
+  LayerTestCommon::LayerImplTest impl;
+  SurfaceLayerImpl* surface_layer_impl =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+
+  SurfaceLayerImpl* surface_layer_impl2 =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
+      1, base::UnguessableToken::Create());
+  viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
+
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
+      2, base::UnguessableToken::Create());
+  viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
+
+  gfx::Size viewport_size(1000, 1000);
+  impl.CalcDrawProps(viewport_size);
+
+  gfx::Size layer_size(400, 100);
+
+  surface_layer_impl->SetBounds(layer_size);
+  surface_layer_impl->SetDrawsContent(true);
+  surface_layer_impl->SetPrimarySurfaceId(surface_id1, 1u);
+  surface_layer_impl->SetFallbackSurfaceId(surface_id2);
+
+  surface_layer_impl2->SetBounds(layer_size);
+  surface_layer_impl2->SetDrawsContent(true);
+  surface_layer_impl2->SetPrimarySurfaceId(surface_id1, base::nullopt);
+  surface_layer_impl2->SetFallbackSurfaceId(surface_id2);
+
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+  AppendQuadsData data;
+  surface_layer_impl->AppendQuads(render_pass.get(), &data);
+  EXPECT_EQ(1u, data.deadline_in_frames);
+  EXPECT_FALSE(data.use_default_lower_bound_deadline);
+
+  surface_layer_impl2->AppendQuads(render_pass.get(), &data);
+  EXPECT_EQ(1u, data.deadline_in_frames);
+  EXPECT_TRUE(data.use_default_lower_bound_deadline);
+}
+
 // This test verifies that one viz::SurfaceDrawQuad is emitted if a
 // SurfaceLayerImpl holds the same surface ID for both the primary
 // and fallback viz::SurfaceInfo.
@@ -170,7 +218,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
 
-  // Populate the primary viz::SurfaceInfo.
+  // Populate the primary viz::SurfaceId.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);

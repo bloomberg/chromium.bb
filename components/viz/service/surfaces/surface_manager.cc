@@ -94,10 +94,6 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
-void SurfaceManager::RequestSurfaceResolution(Surface* surface) {
-  dependency_tracker_.RequestSurfaceResolution(surface);
-}
-
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const SurfaceInfo& surface_info,

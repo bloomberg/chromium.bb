@@ -115,9 +115,9 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.activation_dependencies;
   }
 
-  static const base::Optional<uint32_t>& deadline_in_frames(
+  static const base::Optional<viz::FrameDeadline>& deadline(
       const viz::CompositorFrameMetadata& metadata) {
-    return metadata.deadline_in_frames;
+    return metadata.deadline;
   }
 
   static uint32_t content_source_id(

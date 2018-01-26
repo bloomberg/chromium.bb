@@ -51,7 +51,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   std::string SurfaceReferencesToString();
 #endif
 
-  void RequestSurfaceResolution(Surface* surface);
+  SurfaceDependencyTracker* dependency_tracker() {
+    return &dependency_tracker_;
+  }
 
   // Creates a Surface for the given SurfaceClient. The surface will be
   // destroyed when DestroySurface is called, all of its destruction

@@ -31,6 +31,10 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
                            uint32_t number_of_frames_to_deadline);
   ~SurfaceDependencyTracker();
 
+  uint32_t number_of_frames_to_deadline() const {
+    return number_of_frames_to_deadline_;
+  }
+
   // Called when |surface| has a pending CompositorFrame and it wishes to be
   // informed when that surface's dependencies are resolved.
   void RequestSurfaceResolution(Surface* surface);

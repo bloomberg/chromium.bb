@@ -10,11 +10,20 @@
 namespace mojo {
 
 template <>
-struct StructTraits<viz::mojom::FrameDeadlineDataView, uint32_t> {
-  static uint32_t value(const uint32_t& input) { return input; }
+struct StructTraits<viz::mojom::FrameDeadlineDataView, viz::FrameDeadline> {
+  static uint32_t value(const viz::FrameDeadline& input) {
+    return input.value();
+  }
 
-  static bool Read(viz::mojom::FrameDeadlineDataView data, uint32_t* out) {
-    *out = data.value();
+  static bool use_default_lower_bound_deadline(
+      const viz::FrameDeadline& input) {
+    return input.use_default_lower_bound_deadline();
+  }
+
+  static bool Read(viz::mojom::FrameDeadlineDataView data,
+                   viz::FrameDeadline* out) {
+    *out = viz::FrameDeadline(data.value(),
+                              data.use_default_lower_bound_deadline());
     return true;
   }
 };

@@ -80,6 +80,7 @@
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -1034,12 +1035,15 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         append_quads_data.activation_dependencies.begin(),
         append_quads_data.activation_dependencies.end());
     if (append_quads_data.deadline_in_frames) {
-      if (!frame->deadline_in_frames)
-        frame->deadline_in_frames = 0u;
-
-      frame->deadline_in_frames = std::max(
-          *frame->deadline_in_frames, *append_quads_data.deadline_in_frames);
+      if (!frame->deadline_in_frames) {
+        frame->deadline_in_frames = append_quads_data.deadline_in_frames;
+      } else {
+        frame->deadline_in_frames = std::max(
+            *frame->deadline_in_frames, *append_quads_data.deadline_in_frames);
+      }
     }
+    frame->use_default_lower_bound_deadline |=
+        append_quads_data.use_default_lower_bound_deadline;
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -1789,9 +1793,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
   }
 
-  for (auto& surface_id : active_tree_->SurfaceLayerIds()) {
+  for (auto& surface_id : active_tree_->SurfaceLayerIds())
     metadata.referenced_surfaces.push_back(surface_id);
-  }
 
   const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
   if (!inner_viewport_scroll_node)
@@ -1879,7 +1882,10 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
-  metadata.deadline_in_frames = frame->deadline_in_frames;
+  if (frame->deadline_in_frames) {
+    metadata.deadline = viz::FrameDeadline(
+        *frame->deadline_in_frames, frame->use_default_lower_bound_deadline);
+  }
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
 
   RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();

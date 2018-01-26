@@ -9,4 +9,4 @@ deps = [
   "//components/viz/common",
   "//mojo/common:struct_traits",
 ]
-type_mappings = [ "viz.mojom.FrameDeadline=uint32_t" ]
+type_mappings = [ "viz.mojom.FrameDeadline=viz::FrameDeadline" ]

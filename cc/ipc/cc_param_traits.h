@@ -12,6 +12,7 @@
 #include "cc/paint/filter_operation.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
@@ -57,6 +58,16 @@ struct CC_IPC_EXPORT ParamTraits<sk_sp<cc::PaintFilter>> {
 template <>
 struct CC_IPC_EXPORT ParamTraits<viz::RenderPass> {
   typedef viz::RenderPass param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CC_IPC_EXPORT ParamTraits<viz::FrameDeadline> {
+  typedef viz::FrameDeadline param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

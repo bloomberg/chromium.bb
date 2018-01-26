@@ -6,4 +6,5 @@ module viz.mojom;
 
 struct FrameDeadline {
   uint32 value;
+  bool use_default_lower_bound_deadline;
 };
