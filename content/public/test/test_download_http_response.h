@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/queue.h"
+#include "base/sequence_checker.h"
 #include "net/http/http_response_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -266,12 +267,19 @@ class TestDownloadResponseHandler {
   void OnRequestCompleted(
       std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request);
 
+  // Wait for a certain number of requests to complete.
+  void WaitUntilCompletion(size_t request_count);
+
   using CompletedRequests =
       std::vector<std::unique_ptr<TestDownloadHttpResponse::CompletedRequest>>;
   CompletedRequests const& completed_requests() { return completed_requests_; }
 
  private:
   CompletedRequests completed_requests_;
+  size_t request_count_ = 0u;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(TestDownloadResponseHandler);
 };
 
