@@ -461,10 +461,14 @@ TestDownloadResponseHandler::HandleTestDownloadRequest(
 }
 
 TestDownloadResponseHandler::TestDownloadResponseHandler() = default;
-TestDownloadResponseHandler::~TestDownloadResponseHandler() = default;
+
+TestDownloadResponseHandler::~TestDownloadResponseHandler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void TestDownloadResponseHandler::RegisterToTestServer(
     net::test_server::EmbeddedTestServer* server) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!server->Started())
       << "Register request handler before starting the server";
   server->RegisterRequestHandler(base::Bind(
@@ -475,7 +479,26 @@ void TestDownloadResponseHandler::RegisterToTestServer(
 
 void TestDownloadResponseHandler::OnRequestCompleted(
     std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   completed_requests_.push_back(std::move(request));
+
+  if (run_loop_ && run_loop_->running() &&
+      completed_requests().size() >= request_count_) {
+    run_loop_->Quit();
+  }
+}
+
+void TestDownloadResponseHandler::WaitUntilCompletion(size_t request_count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  request_count_ = request_count;
+
+  if ((run_loop_ && run_loop_->running()) ||
+      completed_requests().size() >= request_count_) {
+    return;
+  }
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
 }
 
 }  // namespace content
