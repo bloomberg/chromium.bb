@@ -15,6 +15,7 @@ void FakeBlobURLStore::Register(mojom::blink::BlobPtr blob,
 
 void FakeBlobURLStore::Revoke(const KURL& url) {
   registrations.erase(url);
+  revocations.push_back(url);
 }
 
 void FakeBlobURLStore::Resolve(const KURL& url, ResolveCallback callback) {

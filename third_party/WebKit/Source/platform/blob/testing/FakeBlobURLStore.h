@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "platform/weborigin/KURLHash.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
@@ -21,6 +22,7 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
   void Resolve(const KURL&, ResolveCallback) override;
 
   HashMap<KURL, mojom::blink::BlobPtr> registrations;
+  Vector<KURL> revocations;
 };
 
 }  // namespace blink
