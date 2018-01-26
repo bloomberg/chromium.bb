@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 240, 784, 284],
+          "rect": [8, 8, 600, 100],
           "reason": "style change"
         }
       ]
@@ -17,6 +17,10 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
       "reason": "style change"
     }
   ]
