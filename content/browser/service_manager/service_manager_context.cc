@@ -33,6 +33,7 @@
 #include "content/grit/content_resources.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_service_registry.h"
 #include "content/public/browser/network_service_instance.h"
@@ -642,10 +643,12 @@ service_manager::Connector* ServiceManagerContext::GetConnectorForIOThread() {
 }
 
 // static
-std::map<std::string, base::WeakPtr<UtilityProcessHost>>*
-ServiceManagerContext::GetProcessGroupsForTesting() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return &g_active_process_groups.Get();
+bool ServiceManagerContext::HasValidProcessForProcessGroup(
+    const std::string& process_group_name) {
+  auto iter = g_active_process_groups.Get().find(process_group_name);
+  if (iter == g_active_process_groups.Get().end() || !iter->second)
+    return false;
+  return iter->second->GetData().handle != base::kNullProcessHandle;
 }
 
 }  // namespace content
