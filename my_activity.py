@@ -528,8 +528,12 @@ class MyActivity(object):
     optional_values = {
         'created': review['created'].date().isoformat(),
         'modified': review['modified'].date().isoformat(),
+        'status': review['status'],
         'activity': activity,
     }
+    if self.options.deltas:
+      optional_values['delta'] = review['delta']
+
     self.print_generic(self.options.output_format,
                        self.options.output_format_reviews,
                        review['header'],
@@ -697,7 +701,7 @@ def main():
   parser.add_option(
       '-d', '--deltas',
       action='store_true',
-      help='Fetch deltas for changes (slow).')
+      help='Fetch deltas for changes.')
 
   activity_types_group = optparse.OptionGroup(parser, 'Activity Types',
                                'By default, all activity will be looked up and '
