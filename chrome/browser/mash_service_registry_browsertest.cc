@@ -6,31 +6,16 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
-#include "content/public/browser/utility_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace {
 
 void VerifyProcessGroupOnIOThread() {
-  // Ash and ui are in the same process group.
-  std::map<std::string, base::WeakPtr<content::UtilityProcessHost>>* groups =
-      content::GetServiceManagerProcessGroups();
-  ASSERT_TRUE(groups);
-  ASSERT_TRUE(
-      base::ContainsKey(*groups, mash_service_registry::kAshAndUiProcessGroup));
-
-  // The process group has a process host.
-  base::WeakPtr<content::UtilityProcessHost> host =
-      groups->at(mash_service_registry::kAshAndUiProcessGroup);
-  ASSERT_TRUE(host);
-
-  // The host is associated with a real process.
-  EXPECT_NE(base::kNullProcessHandle, host->GetData().handle);
+  EXPECT_TRUE(content::HasValidProcessForProcessGroup(
+      mash_service_registry::kAshAndUiProcessGroup));
 }
 
 }  // namespace

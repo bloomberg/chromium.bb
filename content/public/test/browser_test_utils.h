@@ -76,7 +76,6 @@ class NavigationHandle;
 class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
-class UtilityProcessHost;
 class WebContents;
 
 // Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
@@ -1085,8 +1084,9 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      int process_id = 0,
                      int render_frame_id = 0);
 
-std::map<std::string, base::WeakPtr<UtilityProcessHost>>*
-GetServiceManagerProcessGroups();
+// Returns true if there is a valid process for |process_group_name|. Must be
+// called on the IO thread.
+bool HasValidProcessForProcessGroup(const std::string& process_group_name);
 
 }  // namespace content
 

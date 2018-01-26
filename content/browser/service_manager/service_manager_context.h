@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_MANAGER_SERVICE_MANAGER_CONTEXT_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,7 +20,6 @@ class Connector;
 namespace content {
 
 class ServiceManagerConnection;
-class UtilityProcessHost;
 
 // ServiceManagerContext manages the browser's connection to the ServiceManager,
 // hosting a new in-process ServiceManagerContext if the browser was not
@@ -32,8 +32,10 @@ class CONTENT_EXPORT ServiceManagerContext {
   // Returns a service_manager::Connector that can be used on the IO thread.
   static service_manager::Connector* GetConnectorForIOThread();
 
-  static std::map<std::string, base::WeakPtr<UtilityProcessHost>>*
-  GetProcessGroupsForTesting();
+  // Returns true if there is a valid process for |process_group_name|. Must be
+  // called on the IO thread.
+  static bool HasValidProcessForProcessGroup(
+      const std::string& process_group_name);
 
  private:
   class InProcessServiceManagerContext;

@@ -2445,9 +2445,9 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   return simple_loader->NetError();
 }
 
-std::map<std::string, base::WeakPtr<UtilityProcessHost>>*
-GetServiceManagerProcessGroups() {
-  return ServiceManagerContext::GetProcessGroupsForTesting();
+bool HasValidProcessForProcessGroup(const std::string& process_group_name) {
+  return ServiceManagerContext::HasValidProcessForProcessGroup(
+      process_group_name);
 }
 
 }  // namespace content
