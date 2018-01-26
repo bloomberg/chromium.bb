@@ -10,6 +10,7 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/setting_option.h"
@@ -123,6 +124,7 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
   cell.textLabel.text = setting.title;
   cell.textLabel.textColor = RemotingTheme.menuTextColor;
   cell.textLabel.numberOfLines = 1;
+  cell.textLabel.font = [MDCTypography boldFontFromFont:cell.textLabel.font];
   cell.detailTextLabel.text = setting.subtext;
   cell.detailTextLabel.textColor = RemotingTheme.menuTextColor;
   cell.detailTextLabel.numberOfLines = 1;
