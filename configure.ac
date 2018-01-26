@@ -445,9 +445,6 @@ if test "x$ETNAVIV" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_INSTALL_TESTS, [test "x$INSTALL_TESTS" = xyes])
-if test "x$INSTALL_TESTS" = xyes; then
-	AC_DEFINE(HAVE_INSTALL_TESTS, 1, [Install test programs])
-fi
 
 AC_ARG_ENABLE([cairo-tests],
               [AS_HELP_STRING([--enable-cairo-tests],
