@@ -36,8 +36,9 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
+// http://crbug.com/804413
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       MAYBE_OpenSingleImageOnDownloads) {
+                       DISABLED_OpenSingleImageOnDownloads) {
   set_test_case_name("openSingleImageOnDownloads");
   StartTest();
 }
