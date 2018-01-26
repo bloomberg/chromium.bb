@@ -934,6 +934,7 @@ test("browser_tests") {
       "//net",
       "//net:test_support",
       "//services/device/public/interfaces",
+      "//services/network/public/cpp:network_features",
       "//services/service_manager/public/cpp",
       "//skia",
       "//testing/gmock",

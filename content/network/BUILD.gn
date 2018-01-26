@@ -100,7 +100,7 @@ jumbo_source_set("network_sources") {
     "//net:net_browser_services",
     "//services/network:network_service",
     "//services/network/public/cpp",
-    "//services/network/public/interfaces",
+    "//services/network/public/cpp:network_features",
     "//services/proxy_resolver/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",

@@ -68,7 +68,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
-#include "net/reporting/reporting_feature.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
@@ -479,8 +478,6 @@ void ProfileImplIOData::InitializeInternal(
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor));
-
-  builder->set_reporting_policy(MaybeCreateReportingPolicy());
 }
 
 void ProfileImplIOData::OnMainRequestContextCreated(
@@ -578,7 +575,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   // TODO(mmenke):  It's weird to combine state from
-  // main_request_context_storage() objects and the argumet to this method,
+  // main_request_context_storage() objects and the argument to this method,
   // |main_context|.  Remove |main_context| as an argument, and just use
   // main_context() instead.
   net::HttpNetworkSession* network_session =
@@ -615,7 +612,12 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
           context->host_resolver()));
   context->SetJobFactory(std::move(top_job_factory));
 
-  context->SetReportingService(MaybeCreateReportingService(context));
+  if (context->reporting_service()) {
+    context->SetReportingService(net::ReportingService::Create(
+        context->reporting_service()->GetPolicy(), context));
+  }
+
+  // TODO(juliatuttle): Should also isolate NetworkErrorLoggingDelegate.
 
   return context;
 }
@@ -703,23 +705,4 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
 
 chrome_browser_net::Predictor* ProfileImplIOData::GetPredictor() {
   return predictor_.get();
-}
-
-std::unique_ptr<net::ReportingService>
-ProfileImplIOData::MaybeCreateReportingService(
-    net::URLRequestContext* url_request_context) const {
-  std::unique_ptr<net::ReportingPolicy> reporting_policy(
-      MaybeCreateReportingPolicy());
-  if (!reporting_policy)
-    return std::unique_ptr<net::ReportingService>();
-
-  return net::ReportingService::Create(*reporting_policy, url_request_context);
-}
-
-std::unique_ptr<net::ReportingPolicy>
-ProfileImplIOData::MaybeCreateReportingPolicy() {
-  if (!base::FeatureList::IsEnabled(features::kReporting))
-    return std::unique_ptr<net::ReportingPolicy>();
-
-  return base::MakeUnique<net::ReportingPolicy>();
 }
