@@ -80,18 +80,9 @@ void RTCRtpReceiver::UpdateSourcesIfNeeded() {
     }
     DCHECK_EQ(web_contributing_source->SourceType(),
               WebRTCRtpContributingSourceType::CSRC);
-    auto it = contributing_sources_by_source_id_.find(
-        web_contributing_source->Source());
-    if (it == contributing_sources_by_source_id_.end()) {
-      RTCRtpContributingSource* contributing_source =
-          new RTCRtpContributingSource(this, *web_contributing_source);
-      contributing_sources_by_source_id_.insert(contributing_source->source(),
-                                                contributing_source);
-      contributing_sources_.push_back(contributing_source);
-    } else {
-      it->value->UpdateMembers(*web_contributing_source);
-      contributing_sources_.push_back(it->value);
-    }
+    RTCRtpContributingSource* contributing_source =
+        new RTCRtpContributingSource(this, *web_contributing_source);
+    contributing_sources_.push_back(contributing_source);
   }
   // Clear the flag and schedule a microtask to reset it to true. This makes
   // the cache valid until the next microtask checkpoint. As such, sources
@@ -111,7 +102,6 @@ void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
 void RTCRtpReceiver::Trace(blink::Visitor* visitor) {
   visitor->Trace(track_);
   visitor->Trace(streams_);
-  visitor->Trace(contributing_sources_by_source_id_);
   visitor->Trace(contributing_sources_);
   ScriptWrappable::Trace(visitor);
 }

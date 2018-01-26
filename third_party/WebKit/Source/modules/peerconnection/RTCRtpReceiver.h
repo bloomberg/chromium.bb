@@ -47,16 +47,6 @@ class RTCRtpReceiver final : public ScriptWrappable {
   Member<MediaStreamTrack> track_;
   MediaStreamVector streams_;
 
-  // All contributing sources that have ever been returned by
-  // |getContributingSources| that are still alive. If |UpdateSourcesIfNeeded|
-  // encounters a source that already has an associate
-  // |RTCRtpContributingSource| it will be kept up-to-date. Garbage collected
-  // sources are automatically removed from the map.
-  HeapHashMap<uint32_t,
-              WeakMember<RTCRtpContributingSource>,
-              typename DefaultHash<uint32_t>::Hash,
-              WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
-      contributing_sources_by_source_id_;
   // The current contributing sources (|getContributingSources|).
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources_;
   bool contributing_sources_needs_updating_ = true;
