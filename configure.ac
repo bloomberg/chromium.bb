@@ -197,7 +197,7 @@ dnl skipped and all flags rechecked.  So there's no need to do anything
 dnl else.  If for any reason you need to force a recheck, just change
 dnl MAYBE_WARN in an ignorable way (like adding whitespace)
 
-MAYBE_WARN="-Wall -Wextra -Wundef \
+MAYBE_WARN="-Wall -Wextra -Werror=undef \
 -Wsign-compare -Werror-implicit-function-declaration \
 -Wpointer-arith -Wwrite-strings -Wstrict-prototypes \
 -Wmissing-prototypes -Wmissing-declarations -Wnested-externs \
