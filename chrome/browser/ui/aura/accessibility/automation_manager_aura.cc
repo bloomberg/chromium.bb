@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
@@ -83,7 +83,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   enabled_ = true;
   Reset(false);
 
-  SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
+  SendEvent(context, current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
@@ -91,7 +91,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   if (active_window) {
     views::AXAuraObjWrapper* focus =
         views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
-    SendEvent(context, focus, ui::AX_EVENT_CHILDREN_CHANGED);
+    SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
   }
 #endif
 }
@@ -103,7 +103,7 @@ void AutomationManagerAura::Disable() {
 
 void AutomationManagerAura::HandleEvent(BrowserContext* context,
                                         views::View* view,
-                                        ui::AXEvent event_type) {
+                                        ax::mojom::Event event_type) {
   if (!enabled_)
     return;
 
@@ -121,7 +121,7 @@ void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
   views::AXAuraObjWrapper* obj =
       static_cast<AXRootObjWrapper*>(current_tree_->GetRoot())
           ->GetAlertForText(text);
-  SendEvent(context, obj, ui::AX_EVENT_ALERT);
+  SendEvent(context, obj, ax::mojom::Event::kAlert);
 }
 
 void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
@@ -129,7 +129,7 @@ void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
 
   // Unlike all of the other actions, a hit test requires determining the
   // node to perform the action on first.
-  if (data.action == ui::AX_ACTION_HIT_TEST) {
+  if (data.action == ax::mojom::Action::kHitTest) {
     PerformHitTest(data);
     return;
   }
@@ -145,11 +145,11 @@ void AutomationManagerAura::OnChildWindowRemoved(
   if (!parent)
     parent = current_tree_->GetRoot();
 
-  SendEvent(nullptr, parent, ui::AX_EVENT_CHILDREN_CHANGED);
+  SendEvent(nullptr, parent, ax::mojom::Event::kChildrenChanged);
 }
 
 void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
-                                    ui::AXEvent event_type) {
+                                    ax::mojom::Event event_type) {
   SendEvent(nullptr, aura_obj, event_type);
 }
 
@@ -171,7 +171,7 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
 
 void AutomationManagerAura::SendEvent(BrowserContext* context,
                                       views::AXAuraObjWrapper* aura_obj,
-                                      ui::AXEvent event_type) {
+                                      ax::mojom::Event event_type) {
   if (!current_tree_serializer_)
     return;
 

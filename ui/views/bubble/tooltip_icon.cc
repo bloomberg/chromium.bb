@@ -55,7 +55,7 @@ void TooltipIcon::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void TooltipIcon::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TOOLTIP;
+  node_data->role = ax::mojom::Role::kTooltip;
   node_data->SetName(tooltip_);
 }
 

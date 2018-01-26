@@ -126,7 +126,7 @@ class FullscreenButton : public ImageButton {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ImageButton::GetAccessibleNodeData(node_data);
-    node_data->role = ui::AX_ROLE_MENU_ITEM;
+    node_data->role = ax::mojom::Role::kMenuItem;
   }
 
  private:
@@ -267,7 +267,7 @@ class InMenuButton : public LabelButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     LabelButton::GetAccessibleNodeData(node_data);
     if (!role_is_button_)
-      node_data->role = ui::AX_ROLE_MENU_ITEM;
+      node_data->role = ax::mojom::Role::kMenuItem;
   }
 
   // views::LabelButton
@@ -638,7 +638,7 @@ class AppMenu::ZoomView : public AppMenuView {
                                     contents->GetMinimumZoomPercent());
     }
     zoom_label_->SetText(base::FormatPercent(zoom));
-    zoom_label_->NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+    zoom_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
     zoom_label_max_width_valid_ = false;
   }
 

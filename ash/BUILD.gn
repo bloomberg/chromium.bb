@@ -1091,7 +1091,6 @@ component("ash") {
     "//third_party/qcms",
     "//third_party/re2",
     "//ui/accessibility",
-    "//ui/accessibility:ax_gen",
     "//ui/app_list/presenter",
     "//ui/base",
     "//ui/base:ui_data_pack",

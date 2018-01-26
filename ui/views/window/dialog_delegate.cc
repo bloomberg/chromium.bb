@@ -249,8 +249,8 @@ void DialogDelegate::DialogModelChanged() {
     observer.OnDialogModelChanged();
 }
 
-ui::AXRole DialogDelegate::GetAccessibleWindowRole() const {
-  return ui::AX_ROLE_DIALOG;
+ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kDialog;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ View* DialogDelegateView::GetContentsView() {
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this && GetWidget())
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 }  // namespace views

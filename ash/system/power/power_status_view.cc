@@ -119,7 +119,7 @@ void PowerStatusView::Layout() {
 }
 
 void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_LABEL_TEXT;
+  node_data->role = ax::mojom::Role::kLabelText;
   node_data->SetName(accessible_name_);
 }
 

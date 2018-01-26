@@ -19,7 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -1115,12 +1115,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // cases where the view is a native control that's already sending a
   // native accessibility event and the duplicate event would cause
   // problems.
-  void NotifyAccessibilityEvent(ui::AXEvent event_type,
+  void NotifyAccessibilityEvent(ax::mojom::Event event_type,
                                 bool send_native_event);
 
   // Views may override this function to know when an accessibility
   // event is fired. This will be called by NotifyAccessibilityEvent.
-  virtual void OnAccessibilityEvent(ui::AXEvent event_type);
+  virtual void OnAccessibilityEvent(ax::mojom::Event event_type);
 
   // Scrolling -----------------------------------------------------------------
   // TODO(beng): Figure out if this can live somewhere other than View, i.e.

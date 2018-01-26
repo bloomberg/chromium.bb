@@ -771,12 +771,12 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TAB;
+  node_data->role = ax::mojom::Role::kTab;
   node_data->SetName(controller_->GetAccessibleTabName(this));
-  node_data->AddState(ui::AX_STATE_MULTISELECTABLE);
-  node_data->AddState(ui::AX_STATE_SELECTABLE);
+  node_data->AddState(ax::mojom::State::kMultiselectable);
+  node_data->AddState(ax::mojom::State::kSelectable);
   if (IsSelected())
-    node_data->AddState(ui::AX_STATE_SELECTED);
+    node_data->AddState(ax::mojom::State::kSelected);
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {

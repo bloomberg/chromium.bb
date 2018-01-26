@@ -170,8 +170,8 @@ TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
   view->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(
       base::UTF8ToUTF16("Über tray Über tray Über tray Über tray First@tray"),
-      node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, node_data.role);
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(ax::mojom::Role::kStaticText, node_data.role);
 }
 
 TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
@@ -185,8 +185,8 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
   view->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(
       base::UTF8ToUTF16("Über tray Über tray Über tray Über tray First@tray"),
-      node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-  EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
 }
 
 // Make sure that in multi user mode the user panel can be activated and there

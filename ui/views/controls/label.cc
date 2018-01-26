@@ -410,7 +410,7 @@ WordLookupClient* Label::GetWordLookupClient() {
 }
 
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_STATIC_TEXT;
+  node_data->role = ax::mojom::Role::kStaticText;
   node_data->SetName(full_text_->GetDisplayText());
 }
 

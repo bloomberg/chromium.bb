@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
@@ -130,7 +130,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
  protected:
   // Overridden from WidgetDelegate:
-  ui::AXRole GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
 
  private:
   // A flag indicating whether this dialog is able to use the custom frame

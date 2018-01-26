@@ -151,7 +151,7 @@ Background = function() {
 };
 
 /**
- * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
+ * Map from gesture names (ax::mojom::Gesture defined in ui/accessibility/ax_enums.idl)
  *     to commands.
  * @type {Object<string, string>}
  * @const
@@ -462,7 +462,7 @@ Background.prototype = {
 
   /**
    * Handles accessibility gestures from the touch screen.
-   * @param {string} gesture The gesture to handle, based on the AXGesture enum
+   * @param {string} gesture The gesture to handle, based on the ax::mojom::Gesture enum
    *     defined in ui/accessibility/ax_enums.idl
    * @private
    */

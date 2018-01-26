@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enum_util.h"
 
 using base::IntToString;
 
@@ -21,24 +22,25 @@ AXActionData::~AXActionData() = default;
 
 namespace {
 
-bool IsFlagSet(uint32_t bitfield, AXActionFlags flag) {
+bool IsFlagSet(uint32_t bitfield, ax::mojom::ActionFlags flag) {
   return 0 != (bitfield & (1 << static_cast<uint32_t>(flag)));
 }
 
 }  // namespace
 
 // Note that this includes an initial space character if nonempty, but
-// that works fine because this is normally printed by AXAction::ToString.
+// that works fine because this is normally printed by
+// ax::mojom::Action::ToString.
 std::string AXActionData::ToString() const {
   std::string result = ui::ToString(action);
 
   if (target_node_id != -1)
     result += " target_node_id=" + IntToString(target_node_id);
 
-  if (IsFlagSet(flags, AX_ACTION_FLAGS_REQUEST_IMAGES))
+  if (IsFlagSet(flags, ax::mojom::ActionFlags::kRequestImages))
     result += " flag_request_images";
 
-  if (IsFlagSet(flags, AX_ACTION_FLAGS_REQUEST_INLINE_TEXT_BOXES))
+  if (IsFlagSet(flags, ax::mojom::ActionFlags::kRequestInlineTextBoxes))
     result += " flag_request_inline_text_boxes";
 
   if (anchor_node_id != -1) {

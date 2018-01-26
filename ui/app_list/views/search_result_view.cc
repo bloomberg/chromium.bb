@@ -141,7 +141,7 @@ void SearchResultView::SetSelected(bool selected) {
 
   if (selected_) {
     ScrollRectToVisible(GetLocalBounds());
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
   SchedulePaint();
 }

@@ -98,7 +98,7 @@ void AshTouchExplorationManager::PlayEnterScreenEarcon() {
 }
 
 void AshTouchExplorationManager::HandleAccessibilityGesture(
-    ui::AXGesture gesture) {
+    ax::mojom::Gesture gesture) {
   Shell::Get()->accessibility_controller()->HandleAccessibilityGesture(gesture);
 }
 

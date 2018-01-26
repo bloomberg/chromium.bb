@@ -5,7 +5,7 @@
 #include "ui/accessibility/ax_node_position.h"
 
 #include "base/strings/string_util.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
@@ -24,11 +24,12 @@ base::string16 AXNodePosition::GetInnerText() const {
     return base::string16();
 
   DCHECK(GetAnchor());
-  base::string16 value =
-      GetAnchor()->data().GetString16Attribute(AX_ATTR_VALUE);
+  base::string16 value = GetAnchor()->data().GetString16Attribute(
+      ax::mojom::StringAttribute::kValue);
   if (!value.empty())
     return value;
-  return GetAnchor()->data().GetString16Attribute(AX_ATTR_NAME);
+  return GetAnchor()->data().GetString16Attribute(
+      ax::mojom::StringAttribute::kName);
 }
 
 void AXNodePosition::AnchorChild(int child_index,
@@ -100,14 +101,16 @@ std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {
   if (IsNullPosition())
     return std::vector<int32_t>();
   DCHECK(GetAnchor());
-  return GetAnchor()->data().GetIntListAttribute(ui::AX_ATTR_WORD_STARTS);
+  return GetAnchor()->data().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kWordStarts);
 }
 
 std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
   if (IsNullPosition())
     return std::vector<int32_t>();
   DCHECK(GetAnchor());
-  return GetAnchor()->data().GetIntListAttribute(ui::AX_ATTR_WORD_ENDS);
+  return GetAnchor()->data().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kWordEnds);
 }
 
 int32_t AXNodePosition::GetNextOnLineID(int32_t node_id) const {
@@ -115,9 +118,8 @@ int32_t AXNodePosition::GetNextOnLineID(int32_t node_id) const {
     return INVALID_ANCHOR_ID;
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int next_on_line_id;
-  if (!node ||
-      !node->data().GetIntAttribute(AX_ATTR_NEXT_ON_LINE_ID,
-                                    &next_on_line_id)) {
+  if (!node || !node->data().GetIntAttribute(
+                   ax::mojom::IntAttribute::kNextOnLineId, &next_on_line_id)) {
     return INVALID_ANCHOR_ID;
   }
   return static_cast<int32_t>(next_on_line_id);
@@ -129,7 +131,7 @@ int32_t AXNodePosition::GetPreviousOnLineID(int32_t node_id) const {
   AXNode* node = GetNodeInTree(tree_id(), node_id);
   int previous_on_line_id;
   if (!node ||
-      !node->data().GetIntAttribute(AX_ATTR_PREVIOUS_ON_LINE_ID,
+      !node->data().GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
                                     &previous_on_line_id)) {
     return INVALID_ANCHOR_ID;
   }

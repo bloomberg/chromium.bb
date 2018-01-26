@@ -489,7 +489,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using GetAXTreeForTesting().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>&
+      const base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>&
           callback);
 
   // Called when the metadata about the accessibility tree for this frame
@@ -805,7 +805,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const gfx::Point& point,
       int child_frame_routing_id,
       int child_frame_browser_plugin_instance_id,
-      ui::AXEvent event_to_fire);
+      ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
       const AXContentTreeUpdate& snapshot);
@@ -1225,7 +1225,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif  // defined(OS_ANDROID)
 
   // Callback when an event is received, for testing.
-  base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>
+  base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>
       accessibility_testing_callback_;
   // The most recently received accessibility tree - for testing only.
   std::unique_ptr<ui::AXTree> ax_tree_for_testing_;

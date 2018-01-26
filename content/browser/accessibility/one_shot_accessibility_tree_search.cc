@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -21,14 +21,18 @@ namespace content {
 // attributes that might be relevant for a text search.
 void GetNodeStrings(BrowserAccessibility* node,
                     std::vector<base::string16>* strings) {
-  if (node->HasStringAttribute(ui::AX_ATTR_NAME))
-    strings->push_back(node->GetString16Attribute(ui::AX_ATTR_NAME));
-  if (node->HasStringAttribute(ui::AX_ATTR_DESCRIPTION))
-    strings->push_back(node->GetString16Attribute(ui::AX_ATTR_DESCRIPTION));
-  if (node->HasStringAttribute(ui::AX_ATTR_VALUE))
-    strings->push_back(node->GetString16Attribute(ui::AX_ATTR_VALUE));
-  if (node->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER))
-    strings->push_back(node->GetString16Attribute(ui::AX_ATTR_PLACEHOLDER));
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kName))
+    strings->push_back(
+        node->GetString16Attribute(ax::mojom::StringAttribute::kName));
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kDescription))
+    strings->push_back(
+        node->GetString16Attribute(ax::mojom::StringAttribute::kDescription));
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kValue))
+    strings->push_back(
+        node->GetString16Attribute(ax::mojom::StringAttribute::kValue));
+  if (node->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder))
+    strings->push_back(
+        node->GetString16Attribute(ax::mojom::StringAttribute::kPlaceholder));
 }
 
 OneShotAccessibilityTreeSearch::OneShotAccessibilityTreeSearch(
@@ -190,7 +194,7 @@ bool OneShotAccessibilityTreeSearch::Matches(BrowserAccessibility* node) {
   }
 
   if (visible_only_) {
-    if (node->HasState(ui::AX_STATE_INVISIBLE) || node->IsOffscreen()) {
+    if (node->HasState(ax::mojom::State::kInvisible) || node->IsOffscreen()) {
       return false;
     }
   }
@@ -223,17 +227,17 @@ bool OneShotAccessibilityTreeSearch::Matches(BrowserAccessibility* node) {
 
 bool AccessibilityArticlePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_ARTICLE;
+  return node->GetRole() == ax::mojom::Role::kArticle;
 }
 
 bool AccessibilityButtonPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   switch (node->GetRole()) {
-    case ui::AX_ROLE_BUTTON:
-    case ui::AX_ROLE_MENU_BUTTON:
-    case ui::AX_ROLE_POP_UP_BUTTON:
-    case ui::AX_ROLE_SWITCH:
-    case ui::AX_ROLE_TOGGLE_BUTTON:
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kPopUpButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kToggleButton:
       return true;
     default:
       return false;
@@ -242,33 +246,33 @@ bool AccessibilityButtonPredicate(
 
 bool AccessibilityBlockquotePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_BLOCKQUOTE;
+  return node->GetRole() == ax::mojom::Role::kBlockquote;
 }
 
 bool AccessibilityCheckboxPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_CHECK_BOX ||
-          node->GetRole() == ui::AX_ROLE_MENU_ITEM_CHECK_BOX);
+  return (node->GetRole() == ax::mojom::Role::kCheckBox ||
+          node->GetRole() == ax::mojom::Role::kMenuItemCheckBox);
 }
 
 bool AccessibilityComboboxPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_COMBO_BOX_GROUPING ||
-          node->GetRole() == ui::AX_ROLE_COMBO_BOX_MENU_BUTTON ||
-          node->GetRole() == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX ||
-          node->GetRole() == ui::AX_ROLE_POP_UP_BUTTON);
+  return (node->GetRole() == ax::mojom::Role::kComboBoxGrouping ||
+          node->GetRole() == ax::mojom::Role::kComboBoxMenuButton ||
+          node->GetRole() == ax::mojom::Role::kTextFieldWithComboBox ||
+          node->GetRole() == ax::mojom::Role::kPopUpButton);
 }
 
 bool AccessibilityControlPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   if (ui::IsControl(node->GetRole()))
     return true;
-  if (node->HasState(ui::AX_STATE_FOCUSABLE) &&
-      node->GetRole() != ui::AX_ROLE_IFRAME &&
-      node->GetRole() != ui::AX_ROLE_IFRAME_PRESENTATIONAL &&
-      node->GetRole() != ui::AX_ROLE_LINK &&
-      node->GetRole() != ui::AX_ROLE_WEB_AREA &&
-      node->GetRole() != ui::AX_ROLE_ROOT_WEB_AREA) {
+  if (node->HasState(ax::mojom::State::kFocusable) &&
+      node->GetRole() != ax::mojom::Role::kIframe &&
+      node->GetRole() != ax::mojom::Role::kIframePresentational &&
+      node->GetRole() != ax::mojom::Role::kLink &&
+      node->GetRole() != ax::mojom::Role::kWebArea &&
+      node->GetRole() != ax::mojom::Role::kRootWebArea) {
     return true;
   }
   return false;
@@ -276,11 +280,11 @@ bool AccessibilityControlPredicate(
 
 bool AccessibilityFocusablePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  bool focusable = node->HasState(ui::AX_STATE_FOCUSABLE);
-  if (node->GetRole() == ui::AX_ROLE_IFRAME ||
-      node->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL ||
-      node->GetRole() == ui::AX_ROLE_WEB_AREA ||
-      node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
+  bool focusable = node->HasState(ax::mojom::State::kFocusable);
+  if (node->GetRole() == ax::mojom::Role::kIframe ||
+      node->GetRole() == ax::mojom::Role::kIframePresentational ||
+      node->GetRole() == ax::mojom::Role::kWebArea ||
+      node->GetRole() == ax::mojom::Role::kRootWebArea) {
     focusable = false;
   }
   return focusable;
@@ -288,56 +292,63 @@ bool AccessibilityFocusablePredicate(
 
 bool AccessibilityGraphicPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_IMAGE;
+  return node->GetRole() == ax::mojom::Role::kImage;
 }
 
 bool AccessibilityHeadingPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING);
+  return (node->GetRole() == ax::mojom::Role::kHeading);
 }
 
 bool AccessibilityH1Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 1);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              1);
 }
 
 bool AccessibilityH2Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 2);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              2);
 }
 
 bool AccessibilityH3Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 3);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              3);
 }
 
 bool AccessibilityH4Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 4);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              4);
 }
 
 bool AccessibilityH5Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 5);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              5);
 }
 
 bool AccessibilityH6Predicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 6);
+  return (node->GetRole() == ax::mojom::Role::kHeading &&
+          node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+              6);
 }
 
 bool AccessibilityHeadingSameLevelPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_HEADING &&
-          start->GetRole() == ui::AX_ROLE_HEADING &&
-          (node->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) ==
-           start->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL)));
+  return (
+      node->GetRole() == ax::mojom::Role::kHeading &&
+      start->GetRole() == ax::mojom::Role::kHeading &&
+      (node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel) ==
+       start->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel)));
 }
 
 bool AccessibilityFramePredicate(
@@ -346,22 +357,22 @@ bool AccessibilityFramePredicate(
     return false;
   if (!node->PlatformGetParent())
     return false;
-  return (node->GetRole() == ui::AX_ROLE_WEB_AREA ||
-          node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
+  return (node->GetRole() == ax::mojom::Role::kWebArea ||
+          node->GetRole() == ax::mojom::Role::kRootWebArea);
 }
 
 bool AccessibilityLandmarkPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   switch (node->GetRole()) {
-    case ui::AX_ROLE_APPLICATION:
-    case ui::AX_ROLE_ARTICLE:
-    case ui::AX_ROLE_BANNER:
-    case ui::AX_ROLE_COMPLEMENTARY:
-    case ui::AX_ROLE_CONTENT_INFO:
-    case ui::AX_ROLE_MAIN:
-    case ui::AX_ROLE_NAVIGATION:
-    case ui::AX_ROLE_SEARCH:
-    case ui::AX_ROLE_REGION:
+    case ax::mojom::Role::kApplication:
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kMain:
+    case ax::mojom::Role::kNavigation:
+    case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kRegion:
       return true;
     default:
       return false;
@@ -370,48 +381,49 @@ bool AccessibilityLandmarkPredicate(
 
 bool AccessibilityLinkPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_LINK;
+  return node->GetRole() == ax::mojom::Role::kLink;
 }
 
 bool AccessibilityListPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_LIST_BOX ||
-          node->GetRole() == ui::AX_ROLE_LIST ||
-          node->GetRole() == ui::AX_ROLE_DESCRIPTION_LIST);
+  return (node->GetRole() == ax::mojom::Role::kListBox ||
+          node->GetRole() == ax::mojom::Role::kList ||
+          node->GetRole() == ax::mojom::Role::kDescriptionList);
 }
 
 bool AccessibilityListItemPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_LIST_ITEM ||
-          node->GetRole() == ui::AX_ROLE_DESCRIPTION_LIST_TERM ||
-          node->GetRole() == ui::AX_ROLE_LIST_BOX_OPTION);
+  return (node->GetRole() == ax::mojom::Role::kListItem ||
+          node->GetRole() == ax::mojom::Role::kDescriptionListTerm ||
+          node->GetRole() == ax::mojom::Role::kListBoxOption);
 }
 
 bool AccessibilityLiveRegionPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS);
+  return node->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus);
 }
 
 bool AccessibilityMainPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_MAIN);
+  return (node->GetRole() == ax::mojom::Role::kMain);
 }
 
 bool AccessibilityMediaPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  const std::string& tag = node->GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+  const std::string& tag =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
   return tag == "audio" || tag == "video";
 }
 
 bool AccessibilityRadioButtonPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_RADIO_BUTTON ||
-          node->GetRole() == ui::AX_ROLE_MENU_ITEM_RADIO);
+  return (node->GetRole() == ax::mojom::Role::kRadioButton ||
+          node->GetRole() == ax::mojom::Role::kMenuItemRadio);
 }
 
 bool AccessibilityRadioGroupPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_RADIO_GROUP;
+  return node->GetRole() == ax::mojom::Role::kRadioGroup;
 }
 
 bool AccessibilityTablePredicate(
@@ -426,20 +438,23 @@ bool AccessibilityTextfieldPredicate(
 
 bool AccessibilityTextStyleBoldPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD));
+  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  return 0 !=
+         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold));
 }
 
 bool AccessibilityTextStyleItalicPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD));
+  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  return 0 !=
+         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold));
 }
 
 bool AccessibilityTextStyleUnderlinePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-  return 0 != (style & static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE));
+  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  return 0 != (style &
+               static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline));
 }
 
 bool AccessibilityTreePredicate(
@@ -449,14 +464,14 @@ bool AccessibilityTreePredicate(
 
 bool AccessibilityUnvisitedLinkPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_LINK &&
-         !node->HasState(ui::AX_STATE_VISITED);
+  return node->GetRole() == ax::mojom::Role::kLink &&
+         !node->HasState(ax::mojom::State::kVisited);
 }
 
 bool AccessibilityVisitedLinkPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->GetRole() == ui::AX_ROLE_LINK &&
-         node->HasState(ui::AX_STATE_VISITED);
+  return node->GetRole() == ax::mojom::Role::kLink &&
+         node->HasState(ax::mojom::State::kVisited);
 }
 
 }  // namespace content

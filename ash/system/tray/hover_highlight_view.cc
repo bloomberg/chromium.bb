@@ -176,7 +176,7 @@ void HoverHighlightView::SetAccessiblityState(
     AccessibilityState accessibility_state) {
   accessibility_state_ = accessibility_state;
   if (accessibility_state_ != AccessibilityState::DEFAULT)
-    NotifyAccessibilityEvent(ui::AX_EVENT_CHECKED_STATE_CHANGED, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
 }
 
 void HoverHighlightView::Reset() {
@@ -199,17 +199,17 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
 void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
 
-  ui::AXCheckedState checked_state;
+  ax::mojom::CheckedState checked_state;
 
   if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX)
-    checked_state = ui::AX_CHECKED_STATE_TRUE;
+    checked_state = ax::mojom::CheckedState::kTrue;
   else if (accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX)
-    checked_state = ui::AX_CHECKED_STATE_FALSE;
+    checked_state = ax::mojom::CheckedState::kFalse;
   else
     return;  // Not a checkbox
 
   // Checkbox
-  node_data->role = ui::AX_ROLE_CHECK_BOX;
+  node_data->role = ax::mojom::Role::kCheckBox;
   node_data->SetCheckedState(checked_state);
 }
 

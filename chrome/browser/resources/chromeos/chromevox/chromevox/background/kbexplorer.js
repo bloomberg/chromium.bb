@@ -200,7 +200,7 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
 
 /**
  * Handles accessibility gestures from the touch screen.
- * @param {string} gesture The gesture to handle, based on the AXGesture enum
+ * @param {string} gesture The gesture to handle, based on the ax::mojom::Gesture enum
  *     defined in ui/accessibility/ax_enums.idl
  */
 cvox.KbExplorer.onAccessibilityGesture = function(gesture) {

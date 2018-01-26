@@ -127,7 +127,8 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
                        VoiceInteractionStructureSelectTest) {
   // Help ensure accessibility states are tested correctly.
   // When the states are not tested correctly (bit shifted), the option appears
-  // to have AX_STATE_PROTECTED, and text is incorrectly set as password dots.
+  // to have ax::mojom::State::kProtected, and text is incorrectly set as
+  // password dots.
   auto result = GetVoiceInteractionStructure(
       "<div><select><option>1</option></select></div>");
   ASSERT_FALSE(result.is_null());

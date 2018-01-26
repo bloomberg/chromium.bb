@@ -104,7 +104,7 @@ class NetworkTrayView : public TrayItemView,
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(connection_status_string_);
-    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->role = ax::mojom::Role::kButton;
   }
 
   // network_icon::AnimationObserver:
@@ -155,7 +155,7 @@ class NetworkTrayView : public TrayItemView,
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;
       if (notify_a11y && !connection_status_string_.empty())
-        NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+        NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
     }
   }
 

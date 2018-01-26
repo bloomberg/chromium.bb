@@ -427,7 +427,7 @@ bool LocationBarView::HasFocus() const {
 }
 
 void LocationBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_GROUP;
+  node_data->role = ax::mojom::Role::kGroup;
 }
 
 gfx::Size LocationBarView::CalculatePreferredSize() const {

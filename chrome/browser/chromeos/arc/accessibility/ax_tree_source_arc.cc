@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "components/exo/wm_helper.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/aura/window.h"
 #include "ui/views/focus/focus_manager.h"
@@ -18,29 +19,29 @@
 
 namespace {
 
-ui::AXEvent ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
+ax::mojom::Event ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
   switch (arc_event_type) {
     case arc::mojom::AccessibilityEventType::VIEW_FOCUSED:
     case arc::mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUSED:
-      return ui::AX_EVENT_FOCUS;
+      return ax::mojom::Event::kFocus;
     case arc::mojom::AccessibilityEventType::VIEW_CLICKED:
     case arc::mojom::AccessibilityEventType::VIEW_LONG_CLICKED:
-      return ui::AX_EVENT_CLICKED;
+      return ax::mojom::Event::kClicked;
     case arc::mojom::AccessibilityEventType::VIEW_TEXT_CHANGED:
-      return ui::AX_EVENT_TEXT_CHANGED;
+      return ax::mojom::Event::kTextChanged;
     case arc::mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED:
-      return ui::AX_EVENT_TEXT_SELECTION_CHANGED;
+      return ax::mojom::Event::kTextSelectionChanged;
     case arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED:
     case arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED:
     case arc::mojom::AccessibilityEventType::WINDOW_CONTENT_CHANGED:
     case arc::mojom::AccessibilityEventType::WINDOWS_CHANGED:
-      return ui::AX_EVENT_LAYOUT_COMPLETE;
+      return ax::mojom::Event::kLayoutComplete;
     case arc::mojom::AccessibilityEventType::VIEW_HOVER_ENTER:
-      return ui::AX_EVENT_HOVER;
+      return ax::mojom::Event::kHover;
     case arc::mojom::AccessibilityEventType::ANNOUNCEMENT:
-      return ui::AX_EVENT_ALERT;
+      return ax::mojom::Event::kAlert;
     case arc::mojom::AccessibilityEventType::VIEW_SCROLLED:
-      return ui::AX_EVENT_SCROLL_POSITION_CHANGED;
+      return ax::mojom::Event::kScrollPositionChanged;
     case arc::mojom::AccessibilityEventType::VIEW_SELECTED:
     case arc::mojom::AccessibilityEventType::VIEW_HOVER_EXIT:
     case arc::mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_START:
@@ -53,11 +54,11 @@ ui::AXEvent ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
     case arc::mojom::AccessibilityEventType::TOUCH_INTERACTION_END:
     case arc::mojom::AccessibilityEventType::VIEW_CONTEXT_CLICKED:
     case arc::mojom::AccessibilityEventType::ASSIST_READING_CONTEXT:
-      return ui::AX_EVENT_CHILDREN_CHANGED;
+      return ax::mojom::Event::kChildrenChanged;
     default:
-      return ui::AX_EVENT_CHILDREN_CHANGED;
+      return ax::mojom::Event::kChildrenChanged;
   }
-  return ui::AX_EVENT_CHILDREN_CHANGED;
+  return ax::mojom::Event::kChildrenChanged;
 }
 
 bool GetBooleanProperty(arc::mojom::AccessibilityNodeInfoData* node,
@@ -161,7 +162,8 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   if (GetStringProperty(node,
                         arc::mojom::AccessibilityStringProperty::CLASS_NAME,
                         &class_name)) {
-    out_data->AddStringAttribute(ui::AX_ATTR_CLASS_NAME, class_name);
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                 class_name);
   }
 
   if (HasCoveringSpan(node, arc::mojom::AccessibilityStringProperty::TEXT,
@@ -169,7 +171,7 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
       HasCoveringSpan(
           node, arc::mojom::AccessibilityStringProperty::CONTENT_DESCRIPTION,
           arc::mojom::SpanType::URL)) {
-    out_data->role = ui::AX_ROLE_LINK;
+    out_data->role = ax::mojom::Role::kLink;
     return;
   }
 
@@ -177,10 +179,10 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
       node->collection_item_info.get();
   if (collection_item_info) {
     if (collection_item_info->is_heading) {
-      out_data->role = ui::AX_ROLE_HEADING;
+      out_data->role = ax::mojom::Role::kHeading;
     } else {
-      out_data->role = ui::AX_ROLE_LIST_ITEM;
-      out_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET,
+      out_data->role = ax::mojom::Role::kListItem;
+      out_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                                 collection_item_info->row_index);
     }
     return;
@@ -190,8 +192,8 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   if (GetStringProperty(node,
                         arc::mojom::AccessibilityStringProperty::CHROME_ROLE,
                         &chrome_role)) {
-    ui::AXRole role_value = ui::ParseAXRole(chrome_role);
-    if (role_value != ui::AX_ROLE_NONE) {
+    ax::mojom::Role role_value = ui::ParseRole(chrome_role.c_str());
+    if (role_value != ax::mojom::Role::kNone) {
       out_data->role = role_value;
       return;
     }
@@ -206,44 +208,44 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   // These mappings were taken from accessibility utils (Android -> Chrome) and
   // BrowserAccessibilityAndroid. They do not completely match the above two
   // sources.
-  MAP_ROLE(ui::kAXAbsListViewClassname, ui::AX_ROLE_LIST);
-  MAP_ROLE(ui::kAXButtonClassname, ui::AX_ROLE_BUTTON);
-  MAP_ROLE(ui::kAXCheckBoxClassname, ui::AX_ROLE_CHECK_BOX);
-  MAP_ROLE(ui::kAXCheckedTextViewClassname, ui::AX_ROLE_STATIC_TEXT);
-  MAP_ROLE(ui::kAXCompoundButtonClassname, ui::AX_ROLE_CHECK_BOX);
-  MAP_ROLE(ui::kAXDialogClassname, ui::AX_ROLE_DIALOG);
-  MAP_ROLE(ui::kAXEditTextClassname, ui::AX_ROLE_TEXT_FIELD);
-  MAP_ROLE(ui::kAXGridViewClassname, ui::AX_ROLE_TABLE);
-  MAP_ROLE(ui::kAXImageClassname, ui::AX_ROLE_IMAGE);
-  MAP_ROLE(ui::kAXImageButtonClassname, ui::AX_ROLE_BUTTON);
+  MAP_ROLE(ui::kAXAbsListViewClassname, ax::mojom::Role::kList);
+  MAP_ROLE(ui::kAXButtonClassname, ax::mojom::Role::kButton);
+  MAP_ROLE(ui::kAXCheckBoxClassname, ax::mojom::Role::kCheckBox);
+  MAP_ROLE(ui::kAXCheckedTextViewClassname, ax::mojom::Role::kStaticText);
+  MAP_ROLE(ui::kAXCompoundButtonClassname, ax::mojom::Role::kCheckBox);
+  MAP_ROLE(ui::kAXDialogClassname, ax::mojom::Role::kDialog);
+  MAP_ROLE(ui::kAXEditTextClassname, ax::mojom::Role::kTextField);
+  MAP_ROLE(ui::kAXGridViewClassname, ax::mojom::Role::kTable);
+  MAP_ROLE(ui::kAXImageClassname, ax::mojom::Role::kImage);
+  MAP_ROLE(ui::kAXImageButtonClassname, ax::mojom::Role::kButton);
   if (GetBooleanProperty(node,
                          arc::mojom::AccessibilityBooleanProperty::CLICKABLE)) {
-    MAP_ROLE(ui::kAXImageViewClassname, ui::AX_ROLE_BUTTON);
+    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kButton);
   } else {
-    MAP_ROLE(ui::kAXImageViewClassname, ui::AX_ROLE_IMAGE);
+    MAP_ROLE(ui::kAXImageViewClassname, ax::mojom::Role::kImage);
   }
-  MAP_ROLE(ui::kAXListViewClassname, ui::AX_ROLE_LIST);
-  MAP_ROLE(ui::kAXMenuItemClassname, ui::AX_ROLE_MENU_ITEM);
-  MAP_ROLE(ui::kAXPagerClassname, ui::AX_ROLE_GROUP);
-  MAP_ROLE(ui::kAXProgressBarClassname, ui::AX_ROLE_PROGRESS_INDICATOR);
-  MAP_ROLE(ui::kAXRadioButtonClassname, ui::AX_ROLE_RADIO_BUTTON);
-  MAP_ROLE(ui::kAXSeekBarClassname, ui::AX_ROLE_SLIDER);
-  MAP_ROLE(ui::kAXSpinnerClassname, ui::AX_ROLE_POP_UP_BUTTON);
-  MAP_ROLE(ui::kAXSwitchClassname, ui::AX_ROLE_SWITCH);
-  MAP_ROLE(ui::kAXTabWidgetClassname, ui::AX_ROLE_TAB_LIST);
-  MAP_ROLE(ui::kAXToggleButtonClassname, ui::AX_ROLE_TOGGLE_BUTTON);
-  MAP_ROLE(ui::kAXViewClassname, ui::AX_ROLE_GENERIC_CONTAINER);
-  MAP_ROLE(ui::kAXViewGroupClassname, ui::AX_ROLE_GROUP);
-  MAP_ROLE(ui::kAXWebViewClassname, ui::AX_ROLE_WEB_VIEW);
+  MAP_ROLE(ui::kAXListViewClassname, ax::mojom::Role::kList);
+  MAP_ROLE(ui::kAXMenuItemClassname, ax::mojom::Role::kMenuItem);
+  MAP_ROLE(ui::kAXPagerClassname, ax::mojom::Role::kGroup);
+  MAP_ROLE(ui::kAXProgressBarClassname, ax::mojom::Role::kProgressIndicator);
+  MAP_ROLE(ui::kAXRadioButtonClassname, ax::mojom::Role::kRadioButton);
+  MAP_ROLE(ui::kAXSeekBarClassname, ax::mojom::Role::kSlider);
+  MAP_ROLE(ui::kAXSpinnerClassname, ax::mojom::Role::kPopUpButton);
+  MAP_ROLE(ui::kAXSwitchClassname, ax::mojom::Role::kSwitch);
+  MAP_ROLE(ui::kAXTabWidgetClassname, ax::mojom::Role::kTabList);
+  MAP_ROLE(ui::kAXToggleButtonClassname, ax::mojom::Role::kToggleButton);
+  MAP_ROLE(ui::kAXViewClassname, ax::mojom::Role::kGenericContainer);
+  MAP_ROLE(ui::kAXViewGroupClassname, ax::mojom::Role::kGroup);
+  MAP_ROLE(ui::kAXWebViewClassname, ax::mojom::Role::kWebView);
 
 #undef MAP_ROLE
 
   std::string text;
   GetStringProperty(node, arc::mojom::AccessibilityStringProperty::TEXT, &text);
   if (!text.empty())
-    out_data->role = ui::AX_ROLE_STATIC_TEXT;
+    out_data->role = ax::mojom::Role::kStaticText;
   else
-    out_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
+    out_data->role = ax::mojom::Role::kGenericContainer;
 }
 
 void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
@@ -257,27 +259,27 @@ void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
   // These mappings were taken from accessibility utils (Android -> Chrome) and
   // BrowserAccessibilityAndroid. They do not completely match the above two
   // sources.
-  MAP_STATE(AXBooleanProperty::EDITABLE, ui::AX_STATE_EDITABLE);
-  MAP_STATE(AXBooleanProperty::FOCUSABLE, ui::AX_STATE_FOCUSABLE);
-  MAP_STATE(AXBooleanProperty::MULTI_LINE, ui::AX_STATE_MULTILINE);
-  MAP_STATE(AXBooleanProperty::PASSWORD, ui::AX_STATE_PROTECTED);
-  MAP_STATE(AXBooleanProperty::SELECTED, ui::AX_STATE_SELECTED);
+  MAP_STATE(AXBooleanProperty::EDITABLE, ax::mojom::State::kEditable);
+  MAP_STATE(AXBooleanProperty::FOCUSABLE, ax::mojom::State::kFocusable);
+  MAP_STATE(AXBooleanProperty::MULTI_LINE, ax::mojom::State::kMultiline);
+  MAP_STATE(AXBooleanProperty::PASSWORD, ax::mojom::State::kProtected);
+  MAP_STATE(AXBooleanProperty::SELECTED, ax::mojom::State::kSelected);
 
 #undef MAP_STATE
 
   if (GetBooleanProperty(node, AXBooleanProperty::CHECKABLE)) {
     const bool is_checked =
         GetBooleanProperty(node, AXBooleanProperty::CHECKED);
-    out_data->SetCheckedState(is_checked ? ui::AX_CHECKED_STATE_TRUE
-                                         : ui::AX_CHECKED_STATE_FALSE);
+    out_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
+                                         : ax::mojom::CheckedState::kFalse);
   }
 
   if (!GetBooleanProperty(node, AXBooleanProperty::ENABLED)) {
-    out_data->SetRestriction(ui::AX_RESTRICTION_DISABLED);
+    out_data->SetRestriction(ax::mojom::Restriction::kDisabled);
   }
 
   if (!GetBooleanProperty(node, AXBooleanProperty::VISIBLE_TO_USER)) {
-    out_data->AddState(ui::AX_STATE_INVISIBLE);
+    out_data->AddState(ax::mojom::State::kInvisible);
   }
 }
 
@@ -299,8 +301,8 @@ class AXTreeSourceArc::FocusStealer : public views::View {
 
   // views::View overrides.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, id_);
-    node_data->role = ui::AX_ROLE_CLIENT;
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId, id_);
+    node_data->role = ax::mojom::Role::kClient;
   }
 
  private:
@@ -473,7 +475,7 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   int32_t id = node->id;
   out_data->id = id;
   if (id == root_id_)
-    out_data->role = ui::AX_ROLE_ROOT_WEB_AREA;
+    out_data->role = ax::mojom::Role::kRootWebArea;
   else
     PopulateAXRole(node, out_data);
 
@@ -492,7 +494,7 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   std::string role_description;
   if (GetStringProperty(node, AXStringProperty::ROLE_DESCRIPTION,
                         &role_description)) {
-    out_data->AddStringAttribute(ui::AX_ATTR_ROLE_DESCRIPTION,
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                                  role_description);
   }
 
@@ -500,21 +502,21 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   PopulateAXState(node, out_data);
   if (GetBooleanProperty(
           node, arc::mojom::AccessibilityBooleanProperty::SCROLLABLE)) {
-    out_data->AddBoolAttribute(ui::AX_ATTR_SCROLLABLE, true);
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
   }
   if (GetBooleanProperty(node,
                          arc::mojom::AccessibilityBooleanProperty::CLICKABLE)) {
-    out_data->AddBoolAttribute(ui::AX_ATTR_CLICKABLE, true);
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
   }
 
   // Range info.
   arc::mojom::AccessibilityRangeInfoData* range_info = node->range_info.get();
   if (range_info) {
-    out_data->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE,
+    out_data->AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                 range_info->current);
-    out_data->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
+    out_data->AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
                                 range_info->min);
-    out_data->AddFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
+    out_data->AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
                                 range_info->max);
   }
 
@@ -532,17 +534,17 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
                                local_bounds.width(), local_bounds.height());
   }
 
-  if (out_data->role == ui::AX_ROLE_TEXT_FIELD && !text.empty())
-    out_data->AddStringAttribute(ui::AX_ATTR_VALUE, text);
+  if (out_data->role == ax::mojom::Role::kTextField && !text.empty())
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, text);
 
   // Integer properties.
   int32_t val;
   if (GetIntProperty(node, AXIntProperty::TEXT_SELECTION_START, &val) &&
       val >= 0)
-    out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, val);
+    out_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart, val);
 
   if (GetIntProperty(node, AXIntProperty::TEXT_SELECTION_END, &val) && val >= 0)
-    out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, val);
+    out_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, val);
 
   // Custom actions.
   std::vector<int32_t> custom_action_ids;
@@ -556,11 +558,12 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     CHECK(!custom_action_ids.empty());
     CHECK_EQ(custom_action_ids.size(), custom_action_descriptions.size());
 
-    out_data->AddAction(ui::AX_ACTION_CUSTOM_ACTION);
-    out_data->AddIntListAttribute(ui::AX_ATTR_CUSTOM_ACTION_IDS,
+    out_data->AddAction(ax::mojom::Action::kCustomAction);
+    out_data->AddIntListAttribute(ax::mojom::IntListAttribute::kCustomActionIds,
                                   custom_action_ids);
-    out_data->AddStringListAttribute(ui::AX_ATTR_CUSTOM_ACTION_DESCRIPTIONS,
-                                     custom_action_descriptions);
+    out_data->AddStringListAttribute(
+        ax::mojom::StringListAttribute::kCustomActionDescriptions,
+        custom_action_descriptions);
   }
 }
 
@@ -605,7 +608,7 @@ void AXTreeSourceArc::Reset() {
   if (focus_stealer_->parent()) {
     views::View* parent = focus_stealer_->parent();
     parent->RemoveChildView(focus_stealer_.get());
-    parent->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+    parent->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
   }
   focus_stealer_.reset();
   extensions::AutomationEventRouter* router =

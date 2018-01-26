@@ -267,19 +267,19 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
 void SearchResultTileItemView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
-  // Specify |ui::AX_ATTR_DESCRIPTION| with an empty string, so that long
-  // truncated names are not read twice.
-  // Details of this issue:
-  // - The Play Store app's name is shown in a label |title_|.
-  // - If the name is too long, it'll get truncated and the full name will
+  // Specify |ax::mojom::StringAttribute::kDescription| with an empty string, so
+  // that long truncated names are not read twice. Details of this issue: - The
+  // Play Store app's name is shown in a label |title_|. - If the name is too
+  // long, it'll get truncated and the full name will
   //   go to the label's tooltip.
   // - SearchResultTileItemView uses that label's tooltip as its tooltip.
-  // - If a view doesn't have |ui::AX_ATTR_DESCRIPTION| defined in the
+  // - If a view doesn't have |ax::mojom::StringAttribute::kDescription| defined
+  // in the
   //   |AXNodeData|, |AXViewObjWrapper::Serialize| will use the tooltip text
   //   as its description.
   // - We're customizing this view's accessible name, so it get focused
   //   ChromeVox will read its accessible name and then its description.
-  node_data->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "");
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription, "");
 }
 
 bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {

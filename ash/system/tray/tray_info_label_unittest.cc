@@ -75,9 +75,9 @@ class TrayInfoLabelTest : public AshTestBase {
     label_->GetAccessibleNodeData(&node_data);
 
     if (expected_clickable)
-      EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
+      EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
     else
-      EXPECT_EQ(ui::AX_ROLE_LABEL_TEXT, node_data.role);
+      EXPECT_EQ(ax::mojom::Role::kLabelText, node_data.role);
   }
 
   void VerifyClicks(const std::vector<int>& expected_clicked_message_ids) {

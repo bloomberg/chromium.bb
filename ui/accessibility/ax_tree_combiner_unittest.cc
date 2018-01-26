@@ -45,10 +45,11 @@ TEST(CombineAXTreesTest, EmbedChildTree) {
   parent_tree.nodes[0].child_ids.push_back(2);
   parent_tree.nodes[0].child_ids.push_back(3);
   parent_tree.nodes[1].id = 2;
-  parent_tree.nodes[1].role = AX_ROLE_BUTTON;
+  parent_tree.nodes[1].role = ax::mojom::Role::kButton;
   parent_tree.nodes[2].id = 3;
-  parent_tree.nodes[2].role = AX_ROLE_IFRAME;
-  parent_tree.nodes[2].AddIntAttribute(AX_ATTR_CHILD_TREE_ID, 2);
+  parent_tree.nodes[2].role = ax::mojom::Role::kIframe;
+  parent_tree.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                       2);
 
   AXTreeUpdate child_tree;
   child_tree.root_id = 1;
@@ -60,9 +61,9 @@ TEST(CombineAXTreesTest, EmbedChildTree) {
   child_tree.nodes[0].child_ids.push_back(2);
   child_tree.nodes[0].child_ids.push_back(3);
   child_tree.nodes[1].id = 2;
-  child_tree.nodes[1].role = AX_ROLE_CHECK_BOX;
+  child_tree.nodes[1].role = ax::mojom::Role::kCheckBox;
   child_tree.nodes[2].id = 3;
-  child_tree.nodes[2].role = AX_ROLE_RADIO_BUTTON;
+  child_tree.nodes[2].role = ax::mojom::Role::kRadioButton;
 
   AXTreeCombiner combiner;
   combiner.AddTree(parent_tree, true);
@@ -78,16 +79,16 @@ TEST(CombineAXTreesTest, EmbedChildTree) {
   EXPECT_EQ(2, combined.nodes[0].child_ids[0]);
   EXPECT_EQ(3, combined.nodes[0].child_ids[1]);
   EXPECT_EQ(2, combined.nodes[1].id);
-  EXPECT_EQ(AX_ROLE_BUTTON, combined.nodes[1].role);
+  EXPECT_EQ(ax::mojom::Role::kButton, combined.nodes[1].role);
   EXPECT_EQ(3, combined.nodes[2].id);
-  EXPECT_EQ(AX_ROLE_IFRAME, combined.nodes[2].role);
+  EXPECT_EQ(ax::mojom::Role::kIframe, combined.nodes[2].role);
   EXPECT_EQ(1U, combined.nodes[2].child_ids.size());
   EXPECT_EQ(4, combined.nodes[2].child_ids[0]);
   EXPECT_EQ(4, combined.nodes[3].id);
   EXPECT_EQ(5, combined.nodes[4].id);
-  EXPECT_EQ(AX_ROLE_CHECK_BOX, combined.nodes[4].role);
+  EXPECT_EQ(ax::mojom::Role::kCheckBox, combined.nodes[4].role);
   EXPECT_EQ(6, combined.nodes[5].id);
-  EXPECT_EQ(AX_ROLE_RADIO_BUTTON, combined.nodes[5].role);
+  EXPECT_EQ(ax::mojom::Role::kRadioButton, combined.nodes[5].role);
 }
 
 TEST(CombineAXTreesTest, MapAllIdAttributes) {
@@ -101,18 +102,26 @@ TEST(CombineAXTreesTest, MapAllIdAttributes) {
   tree.nodes.resize(2);
   tree.nodes[0].id = 11;
   tree.nodes[0].child_ids.push_back(22);
-  tree.nodes[0].AddIntAttribute(AX_ATTR_TABLE_HEADER_ID, 22);
-  tree.nodes[0].AddIntAttribute(AX_ATTR_TABLE_ROW_HEADER_ID, 22);
-  tree.nodes[0].AddIntAttribute(AX_ATTR_TABLE_COLUMN_HEADER_ID, 22);
-  tree.nodes[0].AddIntAttribute(AX_ATTR_ACTIVEDESCENDANT_ID, 22);
+  tree.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTableHeaderId, 22);
+  tree.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTableRowHeaderId, 22);
+  tree.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTableColumnHeaderId,
+                                22);
+  tree.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                                22);
   std::vector<int32_t> ids { 22 };
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_INDIRECT_CHILD_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_CONTROLS_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_DESCRIBEDBY_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_FLOWTO_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_LABELLEDBY_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_CELL_IDS, ids);
-  tree.nodes[0].AddIntListAttribute(AX_ATTR_UNIQUE_CELL_IDS, ids);
+  tree.nodes[0].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kIndirectChildIds, ids);
+  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                                    ids);
+  tree.nodes[0].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kDescribedbyIds, ids);
+  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds,
+                                    ids);
+  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                                    ids);
+  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kCellIds, ids);
+  tree.nodes[0].AddIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds,
+                                    ids);
   tree.nodes[1].id = 22;
 
   AXTreeCombiner combiner;
@@ -128,25 +137,28 @@ TEST(CombineAXTreesTest, MapAllIdAttributes) {
   EXPECT_EQ(2, combined.nodes[0].child_ids[0]);
   EXPECT_EQ(2, combined.nodes[1].id);
 
-  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(AX_ATTR_TABLE_HEADER_ID));
-  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(AX_ATTR_TABLE_ROW_HEADER_ID));
   EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(
-      AX_ATTR_TABLE_COLUMN_HEADER_ID));
-  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(AX_ATTR_ACTIVEDESCENDANT_ID));
+                   ax::mojom::IntAttribute::kTableHeaderId));
+  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(
+                   ax::mojom::IntAttribute::kTableRowHeaderId));
+  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(
+                   ax::mojom::IntAttribute::kTableColumnHeaderId));
+  EXPECT_EQ(2, combined.nodes[0].GetIntAttribute(
+                   ax::mojom::IntAttribute::kActivedescendantId));
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_INDIRECT_CHILD_IDS)[0]);
+                   ax::mojom::IntListAttribute::kIndirectChildIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_CONTROLS_IDS)[0]);
+                   ax::mojom::IntListAttribute::kControlsIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_DESCRIBEDBY_IDS)[0]);
+                   ax::mojom::IntListAttribute::kDescribedbyIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_FLOWTO_IDS)[0]);
+                   ax::mojom::IntListAttribute::kFlowtoIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_LABELLEDBY_IDS)[0]);
+                   ax::mojom::IntListAttribute::kLabelledbyIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_CELL_IDS)[0]);
+                   ax::mojom::IntListAttribute::kCellIds)[0]);
   EXPECT_EQ(2, combined.nodes[0].GetIntListAttribute(
-      AX_ATTR_UNIQUE_CELL_IDS)[0]);
+                   ax::mojom::IntListAttribute::kUniqueCellIds)[0]);
 }
 
 TEST(CombineAXTreesTest, FocusedTree) {
@@ -161,10 +173,11 @@ TEST(CombineAXTreesTest, FocusedTree) {
   parent_tree.nodes[0].child_ids.push_back(2);
   parent_tree.nodes[0].child_ids.push_back(3);
   parent_tree.nodes[1].id = 2;
-  parent_tree.nodes[1].role = AX_ROLE_BUTTON;
+  parent_tree.nodes[1].role = ax::mojom::Role::kButton;
   parent_tree.nodes[2].id = 3;
-  parent_tree.nodes[2].role = AX_ROLE_IFRAME;
-  parent_tree.nodes[2].AddIntAttribute(AX_ATTR_CHILD_TREE_ID, 2);
+  parent_tree.nodes[2].role = ax::mojom::Role::kIframe;
+  parent_tree.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                                       2);
 
   AXTreeUpdate child_tree;
   child_tree.has_tree_data = true;
@@ -177,9 +190,9 @@ TEST(CombineAXTreesTest, FocusedTree) {
   child_tree.nodes[0].child_ids.push_back(2);
   child_tree.nodes[0].child_ids.push_back(3);
   child_tree.nodes[1].id = 2;
-  child_tree.nodes[1].role = AX_ROLE_CHECK_BOX;
+  child_tree.nodes[1].role = ax::mojom::Role::kCheckBox;
   child_tree.nodes[2].id = 3;
-  child_tree.nodes[2].role = AX_ROLE_RADIO_BUTTON;
+  child_tree.nodes[2].role = ax::mojom::Role::kRadioButton;
 
   AXTreeCombiner combiner;
   combiner.AddTree(parent_tree, true);

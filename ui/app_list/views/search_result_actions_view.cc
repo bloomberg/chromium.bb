@@ -56,7 +56,7 @@ void SearchResultActionsView::SetSelectedAction(int action_index) {
 
   if (IsValidActionIndex(selected_action_)) {
     child_at(selected_action_)
-        ->NotifyAccessibilityEvent(ui::AX_EVENT_HOVER, true);
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
   }
 }
 

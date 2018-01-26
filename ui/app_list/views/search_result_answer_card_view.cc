@@ -94,7 +94,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
   void OnFocus() override {
     SetSelected(true);
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
     Button::OnFocus();
   }
 
@@ -110,7 +110,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     // Default button role is atomic for ChromeVox, so assign a generic
     // container role to allow accessibility focus to get into this view.
-    node_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
+    node_data->role = ax::mojom::Role::kGenericContainer;
     node_data->SetName(accessible_name());
   }
 
@@ -186,7 +186,7 @@ int SearchResultAnswerCardView::DoUpdate() {
   set_container_score(have_result ? display_results.front()->relevance() : 0);
   if (title_changed && search_answer_container_view_->selected())
     search_answer_container_view_->NotifyAccessibilityEvent(
-        ui::AX_EVENT_SELECTION, true);
+        ax::mojom::Event::kSelection, true);
   return have_result ? 1 : 0;
 }
 
@@ -199,7 +199,7 @@ void SearchResultAnswerCardView::UpdateSelectedIndex(int old_selected,
   search_answer_container_view_->SetSelected(is_selected);
   if (is_selected)
     search_answer_container_view_->NotifyAccessibilityEvent(
-        ui::AX_EVENT_SELECTION, true);
+        ax::mojom::Event::kSelection, true);
 }
 
 bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {

@@ -57,8 +57,8 @@ void AXPlatformNodeTest::Init(const AXNodeData& node1,
 AXTreeUpdate AXPlatformNodeTest::BuildTextField() {
   AXNodeData text_field_node;
   text_field_node.id = 1;
-  text_field_node.role = AX_ROLE_TEXT_FIELD;
-  text_field_node.AddState(AX_STATE_EDITABLE);
+  text_field_node.role = ax::mojom::Role::kTextField;
+  text_field_node.AddState(ax::mojom::State::kEditable);
   text_field_node.SetValue("How now brown cow.");
 
   AXTreeUpdate update;
@@ -72,11 +72,12 @@ AXTreeUpdate AXPlatformNodeTest::BuildTextFieldWithSelectionRange(
     int32_t stop) {
   AXNodeData text_field_node;
   text_field_node.id = 1;
-  text_field_node.role = AX_ROLE_TEXT_FIELD;
-  text_field_node.AddState(AX_STATE_EDITABLE);
-  text_field_node.AddState(AX_STATE_SELECTED);
-  text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, start);
-  text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, stop);
+  text_field_node.role = ax::mojom::Role::kTextField;
+  text_field_node.AddState(ax::mojom::State::kEditable);
+  text_field_node.AddState(ax::mojom::State::kSelected);
+  text_field_node.AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
+                                  start);
+  text_field_node.AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, stop);
   text_field_node.SetValue("How now brown cow.");
 
   AXTreeUpdate update;
@@ -88,9 +89,10 @@ AXTreeUpdate AXPlatformNodeTest::BuildTextFieldWithSelectionRange(
 AXTreeUpdate AXPlatformNodeTest::BuildContentEditable() {
   AXNodeData content_editable_node;
   content_editable_node.id = 1;
-  content_editable_node.role = AX_ROLE_GROUP;
-  content_editable_node.AddState(AX_STATE_RICHLY_EDITABLE);
-  content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
+  content_editable_node.role = ax::mojom::Role::kGroup;
+  content_editable_node.AddState(ax::mojom::State::kRichlyEditable);
+  content_editable_node.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kEditableRoot, true);
   content_editable_node.SetValue("How now brown cow.");
 
   AXTreeUpdate update;
@@ -104,10 +106,11 @@ AXTreeUpdate AXPlatformNodeTest::BuildContentEditableWithSelectionRange(
     int32_t end) {
   AXNodeData content_editable_node;
   content_editable_node.id = 1;
-  content_editable_node.role = AX_ROLE_GROUP;
-  content_editable_node.AddState(AX_STATE_RICHLY_EDITABLE);
-  content_editable_node.AddState(AX_STATE_SELECTED);
-  content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
+  content_editable_node.role = ax::mojom::Role::kGroup;
+  content_editable_node.AddState(ax::mojom::State::kRichlyEditable);
+  content_editable_node.AddState(ax::mojom::State::kSelected);
+  content_editable_node.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kEditableRoot, true);
   content_editable_node.SetValue("How now brown cow.");
 
   AXTreeUpdate update;
@@ -138,18 +141,18 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
 
   AXNodeData table;
   table.id = 0;
-  table.role = AX_ROLE_TABLE;
+  table.role = ax::mojom::Role::kTable;
 
-  table.AddIntAttribute(AX_ATTR_TABLE_ROW_COUNT, 3);
-  table.AddIntAttribute(AX_ATTR_TABLE_COLUMN_COUNT, 3);
+  table.AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount, 3);
+  table.AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, 3);
 
   // Ordering in this list matters.  It is used in the calculation
   // of where cells are by the following:
   // int position = row * GetTableColumnCount() + column;
 
   std::vector<int32_t> ids{51, 52, 53, 2, 3, 4, 11, 12, 13};
-  table.AddIntListAttribute(AX_ATTR_CELL_IDS, ids);
-  table.AddIntListAttribute(AX_ATTR_UNIQUE_CELL_IDS, ids);
+  table.AddIntListAttribute(ax::mojom::IntListAttribute::kCellIds, ids);
+  table.AddIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds, ids);
 
   table.child_ids.push_back(50);  // Header
   table.child_ids.push_back(1);   // Row 1
@@ -158,74 +161,75 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   // Table column header
   AXNodeData table_row_header;
   table_row_header.id = 50;
-  table_row_header.role = AX_ROLE_ROW;
+  table_row_header.role = ax::mojom::Role::kRow;
   table_row_header.child_ids.push_back(51);
   table_row_header.child_ids.push_back(52);
   table_row_header.child_ids.push_back(53);
 
   AXNodeData table_column_header_1;
   table_column_header_1.id = 51;
-  table_column_header_1.role = AX_ROLE_COLUMN_HEADER;
+  table_column_header_1.role = ax::mojom::Role::kColumnHeader;
 
   AXNodeData table_column_header_2;
   table_column_header_2.id = 52;
-  table_column_header_2.role = AX_ROLE_COLUMN_HEADER;
+  table_column_header_2.role = ax::mojom::Role::kColumnHeader;
   table_column_header_2.SetName("column header 1");
 
   AXNodeData table_column_header_3;
   table_column_header_3.id = 53;
-  table_column_header_3.role = AX_ROLE_COLUMN_HEADER;
-  // Either AX_ATTR_NAME -or- AX_ATTR_DESCRIPTION is acceptable for a
-  // description
-  table_column_header_3.AddStringAttribute(AX_ATTR_DESCRIPTION,
-                                           "column header 2");
+  table_column_header_3.role = ax::mojom::Role::kColumnHeader;
+  // Either ax::mojom::StringAttribute::kName -or-
+  // ax::mojom::StringAttribute::kDescription is acceptable for a description
+  table_column_header_3.AddStringAttribute(
+      ax::mojom::StringAttribute::kDescription, "column header 2");
 
   // Row 1
   AXNodeData table_row_1;
   table_row_1.id = 1;
-  table_row_1.role = AX_ROLE_ROW;
+  table_row_1.role = ax::mojom::Role::kRow;
   table_row_1.child_ids.push_back(2);
   table_row_1.child_ids.push_back(3);
   table_row_1.child_ids.push_back(4);
 
   AXNodeData table_row_header_1;
   table_row_header_1.id = 2;
-  table_row_header_1.role = AX_ROLE_ROW_HEADER;
+  table_row_header_1.role = ax::mojom::Role::kRowHeader;
   table_row_header_1.SetName("row header 1");
 
   AXNodeData table_cell_1;
   table_cell_1.id = 3;
-  table_cell_1.role = AX_ROLE_CELL;
+  table_cell_1.role = ax::mojom::Role::kCell;
   table_cell_1.SetName("1");
 
   AXNodeData table_cell_2;
   table_cell_2.id = 4;
-  table_cell_2.role = AX_ROLE_CELL;
+  table_cell_2.role = ax::mojom::Role::kCell;
   table_cell_2.SetName("2");
 
   // Row 2
   AXNodeData table_row_2;
   table_row_2.id = 10;
-  table_row_2.role = AX_ROLE_ROW;
+  table_row_2.role = ax::mojom::Role::kRow;
   table_row_2.child_ids.push_back(11);
   table_row_2.child_ids.push_back(12);
   table_row_2.child_ids.push_back(13);
 
   AXNodeData table_row_header_2;
   table_row_header_2.id = 11;
-  table_row_header_2.role = AX_ROLE_ROW_HEADER;
-  // Either AX_ATTR_NAME -or- AX_ATTR_DESCRIPTION is acceptable for a
-  // description
-  table_row_header_2.AddStringAttribute(AX_ATTR_DESCRIPTION, "row header 2");
+  table_row_header_2.role = ax::mojom::Role::kRowHeader;
+  // Either ax::mojom::StringAttribute::kName -or-
+  // ax::mojom::StringAttribute::kDescription is acceptable for a description
+  table_row_header_2.AddStringAttribute(
+      ax::mojom::StringAttribute::kDescription, "row header 2");
 
   AXNodeData table_cell_3;
   table_cell_3.id = 12;
-  table_cell_3.role = AX_ROLE_CELL;
+  table_cell_3.role = ax::mojom::Role::kCell;
   table_cell_3.SetName("3");
 
   AXNodeData table_cell_4;
   table_cell_4.id = 13;
-  table_cell_4.role = AX_ROLE_CELL;
+  table_cell_4.role = ax::mojom::Role::kCell;
   table_cell_4.SetName("4");
 
   AXTreeUpdate update;

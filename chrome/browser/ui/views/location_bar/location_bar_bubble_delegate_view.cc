@@ -102,7 +102,7 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
     GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescription(
         l10n_util::GetStringUTF8(IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION));
   }
-  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT,
+  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
                                                        true);
 }
 

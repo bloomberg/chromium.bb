@@ -202,7 +202,7 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
     return;
 
   if (controller_->password_selected())
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 
   password_view_->SetBackground(views::CreateThemedSolidBackground(
       password_view_,
@@ -276,7 +276,7 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->SetName(controller_->SuggestedText());
-  node_data->role = ui::AX_ROLE_MENU_ITEM;
+  node_data->role = ax::mojom::Role::kMenuItem;
 }
 
 }  // namespace autofill

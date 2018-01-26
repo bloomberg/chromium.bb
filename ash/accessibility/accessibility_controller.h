@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -77,7 +77,7 @@ class ASH_EXPORT AccessibilityController
 
   // Forwards an accessibility gesture from the touch exploration controller to
   // ChromeVox.
-  void HandleAccessibilityGesture(ui::AXGesture gesture);
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture);
 
   // Toggle dictation.
   void ToggleDictation();

@@ -23,7 +23,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace extensions {

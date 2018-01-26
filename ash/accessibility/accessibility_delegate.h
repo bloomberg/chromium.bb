@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "base/time/time.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
 

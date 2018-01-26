@@ -23,7 +23,7 @@ const char* NonAccessibleView::GetClassName() const {
 }
 
 void NonAccessibleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->AddState(ui::AX_STATE_INVISIBLE);
+  node_data->AddState(ax::mojom::State::kInvisible);
 }
 
 }  // namespace ash

@@ -218,7 +218,7 @@ json_schema_api("api_registration") {
     "//components/sync",
     "//skia",
     "//third_party/metrics_proto",
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
   ]
   if (is_chromeos) {
     deps += [ "//components/drive:proto" ]

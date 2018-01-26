@@ -33,7 +33,7 @@ class ConflictingModuleView : public views::BubbleDialogDelegateView,
   void ShowBubble();
 
   // views::BubbleDialogDelegateView:
-  ui::AXRole GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   void OnWidgetClosing(views::Widget* widget) override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;

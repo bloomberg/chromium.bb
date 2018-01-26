@@ -21,7 +21,7 @@ namespace content {
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     WebContents* web_contents)
-    : event_to_wait_for_(ui::AX_EVENT_NONE),
+    : event_to_wait_for_(ax::mojom::Event::kNone),
       loop_runner_(new MessageLoopRunner()),
       event_target_id_(0),
       event_render_frame_host_(nullptr),
@@ -36,7 +36,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     WebContents* web_contents,
     ui::AXMode accessibility_mode,
-    ui::AXEvent event_type)
+    ax::mojom::Event event_type)
     : event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
       event_target_id_(0),
@@ -53,7 +53,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     RenderFrameHostImpl* frame_host,
-    ui::AXEvent event_type)
+    ax::mojom::Event event_type)
     : frame_host_(frame_host),
       event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
@@ -92,9 +92,9 @@ const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(
     RenderFrameHostImpl* rfhi,
-    ui::AXEvent event_type,
+    ax::mojom::Event event_type,
     int event_target_id) {
-  if (!IsAboutBlank() && (event_to_wait_for_ == ui::AX_EVENT_NONE ||
+  if (!IsAboutBlank() && (event_to_wait_for_ == ax::mojom::Event::kNone ||
                           event_to_wait_for_ == event_type)) {
     event_target_id_ = event_target_id;
     event_render_frame_host_ = rfhi;

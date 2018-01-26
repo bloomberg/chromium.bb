@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
@@ -194,7 +194,7 @@ void MessagePopupCollection::UpdateWidgets() {
 
     if (views::ViewsDelegate::GetInstance()) {
       views::ViewsDelegate::GetInstance()->NotifyAccessibilityEvent(
-          toast, ui::AX_EVENT_ALERT);
+          toast, ax::mojom::Event::kAlert);
     }
 
     message_center_->DisplayedNotification(

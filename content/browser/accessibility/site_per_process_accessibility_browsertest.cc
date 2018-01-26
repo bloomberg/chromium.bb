@@ -104,31 +104,33 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   // Assert that we can walk from the main frame down into the child frame
   // directly, getting correct roles and data along the way.
   BrowserAccessibility* ax_root = main_frame_manager->GetRoot();
-  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, ax_root->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, ax_root->GetRole());
   ASSERT_EQ(1U, ax_root->PlatformChildCount());
 
   BrowserAccessibility* ax_group = ax_root->PlatformGetChild(0);
-  EXPECT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, ax_group->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, ax_group->GetRole());
   ASSERT_EQ(2U, ax_group->PlatformChildCount());
 
   BrowserAccessibility* ax_iframe = ax_group->PlatformGetChild(0);
-  EXPECT_EQ(ui::AX_ROLE_IFRAME, ax_iframe->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kIframe, ax_iframe->GetRole());
   ASSERT_EQ(1U, ax_iframe->PlatformChildCount());
 
   BrowserAccessibility* ax_child_frame_root = ax_iframe->PlatformGetChild(0);
-  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, ax_child_frame_root->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, ax_child_frame_root->GetRole());
   ASSERT_EQ(1U, ax_child_frame_root->PlatformChildCount());
-  EXPECT_EQ("Title Of Awesomeness",
-            ax_child_frame_root->GetStringAttribute(ui::AX_ATTR_NAME));
+  EXPECT_EQ("Title Of Awesomeness", ax_child_frame_root->GetStringAttribute(
+                                        ax::mojom::StringAttribute::kName));
 
   BrowserAccessibility* ax_child_frame_group =
       ax_child_frame_root->PlatformGetChild(0);
-  EXPECT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, ax_child_frame_group->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer,
+            ax_child_frame_group->GetRole());
   ASSERT_EQ(1U, ax_child_frame_group->PlatformChildCount());
 
   BrowserAccessibility* ax_child_frame_static_text =
       ax_child_frame_group->PlatformGetChild(0);
-  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, ax_child_frame_static_text->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
+            ax_child_frame_static_text->GetRole());
   ASSERT_EQ(0U, ax_child_frame_static_text->PlatformChildCount());
 
   // Last, check that the parent of the child frame root is correct.

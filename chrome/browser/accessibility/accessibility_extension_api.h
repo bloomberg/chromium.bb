@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction

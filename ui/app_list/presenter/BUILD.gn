@@ -51,7 +51,7 @@ component("presenter") {
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
   ]
 }
 
@@ -66,7 +66,7 @@ static_library("test_support") {
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
   ]
 
   public_deps = [
@@ -105,7 +105,7 @@ test("app_list_presenter_unittests") {
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
   ]
 
   data_deps = [

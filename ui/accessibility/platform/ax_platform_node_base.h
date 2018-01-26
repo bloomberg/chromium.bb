@@ -6,7 +6,7 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 
 #include "base/macros.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -40,31 +40,33 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeBase* GetNextSibling();
   bool IsDescendant(AXPlatformNodeBase* descendant);
 
-  bool HasBoolAttribute(AXBoolAttribute attr) const;
-  bool GetBoolAttribute(AXBoolAttribute attr) const;
-  bool GetBoolAttribute(AXBoolAttribute attr, bool* value) const;
+  bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attr) const;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attr, bool* value) const;
 
-  bool HasFloatAttribute(AXFloatAttribute attr) const;
-  float GetFloatAttribute(AXFloatAttribute attr) const;
-  bool GetFloatAttribute(AXFloatAttribute attr, float* value) const;
+  bool HasFloatAttribute(ax::mojom::FloatAttribute attr) const;
+  float GetFloatAttribute(ax::mojom::FloatAttribute attr) const;
+  bool GetFloatAttribute(ax::mojom::FloatAttribute attr, float* value) const;
 
-  bool HasIntAttribute(AXIntAttribute attribute) const;
-  int GetIntAttribute(AXIntAttribute attribute) const;
-  bool GetIntAttribute(AXIntAttribute attribute, int* value) const;
+  bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
+  int GetIntAttribute(ax::mojom::IntAttribute attribute) const;
+  bool GetIntAttribute(ax::mojom::IntAttribute attribute, int* value) const;
 
-  bool HasStringAttribute(AXStringAttribute attribute) const;
-  const std::string& GetStringAttribute(AXStringAttribute attribute) const;
-  bool GetStringAttribute(AXStringAttribute attribute,
+  bool HasStringAttribute(ax::mojom::StringAttribute attribute) const;
+  const std::string& GetStringAttribute(
+      ax::mojom::StringAttribute attribute) const;
+  bool GetStringAttribute(ax::mojom::StringAttribute attribute,
                           std::string* value) const;
-  bool GetString16Attribute(AXStringAttribute attribute,
+  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
                             base::string16* value) const;
-  base::string16 GetString16Attribute(AXStringAttribute attribute) const;
+  base::string16 GetString16Attribute(
+      ax::mojom::StringAttribute attribute) const;
 
-  bool HasIntListAttribute(AXIntListAttribute attribute) const;
+  bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(
-      AXIntListAttribute attribute) const;
+      ax::mojom::IntListAttribute attribute) const;
 
-  bool GetIntListAttribute(AXIntListAttribute attribute,
+  bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
                            std::vector<int32_t>* value) const;
 
   // Returns the table or ARIA grid if inside one.

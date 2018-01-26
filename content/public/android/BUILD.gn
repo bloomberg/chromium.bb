@@ -60,7 +60,6 @@ android_library("content_java") {
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
-    "//ui/accessibility:ui_accessibility_java",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
   ]

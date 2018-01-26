@@ -163,15 +163,16 @@ const char* Checkbox::GetClassName() const {
 
 void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   LabelButton::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_CHECK_BOX;
-  const ui::AXCheckedState checked_state =
-      checked() ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE;
+  node_data->role = ax::mojom::Role::kCheckBox;
+  const ax::mojom::CheckedState checked_state =
+      checked() ? ax::mojom::CheckedState::kTrue
+                : ax::mojom::CheckedState::kFalse;
   node_data->SetCheckedState(checked_state);
   if (enabled()) {
     if (checked()) {
-      node_data->SetDefaultActionVerb(ui::AX_DEFAULT_ACTION_VERB_UNCHECK);
+      node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kUncheck);
     } else {
-      node_data->SetDefaultActionVerb(ui::AX_DEFAULT_ACTION_VERB_CHECK);
+      node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kCheck);
     }
   }
 }

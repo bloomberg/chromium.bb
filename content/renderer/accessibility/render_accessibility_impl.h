@@ -98,7 +98,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void DisableAccessibility();
 
   void HandleAXEvent(const blink::WebAXObject& obj,
-                     ui::AXEvent event,
+                     ax::mojom::Event event,
                      int action_request_id = -1);
 
  protected:
@@ -125,7 +125,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnReset(int reset_token);
 
   void OnHitTest(const gfx::Point& point,
-                 ui::AXEvent event_to_fire,
+                 ax::mojom::Event event_to_fire,
                  int action_request_id);
   void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);

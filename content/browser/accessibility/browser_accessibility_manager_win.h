@@ -43,7 +43,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   gfx::Rect GetViewBounds() override;
 
   void FireFocusEvent(BrowserAccessibility* node) override;
-  void FireBlinkEvent(ui::AXEvent event_type,
+  void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
   void FireGeneratedEvent(AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;

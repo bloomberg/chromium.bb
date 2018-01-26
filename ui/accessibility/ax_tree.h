@@ -52,41 +52,41 @@ class AX_EXPORT AXTreeDelegate {
   // Individual callbacks for every attribute of AXNodeData that can change.
   virtual void OnRoleChanged(AXTree* tree,
                              AXNode* node,
-                             AXRole old_role,
-                             AXRole new_role) {}
+                             ax::mojom::Role old_role,
+                             ax::mojom::Role new_role) {}
   virtual void OnStateChanged(AXTree* tree,
                               AXNode* node,
-                              AXState state,
+                              ax::mojom::State state,
                               bool new_value) {}
   virtual void OnStringAttributeChanged(AXTree* tree,
                                         AXNode* node,
-                                        AXStringAttribute attr,
+                                        ax::mojom::StringAttribute attr,
                                         const std::string& old_value,
                                         const std::string& new_value) {}
   virtual void OnIntAttributeChanged(AXTree* tree,
                                      AXNode* node,
-                                     AXIntAttribute attr,
+                                     ax::mojom::IntAttribute attr,
                                      int32_t old_value,
                                      int32_t new_value) {}
   virtual void OnFloatAttributeChanged(AXTree* tree,
                                        AXNode* node,
-                                       AXFloatAttribute attr,
+                                       ax::mojom::FloatAttribute attr,
                                        float old_value,
                                        float new_value) {}
   virtual void OnBoolAttributeChanged(AXTree* tree,
                                       AXNode* node,
-                                      AXBoolAttribute attr,
+                                      ax::mojom::BoolAttribute attr,
                                       bool new_value) {}
   virtual void OnIntListAttributeChanged(
       AXTree* tree,
       AXNode* node,
-      AXIntListAttribute attr,
+      ax::mojom::IntListAttribute attr,
       const std::vector<int32_t>& old_value,
       const std::vector<int32_t>& new_value) {}
   virtual void OnStringListAttributeChanged(
       AXTree* tree,
       AXNode* node,
-      AXStringListAttribute attr,
+      ax::mojom::StringListAttribute attr,
       const std::vector<std::string>& old_value,
       const std::vector<std::string>& new_value) {}
 
@@ -204,14 +204,14 @@ class AX_EXPORT AXTree {
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
   // and a destination node ID, return a set of all source node IDs that
   // have that relationship attribute between them and the destination.
-  std::set<int32_t> GetReverseRelations(AXIntAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
                                         int32_t dst_id) const;
 
   // Given a node ID list attribute (one where
   // IsNodeIdIntListAttribute is true), and a destination node ID,
   // return a set of all source node IDs that have that relationship
   // attribute between them and the destination.
-  std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
+  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) const;
 
   // Return a multi-line indented string representation, for logging.
@@ -273,11 +273,11 @@ class AX_EXPORT AXTree {
 
   // Map from an int attribute (if IsNodeIdIntAttribute is true) to
   // a reverse mapping from target nodes to source nodes.
-  std::map<AXIntAttribute, std::map<int32_t, std::set<int32_t>>>
+  std::map<ax::mojom::IntAttribute, std::map<int32_t, std::set<int32_t>>>
       int_reverse_relations_;
   // Map from an int list attribute (if IsNodeIdIntListAttribute is true) to
   // a reverse mapping from target nodes to source nodes.
-  std::map<AXIntListAttribute, std::map<int32_t, std::set<int32_t>>>
+  std::map<ax::mojom::IntListAttribute, std::map<int32_t, std::set<int32_t>>>
       intlist_reverse_relations_;
 };
 

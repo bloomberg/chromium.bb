@@ -52,15 +52,15 @@ const char kSignalDiff[] = "*";
 // that represents a fully loaded web document with the given url.
 bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
                                                const std::string& url) {
-  if (node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA &&
-      node->GetStringAttribute(ui::AX_ATTR_URL) == url) {
+  if (node->GetRole() == ax::mojom::Role::kRootWebArea &&
+      node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {
     // Ensure the doc has finished loading and has a non-zero size.
     return node->manager()->GetTreeData().loaded &&
            (node->GetData().location.width() > 0 &&
             node->GetData().location.height() > 0);
   }
-  if (node->GetRole() == ui::AX_ROLE_WEB_AREA &&
-      node->GetStringAttribute(ui::AX_ATTR_URL) == url) {
+  if (node->GetRole() == ax::mojom::Role::kWebArea &&
+      node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {
     // Ensure the doc has finished loading.
     return node->manager()->GetTreeData().loaded;
   }
@@ -269,13 +269,13 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Load the url, then enable accessibility.
     NavigateToURL(shell(), url);
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, ui::kAXModeComplete, ui::AX_EVENT_NONE);
+        web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
   } else {
     // Enable accessibility, then load the test html and wait for the
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+        web_contents, ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
     NavigateToURL(shell(), url);
     accessibility_waiter.WaitForNotification();
   }
@@ -346,8 +346,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
     // Block until the next accessibility notification in any frame.
     VLOG(1) << "Waiting until the next accessibility event";
-    AccessibilityNotificationWaiter accessibility_waiter(main_frame,
-                                                         ui::AX_EVENT_NONE);
+    AccessibilityNotificationWaiter accessibility_waiter(
+        main_frame, ax::mojom::Event::kNone);
     for (FrameTreeNode* node : frame_tree->Nodes())
       accessibility_waiter.ListenToAdditionalFrame(node->current_frame_host());
     accessibility_waiter.WaitForNotification();

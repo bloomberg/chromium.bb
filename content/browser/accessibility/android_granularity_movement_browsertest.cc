@@ -41,7 +41,7 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     // Load the page.
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ui::AX_EVENT_LOAD_COMPLETE);
+                                           ax::mojom::Event::kLoadComplete);
     NavigateToURL(shell(), url);
     waiter.WaitForNotification();
 
@@ -71,7 +71,7 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
       int granularity) {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ui::AX_EVENT_TREE_CHANGED);
+                                           ax::mojom::Event::kTreeChanged);
     node->manager()->LoadInlineTextBoxes(*node);
     waiter.WaitForNotification();
 

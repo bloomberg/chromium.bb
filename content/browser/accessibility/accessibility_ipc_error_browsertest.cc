@@ -27,7 +27,7 @@ class AccessibilityIpcErrorBrowserTest : public ContentBrowserTest {
   // Convenience method to get the value of a particular AXNode
   // attribute as a UTF-8 string.
   std::string GetAttr(const ui::AXNode* node,
-                      const ui::AXStringAttribute attr) {
+                      const ax::mojom::StringAttribute attr) {
     const ui::AXNodeData& data = node->data();
     for (size_t i = 0; i < data.string_attributes.size(); ++i) {
       if (data.string_attributes[i].first == attr)
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
     // the first event.
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ui::AX_EVENT_LAYOUT_COMPLETE);
+                                           ax::mojom::Event::kLayoutComplete);
     waiter.WaitForNotification();
   }
 
@@ -84,9 +84,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   {
     // Hide one of the elements on the page, and wait for an accessibility
     // notification triggered by the hide.
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           ui::kAXModeComplete,
-                                           ui::AX_EVENT_LIVE_REGION_CHANGED);
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kLiveRegionChanged);
     ASSERT_TRUE(ExecuteScript(
         shell(), "document.getElementById('p1').style.display = 'none';"));
     waiter.WaitForNotification();
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   const ui::AXTree* tree = nullptr;
   {
     AccessibilityNotificationWaiter waiter(
-        shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_FOCUS);
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
     ASSERT_TRUE(
         ExecuteScript(shell(), "document.getElementById('button').focus();"));
     waiter.WaitForNotification();
@@ -116,18 +116,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   // Use this for debugging if the test fails.
   VLOG(1) << tree->ToString();
 
-  EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->data().role);
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
   ASSERT_EQ(2, root->child_count());
 
   const ui::AXNode* live_region = root->ChildAtIndex(0);
   ASSERT_EQ(1, live_region->child_count());
-  EXPECT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, live_region->data().role);
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, live_region->data().role);
 
   const ui::AXNode* para = live_region->ChildAtIndex(0);
-  EXPECT_EQ(ui::AX_ROLE_PARAGRAPH, para->data().role);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
 
   const ui::AXNode* button = root->ChildAtIndex(1);
-  EXPECT_EQ(ui::AX_ROLE_BUTTON, button->data().role);
+  EXPECT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 
 #if defined(OS_ANDROID)
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
     // the first event.
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ui::AX_EVENT_LAYOUT_COMPLETE);
+                                           ax::mojom::Event::kLayoutComplete);
     waiter.WaitForNotification();
   }
 
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
 
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ui::AX_EVENT_LOAD_COMPLETE);
+                                           ax::mojom::Event::kLoadComplete);
     waiter.WaitForNotification();
   }
 

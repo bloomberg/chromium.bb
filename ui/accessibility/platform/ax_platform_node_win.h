@@ -270,7 +270,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  void NotifyAccessibilityEvent(AXEvent event_type) override;
+  void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
   // AXPlatformNodeBase overrides.
   void Destroy() override;
@@ -708,12 +708,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
 
  private:
-  int MSAAEvent(AXEvent event);
+  int MSAAEvent(ax::mojom::Event event);
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 
-  HRESULT GetStringAttributeAsBstr(AXStringAttribute attribute,
+  HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr) const;
 
   // Escapes characters in string attributes as required by the IA2 Spec.
@@ -727,19 +727,19 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void StringAttributeToIA2(std::vector<base::string16>& attributes,
-                            AXStringAttribute attribute,
+                            ax::mojom::StringAttribute attribute,
                             const char* ia2_attr);
 
   // If the bool attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void BoolAttributeToIA2(std::vector<base::string16>& attributes,
-                          AXBoolAttribute attribute,
+                          ax::mojom::BoolAttribute attribute,
                           const char* ia2_attr);
 
   // If the int attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void IntAttributeToIA2(std::vector<base::string16>& attributes,
-                         AXIntAttribute attribute,
+                         ax::mojom::IntAttribute attribute,
                          const char* ia2_attr);
 
   void AddAlertTarget();

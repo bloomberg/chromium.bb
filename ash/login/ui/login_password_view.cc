@@ -78,7 +78,7 @@ class NonAccessibleSeparator : public views::Separator {
   // views::Separator:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     views::Separator::GetAccessibleNodeData(node_data);
-    node_data->AddState(ui::AX_STATE_INVISIBLE);
+    node_data->AddState(ax::mojom::State::kInvisible);
   }
 
  private:

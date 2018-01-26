@@ -139,11 +139,11 @@ void CriticalNotificationBubbleView::Init() {
 
 void CriticalNotificationBubbleView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_ALERT;
+  node_data->role = ax::mojom::Role::kAlert;
 }
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
-    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

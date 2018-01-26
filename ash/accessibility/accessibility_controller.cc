@@ -27,7 +27,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/cursor/cursor_type.h"
 
 using session_manager::SessionState;
@@ -170,10 +171,10 @@ void AccessibilityController::PlayShutdownSound(
 }
 
 void AccessibilityController::HandleAccessibilityGesture(
-    ui::AXGesture gesture) {
+    ax::mojom::Gesture gesture) {
   if (client_) {
     const std::string gesture_str(ui::ToString(gesture));
-    DCHECK(!gesture_str.empty() || gesture == ui::AX_GESTURE_NONE);
+    DCHECK(!gesture_str.empty() || gesture == ax::mojom::Gesture::kNone);
     client_->HandleAccessibilityGesture(gesture_str);
   }
 }

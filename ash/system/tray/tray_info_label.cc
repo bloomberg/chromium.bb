@@ -69,7 +69,7 @@ void TrayInfoLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
 
   if (!IsClickable())
-    node_data->role = ui::AX_ROLE_LABEL_TEXT;
+    node_data->role = ax::mojom::Role::kLabelText;
 }
 
 bool TrayInfoLabel::IsClickable() {

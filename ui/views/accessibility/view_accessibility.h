@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/native_widget_types.h"
@@ -44,13 +44,13 @@ class VIEWS_EXPORT ViewAccessibility {
   // Note that string attributes are only used if non-empty, so you can't
   // override a string with the empty string.
   //
-  void OverrideRole(ui::AXRole role);
+  void OverrideRole(ax::mojom::Role role);
   void OverrideName(const std::string& name);
   void OverrideName(const base::string16& name);
   void OverrideDescription(const std::string& description);
 
   virtual gfx::NativeViewAccessible GetNativeObject();
-  virtual void NotifyAccessibilityEvent(ui::AXEvent event_type) {}
+  virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
 

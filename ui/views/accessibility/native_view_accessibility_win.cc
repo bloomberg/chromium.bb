@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/aura/window.h"

@@ -3214,18 +3214,18 @@ TEST_F(TextfieldTest, AccessiblePasswordTest) {
 
   ui::AXNodeData node_data_regular;
   textfield_->GetAccessibleNodeData(&node_data_regular);
-  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, node_data_regular.role);
-  EXPECT_EQ(ASCIIToUTF16("password"),
-            node_data_regular.GetString16Attribute(ui::AX_ATTR_VALUE));
-  EXPECT_FALSE(node_data_regular.HasState(ui::AX_STATE_PROTECTED));
+  EXPECT_EQ(ax::mojom::Role::kTextField, node_data_regular.role);
+  EXPECT_EQ(ASCIIToUTF16("password"), node_data_regular.GetString16Attribute(
+                                          ax::mojom::StringAttribute::kValue));
+  EXPECT_FALSE(node_data_regular.HasState(ax::mojom::State::kProtected));
 
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   ui::AXNodeData node_data_protected;
   textfield_->GetAccessibleNodeData(&node_data_protected);
-  EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, node_data_protected.role);
-  EXPECT_EQ(UTF8ToUTF16("••••••••"),
-            node_data_protected.GetString16Attribute(ui::AX_ATTR_VALUE));
-  EXPECT_TRUE(node_data_protected.HasState(ui::AX_STATE_PROTECTED));
+  EXPECT_EQ(ax::mojom::Role::kTextField, node_data_protected.role);
+  EXPECT_EQ(UTF8ToUTF16("••••••••"), node_data_protected.GetString16Attribute(
+                                         ax::mojom::StringAttribute::kValue));
+  EXPECT_TRUE(node_data_protected.HasState(ax::mojom::State::kProtected));
 }
 
 // Verify that cursor visibility is controlled by SetCursorEnabled.

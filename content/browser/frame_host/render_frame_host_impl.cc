@@ -2601,7 +2601,7 @@ void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
     const gfx::Point& point,
     int child_frame_routing_id,
     int child_frame_browser_plugin_instance_id,
-    ui::AXEvent event_to_fire) {
+    ax::mojom::Event event_to_fire) {
   RenderFrameHostImpl* child_frame = nullptr;
   if (child_frame_routing_id) {
     RenderFrameProxyHost* rfph = nullptr;
@@ -2623,7 +2623,7 @@ void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
   ui::AXActionData action_data;
   action_data.request_id = action_request_id;
   action_data.target_point = point;
-  action_data.action = ui::AX_ACTION_HIT_TEST;
+  action_data.action = ax::mojom::Action::kHitTest;
   action_data.hit_test_event_to_fire = event_to_fire;
 
   child_frame->AccessibilityPerformAction(action_data);
@@ -3920,7 +3920,7 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>&
+    const base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>&
         callback) {
   accessibility_testing_callback_ = callback;
 }
@@ -4234,12 +4234,12 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
     switch (attr) {
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
         dst->int_attributes.push_back(std::make_pair(
-            ui::AX_ATTR_CHILD_TREE_ID, RoutingIDToAXTreeID(value)));
+            ax::mojom::IntAttribute::kChildTreeId, RoutingIDToAXTreeID(value)));
         break;
       case AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID:
-        dst->int_attributes.push_back(std::make_pair(
-            ui::AX_ATTR_CHILD_TREE_ID,
-            BrowserPluginInstanceIDToAXTreeID(value)));
+        dst->int_attributes.push_back(
+            std::make_pair(ax::mojom::IntAttribute::kChildTreeId,
+                           BrowserPluginInstanceIDToAXTreeID(value)));
         break;
       case AX_CONTENT_INT_ATTRIBUTE_LAST:
         NOTREACHED();

@@ -17,7 +17,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
@@ -94,7 +95,7 @@ class AXPosition {
     AXPositionInstance new_position(new AXPositionType());
     new_position->Initialize(AXPositionKind::NULL_POSITION, INVALID_TREE_ID,
                              INVALID_ANCHOR_ID, INVALID_INDEX, INVALID_OFFSET,
-                             AX_TEXT_AFFINITY_DOWNSTREAM);
+                             ax::mojom::TextAffinity::kDownstream);
     return new_position;
   }
 
@@ -104,14 +105,15 @@ class AXPosition {
     AXPositionInstance new_position(new AXPositionType());
     new_position->Initialize(AXPositionKind::TREE_POSITION, tree_id, anchor_id,
                              child_index, INVALID_OFFSET,
-                             AX_TEXT_AFFINITY_DOWNSTREAM);
+                             ax::mojom::TextAffinity::kDownstream);
     return new_position;
   }
 
-  static AXPositionInstance CreateTextPosition(int tree_id,
-                                               int32_t anchor_id,
-                                               int text_offset,
-                                               AXTextAffinity affinity) {
+  static AXPositionInstance CreateTextPosition(
+      int tree_id,
+      int32_t anchor_id,
+      int text_offset,
+      ax::mojom::TextAffinity affinity) {
     AXPositionInstance new_position(new AXPositionType());
     new_position->Initialize(AXPositionKind::TEXT_POSITION, tree_id, anchor_id,
                              INVALID_INDEX, text_offset, affinity);
@@ -150,9 +152,9 @@ class AXPosition {
           str_text_offset = base::IntToString(text_offset_);
         }
         str = "TextPosition tree_id=" + base::IntToString(tree_id_) +
-              " anchor_id=" + base::IntToString(anchor_id_) + " text_offset=" +
-              str_text_offset + " affinity=" +
-              ui::ToString(static_cast<AXTextAffinity>(affinity_));
+              " anchor_id=" + base::IntToString(anchor_id_) +
+              " text_offset=" + str_text_offset + " affinity=" +
+              ui::ToString(static_cast<ax::mojom::TextAffinity>(affinity_));
         break;
       }
     }
@@ -188,7 +190,7 @@ class AXPosition {
   AXPositionKind kind() const { return kind_; }
   int child_index() const { return child_index_; }
   int text_offset() const { return text_offset_; }
-  AXTextAffinity affinity() const { return affinity_; }
+  ax::mojom::TextAffinity affinity() const { return affinity_; }
 
   bool IsNullPosition() const {
     return kind_ == AXPositionKind::NULL_POSITION || !GetAnchor();
@@ -376,7 +378,7 @@ class AXPosition {
       int child_length = child->MaxTextOffsetInParent();
       if (copy->text_offset_ >= current_offset &&
           (copy->text_offset_ < (current_offset + child_length) ||
-           (copy->affinity_ == AX_TEXT_AFFINITY_UPSTREAM &&
+           (copy->affinity_ == ax::mojom::TextAffinity::kUpstream &&
             copy->text_offset_ == (current_offset + child_length)))) {
         copy->child_index_ = i;
         break;
@@ -474,7 +476,7 @@ class AXPosition {
         return CreateTreePosition(tree_id_, anchor_id_, 0 /* child_index */);
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, 0 /* text_offset */,
-                                  AX_TEXT_AFFINITY_DOWNSTREAM);
+                                  ax::mojom::TextAffinity::kDownstream);
     }
     return CreateNullPosition();
   }
@@ -487,7 +489,7 @@ class AXPosition {
         return CreateTreePosition(tree_id_, anchor_id_, AnchorChildCount());
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, MaxTextOffset(),
-                                  AX_TEXT_AFFINITY_DOWNSTREAM);
+                                  ax::mojom::TextAffinity::kDownstream);
     }
     return CreateNullPosition();
   }
@@ -519,7 +521,7 @@ class AXPosition {
       }
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id, child_id, 0 /* text_offset */,
-                                  AX_TEXT_AFFINITY_DOWNSTREAM);
+                                  ax::mojom::TextAffinity::kDownstream);
     }
 
     return CreateNullPosition();
@@ -547,12 +549,12 @@ class AXPosition {
         // before or after the child and we don't maintain the affinity when the
         // position is after the child.
         int parent_offset = AnchorTextOffsetInParent();
-        AXTextAffinity parent_affinity = affinity_;
+        ax::mojom::TextAffinity parent_affinity = affinity_;
         if (MaxTextOffset() == MaxTextOffsetInParent()) {
           parent_offset += text_offset_;
         } else if (text_offset_ > 0) {
           parent_offset += MaxTextOffsetInParent();
-          parent_affinity = AX_TEXT_AFFINITY_DOWNSTREAM;
+          parent_affinity = ax::mojom::TextAffinity::kDownstream;
         }
         return CreateTextPosition(tree_id, parent_id, parent_offset,
                                   parent_affinity);
@@ -606,7 +608,7 @@ class AXPosition {
       text_position->text_offset_ += 1;
       // Even if our affinity was upstream, moving to the next character should
       // inevitably reset it to downstream.
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     } else {
       // Moving to the end of the current anchor first is essential. Otherwise
       // |CreateNextAnchorPosition| might return our deepest left-most child
@@ -639,7 +641,7 @@ class AXPosition {
       text_position->text_offset_ -= 1;
       // Even if the new position is at the beginning of the line, the affinity
       // is defaulted to downstream for simplicity.
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     } else {
       text_position = text_position->CreatePreviousTextAnchorPosition();
       text_position = text_position->CreatePositionAtEndOfAnchor();
@@ -661,7 +663,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfWord()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -689,7 +691,7 @@ class AXPosition {
       text_position->text_offset_ = static_cast<int>(updated_word_starts[0]);
     } else {
       text_position->text_offset_ = static_cast<int>(*iterator);
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     }
 
     // If the word boundary is in the same subtree, return a position rooted
@@ -716,7 +718,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfWord()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -755,7 +757,7 @@ class AXPosition {
           static_cast<int>(*(updated_word_starts.end() - 1));
     } else {
       text_position->text_offset_ = static_cast<int>(*(--iterator));
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     }
 
     // If the word boundary is in the same subtree, return a position rooted
@@ -783,7 +785,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfWord()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -818,7 +820,7 @@ class AXPosition {
       text_position->text_offset_ = static_cast<int>(updated_word_ends[0]);
     } else {
       text_position->text_offset_ = static_cast<int>(*iterator);
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     }
 
     // If the word boundary is in the same subtree, return a position rooted
@@ -846,7 +848,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfWord()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -884,7 +886,7 @@ class AXPosition {
           static_cast<int>(*(updated_word_ends.end() - 1));
     } else {
       text_position->text_offset_ = static_cast<int>(*(--iterator));
-      text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
     }
 
     // If the word boundary is in the same subtree, return a position rooted
@@ -913,7 +915,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfLine()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -951,7 +953,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtStartOfLine()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -997,7 +999,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfLine()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -1048,7 +1050,7 @@ class AXPosition {
     if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
         text_position->AtEndOfLine()) {
       AXPositionInstance clone = Clone();
-      clone->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
       return clone;
     }
 
@@ -1100,7 +1102,7 @@ class AXPosition {
                           int32_t anchor_id,
                           int child_index,
                           int text_offset,
-                          AXTextAffinity affinity) {
+                          ax::mojom::TextAffinity affinity) {
     kind_ = kind;
     tree_id_ = tree_id;
     anchor_id_ = anchor_id;
@@ -1120,7 +1122,7 @@ class AXPosition {
       anchor_id_ = INVALID_ANCHOR_ID;
       child_index_ = INVALID_INDEX;
       text_offset_ = INVALID_OFFSET;
-      affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
+      affinity_ = ax::mojom::TextAffinity::kDownstream;
     }
   }
 
@@ -1241,7 +1243,7 @@ class AXPosition {
 
   // TODO(nektar): Get rid of affinity and make Blink handle affinity
   // internally since inline text objects don't span lines.
-  AXTextAffinity affinity_;
+  ax::mojom::TextAffinity affinity_;
 };
 
 template <class AXPositionType, class AXNodeType>

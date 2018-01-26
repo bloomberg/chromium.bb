@@ -13,16 +13,16 @@ namespace views {
 
 namespace {
 
-bool IsValidRoleForViews(ui::AXRole role) {
+bool IsValidRoleForViews(ax::mojom::Role role) {
   switch (role) {
     // These roles all have special meaning and shouldn't ever be
     // set on a View.
-    case ui::AX_ROLE_DESKTOP:
-    case ui::AX_ROLE_NONE:
-    case ui::AX_ROLE_ROOT_WEB_AREA:
-    case ui::AX_ROLE_SVG_ROOT:
-    case ui::AX_ROLE_UNKNOWN:
-    case ui::AX_ROLE_WEB_AREA:
+    case ax::mojom::Role::kDesktop:
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kRootWebArea:
+    case ax::mojom::Role::kSvgRoot:
+    case ax::mojom::Role::kUnknown:
+    case ax::mojom::Role::kWebArea:
       return false;
 
     default:
@@ -51,46 +51,44 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
   if (!owner_view_->GetWidget() || owner_view_->GetWidget()->IsClosed()) {
-    data->role = ui::AX_ROLE_UNKNOWN;
-    data->SetRestriction(ui::AX_RESTRICTION_DISABLED);
+    data->role = ax::mojom::Role::kUnknown;
+    data->SetRestriction(ax::mojom::Restriction::kDisabled);
     return;
   }
 
   owner_view_->GetAccessibleNodeData(data);
-  if (custom_data_.role != ui::AX_ROLE_UNKNOWN)
+  if (custom_data_.role != ax::mojom::Role::kUnknown)
     data->role = custom_data_.role;
-  if (custom_data_.HasStringAttribute(ui::AX_ATTR_NAME))
-    data->SetName(custom_data_.GetStringAttribute(ui::AX_ATTR_NAME));
-  if (custom_data_.HasStringAttribute(ui::AX_ATTR_DESCRIPTION)) {
-    data->AddStringAttribute(
-        ui::AX_ATTR_DESCRIPTION,
-        custom_data_.GetStringAttribute(ui::AX_ATTR_DESCRIPTION));
+  if (custom_data_.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    data->SetName(
+        custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
   data->location = gfx::RectF(owner_view_->GetBoundsInScreen());
-  if (!data->HasStringAttribute(ui::AX_ATTR_DESCRIPTION)) {
+  if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
     base::string16 description;
     owner_view_->GetTooltipText(gfx::Point(), &description);
-    data->AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
+    data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                              base::UTF16ToUTF8(description));
   }
 
-  data->AddStringAttribute(ui::AX_ATTR_CLASS_NAME, owner_view_->GetClassName());
+  data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                           owner_view_->GetClassName());
 
   if (owner_view_->IsAccessibilityFocusable())
-    data->AddState(ui::AX_STATE_FOCUSABLE);
+    data->AddState(ax::mojom::State::kFocusable);
 
   if (!owner_view_->enabled())
-    data->SetRestriction(ui::AX_RESTRICTION_DISABLED);
+    data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
   if (!owner_view_->visible())
-    data->AddState(ui::AX_STATE_INVISIBLE);
+    data->AddState(ax::mojom::State::kInvisible);
 
   if (owner_view_->context_menu_controller())
-    data->AddAction(ui::AX_ACTION_SHOW_CONTEXT_MENU);
+    data->AddAction(ax::mojom::Action::kShowContextMenu);
 }
 
-void ViewAccessibility::OverrideRole(ui::AXRole role) {
+void ViewAccessibility::OverrideRole(ax::mojom::Role role) {
   DCHECK(IsValidRoleForViews(role));
 
   custom_data_.role = role;
@@ -105,8 +103,10 @@ void ViewAccessibility::OverrideName(const base::string16& name) {
 }
 
 void ViewAccessibility::OverrideDescription(const std::string& description) {
-  DCHECK(!custom_data_.HasStringAttribute(ui::AX_ATTR_DESCRIPTION));
-  custom_data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION, description);
+  DCHECK(!custom_data_.HasStringAttribute(
+      ax::mojom::StringAttribute::kDescription));
+  custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                  description);
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {

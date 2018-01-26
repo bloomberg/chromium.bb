@@ -54,7 +54,7 @@ ProgressBar::~ProgressBar() {
 }
 
 void ProgressBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_PROGRESS_INDICATOR;
+  node_data->role = ax::mojom::Role::kProgressIndicator;
 }
 
 gfx::Size ProgressBar::CalculatePreferredSize() const {

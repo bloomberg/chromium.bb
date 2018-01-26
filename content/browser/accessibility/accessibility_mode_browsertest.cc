@@ -32,7 +32,7 @@ class AccessibilityModeTest : public ContentBrowserTest {
   }
 
  protected:
-  const BrowserAccessibility* FindNode(ui::AXRole role,
+  const BrowserAccessibility* FindNode(ax::mojom::Role role,
                                        const std::string& name) {
     const BrowserAccessibility* root = GetManager()->GetRoot();
     CHECK(root);
@@ -48,10 +48,10 @@ class AccessibilityModeTest : public ContentBrowserTest {
  private:
   const BrowserAccessibility* FindNodeInSubtree(
       const BrowserAccessibility& node,
-      ui::AXRole role,
+      ax::mojom::Role role,
       const std::string& name) {
     if (node.GetRole() == role &&
-        node.GetStringAttribute(ui::AX_ATTR_NAME) == name)
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
       return &node;
     for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
       const BrowserAccessibility* result = FindNodeInSubtree(
@@ -118,18 +118,20 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
 #if !defined(OS_ANDROID)
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(
-      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
   GURL url("data:text/html,<p>Para</p>");
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  const BrowserAccessibility* text = FindNode(ui::AX_ROLE_STATIC_TEXT, "Para");
+  const BrowserAccessibility* text =
+      FindNode(ax::mojom::Role::kStaticText, "Para");
   ASSERT_NE(nullptr, text);
   ASSERT_EQ(1U, text->InternalChildCount());
   BrowserAccessibility* inline_text = text->InternalGetChild(0);
   ASSERT_NE(nullptr, inline_text);
-  EXPECT_EQ(ui::AX_ROLE_INLINE_TEXT_BOX, inline_text->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kInlineTextBox, inline_text->GetRole());
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -143,12 +145,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(),
       ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents,
-      ui::AX_EVENT_LOAD_COMPLETE);
+      ax::mojom::Event::kLoadComplete);
   GURL url("data:text/html,<p>Para</p>");
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  const BrowserAccessibility* text = FindNode(ui::AX_ROLE_STATIC_TEXT, "Para");
+  const BrowserAccessibility* text =
+      FindNode(ax::mojom::Role::kStaticText, "Para");
   ASSERT_NE(nullptr, text);
   EXPECT_EQ(0U, text->InternalChildCount());
 #endif  // !defined(OS_ANDROID)
@@ -160,26 +163,29 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(),
       ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents,
-      ui::AX_EVENT_LOAD_COMPLETE);
+      ax::mojom::Event::kLoadComplete);
   GURL url("data:text/html,<input aria-label=Foo placeholder=Bar>");
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  const BrowserAccessibility* textbox = FindNode(ui::AX_ROLE_TEXT_FIELD, "Foo");
+  const BrowserAccessibility* textbox =
+      FindNode(ax::mojom::Role::kTextField, "Foo");
   ASSERT_NE(nullptr, textbox);
-  EXPECT_FALSE(textbox->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
+  EXPECT_FALSE(
+      textbox->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder));
   int original_id = textbox->GetId();
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents(), ui::AXMode(),
-                                          ui::AX_EVENT_LOAD_COMPLETE);
+                                          ax::mojom::Event::kLoadComplete);
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
       ui::AXMode::kScreenReader);
   waiter2.WaitForNotification();
 
-  const BrowserAccessibility* textbox2 = FindNode(
-      ui::AX_ROLE_TEXT_FIELD, "Foo");
+  const BrowserAccessibility* textbox2 =
+      FindNode(ax::mojom::Role::kTextField, "Foo");
   ASSERT_NE(nullptr, textbox2);
-  EXPECT_TRUE(textbox2->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
+  EXPECT_TRUE(
+      textbox2->HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder));
   EXPECT_EQ(original_id, textbox2->GetId());
 }
 

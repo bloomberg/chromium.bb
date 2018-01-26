@@ -78,7 +78,7 @@ ToolbarActionView::~ToolbarActionView() {
 
 void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->role = ax::mojom::Role::kButton;
 }
 
 std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()

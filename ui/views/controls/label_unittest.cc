@@ -567,9 +567,11 @@ TEST_F(LabelTest, Accessibility) {
 
   ui::AXNodeData node_data;
   label()->GetAccessibleNodeData(&node_data);
-  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, node_data.role);
-  EXPECT_EQ(label()->text(), node_data.GetString16Attribute(ui::AX_ATTR_NAME));
-  EXPECT_FALSE(node_data.HasIntAttribute(ui::AX_ATTR_RESTRICTION));
+  EXPECT_EQ(ax::mojom::Role::kStaticText, node_data.role);
+  EXPECT_EQ(label()->text(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+  EXPECT_FALSE(
+      node_data.HasIntAttribute(ax::mojom::IntAttribute::kRestriction));
 }
 
 TEST_F(LabelTest, TextChangeWithoutLayout) {

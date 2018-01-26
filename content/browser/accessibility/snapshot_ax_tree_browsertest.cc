@@ -48,8 +48,10 @@ void DumpRolesAndNamesAsText(const ui::AXNode* node,
   for (int i = 0; i < indent; i++)
     *dst += "  ";
   *dst += ui::ToString(node->data().role);
-  if (node->data().HasStringAttribute(ui::AX_ATTR_NAME))
-    *dst += " '" + node->data().GetStringAttribute(ui::AX_ATTR_NAME) + "'";
+  if (node->data().HasStringAttribute(ax::mojom::StringAttribute::kName))
+    *dst += " '" +
+            node->data().GetStringAttribute(ax::mojom::StringAttribute::kName) +
+            "'";
   *dst += "\n";
   for (int i = 0; i < node->child_count(); ++i)
     DumpRolesAndNamesAsText(node->children()[i], indent + 1, dst);
@@ -84,11 +86,11 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
   ui::AXTree tree(waiter.snapshot());
   ui::AXNode* root = tree.root();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->data().role);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
   ui::AXNode* group = root->ChildAtIndex(0);
-  ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, group->data().role);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, group->data().role);
   ui::AXNode* button = group->ChildAtIndex(0);
-  ASSERT_EQ(ui::AX_ROLE_BUTTON, button->data().role);
+  ASSERT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 
 IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,

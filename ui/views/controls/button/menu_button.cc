@@ -285,10 +285,10 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
 
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
-  node_data->AddState(ui::AX_STATE_HASPOPUP);
+  node_data->role = ax::mojom::Role::kPopUpButton;
+  node_data->AddState(ax::mojom::State::kHaspopup);
   if (enabled())
-    node_data->SetDefaultActionVerb(ui::AX_DEFAULT_ACTION_VERB_OPEN);
+    node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
 }
 
 void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {

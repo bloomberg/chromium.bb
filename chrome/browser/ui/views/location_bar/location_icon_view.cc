@@ -74,12 +74,12 @@ bool LocationIconView::ShowBubble(const ui::Event& event) {
 
 void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty()) {
-    node_data->role = ui::AX_ROLE_NONE;
+    node_data->role = ax::mojom::Role::kNone;
     return;
   }
 
   IconLabelBubbleView::GetAccessibleNodeData(node_data);
-  node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
+  node_data->role = ax::mojom::Role::kPopUpButton;
 }
 
 bool LocationIconView::IsBubbleShowing() const {

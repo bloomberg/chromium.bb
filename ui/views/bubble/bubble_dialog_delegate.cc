@@ -320,13 +320,14 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
     anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
   }
 
-  // Fire AX_EVENT_ALERT for bubbles marked as AX_ROLE_ALERT_DIALOG; this
-  // instructs accessibility tools to read the bubble in its entirety rather
-  // than just its title and initially focused view.  See
-  // http://crbug.com/474622 for details.
+  // Fire ax::mojom::Event::kAlert for bubbles marked as
+  // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
+  // the bubble in its entirety rather than just its title and initially focused
+  // view.  See http://crbug.com/474622 for details.
   if (widget == GetWidget() && visible) {
-    if (GetAccessibleWindowRole() == ui::AX_ROLE_ALERT_DIALOG)
-      widget->GetRootView()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+    if (GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog)
+      widget->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                                      true);
   }
 }
 

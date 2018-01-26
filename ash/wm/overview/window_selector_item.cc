@@ -672,7 +672,7 @@ void WindowSelectorItem::SetSelected(bool selected) {
 
 void WindowSelectorItem::SendAccessibleSelectionEvent() {
   caption_container_view_->listener_button()->NotifyAccessibilityEvent(
-      ui::AX_EVENT_SELECTION, true);
+      ax::mojom::Event::kSelection, true);
 }
 
 void WindowSelectorItem::CloseWindow() {

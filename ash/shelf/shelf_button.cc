@@ -463,7 +463,7 @@ bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(shelf_view_->GetTitleForView(this));
 }
 

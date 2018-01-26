@@ -14,7 +14,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -191,7 +191,7 @@ void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 }
 
 void WebView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_WEB_VIEW;
+  node_data->role = ax::mojom::Role::kWebView;
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
@@ -319,7 +319,7 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
 
 void WebView::NotifyAccessibilityWebContentsChanged() {
   if (web_contents())
-    NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+    NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
 content::WebContents* WebView::CreateWebContents(

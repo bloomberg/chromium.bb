@@ -447,18 +447,18 @@ bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TABLE;
-  node_data->SetRestriction(ui::AX_RESTRICTION_READ_ONLY);
-  node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, RowCount());
+  node_data->role = ax::mojom::Role::kTable;
+  node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, RowCount());
 
   if (selection_model_.active() != ui::ListSelectionModel::kUnselectedIndex) {
     // Get information about the active item, this is not the same as the set
     // of selected items (of which there could be more than one).
-    node_data->role = ui::AX_ROLE_ROW;
-    node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET,
+    node_data->role = ax::mojom::Role::kRow;
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                                selection_model_.active());
     if (selection_model_.IsSelected(selection_model_.active())) {
-      node_data->AddState(ui::AX_STATE_SELECTED);
+      node_data->AddState(ax::mojom::State::kSelected);
     }
 
     std::vector<base::string16> name_parts;
@@ -647,7 +647,7 @@ void TableView::OnFocus() {
     scroll_view->SetHasFocusIndicator(true);
 
   SchedulePaintForSelection();
-  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void TableView::OnBlur() {
@@ -872,7 +872,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
   if (observer_)
     observer_->OnSelectionChanged();
 
-  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void TableView::AdvanceSelection(AdvanceDirection direction) {

@@ -329,7 +329,7 @@ const char* BrowserNonClientFrameViewMus::GetClassName() const {
 
 void BrowserNonClientFrameViewMus::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TITLE_BAR;
+  node_data->role = ax::mojom::Role::kTitleBar;
 }
 
 gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {

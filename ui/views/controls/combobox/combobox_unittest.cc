@@ -648,19 +648,19 @@ TEST_F(ComboboxTest, ShowViaAccessibleAction) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
 
   ui::AXActionData data;
-  data.action = ui::AX_ACTION_DO_DEFAULT;
+  data.action = ax::mojom::Action::kDoDefault;
 
   EXPECT_EQ(0, menu_show_count_);
   combobox_->HandleAccessibleAction(data);
   EXPECT_EQ(1, menu_show_count_);
 
-  // AX_ACTION_SHOW_CONTEXT_MENU is specifically for a context menu (e.g. right-
-  // click). Combobox should ignore it.
-  data.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
+  // ax::mojom::Action::kShowContextMenu is specifically for a context menu
+  // (e.g. right- click). Combobox should ignore it.
+  data.action = ax::mojom::Action::kShowContextMenu;
   combobox_->HandleAccessibleAction(data);
   EXPECT_EQ(1, menu_show_count_);  // No change.
 
-  data.action = ui::AX_ACTION_BLUR;
+  data.action = ax::mojom::Action::kBlur;
   combobox_->HandleAccessibleAction(data);
   EXPECT_EQ(1, menu_show_count_);  // No change.
 
@@ -668,7 +668,7 @@ TEST_F(ComboboxTest, ShowViaAccessibleAction) {
   combobox_->HandleAccessibleAction(data);
   EXPECT_EQ(1, menu_show_count_);  // No change.
 
-  data.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
+  data.action = ax::mojom::Action::kShowContextMenu;
   combobox_->HandleAccessibleAction(data);
   EXPECT_EQ(1, menu_show_count_);  // No change.
 }

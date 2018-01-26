@@ -237,8 +237,8 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   ASSERT_EQ(0, n_targets);
 
   // Fire alert events on the infobars.
-  infobar->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
-  infobar2->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  infobar->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  infobar2->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 
   // Now calling get_relationTargetsOfType should retrieve the alerts.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(

@@ -12,573 +12,580 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   blink::WebAXExpanded expanded = o.IsExpanded();
   if (expanded) {
     if (expanded == blink::kWebAXExpandedCollapsed)
-      dst->AddState(ui::AX_STATE_COLLAPSED);
+      dst->AddState(ax::mojom::State::kCollapsed);
     else if (expanded == blink::kWebAXExpandedExpanded)
-      dst->AddState(ui::AX_STATE_EXPANDED);
+      dst->AddState(ax::mojom::State::kExpanded);
   }
 
   if (o.CanSetFocusAttribute())
-    dst->AddState(ui::AX_STATE_FOCUSABLE);
+    dst->AddState(ax::mojom::State::kFocusable);
 
   if (o.Role() == blink::kWebAXRolePopUpButton || o.AriaHasPopup())
-    dst->AddState(ui::AX_STATE_HASPOPUP);
+    dst->AddState(ax::mojom::State::kHaspopup);
 
   if (o.IsHovered())
-    dst->AddState(ui::AX_STATE_HOVERED);
+    dst->AddState(ax::mojom::State::kHovered);
 
   if (!o.IsVisible())
-    dst->AddState(ui::AX_STATE_INVISIBLE);
+    dst->AddState(ax::mojom::State::kInvisible);
 
   if (o.IsLinked())
-    dst->AddState(ui::AX_STATE_LINKED);
+    dst->AddState(ax::mojom::State::kLinked);
 
   if (o.IsMultiline())
-    dst->AddState(ui::AX_STATE_MULTILINE);
+    dst->AddState(ax::mojom::State::kMultiline);
 
   if (o.IsMultiSelectable())
-    dst->AddState(ui::AX_STATE_MULTISELECTABLE);
+    dst->AddState(ax::mojom::State::kMultiselectable);
 
   if (o.IsPasswordField())
-    dst->AddState(ui::AX_STATE_PROTECTED);
+    dst->AddState(ax::mojom::State::kProtected);
 
   if (o.IsRequired())
-    dst->AddState(ui::AX_STATE_REQUIRED);
+    dst->AddState(ax::mojom::State::kRequired);
 
   if (o.IsSelected() != blink::kWebAXSelectedStateUndefined)
-    dst->AddState(ui::AX_STATE_SELECTABLE);
+    dst->AddState(ax::mojom::State::kSelectable);
 
   if (o.IsEditable())
-    dst->AddState(ui::AX_STATE_EDITABLE);
+    dst->AddState(ax::mojom::State::kEditable);
 
   if (o.IsSelected() == blink::kWebAXSelectedStateTrue)
-    dst->AddState(ui::AX_STATE_SELECTED);
+    dst->AddState(ax::mojom::State::kSelected);
 
   if (o.IsRichlyEditable())
-    dst->AddState(ui::AX_STATE_RICHLY_EDITABLE);
+    dst->AddState(ax::mojom::State::kRichlyEditable);
 
   if (o.IsVisited())
-    dst->AddState(ui::AX_STATE_VISITED);
+    dst->AddState(ax::mojom::State::kVisited);
 
   if (o.Orientation() == blink::kWebAXOrientationVertical)
-    dst->AddState(ui::AX_STATE_VERTICAL);
+    dst->AddState(ax::mojom::State::kVertical);
   else if (o.Orientation() == blink::kWebAXOrientationHorizontal)
-    dst->AddState(ui::AX_STATE_HORIZONTAL);
+    dst->AddState(ax::mojom::State::kHorizontal);
 
   if (o.IsVisited())
-    dst->AddState(ui::AX_STATE_VISITED);
+    dst->AddState(ax::mojom::State::kVisited);
 }
 
-ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
+ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
   switch (role) {
     case blink::kWebAXRoleAbbr:
-      return ui::AX_ROLE_ABBR;
+      return ax::mojom::Role::kAbbr;
     case blink::kWebAXRoleAlert:
-      return ui::AX_ROLE_ALERT;
+      return ax::mojom::Role::kAlert;
     case blink::kWebAXRoleAlertDialog:
-      return ui::AX_ROLE_ALERT_DIALOG;
+      return ax::mojom::Role::kAlertDialog;
     case blink::kWebAXRoleAnchor:
-      return ui::AX_ROLE_ANCHOR;
+      return ax::mojom::Role::kAnchor;
     case blink::kWebAXRoleAnnotation:
-      return ui::AX_ROLE_ANNOTATION;
+      return ax::mojom::Role::kAnnotation;
     case blink::kWebAXRoleApplication:
-      return ui::AX_ROLE_APPLICATION;
+      return ax::mojom::Role::kApplication;
     case blink::kWebAXRoleArticle:
-      return ui::AX_ROLE_ARTICLE;
+      return ax::mojom::Role::kArticle;
     case blink::kWebAXRoleAudio:
-      return ui::AX_ROLE_AUDIO;
+      return ax::mojom::Role::kAudio;
     case blink::kWebAXRoleBanner:
-      return ui::AX_ROLE_BANNER;
+      return ax::mojom::Role::kBanner;
     case blink::kWebAXRoleBlockquote:
-      return ui::AX_ROLE_BLOCKQUOTE;
+      return ax::mojom::Role::kBlockquote;
     case blink::kWebAXRoleButton:
-      return ui::AX_ROLE_BUTTON;
+      return ax::mojom::Role::kButton;
     case blink::kWebAXRoleCanvas:
-      return ui::AX_ROLE_CANVAS;
+      return ax::mojom::Role::kCanvas;
     case blink::kWebAXRoleCaption:
-      return ui::AX_ROLE_CAPTION;
+      return ax::mojom::Role::kCaption;
     case blink::kWebAXRoleCell:
-      return ui::AX_ROLE_CELL;
+      return ax::mojom::Role::kCell;
     case blink::kWebAXRoleCheckBox:
-      return ui::AX_ROLE_CHECK_BOX;
+      return ax::mojom::Role::kCheckBox;
     case blink::kWebAXRoleColorWell:
-      return ui::AX_ROLE_COLOR_WELL;
+      return ax::mojom::Role::kColorWell;
     case blink::kWebAXRoleColumn:
-      return ui::AX_ROLE_COLUMN;
+      return ax::mojom::Role::kColumn;
     case blink::kWebAXRoleColumnHeader:
-      return ui::AX_ROLE_COLUMN_HEADER;
+      return ax::mojom::Role::kColumnHeader;
     case blink::kWebAXRoleComboBoxGrouping:
-      return ui::AX_ROLE_COMBO_BOX_GROUPING;
+      return ax::mojom::Role::kComboBoxGrouping;
     case blink::kWebAXRoleComboBoxMenuButton:
-      return ui::AX_ROLE_COMBO_BOX_MENU_BUTTON;
+      return ax::mojom::Role::kComboBoxMenuButton;
     case blink::kWebAXRoleComplementary:
-      return ui::AX_ROLE_COMPLEMENTARY;
+      return ax::mojom::Role::kComplementary;
     case blink::kWebAXRoleContentInfo:
-      return ui::AX_ROLE_CONTENT_INFO;
+      return ax::mojom::Role::kContentInfo;
     case blink::kWebAXRoleDate:
-      return ui::AX_ROLE_DATE;
+      return ax::mojom::Role::kDate;
     case blink::kWebAXRoleDateTime:
-      return ui::AX_ROLE_DATE_TIME;
+      return ax::mojom::Role::kDateTime;
     case blink::kWebAXRoleDefinition:
-      return ui::AX_ROLE_DEFINITION;
+      return ax::mojom::Role::kDefinition;
     case blink::kWebAXRoleDescriptionListDetail:
-      return ui::AX_ROLE_DESCRIPTION_LIST_DETAIL;
+      return ax::mojom::Role::kDescriptionListDetail;
     case blink::kWebAXRoleDescriptionList:
-      return ui::AX_ROLE_DESCRIPTION_LIST;
+      return ax::mojom::Role::kDescriptionList;
     case blink::kWebAXRoleDescriptionListTerm:
-      return ui::AX_ROLE_DESCRIPTION_LIST_TERM;
+      return ax::mojom::Role::kDescriptionListTerm;
     case blink::kWebAXRoleDetails:
-      return ui::AX_ROLE_DETAILS;
+      return ax::mojom::Role::kDetails;
     case blink::kWebAXRoleDialog:
-      return ui::AX_ROLE_DIALOG;
+      return ax::mojom::Role::kDialog;
     case blink::kWebAXRoleDirectory:
-      return ui::AX_ROLE_DIRECTORY;
+      return ax::mojom::Role::kDirectory;
     case blink::kWebAXRoleDisclosureTriangle:
-      return ui::AX_ROLE_DISCLOSURE_TRIANGLE;
+      return ax::mojom::Role::kDisclosureTriangle;
     case blink::kWebAXRoleDocument:
-      return ui::AX_ROLE_DOCUMENT;
+      return ax::mojom::Role::kDocument;
     case blink::kWebAXRoleEmbeddedObject:
-      return ui::AX_ROLE_EMBEDDED_OBJECT;
+      return ax::mojom::Role::kEmbeddedObject;
     case blink::kWebAXRoleFeed:
-      return ui::AX_ROLE_FEED;
+      return ax::mojom::Role::kFeed;
     case blink::kWebAXRoleFigcaption:
-      return ui::AX_ROLE_FIGCAPTION;
+      return ax::mojom::Role::kFigcaption;
     case blink::kWebAXRoleFigure:
-      return ui::AX_ROLE_FIGURE;
+      return ax::mojom::Role::kFigure;
     case blink::kWebAXRoleFooter:
-      return ui::AX_ROLE_FOOTER;
+      return ax::mojom::Role::kFooter;
     case blink::kWebAXRoleForm:
-      return ui::AX_ROLE_FORM;
+      return ax::mojom::Role::kForm;
     case blink::kWebAXRoleGenericContainer:
-      return ui::AX_ROLE_GENERIC_CONTAINER;
+      return ax::mojom::Role::kGenericContainer;
     case blink::kWebAXRoleGrid:
-      return ui::AX_ROLE_GRID;
+      return ax::mojom::Role::kGrid;
     case blink::kWebAXRoleGroup:
-      return ui::AX_ROLE_GROUP;
+      return ax::mojom::Role::kGroup;
     case blink::kWebAXRoleHeading:
-      return ui::AX_ROLE_HEADING;
+      return ax::mojom::Role::kHeading;
     case blink::kWebAXRoleIframe:
-      return ui::AX_ROLE_IFRAME;
+      return ax::mojom::Role::kIframe;
     case blink::kWebAXRoleIframePresentational:
-      return ui::AX_ROLE_IFRAME_PRESENTATIONAL;
+      return ax::mojom::Role::kIframePresentational;
     case blink::kWebAXRoleIgnored:
-      return ui::AX_ROLE_IGNORED;
+      return ax::mojom::Role::kIgnored;
     case blink::kWebAXRoleImage:
-      return ui::AX_ROLE_IMAGE;
+      return ax::mojom::Role::kImage;
     case blink::kWebAXRoleImageMap:
-      return ui::AX_ROLE_IMAGE_MAP;
+      return ax::mojom::Role::kImageMap;
     case blink::kWebAXRoleInlineTextBox:
-      return ui::AX_ROLE_INLINE_TEXT_BOX;
+      return ax::mojom::Role::kInlineTextBox;
     case blink::kWebAXRoleInputTime:
-      return ui::AX_ROLE_INPUT_TIME;
+      return ax::mojom::Role::kInputTime;
     case blink::kWebAXRoleLabel:
-      return ui::AX_ROLE_LABEL_TEXT;
+      return ax::mojom::Role::kLabelText;
     case blink::kWebAXRoleLegend:
-      return ui::AX_ROLE_LEGEND;
+      return ax::mojom::Role::kLegend;
     case blink::kWebAXRoleLink:
-      return ui::AX_ROLE_LINK;
+      return ax::mojom::Role::kLink;
     case blink::kWebAXRoleList:
-      return ui::AX_ROLE_LIST;
+      return ax::mojom::Role::kList;
     case blink::kWebAXRoleListBox:
-      return ui::AX_ROLE_LIST_BOX;
+      return ax::mojom::Role::kListBox;
     case blink::kWebAXRoleListBoxOption:
-      return ui::AX_ROLE_LIST_BOX_OPTION;
+      return ax::mojom::Role::kListBoxOption;
     case blink::kWebAXRoleListItem:
-      return ui::AX_ROLE_LIST_ITEM;
+      return ax::mojom::Role::kListItem;
     case blink::kWebAXRoleListMarker:
-      return ui::AX_ROLE_LIST_MARKER;
+      return ax::mojom::Role::kListMarker;
     case blink::kWebAXRoleLog:
-      return ui::AX_ROLE_LOG;
+      return ax::mojom::Role::kLog;
     case blink::kWebAXRoleMain:
-      return ui::AX_ROLE_MAIN;
+      return ax::mojom::Role::kMain;
     case blink::kWebAXRoleMarquee:
-      return ui::AX_ROLE_MARQUEE;
+      return ax::mojom::Role::kMarquee;
     case blink::kWebAXRoleMark:
-      return ui::AX_ROLE_MARK;
+      return ax::mojom::Role::kMark;
     case blink::kWebAXRoleMath:
-      return ui::AX_ROLE_MATH;
+      return ax::mojom::Role::kMath;
     case blink::kWebAXRoleMenu:
-      return ui::AX_ROLE_MENU;
+      return ax::mojom::Role::kMenu;
     case blink::kWebAXRoleMenuBar:
-      return ui::AX_ROLE_MENU_BAR;
+      return ax::mojom::Role::kMenuBar;
     case blink::kWebAXRoleMenuButton:
-      return ui::AX_ROLE_MENU_BUTTON;
+      return ax::mojom::Role::kMenuButton;
     case blink::kWebAXRoleMenuItem:
-      return ui::AX_ROLE_MENU_ITEM;
+      return ax::mojom::Role::kMenuItem;
     case blink::kWebAXRoleMenuItemCheckBox:
-      return ui::AX_ROLE_MENU_ITEM_CHECK_BOX;
+      return ax::mojom::Role::kMenuItemCheckBox;
     case blink::kWebAXRoleMenuItemRadio:
-      return ui::AX_ROLE_MENU_ITEM_RADIO;
+      return ax::mojom::Role::kMenuItemRadio;
     case blink::kWebAXRoleMenuListOption:
-      return ui::AX_ROLE_MENU_LIST_OPTION;
+      return ax::mojom::Role::kMenuListOption;
     case blink::kWebAXRoleMenuListPopup:
-      return ui::AX_ROLE_MENU_LIST_POPUP;
+      return ax::mojom::Role::kMenuListPopup;
     case blink::kWebAXRoleMeter:
-      return ui::AX_ROLE_METER;
+      return ax::mojom::Role::kMeter;
     case blink::kWebAXRoleNavigation:
-      return ui::AX_ROLE_NAVIGATION;
+      return ax::mojom::Role::kNavigation;
     case blink::kWebAXRoleNone:
-      return ui::AX_ROLE_NONE;
+      return ax::mojom::Role::kNone;
     case blink::kWebAXRoleNote:
-      return ui::AX_ROLE_NOTE;
+      return ax::mojom::Role::kNote;
     case blink::kWebAXRoleParagraph:
-      return ui::AX_ROLE_PARAGRAPH;
+      return ax::mojom::Role::kParagraph;
     case blink::kWebAXRolePopUpButton:
-      return ui::AX_ROLE_POP_UP_BUTTON;
+      return ax::mojom::Role::kPopUpButton;
     case blink::kWebAXRolePre:
-      return ui::AX_ROLE_PRE;
+      return ax::mojom::Role::kPre;
     case blink::kWebAXRolePresentational:
-      return ui::AX_ROLE_PRESENTATIONAL;
+      return ax::mojom::Role::kPresentational;
     case blink::kWebAXRoleProgressIndicator:
-      return ui::AX_ROLE_PROGRESS_INDICATOR;
+      return ax::mojom::Role::kProgressIndicator;
     case blink::kWebAXRoleRadioButton:
-      return ui::AX_ROLE_RADIO_BUTTON;
+      return ax::mojom::Role::kRadioButton;
     case blink::kWebAXRoleRadioGroup:
-      return ui::AX_ROLE_RADIO_GROUP;
+      return ax::mojom::Role::kRadioGroup;
     case blink::kWebAXRoleRegion:
-      return ui::AX_ROLE_REGION;
+      return ax::mojom::Role::kRegion;
     case blink::kWebAXRoleRow:
-      return ui::AX_ROLE_ROW;
+      return ax::mojom::Role::kRow;
     case blink::kWebAXRoleRuby:
-      return ui::AX_ROLE_RUBY;
+      return ax::mojom::Role::kRuby;
     case blink::kWebAXRoleRowHeader:
-      return ui::AX_ROLE_ROW_HEADER;
+      return ax::mojom::Role::kRowHeader;
     case blink::kWebAXRoleSVGRoot:
-      return ui::AX_ROLE_SVG_ROOT;
+      return ax::mojom::Role::kSvgRoot;
     case blink::kWebAXRoleScrollBar:
-      return ui::AX_ROLE_SCROLL_BAR;
+      return ax::mojom::Role::kScrollBar;
     case blink::kWebAXRoleSearch:
-      return ui::AX_ROLE_SEARCH;
+      return ax::mojom::Role::kSearch;
     case blink::kWebAXRoleSearchBox:
-      return ui::AX_ROLE_SEARCH_BOX;
+      return ax::mojom::Role::kSearchBox;
     case blink::kWebAXRoleSlider:
-      return ui::AX_ROLE_SLIDER;
+      return ax::mojom::Role::kSlider;
     case blink::kWebAXRoleSliderThumb:
-      return ui::AX_ROLE_SLIDER_THUMB;
+      return ax::mojom::Role::kSliderThumb;
     case blink::kWebAXRoleSpinButton:
-      return ui::AX_ROLE_SPIN_BUTTON;
+      return ax::mojom::Role::kSpinButton;
     case blink::kWebAXRoleSpinButtonPart:
-      return ui::AX_ROLE_SPIN_BUTTON_PART;
+      return ax::mojom::Role::kSpinButtonPart;
     case blink::kWebAXRoleSplitter:
-      return ui::AX_ROLE_SPLITTER;
+      return ax::mojom::Role::kSplitter;
     case blink::kWebAXRoleStaticText:
-      return ui::AX_ROLE_STATIC_TEXT;
+      return ax::mojom::Role::kStaticText;
     case blink::kWebAXRoleStatus:
-      return ui::AX_ROLE_STATUS;
+      return ax::mojom::Role::kStatus;
     case blink::kWebAXRoleSwitch:
-      return ui::AX_ROLE_SWITCH;
+      return ax::mojom::Role::kSwitch;
     case blink::kWebAXRoleTab:
-      return ui::AX_ROLE_TAB;
+      return ax::mojom::Role::kTab;
     case blink::kWebAXRoleTabList:
-      return ui::AX_ROLE_TAB_LIST;
+      return ax::mojom::Role::kTabList;
     case blink::kWebAXRoleTabPanel:
-      return ui::AX_ROLE_TAB_PANEL;
+      return ax::mojom::Role::kTabPanel;
     case blink::kWebAXRoleTable:
-      return ui::AX_ROLE_TABLE;
+      return ax::mojom::Role::kTable;
     case blink::kWebAXRoleTableHeaderContainer:
-      return ui::AX_ROLE_TABLE_HEADER_CONTAINER;
+      return ax::mojom::Role::kTableHeaderContainer;
     case blink::kWebAXRoleTerm:
-      return ui::AX_ROLE_TERM;
+      return ax::mojom::Role::kTerm;
     case blink::kWebAXRoleTextField:
-      return ui::AX_ROLE_TEXT_FIELD;
+      return ax::mojom::Role::kTextField;
     case blink::kWebAXRoleTextFieldWithComboBox:
-      return ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
+      return ax::mojom::Role::kTextFieldWithComboBox;
     case blink::kWebAXRoleTime:
-      return ui::AX_ROLE_TIME;
+      return ax::mojom::Role::kTime;
     case blink::kWebAXRoleTimer:
-      return ui::AX_ROLE_TIMER;
+      return ax::mojom::Role::kTimer;
     case blink::kWebAXRoleToggleButton:
-      return ui::AX_ROLE_TOGGLE_BUTTON;
+      return ax::mojom::Role::kToggleButton;
     case blink::kWebAXRoleToolbar:
-      return ui::AX_ROLE_TOOLBAR;
+      return ax::mojom::Role::kToolbar;
     case blink::kWebAXRoleTree:
-      return ui::AX_ROLE_TREE;
+      return ax::mojom::Role::kTree;
     case blink::kWebAXRoleTreeGrid:
-      return ui::AX_ROLE_TREE_GRID;
+      return ax::mojom::Role::kTreeGrid;
     case blink::kWebAXRoleTreeItem:
-      return ui::AX_ROLE_TREE_ITEM;
+      return ax::mojom::Role::kTreeItem;
     case blink::kWebAXRoleUnknown:
-      return ui::AX_ROLE_UNKNOWN;
+      return ax::mojom::Role::kUnknown;
     case blink::kWebAXRoleUserInterfaceTooltip:
-      return ui::AX_ROLE_TOOLTIP;
+      return ax::mojom::Role::kTooltip;
     case blink::kWebAXRoleVideo:
-      return ui::AX_ROLE_VIDEO;
+      return ax::mojom::Role::kVideo;
     case blink::kWebAXRoleWebArea:
-      return ui::AX_ROLE_ROOT_WEB_AREA;
+      return ax::mojom::Role::kRootWebArea;
     case blink::kWebAXRoleLineBreak:
-      return ui::AX_ROLE_LINE_BREAK;
+      return ax::mojom::Role::kLineBreak;
     default:
-      return ui::AX_ROLE_UNKNOWN;
+      return ax::mojom::Role::kUnknown;
   }
 }
 
-ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
+ax::mojom::Event AXEventFromBlink(blink::WebAXEvent event) {
   switch (event) {
     case blink::kWebAXEventActiveDescendantChanged:
-      return ui::AX_EVENT_ACTIVEDESCENDANTCHANGED;
+      return ax::mojom::Event::kActiveDescendantChanged;
     case blink::kWebAXEventAriaAttributeChanged:
-      return ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
+      return ax::mojom::Event::kAriaAttributeChanged;
     case blink::kWebAXEventAutocorrectionOccured:
-      return ui::AX_EVENT_AUTOCORRECTION_OCCURED;
+      return ax::mojom::Event::kAutocorrectionOccured;
     case blink::kWebAXEventBlur:
-      return ui::AX_EVENT_BLUR;
+      return ax::mojom::Event::kBlur;
     case blink::kWebAXEventCheckedStateChanged:
-      return ui::AX_EVENT_CHECKED_STATE_CHANGED;
+      return ax::mojom::Event::kCheckedStateChanged;
     case blink::kWebAXEventChildrenChanged:
-      return ui::AX_EVENT_CHILDREN_CHANGED;
+      return ax::mojom::Event::kChildrenChanged;
     case blink::kWebAXEventClicked:
-      return ui::AX_EVENT_CLICKED;
+      return ax::mojom::Event::kClicked;
     case blink::kWebAXEventDocumentSelectionChanged:
-      return ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED;
+      return ax::mojom::Event::kDocumentSelectionChanged;
     case blink::kWebAXEventExpandedChanged:
-      return ui::AX_EVENT_EXPANDED_CHANGED;
+      return ax::mojom::Event::kExpandedChanged;
     case blink::kWebAXEventFocus:
-      return ui::AX_EVENT_FOCUS;
+      return ax::mojom::Event::kFocus;
     case blink::kWebAXEventHover:
-      return ui::AX_EVENT_HOVER;
+      return ax::mojom::Event::kHover;
     case blink::kWebAXEventInvalidStatusChanged:
-      return ui::AX_EVENT_INVALID_STATUS_CHANGED;
+      return ax::mojom::Event::kInvalidStatusChanged;
     case blink::kWebAXEventLayoutComplete:
-      return ui::AX_EVENT_LAYOUT_COMPLETE;
+      return ax::mojom::Event::kLayoutComplete;
     case blink::kWebAXEventLiveRegionChanged:
-      return ui::AX_EVENT_LIVE_REGION_CHANGED;
+      return ax::mojom::Event::kLiveRegionChanged;
     case blink::kWebAXEventLoadComplete:
-      return ui::AX_EVENT_LOAD_COMPLETE;
+      return ax::mojom::Event::kLoadComplete;
     case blink::kWebAXEventLocationChanged:
-      return ui::AX_EVENT_LOCATION_CHANGED;
+      return ax::mojom::Event::kLocationChanged;
     case blink::kWebAXEventMenuListItemSelected:
-      return ui::AX_EVENT_MENU_LIST_ITEM_SELECTED;
+      return ax::mojom::Event::kMenuListItemSelected;
     case blink::kWebAXEventMenuListItemUnselected:
-      return ui::AX_EVENT_MENU_LIST_ITEM_SELECTED;
+      return ax::mojom::Event::kMenuListItemSelected;
     case blink::kWebAXEventMenuListValueChanged:
-      return ui::AX_EVENT_MENU_LIST_VALUE_CHANGED;
+      return ax::mojom::Event::kMenuListValueChanged;
     case blink::kWebAXEventRowCollapsed:
-      return ui::AX_EVENT_ROW_COLLAPSED;
+      return ax::mojom::Event::kRowCollapsed;
     case blink::kWebAXEventRowCountChanged:
-      return ui::AX_EVENT_ROW_COUNT_CHANGED;
+      return ax::mojom::Event::kRowCountChanged;
     case blink::kWebAXEventRowExpanded:
-      return ui::AX_EVENT_ROW_EXPANDED;
+      return ax::mojom::Event::kRowExpanded;
     case blink::kWebAXEventScrollPositionChanged:
-      return ui::AX_EVENT_SCROLL_POSITION_CHANGED;
+      return ax::mojom::Event::kScrollPositionChanged;
     case blink::kWebAXEventScrolledToAnchor:
-      return ui::AX_EVENT_SCROLLED_TO_ANCHOR;
+      return ax::mojom::Event::kScrolledToAnchor;
     case blink::kWebAXEventSelectedChildrenChanged:
-      return ui::AX_EVENT_SELECTED_CHILDREN_CHANGED;
+      return ax::mojom::Event::kSelectedChildrenChanged;
     case blink::kWebAXEventSelectedTextChanged:
-      return ui::AX_EVENT_TEXT_SELECTION_CHANGED;
+      return ax::mojom::Event::kTextSelectionChanged;
     case blink::kWebAXEventTextChanged:
-      return ui::AX_EVENT_TEXT_CHANGED;
+      return ax::mojom::Event::kTextChanged;
     case blink::kWebAXEventValueChanged:
-      return ui::AX_EVENT_VALUE_CHANGED;
+      return ax::mojom::Event::kValueChanged;
     default:
       // We can't add an assertion here, that prevents us
       // from adding new event enums in Blink.
-      return ui::AX_EVENT_NONE;
+      return ax::mojom::Event::kNone;
   }
 }
 
-ui::AXDefaultActionVerb AXDefaultActionVerbFromBlink(
+ax::mojom::DefaultActionVerb AXDefaultActionVerbFromBlink(
     blink::WebAXDefaultActionVerb action_verb) {
   switch (action_verb) {
     case blink::WebAXDefaultActionVerb::kNone:
-      return ui::AX_DEFAULT_ACTION_VERB_NONE;
+      return ax::mojom::DefaultActionVerb::kNone;
     case blink::WebAXDefaultActionVerb::kActivate:
-      return ui::AX_DEFAULT_ACTION_VERB_ACTIVATE;
+      return ax::mojom::DefaultActionVerb::kActivate;
     case blink::WebAXDefaultActionVerb::kCheck:
-      return ui::AX_DEFAULT_ACTION_VERB_CHECK;
+      return ax::mojom::DefaultActionVerb::kCheck;
     case blink::WebAXDefaultActionVerb::kClick:
-      return ui::AX_DEFAULT_ACTION_VERB_CLICK;
+      return ax::mojom::DefaultActionVerb::kClick;
     case blink::WebAXDefaultActionVerb::kClickAncestor:
-      return ui::AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR;
+      return ax::mojom::DefaultActionVerb::kClickAncestor;
     case blink::WebAXDefaultActionVerb::kJump:
-      return ui::AX_DEFAULT_ACTION_VERB_JUMP;
+      return ax::mojom::DefaultActionVerb::kJump;
     case blink::WebAXDefaultActionVerb::kOpen:
-      return ui::AX_DEFAULT_ACTION_VERB_OPEN;
+      return ax::mojom::DefaultActionVerb::kOpen;
     case blink::WebAXDefaultActionVerb::kPress:
-      return ui::AX_DEFAULT_ACTION_VERB_PRESS;
+      return ax::mojom::DefaultActionVerb::kPress;
     case blink::WebAXDefaultActionVerb::kSelect:
-      return ui::AX_DEFAULT_ACTION_VERB_SELECT;
+      return ax::mojom::DefaultActionVerb::kSelect;
     case blink::WebAXDefaultActionVerb::kUncheck:
-      return ui::AX_DEFAULT_ACTION_VERB_UNCHECK;
+      return ax::mojom::DefaultActionVerb::kUncheck;
   }
   NOTREACHED();
-  return ui::AX_DEFAULT_ACTION_VERB_NONE;
+  return ax::mojom::DefaultActionVerb::kNone;
 }
 
-ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type) {
+ax::mojom::MarkerType AXMarkerTypeFromBlink(
+    blink::WebAXMarkerType marker_type) {
   switch (marker_type) {
     case blink::kWebAXMarkerTypeSpelling:
-      return ui::AX_MARKER_TYPE_SPELLING;
+      return ax::mojom::MarkerType::kSpelling;
     case blink::kWebAXMarkerTypeGrammar:
-      return ui::AX_MARKER_TYPE_GRAMMAR;
+      return ax::mojom::MarkerType::kGrammar;
     case blink::kWebAXMarkerTypeTextMatch:
-      return ui::AX_MARKER_TYPE_TEXT_MATCH;
+      return ax::mojom::MarkerType::kTextMatch;
     case blink::kWebAXMarkerTypeActiveSuggestion:
-      return ui::AX_MARKER_TYPE_ACTIVE_SUGGESTION;
+      return ax::mojom::MarkerType::kActiveSuggestion;
     case blink::kWebAXMarkerTypeSuggestion:
-      return ui::AX_MARKER_TYPE_SUGGESTION;
+      return ax::mojom::MarkerType::kSuggestion;
   }
   NOTREACHED();
-  return ui::AX_MARKER_TYPE_NONE;
+  return ax::mojom::MarkerType::kNone;
 }
 
-ui::AXTextDirection AXTextDirectionFromBlink(
+ax::mojom::TextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction) {
   switch (text_direction) {
     case blink::kWebAXTextDirectionLR:
-      return ui::AX_TEXT_DIRECTION_LTR;
+      return ax::mojom::TextDirection::kLtr;
     case blink::kWebAXTextDirectionRL:
-      return ui::AX_TEXT_DIRECTION_RTL;
+      return ax::mojom::TextDirection::kRtl;
     case blink::kWebAXTextDirectionTB:
-      return ui::AX_TEXT_DIRECTION_TTB;
+      return ax::mojom::TextDirection::kTtb;
     case blink::kWebAXTextDirectionBT:
-      return ui::AX_TEXT_DIRECTION_BTT;
+      return ax::mojom::TextDirection::kBtt;
   }
   NOTREACHED();
-  return ui::AX_TEXT_DIRECTION_NONE;
+  return ax::mojom::TextDirection::kNone;
 }
 
-ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
-  uint32_t browser_text_style = static_cast<uint32_t>(ui::AX_TEXT_STYLE_NONE);
+ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
+  uint32_t browser_text_style =
+      static_cast<uint32_t>(ax::mojom::TextStyle::kNone);
   if (text_style & blink::kWebAXTextStyleBold)
-    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_BOLD);
+    browser_text_style |=
+        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold);
   if (text_style & blink::kWebAXTextStyleItalic)
-    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_ITALIC);
+    browser_text_style |=
+        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic);
   if (text_style & blink::kWebAXTextStyleUnderline)
-    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_UNDERLINE);
+    browser_text_style |=
+        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline);
   if (text_style & blink::kWebAXTextStyleLineThrough)
-    browser_text_style |= static_cast<int32_t>(ui::AX_TEXT_STYLE_LINE_THROUGH);
-  return static_cast<ui::AXTextStyle>(browser_text_style);
+    browser_text_style |=
+        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleLineThrough);
+  return static_cast<ax::mojom::TextStyle>(browser_text_style);
 }
 
-ui::AXAriaCurrentState AXAriaCurrentStateFromBlink(
+ax::mojom::AriaCurrentState AXAriaCurrentStateFromBlink(
     blink::WebAXAriaCurrentState aria_current_state) {
   switch (aria_current_state) {
     case blink::kWebAXAriaCurrentStateUndefined:
-      return ui::AX_ARIA_CURRENT_STATE_NONE;
+      return ax::mojom::AriaCurrentState::kNone;
     case blink::kWebAXAriaCurrentStateFalse:
-      return ui::AX_ARIA_CURRENT_STATE_FALSE;
+      return ax::mojom::AriaCurrentState::kFalse;
     case blink::kWebAXAriaCurrentStateTrue:
-      return ui::AX_ARIA_CURRENT_STATE_TRUE;
+      return ax::mojom::AriaCurrentState::kTrue;
     case blink::kWebAXAriaCurrentStatePage:
-      return ui::AX_ARIA_CURRENT_STATE_PAGE;
+      return ax::mojom::AriaCurrentState::kPage;
     case blink::kWebAXAriaCurrentStateStep:
-      return ui::AX_ARIA_CURRENT_STATE_STEP;
+      return ax::mojom::AriaCurrentState::kStep;
     case blink::kWebAXAriaCurrentStateLocation:
-      return ui::AX_ARIA_CURRENT_STATE_LOCATION;
+      return ax::mojom::AriaCurrentState::kLocation;
     case blink::kWebAXAriaCurrentStateDate:
-      return ui::AX_ARIA_CURRENT_STATE_DATE;
+      return ax::mojom::AriaCurrentState::kDate;
     case blink::kWebAXAriaCurrentStateTime:
-      return ui::AX_ARIA_CURRENT_STATE_TIME;
+      return ax::mojom::AriaCurrentState::kTime;
   }
 
   NOTREACHED();
-  return ui::AX_ARIA_CURRENT_STATE_NONE;
+  return ax::mojom::AriaCurrentState::kNone;
 }
 
-ui::AXInvalidState AXInvalidStateFromBlink(
+ax::mojom::InvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state) {
   switch (invalid_state) {
     case blink::kWebAXInvalidStateUndefined:
-      return ui::AX_INVALID_STATE_NONE;
+      return ax::mojom::InvalidState::kNone;
     case blink::kWebAXInvalidStateFalse:
-      return ui::AX_INVALID_STATE_FALSE;
+      return ax::mojom::InvalidState::kFalse;
     case blink::kWebAXInvalidStateTrue:
-      return ui::AX_INVALID_STATE_TRUE;
+      return ax::mojom::InvalidState::kTrue;
     case blink::kWebAXInvalidStateSpelling:
-      return ui::AX_INVALID_STATE_SPELLING;
+      return ax::mojom::InvalidState::kSpelling;
     case blink::kWebAXInvalidStateGrammar:
-      return ui::AX_INVALID_STATE_GRAMMAR;
+      return ax::mojom::InvalidState::kGrammar;
     case blink::kWebAXInvalidStateOther:
-      return ui::AX_INVALID_STATE_OTHER;
+      return ax::mojom::InvalidState::kOther;
   }
   NOTREACHED();
-  return ui::AX_INVALID_STATE_NONE;
+  return ax::mojom::InvalidState::kNone;
 }
 
-ui::AXCheckedState AXCheckedStateFromBlink(
+ax::mojom::CheckedState AXCheckedStateFromBlink(
     blink::WebAXCheckedState checked_state) {
   switch (checked_state) {
     case blink::kWebAXCheckedUndefined:
-      return ui::AX_CHECKED_STATE_NONE;
+      return ax::mojom::CheckedState::kNone;
     case blink::kWebAXCheckedTrue:
-      return ui::AX_CHECKED_STATE_TRUE;
+      return ax::mojom::CheckedState::kTrue;
     case blink::kWebAXCheckedMixed:
-      return ui::AX_CHECKED_STATE_MIXED;
+      return ax::mojom::CheckedState::kMixed;
     case blink::kWebAXCheckedFalse:
-      return ui::AX_CHECKED_STATE_FALSE;
+      return ax::mojom::CheckedState::kFalse;
   }
   NOTREACHED();
-  return ui::AX_CHECKED_STATE_NONE;
+  return ax::mojom::CheckedState::kNone;
 }
 
-ui::AXSortDirection AXSortDirectionFromBlink(
+ax::mojom::SortDirection AXSortDirectionFromBlink(
     blink::WebAXSortDirection sort_direction) {
   switch (sort_direction) {
     case blink::kWebAXSortDirectionUndefined:
-      return ui::AX_SORT_DIRECTION_NONE;
+      return ax::mojom::SortDirection::kNone;
     case blink::kWebAXSortDirectionNone:
-      return ui::AX_SORT_DIRECTION_UNSORTED;
+      return ax::mojom::SortDirection::kUnsorted;
     case blink::kWebAXSortDirectionAscending:
-      return ui::AX_SORT_DIRECTION_ASCENDING;
+      return ax::mojom::SortDirection::kAscending;
     case blink::kWebAXSortDirectionDescending:
-      return ui::AX_SORT_DIRECTION_DESCENDING;
+      return ax::mojom::SortDirection::kDescending;
     case blink::kWebAXSortDirectionOther:
-      return ui::AX_SORT_DIRECTION_OTHER;
+      return ax::mojom::SortDirection::kOther;
   }
   NOTREACHED();
-  return ui::AX_SORT_DIRECTION_NONE;
+  return ax::mojom::SortDirection::kNone;
 }
 
-ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from) {
+ax::mojom::NameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from) {
   switch (name_from) {
     case blink::kWebAXNameFromUninitialized:
-      return ui::AX_NAME_FROM_UNINITIALIZED;
+      return ax::mojom::NameFrom::kUninitialized;
     case blink::kWebAXNameFromAttribute:
-      return ui::AX_NAME_FROM_ATTRIBUTE;
+      return ax::mojom::NameFrom::kAttribute;
     case blink::kWebAXNameFromAttributeExplicitlyEmpty:
-      return ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY;
+      return ax::mojom::NameFrom::kAttributeExplicitlyEmpty;
     case blink::kWebAXNameFromCaption:
-      return ui::AX_NAME_FROM_RELATED_ELEMENT;
+      return ax::mojom::NameFrom::kRelatedElement;
     case blink::kWebAXNameFromContents:
-      return ui::AX_NAME_FROM_CONTENTS;
+      return ax::mojom::NameFrom::kContents;
     case blink::kWebAXNameFromPlaceholder:
-      return ui::AX_NAME_FROM_PLACEHOLDER;
+      return ax::mojom::NameFrom::kPlaceholder;
     case blink::kWebAXNameFromRelatedElement:
-      return ui::AX_NAME_FROM_RELATED_ELEMENT;
+      return ax::mojom::NameFrom::kRelatedElement;
     case blink::kWebAXNameFromValue:
-      return ui::AX_NAME_FROM_VALUE;
+      return ax::mojom::NameFrom::kValue;
     case blink::kWebAXNameFromTitle:
-      return ui::AX_NAME_FROM_ATTRIBUTE;
+      return ax::mojom::NameFrom::kAttribute;
   }
   NOTREACHED();
-  return ui::AX_NAME_FROM_NONE;
+  return ax::mojom::NameFrom::kNone;
 }
 
-ui::AXDescriptionFrom AXDescriptionFromFromBlink(
+ax::mojom::DescriptionFrom AXDescriptionFromFromBlink(
     blink::WebAXDescriptionFrom description_from) {
   switch (description_from) {
     case blink::kWebAXDescriptionFromUninitialized:
-      return ui::AX_DESCRIPTION_FROM_UNINITIALIZED;
+      return ax::mojom::DescriptionFrom::kUninitialized;
     case blink::kWebAXDescriptionFromAttribute:
-      return ui::AX_DESCRIPTION_FROM_ATTRIBUTE;
+      return ax::mojom::DescriptionFrom::kAttribute;
     case blink::kWebAXDescriptionFromContents:
-      return ui::AX_DESCRIPTION_FROM_CONTENTS;
+      return ax::mojom::DescriptionFrom::kContents;
     case blink::kWebAXDescriptionFromRelatedElement:
-      return ui::AX_DESCRIPTION_FROM_RELATED_ELEMENT;
+      return ax::mojom::DescriptionFrom::kRelatedElement;
   }
   NOTREACHED();
-  return ui::AX_DESCRIPTION_FROM_NONE;
+  return ax::mojom::DescriptionFrom::kNone;
 }
 
-ui::AXTextAffinity AXTextAffinityFromBlink(blink::WebAXTextAffinity affinity) {
+ax::mojom::TextAffinity AXTextAffinityFromBlink(
+    blink::WebAXTextAffinity affinity) {
   switch (affinity) {
     case blink::kWebAXTextAffinityUpstream:
-      return ui::AX_TEXT_AFFINITY_UPSTREAM;
+      return ax::mojom::TextAffinity::kUpstream;
     case blink::kWebAXTextAffinityDownstream:
-      return ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+      return ax::mojom::TextAffinity::kDownstream;
   }
   NOTREACHED();
-  return ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+  return ax::mojom::TextAffinity::kDownstream;
 }
 
 }  // namespace content.

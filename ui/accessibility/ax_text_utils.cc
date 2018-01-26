@@ -21,7 +21,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
                                   TextBoundaryType boundary,
                                   size_t start_offset,
                                   TextBoundaryDirection direction,
-                                  AXTextAffinity affinity) {
+                                  ax::mojom::TextAffinity affinity) {
   size_t text_size = text.size();
   DCHECK_LE(start_offset, text_size);
 
@@ -43,20 +43,20 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     if (direction == FORWARDS_DIRECTION) {
       for (size_t j = 0; j < line_breaks.size(); ++j) {
           size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
-        if ((affinity == AX_TEXT_AFFINITY_DOWNSTREAM &&
-             line_break > start_offset) ||
-            (affinity == AX_TEXT_AFFINITY_UPSTREAM &&
-             line_break >= start_offset)) {
-          return line_break;
+          if ((affinity == ax::mojom::TextAffinity::kDownstream &&
+               line_break > start_offset) ||
+              (affinity == ax::mojom::TextAffinity::kUpstream &&
+               line_break >= start_offset)) {
+            return line_break;
         }
       }
       return text_size;
     } else {
       for (size_t j = line_breaks.size(); j != 0; --j) {
         size_t line_break = line_breaks[j - 1] >= 0 ? line_breaks[j - 1] : 0;
-        if ((affinity == AX_TEXT_AFFINITY_DOWNSTREAM &&
+        if ((affinity == ax::mojom::TextAffinity::kDownstream &&
              line_break <= start_offset) ||
-            (affinity == AX_TEXT_AFFINITY_UPSTREAM &&
+            (affinity == ax::mojom::TextAffinity::kUpstream &&
              line_break < start_offset)) {
           return line_break;
         }
@@ -116,27 +116,27 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
 }
 
 base::string16 ActionVerbToLocalizedString(
-    const AXDefaultActionVerb action_verb) {
+    const ax::mojom::DefaultActionVerb action_verb) {
   switch (action_verb) {
-    case AX_DEFAULT_ACTION_VERB_NONE:
+    case ax::mojom::DefaultActionVerb::kNone:
       return base::string16();
-    case AX_DEFAULT_ACTION_VERB_ACTIVATE:
+    case ax::mojom::DefaultActionVerb::kActivate:
       return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_CHECK:
+    case ax::mojom::DefaultActionVerb::kCheck:
       return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_CLICK:
+    case ax::mojom::DefaultActionVerb::kClick:
       return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR:
+    case ax::mojom::DefaultActionVerb::kClickAncestor:
       return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_JUMP:
+    case ax::mojom::DefaultActionVerb::kJump:
       return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_OPEN:
+    case ax::mojom::DefaultActionVerb::kOpen:
       return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_PRESS:
+    case ax::mojom::DefaultActionVerb::kPress:
       return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_SELECT:
+    case ax::mojom::DefaultActionVerb::kSelect:
       return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
-    case AX_DEFAULT_ACTION_VERB_UNCHECK:
+    case ax::mojom::DefaultActionVerb::kUncheck:
       return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
   }
   NOTREACHED();
@@ -145,27 +145,27 @@ base::string16 ActionVerbToLocalizedString(
 
 // Some APIs on Linux and Windows need to return non-localized action names.
 base::string16 ActionVerbToUnlocalizedString(
-    const AXDefaultActionVerb action_verb) {
+    const ax::mojom::DefaultActionVerb action_verb) {
   switch (action_verb) {
-    case ui::AX_DEFAULT_ACTION_VERB_NONE:
+    case ax::mojom::DefaultActionVerb::kNone:
       return base::UTF8ToUTF16("none");
-    case ui::AX_DEFAULT_ACTION_VERB_ACTIVATE:
+    case ax::mojom::DefaultActionVerb::kActivate:
       return base::UTF8ToUTF16("activate");
-    case ui::AX_DEFAULT_ACTION_VERB_CHECK:
+    case ax::mojom::DefaultActionVerb::kCheck:
       return base::UTF8ToUTF16("check");
-    case ui::AX_DEFAULT_ACTION_VERB_CLICK:
+    case ax::mojom::DefaultActionVerb::kClick:
       return base::UTF8ToUTF16("click");
-    case ui::AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR:
+    case ax::mojom::DefaultActionVerb::kClickAncestor:
       return base::UTF8ToUTF16("click-ancestor");
-    case ui::AX_DEFAULT_ACTION_VERB_JUMP:
+    case ax::mojom::DefaultActionVerb::kJump:
       return base::UTF8ToUTF16("jump");
-    case ui::AX_DEFAULT_ACTION_VERB_OPEN:
+    case ax::mojom::DefaultActionVerb::kOpen:
       return base::UTF8ToUTF16("open");
-    case ui::AX_DEFAULT_ACTION_VERB_PRESS:
+    case ax::mojom::DefaultActionVerb::kPress:
       return base::UTF8ToUTF16("press");
-    case ui::AX_DEFAULT_ACTION_VERB_SELECT:
+    case ax::mojom::DefaultActionVerb::kSelect:
       return base::UTF8ToUTF16("select");
-    case ui::AX_DEFAULT_ACTION_VERB_UNCHECK:
+    case ax::mojom::DefaultActionVerb::kUncheck:
       return base::UTF8ToUTF16("uncheck");
   }
   NOTREACHED();

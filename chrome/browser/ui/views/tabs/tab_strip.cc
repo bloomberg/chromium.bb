@@ -676,14 +676,14 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
   // Fire accessibility events that reflect the changes to selection.
   for (size_t i = 0; i < no_longer_selected.size(); ++i) {
     tab_at(no_longer_selected[i])
-        ->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION_REMOVE, true);
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionRemove, true);
   }
   for (size_t i = 0; i < newly_selected.size(); ++i) {
     tab_at(newly_selected[i])
-        ->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION_ADD, true);
+        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionAdd, true);
   }
   tab_at(new_selection.active())
-      ->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 void TabStrip::TabTitleChangedNotLoading(int model_index) {
@@ -1269,7 +1269,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
 }
 
 void TabStrip::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TAB_LIST;
+  node_data->role = ax::mojom::Role::kTabList;
 }
 
 views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {

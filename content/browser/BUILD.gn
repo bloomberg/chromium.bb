@@ -168,7 +168,7 @@ jumbo_source_set("browser") {
     "//third_party/zlib/google:compression_utils",
     "//third_party/zlib/google:zip",
     "//ui/accessibility",
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base:ui_features",
     "//ui/base/ime",

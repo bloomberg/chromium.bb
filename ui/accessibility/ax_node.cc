@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string16.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -21,9 +21,9 @@ AXNode::~AXNode() {
 }
 
 bool AXNode::IsTextNode() const {
-  return data().role == AX_ROLE_STATIC_TEXT ||
-         data().role == AX_ROLE_LINE_BREAK ||
-         data().role == AX_ROLE_INLINE_TEXT_BOX;
+  return data().role == ax::mojom::Role::kStaticText ||
+         data().role == ax::mojom::Role::kLineBreak ||
+         data().role == ax::mojom::Role::kInlineTextBox;
 }
 
 void AXNode::SetData(const AXNodeData& src) {
@@ -64,12 +64,14 @@ bool AXNode::IsDescendantOf(AXNode* ancestor) {
 
 std::vector<int> AXNode::GetOrComputeLineStartOffsets() {
   std::vector<int> line_offsets;
-  if (data().GetIntListAttribute(AX_ATTR_CACHED_LINE_STARTS, &line_offsets))
+  if (data().GetIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
+                                 &line_offsets))
     return line_offsets;
 
   int start_offset = 0;
   ComputeLineStartOffsets(&line_offsets, &start_offset);
-  data_.AddIntListAttribute(AX_ATTR_CACHED_LINE_STARTS, line_offsets);
+  data_.AddIntListAttribute(ax::mojom::IntListAttribute::kCachedLineStarts,
+                            line_offsets);
   return line_offsets;
 }
 
@@ -85,15 +87,16 @@ void AXNode::ComputeLineStartOffsets(std::vector<int>* line_offsets,
     }
 
     // Don't report if the first piece of text starts a new line or not.
-    if (*start_offset &&
-        !child->data().HasIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID)) {
+    if (*start_offset && !child->data().HasIntAttribute(
+                             ax::mojom::IntAttribute::kPreviousOnLineId)) {
       // If there are multiple objects with an empty accessible label at the
       // start of a line, only include a single line start offset.
       if (line_offsets->empty() || line_offsets->back() != *start_offset)
         line_offsets->push_back(*start_offset);
     }
 
-    base::string16 text = child->data().GetString16Attribute(ui::AX_ATTR_NAME);
+    base::string16 text =
+        child->data().GetString16Attribute(ax::mojom::StringAttribute::kName);
     *start_offset += static_cast<int>(text.length());
   }
 }

@@ -294,17 +294,17 @@ is stored in attribute arrays, one for each major data type.
 ```
 struct AXNodeData {
   int32_t id;
-  AXRole role;
+  ax::mojom::Role role;
   ...
-  std::vector<std::pair<AXStringAttribute, std::string>> string_attributes;
-  std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
+  std::vector<std::pair<ax::mojom::StringAttribute, std::string>> string_attributes;
+  std::vector<std::pair<ax::mojom::IntAttribute, int32_t>> int_attributes;
   ...
 }
 ```
 
 So if a text field has a placeholder attribute, we can store
 that by adding an entry to `string_attributes` with an attribute
-of ui::AX_ATTR_PLACEHOLDER and the placeholder string as the value.
+of ax::mojom::StringAttribute::kPlaceholder and the placeholder string as the value.
 
 ### Incremental tree updates
 

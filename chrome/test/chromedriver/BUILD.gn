@@ -185,7 +185,7 @@ source_set("automation_client_lib") {
     "//third_party/WebKit/public:features",
     "//third_party/zlib:minizip",
     "//third_party/zlib/google:zip",
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

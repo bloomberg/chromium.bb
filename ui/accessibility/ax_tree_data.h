@@ -13,7 +13,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -61,10 +61,12 @@ struct AX_EXPORT AXTreeData {
   // line, otherwise it's on the second line.
   int32_t sel_anchor_object_id = -1;
   int32_t sel_anchor_offset = -1;
-  ui::AXTextAffinity sel_anchor_affinity = AX_TEXT_AFFINITY_UPSTREAM;
+  ax::mojom::TextAffinity sel_anchor_affinity =
+      ax::mojom::TextAffinity::kUpstream;
   int32_t sel_focus_object_id = -1;
   int32_t sel_focus_offset = -1;
-  ui::AXTextAffinity sel_focus_affinity = AX_TEXT_AFFINITY_DOWNSTREAM;
+  ax::mojom::TextAffinity sel_focus_affinity =
+      ax::mojom::TextAffinity::kDownstream;
 };
 
 AX_EXPORT bool operator==(const AXTreeData& lhs, const AXTreeData& rhs);

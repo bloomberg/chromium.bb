@@ -379,7 +379,7 @@ source_set("vr_test_support") {
     "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
-    "//ui/accessibility:ax_gen",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/gfx:test_support",
 
     # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.

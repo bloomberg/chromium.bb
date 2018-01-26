@@ -204,8 +204,7 @@ void BrowserPlugin::Attach() {
     blink::WebAXObject ax_element = blink::WebAXObject::FromWebNode(element);
     if (!ax_element.IsDetached()) {
       render_frame->render_accessibility()->HandleAXEvent(
-          ax_element,
-          ui::AX_EVENT_CHILDREN_CHANGED);
+          ax_element, ax::mojom::Event::kChildrenChanged);
     }
   }
 
