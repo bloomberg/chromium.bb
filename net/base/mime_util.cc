@@ -79,6 +79,7 @@ static const MimeInfo kPrimaryMappings[] = {
     // Must precede audio/webm .
     {"video/webm", "webm"},
 
+    {"application/javascript", "js"},
     {"application/wasm", "wasm"},
     {"application/x-chrome-extension", "crx"},
     {"application/xhtml+xml", "xhtml,xht,xhtm"},
@@ -107,7 +108,6 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/epub+zip", "epub"},
     {"application/font-woff", "woff"},
     {"application/gzip", "gz,tgz"},
-    {"application/javascript", "js"},
     {"application/octet-stream", "bin,exe,com"},
     {"application/pdf", "pdf"},
     {"application/pkcs7-mime", "p7m,p7c,p7z"},
