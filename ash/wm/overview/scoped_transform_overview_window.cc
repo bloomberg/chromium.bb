@@ -50,6 +50,23 @@ aura::Window* GetTransientRoot(aura::Window* window) {
   return window;
 }
 
+ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType(
+    aura::Window* window) {
+  if (window->bounds().width() >
+      window->bounds().height() *
+          ScopedTransformOverviewWindow::kExtremeWindowRatioThreshold) {
+    return ScopedTransformOverviewWindow::GridWindowFillMode::kLetterBoxed;
+  }
+
+  if (window->bounds().height() >
+      window->bounds().width() *
+          ScopedTransformOverviewWindow::kExtremeWindowRatioThreshold) {
+    return ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed;
+  }
+
+  return ScopedTransformOverviewWindow::GridWindowFillMode::kNormal;
+}
+
 // An iterator class that traverses an aura::Window and all of its transient
 // descendants.
 class TransientDescendantIterator {
@@ -261,7 +278,10 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       overview_started_(false),
       original_transform_(window->layer()->GetTargetTransform()),
       original_opacity_(window->layer()->GetTargetOpacity()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (IsNewOverviewUi())
+    type_ = GetWindowDimensionsType(window);
+}
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
@@ -423,26 +443,6 @@ float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
                             (source.height() - top_view_inset));
 }
 
-gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
-    const gfx::Rect& rect,
-    const gfx::Rect& bounds,
-    int top_view_inset,
-    int title_height) {
-  DCHECK(!rect.IsEmpty());
-  DCHECK_LE(top_view_inset, rect.height());
-  const float scale =
-      GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
-  const int horizontal_offset = gfx::ToFlooredInt(
-      0.5 * (bounds.width() - gfx::ToFlooredInt(scale * rect.width())));
-  const int width = bounds.width() - 2 * horizontal_offset;
-  const int vertical_offset =
-      title_height - gfx::ToCeiledInt(scale * top_view_inset);
-  const int height = std::min(gfx::ToCeiledInt(scale * rect.height()),
-                              bounds.height() - vertical_offset);
-  return gfx::Rect(bounds.x() + horizontal_offset, bounds.y() + vertical_offset,
-                   width, height);
-}
-
 gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
     const gfx::Rect& src_rect,
     const gfx::Rect& dst_rect) {
@@ -490,6 +490,68 @@ void ScopedTransformOverviewWindow::UpdateMirrorWindowForMinimizedState() {
     minimized_widget_->CloseNow();
     minimized_widget_.reset();
   }
+}
+
+gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+    const gfx::Rect& rect,
+    const gfx::Rect& bounds,
+    int top_view_inset,
+    int title_height) {
+  DCHECK(!rect.IsEmpty());
+  DCHECK_LE(top_view_inset, rect.height());
+  const float scale =
+      GetItemScale(rect.size(), bounds.size(), top_view_inset, title_height);
+  const int horizontal_offset = gfx::ToFlooredInt(
+      0.5 * (bounds.width() - gfx::ToFlooredInt(scale * rect.width())));
+  const int width = bounds.width() - 2 * horizontal_offset;
+  const int vertical_offset =
+      title_height - gfx::ToCeiledInt(scale * top_view_inset);
+  const int height = std::min(gfx::ToCeiledInt(scale * rect.height()),
+                              bounds.height() - vertical_offset);
+  gfx::Rect new_bounds(bounds.x() + horizontal_offset,
+                       bounds.y() + vertical_offset, width, height);
+
+  if (!IsNewOverviewUi()) {
+    DCHECK_EQ(ScopedTransformOverviewWindow::GridWindowFillMode::kNormal,
+              type());
+  }
+  switch (type()) {
+    case ScopedTransformOverviewWindow::GridWindowFillMode::kLetterBoxed:
+    case ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed: {
+      // Attempt to scale |rect| to fit |bounds|. Maintain the aspect ratio of
+      // |rect|. Letter boxed windows' width will match |bounds|'s height and
+      // pillar boxed windows' height will match |bounds|'s height.
+      const bool is_pillar =
+          type() ==
+          ScopedTransformOverviewWindow::GridWindowFillMode::kPillarBoxed;
+      gfx::Rect src = rect;
+      new_bounds = bounds;
+      src.Inset(0, top_view_inset, 0, 0);
+      new_bounds.Inset(0, title_height, 0, 0);
+      float scale = is_pillar ? static_cast<float>(new_bounds.height()) /
+                                    static_cast<float>(src.height())
+                              : static_cast<float>(new_bounds.width()) /
+                                    static_cast<float>(src.width());
+      gfx::Size size(is_pillar ? src.width() * scale : new_bounds.width(),
+                     is_pillar ? new_bounds.height() : src.height() * scale);
+      new_bounds.ClampToCenteredSize(size);
+
+      // Extend |new_bounds| in the vertical direction to account for the header
+      // that will be hidden.
+      if (top_view_inset > 0)
+        new_bounds.Inset(0, -(scale * top_view_inset), 0, 0);
+
+      // Save the original bounds minus the title into |window_selector_bounds_|
+      // so a larger backdrop can be drawn behind the window after.
+      window_selector_bounds_ = bounds;
+      window_selector_bounds_->Inset(0, title_height, 0, 0);
+      break;
+    }
+    default:
+      break;
+  }
+
+  return new_bounds;
 }
 
 void ScopedTransformOverviewWindow::Close() {
@@ -620,6 +682,14 @@ void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
 aura::Window*
 ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState() const {
   return minimized_widget_ ? minimized_widget_->GetNativeWindow() : nullptr;
+}
+
+void ScopedTransformOverviewWindow::UpdateWindowDimensionsType() {
+  if (!IsNewOverviewUi())
+    return;
+
+  type_ = GetWindowDimensionsType(window_);
+  window_selector_bounds_.reset();
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
