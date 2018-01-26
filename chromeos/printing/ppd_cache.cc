@@ -156,7 +156,8 @@ class PpdCacheImpl : public PpdCache {
                        const std::string& contents,
                        base::TimeDelta age) override {
     store_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&StoreImpl, cache_base_dir_, key, contents, age));
+        FROM_HERE,
+        base::BindOnce(&StoreImpl, cache_base_dir_, key, contents, age));
   }
 
  private:

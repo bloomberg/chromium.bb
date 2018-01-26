@@ -267,7 +267,7 @@ class PpdProviderTest : public ::testing::Test {
                            const std::string& expected_used_locale) {
     captured_resolve_manufacturers_.clear();
     auto provider = CreateProvider(browser_locale, false);
-    provider->ResolveManufacturers(base::Bind(
+    provider->ResolveManufacturers(base::BindOnce(
         &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
     scoped_task_environment_.RunUntilIdle();
     provider = nullptr;
@@ -330,9 +330,9 @@ TEST_F(PpdProviderTest, ManufacturersFetch) {
   StartFakePpdServer();
   auto provider = CreateProvider("en", false);
   // Issue two requests at the same time, both should be resolved properly.
-  provider->ResolveManufacturers(base::Bind(
+  provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-  provider->ResolveManufacturers(base::Bind(
+  provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
@@ -350,9 +350,9 @@ TEST_F(PpdProviderTest, ManufacturersFetch) {
 TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
   auto provider = CreateProvider("en", false);
   // Issue two requests at the same time, both should be resolved properly.
-  provider->ResolveManufacturers(base::Bind(
+  provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-  provider->ResolveManufacturers(base::Bind(
+  provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
@@ -392,15 +392,15 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
   // Resolve the same thing repeatedly.
   provider->ResolvePpdReference(
       unrecognized_printer,
-      base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                 base::Unretained(this)));
+      base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                     base::Unretained(this)));
   provider->ResolvePpdReference(
-      mixed, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                        base::Unretained(this)));
+      mixed, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                            base::Unretained(this)));
   provider->ResolvePpdReference(
       recognized_printer,
-      base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                 base::Unretained(this)));
+      base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                     base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(static_cast<size_t>(3), captured_resolve_ppd_references_.size());
@@ -426,21 +426,21 @@ TEST_F(PpdProviderTest, UsbResolution) {
   search_data.usb_vendor_id = 0x031f;
   search_data.usb_product_id = 1592;
   provider->ResolvePpdReference(
-      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                              base::Unretained(this)));
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
   // Should get back "Some other canonical reference"
   search_data.usb_vendor_id = 0x031f;
   search_data.usb_product_id = 6535;
   provider->ResolvePpdReference(
-      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                              base::Unretained(this)));
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
 
   // Extant vendor id, nonexistant device id, should get a NOT_FOUND
   search_data.usb_vendor_id = 0x031f;
   search_data.usb_product_id = 8162;
   provider->ResolvePpdReference(
-      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                              base::Unretained(this)));
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
 
   // Nonexistant vendor id, should get a NOT_FOUND in the real world, but
   // the URL interceptor we're using considers all nonexistant files to
@@ -449,8 +449,8 @@ TEST_F(PpdProviderTest, UsbResolution) {
   search_data.usb_vendor_id = 1234;
   search_data.usb_product_id = 1782;
   provider->ResolvePpdReference(
-      search_data, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
-                              base::Unretained(this)));
+      search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                  base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(captured_resolve_ppd_references_.size(), static_cast<size_t>(4));
@@ -478,15 +478,17 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
   // Grab the manufacturer list, but don't bother to save it, we know what
   // should be in it and we check that elsewhere.  We just need to run the
   // resolve to populate the internal PpdProvider structures.
-  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   scoped_task_environment_.RunUntilIdle();
 
-  provider->ResolvePrinters("manufacturer_a_en",
-                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
-                                       base::Unretained(this)));
-  provider->ResolvePrinters("manufacturer_b_en",
-                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
-                                       base::Unretained(this)));
+  provider->ResolvePrinters(
+      "manufacturer_a_en",
+      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                     base::Unretained(this)));
+  provider->ResolvePrinters(
+      "manufacturer_b_en",
+      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                     base::Unretained(this)));
 
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_printers_.size());
@@ -518,12 +520,13 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
 TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
   StartFakePpdServer();
   auto provider = CreateProvider("en", false);
-  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   scoped_task_environment_.RunUntilIdle();
 
-  provider->ResolvePrinters("bogus_doesnt_exist",
-                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
-                                       base::Unretained(this)));
+  provider->ResolvePrinters(
+      "bogus_doesnt_exist",
+      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                     base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_printers_.size());
   EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_printers_[0].first);
@@ -533,17 +536,19 @@ TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
 TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
   StartFakePpdServer();
   auto provider = CreateProvider("en", false);
-  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   scoped_task_environment_.RunUntilIdle();
 
   StopFakePpdServer();
 
-  provider->ResolvePrinters("manufacturer_a_en",
-                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
-                                       base::Unretained(this)));
-  provider->ResolvePrinters("manufacturer_b_en",
-                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
-                                       base::Unretained(this)));
+  provider->ResolvePrinters(
+      "manufacturer_a_en",
+      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                     base::Unretained(this)));
+  provider->ResolvePrinters(
+      "manufacturer_b_en",
+      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                     base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_printers_.size());
   EXPECT_EQ(PpdProvider::SERVER_ERROR, captured_resolve_printers_[0].first);
@@ -556,11 +561,11 @@ TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
   auto provider = CreateProvider("en", false);
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_b_ref";
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   ref.effective_make_and_model = "printer_c_ref";
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(2UL, captured_resolve_ppd_.size());
@@ -581,8 +586,8 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
   Printer::PpdReference ref;
   ref.user_supplied_ppd_url = base::StringPrintf(
       "https://%s/user_supplied_ppd_directory/user_supplied.ppd", kPpdServer);
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
@@ -608,8 +613,8 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
   Printer::PpdReference ref;
   ref.user_supplied_ppd_url =
       base::StringPrintf("file://%s", filename.MaybeAsASCII().c_str());
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
@@ -634,8 +639,9 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
 
     ref.user_supplied_ppd_url =
         base::StringPrintf("file://%s", filename.MaybeAsASCII().c_str());
-    provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                         base::Unretained(this)));
+    provider->ResolvePpd(ref,
+                         base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                        base::Unretained(this)));
     scoped_task_environment_.RunUntilIdle();
 
     ASSERT_EQ(1UL, captured_resolve_ppd_.size());
@@ -653,8 +659,8 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
   provider = CreateProvider("en", false);
 
   // Re-resolve.
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
@@ -669,11 +675,11 @@ TEST_F(PpdProviderTest, ExtractPpdFilters) {
   auto provider = CreateProvider("en", false);
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_a_ref";
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   ref.effective_make_and_model = "printer_b_ref";
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(2UL, captured_resolve_ppd_.size());
@@ -703,16 +709,16 @@ TEST_F(PpdProviderTest, ReverseLookup) {
   auto provider = CreateProvider("en", false);
   std::string ref = "printer_a_ref";
   provider->ReverseLookup(ref,
-                          base::Bind(&PpdProviderTest::CaptureReverseLookup,
-                                     base::Unretained(this)));
+                          base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
+                                         base::Unretained(this)));
   // TODO(skau): PpdProvider has a race condition that prevents running these
   // requests in parallel.
   scoped_task_environment_.RunUntilIdle();
 
   std::string ref_fail = "printer_does_not_exist";
   provider->ReverseLookup(ref_fail,
-                          base::Bind(&PpdProviderTest::CaptureReverseLookup,
-                                     base::Unretained(this)));
+                          base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
+                                         base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(2U, captured_reverse_lookup_.size());
