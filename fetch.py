@@ -61,11 +61,15 @@ class Checkout(object):
   def sync(self):
     pass
 
-  def run(self, cmd, **kwargs):
+  def run(self, cmd, return_stdout=False, **kwargs):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
     if self.options.dry_run:
       return ''
-    return subprocess.check_output(cmd, **kwargs)
+    if return_stdout:
+      return subprocess.check_output(cmd, **kwargs)
+    else:
+      subprocess.check_call(cmd, **kwargs)
+      return ''
 
 
 class GclientCheckout(Checkout):
@@ -79,7 +83,7 @@ class GclientCheckout(Checkout):
 
   def exists(self):
     try:
-      gclient_root = self.run_gclient('root').strip()
+      gclient_root = self.run_gclient('root', return_stdout=True).strip()
       return (os.path.exists(os.path.join(gclient_root, '.gclient')) or
               os.path.exists(os.path.join(os.getcwd(), self.root)))
     except subprocess.CalledProcessError:
