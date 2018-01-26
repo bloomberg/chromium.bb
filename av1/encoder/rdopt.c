@@ -1824,7 +1824,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int rate_cost = 0;
   const int is_inter = is_inter_block(mbmi);
   TX_TYPE txk_start = DCT_DCT;
-  TX_TYPE txk_end = x->rd_model == LOW_TXFM_RD ? DCT_DCT : TX_TYPES - 1;
+  TX_TYPE txk_end = (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan)
+                        ? DCT_DCT
+                        : TX_TYPES - 1;
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
   uint8_t best_txb_ctx = 0;
@@ -2345,6 +2347,8 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
+
+  if (x->cb_partition_scan && tx_type != DCT_DCT) return 1;
 
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
   if (!is_inter && x->use_default_intra_tx_type &&

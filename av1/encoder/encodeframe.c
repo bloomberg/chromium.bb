@@ -3660,9 +3660,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       if (cpi->sf.two_pass_partition_search &&
           mi_row + mi_size_high[cm->sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[cm->sb_size] < cm->mi_cols) {
+        x->cb_partition_scan = 1;
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                               cm->sb_size, &dummy_rdc, INT64_MAX, pc_root,
                               NULL);
+        x->cb_partition_scan = 0;
 
         x->source_variance = UINT_MAX;
         if (sf->adaptive_pred_interp_filter) {
