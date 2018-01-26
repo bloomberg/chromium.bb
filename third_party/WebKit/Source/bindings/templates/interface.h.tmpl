@@ -266,11 +266,6 @@ class {{v8_class}} {
       v8::Local<v8::Object> instance,
       v8::Local<v8::Object> prototype,
       v8::Local<v8::Function> interface);
-
-  {% if has_partial_interface %}
-  static InstallRuntimeEnabledFeaturesFunction
-  install_runtime_enabled_features_function_;
-  {% endif %}
   {% endif %}{# needs_runtime_enabled_installer #}
 
   {% if not is_array_buffer_or_view %}
@@ -284,9 +279,23 @@ class {{v8_class}} {
   {% endif %}
   {% endif %}{# not is_array_buffer_or_view #}
 
-  {% if has_partial_interface %}
+  {% if needs_runtime_enabled_installer or has_partial_interface %}
  private:
+  {% if needs_runtime_enabled_installer %}
+  static void InstallRuntimeEnabledFeaturesImpl(
+      v8::Isolate*,
+      const DOMWrapperWorld& world,
+      v8::Local<v8::Object> instance,
+      v8::Local<v8::Object> prototype,
+      v8::Local<v8::Function> interface);
+  {% endif %}{# needs_runtime_enabled_installer #}
+  {% if has_partial_interface %}
   static InstallTemplateFunction install{{v8_class}}TemplateFunction;
+  {% if needs_runtime_enabled_installer %}
+  static InstallRuntimeEnabledFeaturesFunction
+  install_runtime_enabled_features_function_;
+  {% endif %}
+  {% endif %}{# has_partial_interface #}
   {% endif %}
 };
 

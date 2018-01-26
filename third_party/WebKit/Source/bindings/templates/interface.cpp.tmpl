@@ -1139,7 +1139,7 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 {% if needs_runtime_enabled_installer %}
 InstallRuntimeEnabledFeaturesFunction
 {{v8_class}}::install_runtime_enabled_features_function_ =
-    &{{v8_class}}::InstallRuntimeEnabledFeatures;
+    &{{v8_class}}::InstallRuntimeEnabledFeaturesImpl;
 {% endif %}
 {% if not is_array_buffer_or_view %}
 InstallRuntimeEnabledFeaturesOnTemplateFunction
