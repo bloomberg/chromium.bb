@@ -91,10 +91,6 @@ Still reading?
   <issue id="GoogleAppIndexingWarning" severity="Error">
     <ignore regexp="AndroidManifest.xml"/>
   </issue>
-  <!-- TODO(crbug.com/804441): Fix for remoting -->
-  <issue id="AppLinkUrlError">
-    <ignore regexp="AndroidManifest.xml"/>
-  </issue>
   <issue id="HandlerLeak">
     <ignore regexp="android_webview/glue/java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java" />
     <ignore regexp="chromecast/internal" />
