@@ -28,9 +28,6 @@
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 
-// Force multiple inclusion of the param traits file to generate all methods.
-#undef COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_
-
 #ifndef INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 #define INTERNAL_COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 
