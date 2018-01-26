@@ -446,25 +446,31 @@ camera.views.Album.prototype.onScrollEnded_ = function() {
  * @override
  */
 camera.views.Album.prototype.addPictureToDOM = function(picture) {
-  // TODO(yuli): Add overlay icons for motion pictures (video).
   var album = document.querySelector('#album .padder');
+  var wrapper = document.createElement('div');
+  wrapper.className = 'media-wrapper';
+  wrapper.id = 'album-picture-' + (this.lastPictureIndex_++);
+  wrapper.tabIndex = -1;
+  wrapper.setAttribute('aria-role', 'option');
+  wrapper.setAttribute('aria-selected', 'false');
   var img = document.createElement('img');
-  img.id = 'album-picture-' + (this.lastPictureIndex_++);
   img.tabIndex = -1;
-  img.setAttribute('aria-role', 'option');
-  img.setAttribute('aria-selected', 'false');
   img.src = picture.thumbnailURL;
-  album.insertBefore(img, album.firstChild);
+  wrapper.appendChild(img);
+  if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
+    wrapper.classList.add('motion-picture');
+  }
+  album.insertBefore(wrapper, album.firstChild);
 
   // Add to the collection.
-  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, img);
+  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
   this.pictures.push(domPicture);
 
   // Add handlers.
-  img.addEventListener('mousedown', function(event) {
+  wrapper.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
   });
-  img.addEventListener('click', function(event) {
+  wrapper.addEventListener('click', function(event) {
     var index = this.pictures.indexOf(domPicture);
     var key = camera.util.getShortcutIdentifier(event);
     if (key == 'Ctrl-') {
@@ -475,7 +481,7 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
       this.setSelectedIndex(index);
     }
   }.bind(this));
-  img.addEventListener('contextmenu', function(event) {
+  wrapper.addEventListener('contextmenu', function(event) {
     // Prevent the default context menu for ctrl-clicking.
     var index = this.pictures.indexOf(domPicture);
     if (camera.util.getShortcutIdentifier(event) == 'Ctrl-') {
@@ -483,13 +489,13 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
       event.preventDefault();
     }
   }.bind(this));
-  img.addEventListener('focus', function() {
+  wrapper.addEventListener('focus', function() {
     var index = this.pictures.indexOf(domPicture);
     if (this.selectedIndexes.indexOf(index) == -1)
       this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
 
-  img.addEventListener('dblclick', function() {
+  wrapper.addEventListener('dblclick', function() {
     this.openPictureInBrowser_(picture);
   }.bind(this));
 };

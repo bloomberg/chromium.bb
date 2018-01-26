@@ -59,19 +59,23 @@ SRC_RESOURCES= \
 	src/_locales/zh_CN/messages.json \
 	src/_locales/zh_TW/messages.json \
 	src/css/main.css \
+	src/images/2x/album_video_overlay.png \
 	src/images/2x/browser_button_export.png \
 	src/images/2x/browser_button_print.png \
 	src/images/2x/camera_button_album.png \
 	src/images/2x/camera_button_filters.png \
+        src/images/2x/camera_button_mic.png \
 	src/images/2x/camera_button_mirror.png \
 	src/images/2x/camera_button_multi.png \
 	src/images/2x/camera_button_picture.png \
+        src/images/2x/camera_button_record.png \
 	src/images/2x/camera_button_timer.png \
 	src/images/2x/camera_button_toggle.png \
 	src/images/2x/camera_button_video.png \
 	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
         src/images/2x/dialog_button_close.png \
+	src/images/album_video_overlay.png \
 	src/images/browser_button_export.png \
 	src/images/browser_button_print.png \
 	src/images/camera_app_icons_128.png \
@@ -84,9 +88,11 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_favicon_32.png \
 	src/images/camera_button_album.png \
 	src/images/camera_button_filters.png \
+        src/images/camera_button_mic.png \
 	src/images/camera_button_mirror.png \
 	src/images/camera_button_multi.png \
 	src/images/camera_button_picture.png \
+        src/images/camera_button_record.png \
 	src/images/camera_button_timer.png \
 	src/images/camera_button_toggle.png \
 	src/images/camera_button_video.png \
@@ -130,6 +136,8 @@ SRC_RESOURCES= \
 	src/js/views/camera.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
+        src/sounds/record_end.ogg \
+        src/sounds/record_start.ogg \
 	src/sounds/shutter.ogg \
 	src/sounds/tick.ogg \
 	src/views/main.html \
