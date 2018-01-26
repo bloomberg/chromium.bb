@@ -1132,7 +1132,7 @@ TEST_F('CrSettingsBluetoothPageTest', 'All', function() {
 });
 
 /**
- * Test fixture for internet-page.
+ * Test fixture for settings-internet-page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -1155,6 +1155,33 @@ CrSettingsInternetPageTest.prototype = {
 };
 
 TEST_F('CrSettingsInternetPageTest', 'InternetPage', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for settings-internet-detail-page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsInternetDetailPageTest() {}
+
+CrSettingsInternetDetailPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/internet_page/internet_detail_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    '../fake_chrome_event.js',
+    '../chromeos/fake_networking_private.js',
+    'internet_detail_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsInternetDetailPageTest', 'InternetDetailPage', function() {
   mocha.run();
 });
 

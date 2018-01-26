@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-suite('Internet', function() {
+suite('InternetPage', function() {
   /** @type {InternetPageElement} */
   let internetPage = null;
 
@@ -313,6 +313,45 @@ suite('Internet', function() {
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
         assertEquals(2, subpage.arcVpnProviders.length);
+      });
+    });
+
+    test('WiFi Detail', function() {
+      setNetworksForTest([
+        {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
+      ]);
+      api_.enableNetworkType('WiFi');
+      return flushAsync().then(() => {
+        const wifi = networkSummary_.$$('#WiFi');
+        assertTrue(!!wifi);
+        MockInteractions.tap(wifi.$$('button.subpage-arrow'));
+        return flushAsync();
+      }).then(() => {
+        // Call setTimeout to populate iron-list.
+        return new Promise((resolve) => {
+          setTimeout(function() { resolve(); });
+        });
+      }).then(() => {
+        const subpage = internetPage.$$('settings-internet-subpage');
+        assertTrue(!!subpage);
+        const networkList = subpage.$$('#networkList');
+        assertTrue(!!networkList);
+        assertEquals(1, networkList.networks.length);
+        assertEquals(1, networkList.listItems_.length);
+        const ironList = networkList.$$('iron-list');
+        assertTrue(!!ironList);
+        assertEquals(1, ironList.items.length);
+        const networkListItem = networkList.$$('cr-network-list-item');
+        assertTrue(!!networkListItem);
+        MockInteractions.tap(networkListItem);
+        return flushAsync();
+      }).then(() => {
+        const detailPage = internetPage.$$('settings-internet-detail-page');
+        assertTrue(!!detailPage);
+        assertEquals('wifi1_guid', detailPage.guid);
+        return Promise.all([
+          api_.whenCalled('getManagedProperties'),
+        ]);
       });
     });
   });

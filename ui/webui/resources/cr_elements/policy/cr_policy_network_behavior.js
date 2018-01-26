@@ -23,8 +23,10 @@ var CrPolicyNetworkBehavior = {
     if (effective == 'UserPolicy' || effective == 'DevicePolicy')
       return true;
     // Recommended
-    if (property.UserPolicy || property.DevicePolicy)
+    if (typeof property.UserPolicy != 'undefined' ||
+        typeof property.DevicePolicy != 'undefined') {
       return true;
+    }
     // Neither enforced nor recommended = not policy controlled.
     return false;
   },

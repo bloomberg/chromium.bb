@@ -174,21 +174,31 @@ Polymer({
       return;
 
     const queryParams = settings.getQueryParameters();
-    this.guid = queryParams.get('guid') || '';
-    if (!this.guid) {
+    let guid = queryParams.get('guid') || '';
+    if (!guid) {
       console.error('No guid specified for page:' + route);
       this.close_();
     }
 
-    // Set basic networkProperties until they are loaded.
-    this.networkPropertiesReceived_ = false;
     this.shouldShowConfigureWhenNetworkLoaded_ =
         queryParams.get('showConfigure') == 'true';
-
     const type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
                      queryParams.get('type')) ||
         CrOnc.Type.WI_FI;
     const name = queryParams.get('name') || type;
+    this.init(guid, type, name);
+  },
+
+  /**
+   * @param {string} guid
+   * @param {!chrome.networkingPrivate.NetworkType} type
+   * @param {string} name
+   * @private
+   */
+  init: function(guid, type, name) {
+    this.guid = guid;
+    // Set basic networkProperties until they are loaded.
+    this.networkPropertiesReceived_ = false;
     this.networkProperties = {
       GUID: this.guid,
       Type: type,
