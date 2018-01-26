@@ -87,21 +87,22 @@
 //  UMA_HISTOGRAM_COUNTS_1M("DiskCache.2.MyName", 20);  // "2" is the CacheType.
 //  UMA_HISTOGRAM_COUNTS_1M("DiskCache.2.MyExperiment_530", 55);
 //
-#define CACHE_UMA(type, name, experiment, sample) {\
-    const std::string my_name =\
-        CACHE_UMA_BACKEND_IMPL_OBJ->HistogramName(name, experiment);\
-    switch (CACHE_UMA_BACKEND_IMPL_OBJ->cache_type()) {\
-      default:\
-        NOTREACHED();\
-        /* Fall-through. */\
-      case net::DISK_CACHE:\
-      case net::MEDIA_CACHE:\
-      case net::APP_CACHE:\
-      case net::SHADER_CACHE:\
-      case net::PNACL_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
-    }\
+#define CACHE_UMA(type, name, experiment, sample)                    \
+  {                                                                  \
+    const std::string my_name =                                      \
+        CACHE_UMA_BACKEND_IMPL_OBJ->HistogramName(name, experiment); \
+    switch (CACHE_UMA_BACKEND_IMPL_OBJ->cache_type()) {              \
+      default:                                                       \
+        NOTREACHED();                                                \
+        FALLTHROUGH;                                                 \
+      case net::DISK_CACHE:                                          \
+      case net::MEDIA_CACHE:                                         \
+      case net::APP_CACHE:                                           \
+      case net::SHADER_CACHE:                                        \
+      case net::PNACL_CACHE:                                         \
+        CACHE_HISTOGRAM_##type(my_name.data(), sample);              \
+        break;                                                       \
+    }                                                                \
   }
 
 #endif  // NET_DISK_CACHE_BLOCKFILE_HISTOGRAM_MACROS_H_

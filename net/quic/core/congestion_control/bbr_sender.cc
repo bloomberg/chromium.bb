@@ -613,6 +613,7 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
       if (is_round_start) {
         recovery_state_ = GROWTH;
       }
+      FALLTHROUGH;
 
     case GROWTH:
       // Exit recovery if appropriate.

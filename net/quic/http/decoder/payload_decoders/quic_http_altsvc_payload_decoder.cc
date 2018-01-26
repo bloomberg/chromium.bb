@@ -74,7 +74,7 @@ QuicHttpAltSvcQuicHttpPayloadDecoder::ResumeDecodingPayload(
     switch (payload_state_) {
       case PayloadState::kStartDecodingStruct:
         status = state->StartDecodingStructureInPayload(&altsvc_fields_, db);
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kMaybeDecodedStruct:
         if (status == QuicHttpDecodeStatus::kDecodeDone &&
@@ -96,7 +96,7 @@ QuicHttpAltSvcQuicHttpPayloadDecoder::ResumeDecodingPayload(
           DCHECK_GT(altsvc_fields_.origin_length, state->remaining_payload());
           return state->ReportFrameSizeError();
         }
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kDecodingStrings:
         return DecodeStrings(state, db);

@@ -72,7 +72,7 @@ DecodeStatus GoAwayPayloadDecoder::ResumeDecodingPayload(
     switch (payload_state_) {
       case PayloadState::kStartDecodingFixedFields:
         status = state->StartDecodingStructureInPayload(&goaway_fields_, db);
-      // FALLTHROUGH_INTENDED
+        FALLTHROUGH;
 
       case PayloadState::kHandleFixedFieldsStatus:
         if (status == DecodeStatus::kDecodeDone) {
@@ -90,7 +90,7 @@ DecodeStatus GoAwayPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kResumeDecodingFixedFields;
           return status;
         }
-      // FALLTHROUGH_INTENDED
+        FALLTHROUGH;
 
       case PayloadState::kReadOpaqueData:
         // The opaque data is all the remains to be decoded, so anything left

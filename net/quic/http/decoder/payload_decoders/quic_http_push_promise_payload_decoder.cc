@@ -101,7 +101,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPadLength;
           return status;
         }
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kStartDecodingPushPromiseFields:
         status =
@@ -113,7 +113,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
         // Finished decoding the Promised Stream ID. Can now tell the listener
         // that we're starting to decode a PUSH_PROMISE frame.
         ReportPushPromise(state);
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kReadPayload:
         DCHECK_LT(state->remaining_payload(), frame_header.payload_length);
@@ -136,7 +136,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPayload;
           return QuicHttpDecodeStatus::kDecodeInProgress;
         }
-      // FALLTHROUGH_INTENDED;
+        FALLTHROUGH;
 
       case PayloadState::kSkipPadding:
         // SkipPadding handles the OnPadding callback.
