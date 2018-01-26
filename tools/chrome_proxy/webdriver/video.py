@@ -232,9 +232,9 @@ class Video(IntegrationTest):
     if is_android:
       alt_data = 'data/buck_bunny_640x360_24fps.mp4.expected_volume_alt.json'
     self.instrumentedVideoTest('http://check.googlezip.net/cacheable/video/buck_bunny_640x360_24fps_audio.html',
-      alt_data=alt_data, needs_click=is_android)
+      alt_data=alt_data)
 
-  def instrumentedVideoTest(self, url, alt_data=None, needs_click=False):
+  def instrumentedVideoTest(self, url, alt_data=None):
     """Run an instrumented video test. The given page is reloaded up to some
     maximum number of times until a compressed video is seen by ChromeDriver by
     inspecting the network logs. Once that happens, test.ready is set and that
@@ -246,6 +246,7 @@ class Video(IntegrationTest):
     max_attempts = 10
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.AddChromeArg('--autoplay-policy=no-user-gesture-required')
       loaded_compressed_video = False
       attempts = 0
       while not loaded_compressed_video and attempts < max_attempts:
@@ -264,8 +265,12 @@ class Video(IntegrationTest):
       if alt_data != None:
         t.ExecuteJavascriptStatement('test.expectedVolumeSrc = "%s"' % alt_data)
       t.ExecuteJavascriptStatement('test.ready = true')
-      if needs_click:
+      t.WaitForJavascriptExpression('test.video_ != undefined', 5)
+      # Click the video to start if Android.
+      if ParseFlags().android:
         t.FindElement(By.ID, 'video').click()
+      else:
+        t.ExecuteJavascriptStatement('test.video_.play()')
       waitTimeQuery = 'test.waitTime'
       if ParseFlags().android:
         waitTimeQuery = 'test.androidWaitTime'
