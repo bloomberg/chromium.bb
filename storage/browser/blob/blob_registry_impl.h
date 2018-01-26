@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/storage_browser_export.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
@@ -52,6 +53,10 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
   size_t BlobsUnderConstructionForTesting() const {
     return blobs_under_construction_.size();
   }
+
+  using URLStoreCreationHook = base::RepeatingCallback<void(
+      mojo::StrongAssociatedBindingPtr<blink::mojom::BlobURLStore>)>;
+  static void SetURLStoreCreationHookForTesting(URLStoreCreationHook* hook);
 
  private:
   class BlobUnderConstruction;

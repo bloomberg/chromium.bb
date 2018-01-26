@@ -22,6 +22,8 @@ namespace {
 
 using MemoryStrategy = BlobMemoryController::Strategy;
 
+BlobRegistryImpl::URLStoreCreationHook* g_url_store_creation_hook = nullptr;
+
 }  // namespace
 
 class BlobRegistryImpl::BlobUnderConstruction {
@@ -562,9 +564,17 @@ void BlobRegistryImpl::URLStoreForOrigin(
   // that origin.
   Delegate* delegate = bindings_.dispatch_context().get();
   DCHECK(delegate);
-  mojo::MakeStrongAssociatedBinding(
+  auto binding = mojo::MakeStrongAssociatedBinding(
       std::make_unique<BlobURLStoreImpl>(context_, delegate),
       std::move(request));
+  if (g_url_store_creation_hook)
+    g_url_store_creation_hook->Run(binding);
+}
+
+// static
+void BlobRegistryImpl::SetURLStoreCreationHookForTesting(
+    URLStoreCreationHook* hook) {
+  g_url_store_creation_hook = hook;
 }
 
 }  // namespace storage
