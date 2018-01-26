@@ -69,8 +69,8 @@ class PpdCacheTest : public ::testing::Test {
 // Test that we miss on an empty cache.
 TEST_F(PpdCacheTest, SimpleMiss) {
   auto cache = CreateTestCache();
-  cache->Find("foo", base::Bind(&PpdCacheTest::CaptureFindResult,
-                                base::Unretained(this)));
+  cache->Find("foo", base::BindOnce(&PpdCacheTest::CaptureFindResult,
+                                    base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 1);
   EXPECT_FALSE(find_result_.success);
@@ -82,8 +82,8 @@ TEST_F(PpdCacheTest, MissThenHit) {
   const char kTestKey2[] = "A different key";
   const char kTestContents[] = "Like, totally awesome contents";
 
-  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
-                                   base::Unretained(this)));
+  cache->Find(kTestKey, base::BindOnce(&PpdCacheTest::CaptureFindResult,
+                                       base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 1);
   EXPECT_FALSE(find_result_.success);
@@ -92,16 +92,16 @@ TEST_F(PpdCacheTest, MissThenHit) {
 
   scoped_task_environment_.RunUntilIdle();
 
-  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
-                                   base::Unretained(this)));
+  cache->Find(kTestKey, base::BindOnce(&PpdCacheTest::CaptureFindResult,
+                                       base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 2);
   EXPECT_TRUE(find_result_.success);
   EXPECT_EQ(find_result_.contents, kTestContents);
   EXPECT_LT(find_result_.age, base::TimeDelta::FromMinutes(5));
 
-  cache->Find(kTestKey2, base::Bind(&PpdCacheTest::CaptureFindResult,
-                                    base::Unretained(this)));
+  cache->Find(kTestKey2, base::BindOnce(&PpdCacheTest::CaptureFindResult,
+                                        base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 3);
   EXPECT_FALSE(find_result_.success);

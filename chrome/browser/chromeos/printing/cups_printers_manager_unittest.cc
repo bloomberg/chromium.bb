@@ -205,27 +205,27 @@ class FakePpdProvider : public PpdProvider {
   FakePpdProvider() {}
 
   void ResolvePpdReference(const PrinterSearchData& search_data,
-                           const ResolvePpdReferenceCallback& cb) override {
+                           ResolvePpdReferenceCallback cb) override {
     if (search_data.make_and_model.empty()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(cb, PpdProvider::NOT_FOUND, Printer::PpdReference()));
+          FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::NOT_FOUND,
+                                    Printer::PpdReference()));
     } else {
       Printer::PpdReference ret;
       ret.effective_make_and_model = search_data.make_and_model[0];
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(cb, PpdProvider::SUCCESS, ret));
+          FROM_HERE, base::BindOnce(std::move(cb), PpdProvider::SUCCESS, ret));
     }
   }
 
   // These three functions are not used by CupsPrintersManager.
   void ResolvePpd(const Printer::PpdReference& reference,
                   ResolvePpdCallback cb) override {}
-  void ResolveManufacturers(const ResolveManufacturersCallback& cb) override {}
+  void ResolveManufacturers(ResolveManufacturersCallback cb) override {}
   void ResolvePrinters(const std::string& manufacturer,
-                       const ResolvePrintersCallback& cb) override {}
+                       ResolvePrintersCallback cb) override {}
   void ReverseLookup(const std::string& effective_make_and_model,
-                     const ReverseLookupCallback& cb) override {}
+                     ReverseLookupCallback cb) override {}
 
  private:
   ~FakePpdProvider() override {}
