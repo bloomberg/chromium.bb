@@ -77,13 +77,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   CheckValues(params, "http://ovveride-1.com/", "http://ovveride-2.com/");
 }
 
-TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
-  EXPECT_TRUE(params::IsIncludedInAndroidOnePromoFieldTrialForTesting(
-      "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
-  EXPECT_FALSE(params::IsIncludedInAndroidOnePromoFieldTrialForTesting(
-      "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
-}
-
 TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
   const struct {
     std::string test_case;
