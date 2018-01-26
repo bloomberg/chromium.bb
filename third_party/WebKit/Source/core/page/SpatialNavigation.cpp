@@ -47,8 +47,6 @@ namespace blink {
 using namespace HTMLNames;
 
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
-static LayoutRect RectToAbsoluteCoordinates(const LocalFrame* initial_frame,
-                                            const LayoutRect&);
 static bool IsScrollableNode(const Node*);
 
 FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
@@ -67,13 +65,13 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
       return;
 
     visible_node = image;
-    rect = VirtualRectForAreaElementAndDirection(*area, type);
+    rect_in_root_frame = VirtualRectForAreaElementAndDirection(*area, type);
   } else {
     if (!node->GetLayoutObject())
       return;
 
     visible_node = node;
-    rect = NodeRectInAbsoluteCoordinates(node, true /* ignore border */);
+    rect_in_root_frame = NodeRectInRootFrame(node, true /* ignore border */);
   }
 
   focusable_node = node;
@@ -412,22 +410,19 @@ bool CanScrollInDirection(const LocalFrame* frame, WebFocusType type) {
   }
 }
 
-static LayoutRect RectToAbsoluteCoordinates(const LocalFrame* initial_frame,
-                                            const LayoutRect& initial_rect) {
-  return LayoutRect(
-      initial_frame->View()->ContentsToRootFrame(initial_rect.Location()),
-      initial_rect.Size());
-}
-
-LayoutRect NodeRectInAbsoluteCoordinates(const Node* node, bool ignore_border) {
+LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
   DCHECK(node);
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
 
-  if (node->IsDocumentNode())
-    return FrameRectInAbsoluteCoordinates(ToDocument(node)->GetFrame());
-  LayoutRect rect = RectToAbsoluteCoordinates(node->GetDocument().GetFrame(),
-                                              node->BoundingBox());
+  if (node->IsDocumentNode() &&
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    LocalFrameView* view = ToDocument(node)->GetFrame()->View();
+    return LayoutRect(view->ContentsToRootFrame(
+        view->LayoutViewportScrollableArea()->VisibleContentRect()));
+  }
+  LayoutRect rect = node->GetDocument().GetFrame()->View()->AbsoluteToRootFrame(
+      node->BoundingBox());
 
   // For authors that use border instead of outline in their CSS, we compensate
   // by ignoring the border when calculating the rect of the focused element.
@@ -442,13 +437,6 @@ LayoutRect NodeRectInAbsoluteCoordinates(const Node* node, bool ignore_border) {
         node->GetLayoutObject()->Style()->BorderBottomWidth()));
   }
   return rect;
-}
-
-LayoutRect FrameRectInAbsoluteCoordinates(const LocalFrame* frame) {
-  return RectToAbsoluteCoordinates(
-      frame,
-      LayoutRect(
-          frame->View()->LayoutViewportScrollableArea()->VisibleContentRect()));
 }
 
 // This method calculates the exitPoint from the startingRect and the entryPoint
@@ -546,7 +534,8 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
       !second_candidate.visible_node->GetLayoutObject())
     return false;
 
-  if (!first_candidate.rect.Intersects(second_candidate.rect))
+  if (!first_candidate.rect_in_root_frame.Intersects(
+          second_candidate.rect_in_root_frame))
     return false;
 
   if (IsHTMLAreaElement(*first_candidate.focusable_node) ||
@@ -567,19 +556,22 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
 void DistanceDataForNode(WebFocusType type,
                          const FocusCandidate& current,
                          FocusCandidate& candidate) {
-  if (!IsRectInDirection(type, current.rect, candidate.rect))
+  if (!IsRectInDirection(type, current.rect_in_root_frame,
+                         candidate.rect_in_root_frame))
     return;
 
   if (AreElementsOnSameLine(current, candidate)) {
-    if ((type == kWebFocusTypeUp && current.rect.Y() > candidate.rect.Y()) ||
-        (type == kWebFocusTypeDown && candidate.rect.Y() > current.rect.Y())) {
+    if ((type == kWebFocusTypeUp &&
+         current.rect_in_root_frame.Y() > candidate.rect_in_root_frame.Y()) ||
+        (type == kWebFocusTypeDown &&
+         candidate.rect_in_root_frame.Y() > current.rect_in_root_frame.Y())) {
       candidate.distance = 0;
       return;
     }
   }
 
-  LayoutRect node_rect = candidate.rect;
-  LayoutRect current_rect = current.rect;
+  LayoutRect node_rect = candidate.rect_in_root_frame;
+  LayoutRect current_rect = current.rect_in_root_frame;
   DeflateIfOverlapped(current_rect, node_rect);
 
   LayoutPoint exit_point;
@@ -641,7 +633,7 @@ void DistanceDataForNode(WebFocusType type,
 bool CanBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate) {
   DCHECK(candidate.visible_node);
   DCHECK(candidate.is_offscreen);
-  LayoutRect candidate_rect = candidate.rect;
+  LayoutRect candidate_rect = candidate.rect_in_root_frame;
   // TODO(ecobos@igalia.com): Investigate interaction with Shadow DOM.
   for (Node& parent_node :
        NodeTraversal::AncestorsOf(*candidate.visible_node)) {
@@ -651,7 +643,7 @@ bool CanBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate) {
       continue;
     }
 
-    LayoutRect parent_rect = NodeRectInAbsoluteCoordinates(&parent_node);
+    LayoutRect parent_rect = NodeRectInRootFrame(&parent_node);
     if (!candidate_rect.Intersects(parent_rect)) {
       if (((type == kWebFocusTypeLeft || type == kWebFocusTypeRight) &&
            parent_node.GetLayoutObject()->Style()->OverflowX() ==
@@ -705,8 +697,7 @@ LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement& area,
   // areas.
   LayoutRect rect = VirtualRectForDirection(
       type,
-      RectToAbsoluteCoordinates(
-          area.GetDocument().GetFrame(),
+      area.GetDocument().GetFrame()->View()->AbsoluteToRootFrame(
           area.ComputeAbsoluteRect(area.ImageElement()->GetLayoutObject())),
       LayoutUnit(1));
   return rect;
@@ -720,8 +711,12 @@ HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate& candidate) {
 
 LayoutRect FindSearchStartPoint(const LocalFrame* frame,
                                 WebFocusType direction) {
-  LayoutRect starting_rect =
-      VirtualRectForDirection(direction, FrameRectInAbsoluteCoordinates(frame));
+  LayoutRect starting_rect = VirtualRectForDirection(
+      direction,
+      frame->View()->AbsoluteToRootFrame(frame->View()->DocumentToAbsolute(
+          LayoutRect(frame->View()
+                         ->LayoutViewportScrollableArea()
+                         ->VisibleContentRect()))));
 
   const Element* focused_element = frame->GetDocument()->FocusedElement();
   if (focused_element) {
@@ -729,10 +724,9 @@ LayoutRect FindSearchStartPoint(const LocalFrame* frame,
     if (area_element)
       focused_element = area_element->ImageElement();
     if (!HasOffscreenRect(focused_element)) {
-      starting_rect =
-          area_element
-              ? VirtualRectForAreaElementAndDirection(*area_element, direction)
-              : NodeRectInAbsoluteCoordinates(focused_element, true);
+      starting_rect = area_element ? VirtualRectForAreaElementAndDirection(
+                                         *area_element, direction)
+                                   : NodeRectInRootFrame(focused_element, true);
     }
   }
 
