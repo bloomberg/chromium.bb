@@ -55,6 +55,7 @@
 #include "components/toolbar/toolbar_model_impl.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -2842,6 +2843,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
     passwordTabHelper->SetBaseViewController(self);
     passwordTabHelper->SetDispatcher(self.dispatcher);
     passwordTabHelper->SetPasswordControllerDelegate(self);
+  }
+
+  if (AutofillTabHelper* autofillTabHelper =
+          AutofillTabHelper::FromWebState(tab.webState)) {
+    autofillTabHelper->SetBaseViewController(self);
   }
 
   tab.dialogDelegate = self;

@@ -60,6 +60,11 @@ ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
   HideAutofillPopup();
 }
 
+void ChromeAutofillClientIOS::SetBaseViewController(
+    UIViewController* base_view_controller) {
+  base_view_controller_ = base_view_controller;
+}
+
 PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
 }
@@ -103,8 +108,9 @@ void ChromeAutofillClientIOS::ShowUnmaskPrompt(
   unmask_controller_.ShowPrompt(
       // autofill::CardUnmaskPromptViewBridge manages its own lifetime, so
       // do not use std::unique_ptr<> here.
-      new autofill::CardUnmaskPromptViewBridge(&unmask_controller_), card,
-      reason, delegate);
+      new autofill::CardUnmaskPromptViewBridge(&unmask_controller_,
+                                               base_view_controller_),
+      card, reason, delegate);
 }
 
 void ChromeAutofillClientIOS::OnUnmaskVerificationResult(

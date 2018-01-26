@@ -43,7 +43,7 @@ using autofill::AutofillPopupDelegate;
 @interface AutofillController ()<AutofillClientIOSBridge,
                                  AutofillDriverIOSBridge> {
   AutofillAgent* _autofillAgent;
-  std::unique_ptr<autofill::AutofillClient> _autofillClient;
+  std::unique_ptr<autofill::ChromeAutofillClientIOS> _autofillClient;
   autofill::AutofillManager* _autofillManager;  // weak
 }
 
@@ -123,6 +123,10 @@ using autofill::AutofillPopupDelegate;
   _autofillManager = nullptr;
   [_autofillAgent detachFromWebState];
   _autofillAgent = nil;
+}
+
+- (void)setBaseViewController:(UIViewController*)baseViewController {
+  _autofillClient->SetBaseViewController(baseViewController);
 }
 
 #pragma mark - AutofillClientIOSBridge

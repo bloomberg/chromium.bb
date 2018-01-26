@@ -25,6 +25,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 
+@class UIViewController;
+
 namespace autofill {
 
 // Chrome iOS implementation of AutofillClient.
@@ -38,6 +40,9 @@ class ChromeAutofillClientIOS : public AutofillClient {
       password_manager::PasswordGenerationManager* password_generation_manager,
       std::unique_ptr<IdentityProvider> identity_provider);
   ~ChromeAutofillClientIOS() override;
+
+  // Sets a weak reference to the view controller used to present UI.
+  void SetBaseViewController(UIViewController* base_view_controller);
 
   // AutofillClientIOS implementation.
   PersonalDataManager* GetPersonalDataManager() override;
@@ -97,6 +102,9 @@ class ChromeAutofillClientIOS : public AutofillClient {
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+
+  // A weak reference to the view controller used to present UI.
+  __weak UIViewController* base_view_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClientIOS);
 };
