@@ -199,6 +199,10 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   return handleMiddleClick_ && [theEvent buttonNumber] == 2;
 }
 
+- (BOOL)shouldMirrorInRTL {
+  return YES;
+}
+
 - (void)drawFocusRingMask {
   // Match the hover image's bezel.
   [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect([self bounds], 2, 2)
@@ -315,12 +319,13 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
       normalIcon = [self browserToolsIconForFillColor:normalColor];
       disabledIcon = [self browserToolsIconForFillColor:disabledColor];
     } else {
-      BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+      BOOL shouldMirror = cocoa_l10n_util::ShouldDoExperimentalRTLLayout() &&
+                          self.shouldMirrorInRTL;
       normalIcon = NSImageFromImageSkia(
           gfx::CreateVectorIcon(*icon,
                                 kMDButtonIconSize.width,
                                 normalColor));
-      if (isRTL)
+      if (shouldMirror)
         normalIcon = cocoa_l10n_util::FlippedImage(normalIcon);
       // The home button has no icon for its disabled state.
       if (icon != &vector_icons::kReloadIcon) {
@@ -328,7 +333,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
             gfx::CreateVectorIcon(*icon,
                                   kMDButtonIconSize.width,
                                   disabledColor));
-        if (isRTL)
+        if (shouldMirror)
           disabledIcon = cocoa_l10n_util::FlippedImage(disabledIcon);
       }
     }

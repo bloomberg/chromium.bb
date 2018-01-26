@@ -37,6 +37,8 @@ enum class ToolbarButtonImageBackgroundStyle {
 + (NSSize)toolbarButtonSize;
 // Whether or not to handle the mouse middle click events.
 @property(assign, nonatomic) BOOL handleMiddleClick;
+// Whether this button should mirror in RTL. Defaults to YES.
+@property(assign, nonatomic, readonly) BOOL shouldMirrorInRTL;
 // Override point for subclasses to return their vector icon.
 - (const gfx::VectorIcon*)vectorIcon;
 // Override point for subclasses to return their vector icon color.
