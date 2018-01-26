@@ -101,7 +101,7 @@ typedef struct { LIBDRM_ATOMIC_TYPE atomic; } atomic_t;
 
 #endif
 
-#if ! HAS_ATOMIC_OPS
+#if !defined(HAS_ATOMIC_OPS)
 #error libdrm requires atomic operations, please define them for your CPU/compiler.
 #endif
 
