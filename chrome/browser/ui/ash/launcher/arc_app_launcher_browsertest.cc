@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -173,7 +172,6 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     arc::ArcSessionManager::DisableUIForTesting();
-    arc::ArcAuthNotification::DisableForTesting();
   }
 
   void SetUpOnMainThread() override {

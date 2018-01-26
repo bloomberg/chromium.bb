@@ -4458,17 +4458,11 @@
   <message name="IDS_ARC_PLAYSTORE_ICON_TITLE_BETA" desc="The Play Store icon title with the beta label in the launcher.">
     Play Store
   </message>
-  <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
-    Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-  </message>
   <message name="IDS_ARC_NOTIFICATION_DISPLAY_SOURCE" desc="Context title of the first-run notification that enables Android apps.">
     Google Play
   </message>
   <message name="IDS_ARC_PLAYSTORE_SETTING_UP_TITLE" desc="The text tile which is shown when Play Store is initializing.">
     Setting up Google Play...
-  </message>
-  <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
-    Install apps and games from Google Play
   </message>
   <message name="IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON" desc="Label for the button in the first-run notification that enables Android apps.">
     Open Play Store

@@ -18,22 +18,14 @@ class TimeDelta;
 namespace arc {
 
 // These enums are used to define the buckets for an enumerated UMA histogram
-// and need to be synced with histograms.xml
+// and need to be synced with tools/metrics/histograms/enums.xml. Note that
+// values 2, 3 and 4 are now deprecated.
 enum class OptInActionType : int {
   // ARC was opted out by user.
   OPTED_OUT = 0,
 
   // ARC was opted in by user.
   OPTED_IN = 1,
-
-  // ARC OptIn notification was accepted.
-  NOTIFICATION_ACCEPTED = 2,
-
-  // ARC OptIn notification was declined.
-  NOTIFICATION_DECLINED = 3,
-
-  // ARC OptIn notification was timed out.
-  NOTIFICATION_TIMED_OUT = 4,
 
   // User asked to retry OptIn.
   RETRY = 5,

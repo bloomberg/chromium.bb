@@ -902,11 +902,6 @@ class ArcSessionOobeOptInTest : public ArcSessionManagerTest {
 
   void CloseLoginDisplayHost() { fake_login_display_host_.reset(); }
 
-  void AppendEnableArcOOBEOptInSwitch() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableArcOOBEOptIn);
-  }
-
  private:
   std::unique_ptr<FakeLoginDisplayHost> fake_login_display_host_;
 
@@ -920,8 +915,6 @@ TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
   CreateLoginDisplayHost();
   EXPECT_FALSE(IsArcOobeOptInActive());
   GetFakeUserManager()->set_current_user_new(true);
-  EXPECT_FALSE(IsArcOobeOptInActive());
-  AppendEnableArcOOBEOptInSwitch();
   EXPECT_TRUE(IsArcOobeOptInActive());
   login_display_host()->StartVoiceInteractionOobe();
   EXPECT_FALSE(IsArcOobeOptInActive());
@@ -942,8 +935,6 @@ class ArcSessionOobeOptInNegotiatorTest
 
   void SetUp() override {
     ArcSessionOobeOptInTest::SetUp();
-
-    AppendEnableArcOOBEOptInSwitch();
 
     ArcTermsOfServiceOobeNegotiator::SetArcTermsOfServiceScreenViewForTesting(
         this);

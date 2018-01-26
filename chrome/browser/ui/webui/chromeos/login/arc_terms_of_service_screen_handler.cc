@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
-#include "base/command_line.h"
 #include "base/i18n/timezone.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
@@ -70,11 +69,6 @@ void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
     OobeScreen current_screen,
     OobeScreen new_screen) {
   if (new_screen != OobeScreen::SCREEN_GAIA_SIGNIN)
-    return;
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(chromeos::switches::kEnableArcOOBEOptIn))
     return;
 
   MaybeLoadPlayStoreToS(false);

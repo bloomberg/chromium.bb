@@ -303,8 +303,6 @@ source_set("chromeos") {
     "arc/accessibility/arc_accessibility_helper_bridge.h",
     "arc/accessibility/ax_tree_source_arc.cc",
     "arc/accessibility/ax_tree_source_arc.h",
-    "arc/arc_auth_notification.cc",
-    "arc/arc_auth_notification.h",
     "arc/arc_migration_constants.h",
     "arc/arc_migration_guide_notification.cc",
     "arc/arc_migration_guide_notification.h",

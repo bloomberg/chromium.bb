@@ -89,7 +89,6 @@ CHROMEOS_EXPORT extern const char kDisableWakeOnWifi[];
 CHROMEOS_EXPORT extern const char kDisableZipArchiverUnpacker[];
 CHROMEOS_EXPORT extern const char kEnableAndroidWallpapersApp[];
 CHROMEOS_EXPORT extern const char kEnableArc[];
-CHROMEOS_EXPORT extern const char kEnableArcOOBEOptIn[];
 CHROMEOS_EXPORT extern const char kEnableCaptivePortalRandomUrl[];
 CHROMEOS_EXPORT extern const char kEnableCastReceiver[];
 CHROMEOS_EXPORT extern const char kEnableChromeVoxArcSupport[];

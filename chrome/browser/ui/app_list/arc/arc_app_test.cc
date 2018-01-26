@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -91,7 +90,6 @@ void ArcAppTest::SetUp(Profile* profile) {
           base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::DisableUIForTesting();
-  arc::ArcAuthNotification::DisableForTesting();
   arc_session_manager_->SetProfile(profile_);
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =

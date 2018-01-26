@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -34,9 +33,6 @@ ArcPlayStoreEnabledPreferenceHandler::ArcPlayStoreEnabledPreferenceHandler(
 }
 
 ArcPlayStoreEnabledPreferenceHandler::~ArcPlayStoreEnabledPreferenceHandler() {
-  sync_preferences::PrefServiceSyncable* pref_service_syncable =
-      PrefServiceSyncableFromProfile(profile_);
-  pref_service_syncable->RemoveObserver(this);
   pref_change_registrar_.RemoveAll();
 }
 
@@ -78,10 +74,6 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
             << "profile. Removing data.";
     arc_session_manager_->RequestArcDataRemoval();
   }
-
-  // ArcAuthNotification may need to be shown.
-  PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
-  OnIsSyncingChanged();
 }
 
 void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
@@ -102,11 +94,6 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
     }
   }
 
-  // Hide auth notification if it was opened before and arc.enabled pref was
-  // explicitly set to true or false.
-  if (profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
-    auth_notification_.reset();
-
   UpdateArcSessionManager();
 
   // Due to life time management, OnArcPlayStoreEnabledChanged() is notified
@@ -126,25 +113,6 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
     arc_session_manager_->RequestEnable();
   else
     arc_session_manager_->RequestDisable();
-}
-
-void ArcPlayStoreEnabledPreferenceHandler::OnIsSyncingChanged() {
-  sync_preferences::PrefServiceSyncable* const pref_service_syncable =
-      PrefServiceSyncableFromProfile(profile_);
-  if (!pref_service_syncable->IsSyncing())
-    return;
-  pref_service_syncable->RemoveObserver(this);
-
-  // TODO(hidehiko): Extract kEnableArcOOBEOptIn check as a utility method.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOOBEOptIn) ||
-      !profile_->IsNewProfile() ||
-      profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled) ||
-      !arc::IsPlayStoreAvailable()) {
-    return;
-  }
-
-  auth_notification_ = std::make_unique<ArcAuthNotification>(profile_);
 }
 
 }  // namespace arc
