@@ -120,7 +120,7 @@ std::vector<Configuration> FillEnabledPresetConfigurations(
     bool enabled_by_default;
     Configuration (*factory_method)();
   } kAvailablePresetConfigurations[] = {
-      {kPresetLiveRunOnPhishingSites, true,
+      {kPresetLiveRunOnPhishingSites, false,
        &Configuration::MakePresetForLiveRunOnPhishingSites},
       {kPresetPerformanceTestingDryRunOnAllSites, false,
        &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites},
@@ -186,9 +186,7 @@ std::vector<Configuration> ParseEnabledConfigurations() {
   std::map<std::string, std::string> params;
   base::GetFieldTrialParamsByFeature(kSafeBrowsingSubresourceFilter, &params);
 
-  std::vector<Configuration> configs;
-  if (base::FeatureList::IsEnabled(kSafeBrowsingSubresourceFilter))
-    configs = FillEnabledPresetConfigurations(&params);
+  std::vector<Configuration> configs = FillEnabledPresetConfigurations(&params);
 
   Configuration experimental_config = ParseExperimentalConfiguration(&params);
   configs.push_back(std::move(experimental_config));
@@ -236,7 +234,7 @@ base::LazyInstance<scoped_refptr<ConfigurationList>>::Leaky
 // Constant definitions -------------------------------------------------------
 
 const base::Feature kSafeBrowsingSubresourceFilter{
-    "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SubresourceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
     "SubresourceFilterExperimentalUI", base::FEATURE_DISABLED_BY_DEFAULT};
