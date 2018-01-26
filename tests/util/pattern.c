@@ -549,7 +549,6 @@ static void make_pwetty(void *data, unsigned int width, unsigned int height,
 #ifdef HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int x, y;
 	cairo_format_t cairo_format;
 
 	/* we can ignore the order of R,G,B channels */
@@ -576,8 +575,8 @@ static void make_pwetty(void *data, unsigned int width, unsigned int height,
 	cairo_surface_destroy(surface);
 
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
-	for (x = 0; x < width; x += 250)
-		for (y = 0; y < height; y += 250) {
+	for (unsigned x = 0; x < width; x += 250)
+		for (unsigned y = 0; y < height; y += 250) {
 			char buf[64];
 
 			cairo_move_to(cr, x, y - 20);
