@@ -182,8 +182,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   client()
       ->GetContextualSuggestionsService(/*create_if_necessary=*/true)
       ->CreateContextualSuggestionsRequest(
-          current_url, client()->GetCurrentVisitTimestamp(),
-          client()->GetTemplateURLService(),
+          current_url, client()->GetTemplateURLService(),
           /*fetcher_delegate=*/this,
           base::BindOnce(
               &ZeroSuggestProvider::OnContextualSuggestionsFetcherAvailable,

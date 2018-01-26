@@ -170,7 +170,6 @@ static_library("browser") {
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/strings",
-    "//components/sync",
     "//components/toolbar",
     "//components/url_formatter",
     "//components/variations",
