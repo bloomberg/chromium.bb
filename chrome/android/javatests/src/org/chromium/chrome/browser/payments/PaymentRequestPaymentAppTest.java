@@ -21,7 +21,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.TestPay;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;

@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.payments.PaymentRequestTestCommon.TestPay;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
