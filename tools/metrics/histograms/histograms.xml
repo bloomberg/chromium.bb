@@ -55931,6 +55931,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.RequestJob.RangeHeader" enum="BooleanExists">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Track whether the range header is provided when an offline page is served.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.RequestJob.ReadFileErrorCode"
     enum="NetErrorCodes">
   <owner>jianli@chromium.org</owner>

@@ -6,17 +6,26 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_REQUEST_JOB_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/archive_validator.h"
+#include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
-#include "net/url_request/url_request_file_job.h"
+#include "net/url_request/url_request_job.h"
 
 namespace base {
 class FilePath;
 }
+
+namespace net {
+class FileStream;
+class IOBuffer;
+}  // namespace net
 
 namespace previews {
 class PreviewsDecider;
@@ -24,8 +33,15 @@ class PreviewsDecider;
 
 namespace offline_pages {
 
-// A request job that serves content from offline file.
-class OfflinePageRequestJob : public net::URLRequestFileJob {
+// A request job that serves content from a trusted offline file, located either
+// in internal directory or in public directory with digest validated, when a
+// http/https URL is being navigated on disconnected or poor network. If no
+// trusted offline file can be found, fall back to the default network handling
+// which will try to load the live version.
+//
+// The only header handled by this request job is:
+// * "X-Chrome-offline" custom header.
+class OfflinePageRequestJob : public net::URLRequestJob {
  public:
   // This enum is used for UMA reporting. It contains all possible outcomes of
   // handling requests that might service offline page in different network
@@ -58,6 +74,7 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
     DIGEST_MISMATCH_ON_FLAKY_NETWORK,
     DIGEST_MISMATCH_ON_PROHIBITIVELY_SLOW_NETWORK,
     DIGEST_MISMATCH_ON_CONNECTED_NETWORK,
+    FILE_NOT_FOUND,
     AGGREGATED_REQUEST_RESULT_MAX
   };
 
@@ -86,6 +103,32 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
     COUNT
   };
 
+  enum class NetworkState {
+    // No network connection.
+    DISCONNECTED_NETWORK,
+    // Prohibitively slow means that the NetworkQualityEstimator reported a
+    // connection slow enough to warrant showing an offline page if available.
+    // This requires offline previews to be enabled and the URL of the request
+    // to be allowed by previews.
+    PROHIBITIVELY_SLOW_NETWORK,
+    // Network error received due to bad network, i.e. connected to a hotspot or
+    // proxy that does not have a working network.
+    FLAKY_NETWORK,
+    // Network is in working condition.
+    CONNECTED_NETWORK,
+    // Force to load the offline page if it is available, though network is in
+    // working condition.
+    FORCE_OFFLINE_ON_CONNECTED_NETWORK
+  };
+
+  // Describes the info about an offline page candidate.
+  struct Candidate {
+    OfflinePageItem offline_page;
+    // Whether the archive file is in internal directory, for which it can be
+    // deemed trusted without validation.
+    bool archive_is_in_internal_dir;
+  };
+
   // Delegate that allows tests to overwrite certain behaviors.
   class Delegate {
    public:
@@ -97,6 +140,17 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
     GetWebContentsGetter(net::URLRequest* request) const = 0;
 
     virtual TabIdGetter GetTabIdGetter() const = 0;
+  };
+
+  class ThreadSafeArchiveValidator final
+      : public ArchiveValidator,
+        public base::RefCountedThreadSafe<ThreadSafeArchiveValidator> {
+   public:
+    ThreadSafeArchiveValidator() = default;
+
+   private:
+    friend class base::RefCountedThreadSafe<ThreadSafeArchiveValidator>;
+    ~ThreadSafeArchiveValidator() override = default;
   };
 
   // Reports the aggregated result combining both request result and network
@@ -116,26 +170,28 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   // net::URLRequestJob overrides:
   void Start() override;
   void Kill() override;
-  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
+  int ReadRawData(net::IOBuffer* dest, int dest_size) override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
+  bool GetMimeType(std::string* mime_type) const override;
+  void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
 
-  // net::URLRequestFileJob overrides:
-  void OnOpenComplete(int result) override;
-  void OnSeekComplete(int64_t result) override;
-  void OnReadComplete(net::IOBuffer* buf, int result) override;
-
-  void OnOfflineFilePathAvailable(const std::string& name_space,
-                                  const base::FilePath& offline_file_path);
-  void OnOfflineRedirectAvailabe(const GURL& redirected_url);
+  // Called when offline pages matching the request URL are found. The list is
+  // sorted based on creation date in descending order.
+  void OnOfflinePagesAvailable(const std::vector<Candidate>& candidates);
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
-  // net::URLRequestFileJob overrides:
-  bool CanAccessFile(const base::FilePath& original_path,
-                     const base::FilePath& absolute_path) override;
+  enum class FileValidationResult {
+    // The file passes the digest validation and thus can be trusted.
+    FILE_VALIDATION_SUCCEEDED,
+    // The file does not exist.
+    FILE_NOT_FOUND,
+    // The digest validation fails.
+    FILE_VALIDATION_FAILED,
+  };
 
   OfflinePageRequestJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
@@ -148,7 +204,33 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
 
   AccessEntryPoint GetAccessEntryPoint() const;
 
+  const OfflinePageItem& GetCurrentOfflinePage() const;
+
+  void OnTrustedOfflinePageFound();
+  void VisitTrustedOfflinePage();
+  void Redirect(const GURL& redirected_url);
+
+  void OpenFile(const net::CompletionCallback& callback);
+
+  // All the work related to validations.
+  void ValidateFile();
+  void GetFileSizeForValidation();
+  void DidGetFileSizeForValidation(const int64_t* actual_file_size);
+  void DidOpenForValidation(int result);
+  void ReadForValidation();
+  void DidReadForValidation(int result);
+  void DidComputeActualDigest(const std::string& actual_digest);
+  void OnFileValidationDone(FileValidationResult result);
+
+  // All the work related to serving from the archive file.
+  void DidOpenForServing(int result);
+  void DidSeekForServing(int64_t result);
+  void DidReadForServing(scoped_refptr<net::IOBuffer> buf, int result);
+
   std::unique_ptr<Delegate> delegate_;
+
+  OfflinePageHeader offline_header_;
+  NetworkState network_state_;
 
   // For redirect simulation.
   scoped_refptr<net::HttpResponseHeaders> fake_headers_for_redirect_;
@@ -157,6 +239,21 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
 
   // Used to determine if an URLRequest is eligible for offline previews.
   previews::PreviewsDecider* previews_decider_;
+
+  // To run any file related operations.
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+
+  // For file validaton purpose.
+  std::vector<Candidate> candidates_;
+  size_t candidate_index_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<ThreadSafeArchiveValidator> archive_validator_;
+
+  // For the purpose of serving from the archive file.
+  base::FilePath file_path_;
+  std::unique_ptr<net::FileStream> stream_;
+  int64_t remaining_bytes_;
+  bool has_range_header_;
 
   base::WeakPtrFactory<OfflinePageRequestJob> weak_ptr_factory_;
 
