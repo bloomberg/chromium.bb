@@ -62,6 +62,9 @@ namespace disk_cache {
 class BackendImpl;
 class InFlightIO;
 }
+namespace functions {
+class ExecScriptScopedAllowBaseSyncPrimitives;
+}
 namespace gpu {
 class GpuChannelHost;
 }
@@ -267,6 +270,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
                            ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class content::SessionStorageDatabase;
+  friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
