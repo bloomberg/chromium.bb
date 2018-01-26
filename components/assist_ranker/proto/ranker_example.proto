@@ -14,6 +14,11 @@ message StringList {
   repeated bytes string_value = 1;
 }
 
+// A repeated list of float values.
+message FloatList {
+  repeated float float_value = 1;
+}
+
 // Generic message that can contain a variety of data types.
 message Feature {
   oneof feature_type {
@@ -26,6 +31,8 @@ message Feature {
     bytes string_value = 4;
     // String list are used for sparse features.
     StringList string_list = 5;
+    // Float lists represent vectorial features.
+    FloatList float_list = 6;
   }
 }
 
