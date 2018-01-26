@@ -74,9 +74,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
-import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -167,7 +168,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
-    private ViewAnchoredTextBubble mTextBubble;
+    private TextBubble mTextBubble;
 
     private HomepageStateListener mHomepageStateListener;
 
@@ -611,9 +612,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
-        mTextBubble = new ViewAnchoredTextBubble(mToolbar.getContext(), getMenuButton(),
+        ViewRectProvider rectProvider = new ViewRectProvider(getMenuButton());
+        int yInsetPx = mToolbar.getContext().getResources().getDimensionPixelOffset(
+                R.dimen.text_bubble_menu_anchor_y_inset);
+        rectProvider.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        mTextBubble = new TextBubble(mToolbar.getContext(), getMenuButton(),
                 R.string.iph_download_page_for_offline_usage_text,
-                R.string.iph_download_page_for_offline_usage_accessibility_text);
+                R.string.iph_download_page_for_offline_usage_accessibility_text, rectProvider);
         mTextBubble.setDismissOnTouchInteraction(true);
         mTextBubble.addOnDismissListener(new OnDismissListener() {
             @Override
@@ -628,10 +634,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         });
         activity.getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
-        int yInsetPx = mToolbar.getContext().getResources().getDimensionPixelOffset(
-                R.dimen.text_bubble_menu_anchor_y_inset);
-        mTextBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
-                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
         mTextBubble.show();
     }
 

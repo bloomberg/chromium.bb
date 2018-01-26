@@ -24,9 +24,9 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.chrome.browser.widget.ViewRectProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
-import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -218,16 +218,16 @@ public class ChromeHomeIphBubbleController {
         };
 
         if (showAtTopOfScreen) {
-            mHelpBubble =
-                    new TextBubble(mContext, topAnchorView, stringId, accessibilityStringId, false);
-            mHelpBubble.setAnchorRect(getTopAnchorRect(topAnchorView));
+            mHelpBubble = new TextBubble(mContext, topAnchorView, stringId, accessibilityStringId,
+                    false, getTopAnchorRect(topAnchorView));
             topAnchorView.addOnLayoutChangeListener(topAnchorLayoutChangeListener);
         } else {
-            mHelpBubble = new ViewAnchoredTextBubble(
-                    mContext, anchorView, stringId, accessibilityStringId);
+            ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
             int inset = mContext.getResources().getDimensionPixelSize(
                     R.dimen.bottom_sheet_help_bubble_inset);
-            ((ViewAnchoredTextBubble) mHelpBubble).setInsetPx(0, inset, 0, inset);
+            rectProvider.setInsetPx(0, inset, 0, inset);
+            mHelpBubble = new TextBubble(
+                    mContext, anchorView, stringId, accessibilityStringId, rectProvider);
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PERSISTENT_IPH)) {
