@@ -41,10 +41,9 @@ bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
   return has_content;
 }
 
-String StringForBoxType(NGPhysicalFragment::NGBoxType box_type,
-                        bool is_old_layout_root) {
+String StringForBoxType(const NGPhysicalFragment& fragment) {
   StringBuilder result;
-  switch (box_type) {
+  switch (fragment.BoxType()) {
     case NGPhysicalFragment::NGBoxType::kNormalBox:
       break;
     case NGPhysicalFragment::NGBoxType::kInlineBlock:
@@ -62,11 +61,23 @@ String StringForBoxType(NGPhysicalFragment::NGBoxType box_type,
     default:
       NOTREACHED();
   }
-  if (is_old_layout_root) {
+  if (fragment.IsOldLayoutRoot()) {
     if (result.length())
       result.Append(" ");
     result.Append("old-layout-root");
   }
+  if (fragment.IsBlockFlow()) {
+    if (result.length())
+      result.Append(" ");
+    result.Append("block-flow");
+  }
+  if (fragment.IsBox() &&
+      static_cast<const NGPhysicalBoxFragment&>(fragment).ChildrenInline()) {
+    if (result.length())
+      result.Append(" ");
+    result.Append("children-inline");
+  }
+
   return result.ToString();
 }
 
@@ -83,8 +94,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   if (fragment->IsBox()) {
     if (flags & NGPhysicalFragment::DumpType) {
       builder->Append("Box");
-      String box_type =
-          StringForBoxType(fragment->BoxType(), fragment->IsOldLayoutRoot());
+      String box_type = StringForBoxType(*fragment);
       if (!box_type.IsEmpty()) {
         builder->Append(" (");
         builder->Append(box_type);
@@ -299,7 +309,7 @@ String NGPhysicalFragment::ToString() const {
       "Type: '%d' Size: '%s' Offset: '%s' Placed: '%d', BoxType: '%s'", Type(),
       Size().ToString().Ascii().data(),
       is_placed_ ? Offset().ToString().Ascii().data() : "no offset", IsPlaced(),
-      StringForBoxType(BoxType(), IsOldLayoutRoot()).Ascii().data());
+      StringForBoxType(*this).Ascii().data());
 }
 
 String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
