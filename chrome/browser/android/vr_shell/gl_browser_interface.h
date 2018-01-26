@@ -14,6 +14,10 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/transform.h"
 
+namespace gl {
+class SurfaceTexture;
+}
+
 namespace vr_shell {
 
 // VrShellGl talks to VrShell through this interface. This could be split up if
@@ -22,8 +26,10 @@ class GlBrowserInterface {
  public:
   virtual ~GlBrowserInterface() = default;
 
-  virtual void ContentSurfaceCreated(jobject surface) = 0;
-  virtual void ContentOverlaySurfaceCreated(jobject surface) = 0;
+  virtual void ContentSurfaceCreated(jobject surface,
+                                     gl::SurfaceTexture* texture) = 0;
+  virtual void ContentOverlaySurfaceCreated(jobject surface,
+                                            gl::SurfaceTexture* texture) = 0;
   virtual void GvrDelegateReady(
       gvr::ViewerType viewer_type,
       device::mojom::VRDisplayFrameTransportOptionsPtr) = 0;

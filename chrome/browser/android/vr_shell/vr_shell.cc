@@ -67,6 +67,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/android/surface_texture.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
@@ -237,6 +238,8 @@ void VrShell::SetUiState() {
 
 VrShell::~VrShell() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
+  content_surface_texture_ = nullptr;
+  overlay_surface_texture_ = nullptr;
   poll_capturing_media_task_.Cancel();
   if (gvr_gamepad_source_active_) {
     device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
@@ -504,13 +507,17 @@ void VrShell::RequestToExitVr(JNIEnv* env,
   ui_->SetExitVrPromptEnabled(true, static_cast<vr::UiUnsupportedMode>(reason));
 }
 
-void VrShell::ContentSurfaceCreated(jobject surface) {
+void VrShell::ContentSurfaceCreated(jobject surface,
+                                    gl::SurfaceTexture* texture) {
+  content_surface_texture_ = texture;
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> ref(env, surface);
   Java_VrShellImpl_contentSurfaceCreated(env, j_vr_shell_, ref);
 }
 
-void VrShell::ContentOverlaySurfaceCreated(jobject surface) {
+void VrShell::ContentOverlaySurfaceCreated(jobject surface,
+                                           gl::SurfaceTexture* texture) {
+  overlay_surface_texture_ = texture;
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> ref(env, surface);
   Java_VrShellImpl_contentOverlaySurfaceCreated(env, j_vr_shell_, ref);
@@ -530,19 +537,6 @@ VrShell::GetVRDisplayFrameTransportOptions() {
   return frame_transport_options_.Clone();
 }
 
-void VrShell::OnPhysicalBackingSizeChanged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents,
-    jint width,
-    jint height) {
-  if (jweb_contents.is_null())
-    return;
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  web_contents->GetNativeView()->OnSizeChanged(width, height);
-}
-
 void VrShell::BufferBoundsChanged(JNIEnv* env,
                                   const JavaParamRef<jobject>& object,
                                   jint content_width,
@@ -550,8 +544,14 @@ void VrShell::BufferBoundsChanged(JNIEnv* env,
                                   jint overlay_width,
                                   jint overlay_height) {
   TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
-  // TODO(acondor): Set the device scale factor for font rendering on the
-  // VR Shell textures.
+  if (content_surface_texture_) {
+    content_surface_texture_->SetDefaultBufferSize(content_width,
+                                                   content_height);
+  }
+  if (overlay_surface_texture_) {
+    overlay_surface_texture_->SetDefaultBufferSize(overlay_width,
+                                                   overlay_height);
+  }
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::BufferBoundsChanged,
                                 gl_thread_->GetVrShellGl(),

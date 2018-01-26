@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.ui.display.DisplayAndroid;
@@ -121,7 +120,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
 
-        mActivity.getCompositorViewHolder().onEnterVr();
         mCompositorView = mActivity.getCompositorViewHolder().getCompositorView();
         mVrCompositorSurfaceManager = new VrCompositorSurfaceManager(mCompositorView);
         mCompositorView.replaceSurfaceManagerForVr(
@@ -153,16 +151,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         getUiLayout().setCloseButtonListener(mDelegate.getVrCloseButtonListener());
 
-        // Set the initial content size and DPR to be applied to reparented tabs. Otherwise, Chrome
-        // will crash due to a GL buffer initialized with zero bytes.
-        ContentViewCore activeContentViewCore =
-                mActivity.getActivityTab().getActiveContentViewCore();
-        assert activeContentViewCore != null;
-        WindowAndroid wa = activeContentViewCore.getWindowAndroid();
-        mLastContentDpr = wa != null ? wa.getDisplay().getDipScale() : 1.0f;
-        mLastContentWidth = activeContentViewCore.getViewportWidthPix() / mLastContentDpr;
-        mLastContentHeight = activeContentViewCore.getViewportHeightPix() / mLastContentDpr;
-
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
             public boolean shouldStayInChrome(boolean hasExternalProtocol) {
@@ -182,7 +170,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                     forceExitVr();
                     return;
                 }
-                setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+                if (mLastContentWidth != 0) {
+                    setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+                }
                 if (tab.getContentViewCore() != null) {
                     mContentViewCore = tab.getContentViewCore();
                     mContentViewCore.getContainerView().requestFocus();
@@ -464,6 +454,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @CalledByNative
     public void setContentCssSize(float width, float height, float dpr) {
         ThreadUtils.assertOnUiThread();
+        boolean surfaceUninitialized = mLastContentWidth == 0;
         mLastContentWidth = width;
         mLastContentHeight = height;
         mLastContentDpr = dpr;
@@ -479,22 +470,26 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         int overlayWidth = (int) Math.ceil(width * dip);
         int overlayHeight = (int) Math.ceil(height * dip);
 
-        if (mVrBrowsingEnabled) mNonVrViews.resize(overlayWidth, overlayHeight);
-
-        Point size = new Point(contentWidth, contentHeight);
-        mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null);
-        nativeOnPhysicalBackingSizeChanged(
-                mNativeVrShell, mTab.getWebContents(), contentWidth, contentHeight);
         nativeBufferBoundsChanged(
                 mNativeVrShell, contentWidth, contentHeight, overlayWidth, overlayHeight);
         if (mContentSurface != null) {
-            mVrCompositorSurfaceManager.surfaceResized(contentWidth, contentHeight);
+            if (surfaceUninitialized) {
+                mVrCompositorSurfaceManager.setSurface(
+                        mContentSurface, PixelFormat.OPAQUE, contentWidth, contentHeight);
+            } else {
+                mVrCompositorSurfaceManager.surfaceResized(contentWidth, contentHeight);
+            }
         }
+        Point size = new Point(contentWidth, contentHeight);
+        mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null);
+        mTab.getWebContents().setSize(contentWidth, contentHeight);
+        if (mVrBrowsingEnabled) mNonVrViews.resize(overlayWidth, overlayHeight);
     }
 
     @CalledByNative
     public void contentSurfaceCreated(Surface surface) {
         mContentSurface = surface;
+        if (mLastContentWidth == 0) return;
         int width = (int) Math.ceil(mLastContentWidth * mLastContentDpr);
         int height = (int) Math.ceil(mLastContentHeight * mLastContentDpr);
         mVrCompositorSurfaceManager.setSurface(mContentSurface, PixelFormat.OPAQUE, width, height);
@@ -585,9 +580,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mContentVirtualDisplay.destroy();
 
         mCompositorView.onExitVr(mActivity.getWindowAndroid());
-        if (mActivity.getCompositorViewHolder() != null) {
-            mActivity.getCompositorViewHolder().onExitVr();
-        }
+
         mActivity.getToolbarManager().setProgressBarEnabled(true);
 
         // Since VSync was paused, control heights may not have been propagated. If we request to
@@ -848,8 +841,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
     private native void nativeOnLoadProgressChanged(long nativeVrShell, double progress);
-    private native void nativeOnPhysicalBackingSizeChanged(
-            long nativeVrShell, WebContents webContents, int width, int height);
     private native void nativeBufferBoundsChanged(long nativeVrShell, int contentWidth,
             int contentHeight, int overlayWidth, int overlayHeight);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled, boolean showToast);
