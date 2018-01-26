@@ -528,11 +528,14 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                               ->Loader()
                               .GetProvisionalDocumentLoader()) {
     FrameClientHintsPreferencesContext hints_context(GetFrame());
-
+    if (!blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
+        IsClientHintsAllowed(response.Url())) {
+      // If the persistent client hint feature is enabled, then client hints
+      // should be allowed only on secure URLs.
       document_loader_->GetClientHintsPreferences()
           .UpdateFromAcceptClientHintsHeader(
               response.HttpHeaderField(HTTPNames::Accept_CH), &hints_context);
-
+    }
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
     resource_loading_policy = LinkLoader::kDoNotLoadResources;
@@ -857,17 +860,22 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
   WebEnabledClientHints enabled_hints;
-  // Check if |url| is allowed to run JavaScript. If not, client hints are not
-  // attached to the requests that initiate on the render side.
-  if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() &&
-      IsClientHintsAllowed(request.Url()) && GetContentSettingsClient() &&
-      AllowScriptFromSource(request.Url())) {
-    // TODO(tbansal): crbug.com/735518 This code path is not executed for main
-    // frame navigations when browser side navigation is enabled. For main
-    // frame requests with browser side navigation enabled, the client hints
-    // should be attached by the browser process.
-    GetContentSettingsClient()->GetAllowedClientHintsFromSource(request.Url(),
-                                                                &enabled_hints);
+  if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled()) {
+    // If the feature is enabled, then client hints are allowed only on secure
+    // URLs.
+    if (!IsClientHintsAllowed(request.Url()))
+      return;
+
+    // Check if |url| is allowed to run JavaScript. If not, client hints are not
+    // attached to the requests that initiate on the render side.
+    if (GetContentSettingsClient() && AllowScriptFromSource(request.Url())) {
+      // TODO(tbansal): crbug.com/735518 This code path is not executed for main
+      // frame navigations when browser side navigation is enabled. For main
+      // frame requests with browser side navigation enabled, the client hints
+      // should be attached by the browser process.
+      GetContentSettingsClient()->GetAllowedClientHintsFromSource(
+          request.Url(), &enabled_hints);
+    }
   }
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
