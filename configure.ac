@@ -424,8 +424,6 @@ AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
 if test "x$AMDGPU" = xyes; then
 	AC_DEFINE(HAVE_AMDGPU, 1, [Have amdgpu support])
 
-	AC_DEFINE(HAVE_CUNIT, [test "x$have_cunit" != "xno"], [Enable CUNIT Have amdgpu support])
-
 	if test "x$have_cunit" = "xno"; then
 		AC_MSG_WARN([Could not find cunit library. Disabling amdgpu tests])
 	fi
