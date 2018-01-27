@@ -60,6 +60,8 @@ source_set("compiler_files") {
     "src/src/reflection.cpp",
     "src/src/util.cpp",
   ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   visibility = [ ":*" ]
   deps = [
     ":flatbuffers",
