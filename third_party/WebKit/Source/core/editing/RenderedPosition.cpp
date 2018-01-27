@@ -341,12 +341,10 @@ static LayoutPoint GetSamplePointForVisibility(
 
 // Returns whether this position is not visible on the screen (because
 // clipped out).
-static bool IsVisible(bool selection_start,
-                      const LocalCaretRect& local_caret_rect) {
-  if (!local_caret_rect.layout_object)
-    return false;
-
-  Node* const node = local_caret_rect.layout_object->GetNode();
+static bool IsVisible(const LayoutObject& rect_layout_object,
+                      const LayoutPoint& edge_top_in_layer,
+                      const LayoutPoint& edge_bottom_in_layer) {
+  Node* const node = rect_layout_object.GetNode();
   if (!node)
     return true;
   TextControlElement* text_control = EnclosingTextControl(node);
@@ -359,21 +357,14 @@ static bool IsVisible(bool selection_start,
   if (!layout_object || !layout_object->IsBox())
     return true;
 
-  LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
-  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
-      GetLocalSelectionEndpoints(selection_start, local_caret_rect);
-  LayoutPoint sample_point =
+  const LayoutPoint sample_point =
       GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer);
 
-  LayoutBox* text_control_object = ToLayoutBox(layout_object);
-  LayoutPoint position_in_input(
-      local_caret_rect.layout_object->LocalToAncestorPoint(
-          FloatPoint(sample_point), text_control_object,
-          kTraverseDocumentBoundaries));
-  if (!text_control_object->BorderBoxRect().Contains(position_in_input))
-    return false;
-
-  return true;
+  LayoutBox* const text_control_object = ToLayoutBox(layout_object);
+  const LayoutPoint position_in_input(rect_layout_object.LocalToAncestorPoint(
+      FloatPoint(sample_point), text_control_object,
+      kTraverseDocumentBoundaries));
+  return text_control_object->BorderBoxRect().Contains(position_in_input);
 }
 
 static CompositedSelectionBound PositionInGraphicsLayerBacking(
@@ -397,7 +388,8 @@ static CompositedSelectionBound PositionInGraphicsLayerBacking(
   bound.edge_bottom_in_layer =
       LocalToInvalidationBackingPoint(edge_bottom_in_layer, *layout_object);
   bound.layer = GetGraphicsLayerBacking(*layout_object);
-  bound.hidden = !IsVisible(selection_start, local_caret_rect);
+  bound.hidden =
+      !IsVisible(*layout_object, edge_top_in_layer, edge_bottom_in_layer);
   return bound;
 }
 
