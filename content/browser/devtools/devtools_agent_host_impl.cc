@@ -363,11 +363,9 @@ void DevToolsAgentHostImpl::NotifyCreated() {
     observer.DevToolsAgentHostCreated(this);
 }
 
-void DevToolsAgentHostImpl::NotifyNavigated(DevToolsAgentHostImpl* host) {
-  if (!host)
-    return;
+void DevToolsAgentHostImpl::NotifyNavigated() {
   for (auto& observer : g_devtools_observers.Get())
-    observer.DevToolsAgentHostNavigated(host);
+    observer.DevToolsAgentHostNavigated(this);
 }
 
 void DevToolsAgentHostImpl::NotifyAttached() {

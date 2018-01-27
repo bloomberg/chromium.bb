@@ -128,6 +128,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void MaybeReattachToRenderFrame();
   void GrantPolicy();
   void RevokePolicy();
+  void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();

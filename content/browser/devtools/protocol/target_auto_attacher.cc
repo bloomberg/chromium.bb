@@ -178,13 +178,12 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
 }
 
 void TargetAutoAttacher::ReattachServiceWorkers(bool waiting_for_debugger) {
-  if (!auto_attach_)
+  if (!auto_attaching_service_workers_)
     return;
 
   frame_urls_.clear();
   BrowserContext* browser_context = nullptr;
   if (render_frame_host_) {
-    // TODO(dgozman): do not traverse inside cross-process subframes.
     for (FrameTreeNode* node :
          render_frame_host_->frame_tree_node()->frame_tree()->Nodes()) {
       frame_urls_.insert(node->current_url());
@@ -225,14 +224,22 @@ void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
     return;
   auto_attach_ = auto_attach;
   if (auto_attach_) {
-    ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
-    ReattachServiceWorkers(false);
+    auto_attaching_service_workers_ =
+        render_frame_host_ && !render_frame_host_->GetParent();
+    if (auto_attaching_service_workers_) {
+      ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
+      ReattachServiceWorkers(false);
+    }
     UpdateFrames();
   } else {
-    ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
     Hosts empty;
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
-    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeServiceWorker, false);
+    if (auto_attaching_service_workers_) {
+      ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
+      ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeServiceWorker,
+                            false);
+      auto_attaching_service_workers_ = false;
+    }
     DCHECK(auto_attached_hosts_.empty());
   }
 }

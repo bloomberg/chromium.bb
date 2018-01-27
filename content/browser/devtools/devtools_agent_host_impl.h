@@ -69,7 +69,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
                                        const std::string& message);
 
   void NotifyCreated();
-  void NotifyNavigated(DevToolsAgentHostImpl* host);
+  void NotifyNavigated();
   void ForceDetachAllClients();
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
