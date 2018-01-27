@@ -2770,9 +2770,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           MB_MODE_INFO *const mbmi = &(pc_tree->split[idx]->none.mic.mbmi);
           PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
           // Neither palette mode nor cfl predicted
-          if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0 &&
-              mbmi->uv_mode != UV_CFL_PRED) {
-            split_ctx_is_ready[idx] = 1;
+          if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
+#if CONFIG_CFL
+            if (mbmi->uv_mode != UV_CFL_PRED)
+#endif  // CONFIG_CFL
+              split_ctx_is_ready[idx] = 1;
           }
         }
 #endif  // CONFIG_EXT_PARTITION_TYPES
@@ -2831,9 +2833,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       MB_MODE_INFO *const mbmi = &(pc_tree->horizontal[0].mic.mbmi);
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
-      if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0 &&
-          mbmi->uv_mode != UV_CFL_PRED) {
-        horz_ctx_is_ready = 1;
+      if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
+#if CONFIG_CFL
+        if (mbmi->uv_mode != UV_CFL_PRED)
+#endif  // CONFIG_CFL
+          horz_ctx_is_ready = 1;
       }
 #endif  // CONFIG_EXT_PARTITION_TYPES
       update_state(cpi, tile_data, td, ctx_h, mi_row, mi_col, subsize, 1);
@@ -2920,9 +2924,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       MB_MODE_INFO *const mbmi = &(pc_tree->vertical[0].mic.mbmi);
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
-      if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0 &&
-          mbmi->uv_mode != UV_CFL_PRED) {
-        vert_ctx_is_ready = 1;
+      if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
+#if CONFIG_CFL
+        if (mbmi->uv_mode != UV_CFL_PRED)
+#endif  // CONFIG_CFL
+          vert_ctx_is_ready = 1;
       }
 #endif  // CONFIG_EXT_PARTITION_TYPES
       update_state(cpi, tile_data, td, &pc_tree->vertical[0], mi_row, mi_col,
