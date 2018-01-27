@@ -124,12 +124,15 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
     case TilePriority::NOW:
       UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.NOW",
                             success);
+      break;
     case TilePriority::SOON:
       UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.SOON",
                             success);
+      break;
     case TilePriority::EVENTUALLY:
       UMA_HISTOGRAM_BOOLEAN(
           "Renderer4.LockExistingCachedImage.Software.EVENTUALLY", success);
+      break;
   }
 }
 

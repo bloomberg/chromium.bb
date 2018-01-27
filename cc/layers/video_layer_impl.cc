@@ -131,6 +131,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
       transform.Rotate(270.0);
       transform.Translate(-rotated_size.width(), 0);
+      break;
     case media::VIDEO_ROTATION_0:
       break;
   }

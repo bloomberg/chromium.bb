@@ -184,10 +184,6 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
         EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer_->scroll_offset());
         break;
       case 1:
-        EXPECT_VECTOR_EQ(
-            gfx::ScrollOffsetWithDelta(initial_scroll_,
-                                       scroll_amount_ + scroll_amount_),
-            scroll_layer_->scroll_offset());
       case 2:
         EXPECT_VECTOR_EQ(
             gfx::ScrollOffsetWithDelta(initial_scroll_,

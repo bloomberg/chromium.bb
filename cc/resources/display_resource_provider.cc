@@ -472,7 +472,7 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
             compositor_context_provider_->ContextCapabilities().texture_npot);
         gl->GenerateMipmap(target);
         resource->mipmap_state = viz::internal::Resource::VALID;
-      // fall-through
+        FALLTHROUGH;
       case viz::internal::Resource::VALID:
         min_filter = GL_LINEAR_MIPMAP_LINEAR;
         break;
