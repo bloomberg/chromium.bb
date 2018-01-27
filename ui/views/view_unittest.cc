@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -4516,7 +4515,7 @@ class PaintLayerView : public View {
   PaintLayerView() = default;
 
   void PaintChildren(const PaintInfo& info) override {
-    last_paint_info_ = base::MakeUnique<PaintInfo>(info);
+    last_paint_info_ = std::make_unique<PaintInfo>(info);
     View::PaintChildren(info);
   }
 
