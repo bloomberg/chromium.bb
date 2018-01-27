@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,20 +42,21 @@ const uint64_t kStorageFreeSpaceInObjects = 0x04000000;  // 64M Objects left
 const char kStorageDescription[] = "ExampleDescription";
 const char kStorageVolumeIdentifier[] = "ExampleVolumeId";
 
-std::map<std::string, device::mojom::MtpStorageInfo> fake_storage_info_map;
+base::LazyInstance<std::map<std::string, device::mojom::MtpStorageInfo>>::Leaky
+      g_fake_storage_info_map = LAZY_INSTANCE_INITIALIZER;
 
 // Helper function to get fake MTP device details.
 const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfo(
     const std::string& storage_name) {
   // Fill the map out if it is empty.
-  if (fake_storage_info_map.empty()) {
+  if (g_fake_storage_info_map.Get().empty()) {
     // Add the invalid MTP storage info.
     auto storage_info = device::mojom::MtpStorageInfo();
     storage_info.storage_name = kStorageWithInvalidInfo;
-    fake_storage_info_map.insert(
+    g_fake_storage_info_map.Get().insert(
         std::make_pair(kStorageWithInvalidInfo, storage_info));
     // Add the valid MTP storage info.
-    fake_storage_info_map.insert(std::make_pair(
+    g_fake_storage_info_map.Get().insert(std::make_pair(
         kStorageWithValidInfo,
         device::mojom::MtpStorageInfo(
             kStorageWithValidInfo, kStorageVendor, kStorageVendorId,
@@ -65,8 +67,8 @@ const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfo(
             kStorageVolumeIdentifier)));
   }
 
-  const auto it = fake_storage_info_map.find(storage_name);
-  return it != fake_storage_info_map.end() ? &it->second : nullptr;
+  const auto it = g_fake_storage_info_map.Get().find(storage_name);
+  return it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
 }
 
 class TestMediaTransferProtocolDeviceObserverChromeOS

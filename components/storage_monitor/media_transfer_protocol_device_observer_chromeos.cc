@@ -113,7 +113,7 @@ MediaTransferProtocolDeviceObserverChromeOS::
     MediaTransferProtocolDeviceObserverChromeOS(
         StorageMonitor::Receiver* receiver,
         device::MediaTransferProtocolManager* mtp_manager,
-        GetMtpStorageInfoCallback get_mtp_storage_info_cb)
+        const GetMtpStorageInfoCallback& get_mtp_storage_info_cb)
     : mtp_manager_(mtp_manager),
       get_mtp_storage_info_cb_(get_mtp_storage_info_cb),
       notifications_(receiver),
