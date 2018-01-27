@@ -989,8 +989,7 @@ void DocumentLoader::DidCommitNavigation(
   // Report legacy Symantec certificates after Page::DidCommitLoad, because the
   // latter clears the console.
   if (response_.IsLegacySymantecCert()) {
-    GetLocalFrameClient().ReportLegacySymantecCert(
-        response_.Url(), response_.CertValidityStart());
+    GetLocalFrameClient().ReportLegacySymantecCert(response_.Url());
   }
 }
 

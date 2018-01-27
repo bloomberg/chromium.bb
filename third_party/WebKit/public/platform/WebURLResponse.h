@@ -197,7 +197,6 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void SetHasMajorCertificateErrors(bool);
   BLINK_PLATFORM_EXPORT void SetIsLegacySymantecCert(bool);
-  BLINK_PLATFORM_EXPORT void SetCertValidityStart(base::Time);
 
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);
 

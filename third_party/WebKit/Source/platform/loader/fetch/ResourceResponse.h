@@ -247,11 +247,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     is_legacy_symantec_cert_ = is_legacy_symantec_cert;
   }
 
-  base::Time CertValidityStart() const { return cert_validity_start_; }
-  void SetCertValidityStart(base::Time cert_validity_start) {
-    cert_validity_start_ = cert_validity_start;
-  }
-
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;

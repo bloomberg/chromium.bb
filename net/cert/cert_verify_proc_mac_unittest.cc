@@ -138,9 +138,9 @@ TEST(CertVerifyProcMacTest, MacCRLIntermediate) {
 // one using SHA1), that the keychain reordering hack will cause the better
 // root in the System Roots to be used instead.
 TEST(CertVerifyProcMacTest, MacKeychainReordering) {
-  // Note: target cert expires Apr  2 23:59:59 2018 GMT
+  // Note: target cert expires Dec 30 23:59:59 2019 GMT
   scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "tripadvisor-verisign-chain.pem",
+      GetTestCertsDirectory(), "gms.hongleong.com.my-verisign-chain.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_TRUE(cert);
 
@@ -166,7 +166,7 @@ TEST(CertVerifyProcMacTest, MacKeychainReordering) {
   int flags = 0;
   CertVerifyResult verify_result;
   scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
-  int error = verify_proc->Verify(cert.get(), "www.tripadvisor.com",
+  int error = verify_proc->Verify(cert.get(), "gms.hongleong.com.my",
                                   std::string(), flags, nullptr /* crl_set */,
                                   CertificateList(), &verify_result);
 

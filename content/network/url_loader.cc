@@ -63,8 +63,6 @@ void PopulateResourceResponse(net::URLRequest* request,
         (!net::IsCertStatusError(response->head.cert_status) ||
          net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
-    response->head.cert_validity_start =
-        request->ssl_info().cert->valid_start();
     response->head.cert_status = request->ssl_info().cert_status;
   }
 

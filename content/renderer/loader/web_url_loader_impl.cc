@@ -1159,7 +1159,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
       net::IsCertStatusError(info.cert_status) &&
       !net::IsCertStatusMinorError(info.cert_status));
   response->SetIsLegacySymantecCert(info.is_legacy_symantec_cert);
-  response->SetCertValidityStart(info.cert_validity_start);
   response->SetAppCacheID(info.appcache_id);
   response->SetAppCacheManifestURL(info.appcache_manifest_url);
   response->SetWasCached(!info.load_timing.request_start_time.is_null() &&

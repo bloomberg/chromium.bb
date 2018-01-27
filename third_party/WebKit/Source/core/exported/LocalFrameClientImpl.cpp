@@ -706,8 +706,7 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
     web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
-                                                    Time cert_validity_start) {
+void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url) {
   // To prevent log spam, only log the message once per hostname.
   if (certificate_warning_hosts_.Contains(url.Host()))
     return;
@@ -734,7 +733,7 @@ void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
                          "https://g.co/chrome/symantecpkicerts for "
                          "more information."));
   } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
-                 url, cert_validity_start, &console_message)) {
+                 url, &console_message)) {
     console_message = WebString(
         String::Format("The SSL certificate used to load resources from %s"
                        " will be "
