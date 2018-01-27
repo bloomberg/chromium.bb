@@ -385,10 +385,9 @@ static CompositedSelectionBound PositionInGraphicsLayerBacking(
     return CompositedSelectionBound();
 
   CompositedSelectionBound bound;
-  // Flipped blocks writing mode is not only vertical but also right to left.
-  if (!layout_object->Style()->IsHorizontalWritingMode()) {
-    bound.is_text_direction_rtl = layout_object->HasFlippedBlocksWritingMode();
-  }
+  bound.is_text_direction_rtl =
+      layout_object->HasFlippedBlocksWritingMode() ||
+      PrimaryDirectionOf(*position.AnchorNode()) == TextDirection::kRtl;
 
   LayoutPoint edge_top_in_layer, edge_bottom_in_layer;
   std::tie(edge_top_in_layer, edge_bottom_in_layer) =
@@ -441,13 +440,6 @@ CompositedSelection RenderedPosition::ComputeCompositedSelection(
   DCHECK(!visible_selection.IsNone());
   selection.type =
       visible_selection.IsRange() ? kRangeSelection : kCaretSelection;
-  selection.start.is_text_direction_rtl |=
-      PrimaryDirectionOf(*visible_selection.Start().AnchorNode()) ==
-      TextDirection::kRtl;
-  selection.end.is_text_direction_rtl |=
-      PrimaryDirectionOf(*visible_selection.End().AnchorNode()) ==
-      TextDirection::kRtl;
-
   return selection;
 }
 
