@@ -64,7 +64,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         --calculated-paper-checkbox-size: var(--paper-checkbox-size, 18px);
         /* -1px is a sentinel for the default and is replaced in `attached`. */
         --calculated-paper-checkbox-ink-size: var(--paper-checkbox-ink-size, -1px);
-        @apply(--paper-font-common-base);
+        @apply --paper-font-common-base;
         line-height: 0;
         -webkit-tap-highlight-color: transparent;
       }
@@ -179,12 +179,12 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         white-space: normal;
         line-height: normal;
         color: var(--paper-checkbox-label-color, var(--primary-text-color));
-        @apply(--paper-checkbox-label);
+        @apply --paper-checkbox-label;
       }
 
       :host([checked]) #checkboxLabel {
         color: var(--paper-checkbox-label-checked-color, var(--paper-checkbox-label-color, var(--primary-text-color)));
-        @apply(--paper-checkbox-label-checked);
+        @apply --paper-checkbox-label-checked;
       }
 
       :host-context([dir="rtl"]) #checkboxLabel {
@@ -224,7 +224,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       </div>
     </div>
 
-    <div id="checkboxLabel"><content></content></div>
+    <div id="checkboxLabel"><slot></slot></div>
   </template>
 
   </dom-module>
