@@ -59,8 +59,8 @@ class WritersTest : public testing::Test {
   enum class DeleteTransactionType { NONE, ACTIVE, WAITING, IDLE };
   WritersTest()
       : disk_entry_(nullptr),
-        test_cache_(base::MakeUnique<MockNetworkLayer>(),
-                    base::MakeUnique<MockBackendFactory>()),
+        test_cache_(std::make_unique<MockNetworkLayer>(),
+                    std::make_unique<MockBackendFactory>()),
         request_(kSimpleGET_Transaction) {
     ScopedMockTransaction transaction(kSimpleGET_Transaction);
     transaction.response_headers =

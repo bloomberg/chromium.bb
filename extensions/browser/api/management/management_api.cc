@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -144,7 +143,7 @@ management::ExtensionInfo CreateExtensionInfo(
       info.disabled_reason = management::EXTENSION_DISABLED_REASON_UNKNOWN;
     }
 
-    info.may_enable = base::MakeUnique<bool>(
+    info.may_enable = std::make_unique<bool>(
         system->management_policy()->UserMayModifySettings(&extension,
                                                            nullptr) &&
         !system->management_policy()->MustRemainDisabled(&extension, nullptr,

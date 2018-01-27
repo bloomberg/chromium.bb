@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_web_contents_manager.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -47,12 +48,12 @@ std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   if (extension) {
-    return base::MakeUnique<CastWebViewExtension>(
+    return std::make_unique<CastWebViewExtension>(
         extension, initial_url, delegate, this, browser_context_, site_instance,
         transparent, allow_media_access, is_headless, enable_touch_input);
   }
 #endif
-  return base::MakeUnique<CastWebViewDefault>(
+  return std::make_unique<CastWebViewDefault>(
       delegate, this, browser_context_, site_instance, transparent,
       allow_media_access, is_headless, enable_touch_input);
 }

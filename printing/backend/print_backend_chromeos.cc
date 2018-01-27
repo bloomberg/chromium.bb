@@ -11,7 +11,6 @@
 #include "url/gurl.h"
 
 #if defined(USE_CUPS)
-#include "base/memory/ptr_util.h"
 #include "printing/backend/print_backend_cups_ipp.h"
 #endif  // defined(USE_CUPS)
 
@@ -32,7 +31,7 @@ std::unique_ptr<CupsConnection> CreateConnection(
   }
   GURL print_server_url(print_server_url_str);
 
-  return base::MakeUnique<CupsConnection>(
+  return std::make_unique<CupsConnection>(
       print_server_url, static_cast<http_encryption_t>(encryption),
       cups_blocking == kValueTrue);
 }

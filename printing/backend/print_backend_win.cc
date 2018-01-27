@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "base/memory/free_deleter.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -192,7 +191,7 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   if (!bytes_needed)
     return false;
 
-  auto printer_info_buffer = base::MakeUnique<BYTE[]>(bytes_needed);
+  auto printer_info_buffer = std::make_unique<BYTE[]>(bytes_needed);
   if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr,
                     kLevel, printer_info_buffer.get(), bytes_needed,
                     &bytes_needed, &count_returned)) {

@@ -4,7 +4,8 @@
 
 #include "chromecast/gpu/cast_content_gpu_client.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "build/build_config.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -29,7 +30,7 @@ const gpu::GPUInfo* CastContentGpuClient::GetGPUInfo() {
   return nullptr;
 #else
   if (!gpu_info_) {
-    gpu_info_ = base::MakeUnique<gpu::GPUInfo>();
+    gpu_info_ = std::make_unique<gpu::GPUInfo>();
     std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
     gpu_info_->gl_vendor = sys_info->GetGlVendor();
     gpu_info_->gl_renderer = sys_info->GetGlRenderer();

@@ -5,10 +5,10 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -287,7 +287,7 @@ void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)
     g_instance_to_dispatcher = new InstanceToDispatcherMap;
   (*g_instance_to_dispatcher)[instance] = this;
-  instance_map_[instance] = base::MakeUnique<InstanceData>();
+  instance_map_[instance] = std::make_unique<InstanceData>();
 }
 
 void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {

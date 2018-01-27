@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -149,7 +148,7 @@ void SetPrintableArea(PrintSettings* settings,
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return base::MakeUnique<PrintingContextChromeos>(delegate);
+  return std::make_unique<PrintingContextChromeos>(delegate);
 }
 
 PrintingContextChromeos::PrintingContextChromeos(Delegate* delegate)

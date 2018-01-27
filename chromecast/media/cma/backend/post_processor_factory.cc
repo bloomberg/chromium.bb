@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/post_processor_factory.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_native_library.h"

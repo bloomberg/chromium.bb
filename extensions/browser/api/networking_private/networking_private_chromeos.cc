@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -154,7 +153,7 @@ void AppendDeviceState(
     bool sim_present = !device->IsSimAbsent();
     properties->sim_present = std::make_unique<bool>(sim_present);
     if (sim_present) {
-      auto sim_lock_status = base::MakeUnique<private_api::SIMLockStatus>();
+      auto sim_lock_status = std::make_unique<private_api::SIMLockStatus>();
       sim_lock_status->lock_enabled = device->sim_lock_enabled();
       sim_lock_status->lock_type = device->sim_lock_type();
       sim_lock_status->retries_left.reset(new int(device->sim_retries_left()));

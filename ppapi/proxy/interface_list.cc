@@ -4,11 +4,11 @@
 
 #include "ppapi/proxy/interface_list.h"
 
+#include <memory>
 #include <stdint.h>
 
 #include "base/hash.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
@@ -399,14 +399,14 @@ void InterfaceList::AddPPB(const char* name,
                            const void* iface,
                            Permission perm) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
-  name_to_browser_info_[name] = base::MakeUnique<InterfaceInfo>(iface, perm);
+  name_to_browser_info_[name] = std::make_unique<InterfaceInfo>(iface, perm);
 }
 
 void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
   name_to_plugin_info_[name] =
-      base::MakeUnique<InterfaceInfo>(iface, PERMISSION_NONE);
+      std::make_unique<InterfaceInfo>(iface, PERMISSION_NONE);
 }
 
 int InterfaceList::HashInterfaceName(const std::string& name) {

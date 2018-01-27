@@ -4,8 +4,9 @@
 
 #include "ppapi/proxy/vpn_provider_resource.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -207,9 +208,9 @@ void VpnProviderResource::OnPluginMsgBindReply(
       NOTREACHED();
       return;
     }
-    send_packet_buffer_ = base::MakeUnique<ppapi::VpnProviderSharedBuffer>(
+    send_packet_buffer_ = std::make_unique<ppapi::VpnProviderSharedBuffer>(
         queue_size, max_packet_size, std::move(send_shm));
-    recv_packet_buffer_ = base::MakeUnique<ppapi::VpnProviderSharedBuffer>(
+    recv_packet_buffer_ = std::make_unique<ppapi::VpnProviderSharedBuffer>(
         queue_size, max_packet_size, std::move(receive_shm));
 
     bound_ = (result == PP_OK);
