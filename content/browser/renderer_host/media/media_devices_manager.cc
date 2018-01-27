@@ -73,7 +73,48 @@ MediaDeviceInfoArray GetFakeAudioDevices(bool is_input) {
   return result;
 }
 
+std::string VideoLabelWithoutModelID(const std::string& label) {
+  if (label.rfind(")") != label.size() - 1)
+    return label;
+
+  auto idx = label.rfind(" (");
+  if (idx == std::string::npos)
+    return label;
+
+  return label.substr(0, idx - 1);
+}
+
 }  // namespace
+
+std::string GuessVideoGroupID(const MediaDeviceInfoArray& audio_infos,
+                              const MediaDeviceInfo& video_info) {
+  std::string video_label = VideoLabelWithoutModelID(video_info.label);
+
+  // If |video_label| is very small, do not guess in order to avoid false
+  // positives.
+  if (video_label.size() <= 3)
+    return video_info.device_id;
+
+  auto equals_lambda = [&video_label](const MediaDeviceInfo& info) {
+    return info.label.find(video_label) != std::string::npos;
+  };
+
+  auto it_first =
+      std::find_if(audio_infos.begin(), audio_infos.end(), equals_lambda);
+  if (it_first == audio_infos.end())
+    return video_info.device_id;
+
+  auto it = it_first;
+  while ((it = std::find_if(it + 1, audio_infos.end(), equals_lambda)) !=
+         audio_infos.end()) {
+    // If the label appears with more than one group ID, it is impossible to
+    // know which group ID is the correct one.
+    if (it->group_id != it_first->group_id)
+      return video_info.device_id;
+  }
+
+  return it_first->group_id;
+}
 
 struct MediaDevicesManager::EnumerationRequest {
   EnumerationRequest(const BoolDeviceTypes& requested_types,
@@ -407,12 +448,23 @@ void MediaDevicesManager::OnDevicesEnumerated(
     const MediaDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::string group_id_salt = group_id_salt_base + device_id_salt;
+
+  MediaDeviceInfoArray video_device_infos =
+      enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT];
+  for (auto& video_device_info : video_device_infos) {
+    video_device_info.group_id = GuessVideoGroupID(
+        enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT], video_device_info);
+  }
+
   std::vector<MediaDeviceInfoArray> result(NUM_MEDIA_DEVICE_TYPES);
   for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
     if (!requested_types[i])
       continue;
 
-    for (const auto& device_info : enumeration[i]) {
+    const MediaDeviceInfoArray& device_infos =
+        i == MEDIA_DEVICE_TYPE_VIDEO_INPUT ? video_device_infos
+                                           : enumeration[i];
+    for (const auto& device_info : device_infos) {
       result[i].push_back(TranslateMediaDeviceInfo(
           has_permissions[i], device_id_salt, group_id_salt, security_origin,
           device_info));

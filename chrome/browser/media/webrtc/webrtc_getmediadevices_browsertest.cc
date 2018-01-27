@@ -111,14 +111,7 @@ class WebRtcGetMediaDevicesBrowserTest
         found_video_input = true;
       }
 
-      // enumerateDevices doesn't have group ID support for video input devices.
-      // TODO(guidou): remove this once http://crbug.com/627793 is fixed.
-      if (device.kind == kDeviceKindVideoInput) {
-        EXPECT_TRUE(device.group_id.empty());
-      } else {
-        EXPECT_FALSE(device.group_id.empty());
-      }
-
+      EXPECT_FALSE(device.group_id.empty());
       devices->push_back(device);
     }
 
