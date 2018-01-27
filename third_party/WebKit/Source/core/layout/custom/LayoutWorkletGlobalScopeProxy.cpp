@@ -15,6 +15,11 @@
 
 namespace blink {
 
+LayoutWorkletGlobalScopeProxy* LayoutWorkletGlobalScopeProxy::From(
+    WorkletGlobalScopeProxy* proxy) {
+  return static_cast<LayoutWorkletGlobalScopeProxy*>(proxy);
+}
+
 LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
     LocalFrame* frame,
     size_t global_scope_number) {

@@ -9,6 +9,5 @@
     Global=(Worklet,LayoutWorklet),
     RuntimeEnabled=CSSLayoutAPI
 ] interface LayoutWorkletGlobalScope : WorkletGlobalScope {
-    // TODO(ikilpatrick): implement.
-    // [RaisesException] void registerLayout(DOMString name, Function layoutCtor);
+    [RaisesException] void registerLayout(DOMString name, Function layoutCtor);
 };

@@ -8,11 +8,13 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/custom/DocumentLayoutDefinition.h"
 #include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
 
 namespace blink {
 
 const size_t LayoutWorklet::kNumGlobalScopes = 2u;
+DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition = nullptr;
 
 // static
 LayoutWorklet* LayoutWorklet::From(LocalDOMWindow& window) {
@@ -41,6 +43,7 @@ const char* LayoutWorklet::SupplementName() {
 }
 
 void LayoutWorklet::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_definition_map_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

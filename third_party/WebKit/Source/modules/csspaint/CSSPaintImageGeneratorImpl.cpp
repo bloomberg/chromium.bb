@@ -65,7 +65,7 @@ bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
   if (!HasDocumentDefinition())
     return false;
   definition = paint_worklet_->GetDocumentDefinitionMap().at(name_);
-  return definition != kInvalidDocumentDefinition;
+  return definition != kInvalidDocumentPaintDefinition;
 }
 
 const Vector<CSSPropertyID>&

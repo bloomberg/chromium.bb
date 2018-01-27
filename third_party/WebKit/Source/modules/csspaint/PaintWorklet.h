@@ -14,7 +14,7 @@
 
 namespace blink {
 
-extern DocumentPaintDefinition* const kInvalidDocumentDefinition;
+extern DocumentPaintDefinition* const kInvalidDocumentPaintDefinition;
 
 class CSSPaintImageGeneratorImpl;
 
