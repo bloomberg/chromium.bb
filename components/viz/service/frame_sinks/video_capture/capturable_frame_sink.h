@@ -49,8 +49,9 @@ class CapturableFrameSink {
   virtual void AttachCaptureClient(Client* client) = 0;
   virtual void DetachCaptureClient(Client* client) = 0;
 
-  // Returns the current surface size.
-  virtual gfx::Size GetSurfaceSize() = 0;
+  // Returns the currently-active frame size, or an empty size if there is no
+  // active frame.
+  virtual gfx::Size GetActiveFrameSize() = 0;
 
   // Issues a request for a copy of the next composited frame.
   virtual void RequestCopyOfSurface(
