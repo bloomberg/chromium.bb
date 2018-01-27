@@ -124,6 +124,7 @@ void RecordContextLost(ContextType type,
     case UI_COMPOSITOR_CONTEXT:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.UICompositor", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
+      break;
     case CONTEXT_TYPE_UNKNOWN:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Unknown", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
