@@ -29,7 +29,7 @@ class CORE_EXPORT NGTextDecorationOffset : public TextDecorationOffsetBase {
   ~NGTextDecorationOffset() = default;
 
   int ComputeUnderlineOffsetForUnder(float text_decoration_thickness,
-                                     LineVerticalPositionType) const override;
+                                     FontVerticalPositionType) const override;
 
  private:
   const NGPhysicalTextFragment& text_fragment_;

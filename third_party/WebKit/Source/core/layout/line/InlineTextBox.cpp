@@ -131,32 +131,23 @@ LayoutUnit InlineTextBox::LineHeight() const {
                   kPositionOnContainingLine);
 }
 
-LayoutUnit InlineTextBox::OffsetTo(LineVerticalPositionType position_type,
+LayoutUnit InlineTextBox::OffsetTo(FontVerticalPositionType position_type,
                                    FontBaseline baseline_type) const {
   if (IsText() &&
-      (position_type == LineVerticalPositionType::TopOfEmHeight ||
-       position_type == LineVerticalPositionType::BottomOfEmHeight)) {
+      (position_type == FontVerticalPositionType::TopOfEmHeight ||
+       position_type == FontVerticalPositionType::BottomOfEmHeight)) {
     const Font& font = GetLineLayoutItem().Style(IsFirstLineStyle())->GetFont();
     if (const SimpleFontData* font_data = font.PrimaryFont()) {
-      const FontMetrics& metrics = font_data->GetFontMetrics();
-      if (position_type == LineVerticalPositionType::TopOfEmHeight) {
-        // Use Ascent, not FixedAscent, to match to how InlineTextBoxPainter
-        // computes the baseline position.
-        return metrics.Ascent(baseline_type) -
-               font_data->EmHeightAscent(baseline_type);
-      }
-      if (position_type == LineVerticalPositionType::BottomOfEmHeight) {
-        return metrics.Ascent(baseline_type) +
-               font_data->EmHeightDescent(baseline_type);
-      }
+      return font_data->GetFontMetrics().Ascent(baseline_type) -
+             font_data->VerticalPosition(position_type, baseline_type);
     }
   }
   switch (position_type) {
-    case LineVerticalPositionType::TextTop:
-    case LineVerticalPositionType::TopOfEmHeight:
+    case FontVerticalPositionType::TextTop:
+    case FontVerticalPositionType::TopOfEmHeight:
       return LayoutUnit();
-    case LineVerticalPositionType::TextBottom:
-    case LineVerticalPositionType::BottomOfEmHeight:
+    case FontVerticalPositionType::TextBottom:
+    case FontVerticalPositionType::BottomOfEmHeight:
       return LogicalHeight();
   }
   NOTREACHED();
@@ -164,7 +155,7 @@ LayoutUnit InlineTextBox::OffsetTo(LineVerticalPositionType position_type,
 }
 
 LayoutUnit InlineTextBox::VerticalPosition(
-    LineVerticalPositionType position_type,
+    FontVerticalPositionType position_type,
     FontBaseline baseline_type) const {
   return LogicalTop() + OffsetTo(position_type, baseline_type);
 }

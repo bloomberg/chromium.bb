@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/NGTextFragmentPaintInfo.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/wtf/text/StringView.h"
@@ -85,6 +86,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   }
   bool IsHorizontal() const {
     return LineOrientation() == NGLineOrientation::kHorizontal;
+  }
+  FontBaseline BaselineType() const {
+    return IsHorizontal() ? kAlphabeticBaseline : kIdeographicBaseline;
   }
 
   // The visual bounding box that includes glpyh bounding box and CSS

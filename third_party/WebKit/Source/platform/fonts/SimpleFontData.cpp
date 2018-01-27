@@ -322,6 +322,25 @@ bool SimpleFontData::NormalizeEmHeightMetrics(float ascent,
   return true;
 }
 
+LayoutUnit SimpleFontData::VerticalPosition(
+    FontVerticalPositionType position_type,
+    FontBaseline baseline_type) const {
+  switch (position_type) {
+    case FontVerticalPositionType::TextTop:
+      // Use Ascent, not FixedAscent, to match to how painter computes the
+      // baseline position.
+      return LayoutUnit(GetFontMetrics().Ascent(baseline_type));
+    case FontVerticalPositionType::TextBottom:
+      return LayoutUnit(-GetFontMetrics().Descent(baseline_type));
+    case FontVerticalPositionType::TopOfEmHeight:
+      return EmHeightAscent(baseline_type);
+    case FontVerticalPositionType::BottomOfEmHeight:
+      return -EmHeightDescent(baseline_type);
+  }
+  NOTREACHED();
+  return LayoutUnit();
+}
+
 FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
   if (!platform_data_.size())
     return FloatRect();

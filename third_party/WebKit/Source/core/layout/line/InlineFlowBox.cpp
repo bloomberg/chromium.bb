@@ -920,7 +920,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
 
 LayoutUnit InlineFlowBox::FarthestPositionForUnderline(
     LineLayoutItem decorating_box,
-    LineVerticalPositionType position_type,
+    FontVerticalPositionType position_type,
     FontBaseline baseline_type,
     LayoutUnit farthest) const {
   for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {

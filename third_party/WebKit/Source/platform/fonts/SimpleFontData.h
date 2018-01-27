@@ -36,6 +36,7 @@
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
 #include "platform/fonts/FontPlatformData.h"
+#include "platform/fonts/FontVerticalPositionType.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/wtf/PtrUtil.h"
@@ -94,6 +95,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   // https://drafts.css-houdini.org/font-metrics-api-1/#fontmetrics
   LayoutUnit EmHeightAscent(FontBaseline = kAlphabeticBaseline) const;
   LayoutUnit EmHeightDescent(FontBaseline = kAlphabeticBaseline) const;
+
+  LayoutUnit VerticalPosition(FontVerticalPositionType, FontBaseline) const;
 
   float MaxCharWidth() const { return max_char_width_; }
   void SetMaxCharWidth(float max_char_width) {

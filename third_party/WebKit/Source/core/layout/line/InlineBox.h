@@ -27,7 +27,7 @@
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
-#include "core/layout/line/LineVerticalPositionType.h"
+#include "platform/fonts/FontVerticalPositionType.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
@@ -44,9 +44,9 @@ enum MarkLineBoxes { kMarkLineBoxesDirty, kDontMarkLineBoxes };
 // Returns whether the position type is CSS "line-over"; i.e., ascender side
 // or "top" side of a line box.
 // https://drafts.csswg.org/css-writing-modes-3/#line-over
-static inline bool IsLineOverSide(LineVerticalPositionType type) {
-  return type == LineVerticalPositionType::TextTop ||
-         type == LineVerticalPositionType::TopOfEmHeight;
+static inline bool IsLineOverSide(FontVerticalPositionType type) {
+  return type == FontVerticalPositionType::TextTop ||
+         type == FontVerticalPositionType::TopOfEmHeight;
 }
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to

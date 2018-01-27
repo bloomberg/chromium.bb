@@ -402,7 +402,7 @@ class InlineFlowBox : public InlineBox {
   }
 
   LayoutUnit FarthestPositionForUnderline(LineLayoutItem decorating_box,
-                                          LineVerticalPositionType,
+                                          FontVerticalPositionType,
                                           FontBaseline,
                                           LayoutUnit current) const;
 

@@ -89,8 +89,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   bool GetEmphasisMarkPosition(const ComputedStyle&,
                                TextEmphasisPosition&) const;
 
-  LayoutUnit OffsetTo(LineVerticalPositionType, FontBaseline) const;
-  LayoutUnit VerticalPosition(LineVerticalPositionType, FontBaseline) const;
+  LayoutUnit OffsetTo(FontVerticalPositionType, FontBaseline) const;
+  LayoutUnit VerticalPosition(FontVerticalPositionType, FontBaseline) const;
 
   LayoutRect LogicalOverflowRect() const;
   void SetLogicalOverflowRect(const LayoutRect&);
