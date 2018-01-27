@@ -242,6 +242,7 @@ cr.define('extensions', function() {
         case EventType.ERROR_ADDED:
         case EventType.ERRORS_REMOVED:
         case EventType.PREFS_CHANGED:
+        case EventType.WARNINGS_CHANGED:
           // |extensionInfo| can be undefined in the case of an extension
           // being unloaded right before uninstallation. There's nothing to do
           // here.

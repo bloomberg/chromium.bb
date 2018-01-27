@@ -352,7 +352,7 @@ cr.define('extensions', function() {
     hasWarnings_: function() {
       return this.data.disableReasons.corruptInstall ||
           this.data.disableReasons.suspiciousInstall ||
-          !!this.data.blacklistText;
+          this.data.runtimeWarnings.length > 0 || !!this.data.blacklistText;
     },
 
     /**
