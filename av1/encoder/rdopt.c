@@ -9227,6 +9227,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t mode_threshold[MAX_MODES];
   int *mode_map = tile_data->mode_map[bsize];
   const int mode_search_skip_flags = sf->mode_search_skip_flags;
+  int skip_intra_modes = 0;
 
   HandleInterModeArgs args = {
     { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
@@ -9509,6 +9510,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
     mbmi->ref_mv_idx = 0;
+
+    if (ref_frame == INTRA_FRAME) {
+      if (sf->skip_intra_in_interframe && skip_intra_modes) continue;
+    }
 
     if (sf->drop_ref) {
       if (ref_frame > INTRA_FRAME && second_ref_frame > INTRA_FRAME) {
@@ -10210,6 +10215,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (this_rd < best_intra_rd) {
         best_intra_rd = this_rd;
         best_intra_mode = mbmi->mode;
+      }
+
+      if (sf->skip_intra_in_interframe) {
+        if (best_rd != INT64_MAX && this_rd > (best_rd + (best_rd >> 1)))
+          skip_intra_modes = 1;
       }
     }
 

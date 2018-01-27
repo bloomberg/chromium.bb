@@ -538,6 +538,9 @@ typedef struct SPEED_FEATURES {
 
   // flag to drop some ref frames in compound motion search
   int drop_ref;
+
+  // flag to allow skipping intra mode for inter frame prediction
+  int skip_intra_in_interframe;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

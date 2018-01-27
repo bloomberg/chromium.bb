@@ -493,6 +493,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->drop_ref = 0;
+  sf->skip_intra_in_interframe = 1;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
