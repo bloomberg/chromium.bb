@@ -766,33 +766,56 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
 WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
   // Only online wallpapers have author and website attributes. All other type
   // of wallpapers should not show attributions.
-  if (selectedItem &&
-      selectedItem.source == Constants.WallpaperSourceEnum.Online) {
-    $('author-name').textContent = selectedItem.author;
-    $('author-website').textContent = $('author-website').href =
-        selectedItem.authorWebsite;
-    chrome.wallpaperPrivate.getThumbnail(
-        selectedItem.baseURL, selectedItem.source, function(data) {
-          var img = $('attribute-image');
-          if (data) {
-            var blob = new Blob([new Int8Array(data)], {'type': 'image\/png'});
-            img.src = window.URL.createObjectURL(blob);
-            img.addEventListener('load', function(e) {
-              window.URL.revokeObjectURL(this.src);
-            });
-          } else {
-            img.src = '';
-          }
-        });
-    $('wallpaper-attribute').hidden = false;
-    $('attribute-image').hidden = false;
+  if (!selectedItem ||
+      selectedItem.source != Constants.WallpaperSourceEnum.Online) {
+    $('wallpaper-attribute').hidden = true;
+    $('attribute-image').hidden = true;
+    $('author-name').textContent = '';
+    $('author-website').textContent = $('author-website').href = '';
+    $('attribute-image').src = '';
     return;
   }
-  $('wallpaper-attribute').hidden = true;
-  $('attribute-image').hidden = true;
-  $('author-name').textContent = '';
-  $('author-website').textContent = $('author-website').href = '';
-  $('attribute-image').src = '';
+
+  $('author-name').textContent = selectedItem.author;
+  $('author-website').textContent = $('author-website').href =
+      selectedItem.authorWebsite;
+  chrome.wallpaperPrivate.getThumbnail(
+      selectedItem.baseURL, selectedItem.source, function(data) {
+        var img = $('attribute-image');
+        if (data) {
+          var blob = new Blob([new Int8Array(data)], {'type': 'image\/png'});
+          img.src = window.URL.createObjectURL(blob);
+          img.addEventListener('load', function(e) {
+            window.URL.revokeObjectURL(this.src);
+          });
+          img.hidden = false;
+        } else {
+          // The only known case for hitting this branch is when showing the
+          // wallpaper picker for the first time after OOBE, the |saveThumbnail|
+          // operation within |WallpaperThumbnailsGridItem.decorate| hasn't
+          // completed. See http://crbug.com/792829.
+          var xhr = new XMLHttpRequest();
+          xhr.open(
+              'GET',
+              selectedItem.baseURL +
+                  Constants.OnlineWallpaperThumbnailUrlSuffix,
+              true);
+          xhr.responseType = 'arraybuffer';
+          xhr.send(null);
+          xhr.addEventListener('load', function(e) {
+            if (xhr.status === 200) {
+              var blob = new Blob(
+                  [new Int8Array(xhr.response)], {'type': 'image\/png'});
+              img.src = window.URL.createObjectURL(blob);
+              img.addEventListener('load', function(e) {
+                window.URL.revokeObjectURL(this.src);
+              });
+              img.hidden = false;
+            }
+          });
+        }
+      });
+  $('wallpaper-attribute').hidden = false;
 };
 
 /**

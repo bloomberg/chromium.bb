@@ -8,7 +8,6 @@ cr.define('wallpapers', function() {
   /** @const */ var GridItem = cr.ui.GridItem;
   /** @const */ var GridSelectionController = cr.ui.GridSelectionController;
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
-  /** @const */ var ThumbnailSuffix = '_thumbnail.png';
   /** @const */ var ShowSpinnerDelayMs = 500;
 
   /**
@@ -135,7 +134,10 @@ cr.define('wallpapers', function() {
                     Constants.WallpaperSourceEnum.Online) {
                   var xhr = new XMLHttpRequest();
                   xhr.open(
-                      'GET', self.dataItem.baseURL + ThumbnailSuffix, true);
+                      'GET',
+                      self.dataItem.baseURL +
+                          Constants.OnlineWallpaperThumbnailUrlSuffix,
+                      true);
                   xhr.responseType = 'arraybuffer';
                   xhr.send(null);
                   xhr.addEventListener('load', function(e) {
