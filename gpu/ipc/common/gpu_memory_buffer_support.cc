@@ -40,6 +40,7 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
+    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       return format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_8888 ||
              format == gfx::BufferFormat::BGRX_8888 ||
@@ -47,10 +48,6 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
              format == gfx::BufferFormat::RGBA_F16 ||
              format == gfx::BufferFormat::UYVY_422 ||
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      return format == gfx::BufferFormat::BGRA_8888 ||
-             format == gfx::BufferFormat::RGBA_8888 ||
-             format == gfx::BufferFormat::BGRX_8888;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return format == gfx::BufferFormat::R_8 ||
