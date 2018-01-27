@@ -24,6 +24,7 @@ struct RemoteInvocationArgument {};
 enum RemoteInvocationError {
   OK = 0,
   METHOD_NOT_FOUND,
+  OBJECT_GET_CLASS_BLOCKED,
 };
 
 struct RemoteInvocationResult {
