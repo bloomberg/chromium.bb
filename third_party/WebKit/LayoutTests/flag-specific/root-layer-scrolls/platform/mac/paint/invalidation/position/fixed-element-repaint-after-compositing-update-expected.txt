@@ -14,26 +14,25 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe'",
+          "rect": [150, 150, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe'",
+          "rect": [8, 102, 100, 100],
+          "reason": "geometry"
+        }
+      ]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixedTransformed'",
       "contentsOpaque": true,
       "drawsContent": false,
       "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='fixedOverlapping'",
-      "position": [8, 102],
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV id='moveMe'",
-      "position": [150, 150],
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "backgroundColor": "#008000"
     }
   ],
   "transforms": [
@@ -45,6 +44,12 @@
         [0, 0, 1, 0],
         [8, 102, 0, 1]
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='moveMe'",
+      "reason": "geometry"
     }
   ]
 }

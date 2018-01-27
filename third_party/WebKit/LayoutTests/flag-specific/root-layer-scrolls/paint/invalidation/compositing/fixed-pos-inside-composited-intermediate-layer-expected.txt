@@ -37,12 +37,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [25, 125, 50, 50],
-          "reason": "subtree"
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [25, 25, 50, 50],
-          "reason": "subtree"
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -74,7 +74,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }
