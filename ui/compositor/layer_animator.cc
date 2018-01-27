@@ -12,9 +12,9 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/single_ticker_animation_player.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -55,8 +55,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       disable_timer_for_test_(false),
       adding_animations_(false),
       animation_metrics_reporter_(nullptr) {
-  animation_player_ =
-      cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId());
+  animation_player_ = cc::SingleTickerAnimationPlayer::Create(
+      cc::AnimationIdProvider::NextPlayerId());
 }
 
 LayerAnimator::~LayerAnimator() {
@@ -191,7 +191,8 @@ void LayerAnimator::RemoveThreadedAnimation(int animation_id) {
   animation_player_->RemoveAnimation(animation_id);
 }
 
-cc::AnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting() const {
+cc::SingleTickerAnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting()
+    const {
   return animation_player_.get();
 }
 
