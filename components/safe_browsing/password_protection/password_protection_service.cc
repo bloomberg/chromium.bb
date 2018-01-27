@@ -151,23 +151,23 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
   }
 }
 
-// static
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
     bool matches_sync_password,
-    LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-        account_type,
     LoginReputationClientResponse::VerdictType verdict_type) {
-  return base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning) &&
-         trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-         matches_sync_password &&
-         account_type ==
-             LoginReputationClientRequest::PasswordReuseEvent::GMAIL &&
-         (verdict_type == LoginReputationClientResponse::PHISHING ||
+  if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
+      !matches_sync_password ||
+      GetSyncAccountType() ==
+          LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN) {
+    return false;
+  }
+
+  return (verdict_type == LoginReputationClientResponse::PHISHING ||
           (verdict_type == LoginReputationClientResponse::LOW_REPUTATION &&
            base::GetFieldTrialParamByFeatureAsBool(
                kGoogleBrandedPhishingWarning, "warn_on_low_reputation",
-               false)));
+               false))) &&
+         IsWarningEnabled();
 }
 
 bool PasswordProtectionService::ShouldShowSofterWarning() {
@@ -439,9 +439,9 @@ void PasswordProtectionService::RequestFinished(
       CacheVerdict(request->main_frame_url(), request->trigger_type(),
                    response.get(), base::Time::Now());
     }
-    if (ShouldShowModalWarning(
-            request->trigger_type(), request->matches_sync_password(),
-            GetSyncAccountType(), response->verdict_type())) {
+    if (ShouldShowModalWarning(request->trigger_type(),
+                               request->matches_sync_password(),
+                               response->verdict_type())) {
       ShowModalWarning(request->web_contents(), response->verdict_token());
       request->set_is_modal_warning_showing(true);
     }
@@ -836,6 +836,22 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
       return true;
   }
   return false;
+}
+
+bool PasswordProtectionService::IsWarningEnabled() {
+  return base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning) &&
+         GetSyncAccountType() !=
+             LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN &&
+         GetPasswordProtectionTriggerPref(
+             prefs::kPasswordProtectionWarningTrigger) == PHISHING_REUSE;
+}
+
+bool PasswordProtectionService::IsEventLoggingEnabled() {
+  return base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting) &&
+         GetSyncAccountType() !=
+             LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN &&
+         GetPasswordProtectionTriggerPref(
+             prefs::kPasswordProtectionRiskTrigger) == PHISHING_REUSE;
 }
 
 }  // namespace safe_browsing

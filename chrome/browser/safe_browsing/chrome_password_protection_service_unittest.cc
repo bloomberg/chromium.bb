@@ -387,6 +387,15 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedUserEventRecorded) {
   EnableGaiaPasswordReuseReporting();
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
+      SigninManagerFactory::GetForProfile(profile()));
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestAccountID), std::string(kTestEmail));
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
+            service_->GetSyncAccountType());
+
   NavigateAndCommit(GURL("https://www.example.com/"));
 
   // Case 1: safe_browsing_enabled = true
@@ -414,6 +423,16 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseLookupUserEventRecorded) {
   EnableGaiaPasswordReuseReporting();
+
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
+      SigninManagerFactory::GetForProfile(profile()));
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestAccountID), std::string(kTestEmail));
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
+            service_->GetSyncAccountType());
+
   NavigateAndCommit(GURL("https://www.example.com/"));
 
   unsigned long t = 0;

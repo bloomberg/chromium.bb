@@ -52,6 +52,16 @@ extern const char kSafeBrowsingScoutReportingEnabled[];
 // Dictionary that records the origin and navigation ID pairs of unhandled sync
 // password reuses.
 extern const char kSafeBrowsingUnhandledSyncPasswordReuses[];
+
+// Integer indicating the password protection warning trigger. This is managed
+// by enterprise policy and has no effect on users who are not managed by
+// enterprise policy.
+extern const char kPasswordProtectionWarningTrigger[];
+
+// Integer indicating the password protection at-risk account flagging trigger.
+// This is managed by enterprise policy and has no effect on users who are not
+// managed by enterprise policy.
+extern const char kPasswordProtectionRiskTrigger[];
 }
 
 namespace safe_browsing {
@@ -89,6 +99,19 @@ enum ExtendedReportingOptInLocation {
   SBER_OPTIN_SITE_SECURITY_INTERSTITIAL = 3,
   // New sites must be added before SBER_OPTIN_SITE_MAX.
   SBER_OPTIN_SITE_MAX
+};
+
+// Enumerates all the triggers of password protection.
+enum PasswordProtectionTrigger {
+  // Password protection is off.
+  PASSWORD_PROTECTION_OFF = 0,
+  // Password protection triggered by password reuse event.
+  // Not used for now.
+  PASSWORD_REUSE = 1,
+  // Password protection triggered by password reuse event on phishing page.
+  PHISHING_REUSE = 2,
+  // New triggers must be added before PASSWORD_PROTECTION_TRIGGER_MAX.
+  PASSWORD_PROTECTION_TRIGGER_MAX,
 };
 
 // Determines which opt-in text should be used based on the currently active

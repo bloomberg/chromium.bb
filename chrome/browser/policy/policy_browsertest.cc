@@ -70,6 +70,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -3901,6 +3902,80 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
 
   // Policy should allow ending tasks again.
   EXPECT_TRUE(task_manager::TaskManagerInterface::IsEndProcessEnabled());
+}
+
+// Test that when password protection warning trigger is set by policy, chrome
+// password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTrigger) {
+  // Without setting up the enterprise policy,
+  // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  const safe_browsing::ChromePasswordProtectionService* const service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
+                   ->IsManaged());
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+
+  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
+  PolicyMap policies;
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::Value(1)), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
+                  ->IsManaged());
+  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+
+  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
+  policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::Value(2)), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionWarningTrigger));
+}
+
+// Test that when password protection risk trigger is set by policy, chrome
+// password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTrigger) {
+  // Without setting up the enterprise policy,
+  // |GetPasswordProtectionTriggerPref(..) should return |PHISHING_REUSE|.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  const safe_browsing::ChromePasswordProtectionService* const service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
+                   ->IsManaged());
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+
+  // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
+  PolicyMap policies;
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::Value(1)), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionRiskTrigger)
+                  ->IsManaged());
+  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
+
+  // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
+  policies.Set(key::kPasswordProtectionRiskTrigger, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::Value(2)), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
+            service->GetPasswordProtectionTriggerPref(
+                prefs::kPasswordProtectionRiskTrigger));
 }
 
 // Sets the proper policy before the browser is started.
