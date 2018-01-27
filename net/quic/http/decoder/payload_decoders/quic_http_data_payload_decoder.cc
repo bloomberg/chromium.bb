@@ -15,6 +15,7 @@
 #include "net/quic/http/quic_http_constants.h"
 #include "net/quic/http/quic_http_structures.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 
 namespace net {
 
@@ -103,7 +104,7 @@ QuicHttpDecodeStatus QuicHttpDataQuicHttpPayloadDecoder::ResumeDecodingPayload(
       if (status != QuicHttpDecodeStatus::kDecodeDone) {
         return status;
       }
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
 
     case PayloadState::kReadPayload:
       avail = state->AvailablePayload(db);
@@ -116,7 +117,7 @@ QuicHttpDecodeStatus QuicHttpDataQuicHttpPayloadDecoder::ResumeDecodingPayload(
         payload_state_ = PayloadState::kReadPayload;
         return QuicHttpDecodeStatus::kDecodeInProgress;
       }
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
 
     case PayloadState::kSkipPadding:
       // SkipPadding handles the OnPadding callback.

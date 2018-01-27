@@ -15,6 +15,7 @@
 #include "net/quic/http/quic_http_constants.h"
 #include "net/quic/http/quic_http_structures.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 
 namespace net {
 
@@ -101,7 +102,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPadLength;
           return status;
         }
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
 
       case PayloadState::kStartDecodingPushPromiseFields:
         status =
@@ -113,7 +114,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
         // Finished decoding the Promised Stream ID. Can now tell the listener
         // that we're starting to decode a PUSH_PROMISE frame.
         ReportPushPromise(state);
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
 
       case PayloadState::kReadPayload:
         DCHECK_LT(state->remaining_payload(), frame_header.payload_length);
@@ -136,7 +137,7 @@ QuicHttpPushPromiseQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPayload;
           return QuicHttpDecodeStatus::kDecodeInProgress;
         }
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
 
       case PayloadState::kSkipPadding:
         // SkipPadding handles the OnPadding callback.

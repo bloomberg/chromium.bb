@@ -8,6 +8,7 @@
 #include "net/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_pcc_sender.h"
@@ -38,7 +39,7 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
                                max_congestion_window);
       }
       // Fall back to CUBIC if PCC is disabled.
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
     case kCubicBytes:
       return new TcpCubicSenderBytes(
           clock, rtt_stats, false /* don't use Reno */,
