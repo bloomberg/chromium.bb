@@ -326,6 +326,29 @@ executable("chromedriver") {
   ]
 }
 
+group("chromedriver_py_tests") {
+  testonly = true
+  deps = [
+    ":chromedriver",
+    "//chrome:chrome",
+  ]
+
+  _py_files = read_file("test/run_py_tests.pydeps", "list lines")
+
+  # Filter out comments.
+  set_sources_assignment_filter([ "#*" ])
+  sources = _py_files
+
+  data = sources + [
+           "//chrome/test/data/chromedriver/",
+           "//testing/xvfb.py",
+         ]
+
+  data_deps = [
+    "//chrome/test/chromedriver",
+  ]
+}
+
 test("chromedriver_unittests") {
   sources = [
     "capabilities_unittest.cc",
