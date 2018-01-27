@@ -894,7 +894,8 @@ NavigationHandleImpl::CheckWillStartRequest() {
         continue;
 
       case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
-        frame_tree_node_->SetCollapsed(true);  // Fall through.
+        frame_tree_node_->SetCollapsed(true);
+        FALLTHROUGH;
       case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
@@ -941,7 +942,8 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         continue;
 
       case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
-        frame_tree_node_->SetCollapsed(true);  // Fall through.
+        frame_tree_node_->SetCollapsed(true);
+        FALLTHROUGH;
       case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
