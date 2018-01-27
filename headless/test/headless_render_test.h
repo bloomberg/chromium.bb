@@ -118,6 +118,8 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   std::vector<std::string> js_exceptions_;
 
  private:
+  class AdditionalVirtualTimeBudget;
+
   void HandleVirtualTimeExhausted();
   void OnGetDomSnapshotDone(
       std::unique_ptr<dom_snapshot::GetSnapshotResult> result);

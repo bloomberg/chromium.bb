@@ -16,7 +16,8 @@ VirtualTimeController::VirtualTimeController(
     HeadlessDevToolsClient* devtools_client,
     int max_task_starvation_count)
     : devtools_client_(devtools_client),
-      max_task_starvation_count_(max_task_starvation_count) {
+      max_task_starvation_count_(max_task_starvation_count),
+      weak_ptr_factory_(this) {
   devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
 }
 
@@ -24,33 +25,41 @@ VirtualTimeController::~VirtualTimeController() {
   devtools_client_->GetEmulation()->GetExperimental()->RemoveObserver(this);
 }
 
-void VirtualTimeController::GrantVirtualTimeBudget(
-    emulation::VirtualTimePolicy policy,
-    base::TimeDelta budget,
-    const base::Callback<void()>& set_up_complete_callback,
-    const base::Callback<void()>& budget_expired_callback) {
-  DCHECK(!set_up_complete_callback_);
-  DCHECK(!budget_expired_callback_);
+void VirtualTimeController::StartVirtualTime() {
+  if (virtual_time_started_)
+    return;
 
-  set_up_complete_callback_ = set_up_complete_callback;
-  budget_expired_callback_ = budget_expired_callback;
-  requested_budget_ = budget;
-  accumulated_budget_portion_ = TimeDelta();
-  virtual_time_policy_ = policy;
+  TimeDelta next_budget;
+  bool wait_for_navigation = false;
+  for (const auto& entry_pair : tasks_) {
+    if (entry_pair.first->start_policy() ==
+        RepeatingTask::StartPolicy::WAIT_FOR_NAVIGATION) {
+      wait_for_navigation = true;
+    }
+    if (next_budget.is_zero()) {
+      next_budget =
+          entry_pair.second.next_execution_time - total_elapsed_time_offset_;
+    } else {
+      next_budget =
+          std::min(next_budget, entry_pair.second.next_execution_time -
+                                    total_elapsed_time_offset_);
+    }
+  }
 
-  // Notify tasks of new budget request.
-  for (TaskEntry& entry : tasks_)
-    entry.ready_to_advance = false;
+  // If there's no budget, then don't do anything!
+  if (next_budget.is_zero())
+    return;
 
-  iterating_over_tasks_ = true;
-  for (TaskEntry& entry : tasks_)
-    NotifyTaskBudgetRequested(&entry, requested_budget_);
-  iterating_over_tasks_ = false;
-  DeleteTasksIfRequested();
+  virtual_time_started_ = true;
+  should_send_start_notification_ = true;
 
-  // If there tasks, NotifyTasksAndAdvance is called from TaskReadyToAdvance.
-  if (tasks_.empty())
-    NotifyTasksAndAdvance();
+  if (start_deferrer_) {
+    start_deferrer_->DeferStart(base::BindOnce(
+        &VirtualTimeController::SetVirtualTimePolicy,
+        weak_ptr_factory_.GetWeakPtr(), next_budget, wait_for_navigation));
+  } else {
+    SetVirtualTimePolicy(next_budget, wait_for_navigation);
+  }
 }
 
 void VirtualTimeController::NotifyTasksAndAdvance() {
@@ -60,98 +69,84 @@ void VirtualTimeController::NotifyTasksAndAdvance() {
 
   base::AutoReset<bool> reset(&in_notify_tasks_and_advance_, true);
 
-  DCHECK(budget_expired_callback_);
+  for (auto iter = tasks_.begin(); iter != tasks_.end();) {
+    auto entry_pair = iter++;
+    if (entry_pair->second.next_execution_time <= total_elapsed_time_offset_) {
+      entry_pair->second.ready_to_advance = false;
+      entry_pair->second.next_execution_time =
+          total_elapsed_time_offset_ + entry_pair->second.interval;
 
-  // Give at most as much virtual time as available until the next callback.
-  bool ready_to_advance = true;
-  iterating_over_tasks_ = true;
-  TimeDelta next_budget = requested_budget_ - accumulated_budget_portion_;
-  // TODO(alexclarke): This is a little ugly, find a nicer way.
-  for (TaskEntry& entry : tasks_) {
-    if (entry.next_execution_time <= total_elapsed_time_offset_)
-      entry.ready_to_advance = false;
-  }
-
-  for (TaskEntry& entry : tasks_) {
-    if (entry.next_execution_time <= total_elapsed_time_offset_)
-      NotifyTaskIntervalElapsed(&entry);
-
-    if (tasks_to_delete_.find(entry.task) == tasks_to_delete_.end()) {
-      ready_to_advance &= entry.ready_to_advance;
-      next_budget = std::min(
-          next_budget, entry.next_execution_time - total_elapsed_time_offset_);
+      // This may delete itself.
+      entry_pair->first->IntervalElapsed(
+          total_elapsed_time_offset_,
+          base::BindOnce(&VirtualTimeController::TaskReadyToAdvance,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::Unretained(&entry_pair->second)));
     }
   }
-  iterating_over_tasks_ = false;
-  DeleteTasksIfRequested();
+
+  // Give at most as much virtual time as available until the next callback.
+  bool advance_virtual_time = false;
+  bool ready_to_advance = true;
+  TimeDelta next_budget;
+  for (const auto& entry_pair : tasks_) {
+    ready_to_advance &= entry_pair.second.ready_to_advance;
+    if (next_budget.is_zero()) {
+      next_budget =
+          entry_pair.second.next_execution_time - total_elapsed_time_offset_;
+    } else {
+      next_budget =
+          std::min(next_budget, entry_pair.second.next_execution_time -
+                                    total_elapsed_time_offset_);
+    }
+    if (entry_pair.second.continue_policy ==
+        RepeatingTask::ContinuePolicy::CONTINUE_MORE_TIME_NEEDED) {
+      advance_virtual_time = true;
+    }
+  }
 
   if (!ready_to_advance)
     return;
 
-  if (accumulated_budget_portion_ >= requested_budget_) {
-    for (TaskEntry& entry : tasks_)
-      entry.ready_to_advance = false;
+  if (!advance_virtual_time) {
+    for (auto& entry_pair : tasks_) {
+      entry_pair.second.ready_to_advance = false;
+    }
 
-    iterating_over_tasks_ = true;
-    for (const TaskEntry& entry : tasks_)
-      entry.task->BudgetExpired(total_elapsed_time_offset_);
-    iterating_over_tasks_ = false;
-    DeleteTasksIfRequested();
-
-    auto callback = budget_expired_callback_;
-    budget_expired_callback_.Reset();
-    callback.Run();
+    for (auto iter = observers_.begin(); iter != observers_.end();) {
+      Observer* observer = *iter++;
+      // |observer| may delete itself.
+      observer->VirtualTimeStopped(total_elapsed_time_offset_);
+    }
+    virtual_time_started_ = false;
     return;
   }
 
-  SetVirtualTimePolicy(next_budget);
+  DCHECK(!next_budget.is_zero());
+  SetVirtualTimePolicy(next_budget, false /* wait_for_navigation */);
 }
 
-void VirtualTimeController::DeleteTasksIfRequested() {
-  DCHECK(!iterating_over_tasks_);
-
-  // It's not safe to delete tasks while iterating over |tasks_| so do it now.
-  while (!tasks_to_delete_.empty()) {
-    CancelRepeatingTask(*tasks_to_delete_.begin());
-    tasks_to_delete_.erase(tasks_to_delete_.begin());
-  }
-}
-
-void VirtualTimeController::NotifyTaskIntervalElapsed(TaskEntry* entry) {
-  DCHECK(!entry->ready_to_advance);
-  entry->next_execution_time = total_elapsed_time_offset_ + entry->interval;
-
-  entry->task->IntervalElapsed(
-      total_elapsed_time_offset_,
-      base::Bind(&VirtualTimeController::TaskReadyToAdvance,
-                 base::Unretained(this), base::Unretained(entry)));
-}
-
-void VirtualTimeController::NotifyTaskBudgetRequested(TaskEntry* entry,
-                                                      base::TimeDelta budget) {
-  DCHECK(!entry->ready_to_advance);
-  entry->task->BudgetRequested(
-      total_elapsed_time_offset_, budget,
-      base::Bind(&VirtualTimeController::TaskReadyToAdvance,
-                 base::Unretained(this), base::Unretained(entry)));
-}
-
-void VirtualTimeController::TaskReadyToAdvance(TaskEntry* entry) {
+void VirtualTimeController::TaskReadyToAdvance(
+    TaskEntry* entry,
+    RepeatingTask::ContinuePolicy continue_policy) {
   entry->ready_to_advance = true;
+  entry->continue_policy = continue_policy;
   NotifyTasksAndAdvance();
 }
 
-void VirtualTimeController::SetVirtualTimePolicy(base::TimeDelta next_budget) {
-  last_used_budget_ = next_budget;
-  virtual_time_active_ = true;
+void VirtualTimeController::SetVirtualTimePolicy(base::TimeDelta next_budget,
+                                                 bool wait_for_navigation) {
+  last_budget_ = next_budget;
   devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
       emulation::SetVirtualTimePolicyParams::Builder()
-          .SetPolicy(virtual_time_policy_)
+          .SetPolicy(
+              emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
           .SetBudget(next_budget.InMillisecondsF())
           .SetMaxVirtualTimeTaskStarvationCount(max_task_starvation_count_)
+          .SetWaitForNavigation(wait_for_navigation)
           .Build(),
       base::Bind(&VirtualTimeController::SetVirtualTimePolicyDone,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VirtualTimeController::SetVirtualTimePolicyDone(
@@ -161,47 +156,48 @@ void VirtualTimeController::SetVirtualTimePolicyDone(
   } else {
     LOG(WARNING) << "SetVirtualTimePolicy did not succeed";
   }
-  if (set_up_complete_callback_) {
-    set_up_complete_callback_.Run();
-    set_up_complete_callback_.Reset();
+
+  if (should_send_start_notification_) {
+    should_send_start_notification_ = false;
+    for (auto iter = observers_.begin(); iter != observers_.end();) {
+      Observer* observer = *iter++;
+      // |observer| may delete itself.
+      observer->VirtualTimeStarted(total_elapsed_time_offset_);
+    }
   }
 }
 
 void VirtualTimeController::OnVirtualTimeBudgetExpired(
     const emulation::VirtualTimeBudgetExpiredParams& params) {
-  // As the DevTools script may interfere with virtual time directly, we cannot
-  // assume that this event is due to AdvanceVirtualTime().
-  if (!budget_expired_callback_)
-    return;
-
-  accumulated_budget_portion_ += last_used_budget_;
-  total_elapsed_time_offset_ += last_used_budget_;
-  virtual_time_active_ = false;
+  total_elapsed_time_offset_ += last_budget_;
+  virtual_time_paused_ = true;
   NotifyTasksAndAdvance();
 }
 
 void VirtualTimeController::ScheduleRepeatingTask(RepeatingTask* task,
                                                   base::TimeDelta interval) {
-  if (virtual_time_active_) {
+  if (!virtual_time_paused_) {
     // We cannot accurately modify any previously granted virtual time budget.
     LOG(WARNING) << "VirtualTimeController tasks should be added while "
                     "virtual time is paused.";
   }
 
   TaskEntry entry;
-  entry.task = task;
   entry.interval = interval;
   entry.next_execution_time = total_elapsed_time_offset_ + entry.interval;
-  tasks_.push_back(entry);
+  tasks_.insert(std::make_pair(task, entry));
 }
 
 void VirtualTimeController::CancelRepeatingTask(RepeatingTask* task) {
-  if (iterating_over_tasks_) {
-    tasks_to_delete_.insert(task);
-    return;
-  }
-  tasks_.remove_if(
-      [task](const TaskEntry& entry) { return entry.task == task; });
+  tasks_.erase(task);
+}
+
+void VirtualTimeController::AddObserver(Observer* observer) {
+  observers_.insert(observer);
+}
+
+void VirtualTimeController::RemoveObserver(Observer* observer) {
+  observers_.erase(observer);
 }
 
 base::Time VirtualTimeController::GetVirtualTimeBase() const {
@@ -210,6 +206,10 @@ base::Time VirtualTimeController::GetVirtualTimeBase() const {
 
 base::TimeDelta VirtualTimeController::GetCurrentVirtualTimeOffset() const {
   return total_elapsed_time_offset_;
+}
+
+void VirtualTimeController::SetStartDeferrer(StartDeferrer* start_deferrer) {
+  start_deferrer_ = start_deferrer;
 }
 
 }  // namespace headless

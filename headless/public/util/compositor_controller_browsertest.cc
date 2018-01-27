@@ -155,16 +155,53 @@ class CompositorControllerBrowserTest
                             base::Unretained(this)));
   }
 
+  class AdditionalVirtualTimeBudget
+      : public VirtualTimeController::RepeatingTask,
+        public VirtualTimeController::Observer {
+   public:
+    AdditionalVirtualTimeBudget(VirtualTimeController* virtual_time_controller,
+                                CompositorControllerBrowserTest* test,
+                                base::TimeDelta budget)
+        : RepeatingTask(StartPolicy::START_IMMEDIATELY, 0),
+          virtual_time_controller_(virtual_time_controller),
+          test_(test) {
+      virtual_time_controller_->ScheduleRepeatingTask(this, budget);
+      virtual_time_controller_->AddObserver(this);
+      virtual_time_controller_->StartVirtualTime();
+    }
+
+    ~AdditionalVirtualTimeBudget() override {
+      virtual_time_controller_->RemoveObserver(this);
+      virtual_time_controller_->CancelRepeatingTask(this);
+    }
+
+    // headless::VirtualTimeController::RepeatingTask implementation:
+    void IntervalElapsed(
+        base::TimeDelta virtual_time,
+        base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+      std::move(continue_callback).Run(ContinuePolicy::NOT_REQUIRED);
+    }
+
+    // headless::VirtualTimeController::Observer:
+    void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {}
+
+    void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
+      test_->OnVirtualTimeBudgetExpired();
+      delete this;
+    }
+
+   private:
+    headless::VirtualTimeController* const virtual_time_controller_;
+    CompositorControllerBrowserTest* test_;
+  };
+
   void OnRafReady(std::unique_ptr<runtime::EvaluateResult> result) {
     EXPECT_NE(nullptr, result);
     EXPECT_FALSE(result->HasExceptionDetails());
 
-    virtual_time_controller_->GrantVirtualTimeBudget(
-        emulation::VirtualTimePolicy::ADVANCE,
-        kNumFrames * kAnimationFrameInterval, base::Bind([]() {}),
-        base::BindRepeating(
-            &CompositorControllerBrowserTest::OnVirtualTimeBudgetExpired,
-            base::Unretained(this)));
+    // AdditionalVirtualTimeBudget will self delete.
+    new AdditionalVirtualTimeBudget(virtual_time_controller_.get(), this,
+                                    kNumFrames * kAnimationFrameInterval);
   }
 
   void OnVirtualTimeBudgetExpired() {

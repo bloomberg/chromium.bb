@@ -20,16 +20,20 @@ namespace headless {
 // Sends BeginFrames to advance animations while virtual time advances in
 // intervals.
 class CompositorController::AnimationBeginFrameTask
-    : public VirtualTimeController::RepeatingTask {
+    : public VirtualTimeController::RepeatingTask,
+      public VirtualTimeController::Observer,
+      public VirtualTimeController::StartDeferrer {
  public:
   explicit AnimationBeginFrameTask(CompositorController* compositor_controller)
-      : compositor_controller_(compositor_controller),
+      : RepeatingTask(StartPolicy::START_IMMEDIATELY, -1),
+        compositor_controller_(compositor_controller),
         weak_ptr_factory_(this) {}
 
   // VirtualTimeController::RepeatingTask implementation:
-  void IntervalElapsed(base::TimeDelta virtual_time_offset,
-                       const base::Closure& continue_callback) override {
-    continue_callback_ = continue_callback;
+  void IntervalElapsed(
+      base::TimeDelta virtual_time_offset,
+      base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+    interval_continue_callback_ = std::move(continue_callback);
 
     // Post a cancellable task that will issue a BeginFrame. This way, we can
     // cancel sending an animation-only BeginFrame if another virtual time task
@@ -43,20 +47,22 @@ class CompositorController::AnimationBeginFrameTask
         FROM_HERE, begin_frame_task_.callback());
   }
 
-  void BudgetRequested(base::TimeDelta virtual_time_offset,
-                       base::TimeDelta requested_budget,
-                       const base::Closure& continue_callback) override {
+  // VirtualTimeController::StartDeferrer implementation:
+  void DeferStart(base::OnceClosure continue_callback) override {
     // Run a BeginFrame if we cancelled it because the budged expired previously
     // and no other BeginFrame was sent while virtual time was paused.
     if (needs_begin_frame_on_virtual_time_resume_) {
-      continue_callback_ = continue_callback;
+      start_continue_callback_ = std::move(continue_callback);
       IssueAnimationBeginFrame();
       return;
     }
-    continue_callback.Run();
+    std::move(continue_callback).Run();
   }
 
-  void BudgetExpired(base::TimeDelta virtual_time_offset) override {
+  // VirtualTimeController::Observer implementation:
+  void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {}
+
+  void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
     // Wait until a new budget was requested before sending another animation
     // BeginFrame, as it's likely that we will send a screenshotting BeginFrame.
     if (!begin_frame_task_.IsCancelled()) {
@@ -96,16 +102,20 @@ class CompositorController::AnimationBeginFrameTask
     TRACE_EVENT0(
         "headless",
         "CompositorController::AnimationBeginFrameTask::BeginFrameComplete");
-    DCHECK(continue_callback_);
-    auto callback = continue_callback_;
-    continue_callback_.Reset();
-    callback.Run();
+    DCHECK(interval_continue_callback_ || start_continue_callback_);
+    if (interval_continue_callback_)
+      std::move(interval_continue_callback_).Run(ContinuePolicy::NOT_REQUIRED);
+
+    if (start_continue_callback_)
+      std::move(start_continue_callback_).Run();
   }
 
   CompositorController* compositor_controller_;  // NOT OWNED
   bool needs_begin_frame_on_virtual_time_resume_ = false;
   base::CancelableClosure begin_frame_task_;
-  base::Closure continue_callback_;
+
+  base::OnceCallback<void(ContinuePolicy)> interval_continue_callback_;
+  base::OnceClosure start_continue_callback_;
   base::WeakPtrFactory<AnimationBeginFrameTask> weak_ptr_factory_;
 };
 
@@ -134,10 +144,14 @@ CompositorController::CompositorController(
       headless_experimental::EnableParams::Builder().Build());
   virtual_time_controller_->ScheduleRepeatingTask(
       animation_task_.get(), animation_begin_frame_interval_);
+  virtual_time_controller_->AddObserver(animation_task_.get());
+  virtual_time_controller_->SetStartDeferrer(animation_task_.get());
 }
 
 CompositorController::~CompositorController() {
+  virtual_time_controller_->RemoveObserver(animation_task_.get());
   virtual_time_controller_->CancelRepeatingTask(animation_task_.get());
+  virtual_time_controller_->SetStartDeferrer(nullptr);
   devtools_client_->GetHeadlessExperimental()
       ->GetExperimental()
       ->RemoveObserver(this);

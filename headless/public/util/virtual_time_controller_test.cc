@@ -37,25 +37,58 @@ class VirtualTimeControllerTest : public ::testing::Test {
 
   ~VirtualTimeControllerTest() override = default;
 
+  // TODO(alexclarke): This is a common pattern add a helper.
+  class AdditionalVirtualTimeBudget
+      : public VirtualTimeController::RepeatingTask,
+        public VirtualTimeController::Observer {
+   public:
+    AdditionalVirtualTimeBudget(VirtualTimeController* virtual_time_controller,
+                                VirtualTimeControllerTest* test,
+                                base::TimeDelta budget)
+        : RepeatingTask(StartPolicy::START_IMMEDIATELY, 0),
+          virtual_time_controller_(virtual_time_controller),
+          test_(test) {
+      virtual_time_controller_->ScheduleRepeatingTask(this, budget);
+      virtual_time_controller_->AddObserver(this);
+      virtual_time_controller_->StartVirtualTime();
+    }
+
+    ~AdditionalVirtualTimeBudget() override {
+      virtual_time_controller_->RemoveObserver(this);
+      virtual_time_controller_->CancelRepeatingTask(this);
+    }
+
+    // headless::VirtualTimeController::RepeatingTask implementation:
+    void IntervalElapsed(
+        base::TimeDelta virtual_time,
+        base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+      std::move(continue_callback).Run(ContinuePolicy::NOT_REQUIRED);
+    }
+
+    // headless::VirtualTimeController::Observer:
+    void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {
+      EXPECT_FALSE(test_->set_up_complete_);
+      test_->set_up_complete_ = true;
+    }
+
+    void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
+      EXPECT_FALSE(test_->budget_expired_);
+      test_->budget_expired_ = true;
+      delete this;
+    }
+
+   private:
+    headless::VirtualTimeController* const virtual_time_controller_;
+    VirtualTimeControllerTest* test_;
+  };
+
   void GrantVirtualTimeBudget(int budget_ms) {
     ASSERT_FALSE(set_up_complete_);
     ASSERT_FALSE(budget_expired_);
 
-    controller_->GrantVirtualTimeBudget(
-        emulation::VirtualTimePolicy::ADVANCE,
-        base::TimeDelta::FromMilliseconds(budget_ms),
-        base::Bind(
-            [](bool* set_up_complete) {
-              EXPECT_FALSE(*set_up_complete);
-              *set_up_complete = true;
-            },
-            base::Unretained(&set_up_complete_)),
-        base::Bind(
-            [](bool* budget_expired) {
-              EXPECT_FALSE(*budget_expired);
-              *budget_expired = true;
-            },
-            base::Unretained(&budget_expired_)));
+    // AdditionalVirtualTimeBudget will self delete
+    new AdditionalVirtualTimeBudget(
+        controller_.get(), this, base::TimeDelta::FromMilliseconds(budget_ms));
 
     EXPECT_FALSE(set_up_complete_);
     EXPECT_FALSE(budget_expired_);
@@ -78,19 +111,12 @@ class VirtualTimeControllerTest : public ::testing::Test {
   bool budget_expired_ = false;
 };
 
-TEST_F(VirtualTimeControllerTest, AdvancesTimeWithoutTasks) {
+TEST_F(VirtualTimeControllerTest, DoesNotAdvanceTimeWithoutTasks) {
   controller_ = std::make_unique<VirtualTimeController>(&client_, 1000);
 
-  EXPECT_CALL(*mock_host_,
-              DispatchProtocolMessage(
-                  &client_,
-                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":5000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":1000,"
-                  "\"policy\":\"advance\"}}"))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_host_, DispatchProtocolMessage(&client_, _)).Times(0);
 
-  GrantVirtualTimeBudget(5000);
+  controller_->StartVirtualTime();
 }
 
 TEST_F(VirtualTimeControllerTest, MaxVirtualTimeTaskStarvationCount) {
@@ -99,8 +125,9 @@ TEST_F(VirtualTimeControllerTest, MaxVirtualTimeTaskStarvationCount) {
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":5000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(5000);
@@ -119,14 +146,50 @@ TEST_F(VirtualTimeControllerTest, MaxVirtualTimeTaskStarvationCount) {
 namespace {
 class MockTask : public VirtualTimeController::RepeatingTask {
  public:
-  MOCK_METHOD2(IntervalElapsed,
-               void(base::TimeDelta virtual_time_offset,
-                    const base::Callback<void()>& continue_callback));
-  MOCK_METHOD3(BudgetRequested,
-               void(base::TimeDelta virtual_time_offset,
-                    base::TimeDelta requested_budget,
-                    const base::Callback<void()>& continue_callback));
-  MOCK_METHOD1(BudgetExpired, void(base::TimeDelta virtual_time_offset));
+  MockTask() : RepeatingTask(StartPolicy::START_IMMEDIATELY, 0) {}
+
+  MockTask(StartPolicy start_policy, int priority)
+      : RepeatingTask(start_policy, priority) {}
+
+  ~MockTask() override { EXPECT_TRUE(!expected_virtual_time_offset_); }
+
+  // GMock doesn't support move only types
+  void IntervalElapsed(
+      base::TimeDelta virtual_time_offset,
+      base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+    EXPECT_EQ(*expected_virtual_time_offset_, virtual_time_offset);
+    expected_virtual_time_offset_ = base::nullopt;
+    std::move(continue_callback).Run(policy_);
+    interval_elapsed_ = true;
+  }
+
+  void ExpectCallOnceWithOffsetAndReturn(base::TimeDelta virtual_time_offset,
+                                         ContinuePolicy policy) {
+    expected_virtual_time_offset_ = virtual_time_offset;
+    policy_ = policy;
+  }
+
+ private:
+  base::Optional<base::TimeDelta> expected_virtual_time_offset_;
+  ContinuePolicy policy_ = ContinuePolicy::NOT_REQUIRED;
+  bool interval_elapsed_ = false;
+};
+
+class MockDeferrer : public VirtualTimeController::StartDeferrer {
+ public:
+  // GMock doesn't support move only types
+  void DeferStart(base::OnceCallback<void()> continue_callback) override {
+    continue_callback_ = std::move(continue_callback);
+  }
+
+  base::OnceCallback<void()> continue_callback_;
+};
+
+class MockObserver : public VirtualTimeController::Observer {
+ public:
+  MOCK_METHOD1(VirtualTimeStarted, void(base::TimeDelta virtual_time_offset));
+
+  MOCK_METHOD1(VirtualTimeStopped, void(base::TimeDelta virtual_time_offset));
 };
 
 ACTION_TEMPLATE(RunClosure,
@@ -142,19 +205,21 @@ ACTION_P(RunClosure, closure) {
 
 TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
   MockTask task;
+  MockObserver observer;
+  controller_->AddObserver(&observer);
   controller_->ScheduleRepeatingTask(&task,
                                      base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_CALL(task, BudgetRequested(base::TimeDelta::FromMilliseconds(0),
-                                    base::TimeDelta::FromMilliseconds(3000), _))
-      .WillOnce(RunClosure<2>());
+  EXPECT_CALL(observer,
+              VirtualTimeStarted(base::TimeDelta::FromMilliseconds(0)));
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(3000);
@@ -172,9 +237,10 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
   set_up_complete_ = false;
 
   for (int i = 1; i < 3; i++) {
-    EXPECT_CALL(task,
-                IntervalElapsed(base::TimeDelta::FromMilliseconds(1000 * i), _))
-        .WillOnce(RunClosure<1>());
+    task.ExpectCallOnceWithOffsetAndReturn(
+        base::TimeDelta::FromMilliseconds(1000 * i),
+        MockTask::ContinuePolicy::NOT_REQUIRED);
+
     EXPECT_CALL(
         *mock_host_,
         DispatchProtocolMessage(
@@ -182,8 +248,9 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
             base::StringPrintf(
                 "{\"id\":%d,\"method\":\"Emulation.setVirtualTimePolicy\","
                 "\"params\":{\"budget\":1000.0,"
-                "\"maxVirtualTimeTaskStarvationCount\":0,"
-                "\"policy\":\"advance\"}}",
+                "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                "\"pauseIfNetworkFetchesPending\","
+                "\"waitForNavigation\":false}}",
                 i * 2)))
         .WillOnce(Return(true));
 
@@ -201,9 +268,11 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
     EXPECT_FALSE(budget_expired_);
   }
 
-  EXPECT_CALL(task, IntervalElapsed(base::TimeDelta::FromMilliseconds(3000), _))
-      .WillOnce(RunClosure<1>());
-  EXPECT_CALL(task, BudgetExpired(base::TimeDelta::FromMilliseconds(3000)));
+  task.ExpectCallOnceWithOffsetAndReturn(
+      base::TimeDelta::FromMilliseconds(3000),
+      MockTask::ContinuePolicy::NOT_REQUIRED);
+  EXPECT_CALL(observer,
+              VirtualTimeStopped(base::TimeDelta::FromMilliseconds(3000)));
   SendVirtualTimeBudgetExpiredEvent();
 
   EXPECT_FALSE(set_up_complete_);
@@ -215,16 +284,14 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
   controller_->ScheduleRepeatingTask(&task,
                                      base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_CALL(task, BudgetRequested(base::TimeDelta::FromMilliseconds(0),
-                                    base::TimeDelta::FromMilliseconds(5000), _))
-      .WillOnce(RunClosure<2>());
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(5000);
@@ -241,15 +308,18 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
   // We check that set_up_complete_callback is only run once, so reset it here.
   set_up_complete_ = false;
 
-  EXPECT_CALL(task, IntervalElapsed(base::TimeDelta::FromMilliseconds(1000), _))
-      .WillOnce(RunClosure<1>());
+  task.ExpectCallOnceWithOffsetAndReturn(
+      base::TimeDelta::FromMilliseconds(1000),
+      MockTask::ContinuePolicy::NOT_REQUIRED);
+
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":2,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   SendVirtualTimeBudgetExpiredEvent();
@@ -271,8 +341,9 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
                   &client_,
                   "{\"id\":4,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":3000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   SendVirtualTimeBudgetExpiredEvent();
@@ -301,14 +372,6 @@ TEST_F(VirtualTimeControllerTest, MultipleTasks) {
   controller_->ScheduleRepeatingTask(&task2,
                                      base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_CALL(task1,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0),
-                              base::TimeDelta::FromMilliseconds(2000), _))
-      .WillOnce(RunClosure<2>());
-  EXPECT_CALL(task2,
-              BudgetRequested(base::TimeDelta::FromMilliseconds(0),
-                              base::TimeDelta::FromMilliseconds(2000), _))
-      .WillOnce(RunClosure<2>());
   // We should only get one call to Emulation.setVirtualTimePolicy despite
   // having two tasks.
   EXPECT_CALL(*mock_host_,
@@ -316,8 +379,9 @@ TEST_F(VirtualTimeControllerTest, MultipleTasks) {
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(2000);
@@ -332,42 +396,99 @@ TEST_F(VirtualTimeControllerTest, MultipleTasks) {
   EXPECT_FALSE(budget_expired_);
 }
 
-class VirtualTimeTask : public VirtualTimeController::RepeatingTask {
+TEST_F(VirtualTimeControllerTest, StartPolicy) {
+  MockTask task1(MockTask::StartPolicy::START_IMMEDIATELY, 0);
+  MockTask task2(MockTask::StartPolicy::START_IMMEDIATELY, 0);
+  MockTask task3(MockTask::StartPolicy::WAIT_FOR_NAVIGATION, 0);
+  controller_->ScheduleRepeatingTask(&task1,
+                                     base::TimeDelta::FromMilliseconds(1000));
+  controller_->ScheduleRepeatingTask(&task2,
+                                     base::TimeDelta::FromMilliseconds(1000));
+  controller_->ScheduleRepeatingTask(&task3,
+                                     base::TimeDelta::FromMilliseconds(1000));
+
+  // Despite only one task asking for it we should get waitForNavigation:true
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000.0,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":true}}"))
+      .WillOnce(Return(true));
+
+  GrantVirtualTimeBudget(2000);
+}
+
+TEST_F(VirtualTimeControllerTest, DeferStart) {
+  MockDeferrer deferrer;
+  controller_->SetStartDeferrer(&deferrer);
+
+  MockTask task1(MockTask::StartPolicy::START_IMMEDIATELY, 0);
+  controller_->ScheduleRepeatingTask(&task1,
+                                     base::TimeDelta::FromMilliseconds(1000));
+
+  // Shouldn't see the devtools command until the deferrer's call back has run.
+  EXPECT_CALL(*mock_host_, DispatchProtocolMessage(&client_, _)).Times(0);
+  GrantVirtualTimeBudget(2000);
+
+  Mock::VerifyAndClearExpectations(mock_host_.get());
+
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000.0,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
+      .WillOnce(Return(true));
+
+  std::move(deferrer.continue_callback_).Run();
+}
+
+class VirtualTimeTask : public VirtualTimeController::RepeatingTask,
+                        public VirtualTimeController::Observer {
  public:
-  using Task = base::Callback<void(base::TimeDelta virtual_time)>;
+  using Task = base::RepeatingCallback<void(base::TimeDelta virtual_time)>;
 
   VirtualTimeTask(VirtualTimeController* controller,
-                  Task budget_requested_task,
+                  Task virtual_time_started_task,
                   Task interval_elapsed_task,
-                  Task budget_expired_task)
-      : controller_(controller),
-        budget_requested_task_(budget_requested_task),
+                  Task virtual_time_stopped_task,
+                  int priority = 0)
+      : RepeatingTask(StartPolicy::START_IMMEDIATELY, priority),
+        controller_(controller),
+        virtual_time_started_task_(virtual_time_started_task),
         interval_elapsed_task_(interval_elapsed_task),
-        budget_expired_task_(budget_expired_task) {}
+        virtual_time_stopped_task_(virtual_time_stopped_task) {
+    controller_->AddObserver(this);
+  }
 
+  ~VirtualTimeTask() override { controller_->RemoveObserver(this); }
+
+  // VirtualTimeController::RepeatingTask:
   void IntervalElapsed(
       base::TimeDelta virtual_time,
-      const base::Callback<void()>& continue_callback) override {
+      base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+    std::move(continue_callback).Run(ContinuePolicy::NOT_REQUIRED);
     interval_elapsed_task_.Run(virtual_time);
-    continue_callback.Run();
   }
 
-  void BudgetRequested(
-      base::TimeDelta virtual_time,
-      base::TimeDelta requested_budget_ms,
-      const base::Callback<void()>& continue_callback) override {
-    budget_requested_task_.Run(virtual_time);
-    continue_callback.Run();
+  // VirtualTimeController::Observer:
+  void VirtualTimeStarted(base::TimeDelta virtual_time) override {
+    virtual_time_started_task_.Run(virtual_time);
   }
 
-  void BudgetExpired(base::TimeDelta virtual_time) override {
-    budget_expired_task_.Run(virtual_time);
+  void VirtualTimeStopped(base::TimeDelta virtual_time) override {
+    virtual_time_stopped_task_.Run(virtual_time);
   };
 
   VirtualTimeController* controller_;  // NOT OWNED
-  Task budget_requested_task_;
+  Task virtual_time_started_task_;
   Task interval_elapsed_task_;
-  Task budget_expired_task_;
+  Task virtual_time_stopped_task_;
 };
 
 TEST_F(VirtualTimeControllerTest, ReentrantTask) {
@@ -375,14 +496,8 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
   std::vector<std::string> log;
   VirtualTimeTask task_b(
       controller_.get(),
-      base::Bind(
-          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
-            log->push_back(base::StringPrintf(
-                "B: budget requested @ %d",
-                static_cast<int>(virtual_time.InMilliseconds())));
-          },
-          &log),
-      base::Bind(
+      base::BindRepeating([](base::TimeDelta virtual_time) {}),
+      base::BindRepeating(
           [](std::vector<std::string>* log, VirtualTimeController* controller,
              VirtualTimeTask* task_b, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
@@ -391,24 +506,24 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
             controller->CancelRepeatingTask(task_b);
           },
           &log, controller_.get(), &task_b),
-      base::Bind(
+      base::BindRepeating(
           [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
-                "B: budget expired @ %d",
+                "B: virtual time stopped @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
           },
           &log));
 
   VirtualTimeTask task_a(
       controller_.get(),
-      base::Bind(
+      base::BindRepeating(
           [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
-                "A: budget requested @ %d",
+                "Virtual time started @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
           },
           &log),
-      base::Bind(
+      base::BindRepeating(
           [](std::vector<std::string>* log, VirtualTimeController* controller,
              VirtualTimeTask* task_a, VirtualTimeTask* task_b,
              base::TimeDelta virtual_time) {
@@ -420,10 +535,10 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
                 task_b, base::TimeDelta::FromMilliseconds(1500));
           },
           &log, controller_.get(), &task_a, &task_b),
-      base::Bind(
+      base::BindRepeating(
           [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
             log->push_back(base::StringPrintf(
-                "A: budget expired @ %d",
+                "A: virtual time stopped @ %d",
                 static_cast<int>(virtual_time.InMilliseconds())));
           },
           &log));
@@ -436,11 +551,16 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(6000);
+  client_.DispatchProtocolMessage(
+      mock_host_.get(),
+      base::StringPrintf("{\"id\":0,\"result\":{\"virtualTimeBase\":1.0}}"));
+
   Mock::VerifyAndClearExpectations(&mock_host_);
 
   EXPECT_CALL(*mock_host_,
@@ -448,10 +568,15 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
                   &client_,
                   "{\"id\":2,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1500.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
+
   SendVirtualTimeBudgetExpiredEvent();
+  client_.DispatchProtocolMessage(
+      mock_host_.get(),
+      base::StringPrintf("{\"id\":2,\"result\":{\"virtualTimeBase\":1.0}}"));
   Mock::VerifyAndClearExpectations(&mock_host_);
 
   EXPECT_CALL(*mock_host_,
@@ -459,15 +584,98 @@ TEST_F(VirtualTimeControllerTest, ReentrantTask) {
                   &client_,
                   "{\"id\":4,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":3500.0,"
-                  "\"maxVirtualTimeTaskStarvationCount\":0,"
-                  "\"policy\":\"advance\"}}"))
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
       .WillOnce(Return(true));
   SendVirtualTimeBudgetExpiredEvent();
+  client_.DispatchProtocolMessage(
+      mock_host_.get(),
+      base::StringPrintf("{\"id\":4,\"result\":{\"virtualTimeBase\":1.0}}"));
 
   EXPECT_THAT(
-      log, ElementsAre("A: budget requested @ 0", "A: interval elapsed @ 1000",
+      log, ElementsAre("Virtual time started @ 0", "A: interval elapsed @ 1000",
                        "B: interval elapsed @ 2500"));
 #endif
+}
+
+TEST_F(VirtualTimeControllerTest, Priority) {
+  std::vector<std::string> log;
+  VirtualTimeTask task_a(
+      controller_.get(),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}),
+      base::BindRepeating(
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
+            log->push_back(base::StringPrintf(
+                "A: interval elapsed @ %d",
+                static_cast<int>(virtual_time.InMilliseconds())));
+          },
+          &log),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}), 30);
+
+  VirtualTimeTask task_b(
+      controller_.get(),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}),
+      base::BindRepeating(
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
+            log->push_back(base::StringPrintf(
+                "B: interval elapsed @ %d",
+                static_cast<int>(virtual_time.InMilliseconds())));
+          },
+          &log),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}), 20);
+
+  VirtualTimeTask task_c(
+      controller_.get(),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}),
+      base::BindRepeating(
+          [](std::vector<std::string>* log, base::TimeDelta virtual_time) {
+            log->push_back(base::StringPrintf(
+                "C: interval elapsed @ %d",
+                static_cast<int>(virtual_time.InMilliseconds())));
+          },
+          &log),
+      base::BindRepeating([](base::TimeDelta virtual_time) {}), 10);
+
+  controller_->ScheduleRepeatingTask(&task_a,
+                                     base::TimeDelta::FromMilliseconds(1000));
+
+  controller_->ScheduleRepeatingTask(&task_b,
+                                     base::TimeDelta::FromMilliseconds(1000));
+
+  controller_->ScheduleRepeatingTask(&task_c,
+                                     base::TimeDelta::FromMilliseconds(1000));
+
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000.0,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
+      .WillOnce(Return(true));
+
+  GrantVirtualTimeBudget(2000);
+  client_.DispatchProtocolMessage(
+      mock_host_.get(),
+      base::StringPrintf("{\"id\":0,\"result\":{\"virtualTimeBase\":1.0}}"));
+
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":2,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000.0,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
+      .WillOnce(Return(true));
+
+  SendVirtualTimeBudgetExpiredEvent();
+
+  EXPECT_THAT(log, ElementsAre("C: interval elapsed @ 1000",
+                               "B: interval elapsed @ 1000",
+                               "A: interval elapsed @ 1000"));
 }
 
 }  // namespace headless
