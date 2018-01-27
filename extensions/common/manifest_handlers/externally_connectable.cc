@@ -206,18 +206,18 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       externally_connectable->accepts_tls_channel_id.get() &&
       *externally_connectable->accepts_tls_channel_id;
   return base::WrapUnique(new ExternallyConnectableInfo(
-      matches, ids, all_ids, accepts_tls_channel_id));
+      std::move(matches), ids, all_ids, accepts_tls_channel_id));
 }
 
 ExternallyConnectableInfo::~ExternallyConnectableInfo() {
 }
 
 ExternallyConnectableInfo::ExternallyConnectableInfo(
-    const URLPatternSet& matches,
+    URLPatternSet matches,
     const std::vector<std::string>& ids,
     bool all_ids,
     bool accepts_tls_channel_id)
-    : matches(matches),
+    : matches(std::move(matches)),
       ids(Sorted(ids)),
       all_ids(all_ids),
       accepts_tls_channel_id(accepts_tls_channel_id) {

@@ -91,20 +91,20 @@ URLPatternSet URLPatternSet::CreateUnion(
   return result;
 }
 
-URLPatternSet::URLPatternSet() {}
+URLPatternSet::URLPatternSet() = default;
 
-URLPatternSet::URLPatternSet(const URLPatternSet& rhs)
-    : patterns_(rhs.patterns_) {}
+URLPatternSet::URLPatternSet(const URLPatternSet& rhs) = default;
+
+URLPatternSet::URLPatternSet(URLPatternSet&& rhs) = default;
 
 URLPatternSet::URLPatternSet(const std::set<URLPattern>& patterns)
     : patterns_(patterns) {}
 
-URLPatternSet::~URLPatternSet() {}
+URLPatternSet::~URLPatternSet() = default;
 
-URLPatternSet& URLPatternSet::operator=(const URLPatternSet& rhs) {
-  patterns_ = rhs.patterns_;
-  return *this;
-}
+URLPatternSet& URLPatternSet::operator=(const URLPatternSet& rhs) = default;
+
+URLPatternSet& URLPatternSet::operator=(URLPatternSet&& rhs) = default;
 
 bool URLPatternSet::operator==(const URLPatternSet& other) const {
   return patterns_ == other.patterns_;
