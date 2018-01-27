@@ -18,6 +18,7 @@
 #include "platform/wtf/HashTable.h"
 #include "platform/wtf/LinkedHashSet.h"
 #include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/TypeTraits.h"
 
 namespace blink {
@@ -321,6 +322,23 @@ class TraceTrait<std::pair<T, U>> {
   static void Trace(VisitorDispatcher visitor, std::pair<T, U>* pair) {
     TraceIfEnabled<T, kFirstIsTraceable>::Trace(visitor, pair->first);
     TraceIfEnabled<U, kSecondIsTraceable>::Trace(visitor, pair->second);
+  }
+};
+
+// While using Optional<T> with garbage-collected types is generally disallowed
+// by the OptionalGarbageCollected check in blink_gc_plugin, garbage-collected
+// containers such as HeapVector are allowed and need to be traced.
+template <typename T>
+class TraceTrait<WTF::Optional<T>> {
+  STATIC_ONLY(TraceTrait);
+
+ public:
+  template <typename VisitorDispatcher>
+  static void Trace(VisitorDispatcher visitor, WTF::Optional<T>* optional) {
+    if (*optional != WTF::nullopt) {
+      TraceIfEnabled<T, WTF::IsTraceable<T>::value>::Trace(visitor,
+                                                           optional->value());
+    }
   }
 };
 
