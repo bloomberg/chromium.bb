@@ -119,8 +119,9 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
         controller()->Proceed();
         break;
       }
+      // If the user can't proceed, fall through to CMD_DONT_PROCEED.
+      FALLTHROUGH;
     }
-    // If the user can't proceed, fall through to CMD_DONT_PROCEED.
     case CMD_DONT_PROCEED: {
       // User pressed on the button to return to safety.
       // Don't record the user action here because there are other ways of
