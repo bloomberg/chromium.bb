@@ -69,10 +69,10 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
         attributes_.push_back(
             Attribute(attribute.NameAttemptStaticStringCreation(),
                       attribute.Value8BitIfNecessary()));
-    // Fall through!
+      FALLTHROUGH;
     case HTMLToken::kEndTag:
       self_closing_ = token->SelfClosing();
-    // Fall through!
+      FALLTHROUGH;
     case HTMLToken::kComment:
     case HTMLToken::kCharacter: {
       is_all8_bit_data_ = token->IsAll8BitData();
