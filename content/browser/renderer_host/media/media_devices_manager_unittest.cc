@@ -628,4 +628,57 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   EXPECT_EQ(num_audio_output_devices, notification_all_audio_output.size());
 }
 
+TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
+  MediaDeviceInfoArray audio_devices = {
+      {"device_id_1", "Microphone (Logitech Webcam C930e)", "group_1"},
+      {"device_id_2", "HD Pro Webcam C920", "group_2"},
+      {"device_id_3", "Microsoft® LifeCam Cinema(TM)", "group_3"},
+      {"device_id_4", "Repeated webcam", "group_4"},
+      {"device_id_5", "Repeated webcam", "group_5"},
+      {"device_id_6", "Dual-mic webcam device", "group_6"},
+      {"device_id_7", "Dual-mic webcam device", "group_6"},
+      {"device_id_8", "Repeated dual-mic webcam device", "group_7"},
+      {"device_id_9", "Repeated dual-mic webcam device", "group_7"},
+      {"device_id_10", "Repeated dual-mic webcam device", "group_8"},
+      {"device_id_11", "Repeated dual-mic webcam device", "group_8"},
+  };
+
+  MediaDeviceInfo logitech_video("logitech_video",
+                                 "Logitech Webcam C930e (046d:0843)", "");
+  MediaDeviceInfo hd_pro_video("hd_pro_video", "HD Pro Webcam C920 (046d:082d)",
+                               "");
+  MediaDeviceInfo lifecam_video(
+      "lifecam_video", "Microsoft® LifeCam Cinema(TM) (045e:075d)", "");
+  MediaDeviceInfo repeated_webcam1_video("repeated_webcam_1", "Repeated webcam",
+                                         "");
+  MediaDeviceInfo repeated_webcam2_video("repeated_webcam_2", "Repeated webcam",
+                                         "");
+  MediaDeviceInfo dual_mic_video("dual_mic_video",
+                                 "Dual-mic webcam device (1111:1111)", "");
+  MediaDeviceInfo webcam_only_video("webcam_only_video", "Webcam-only device",
+                                    "");
+  MediaDeviceInfo repeated_dual_mic1_video(
+      "repeated_dual_mic1_video", "Repeated dual-mic webcam device", "");
+  MediaDeviceInfo repeated_dual_mic2_video(
+      "repeated_dual_mic2_video", "Repeated dual-mic webcam device", "");
+  MediaDeviceInfo short_label_video("short_label_video", " ()", "");
+
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, logitech_video), "group_1");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, hd_pro_video), "group_2");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, lifecam_video), "group_3");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_webcam1_video),
+            repeated_webcam1_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_webcam2_video),
+            repeated_webcam2_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, dual_mic_video), "group_6");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, webcam_only_video),
+            webcam_only_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_dual_mic1_video),
+            repeated_dual_mic1_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_dual_mic2_video),
+            repeated_dual_mic2_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, short_label_video),
+            short_label_video.device_id);
+}
+
 }  // namespace content

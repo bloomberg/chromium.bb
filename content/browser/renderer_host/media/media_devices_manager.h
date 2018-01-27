@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_DEVICES_MANAGER_H_
 
 #include <array>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -256,6 +259,19 @@ class CONTENT_EXPORT MediaDevicesManager
 
   DISALLOW_COPY_AND_ASSIGN(MediaDevicesManager);
 };
+
+// This function uses a heuristic to guess the group ID for a video device with
+// label |video_label| based on appearance of |video_label| as a substring in
+// the label of any of the audio devices in |audio_infos|. The heuristic tries
+// to minimize the probability of false positives.
+// If the heuristic fails to find an association, the |video_info.device_id| is
+// returned to be used as group ID. This group ID and the device ID are later
+// obfuscated with different salts before being sent to the renderer process.
+// TODO(crbug.com/627793): Replace the heuristic with proper associations
+// provided by the OS.
+CONTENT_EXPORT std::string GuessVideoGroupID(
+    const MediaDeviceInfoArray& audio_infos,
+    const MediaDeviceInfo& video_info);
 
 }  // namespace content
 
