@@ -31,6 +31,8 @@
 #ifndef WebFrameWidgetImpl_h
 #define WebFrameWidgetImpl_h
 
+#include <memory>
+
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/PageWidgetDelegate.h"
@@ -221,8 +223,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_;
-
-  static const WebInputEvent* current_input_event_;
 
   WebColor base_background_color_;
 

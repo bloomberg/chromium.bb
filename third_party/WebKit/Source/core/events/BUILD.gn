@@ -20,6 +20,8 @@ blink_core_sources("events") {
     "ClipboardEvent.h",
     "CompositionEvent.cpp",
     "CompositionEvent.h",
+    "CurrentInputEvent.cpp",
+    "CurrentInputEvent.h",
     "DragEvent.cpp",
     "DragEvent.h",
     "ErrorEvent.cpp",
