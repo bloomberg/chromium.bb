@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "components/viz/common/features.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/frame_messages.h"
+#include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
@@ -443,10 +443,11 @@ void RenderFrameProxy::OnDidStartLoading() {
   web_frame_->DidStartLoading();
 }
 
-void RenderFrameProxy::OnViewChanged(const viz::FrameSinkId& frame_sink_id) {
+void RenderFrameProxy::OnViewChanged(
+    const FrameMsg_ViewChanged_Params& params) {
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
   if (!switches::IsMusHostingViz())
-    frame_sink_id_ = frame_sink_id;
+    frame_sink_id_ = *params.frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.

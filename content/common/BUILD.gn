@@ -130,6 +130,8 @@ source_set("common") {
     "font_list_mac.mm",
     "font_list_win.cc",
     "frame_message_enums.h",
+    "frame_message_structs.cc",
+    "frame_message_structs.h",
     "frame_messages.h",
     "frame_messages_forward.h",
     "frame_owner_properties.cc",

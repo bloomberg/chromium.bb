@@ -26,6 +26,7 @@
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/features.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
@@ -951,7 +952,8 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
 
 // Notifies RenderFrameProxy that its associated RenderWidgetHostView has
 // changed.
-IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged, viz::FrameSinkId /* frame_sink_id */)
+IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged,
+                    content::FrameMsg_ViewChanged_Params /* params */)
 
 // Notifies this frame or proxy that it is now focused.  This is used to
 // support cross-process focused frame changes.
