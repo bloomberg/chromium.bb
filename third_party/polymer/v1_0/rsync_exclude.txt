@@ -6,6 +6,7 @@ compiled_resources*.gyp
 demo*.html
 */demos/
 docs.html
+.eslintrc.json
 .github
 .gitignore
 hero.svg
