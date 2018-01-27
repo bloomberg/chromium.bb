@@ -228,7 +228,6 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   void DispatchProtocolMessage(int call_id,
                                const String& method,
                                const String& message) override;
-  void InspectElement(const WebPoint& point_in_root_frame) override;
 
   // InspectorSession::Client implementation.
   void SendProtocolMessage(int session_id,
@@ -299,8 +298,6 @@ class WebDevToolsAgentImpl::Session::IOSession
                         session_, call_id, method, message));
   }
 
-  void InspectElement(const WebPoint&) override { NOTREACHED(); }
-
  private:
   scoped_refptr<base::SingleThreadTaskRunner> session_task_runner_;
   scoped_refptr<WebTaskRunner> agent_task_runner_;
@@ -357,35 +354,6 @@ void WebDevToolsAgentImpl::Session::DispatchProtocolMessage(
     MainThreadDebugger::Instance()->TaskRunner()->RunAllTasksDontWait();
   else
     DispatchProtocolMessageInternal(call_id, method, message);
-}
-
-void WebDevToolsAgentImpl::Session::InspectElement(
-    const WebPoint& point_in_root_frame) {
-  WebPoint point = point_in_root_frame;
-  if (frame_->ViewImpl() && frame_->ViewImpl()->Client()) {
-    WebFloatRect rect(point.x, point.y, 0, 0);
-    frame_->ViewImpl()->Client()->ConvertWindowToViewport(&rect);
-    point = WebPoint(rect.x, rect.y);
-  }
-
-  HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kMove | HitTestRequest::kReadOnly |
-      HitTestRequest::kAllowChildFrameContent;
-  HitTestRequest request(hit_type);
-  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            WTF::CurrentTimeTicksInMilliseconds());
-  dummy_event.SetPositionInWidget(point.x, point.y);
-  IntPoint transformed_point = FlooredIntPoint(
-      TransformWebMouseEvent(frame_->GetFrameView(), dummy_event)
-          .PositionInRootFrame());
-  HitTestResult result(
-      request, frame_->GetFrameView()->RootFrameToContents(transformed_point));
-  frame_->GetFrame()->ContentLayoutObject()->HitTest(result);
-  Node* node = result.InnerNode();
-  if (!node && frame_->GetFrame()->GetDocument())
-    node = frame_->GetFrame()->GetDocument()->documentElement();
-  overlay_agent_->Inspect(node);
 }
 
 void WebDevToolsAgentImpl::Session::SendProtocolMessage(int session_id,
@@ -582,6 +550,7 @@ void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_content_loader_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
+  visitor->Trace(node_to_inspect_);
 }
 
 void WebDevToolsAgentImpl::WillBeDestroyed() {
@@ -604,13 +573,59 @@ void WebDevToolsAgentImpl::BindRequest(
 
 void WebDevToolsAgentImpl::AttachDevToolsSession(
     mojom::blink::DevToolsSessionHostAssociatedPtrInfo host,
-    mojom::blink::DevToolsSessionAssociatedRequest session,
-    mojom::blink::DevToolsSessionRequest io_session,
+    mojom::blink::DevToolsSessionAssociatedRequest session_request,
+    mojom::blink::DevToolsSessionRequest io_session_request,
     const String& reattach_state) {
   if (!sessions_.size())
     Platform::Current()->CurrentThread()->AddTaskObserver(this);
-  sessions_.insert(new Session(this, std::move(host), std::move(session),
-                               std::move(io_session), reattach_state));
+  Session* session =
+      new Session(this, std::move(host), std::move(session_request),
+                  std::move(io_session_request), reattach_state);
+  sessions_.insert(session);
+  if (node_to_inspect_) {
+    session->overlay_agent()->Inspect(node_to_inspect_);
+    node_to_inspect_ = nullptr;
+  }
+}
+
+void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
+  WebPoint point = point_in_local_root;
+  // TODO(dgozman): the ViewImpl() check must not be necessary,
+  // but it is required when attaching early to a provisional frame.
+  // We should clean this up once provisional frames are gone.
+  // See https://crbug.com/578349.
+  if (web_local_frame_impl_->ViewImpl() &&
+      web_local_frame_impl_->ViewImpl()->Client()) {
+    WebFloatRect rect(point.x, point.y, 0, 0);
+    web_local_frame_impl_->ViewImpl()->Client()->ConvertWindowToViewport(&rect);
+    point = WebPoint(rect.x, rect.y);
+  }
+
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kMove | HitTestRequest::kReadOnly |
+      HitTestRequest::kAllowChildFrameContent;
+  HitTestRequest request(hit_type);
+  WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WTF::CurrentTimeTicksInSeconds());
+  dummy_event.SetPositionInWidget(point.x, point.y);
+  IntPoint transformed_point = FlooredIntPoint(
+      TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)
+          .PositionInRootFrame());
+  HitTestResult result(
+      request, web_local_frame_impl_->GetFrameView()->RootFrameToContents(
+                   transformed_point));
+  web_local_frame_impl_->GetFrame()->ContentLayoutObject()->HitTest(result);
+  Node* node = result.InnerNode();
+  if (!node && web_local_frame_impl_->GetFrame()->GetDocument())
+    node = web_local_frame_impl_->GetFrame()->GetDocument()->documentElement();
+
+  if (!sessions_.IsEmpty()) {
+    for (auto& session : sessions_)
+      session->overlay_agent()->Inspect(node);
+  } else {
+    node_to_inspect_ = node;
+  }
 }
 
 void WebDevToolsAgentImpl::DetachSession(Session* session) {

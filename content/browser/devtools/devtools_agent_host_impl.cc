@@ -242,14 +242,9 @@ bool DevToolsAgentHostImpl::IsAttached() {
   return !sessions_.empty();
 }
 
-void DevToolsAgentHostImpl::InspectElement(
-    DevToolsAgentHostClient* client,
-    int x,
-    int y) {
-  DevToolsSession* session = SessionByClient(client);
-  if (session)
-    InspectElement(session, x, y);
-}
+void DevToolsAgentHostImpl::InspectElement(RenderFrameHost* frame_host,
+                                           int x,
+                                           int y) {}
 
 std::string DevToolsAgentHostImpl::GetId() {
   return id_;
@@ -318,12 +313,6 @@ void DevToolsAgentHostImpl::DetachSession(DevToolsSession* session) {}
 void DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsSession* session,
     const std::string& message) {}
-
-void DevToolsAgentHostImpl::InspectElement(
-    DevToolsSession* session,
-    int x,
-    int y) {
-}
 
 // static
 void DevToolsAgentHost::DetachAllClients() {

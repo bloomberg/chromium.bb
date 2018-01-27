@@ -101,7 +101,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // DevToolsAgentHostImpl overrides.
   void AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
-  void InspectElement(DevToolsSession* session, int x, int y) override;
+  void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
   void DispatchProtocolMessage(DevToolsSession* session,
                                const std::string& message) override;
 
