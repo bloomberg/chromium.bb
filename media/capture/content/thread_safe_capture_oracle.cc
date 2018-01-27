@@ -100,20 +100,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     coded_size.SetSize(base::bits::Align(visible_size.width(), 16),
                        base::bits::Align(visible_size.height(), 16));
 
-    if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
-      output_buffer = client_->ResurrectLastOutputBuffer(
-          coded_size, params_.requested_format.pixel_format,
-          params_.requested_format.pixel_storage, frame_number);
-      if (!output_buffer.is_valid()) {
-        TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
-                             TRACE_EVENT_SCOPE_THREAD);
-        return false;
-      }
-    } else {
-      output_buffer = client_->ReserveOutputBuffer(
-          coded_size, params_.requested_format.pixel_format,
-          params_.requested_format.pixel_storage, frame_number);
-    }
+    output_buffer = client_->ReserveOutputBuffer(
+        coded_size, params_.requested_format.pixel_format,
+        params_.requested_format.pixel_storage, frame_number);
 
     // Get the current buffer pool utilization and attenuate it: The utilization
     // reported to the oracle is in terms of a maximum sustainable amount (not
@@ -185,21 +174,6 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
                          base::Passed(&capture));
 
-  return true;
-}
-
-bool ThreadSafeCaptureOracle::AttemptPassiveRefresh() {
-  const base::TimeTicks refresh_time = base::TimeTicks::Now();
-
-  scoped_refptr<VideoFrame> frame;
-  CaptureFrameCallback capture_callback;
-  if (!ObserveEventAndDecideCapture(VideoCaptureOracle::kPassiveRefreshRequest,
-                                    gfx::Rect(), refresh_time, &frame,
-                                    &capture_callback)) {
-    return false;
-  }
-
-  capture_callback.Run(std::move(frame), refresh_time, true);
   return true;
 }
 
