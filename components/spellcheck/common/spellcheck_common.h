@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 class FilePath;
 }
@@ -21,14 +23,14 @@ static const int kMaxSuggestions = 5;
 
 // Maximum number of words in the custom spellcheck dictionary that can be
 // synced.
-static const size_t MAX_SYNCABLE_DICTIONARY_WORDS = 1300;
+static const size_t kMaxSyncableDictionaryWords = 1300;
 
 // Maximum number of bytes in a word that can be added to the custom spellcheck
 // dictionary. When changing this value, also change the corresponding value in
-// /src/chrome/browser/resources/settings/languages_page/edit_dictionary_page.js
-static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
+// chrome/browser/resources/settings/languages_page/edit_dictionary_page.js
+static const size_t kMaxCustomDictionaryWordBytes = 99;
 
-base::FilePath GetVersionedFileName(const std::string& input_language,
+base::FilePath GetVersionedFileName(base::StringPiece input_language,
                                     const base::FilePath& dict_dir);
 
 // Returns the spellcheck language that should be used for |language|. For
@@ -39,7 +41,7 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
 // Returns an empty string if no spellcheck language found. For example, there's
 // no single dictionary for English, so this function returns an empty string
 // for "en".
-std::string GetCorrespondingSpellCheckLanguage(const std::string& language);
+std::string GetCorrespondingSpellCheckLanguage(base::StringPiece language);
 
 // Get SpellChecker supported languages.
 std::vector<std::string> SpellCheckLanguages();

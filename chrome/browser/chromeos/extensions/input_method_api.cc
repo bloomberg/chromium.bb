@@ -199,7 +199,7 @@ InputMethodPrivateAddWordToDictionaryFunction::Run() {
   // Invalid words:
   // - Already in the dictionary.
   // - Not a UTF8 string.
-  // - Longer than 99 bytes (MAX_CUSTOM_DICTIONARY_WORD_BYTES).
+  // - Longer than 99 bytes (kMaxCustomDictionaryWordBytes).
   // - Leading/trailing whitespace.
   // - Empty.
   return RespondNow(Error("Unable to add invalid word to dictionary."));

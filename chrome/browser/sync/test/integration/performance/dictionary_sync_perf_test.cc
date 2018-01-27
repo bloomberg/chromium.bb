@@ -30,15 +30,15 @@ IN_PROC_BROWSER_TEST_F(DictionarySyncPerfTest, P0) {
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 
   base::TimeDelta dt;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
     ASSERT_TRUE(dictionary_helper::AddWord(0, "foo" + base::NumberToString(i)));
   }
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  ASSERT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             dictionary_helper::GetDictionarySize(1));
   PrintResult("dictionary", "add_words", dt);
 
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
     ASSERT_TRUE(
         dictionary_helper::RemoveWord(0, "foo" + base::NumberToString(i)));
   }
