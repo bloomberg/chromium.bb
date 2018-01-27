@@ -9,6 +9,11 @@
 
 namespace chrome {
 
+// IMPORTANT: This needs to stay in sync with <enum name="CrashExitCodes"> and
+// <enum name="WindowsExitCode"> in tools/metrics/histograms/enums.xml. So do
+// not remove any entries, and always append entries to the bottom just above
+// RESULT_CODE_CHROME_LAST_CODE.
+
 enum ResultCode {
   RESULT_CODE_CHROME_START = content::RESULT_CODE_LAST_CODE,
 
@@ -89,7 +94,7 @@ enum ResultCode {
 
   // Failed to migrate user data directory for side-by-side package support
   // (Linux-only).
-  RESULT_CODE_SXS_MIGRATION_FAILED,
+  RESULT_CODE_SXS_MIGRATION_FAILED_NOT_USED,
 
   // The action is not allowed by a policy.
   RESULT_CODE_ACTION_DISALLOWED_BY_POLICY,
@@ -98,8 +103,11 @@ enum ResultCode {
   RESULT_CODE_INVALID_SANDBOX_STATE,
 
   // Last return code (keep this last).
-  RESULT_CODE_CHROME_LAST_CODE,
+  RESULT_CODE_CHROME_LAST_CODE
 };
+
+static_assert(RESULT_CODE_CHROME_LAST_CODE == 32,
+              "Please make sure the enum values are in sync with enums.xml");
 
 }  // namespace chrome
 

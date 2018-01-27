@@ -12211,12 +12211,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="CrashExitCodes.Extension" enum="CrashExitCodes">
   <owner>wfh@chromium.org</owner>
-  <summary>The exit codes for crashed extension processes.</summary>
+  <summary>
+    The exit codes for crashed extension processes. Note: Due to
+    https://crbug.com/805754, the enum labels are off by 1 for M56 and earlier.
+  </summary>
 </histogram>
 
 <histogram name="CrashExitCodes.Renderer" enum="CrashExitCodes">
   <owner>wfh@chromium.org</owner>
-  <summary>The exit codes for crashed renderer processes.</summary>
+  <summary>
+    The exit codes for crashed renderer processes. Note: Due to
+    https://crbug.com/805754, the enum labels are off by 1 for M56 and earlier.
+  </summary>
 </histogram>
 
 <histogram name="Crashpad.CrashReportPending" enum="CrashpadReportPending">
@@ -84906,7 +84912,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Records the exit code of the browser process (on Windows) from the previous
     launch. On crash, the exit code will indicate the exception code of the
     crash. This is emitted in stability data with the first report on a
-    subsequent launch.
+    subsequent launch. Note: Due to https://crbug.com/805754, the enum labels
+    for RESULT_CODE_* are off by 1 for M56 and earlier.
   </summary>
 </histogram>
 
