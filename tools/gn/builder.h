@@ -6,6 +6,7 @@
 #define TOOLS_GN_BUILDER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -137,9 +138,7 @@ class Builder {
   // Non owning pointer.
   Loader* loader_;
 
-  // Owning pointers.
-  typedef std::map<Label, BuilderRecord*> RecordMap;
-  RecordMap records_;
+  std::map<Label, std::unique_ptr<BuilderRecord>> records_;
 
   ResolvedGeneratedCallback resolved_and_generated_callback_;
 
