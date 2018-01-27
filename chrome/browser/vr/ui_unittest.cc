@@ -1120,10 +1120,51 @@ TEST_F(UiTest, ControllerLabels) {
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
   EXPECT_TRUE(IsVisible(kControllerBackButtonLabel));
 
+  model_->pop_mode(kModeVoiceSearch);
+  EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
+
+  model_->push_mode(kModeRepositionWindow);
+  model_->controller.laser_direction = kForwardVector;
+  EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
+  EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
+  EXPECT_TRUE(IsVisible(kControllerBackButtonLabel));
+
   model_->controller.resting_in_viewport = false;
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
   EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
+}
+
+TEST_F(UiTest, RepositionButton) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  DiscButton* button = static_cast<DiscButton*>(
+      scene_->GetUiElementByName(kContentQuadRepositionButton));
+  EXPECT_FALSE(IsVisible(button->name()));
+
+  model_->experimental_features_enabled = true;
+  model_->controller.quiescent = true;
+  OnBeginFrame();
+  EXPECT_EQ(kRepositionButtonMinOpacity, button->GetTargetOpacity());
+
+  model_->controller.quiescent = false;
+  OnBeginFrame();
+  EXPECT_EQ(kRepositionButtonMidOpacity, button->GetTargetOpacity());
+
+  button->OnHoverEnter({0, 0});
+  OnBeginFrame();
+  EXPECT_EQ(kRepositionButtonMaxOpacity, button->GetTargetOpacity());
+
+  // If hovered, the button should remain visible, even the controller is
+  // quiescent.
+  model_->controller.quiescent = true;
+  OnBeginFrame();
+  EXPECT_EQ(kRepositionButtonMaxOpacity, button->GetTargetOpacity());
+
+  button->OnHoverLeave();
+  OnBeginFrame();
+  EXPECT_EQ(kRepositionButtonMinOpacity, button->GetTargetOpacity());
 }
 
 }  // namespace vr

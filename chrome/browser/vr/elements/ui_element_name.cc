@@ -26,6 +26,7 @@ static const char* g_ui_element_name_strings[] = {
     "kWebVrViewportAwareRoot",
     "kContentQuad",
     "kContentQuadShadow",
+    "kContentQuadRepositionButton",
     "kControllerRoot",
     "kControllerGroup",
     "kLaser",

@@ -505,6 +505,7 @@ void UiSceneCreator::CreateScene() {
   CreateFullscreenToast();
   CreateUnderDevelopmentNotice();
   CreateVoiceSearchUiGroup();
+  CreateContentRepositioningAffordance();
   CreateExitWarning();
   CreateWebVrSubtree();
   CreateKeyboard();
@@ -531,8 +532,8 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
-  auto repositioner = std::make_unique<Repositioner>(kContentDistance);
-  repositioner->SetName(k2dBrowsingRepositioner);
+  auto repositioner = Create<Repositioner>(k2dBrowsingRepositioner, kPhaseNone,
+                                           kContentDistance);
   repositioner->AddBinding(
       VR_BIND_FUNC(bool, Model, model_, model->reposition_window_enabled(),
                    Repositioner, repositioner.get(), set_enable));
@@ -716,9 +717,7 @@ void UiSceneCreator::CreateSystemIndicators() {
 void UiSceneCreator::CreateContentQuad() {
   // Place an invisible but hittable plane behind the content quad, to keep the
   // reticle roughly planar with the content if near content.
-  auto hit_plane = std::make_unique<InvisibleHitTarget>();
-  hit_plane->SetName(kBackplane);
-  hit_plane->SetDrawPhase(kPhaseForeground);
+  auto hit_plane = Create<InvisibleHitTarget>(kBackplane, kPhaseForeground);
   hit_plane->SetSize(kBackplaneSize, kSceneHeight);
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
@@ -1265,6 +1264,53 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       omnibox_editing_enabled());
 }
 
+void UiSceneCreator::CreateContentRepositioningAffordance() {
+  auto reposition_button = Create<DiscButton>(
+      kContentQuadRepositionButton, kPhaseForeground,
+      base::BindRepeating(
+          [](Model* model) { model->push_mode(kModeRepositionWindow); },
+          base::Unretained(model_)),
+      kRepositionIcon);
+  reposition_button->SetSize(kRepositionButtonDiameter,
+                             kRepositionButtonDiameter);
+  reposition_button->set_y_anchoring(BOTTOM);
+  reposition_button->set_x_anchoring(RIGHT);
+  reposition_button->set_x_centering(LEFT);
+  reposition_button->set_y_centering(BOTTOM);
+  reposition_button->SetTranslate(kRepositionButtonXOffset,
+                                  kRepositionButtonYOffset, 0);
+  reposition_button->SetTransitionedProperties({OPACITY});
+  reposition_button->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kRepositionButtonTransitionDurationMs));
+  reposition_button->background()->SetTransitionedProperties(
+      {BACKGROUND_COLOR, TRANSFORM});
+  reposition_button->SetOpacity(kRepositionButtonMinOpacity);
+  reposition_button->AddBinding(std::make_unique<Binding<float>>(
+      VR_BIND_LAMBDA(
+          [](Model* model, Button* button) {
+            if (!model->experimental_features_enabled)
+              return 0.0f;
+            if (button->hovered())
+              return kRepositionButtonMaxOpacity;
+            if (!model->controller.quiescent)
+              return kRepositionButtonMidOpacity;
+            return kRepositionButtonMinOpacity;
+          },
+          base::Unretained(model_), base::Unretained(reposition_button.get())),
+      VR_BIND_LAMBDA(
+          [](UiElement* button, const float& opacity) {
+            if (opacity == 1.0f)
+              button->SetVisibleImmediately(true);
+            else
+              button->SetOpacity(opacity);
+          },
+          base::Unretained(reposition_button.get()))));
+  VR_BIND_BUTTON_COLORS(model_, reposition_button.get(),
+                        &ColorScheme::button_colors,
+                        &DiscButton::SetButtonColors);
+  scene_->AddUiElement(kContentQuad, std::move(reposition_button));
+}
+
 void UiSceneCreator::CreateController() {
   auto root = std::make_unique<UiElement>();
   root->SetName(kControllerRoot);
@@ -1335,7 +1381,8 @@ void UiSceneCreator::CreateController() {
       kControllerBackButtonLabel, kControllerBackButtonOffset,
       l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model_);
   VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled() ||
-                                            model->voice_search_enabled());
+                                            model->voice_search_enabled() ||
+                                            model->reposition_window_enabled());
   callout_group->AddChild(std::move(back_button_label));
 
   controller->AddChild(std::move(callout_group));

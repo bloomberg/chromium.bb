@@ -37,7 +37,9 @@ class Repositioner : public UiElement {
   void UpdateTransform(const gfx::Transform& head_pose);
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Transform& head_pose) override;
+#ifndef NDEBUG
   void DumpGeometry(std::ostringstream* os) const override;
+#endif
 
   gfx::Transform transform_;
   bool enabled_ = false;

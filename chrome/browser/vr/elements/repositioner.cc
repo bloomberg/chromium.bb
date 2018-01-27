@@ -74,6 +74,7 @@ bool Repositioner::OnBeginFrame(const base::TimeTicks& time,
   return false;
 }
 
+#ifndef NDEBUG
 void Repositioner::DumpGeometry(std::ostringstream* os) const {
   gfx::Transform t = world_space_transform();
   gfx::Vector3dF forward = {0, 0, -1};
@@ -88,5 +89,6 @@ void Repositioner::DumpGeometry(std::ostringstream* os) const {
   *os << "rx(" << gfx::RadToDeg(x_rotation) << ") "
       << "ry(" << gfx::RadToDeg(y_rotation) << ") ";
 }
+#endif
 
 }  // namespace vr

@@ -43,11 +43,12 @@ class Button : public UiElement {
   // method and the associated field can be removed.
   void set_hover_offset(float hover_offset) { hover_offset_ = hover_offset; }
 
- protected:
   bool hovered() const { return hovered_; }
   bool down() const { return down_; }
   bool pressed() const { return pressed_; }
   bool enabled() const { return enabled_; }
+
+ protected:
   const ButtonColors& colors() const { return colors_; }
   float hover_offset() const { return hover_offset_; }
 

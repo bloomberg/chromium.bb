@@ -23,13 +23,7 @@ namespace vr {
 
 namespace {
 
-static constexpr char kRed[] = "\x1b[31m";
-static constexpr char kGreen[] = "\x1b[32m";
-static constexpr char kBlue[] = "\x1b[34m";
-static constexpr char kCyan[] = "\x1b[36m";
-static constexpr char kReset[] = "\x1b[0m";
-
-static constexpr float kHitTestResolutionInMeter = 0.000001f;
+constexpr float kHitTestResolutionInMeter = 0.000001f;
 
 int AllocateId() {
   static int g_next_id = 1;
@@ -49,6 +43,44 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
   *distance = gfx::DotProduct(plane_normal, rel) / denom;
   return true;
 }
+
+#ifndef NDEBUG
+constexpr char kRed[] = "\x1b[31m";
+constexpr char kGreen[] = "\x1b[32m";
+constexpr char kBlue[] = "\x1b[34m";
+constexpr char kCyan[] = "\x1b[36m";
+constexpr char kYellow[] = "\x1b[33m";
+constexpr char kReset[] = "\x1b[0m";
+
+void DumpTransformOperations(const cc::TransformOperations& ops,
+                             std::ostringstream* os) {
+  if (!ops.at(0).IsIdentity()) {
+    const auto& translate = ops.at(0).translate;
+    *os << "t(" << translate.x << ", " << translate.y << ", " << translate.z
+        << ") ";
+  }
+
+  if (ops.size() < 2u) {
+    return;
+  }
+
+  if (!ops.at(1).IsIdentity()) {
+    const auto& rotate = ops.at(1).rotate;
+    if (rotate.axis.x > 0.0f) {
+      *os << "rx(" << rotate.angle << ") ";
+    } else if (rotate.axis.y > 0.0f) {
+      *os << "ry(" << rotate.angle << ") ";
+    } else if (rotate.axis.z > 0.0f) {
+      *os << "rz(" << rotate.angle << ") ";
+    }
+  }
+
+  if (!ops.at(2).IsIdentity()) {
+    const auto& scale = ops.at(2).scale;
+    *os << "s(" << scale.x << ", " << scale.y << ", " << scale.z << ") ";
+  }
+}
+#endif
 
 }  // namespace
 
@@ -391,6 +423,7 @@ std::string UiElement::DebugName() const {
       type() == kTypeNone ? "" : UiElementTypeToString(type()).c_str());
 }
 
+#ifndef NDEBUG
 void DumpLines(const std::vector<size_t>& counts,
                const std::vector<const UiElement*>& ancestors,
                std::ostringstream* os) {
@@ -439,7 +472,7 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   *os << DebugName() << kReset << " " << kCyan << DrawPhaseToString(draw_phase_)
       << " " << kReset;
 
-  if (!size().IsEmpty()) {
+  if (size().width() != 0.0f || size().height() != 0.0f) {
     *os << kRed << "[" << size().width() << ", " << size().height() << "] "
         << kReset;
   }
@@ -480,28 +513,11 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
 }
 
 void UiElement::DumpGeometry(std::ostringstream* os) const {
-  if (!transform_operations_.at(0).IsIdentity()) {
-    const auto& translate = transform_operations_.at(0).translate;
-    *os << "t(" << translate.x << ", " << translate.y << ", " << translate.z
-        << ") ";
-  }
-
-  if (!transform_operations_.at(1).IsIdentity()) {
-    const auto& rotate = transform_operations_.at(1).rotate;
-    if (rotate.axis.x > 0.0f) {
-      *os << "rx(" << rotate.angle << ") ";
-    } else if (rotate.axis.y > 0.0f) {
-      *os << "ry(" << rotate.angle << ") ";
-    } else if (rotate.axis.z > 0.0f) {
-      *os << "rz(" << rotate.angle << ") ";
-    }
-  }
-
-  if (!transform_operations_.at(2).IsIdentity()) {
-    const auto& scale = transform_operations_.at(2).scale;
-    *os << "s(" << scale.x << ", " << scale.y << ", " << scale.z << ") ";
-  }
+  DumpTransformOperations(transform_operations_, os);
+  *os << kYellow;
+  DumpTransformOperations(layout_offset_, os);
 }
+#endif
 
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 

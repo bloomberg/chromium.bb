@@ -279,6 +279,15 @@ static constexpr int kControllerLabelTransitionDurationMs = 700;
 static constexpr float kSkyDistance = 1000.0f;
 static constexpr float kGridOpacity = 0.5f;
 
+static constexpr float kRepositionButtonDiameter = 0.75f * kCloseButtonDiameter;
+// This allows the button to be hittable even when hidden.
+static constexpr float kRepositionButtonMinOpacity = 0.001f;
+static constexpr float kRepositionButtonMidOpacity = 0.3f;
+static constexpr float kRepositionButtonMaxOpacity = 1.0f;
+static constexpr float kRepositionButtonXOffset = kIndicatorGap;
+static constexpr float kRepositionButtonYOffset = 0.5f * kIndicatorGap;
+static constexpr int kRepositionButtonTransitionDurationMs = 750;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_

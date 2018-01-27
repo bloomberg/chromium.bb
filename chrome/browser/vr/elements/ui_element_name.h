@@ -25,6 +25,7 @@ enum UiElementName {
   kWebVrViewportAwareRoot,
   kContentQuad,
   kContentQuadShadow,
+  kContentQuadRepositionButton,
   kControllerRoot,
   kControllerGroup,
   kLaser,
