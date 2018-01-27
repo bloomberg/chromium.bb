@@ -117,6 +117,7 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
     case kDeviceHeight:
     case kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
+      FALLTHROUGH;
     case kMaxSizeNone:
     default:
       NOTREACHED();
@@ -193,6 +194,7 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
     case kDeviceHeight:
     case kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
+      FALLTHROUGH;
     case kMaxSizeNone:
     default:
       NOTREACHED();
