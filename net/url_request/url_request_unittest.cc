@@ -11201,8 +11201,7 @@ INSTANTIATE_TEST_CASE_P(OCSPVerify,
                         testing::ValuesIn(kOCSPVerifyData));
 
 static bool SystemSupportsAIA() {
-#if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
-  // TODO(crbug.com/762380): Enable on Fuchsia once it's implemented.
+#if defined(OS_ANDROID)
   return false;
 #else
   return true;
