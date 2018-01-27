@@ -183,8 +183,8 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
       WebVector<WebBlobInfo> blob_info;
       blob_info.reserve(expected_key + i);
       for (int j = 0; j < expected_key + i; ++j) {
-        blob_info.emplace_back(WebString::FromLatin1(base::GenerateGUID()),
-                               "text/plain", 123);
+        blob_info.emplace_back(WebBlobInfo::BlobForTesting(
+            WebString::FromLatin1(base::GenerateGUID()), "text/plain", 123));
       }
       values.emplace_back(WebData(), std::move(blob_info));
     }
@@ -249,8 +249,8 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
     WebVector<WebBlobInfo> blob_info;
     blob_info.reserve(expected_key + i);
     for (int j = 0; j < expected_key + i; ++j) {
-      blob_info.emplace_back(WebString::FromLatin1(base::GenerateGUID()),
-                             "text/plain", 123);
+      blob_info.emplace_back(WebBlobInfo::BlobForTesting(
+          WebString::FromLatin1(base::GenerateGUID()), "text/plain", 123));
     }
     values.emplace_back(WebData(), std::move(blob_info));
   }

@@ -36,6 +36,22 @@ WebBlobInfo::WebBlobInfo(const WebString& uuid,
                   file_name,
                   last_modified) {}
 
+// static
+WebBlobInfo WebBlobInfo::BlobForTesting(const WebString& uuid,
+                                        const WebString& type,
+                                        long long size) {
+  return WebBlobInfo(uuid, type, size, mojo::MessagePipe().handle0);
+}
+
+// static
+WebBlobInfo WebBlobInfo::FileForTesting(const WebString& uuid,
+                                        const WebString& file_path,
+                                        const WebString& file_name,
+                                        const WebString& type) {
+  return WebBlobInfo(uuid, file_path, file_name, type, 0, -1,
+                     mojo::MessagePipe().handle0);
+}
+
 WebBlobInfo::~WebBlobInfo() {
   blob_handle_.Reset();
 }

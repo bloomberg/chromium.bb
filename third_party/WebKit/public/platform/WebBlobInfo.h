@@ -17,38 +17,6 @@ class BlobDataHandle;
 class WebBlobInfo {
  public:
   WebBlobInfo() : is_file_(false), size_(-1), last_modified_(0) {}
-  // TODO(mek): Eliminate constructors that don't accept a message pipe.
-  WebBlobInfo(const WebString& uuid, const WebString& type, long long size)
-      : is_file_(false),
-        uuid_(uuid),
-        type_(type),
-        size_(size),
-        last_modified_(0) {}
-  WebBlobInfo(const WebString& uuid,
-              const WebString& file_path,
-              const WebString& file_name,
-              const WebString& type)
-      : is_file_(true),
-        uuid_(uuid),
-        type_(type),
-        size_(-1),
-        file_path_(file_path),
-        file_name_(file_name),
-        last_modified_(0) {}
-  WebBlobInfo(const WebString& uuid,
-              const WebString& file_path,
-              const WebString& file_name,
-              const WebString& type,
-              double last_modified,
-              long long size)
-      : is_file_(true),
-        uuid_(uuid),
-        type_(type),
-        size_(size),
-        file_path_(file_path),
-        file_name_(file_name),
-        last_modified_(last_modified) {}
-
   BLINK_EXPORT WebBlobInfo(const WebString& uuid,
                            const WebString& type,
                            long long size,
@@ -60,6 +28,18 @@ class WebBlobInfo {
                            double last_modified,
                            long long size,
                            mojo::ScopedMessagePipeHandle);
+
+  // For testing purposes, these two methods create a WebBlobInfo connected to a
+  // dangling mojo message pipe. This means that any operations that actually
+  // depend on the mojo connection to exist will fail, but otherwise you should
+  // be able to safely pass around these blobs.
+  BLINK_EXPORT static WebBlobInfo BlobForTesting(const WebString& uuid,
+                                                 const WebString& type,
+                                                 long long size);
+  BLINK_EXPORT static WebBlobInfo FileForTesting(const WebString& uuid,
+                                                 const WebString& file_path,
+                                                 const WebString& file_name,
+                                                 const WebString& type);
 
   BLINK_EXPORT ~WebBlobInfo();
 
