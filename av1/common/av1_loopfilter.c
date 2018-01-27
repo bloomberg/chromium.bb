@@ -1419,11 +1419,8 @@ static void get_filter_level_and_masks_non420(
     const int col_mask = 1 << c_step;
 
     if (is_inter_block(mbmi) && !mbmi->skip) {
-      const int tx_row_idx =
-          (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
-      const int tx_col_idx =
-          (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
-      const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
+      const TX_SIZE mb_tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(
+          sb_type, blk_row, blk_col)];
       tx_size = (plane->plane_type == PLANE_TYPE_UV)
                     ? av1_get_uv_tx_size(mbmi, ss_x, ss_y)
                     : mb_tx_size;
@@ -2005,11 +2002,8 @@ static TX_SIZE av1_get_transform_size(
   const int blk_col = c & (num_8x8_blocks_wide_lookup[sb_type] - 1);
 
   if (is_inter_block(mbmi) && !mbmi->skip) {
-    const int tx_row_idx =
-        (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
-    const int tx_col_idx =
-        (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
-    const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
+    const TX_SIZE mb_tx_size =
+        mbmi->inter_tx_size[av1_get_txb_size_index(sb_type, blk_row, blk_col)];
 
     assert(mb_tx_size < TX_SIZES_ALL);
 
