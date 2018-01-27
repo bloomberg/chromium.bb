@@ -21,21 +21,16 @@ IDBValue::IDBValue(const WebData& data,
                    const WebVector<WebBlobInfo>& web_blob_info)
     : data_(data) {
   blob_info_.ReserveInitialCapacity(web_blob_info.size());
-  blob_data_.ReserveInitialCapacity(web_blob_info.size());
 
   for (const WebBlobInfo& info : web_blob_info) {
     blob_info_.push_back(info);
-    blob_data_.push_back(info.GetBlobHandle());
   }
 }
 
 IDBValue::IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
-                   Vector<scoped_refptr<BlobDataHandle>> blob_data,
                    Vector<WebBlobInfo> blob_info)
     : data_(std::move(unwrapped_data)),
-      blob_data_(std::move(blob_data)),
       blob_info_(std::move(blob_info)) {
-  DCHECK_EQ(blob_data_.size(), blob_info_.size());
 }
 
 IDBValue::~IDBValue() {
@@ -57,10 +52,9 @@ std::unique_ptr<IDBValue> IDBValue::Create(
 
 std::unique_ptr<IDBValue> IDBValue::Create(
     scoped_refptr<SharedBuffer> unwrapped_data,
-    Vector<scoped_refptr<BlobDataHandle>> blob_data,
     Vector<WebBlobInfo> blob_info) {
-  return base::WrapUnique(new IDBValue(
-      std::move(unwrapped_data), std::move(blob_data), std::move(blob_info)));
+  return base::WrapUnique(
+      new IDBValue(std::move(unwrapped_data), std::move(blob_info)));
 }
 
 scoped_refptr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
@@ -103,9 +97,9 @@ scoped_refptr<BlobDataHandle> IDBValue::TakeLastBlob() {
   DCHECK_GT(blob_info_.size(), 0U)
       << "The IDBValue does not have any attached Blob";
 
+  scoped_refptr<BlobDataHandle> return_value =
+      blob_info_.back().GetBlobHandle();
   blob_info_.pop_back();
-  scoped_refptr<BlobDataHandle> return_value = std::move(blob_data_.back());
-  blob_data_.pop_back();
 
   return return_value;
 }
