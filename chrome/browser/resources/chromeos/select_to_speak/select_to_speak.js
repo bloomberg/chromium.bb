@@ -367,7 +367,7 @@ var SelectToSpeak = function() {
   this.speechPitch_ = 1.0;
 
   /** @private {boolean} */
-  this.wordHighlight_ = false;
+  this.wordHighlight_ = true;
 
   /** @const {string} */
   this.color_ = '#f73a98';
@@ -977,6 +977,9 @@ SelectToSpeak.prototype = {
                 }
                 if (prefs['wordHighlight'] !== undefined) {
                   this.wordHighlight_ = prefs['wordHighlight'];
+                } else {
+                  chrome.storage.sync.set(
+                      {'wordHighlight': this.wordHighlight_});
                 }
                 if (prefs['highlightColor']) {
                   this.highlightColor_ = prefs['highlightColor'];
