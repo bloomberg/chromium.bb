@@ -67,10 +67,10 @@ void SVGPathNormalizer::EmitSegment(const PathSegmentData& segment) {
       break;
     case kPathSegCurveToCubicRel:
       norm_seg.point1 += current_point_;
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegCurveToCubicSmoothRel:
       norm_seg.point2 += current_point_;
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegMoveToRel:
     case kPathSegLineToRel:
     case kPathSegLineToHorizontalRel:
@@ -118,7 +118,7 @@ void SVGPathNormalizer::EmitSegment(const PathSegmentData& segment) {
         norm_seg.point1 = current_point_;
       else
         norm_seg.point1 = ReflectedPoint(current_point_, control_point_);
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegCurveToCubicRel:
     case kPathSegCurveToCubicAbs:
       control_point_ = norm_seg.point2;
@@ -130,7 +130,7 @@ void SVGPathNormalizer::EmitSegment(const PathSegmentData& segment) {
         norm_seg.point1 = current_point_;
       else
         norm_seg.point1 = ReflectedPoint(current_point_, control_point_);
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegCurveToQuadraticRel:
     case kPathSegCurveToQuadraticAbs:
       // Save the unmodified control point.

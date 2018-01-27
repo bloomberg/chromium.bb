@@ -216,12 +216,12 @@ bool SVGPathBlender::BlendState::BlendSegments(
     case kPathSegCurveToCubicAbs:
       blended_segment.point1 =
           BlendAnimatedFloatPoint(from_seg.point1, to_seg.point1);
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegCurveToCubicSmoothRel:
     case kPathSegCurveToCubicSmoothAbs:
       blended_segment.point2 =
           BlendAnimatedFloatPoint(from_seg.point2, to_seg.point2);
-    /* fall through */
+      FALLTHROUGH;
     case kPathSegMoveToRel:
     case kPathSegMoveToAbs:
     case kPathSegLineToRel:

@@ -316,7 +316,7 @@ bool SMILTimeContainer::HandleAnimationPolicy(
       case kRestartOnceTimerIfNotPaused:
         if (IsPaused())
           break;
-      /* fall through */
+        FALLTHROUGH;
       case kRestartOnceTimer:
         ScheduleAnimationPolicyTimer();
         break;
