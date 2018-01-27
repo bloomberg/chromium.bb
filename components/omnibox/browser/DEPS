@@ -16,6 +16,7 @@ include_rules = [
   "+components/search",
   "+components/search_engines",
   "+components/sessions",
+  "+components/sync",
   "+components/signin/core/browser",
   "+components/strings/grit/components_strings.h",
   "+components/toolbar",

@@ -45,6 +45,9 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   std::string GetEmbedderRepresentationOfAboutScheme() override;
   std::vector<base::string16> GetBuiltinURLs() override;
   std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() override;
+  // GetCurrentVisitTimestamp is only implemented for desktop users. For mobile
+  // users, the function returns base::Time().
+  base::Time GetCurrentVisitTimestamp() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
   bool TabSyncEnabledAndUnencrypted() const override;
