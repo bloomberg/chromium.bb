@@ -48,6 +48,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   virtual void OnFilterAdded(IPC::Channel* channel) {}
   virtual void OnFilterRemoved() {}
   virtual void OnChannelClosing() {}
+  virtual void OnChannelError() {}
   virtual void OnChannelConnected(int32_t peer_pid) {}
 
   // Called when the message filter is about to be deleted.  This gives

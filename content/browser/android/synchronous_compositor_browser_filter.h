@@ -38,6 +38,7 @@ class SynchronousCompositorBrowserFilter : public BrowserMessageFilter {
   void OnFilterAdded(IPC::Channel* channel) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
+  void OnChannelError() override;
 
   void SyncStateAfterVSync(ui::WindowAndroid* window_android,
                            SynchronousCompositorHost* compositor_host);
