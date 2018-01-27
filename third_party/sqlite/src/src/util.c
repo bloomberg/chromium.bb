@@ -321,6 +321,45 @@ int sqlite3_strnicmp(const char *zLeft, const char *zRight, int N){
 }
 
 /*
+** Compute 10 to the E-th power.  Examples:  E==1 results in 10.
+** E==2 results in 100.  E==50 results in 1.0e50.
+**
+** This routine only works for values of E between 1 and 341.
+*/
+static LONGDOUBLE_TYPE sqlite3Pow10(int E){
+#if defined(_MSC_VER)
+  static const LONGDOUBLE_TYPE x[] = {
+    1.0e+001,
+    1.0e+002,
+    1.0e+004,
+    1.0e+008,
+    1.0e+016,
+    1.0e+032,
+    1.0e+064,
+    1.0e+128,
+    1.0e+256
+  };
+  LONGDOUBLE_TYPE r = 1.0;
+  int i;
+  assert( E>=0 && E<=307 );
+  for(i=0; E!=0; i++, E >>=1){
+    if( E & 1 ) r *= x[i];
+  }
+  return r;
+#else
+  LONGDOUBLE_TYPE x = 10.0;
+  LONGDOUBLE_TYPE r = 1.0;
+  while(1){
+    if( E & 1 ) r *= x;
+    E >>= 1;
+    if( E==0 ) break;
+    x *= x;
+  }
+  return r;
+#endif
+}
+
+/*
 ** The string z[] is an text representation of a real number.
 ** Convert this string to a double and write it into *pResult.
 **
@@ -387,12 +426,12 @@ int sqlite3AtoF(const char *z, double *pResult, int length, u8 enc){
   /* copy max significant digits to significand */
   while( z<zEnd && sqlite3Isdigit(*z) && s<((LARGEST_INT64-9)/10) ){
     s = s*10 + (*z - '0');
-    z+=incr, nDigits++;
+    z+=incr; nDigits++;
   }
 
   /* skip non-significant significand digits
   ** (increase exponent by d to shift decimal left) */
-  while( z<zEnd && sqlite3Isdigit(*z) ) z+=incr, nDigits++, d++;
+  while( z<zEnd && sqlite3Isdigit(*z) ){ z+=incr; nDigits++; d++; }
   if( z>=zEnd ) goto do_atof_calc;
 
   /* if decimal point is present */
@@ -405,7 +444,7 @@ int sqlite3AtoF(const char *z, double *pResult, int length, u8 enc){
         s = s*10 + (*z - '0');
         d--;
       }
-      z+=incr, nDigits++;
+      z+=incr; nDigits++;
     }
   }
   if( z>=zEnd ) goto do_atof_calc;
@@ -475,11 +514,10 @@ do_atof_calc:
     if( e==0 ){                                         /*OPTIMIZATION-IF-TRUE*/
       result = (double)s;
     }else{
-      LONGDOUBLE_TYPE scale = 1.0;
       /* attempt to handle extremely small/large numbers better */
       if( e>307 ){                                      /*OPTIMIZATION-IF-TRUE*/
         if( e<342 ){                                    /*OPTIMIZATION-IF-TRUE*/
-          while( e%308 ) { scale *= 1.0e+1; e -= 1; }
+          LONGDOUBLE_TYPE scale = sqlite3Pow10(e-308);
           if( esign<0 ){
             result = s / scale;
             result /= 1.0e+308;
@@ -499,10 +537,7 @@ do_atof_calc:
           }
         }
       }else{
-        /* 1.0e+22 is the largest power of 10 than can be
-        ** represented exactly. */
-        while( e%22 ) { scale *= 1.0e+1; e -= 1; }
-        while( e>0 ) { scale *= 1.0e+22; e -= 22; }
+        LONGDOUBLE_TYPE scale = sqlite3Pow10(e);
         if( esign<0 ){
           result = s / scale;
         }else{

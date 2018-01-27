@@ -1,4 +1,4 @@
-From 3b4029bed436558ae745630e970b0f6d8040fb54 Mon Sep 17 00:00:00 2001
+From e38ca21928e6b43aeee582d7c78036bb21a54d5c Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
 Subject: [PATCH 03/10] Modify default VFS to support WebDatabase.
@@ -23,10 +23,10 @@ https://codereview.chromium.org/377039
  3 files changed, 81 insertions(+)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index 1b7e5f344a69..6ed6f6a8fc98 100644
+index a55aa28d7104..74c2e08cd1ba 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
-@@ -1366,6 +1366,12 @@ static int fileHasMoved(unixFile *pFile){
+@@ -1370,6 +1370,12 @@ static int fileHasMoved(unixFile *pFile){
    return pFile->pInode!=0 && pFile->pId!=pFile->pInode->fileId.pId;
  #else
    struct stat buf;
@@ -39,7 +39,7 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
    return pFile->pInode!=0 &&
        (osStat(pFile->zPath, &buf)!=0
           || (u64)buf.st_ino!=pFile->pInode->fileId.ino);
-@@ -5688,6 +5694,45 @@ static int findCreateFileMode(
+@@ -5746,6 +5752,45 @@ static int findCreateFileMode(
    return rc;
  }
 
@@ -85,7 +85,7 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
  /*
  ** Open the file zPath.
  **
-@@ -5789,6 +5834,7 @@ static int unixOpen(
+@@ -5847,6 +5892,7 @@ static int unixOpen(
      sqlite3_randomness(0,0);
    }
 
@@ -93,7 +93,7 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
    memset(p, 0, sizeof(unixFile));
 
    if( eType==SQLITE_OPEN_MAIN_DB ){
-@@ -5797,6 +5843,7 @@ static int unixOpen(
+@@ -5855,6 +5901,7 @@ static int unixOpen(
      if( pUnused ){
        fd = pUnused->fd;
      }else{
@@ -101,7 +101,7 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
        pUnused = sqlite3_malloc64(sizeof(*pUnused));
        if( !pUnused ){
          return SQLITE_NOMEM_BKPT;
-@@ -5874,6 +5921,7 @@ static int unixOpen(
+@@ -5939,6 +5986,7 @@ static int unixOpen(
    }
 
    if( p->pPreallocatedUnused ){
@@ -109,7 +109,7 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
      p->pPreallocatedUnused->fd = fd;
      p->pPreallocatedUnused->flags = flags;
    }
-@@ -5955,10 +6003,12 @@ static int unixOpen(
+@@ -6020,10 +6068,12 @@ static int unixOpen(
    assert( zPath==0 || zPath[0]=='/'
        || eType==SQLITE_OPEN_MASTER_JOURNAL || eType==SQLITE_OPEN_MAIN_JOURNAL
    );
@@ -123,10 +123,10 @@ index 1b7e5f344a69..6ed6f6a8fc98 100644
    }
    return rc;
 diff --git a/third_party/sqlite/src/src/os_win.c b/third_party/sqlite/src/src/os_win.c
-index 245a86045bae..eeb2c149800d 100644
+index 2b2b8ebd564e..3b82da0bc39b 100644
 --- a/third_party/sqlite/src/src/os_win.c
 +++ b/third_party/sqlite/src/src/os_win.c
-@@ -6026,4 +6026,12 @@ int sqlite3_os_end(void){
+@@ -6075,4 +6075,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
 
@@ -140,10 +140,10 @@ index 245a86045bae..eeb2c149800d 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index 64685fef4569..877e79f74af2 100644
+index 9306d1c974ad..4f1b4a65d9d8 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7954,6 +7954,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
+@@ -7991,6 +7991,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
 

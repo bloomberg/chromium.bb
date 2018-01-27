@@ -1,4 +1,4 @@
-From e3f2de64eb622782bdad355e378b9733984c12f4 Mon Sep 17 00:00:00 2001
+From 00c0d160dafbd48f1bec547fa5b2cd4954c8585d Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 2 Mar 2017 15:23:09 -0800
 Subject: [PATCH 09/10] Allow auto-vacuum to work with chunks.
@@ -26,10 +26,10 @@ BUG=698010
  6 files changed, 135 insertions(+), 47 deletions(-)
 
 diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
-index e62f3af10f52..e349eac4b01f 100644
+index 5d6cbfe90051..8e6907bdb351 100644
 --- a/third_party/sqlite/src/src/btree.c
 +++ b/third_party/sqlite/src/src/btree.c
-@@ -2943,6 +2943,46 @@ static void setDefaultSyncFlag(BtShared *pBt, u8 safety_level){
+@@ -2971,6 +2971,46 @@ static void setDefaultSyncFlag(BtShared *pBt, u8 safety_level){
  # define setDefaultSyncFlag(pBt,safety_level)
  #endif
 
@@ -76,7 +76,7 @@ index e62f3af10f52..e349eac4b01f 100644
  /*
  ** Get a reference to pPage1 of the database file.  This will
  ** also acquire a readlock on that file.
-@@ -3772,13 +3812,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
+@@ -3800,13 +3840,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
  */
  static int autoVacuumCommit(BtShared *pBt){
    int rc = SQLITE_OK;
@@ -106,7 +106,7 @@ index e62f3af10f52..e349eac4b01f 100644
      Pgno nFree;        /* Number of pages on the freelist initially */
      Pgno iFree;        /* The next page to be freed */
 diff --git a/third_party/sqlite/src/src/btree.h b/third_party/sqlite/src/src/btree.h
-index b348e9298461..3a0b008abadb 100644
+index d67517a50d55..17124db45720 100644
 --- a/third_party/sqlite/src/src/btree.h
 +++ b/third_party/sqlite/src/src/btree.h
 @@ -78,6 +78,8 @@ int sqlite3BtreeGetOptimalReserve(Btree*);
@@ -131,7 +131,7 @@ index 8b2a9af192bf..0694b31a78cc 100644
    u8 bDoTruncate;       /* True to truncate db on commit */
  #endif
 diff --git a/third_party/sqlite/src/src/pragma.c b/third_party/sqlite/src/src/pragma.c
-index c633429b7785..c1a2781b5549 100644
+index 773ab7c9c2f1..50ee3b985c8f 100644
 --- a/third_party/sqlite/src/src/pragma.c
 +++ b/third_party/sqlite/src/src/pragma.c
 @@ -756,6 +756,27 @@ void sqlite3Pragma(
@@ -298,4 +298,4 @@ index f788eef425fc..0565c6699c20 100644
 
  # Open the output file
 --
-2.14.0
+2.14.0.

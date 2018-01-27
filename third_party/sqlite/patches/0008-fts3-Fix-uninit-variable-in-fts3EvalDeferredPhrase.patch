@@ -1,4 +1,4 @@
-From a3b999263f36b0807ce4ead622e9ad8a536e641b Mon Sep 17 00:00:00 2001
+From 8a6058a07ca57de05365f80ca54e79920cb8822d Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 12 Feb 2015 15:01:26 -0800
 Subject: [PATCH 08/10] [fts3] Fix uninit variable in fts3EvalDeferredPhrase.

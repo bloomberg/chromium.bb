@@ -698,16 +698,20 @@ static int patternCompare(
       ** c or cx.
       */
       if( c<=0x80 ){
-        u32 cx;
+        char zStop[3];
         int bMatch;
         if( noCase ){
-          cx = sqlite3Toupper(c);
-          c = sqlite3Tolower(c);
+          zStop[0] = sqlite3Toupper(c);
+          zStop[1] = sqlite3Tolower(c);
+          zStop[2] = 0;
         }else{
-          cx = c;
+          zStop[0] = c;
+          zStop[1] = 0;
         }
-        while( (c2 = *(zString++))!=0 ){
-          if( c2!=c && c2!=cx ) continue;
+        while(1){
+          zString += strcspn((const char*)zString, zStop);
+          if( zString[0]==0 ) break;
+          zString++;
           bMatch = patternCompare(zPattern,zString,pInfo,matchOther);
           if( bMatch!=SQLITE_NOMATCH ) return bMatch;
         }
@@ -1794,6 +1798,10 @@ void sqlite3RegisterBuiltinFunctions(void){
     FUNCTION2(likely,            1, 0, 0, noopFunc,  SQLITE_FUNC_UNLIKELY),
 #ifdef SQLITE_DEBUG
     FUNCTION2(affinity,          1, 0, 0, noopFunc,  SQLITE_FUNC_AFFINITY),
+#endif
+#ifdef SQLITE_ENABLE_OFFSET_SQL_FUNC
+    FUNCTION2(sqlite_offset,     1, 0, 0, noopFunc,  SQLITE_FUNC_OFFSET|
+                                                     SQLITE_FUNC_TYPEOF),
 #endif
     FUNCTION(ltrim,              1, 1, 0, trimFunc         ),
     FUNCTION(ltrim,              2, 1, 0, trimFunc         ),

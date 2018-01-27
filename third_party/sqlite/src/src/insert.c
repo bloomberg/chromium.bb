@@ -909,7 +909,8 @@ void sqlite3Insert(
         VdbeOp *pOp;
         sqlite3ExprCode(pParse, pList->a[ipkColumn].pExpr, regRowid);
         pOp = sqlite3VdbeGetOp(v, -1);
-        if( ALWAYS(pOp) && pOp->opcode==OP_Null && !IsVirtual(pTab) ){
+        assert( pOp!=0 );
+        if( pOp->opcode==OP_Null && !IsVirtual(pTab) ){
           appendFlag = 1;
           pOp->opcode = OP_NewRowid;
           pOp->p1 = iDataCur;
@@ -1570,6 +1571,7 @@ void sqlite3GenerateConstraintChecks(
     }
 
     /* Check to see if the new index entry will be unique */
+    sqlite3ExprCachePush(pParse);
     sqlite3VdbeAddOp4Int(v, OP_NoConflict, iThisCur, addrUniqueOk,
                          regIdx, pIdx->nKeyCol); VdbeCoverage(v);
 
@@ -1658,6 +1660,7 @@ void sqlite3GenerateConstraintChecks(
       }
     }
     sqlite3VdbeResolveLabel(v, addrUniqueOk);
+    sqlite3ExprCachePop(pParse);
     if( regR!=regIdx ) sqlite3ReleaseTempRange(pParse, regR, nPkField);
   }
   if( ipkTop ){
@@ -2006,7 +2009,6 @@ static int xferOptimization(
   if( pSelect->pLimit ){
     return 0;   /* SELECT may not have a LIMIT clause */
   }
-  assert( pSelect->pOffset==0 );  /* Must be so if pLimit==0 */
   if( pSelect->pPrior ){
     return 0;   /* SELECT may not be a compound query */
   }

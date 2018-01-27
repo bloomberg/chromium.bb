@@ -597,6 +597,7 @@ static int resolveExprStep(Walker *pWalker, Expr *pExpr){
       struct SrcList_item *pItem;
       assert( pSrcList && pSrcList->nSrc==1 );
       pItem = pSrcList->a;
+      assert( HasRowid(pItem->pTab) && pItem->pTab->pSelect==0 );
       pExpr->op = TK_COLUMN;
       pExpr->pTab = pItem->pTab;
       pExpr->iTable = pItem->iCursor;
@@ -1195,8 +1196,7 @@ static int resolveSelectStep(Walker *pWalker, Select *p){
     */
     memset(&sNC, 0, sizeof(sNC));
     sNC.pParse = pParse;
-    if( sqlite3ResolveExprNames(&sNC, p->pLimit) ||
-        sqlite3ResolveExprNames(&sNC, p->pOffset) ){
+    if( sqlite3ResolveExprNames(&sNC, p->pLimit) ){
       return WRC_Abort;
     }
 

@@ -43,7 +43,7 @@ int sqlite3VdbeCheckMemInvariants(Mem *p){
   if( p->flags & MEM_Null ){
     /* Cannot be both MEM_Null and some other type */
     assert( (p->flags & (MEM_Int|MEM_Real|MEM_Str|MEM_Blob
-                         |MEM_RowSet|MEM_Frame|MEM_Agg|MEM_Zero))==0 );
+                         |MEM_RowSet|MEM_Frame|MEM_Agg))==0 );
 
     /* If MEM_Null is set, then either the value is a pure NULL (the usual
     ** case) or it is a pointer set using sqlite3_bind_pointer() or
@@ -350,26 +350,24 @@ int sqlite3VdbeMemStringify(Mem *pMem, u8 enc, u8 bForce){
 ** otherwise.
 */
 int sqlite3VdbeMemFinalize(Mem *pMem, FuncDef *pFunc){
-  int rc = SQLITE_OK;
-  if( ALWAYS(pFunc && pFunc->xFinalize) ){
-    sqlite3_context ctx;
-    Mem t;
-    assert( (pMem->flags & MEM_Null)!=0 || pFunc==pMem->u.pDef );
-    assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
-    memset(&ctx, 0, sizeof(ctx));
-    memset(&t, 0, sizeof(t));
-    t.flags = MEM_Null;
-    t.db = pMem->db;
-    ctx.pOut = &t;
-    ctx.pMem = pMem;
-    ctx.pFunc = pFunc;
-    pFunc->xFinalize(&ctx); /* IMP: R-24505-23230 */
-    assert( (pMem->flags & MEM_Dyn)==0 );
-    if( pMem->szMalloc>0 ) sqlite3DbFreeNN(pMem->db, pMem->zMalloc);
-    memcpy(pMem, &t, sizeof(t));
-    rc = ctx.isError;
-  }
-  return rc;
+  sqlite3_context ctx;
+  Mem t;
+  assert( pFunc!=0 );
+  assert( pFunc->xFinalize!=0 );
+  assert( (pMem->flags & MEM_Null)!=0 || pFunc==pMem->u.pDef );
+  assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
+  memset(&ctx, 0, sizeof(ctx));
+  memset(&t, 0, sizeof(t));
+  t.flags = MEM_Null;
+  t.db = pMem->db;
+  ctx.pOut = &t;
+  ctx.pMem = pMem;
+  ctx.pFunc = pFunc;
+  pFunc->xFinalize(&ctx); /* IMP: R-24505-23230 */
+  assert( (pMem->flags & MEM_Dyn)==0 );
+  if( pMem->szMalloc>0 ) sqlite3DbFreeNN(pMem->db, pMem->zMalloc);
+  memcpy(pMem, &t, sizeof(t));
+  return ctx.isError;
 }
 
 /*
@@ -1323,7 +1321,11 @@ static int valueFromExpr(
 
   assert( pExpr!=0 );
   while( (op = pExpr->op)==TK_UPLUS || op==TK_SPAN ) pExpr = pExpr->pLeft;
+#if defined(SQLITE_ENABLE_STAT3_OR_STAT4)
+  if( op==TK_REGISTER ) op = pExpr->op2;
+#else
   if( NEVER(op==TK_REGISTER) ) op = pExpr->op2;
+#endif
 
   /* Compressed expressions only appear when parsing the DEFAULT clause
   ** on a table column definition, and hence only when pCtx==0.  This
@@ -1418,7 +1420,10 @@ static int valueFromExpr(
   return rc;
 
 no_mem:
-  sqlite3OomFault(db);
+#ifdef SQLITE_ENABLE_STAT3_OR_STAT4
+  if( pCtx==0 || pCtx->pParse->nErr==0 )
+#endif
+    sqlite3OomFault(db);
   sqlite3DbFree(db, zVal);
   assert( *ppVal==0 );
 #ifdef SQLITE_ENABLE_STAT3_OR_STAT4
