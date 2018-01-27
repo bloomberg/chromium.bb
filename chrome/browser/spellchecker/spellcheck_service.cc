@@ -170,7 +170,7 @@ bool SpellcheckService::SignalStatusEvent(
 }
 
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
-  metrics_.reset(new SpellCheckHostMetrics());
+  metrics_ = std::make_unique<SpellCheckHostMetrics>();
   metrics_->RecordEnabledStats(spellcheck_enabled);
   OnUseSpellingServiceChanged();
 }

@@ -87,7 +87,7 @@ ChecksumStatus LoadFile(const base::FilePath& file_path,
 bool IsValidWord(const std::string& word) {
   std::string tmp;
   return !word.empty() &&
-         word.size() <= spellcheck::MAX_CUSTOM_DICTIONARY_WORD_BYTES &&
+         word.size() <= spellcheck::kMaxCustomDictionaryWordBytes &&
          base::IsStringUTF8(word) &&
          base::TRIM_NONE ==
              base::TrimWhitespaceASCII(word, base::TRIM_ALL, &tmp);
@@ -340,7 +340,7 @@ syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
   syncer::SyncDataList data;
   size_t i = 0;
   for (const auto& word : words_) {
-    if (i++ >= spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS)
+    if (i++ >= spellcheck::kMaxSyncableDictionaryWords)
       break;
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_dictionary()->set_word(word);
@@ -483,7 +483,7 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
   int server_size = static_cast<int>(words_.size()) -
       static_cast<int>(dictionary_change.to_add().size());
   int max_upload_size =
-      std::max(0, static_cast<int>(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS) -
+      std::max(0, static_cast<int>(spellcheck::kMaxSyncableDictionaryWords) -
                       server_size);
   int upload_size = std::min(
       static_cast<int>(dictionary_change.to_add().size()),
@@ -518,7 +518,7 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
 
   // Turn off syncing of this dictionary if the server already has the maximum
   // number of words.
-  if (words_.size() > spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS)
+  if (words_.size() > spellcheck::kMaxSyncableDictionaryWords)
     StopSyncing(syncer::DICTIONARY);
 
   return error;

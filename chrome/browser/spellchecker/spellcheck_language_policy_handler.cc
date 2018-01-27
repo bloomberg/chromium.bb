@@ -24,9 +24,7 @@ bool SpellcheckLanguagePolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
     policy::PolicyErrorMap* errors) {
   const base::Value* value = nullptr;
-  if (!CheckAndGetValue(policies, errors, &value))
-    return false;
-  return true;
+  return CheckAndGetValue(policies, errors, &value);
 }
 
 void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
@@ -35,10 +33,8 @@ void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
   // Ignore this policy if the SpellcheckEnabled policy disables spellcheck.
   const base::Value* spellcheck_enabled_value =
       policies.GetValue(policy::key::kSpellcheckEnabled);
-  if (spellcheck_enabled_value &&
-      spellcheck_enabled_value->GetBool() == false) {
+  if (spellcheck_enabled_value && spellcheck_enabled_value->GetBool() == false)
     return;
-  }
 
   const base::Value* value = policies.GetValue(policy_name());
   if (!value)
@@ -51,8 +47,7 @@ void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
   for (const base::Value& language : languages) {
     std::string current_language =
         spellcheck::GetCorrespondingSpellCheckLanguage(
-            base::TrimWhitespaceASCII(language.GetString(), base::TRIM_ALL)
-                .as_string());
+            base::TrimWhitespaceASCII(language.GetString(), base::TRIM_ALL));
     if (!current_language.empty()) {
       forced_language_list->GetList().push_back(base::Value(current_language));
     } else {

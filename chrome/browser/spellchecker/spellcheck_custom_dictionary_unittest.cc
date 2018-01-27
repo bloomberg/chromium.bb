@@ -325,31 +325,31 @@ TEST_F(SpellcheckCustomDictionaryTest, GetAllSyncDataHasLimit) {
           &profile_)->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS - 1; i++) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords - 1; i++) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*dictionary, change);
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS - 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords - 1,
             dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS - 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords - 1,
             dictionary->GetAllSyncData(syncer::DICTIONARY).size());
 
   dictionary->AddWord("baz");
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             dictionary->GetAllSyncData(syncer::DICTIONARY).size());
 
   dictionary->AddWord("bar");
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             dictionary->GetAllSyncData(syncer::DICTIONARY).size());
 
   dictionary->AddWord("snafoo");
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 2,
             dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             dictionary->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -438,13 +438,13 @@ TEST_F(SpellcheckCustomDictionaryTest, MergeDataAndStartSyncing) {
       spellcheck_service2->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords / 2; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
 
   SpellcheckCustomDictionary::Change change2;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords / 2; ++i) {
     change2.AddWord("bar" + base::NumberToString(i));
   }
   Apply(*custom_dictionary2, change2);
@@ -535,7 +535,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigBeforeSyncing) {
       spellcheck_service2->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords + 1; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
@@ -555,14 +555,14 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigBeforeSyncing) {
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -581,7 +581,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigAndServerFull) {
 
   SpellcheckCustomDictionary::Change change;
   SpellcheckCustomDictionary::Change change2;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
     change2.AddWord("bar" + base::NumberToString(i));
   }
@@ -589,9 +589,9 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigAndServerFull) {
   Apply(*custom_dictionary, change);
   Apply(*custom_dictionary2, change2);
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
   int error_counter = 0;
@@ -609,14 +609,14 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigAndServerFull) {
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS * 2 + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords * 2 + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -635,16 +635,16 @@ TEST_F(SpellcheckCustomDictionaryTest, ServerTooBig) {
 
   SpellcheckCustomDictionary::Change change;
   SpellcheckCustomDictionary::Change change2;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords + 1; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
     change2.AddWord("bar" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
   Apply(*custom_dictionary2, change2);
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary2->GetWords().size());
 
   int error_counter = 0;
@@ -662,14 +662,14 @@ TEST_F(SpellcheckCustomDictionaryTest, ServerTooBig) {
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS * 2 + 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords * 2 + 2,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -687,7 +687,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigToStartSyncing) {
       spellcheck_service2->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS - 1; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords - 1; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
@@ -710,14 +710,14 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigToStartSyncing) {
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -735,7 +735,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigToContiueSyncing) {
       spellcheck_service2->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS - 1; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords - 1; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
@@ -763,14 +763,14 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigToContiueSyncing) {
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -849,21 +849,21 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadAfterSyncStartTooBigToSync) {
 
   std::unique_ptr<std::set<std::string>> custom_words(
       new std::set<std::string>);
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
     custom_words->insert(custom_words->end(), "foo" + base::NumberToString(i));
   }
   OnLoaded(*custom_dictionary, std::move(custom_words));
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS + 1,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords + 1,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -881,7 +881,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadDuplicatesAfterSync) {
       spellcheck_service2->GetCustomDictionary();
 
   SpellcheckCustomDictionary::Change change;
-  for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2; ++i) {
+  for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords / 2; ++i) {
     change.AddWord("foo" + base::NumberToString(i));
   }
   Apply(*custom_dictionary, change);
@@ -906,14 +906,14 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadDuplicatesAfterSync) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords / 2,
             custom_dictionary->GetWords().size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords / 2,
             custom_dictionary2->GetWords().size());
 
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords / 2,
             custom_dictionary->GetAllSyncData(syncer::DICTIONARY).size());
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS / 2,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords / 2,
             custom_dictionary2->GetAllSyncData(syncer::DICTIONARY).size());
 }
 
@@ -1054,7 +1054,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
         spellcheck_service->GetCustomDictionary();
 
     SpellcheckCustomDictionary::Change change;
-    for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+    for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
       change.AddWord("foo" + base::NumberToString(i));
     }
     Apply(*custom_dictionary, change);
@@ -1074,12 +1074,12 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
             .IsSet());
     EXPECT_EQ(0, error_counter);
     EXPECT_TRUE(custom_dictionary->IsSyncing());
-    EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+    EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
               custom_dictionary->GetWords().size());
   }
 
   // The sync server now has the maximum number of words.
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             server_custom_dictionary->GetWords().size());
 
   // Associate the sync server with a client that also has the maximum number of
@@ -1099,7 +1099,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
     // Add the maximum number of words to the client. These words are all
     // different from those on the server.
     SpellcheckCustomDictionary::Change change;
-    for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
+    for (size_t i = 0; i < spellcheck::kMaxSyncableDictionaryWords; ++i) {
       change.AddWord("bar" + base::NumberToString(i));
     }
     Apply(*client_custom_dictionary, change);
@@ -1120,13 +1120,13 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
             .IsSet());
     EXPECT_EQ(0, error_counter);
     EXPECT_FALSE(client_custom_dictionary->IsSyncing());
-    EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS * 2,
+    EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords * 2,
               client_custom_dictionary->GetWords().size());
   }
 
   // The sync server should not receive more words, because it has the maximum
   // number of words already.
-  EXPECT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
+  EXPECT_EQ(spellcheck::kMaxSyncableDictionaryWords,
             server_custom_dictionary->GetWords().size());
 }
 

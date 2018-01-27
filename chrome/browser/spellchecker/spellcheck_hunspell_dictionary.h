@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -122,6 +123,7 @@ class SpellcheckHunspellDictionary
   // Attempt to download the dictionary.
   void DownloadDictionary(GURL url);
 
+#if !defined(OS_ANDROID)
   // Figures out the location for the dictionary, verifies its contents, and
   // opens it.
   static DictionaryFile OpenDictionaryFile(const base::FilePath& path);
@@ -133,6 +135,7 @@ class SpellcheckHunspellDictionary
   // The reply point for PostTaskAndReplyWithResult, called after the dictionary
   // file has been initialized.
   void InitializeDictionaryLocationComplete(DictionaryFile file);
+#endif
 
   // The reply point for PostTaskAndReplyWithResult, called after the dictionary
   // file has been saved.
@@ -145,10 +148,10 @@ class SpellcheckHunspellDictionary
   void InformListenersOfDownloadFailure();
 
   // Task runner where the file operations takes place.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> const task_runner_;
 
   // The language of the dictionary file.
-  std::string language_;
+  const std::string language_;
 
   // Whether to use the platform spellchecker instead of Hunspell.
   bool use_browser_spellchecker_;
@@ -160,7 +163,9 @@ class SpellcheckHunspellDictionary
   // Used for downloading the dictionary file.
   std::unique_ptr<net::URLFetcher> fetcher_;
 
-  SpellcheckService* spellcheck_service_;
+#if !defined(OS_ANDROID)
+  SpellcheckService* const spellcheck_service_;
+#endif
 
   // Observers of Hunspell dictionary events.
   base::ObserverList<Observer> observers_;
