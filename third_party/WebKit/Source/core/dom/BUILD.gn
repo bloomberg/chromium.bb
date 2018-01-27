@@ -50,6 +50,7 @@ blink_core_sources("dom") {
     "ContextLifecycleNotifier.h",
     "ContextLifecycleObserver.cpp",
     "ContextLifecycleObserver.h",
+    "CreateElementFlags.h",
     "DOMException.cpp",
     "DOMException.h",
     "DOMHighResTimeStamp.h",
