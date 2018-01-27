@@ -6,10 +6,13 @@
 #define LayoutWorklet_h
 
 #include "core/CoreExport.h"
+#include "core/layout/custom/DocumentLayoutDefinition.h"
 #include "core/workers/Worklet.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+extern DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition;
 
 // Manages a layout worklet:
 // https://drafts.css-houdini.org/css-layout-api/#dom-css-layoutworklet
@@ -29,15 +32,25 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
 
   ~LayoutWorklet() override;
 
+  typedef HeapHashMap<String, TraceWrapperMember<DocumentLayoutDefinition>>
+      DocumentDefinitionMap;
+  DocumentDefinitionMap* GetDocumentDefinitionMap() {
+    return &document_definition_map_;
+  }
+
   void Trace(blink::Visitor*) override;
 
  protected:
   explicit LayoutWorklet(LocalFrame*);
 
  private:
+  friend class LayoutWorkletTest;
+
   // Implements Worklet.
   bool NeedsToCreateGlobalScope() final;
   WorkletGlobalScopeProxy* CreateGlobalScope() final;
+
+  DocumentDefinitionMap document_definition_map_;
 
   static const char* SupplementName();
 };

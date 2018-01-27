@@ -17,7 +17,7 @@ namespace blink {
 
 const size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
-DocumentPaintDefinition* const kInvalidDocumentDefinition = nullptr;
+DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
 // static
 PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
@@ -96,7 +96,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   // Check if the existing document definition is valid or not.
   DocumentPaintDefinition* document_definition =
       document_definition_map_.at(name);
-  if (document_definition == kInvalidDocumentDefinition)
+  if (document_definition == kInvalidDocumentPaintDefinition)
     return nullptr;
 
   PaintWorkletGlobalScopeProxy* proxy =

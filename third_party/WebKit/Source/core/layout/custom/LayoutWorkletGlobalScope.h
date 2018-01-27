@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CSSLayoutDefinition;
 class WorkerReportingProxy;
 
 class CORE_EXPORT LayoutWorkletGlobalScope final
@@ -31,10 +32,25 @@ class CORE_EXPORT LayoutWorkletGlobalScope final
 
   bool IsLayoutWorkletGlobalScope() const final { return true; }
 
+  // Implements LayoutWorkletGlobalScope.idl
+  void registerLayout(const String& name,
+                      const ScriptValue& ctor_value,
+                      ExceptionState&);
+
+  CSSLayoutDefinition* FindDefinition(const String& name);
+
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+
  private:
   LayoutWorkletGlobalScope(LocalFrame*,
                            std::unique_ptr<GlobalScopeCreationParams>,
                            WorkerReportingProxy&);
+
+  // https://drafts.css-houdini.org/css-layout-api/#layout-definitions
+  typedef HeapHashMap<String, TraceWrapperMember<CSSLayoutDefinition>>
+      DefinitionMap;
+  DefinitionMap layout_definitions_;
 };
 
 DEFINE_TYPE_CASTS(LayoutWorkletGlobalScope,

@@ -270,11 +270,11 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   if (document_definition_map.Contains(name)) {
     DocumentPaintDefinition* existing_document_definition =
         document_definition_map.at(name);
-    if (existing_document_definition == kInvalidDocumentDefinition)
+    if (existing_document_definition == kInvalidDocumentPaintDefinition)
       return;
     if (!existing_document_definition->RegisterAdditionalPaintDefinition(
             *definition)) {
-      document_definition_map.Set(name, kInvalidDocumentDefinition);
+      document_definition_map.Set(name, kInvalidDocumentPaintDefinition);
       exception_state.ThrowDOMException(
           kNotSupportedError,
           "A class with name:'" + name +
