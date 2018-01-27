@@ -134,7 +134,7 @@ std::vector<const BuilderRecord*> Builder::GetAllRecords() const {
   std::vector<const BuilderRecord*> result;
   result.reserve(records_.size());
   for (const auto& record : records_)
-    result.push_back(record.second);
+    result.push_back(record.second.get());
   return result;
 }
 
@@ -168,10 +168,8 @@ const BuilderRecord* Builder::GetRecord(const Label& label) const {
 }
 
 BuilderRecord* Builder::GetRecord(const Label& label) {
-  RecordMap::iterator found = records_.find(label);
-  if (found == records_.end())
-    return nullptr;
-  return found->second;
+  auto found = records_.find(label);
+  return (found != records_.end()) ? found->second.get() : nullptr;
 }
 
 bool Builder::CheckForBadItems(Err* err) const {
@@ -187,7 +185,7 @@ bool Builder::CheckForBadItems(Err* err) const {
   std::vector<const BuilderRecord*> bad_records;
   std::string depstring;
   for (const auto& record_pair : records_) {
-    const BuilderRecord* src = record_pair.second;
+    const BuilderRecord* src = record_pair.second.get();
     if (!src->should_generate())
       continue;  // Skip ungenerated nodes.
 
@@ -308,9 +306,10 @@ BuilderRecord* Builder::GetOrCreateRecordOfType(const Label& label,
   BuilderRecord* record = GetRecord(label);
   if (!record) {
     // Not seen this record yet, create a new one.
-    record = new BuilderRecord(type, label);
-    record->set_originally_referenced_from(request_from);
-    records_[label] = record;
+    auto new_record = std::make_unique<BuilderRecord>(type, label);
+    new_record->set_originally_referenced_from(request_from);
+    record = new_record.get();
+    records_[label] = std::move(new_record);
     return record;
   }
 
