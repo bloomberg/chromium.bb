@@ -1480,6 +1480,11 @@ COMMON_GTESTS = {
      ]
   },
   'gl_unittests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEFAULT_AND_OPTIONAL,
+      },
+    ],
     'disabled_tester_configs': [
       {
         'names': [
