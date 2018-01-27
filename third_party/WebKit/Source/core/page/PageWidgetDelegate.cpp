@@ -227,6 +227,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     case WebInputEvent::kTouchCancel:
     case WebInputEvent::kTouchScrollStarted:
       NOTREACHED();
+      return WebInputEventResult::kNotHandled;
 
     case WebInputEvent::kGesturePinchBegin:
     case WebInputEvent::kGesturePinchEnd:
