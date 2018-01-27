@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class FullscreenScrollEndAnimator;
+@class FullscreenScrollToTopAnimator;
 
 // UI elements that need to react to Fullscreen events should conform to this
 // protocol to react to changes in Fullscreen state.
@@ -27,6 +28,11 @@
 // to fullscreen events can configure |animator| with animations.
 - (void)finishFullscreenScrollWithAnimator:
     (FullscreenScrollEndAnimator*)animator;
+
+// Called when a scroll-to-top animation is triggered.  UI elements that react
+// to fullscreen events can configure |animator| with animations.
+- (void)scrollFullscreenToTopWithAnimator:
+    (FullscreenScrollToTopAnimator*)animator;
 
 @end
 

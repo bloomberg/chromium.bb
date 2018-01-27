@@ -25,6 +25,9 @@ class FullscreenUIUpdater : public FullscreenControllerObserver {
   void FullscreenScrollEventEnded(
       FullscreenController* controller,
       FullscreenScrollEndAnimator* animator) override;
+  void FullscreenWillScrollToTop(
+      FullscreenController* controller,
+      FullscreenScrollToTopAnimator* animator) override;
 
   // The UI element being updated by this observer.
   __weak id<FullscreenUIElement> ui_element_;

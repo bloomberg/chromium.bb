@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_scroll_view_replacement_handler.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -38,12 +38,13 @@ bool ShouldDisableFullscreenForWebStateSSL(web::WebState* web_state) {
 
 FullscreenWebStateObserver::FullscreenWebStateObserver(
     FullscreenController* controller,
-    FullscreenModel* model)
+    FullscreenModel* model,
+    FullscreenMediator* mediator)
     : controller_(controller),
       model_(model),
-      scroll_view_replacement_handler_(
-          [[FullscreenWebScrollViewReplacementHandler alloc]
-              initWithModel:model_]) {
+      web_view_proxy_observer_([[FullscreenWebViewProxyObserver alloc]
+          initWithModel:model_
+               mediator:mediator]) {
   DCHECK(controller_);
   DCHECK(model_);
 }
@@ -62,7 +63,7 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
   SetIsLoading(web_state_ ? web_state->IsLoading() : false);
   SetDisableFullscreenForSSL(ShouldDisableFullscreenForWebStateSSL(web_state_));
   // Update the scroll view replacement handler's proxy.
-  scroll_view_replacement_handler_.proxy =
+  web_view_proxy_observer_.proxy =
       web_state_ ? web_state_->GetWebViewProxy() : nil;
 }
 

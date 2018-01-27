@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_scroll_view_replacement_handler.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_scroll_view_replacement_util.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -13,20 +15,24 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FullscreenWebScrollViewReplacementHandler ()<
-    CRWWebViewScrollViewProxyObserver>
-// The model passed on initialization.
-@property(nonatomic, assign) FullscreenModel* model;
+@interface FullscreenWebViewProxyObserver ()<CRWWebViewScrollViewProxyObserver>
+// The model and mediator passed on initialization.
+@property(nonatomic, readonly) FullscreenModel* model;
+@property(nonatomic, readonly) FullscreenMediator* mediator;
 @end
 
-@implementation FullscreenWebScrollViewReplacementHandler
+@implementation FullscreenWebViewProxyObserver
 @synthesize proxy = _proxy;
 @synthesize model = _model;
+@synthesize mediator = _mediator;
 
-- (instancetype)initWithModel:(FullscreenModel*)model {
+- (instancetype)initWithModel:(FullscreenModel*)model
+                     mediator:(FullscreenMediator*)mediator {
   if (self = [super init]) {
     _model = model;
     DCHECK(_model);
+    _mediator = mediator;
+    DCHECK(_mediator);
   }
   return self;
 }
@@ -46,6 +52,15 @@
 - (void)webViewScrollViewProxyDidSetScrollView:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   UpdateFullscreenWebViewProxyForReplacedScrollView(self.proxy, self.model);
+}
+
+- (BOOL)webViewScrollViewShouldScrollToTop:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  // The content offset and the toolbar layout needs to be reset simultaneously,
+  // so disallow UIKit's scroll-to-top animation and instead use the mediator to
+  // trigger a custom animation.
+  self.mediator->ScrollToTop();
+  return NO;
 }
 
 @end

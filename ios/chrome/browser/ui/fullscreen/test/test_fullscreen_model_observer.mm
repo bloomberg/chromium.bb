@@ -26,3 +26,9 @@ void TestFullscreenModelObserver::FullscreenModelScrollEventEnded(
     FullscreenModel* model) {
   scroll_end_received_ = true;
 }
+
+void TestFullscreenModelObserver::FullscreenModelWasReset(
+    FullscreenModel* model) {
+  reset_called_ = true;
+  progress_ = model->progress();
+}

@@ -17,10 +17,11 @@
 FullscreenWebStateListObserver::FullscreenWebStateListObserver(
     FullscreenController* controller,
     FullscreenModel* model,
-    WebStateList* web_state_list)
+    WebStateList* web_state_list,
+    FullscreenMediator* mediator)
     : model_(model),
       web_state_list_(web_state_list),
-      web_state_observer_(controller, model) {
+      web_state_observer_(controller, model, mediator) {
   DCHECK(model_);
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);

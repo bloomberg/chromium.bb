@@ -26,7 +26,7 @@
 // scrolling.
 - (void)broadcastScrollViewIsScrolling:(BOOL)scrolling;
 
-// Observer method for objects that care abotu whether the main content area is
+// Observer method for objects that care about whether the main content area is
 // being dragged.  Note that if a drag ends with residual velocity, it's
 // possible for |dragging| to be NO while |scrolling| is still YES.
 - (void)broadcastScrollViewIsDragging:(BOOL)dragging;

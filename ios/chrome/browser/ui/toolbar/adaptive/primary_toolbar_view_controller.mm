@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
@@ -144,6 +145,17 @@
 
 - (void)finishFullscreenScrollWithAnimator:
     (FullscreenScrollEndAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+- (void)scrollFullscreenToTopWithAnimator:
+    (FullscreenScrollToTopAnimator*)animator {
+  [self addFullscreenAnimationsToAnimator:animator];
+}
+
+#pragma mark - FullscreenUIElement helpers
+
+- (void)addFullscreenAnimationsToAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
   [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];
