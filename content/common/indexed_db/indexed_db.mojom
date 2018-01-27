@@ -137,7 +137,7 @@ struct FileInfo {
 };
 
 struct BlobInfo {
-  blink.mojom.Blob? blob;
+  blink.mojom.Blob blob;
   string uuid;
   mojo.common.mojom.String16 mime_type;
   int64 size;
@@ -241,8 +241,7 @@ interface Cursor {
   Advance(uint32 count, associated Callbacks callbacks);
   Continue(Key key, Key primary_key, associated Callbacks callbacks);
   Prefetch(int32 count, associated Callbacks callbacks);
-  PrefetchReset(int32 used_prefetches, int32 unused_prefetches,
-                array<string> unused_blob_uuids);
+  PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
 interface Database {
@@ -331,7 +330,6 @@ interface Database {
               mojo.common.mojom.String16 new_name);
   Abort(int64 transaction_id);
   Commit(int64 transaction_id);
-  AckReceivedBlobs(array<string> uuids);
 };
 
 interface Factory {

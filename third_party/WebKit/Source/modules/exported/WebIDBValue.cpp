@@ -34,13 +34,8 @@ void WebIDBValue::SetInjectedPrimaryKey(WebIDBKey primary_key,
                                   IDBKeyPath(primary_key_path));
 }
 
-WebVector<WebString> WebIDBValue::BlobUuids() const {
-  const Vector<WebBlobInfo>& web_blob_infos = private_->BlobInfo();
-  WebVector<WebString> blob_uuids;
-  blob_uuids.reserve(web_blob_infos.size());
-  for (const WebBlobInfo& web_blob_info : web_blob_infos)
-    blob_uuids.emplace_back(web_blob_info.Uuid());
-  return blob_uuids;
+WebVector<WebBlobInfo> WebIDBValue::BlobInfoForTesting() const {
+  return private_->BlobInfo();
 }
 
 #if DCHECK_IS_ON()

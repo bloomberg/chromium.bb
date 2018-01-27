@@ -144,7 +144,6 @@ class MockWebIDBDatabase : public ::testing::StrictMock<WebIDBDatabase> {
                void(long long transaction_id,
                     long long object_store_id,
                     WebIDBCallbacks*));
-  MOCK_METHOD1(AckReceivedBlobs, void(const WebVector<WebString>& uuids));
 
  private:
   MockWebIDBDatabase();

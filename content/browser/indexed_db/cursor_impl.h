@@ -40,10 +40,8 @@ class CursorImpl : public ::indexed_db::mojom::Cursor {
   void Prefetch(
       int32_t count,
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
-  void PrefetchReset(
-      int32_t used_prefetches,
-      int32_t unused_prefetches,
-      const std::vector<std::string>& unused_blob_uuids) override;
+  void PrefetchReset(int32_t used_prefetches,
+                     int32_t unused_prefetches) override;
 
  private:
   class IDBSequenceHelper;

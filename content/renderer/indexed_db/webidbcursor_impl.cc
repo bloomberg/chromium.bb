@@ -39,9 +39,7 @@ class WebIDBCursorImpl::IOThreadHelper {
                 std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
   void Prefetch(int32_t count,
                 std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
-  void PrefetchReset(int32_t used_prefetches,
-                     int32_t unused_prefetches,
-                     std::vector<std::string> unused_blob_uuids);
+  void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
 
  private:
   CallbacksAssociatedPtrInfo GetCallbacksProxy(
@@ -238,26 +236,11 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
     return;
   }
 
-  // Ack any unused blobs.
-  //
-  // The extra memory allocations and copying here could be reduced by having an
-  // AppendBlobUuidsTo that takes in a std::vector<std::string> reference.
-  // However, that would be a deviation from the Blink API standards.
-  // TODO(pwnall): Ensure that the code here is deleted when
-  // https://crbug.com/611935 is completed and non-Mojo Blob code paths are
-  // removed from the codebase.
-  std::vector<std::string> uuids;
-  for (const auto& value : prefetch_values_) {
-    blink::WebVector<blink::WebString> web_uuids = value.BlobUuids();
-    for (const blink::WebString& web_uuid : web_uuids)
-      uuids.emplace_back(web_uuid.Latin1());
-  }
-
   // Reset the back-end cursor.
   io_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IOThreadHelper::PrefetchReset,
-                                base::Unretained(helper_), used_prefetches_,
-                                prefetch_keys_.size(), std::move(uuids)));
+      FROM_HERE,
+      base::BindOnce(&IOThreadHelper::PrefetchReset, base::Unretained(helper_),
+                     used_prefetches_, prefetch_keys_.size()));
 
   // Reset the prefetch cache.
   prefetch_keys_.clear();
@@ -297,9 +280,8 @@ void WebIDBCursorImpl::IOThreadHelper::Prefetch(
 
 void WebIDBCursorImpl::IOThreadHelper::PrefetchReset(
     int32_t used_prefetches,
-    int32_t unused_prefetches,
-    std::vector<std::string> unused_blob_uuids) {
-  cursor_->PrefetchReset(used_prefetches, unused_prefetches, unused_blob_uuids);
+    int32_t unused_prefetches) {
+  cursor_->PrefetchReset(used_prefetches, unused_prefetches);
 }
 
 CallbacksAssociatedPtrInfo WebIDBCursorImpl::IOThreadHelper::GetCallbacksProxy(

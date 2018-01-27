@@ -55,10 +55,8 @@ class MockCursorImpl : public Cursor {
     last_prefetch_count_ = count;
   }
 
-  void PrefetchReset(
-      int32_t used_prefetches,
-      int32_t unused_prefetches,
-      const std::vector<std::string>& unused_blob_uuids) override {
+  void PrefetchReset(int32_t used_prefetches,
+                     int32_t unused_prefetches) override {
     ++reset_calls_;
     last_used_count_ = used_prefetches;
   }
@@ -101,21 +99,21 @@ class MockCursorImpl : public Cursor {
 class MockContinueCallbacks : public StrictMock<MockWebIDBCallbacks> {
  public:
   MockContinueCallbacks(IndexedDBKey* key = nullptr,
-                        WebVector<WebString>* blob_uuids = nullptr)
-      : key_(key), blob_uuids_(blob_uuids) {}
+                        WebVector<WebBlobInfo>* blobs = nullptr)
+      : key_(key), blobs_(blobs) {}
 
   void OnSuccess(WebIDBKey key,
                  WebIDBKey primaryKey,
                  WebIDBValue value) override {
     if (key_)
       *key_ = IndexedDBKeyBuilder::Build(key.View());
-    if (blob_uuids_)
-      *blob_uuids_ = value.BlobUuids();
+    if (blobs_)
+      *blobs_ = value.BlobInfoForTesting();
   }
 
  private:
   IndexedDBKey* key_;
-  WebVector<WebString>* blob_uuids_;
+  WebVector<WebBlobInfo>* blobs_;
 };
 
 }  // namespace
@@ -198,15 +196,15 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
     // Verify that the cache is used for subsequent continue() calls.
     for (int i = 0; i < prefetch_count; ++i) {
       IndexedDBKey key;
-      WebVector<WebString> blob_uuids;
+      WebVector<WebBlobInfo> blobs;
       cursor_->Continue(null_key_.View(), null_key_.View(),
-                        new MockContinueCallbacks(&key, &blob_uuids));
+                        new MockContinueCallbacks(&key, &blobs));
       base::RunLoop().RunUntilIdle();
       EXPECT_EQ(continue_calls, mock_cursor_->continue_calls());
       EXPECT_EQ(repetitions + 1, mock_cursor_->prefetch_calls());
 
       EXPECT_EQ(kWebIDBKeyTypeNumber, key.type());
-      EXPECT_EQ(expected_key, static_cast<int>(blob_uuids.size()));
+      EXPECT_EQ(expected_key, static_cast<int>(blobs.size()));
       EXPECT_EQ(expected_key++, key.number());
     }
   }

@@ -147,7 +147,6 @@ class WebIDBDatabase {
   virtual void Clear(long long transaction_id,
                      long long object_store_id,
                      WebIDBCallbacks*) = 0;
-  virtual void AckReceivedBlobs(const WebVector<WebString>& uuids) = 0;
 
  protected:
   WebIDBDatabase() = default;

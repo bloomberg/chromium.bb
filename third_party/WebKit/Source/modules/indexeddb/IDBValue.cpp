@@ -25,8 +25,7 @@ IDBValue::IDBValue(const WebData& data,
 
   for (const WebBlobInfo& info : web_blob_info) {
     blob_info_.push_back(info);
-    blob_data_.push_back(
-        BlobDataHandle::Create(info.Uuid(), info.GetType(), info.size()));
+    blob_data_.push_back(info.GetBlobHandle());
   }
 }
 
@@ -62,14 +61,6 @@ std::unique_ptr<IDBValue> IDBValue::Create(
     Vector<WebBlobInfo> blob_info) {
   return base::WrapUnique(new IDBValue(
       std::move(unwrapped_data), std::move(blob_data), std::move(blob_info)));
-}
-
-Vector<String> IDBValue::GetUUIDs() const {
-  Vector<String> uuids;
-  uuids.ReserveCapacity(blob_info_.size());
-  for (const WebBlobInfo& info : blob_info_)
-    uuids.push_back(info.Uuid());
-  return uuids;
 }
 
 scoped_refptr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {

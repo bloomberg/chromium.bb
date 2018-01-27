@@ -81,13 +81,8 @@ void CursorImpl::Prefetch(
                      count, base::Passed(&callbacks)));
 }
 
-void CursorImpl::PrefetchReset(
-    int32_t used_prefetches,
-    int32_t unused_prefetches,
-    const std::vector<std::string>& unused_blob_uuids) {
-  for (const auto& uuid : unused_blob_uuids)
-    dispatcher_host_->DropBlobData(uuid);
-
+void CursorImpl::PrefetchReset(int32_t used_prefetches,
+                               int32_t unused_prefetches) {
   idb_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IDBSequenceHelper::PrefetchReset,
                                 base::Unretained(helper_), used_prefetches,

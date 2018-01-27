@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
@@ -20,7 +19,6 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "url/origin.h"
@@ -159,48 +157,6 @@ void IndexedDBDispatcherHost::AddCursorBinding(
     std::unique_ptr<::indexed_db::mojom::Cursor> cursor,
     ::indexed_db::mojom::CursorAssociatedRequest request) {
   cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
-}
-
-std::string IndexedDBDispatcherHost::HoldBlobData(
-    const IndexedDBBlobInfo& blob_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::string uuid = blob_info.uuid();
-  storage::BlobStorageContext* context = blob_storage_context_->context();
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
-  if (uuid.empty()) {
-    uuid = base::GenerateGUID();
-    auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
-    blob_data_builder->set_content_type(base::UTF16ToUTF8(blob_info.type()));
-    blob_data_builder->AppendFile(blob_info.file_path(), 0, blob_info.size(),
-                                  blob_info.last_modified());
-    blob_data_handle = context->AddFinishedBlob(std::move(blob_data_builder));
-  } else {
-    auto iter = blob_data_handle_map_.find(uuid);
-    if (iter != blob_data_handle_map_.end()) {
-      iter->second.second += 1;
-      return uuid;
-    }
-    blob_data_handle = context->GetBlobDataFromUUID(uuid);
-  }
-
-  DCHECK(!base::ContainsKey(blob_data_handle_map_, uuid));
-  blob_data_handle_map_[uuid] = std::make_pair(std::move(blob_data_handle), 1);
-  return uuid;
-}
-
-void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const auto& iter = blob_data_handle_map_.find(uuid);
-  if (iter == blob_data_handle_map_.end()) {
-    DLOG(FATAL) << "Failed to find blob UUID in map:" << uuid;
-    return;
-  }
-
-  DCHECK_GE(iter->second.second, 1);
-  if (iter->second.second == 1)
-    blob_data_handle_map_.erase(iter);
-  else
-    --iter->second.second;
 }
 
 void IndexedDBDispatcherHost::RenderProcessExited(

@@ -118,7 +118,6 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
                    const base::string16& new_name) override;
   void Abort(int64_t transaction_id) override;
   void Commit(int64_t transaction_id) override;
-  void AckReceivedBlobs(const std::vector<std::string>& uuids) override;
 
  private:
   class IDBSequenceHelper;
