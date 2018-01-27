@@ -4,6 +4,7 @@ include_rules = [
   # completely independent mojo app under mustash.
   "-ash",
   "-chrome",
+  "+ash/wm/window_util.h",
   "+chrome/browser/ui/ash/ksv",
   "+ui/chromeos/ksv",
 ]

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
 #include "ash/content/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -215,6 +216,14 @@ void ChromeNewWindowClient::RestoreTab() {
 
 // TODO(crbug.com/755448): Remove this when the new shortcut viewer is enabled.
 void ChromeNewWindowClient::ShowKeyboardOverlay() {
+  // TODO(wutao): It is only for cl reviewers to test the new shortcut viewer
+  // and will be removed when the new shortcut viewer is enabled.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshEnableKeyboardShortcutViewer)) {
+    keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+    return;
+  }
+
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string url(chrome::kChromeUIKeyboardOverlayURL);
