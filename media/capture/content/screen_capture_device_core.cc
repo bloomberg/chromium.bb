@@ -70,6 +70,18 @@ void ScreenCaptureDeviceCore::RequestRefreshFrame() {
   if (state_ != kCapturing)
     return;
 
+  // Try to use the less resource-intensive "passive" refresh mechanism, unless
+  // this is the first refresh following a Resume().
+  if (force_active_refresh_once_) {
+    capture_machine_->MaybeCaptureForRefresh();
+    force_active_refresh_once_ = false;
+    return;
+  }
+
+  // Make a best-effort attempt at a passive refresh, but fall-back to an active
+  // refresh if that fails.
+  if (oracle_proxy_->AttemptPassiveRefresh())
+    return;
   capture_machine_->MaybeCaptureForRefresh();
 }
 
@@ -90,6 +102,7 @@ void ScreenCaptureDeviceCore::Resume() {
   if (state_ != kSuspended)
     return;
 
+  force_active_refresh_once_ = true;
   TransitionStateTo(kCapturing);
 
   capture_machine_->Resume();
@@ -127,7 +140,9 @@ void ScreenCaptureDeviceCore::CaptureStarted(bool success) {
 
 ScreenCaptureDeviceCore::ScreenCaptureDeviceCore(
     std::unique_ptr<VideoCaptureMachine> capture_machine)
-    : state_(kIdle), capture_machine_(std::move(capture_machine)) {
+    : state_(kIdle),
+      capture_machine_(std::move(capture_machine)),
+      force_active_refresh_once_(false) {
   DCHECK(capture_machine_.get());
 }
 
