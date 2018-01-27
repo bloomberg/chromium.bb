@@ -108,7 +108,7 @@ void ScopedRenderPassTexture::BindForSampling() {
       DCHECK(context_provider_->ContextCapabilities().texture_npot);
       gl->GenerateMipmap(GL_TEXTURE_2D);
       mipmap_state_ = VALID;
-    // fall-through
+      FALLTHROUGH;
     case VALID:
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                         GL_LINEAR_MIPMAP_LINEAR);
