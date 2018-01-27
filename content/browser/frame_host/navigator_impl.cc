@@ -756,6 +756,7 @@ void NavigatorImpl::RequestTransferURL(
             extra_headers, controller_->GetBrowserContext()));
     entry->root_node()->frame_entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(source_site_instance));
+    entry->root_node()->frame_entry->set_method(method);
     entry->SetRedirectChain(redirect_chain);
   }
   entry->set_suggested_filename(suggested_filename);
