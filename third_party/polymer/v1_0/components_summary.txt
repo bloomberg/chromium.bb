@@ -228,9 +228,9 @@ Tree link: https://github.com/PolymerElements/paper-item/tree/v1.2.1
 
 Name: paper-listbox
 Repository: https://github.com/PolymerelEments/paper-listbox.git
-Tree: v1.1.2
-Revision: b0fde50f57db3e8e4926e9d046be9d3c159a2bff
-Tree link: https://github.com/PolymerelEments/paper-listbox/tree/v1.1.2
+Tree: v2.0.0
+Revision: 556e366eada2a75ad2c2df52a0b80baee66f9390
+Tree link: https://github.com/PolymerelEments/paper-listbox/tree/v2.0.0
 
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
@@ -264,9 +264,9 @@ Tree link: https://github.com/PolymerElements/paper-slider/tree/v2.0.2
 
 Name: paper-spinner
 Repository: https://github.com/PolymerElements/paper-spinner.git
-Tree: v1.2.0
-Revision: 66dc50a940aa9a3a067137defe1712aa85de6f35
-Tree link: https://github.com/PolymerElements/paper-spinner/tree/v1.2.0
+Tree: v2.0.0
+Revision: 9667b7c6ae44986e4faa6c8c6ebed035fb2daaa5
+Tree link: https://github.com/PolymerElements/paper-spinner/tree/v2.0.0
 
 Name: paper-styles
 Repository: https://github.com/PolymerElements/paper-styles.git
@@ -276,9 +276,9 @@ Tree link: https://github.com/PolymerElements/paper-styles/tree/v1.3.1
 
 Name: paper-tabs
 Repository: https://github.com/PolymerElements/paper-tabs.git
-Tree: v1.6.2
-Revision: fc3df3875f97cbcee8cfa8f4895d86a4fd2925c7
-Tree link: https://github.com/PolymerElements/paper-tabs/tree/v1.6.2
+Tree: v2.0.0
+Revision: 775a9f019072a58b6a8a936f79450cd01b3b2cba
+Tree link: https://github.com/PolymerElements/paper-tabs/tree/v2.0.0
 
 Name: paper-toggle-button
 Repository: https://github.com/PolymerElements/paper-toggle-button.git
