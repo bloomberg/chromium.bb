@@ -11,5 +11,5 @@
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
     attribute DOMString variable;
-    attribute CSSUnparsedValue? fallback;
+    readonly attribute CSSUnparsedValue? fallback;
 };
