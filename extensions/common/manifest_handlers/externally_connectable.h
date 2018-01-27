@@ -83,7 +83,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
   bool IdCanConnect(const std::string& id);
 
   // Public only for testing. Use FromValue in production.
-  ExternallyConnectableInfo(const URLPatternSet& matches,
+  ExternallyConnectableInfo(URLPatternSet matches,
                             const std::vector<std::string>& ids,
                             bool all_ids,
                             bool accepts_tls_channel_id);

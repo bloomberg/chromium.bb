@@ -56,10 +56,12 @@ class URLPatternSet {
 
   URLPatternSet();
   URLPatternSet(const URLPatternSet& rhs);
+  URLPatternSet(URLPatternSet&& rhs);
   explicit URLPatternSet(const std::set<URLPattern>& patterns);
   ~URLPatternSet();
 
   URLPatternSet& operator=(const URLPatternSet& rhs);
+  URLPatternSet& operator=(URLPatternSet&& rhs);
   bool operator==(const URLPatternSet& rhs) const;
 
   bool is_empty() const;
