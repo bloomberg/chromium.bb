@@ -45,6 +45,7 @@ if (is_chromeos) {
       "scale_factor.mojom",
       "screen_capture.mojom",
       "storage_manager.mojom",
+      "timer.mojom",
       "tracing.mojom",
       "tts.mojom",
       "usb_host.mojom",

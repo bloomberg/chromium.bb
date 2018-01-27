@@ -50,6 +50,12 @@ static_library("arc") {
     "rotation_lock/arc_rotation_lock_bridge.h",
     "storage_manager/arc_storage_manager.cc",
     "storage_manager/arc_storage_manager.h",
+    "timer/arc_timer.cc",
+    "timer/arc_timer.h",
+    "timer/arc_timer_bridge.cc",
+    "timer/arc_timer_bridge.h",
+    "timer/create_timer_request.cc",
+    "timer/create_timer_request.h",
     "usb/usb_host_bridge.cc",
     "usb/usb_host_bridge.h",
     "volume_mounter/arc_volume_mounter_bridge.cc",
@@ -74,6 +80,7 @@ static_library("arc") {
     "//components/prefs",
     "//components/session_manager/core",
     "//components/signin/core/account_id",
+    "//components/timers",
     "//components/url_formatter",
     "//components/user_manager",
     "//content/public/common",
@@ -190,6 +197,8 @@ static_library("arc_test_support") {
     "test/fake_policy_instance.h",
     "test/fake_power_instance.cc",
     "test/fake_power_instance.h",
+    "test/fake_timer_instance.cc",
+    "test/fake_timer_instance.h",
     "test/fake_voice_interaction_framework_instance.cc",
     "test/fake_voice_interaction_framework_instance.h",
     "test/fake_wallpaper_instance.cc",
@@ -231,6 +240,7 @@ source_set("unit_tests") {
     "intent_helper/page_transition_util_unittest.cc",
     "metrics/arc_metrics_service_unittest.cc",
     "power/arc_power_bridge_unittest.cc",
+    "timer/arc_timer_bridge_unittest.cc",
   ]
 
   deps = [
