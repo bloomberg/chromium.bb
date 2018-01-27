@@ -153,7 +153,6 @@ void sqlite3TreeViewSelect(TreeView *pView, const Select *p, u8 moreToFollow){
       if( p->pHaving ) n++;
       if( p->pOrderBy ) n++;
       if( p->pLimit ) n++;
-      if( p->pOffset ) n++;
     }
     sqlite3TreeViewExprList(pView, p->pEList, (n--)>0, "result-set");
     if( p->pSrc && p->pSrc->nSrc ){
@@ -210,12 +209,12 @@ void sqlite3TreeViewSelect(TreeView *pView, const Select *p, u8 moreToFollow){
     }
     if( p->pLimit ){
       sqlite3TreeViewItem(pView, "LIMIT", (n--)>0);
-      sqlite3TreeViewExpr(pView, p->pLimit, 0);
-      sqlite3TreeViewPop(pView);
-    }
-    if( p->pOffset ){
-      sqlite3TreeViewItem(pView, "OFFSET", (n--)>0);
-      sqlite3TreeViewExpr(pView, p->pOffset, 0);
+      sqlite3TreeViewExpr(pView, p->pLimit->pLeft, p->pLimit->pRight!=0);
+      if( p->pLimit->pRight ){
+        sqlite3TreeViewItem(pView, "OFFSET", (n--)>0);
+        sqlite3TreeViewExpr(pView, p->pLimit->pRight, 0);
+        sqlite3TreeViewPop(pView);
+      }
       sqlite3TreeViewPop(pView);
     }
     if( p->pPrior ){
@@ -508,12 +507,20 @@ void sqlite3TreeViewBareExprList(
     sqlite3TreeViewLine(pView, "%s", zLabel);
     for(i=0; i<pList->nExpr; i++){
       int j = pList->a[i].u.x.iOrderByCol;
-      if( j ){
+      char *zName = pList->a[i].zName;
+      if( j || zName ){
         sqlite3TreeViewPush(pView, 0);
+      }
+      if( zName ){
+        sqlite3TreeViewLine(pView, "AS %s", zName);
+      }
+      if( j ){
         sqlite3TreeViewLine(pView, "iOrderByCol=%d", j);
       }
       sqlite3TreeViewExpr(pView, pList->a[i].pExpr, i<pList->nExpr-1);
-      if( j ) sqlite3TreeViewPop(pView);
+      if( j || zName ){
+        sqlite3TreeViewPop(pView);
+      }
     }
   }
 }

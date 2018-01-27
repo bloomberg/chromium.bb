@@ -1,4 +1,4 @@
-From 11549819a8c9f9ebc7cea2501c6939e497014524 Mon Sep 17 00:00:00 2001
+From 27b5c0b987de8959baa85f15055f64039ce1d3ef Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Tue, 16 Dec 2014 13:02:27 -0800
 Subject: [PATCH 06/10] [fts3] Disable fts3_tokenizer and fts4.

@@ -1,4 +1,4 @@
-From e6a52a13daabf722ed5bee436af214babae113c1 Mon Sep 17 00:00:00 2001
+From 61a09e698c41f2aea5b7fbfd60386b073c813656 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Fri, 16 Jan 2015 10:24:30 -0800
 Subject: [PATCH 01/10] [test] SQLite tests compiling on Linux.
@@ -103,17 +103,17 @@ index b838b844a312..62d029430803 100644
  #LIBTCL = /home/drh/tcltk/8.3hpux/libtcl8.3.a -ldld -lm -lc
 
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index d45f8b8a4daf..be694f0d5586 100644
+index 459adf6991c4..1ba4cda9a570 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
-@@ -784,7 +784,7 @@ sqlite3_analyzer.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl $
+@@ -821,7 +821,7 @@ sqlite3_analyzer.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl $
  	tclsh $(TOP)/tool/mkccode.tcl $(TOP)/tool/sqlite3_analyzer.c.in >sqlite3_analyzer.c
 
  sqlite3_analyzer$(EXE): sqlite3_analyzer.c
 -	$(TCCX) $(TCL_FLAGS) sqlite3_analyzer.c -o $@ $(LIBTCL) $(THREADLIB)
 +	$(TCCX) $(TCL_FLAGS) sqlite3_analyzer.c -o $@ $(LIBTCL) $(TLIBS) $(THREADLIB)
 
- dbdump$(EXE):	$(TOP)/ext/misc/dbdump.c sqlite3.o
- 	$(TCCX) -DDBDUMP_STANDALONE -o dbdump$(EXE) \
+ sqltclsh.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/sqltclsh.tcl $(TOP)/ext/misc/appendvfs.c $(TOP)/tool/mkccode.tcl
+ 	tclsh $(TOP)/tool/mkccode.tcl $(TOP)/tool/sqltclsh.c.in >sqltclsh.c
 --
 2.14.0
