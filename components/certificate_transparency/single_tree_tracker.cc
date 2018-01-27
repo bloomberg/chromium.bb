@@ -515,7 +515,8 @@ void SingleTreeTracker::OnMemoryPressure(
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       pending_entries_.clear();
-    // Fall through to clearing the other cache.
+      // Fall through to clearing the other cache.
+      FALLTHROUGH;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       checked_entries_.Clear();
       break;
