@@ -250,24 +250,28 @@ def main(argv):
   if options.packages:
     package_list = options.packages.split(':')
 
+  overlays = []
   if options.overlays:
-    overlays = {}
     for path in options.overlays.split(':'):
       if not os.path.isdir(path):
         cros_build_lib.Die('Cannot find overlay: %s' % path)
-      overlays[os.path.realpath(path)] = []
+      overlays.append(os.path.realpath(path))
   else:
     logging.warning('Missing --overlays argument')
-    overlays = {
-        '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
-        '%s/third_party/chromiumos-overlay' % options.srcroot: [],
-    }
+    overlays.extend([
+        '%s/private-overlays/chromeos-overlay' % options.srcroot,
+        '%s/third_party/chromiumos-overlay' % options.srcroot])
 
   manifest = git.ManifestCheckout.Cached(options.srcroot)
 
+  overlay_ebuilds = {}
   if options.command == 'commit':
-    portage_util.BuildEBuildDictionary(overlays, options.all, package_list,
-                                       allow_blacklisted=options.force)
+    inputs = [[overlay, options.all, package_list, options.force]
+              for overlay in overlays]
+    result = parallel.RunTasksInProcessPool(
+        portage_util.GetOverlayEBuilds, inputs)
+    for idx, ebuilds in enumerate(result):
+      overlay_ebuilds[inputs[idx][0]] = ebuilds
 
   with parallel.Manager() as manager:
     # Contains the array of packages we actually revved.
@@ -275,13 +279,12 @@ def main(argv):
     new_package_atoms = manager.list()
 
     for overlay in overlays:
-      ebuilds = overlays[overlay]
       messages = manager.list()
       ebuild_paths_to_add = manager.list()
       ebuild_paths_to_remove = manager.list()
-      _WorkOnOverlay(overlay, ebuilds, manifest, options, ebuild_paths_to_add,
-                     ebuild_paths_to_remove, messages, revved_packages,
-                     new_package_atoms)
+      _WorkOnOverlay(overlay, overlay_ebuilds, manifest, options,
+                     ebuild_paths_to_add, ebuild_paths_to_remove, messages,
+                     revved_packages, new_package_atoms)
 
     if options.command == 'commit':
       chroot_path = os.path.join(options.srcroot, constants.DEFAULT_CHROOT_DIR)
@@ -292,14 +295,14 @@ def main(argv):
         osutils.WriteFile(options.drop_file, ' '.join(revved_packages))
 
 
-def _WorkOnOverlay(overlay, ebuilds, manifest, options, ebuild_paths_to_add,
-                   ebuild_paths_to_remove, messages, revved_packages,
-                   new_package_atoms):
+def _WorkOnOverlay(overlay, overlay_ebuilds, manifest, options,
+                   ebuild_paths_to_add, ebuild_paths_to_remove, messages,
+                   revved_packages, new_package_atoms):
   """Work on a single overlay.
 
   Args:
     overlay: The overlay to work on.
-    ebuilds: The ebuilds belonging to the overlay.
+    overlay_ebuilds: A dict mapping overlays to their ebuilds.
     manifest: The manifest of the given source root.
     options: The options object returned by the argument parser.
     ebuild_paths_to_add: New stable ebuild paths to add to git.
@@ -336,6 +339,7 @@ def _WorkOnOverlay(overlay, ebuilds, manifest, options, ebuild_paths_to_add,
     # include the patched changes in the stabilizing branch.
     git.RunGit(overlay, ['rebase', existing_commit])
 
+    ebuilds = overlay_ebuilds.get(overlay, [])
     if ebuilds:
       inputs = [[overlay, ebuild, manifest, options, ebuild_paths_to_add,
                  ebuild_paths_to_remove, messages, revved_packages,

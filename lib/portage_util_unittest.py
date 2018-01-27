@@ -956,15 +956,14 @@ CROS_WORKON_SRCDIR=("%s")
     _runTestGetRepositoryFromEbuildInfo(['a'], ['src_a'])
 
 
-class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
-  """Tests of the EBuild Dictionary."""
+class GetOverlayEBuildsTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for GetOverlayEBuilds."""
 
   def setUp(self):
     self.overlay = self.tempdir
     self.uprev_candidate_mock = self.PatchObject(
         portage_util, '_FindUprevCandidates',
-        side_effect=BuildEBuildDictionaryTest._FindUprevCandidateMock)
-    self.overlays = {self.overlay: []}
+        side_effect=GetOverlayEBuildsTest._FindUprevCandidateMock)
 
   def _CreatePackage(self, name, blacklisted=False):
     """Helper that creates an ebuild."""
@@ -989,53 +988,54 @@ class BuildEBuildDictionaryTest(cros_test_lib.MockTempDirTestCase):
                                      os.path.basename(pkgdir)))
     return None
 
-  def _assertFoundPackages(self, packages):
+  def _assertFoundPackages(self, ebuilds, packages):
     """Succeeds iff the packages discovered were packages."""
-    self.assertEquals(len(self.overlays), 1)
-    self.assertEquals([p.package for p in self.overlays[self.overlay]],
+    self.assertEquals([e.package for e in ebuilds],
                       packages)
 
   def testWantedPackage(self):
     """Test that we can find a specific package."""
     package_name = 'chromeos-base/mypackage'
     self._CreatePackage(package_name)
-    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name])
-    self._assertFoundPackages([package_name])
+    ebuilds = portage_util.GetOverlayEBuilds(
+        self.overlay, False, [package_name])
+    self._assertFoundPackages(ebuilds, [package_name])
 
   def testUnwantedPackage(self):
     """Test that we find only the packages we want."""
-    portage_util.BuildEBuildDictionary(self.overlays, False, [])
-    self._assertFoundPackages([])
+    ebuilds = portage_util.GetOverlayEBuilds(self.overlay, False, [])
+    self._assertFoundPackages(ebuilds, [])
 
   def testAnyPackage(self):
     """Test that we return all packages available if use_all is set."""
     package_name = 'chromeos-base/package_name'
     self._CreatePackage(package_name)
-    portage_util.BuildEBuildDictionary(self.overlays, True, [])
-    self._assertFoundPackages([package_name])
+    ebuilds = portage_util.GetOverlayEBuilds(self.overlay, True, [])
+    self._assertFoundPackages(ebuilds, [package_name])
 
   def testUnknownPackage(self):
     """Test that _FindUprevCandidates is only called if the CP matches."""
     self._CreatePackage('chromeos-base/package_name')
-    portage_util.BuildEBuildDictionary(self.overlays, False,
-                                       ['chromeos-base/other_package'])
+    ebuilds = portage_util.GetOverlayEBuilds(
+        self.overlay, False, ['chromeos-base/other_package'])
     self.assertFalse(self.uprev_candidate_mock.called)
-    self._assertFoundPackages([])
+    self._assertFoundPackages(ebuilds, [])
 
   def testBlacklistedPackagesIgnoredByDefault(self):
     """Test that blacklisted packages are ignored by default."""
     package_name = 'chromeos-base/blacklisted_package'
     self._CreatePackage(package_name, blacklisted=True)
-    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name])
-    self._assertFoundPackages([])
+    ebuilds = portage_util.GetOverlayEBuilds(
+        self.overlay, False, [package_name])
+    self._assertFoundPackages(ebuilds, [])
 
   def testBlacklistedPackagesAllowed(self):
     """Test that we can find blacklisted packages with |allow_blacklisted|."""
     package_name = 'chromeos-base/blacklisted_package'
     self._CreatePackage(package_name, blacklisted=True)
-    portage_util.BuildEBuildDictionary(self.overlays, False, [package_name],
-                                       allow_blacklisted=True)
-    self._assertFoundPackages([package_name])
+    ebuilds = portage_util.GetOverlayEBuilds(
+        self.overlay, False, [package_name], allow_blacklisted=True)
+    self._assertFoundPackages(ebuilds, [package_name])
 
 
 class ProjectMappingTest(cros_test_lib.TestCase):

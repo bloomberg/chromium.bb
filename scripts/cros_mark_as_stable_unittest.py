@@ -175,13 +175,14 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
     ebuild_1 = EbuildMock('ebuild_1')
     ebuild_2 = EbuildMock('ebuild_2')
     ebuilds = [ebuild_1, ebuild_2]
+    overlay_ebuilds = {self._overlay: ebuilds}
     options = self._parser.parse_args(['push'])
 
     push_change_mock = self.PatchObject(cros_mark_as_stable, 'PushChange')
     self.PatchObject(os.path, 'isdir', return_value=True)
 
     cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, ebuilds, self._manifest, options,
+        self._overlay, overlay_ebuilds, self._manifest, options,
         self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
         self.messages, self.revved_packages, self.new_package_atoms)
 
@@ -195,6 +196,7 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
     ebuild_1 = EbuildMock('ebuild_1')
     ebuild_2 = EbuildMock('ebuild_2')
     ebuilds = [ebuild_1, ebuild_2]
+    overlay_ebuilds = {self._overlay: ebuilds}
     options = self._parser.parse_args(['commit'])
 
     self.PatchObject(git, 'GetGitRepoRevision')
@@ -205,7 +207,7 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
     self.PatchObject(os.path, 'isdir', return_value=True)
 
     cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, ebuilds, self._manifest, options,
+        self._overlay, overlay_ebuilds, self._manifest, options,
         self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
         self.messages, self.revved_packages, self.new_package_atoms)
 
@@ -228,7 +230,7 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
 
   def testWorkOnOverlayNoEbuildsWithCommitCmd(self):
     """Test _WorkOnOverlay without ebuilds with Commit command."""
-    ebuilds = []
+    overlay_ebuilds = {self._overlay: []}
     options = self._parser.parse_args(['commit'])
 
     self.PatchObject(git, 'GetGitRepoRevision')
@@ -238,7 +240,7 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
     self.PatchObject(os.path, 'isdir', return_value=True)
 
     cros_mark_as_stable._WorkOnOverlay(
-        self._overlay, ebuilds, self._manifest, options,
+        self._overlay, overlay_ebuilds, self._manifest, options,
         self.ebuild_paths_to_add, self.ebuild_paths_to_remove,
         self.messages, self.revved_packages, self.new_package_atoms)
     self.assertItemsEqual(self.ebuild_paths_to_add, [])
@@ -246,6 +248,31 @@ class MarkAsStableParallelTest(cros_test_lib.MockTestCase):
     self.assertItemsEqual(self.messages, [])
     self.assertItemsEqual(self.revved_packages, [])
     self.assertItemsEqual(self.new_package_atoms, [])
+
+
+class MainTests(cros_build_lib_unittest.RunCommandTestCase,
+                cros_test_lib.MockTempDirTestCase):
+  """Tests for cros_mark_as_stable.main()."""
+
+  def setUp(self):
+    self.PatchObject(git.ManifestCheckout, 'Cached', return_value='manifest')
+    self.PatchObject(cros_mark_as_stable, 'CleanStalePackages')
+    self.mock_work_on_overlay = self.PatchObject(
+        cros_mark_as_stable, '_WorkOnOverlay')
+
+  def testMainWithProvidedOverlays(self):
+    """Test Main with overlays provided in options."""
+    overlays = []
+    for i in range(0, 3):
+      overlay = os.path.join(self.tempdir, 'overlay_%s' % i)
+      osutils.SafeMakedirs(overlay)
+      overlays.append(overlay)
+
+    self.PatchObject(portage_util, 'GetOverlayEBuilds', return_value=['ebuild'])
+
+    cros_mark_as_stable.main(
+        ['commit', '--all', '--overlays', ':'.join(overlays)])
+    self.assertEqual(self.mock_work_on_overlay.call_count, 3)
 
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):

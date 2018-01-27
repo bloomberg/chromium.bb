@@ -999,33 +999,6 @@ class EBuild(object):
     branch = git.StripRefsHeads(manifest_branch)
     return helper.GetLatestSHA1ForBranch(project, branch)
 
-  @staticmethod
-  def _GetEBuildPaths(buildroot, manifest, overlay_list, changes):
-    """Calculate ebuild->path map for changed ebuilds.
-
-    Args:
-      buildroot: Path to root of build directory.
-      manifest: git.ManifestCheckout object.
-      overlay_list: List of all overlays.
-      changes: Changes from Gerrit that are being pushed.
-
-    Returns:
-      A dictionary mapping changed ebuilds to lists of associated paths.
-    """
-    directory_src = os.path.join(buildroot, 'src')
-    overlay_dict = dict((o, []) for o in overlay_list)
-    BuildEBuildDictionary(overlay_dict, True, None)
-    changed_paths = set(c.GetCheckout(manifest).GetPath(absolute=True)
-                        for c in changes)
-    ebuild_projects = {}
-    for ebuilds in overlay_dict.itervalues():
-      for ebuild in ebuilds:
-        _, paths = ebuild.GetSourcePath(directory_src, manifest)
-        if changed_paths.intersection(paths):
-          ebuild_projects[ebuild] = paths
-
-    return ebuild_projects
-
 
 class PortageDBException(Exception):
   """Generic PortageDB error."""
@@ -1290,38 +1263,43 @@ def _FindUprevCandidates(files, allow_blacklisted=False):
   return uprev_ebuild
 
 
-def BuildEBuildDictionary(overlays, use_all, packages, allow_blacklisted=False):
-  """Build a dictionary of the ebuilds in the specified overlays.
+def GetOverlayEBuilds(overlay, use_all, packages, allow_blacklisted=False):
+  """Get ebuilds from the specified overlay.
 
   Args:
-    overlays: A map which maps overlay directories to arrays of stable EBuilds
-      inside said directories.
+    overlay: The path of the overlay to get ebuilds.
     use_all: Whether to include all ebuilds in the specified directories.
       If true, then we gather all packages in the directories regardless
       of whether they are in our set of packages.
     packages: A set of the packages we want to gather.  If use_all is
       True, this argument is ignored, and should be None.
     allow_blacklisted: Whether or not to consider blacklisted ebuilds.
+
+  Returns:
+    A list of ebuilds of the overlay
   """
-  for overlay in overlays:
-    for package_dir, _dirs, files in os.walk(overlay):
-      # If we were given a list of packages to uprev, only consider the files
-      # whose potential CP match.
-      # This allows us to uprev specific blacklisted without throwing errors on
-      # every badly formatted blacklisted ebuild.
-      package_name = os.path.basename(package_dir)
-      category = os.path.basename(os.path.dirname(package_dir))
-      if not (use_all or os.path.join(category, package_name) in packages):
-        continue
+  ebuilds = []
+  for package_dir, _dirs, files in os.walk(overlay):
+    # If we were given a list of packages to uprev, only consider the files
+    # whose potential CP match.
+    # This allows us to uprev specific blacklisted without throwing errors on
+    # every badly formatted blacklisted ebuild.
+    package_name = os.path.basename(package_dir)
+    category = os.path.basename(os.path.dirname(package_dir))
 
-      # Add stable ebuilds to overlays[overlay].
-      paths = [os.path.join(package_dir, path) for path in files]
-      ebuild = _FindUprevCandidates(paths, allow_blacklisted)
+    # If the --all option isn't used, we only want to update packages that
+    # are in packages.
+    if not (use_all or os.path.join(category, package_name) in packages):
+      continue
 
-      # If the --all option isn't used, we only want to update packages that
-      # are in packages.
-      if ebuild:
-        overlays[overlay].append(ebuild)
+    paths = [os.path.join(package_dir, path) for path in files]
+    ebuild = _FindUprevCandidates(paths, allow_blacklisted)
+
+    # Add stable ebuild.
+    if ebuild:
+      ebuilds.append(ebuild)
+
+  return ebuilds
 
 
 def RegenCache(overlay):
