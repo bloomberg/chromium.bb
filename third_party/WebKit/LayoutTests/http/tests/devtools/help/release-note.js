@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Test release note\n`);
+  await TestRunner.loadModule('help');
 
+  TestRunner.addResult(`Test release note\n`);
 
   Help.releaseNoteText = [
     {
@@ -29,9 +30,9 @@
   TestRunner.addSniffer(UI.viewManager, 'showView', onShowView);
 
   TestRunner.addResult('Last release note version seen:');
-  Help.releaseNoteVersionSetting().set(1);
-  TestRunner.addResult(Help.releaseNoteVersionSetting().get() + '\n');
-  Help.showReleaseNoteIfNeeded();
+  Help._releaseNoteVersionSetting.set(1);
+  TestRunner.addResult(Help._releaseNoteVersionSetting.get() + '\n');
+  Help._showReleaseNoteIfNeeded();
 
   function onShowView(viewId, isUserGesture, viewPromise) {
     viewPromise.then(() => {
@@ -40,7 +41,7 @@
       TestRunner.addResult('Dumping release note text:');
       TestRunner.addResult(releaseNoteElement.innerText);
       TestRunner.addResult('Last version of release note seen should be updated:');
-      TestRunner.addResult(Help.releaseNoteVersionSetting().get() + '\n');
+      TestRunner.addResult(Help._releaseNoteVersionSetting.get() + '\n');
 
       TestRunner.addSniffer(UI.InspectorView.prototype, 'closeDrawerTab', onClose);
       TestRunner.addResult('Click on hide button');

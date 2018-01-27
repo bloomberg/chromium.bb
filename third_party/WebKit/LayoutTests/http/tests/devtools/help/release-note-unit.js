@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Unit test for release note\n`);
+  await TestRunner.loadModule('help');
 
+  TestRunner.addResult(`Unit test for release note\n`);
 
   Help.releaseNoteText = [
     {version: 3},
@@ -21,7 +22,7 @@
     TestRunner.addSniffer(UI.viewManager, 'showView', onShowView);
     var showedReleaseNote = false;
 
-    Help._showReleaseNoteIfNeeded(lastSeenVersion, Help.latestReleaseNote().version, showReleaseNote);
+    Help._innerShowReleaseNoteIfNeeded(lastSeenVersion, Help.latestReleaseNote().version, showReleaseNote);
 
     function onShowView() {
       showedReleaseNote = true;
@@ -51,7 +52,7 @@
     function doNotShowReleaseNoteOnFreshProfile(next) {
       var lastSeenVersion = 0;
       testMaybeShowInDrawer(lastSeenVersion);
-      TestRunner.addResult(`Release note version in setting: ${Help.releaseNoteVersionSetting().get()}`);
+      TestRunner.addResult(`Release note version in setting: ${Help._releaseNoteVersionSetting.get()}`);
       next();
     },
     function showReleaseNoteSetting(next) {
