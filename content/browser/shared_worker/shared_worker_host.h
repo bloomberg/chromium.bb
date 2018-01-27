@@ -67,9 +67,6 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
                  int frame_id,
                  const blink::MessagePortChannel& port);
 
-  // Returns true if any clients live in a different process from this worker.
-  bool ServesExternalClient();
-
   void BindDevToolsAgent(blink::mojom::DevToolsAgentAssociatedRequest request);
 
   SharedWorkerInstance* instance() { return instance_.get(); }
