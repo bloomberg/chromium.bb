@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_messages.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -211,7 +212,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnIntrinsicSizingInfoOfChildChanged(
       blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
-  void OnViewChanged(const viz::FrameSinkId& frame_sink_id);
+  void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnDidSetActiveSandboxFlags(blink::WebSandboxFlags active_sandbox_flags);
