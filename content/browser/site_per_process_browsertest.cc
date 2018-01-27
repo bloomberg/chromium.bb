@@ -8785,6 +8785,72 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
   EXPECT_EQ("my_token=my_value\n", body);
 }
 
+// Tests that POST method and body is not lost when an OOPIF submits a form
+// that targets the main frame.  See https://crbug.com/806215.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PostTargetsMainFrameFromOOPIF) {
+  // Navigate to a page with an OOPIF.
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // The main frame and the subframe live on different processes.
+  EXPECT_EQ(1u, root->child_count());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Make a form submission from the subframe and target its parent frame.
+  GURL form_url(embedded_test_server()->GetURL("/echoall"));
+  TestNavigationObserver form_post_observer(web_contents());
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), R"(
+    var form = document.createElement('form');
+
+    // POST form submission to /echoall.
+    form.setAttribute("method", "POST");
+    form.setAttribute("action", ")" + form_url.spec() + R"(");
+
+    // Target the parent.
+    form.setAttribute("target", "_parent");
+
+    // Add some POST data: "my_token=my_value";
+    var input = document.createElement("input");
+    input.setAttribute("type", "hidden");
+    input.setAttribute("name", "my_token");
+    input.setAttribute("value", "my_value");
+    form.appendChild(input);
+
+    // Submit the form.
+    document.body.appendChild(form);
+    form.submit();
+  )"));
+  form_post_observer.Wait();
+
+  // Verify that the FrameNavigationEntry's method is POST.
+  NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
+      web_contents()->GetController().GetLastCommittedEntry());
+  EXPECT_EQ("POST", entry->root_node()->frame_entry->method());
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(root, R"(
+    var body = document.getElementsByTagName('pre')[0].innerText;
+    window.domAutomationController.send(body);)", &body));
+  EXPECT_EQ("my_token=my_value\n", body);
+
+  // Reload the main frame and ensure the POST body is preserved.  This checks
+  // that the POST body was saved in the FrameNavigationEntry.
+  web_contents()->GetController().Reload(ReloadType::NORMAL,
+                                         false /* check_for_repost */);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  body = "";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(root, R"(
+    var body = document.getElementsByTagName('pre')[0].innerText;
+    window.domAutomationController.send(body);)", &body));
+  EXPECT_EQ("my_token=my_value\n", body);
+}
+
 // Verify that a remote-to-local main frame navigation doesn't overwrite
 // the previous history entry.  See https://crbug.com/725716.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
