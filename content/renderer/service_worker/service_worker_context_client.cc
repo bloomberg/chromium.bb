@@ -28,10 +28,10 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/worker_thread.h"
+#include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -1268,14 +1268,14 @@ std::unique_ptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
-  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter =
+  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
       RenderThreadImpl::current()
           ->blink_platform_impl()
-          ->CreateDefaultURLLoaderFactoryGetter();
-  DCHECK(url_loader_factory_getter);
+          ->CreateDefaultURLLoaderFactoryBundle();
+  DCHECK(url_loader_factory_bundle);
   // Blink is responsible for deleting the returned object.
   return std::make_unique<ServiceWorkerFetchContextImpl>(
-      script_url_, url_loader_factory_getter->GetClonedInfo(),
+      script_url_, url_loader_factory_bundle->Clone(),
       provider_context_->provider_id(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker));

@@ -32,7 +32,6 @@ struct ResourceResponseInfo;
 
 namespace content {
 
-class ChildURLLoaderFactoryGetter;
 class ResourceDispatcher;
 
 // PlzNavigate: Used to override parameters of the navigation request.
@@ -57,9 +56,8 @@ struct CONTENT_EXPORT StreamOverrideParameters {
 class CONTENT_EXPORT WebURLLoaderFactoryImpl
     : public blink::WebURLLoaderFactory {
  public:
-  WebURLLoaderFactoryImpl(
-      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
-      scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter);
+  WebURLLoaderFactoryImpl(base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+                          scoped_refptr<SharedURLLoaderFactory> loader_factory);
   ~WebURLLoaderFactoryImpl() override;
 
   // Creates a test-only factory which can be used only for data URLs.
@@ -71,7 +69,7 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
 
  private:
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
-  scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryImpl);
 };
 

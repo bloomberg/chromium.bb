@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_request_util.h"

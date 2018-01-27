@@ -62,7 +62,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
-#include "content/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
@@ -80,7 +80,6 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
@@ -763,11 +762,8 @@ void RecordSuffixedRendererMemoryMetrics(
 class RenderFrameImpl::FrameURLLoaderFactory
     : public blink::WebURLLoaderFactory {
  public:
-  FrameURLLoaderFactory(
-      base::WeakPtr<RenderFrameImpl> frame,
-      scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter)
-      : frame_(std::move(frame)),
-        loader_factory_getter_(std::move(loader_factory_getter)) {}
+  explicit FrameURLLoaderFactory(base::WeakPtr<RenderFrameImpl> frame)
+      : frame_(std::move(frame)) {}
 
   ~FrameURLLoaderFactory() override = default;
 
@@ -778,18 +774,6 @@ class RenderFrameImpl::FrameURLLoaderFactory
     DCHECK(frame_);
     frame_->UpdatePeakMemoryStats();
 
-    scoped_refptr<SharedURLLoaderFactory> factory;
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      factory = frame_->GetSubresourceLoaderFactories();
-    } else {
-      // TODO(crbug.com/796425): Temporarily wrap the raw
-      // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
-      factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-          frame_->GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(
-              request.Url(), frame_->custom_url_loader_factory()));
-    }
-    DCHECK(factory);
-
     mojom::KeepAliveHandlePtr keep_alive_handle;
     if (base::FeatureList::IsEnabled(
             features::kKeepAliveRendererForKeepaliveRequests) &&
@@ -799,14 +783,12 @@ class RenderFrameImpl::FrameURLLoaderFactory
     }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
-        std::move(task_runner),
-
-        std::move(factory), std::move(keep_alive_handle));
+        std::move(task_runner), frame_->GetLoaderFactoryBundle(),
+        std::move(keep_alive_handle));
   }
 
  private:
   base::WeakPtr<RenderFrameImpl> frame_;
-  scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameURLLoaderFactory);
 };
@@ -3140,17 +3122,7 @@ void RenderFrameImpl::CommitNavigation(
          !base::FeatureList::IsEnabled(features::kNetworkService) ||
          subresource_loader_factories);
 
-  if (subresource_loader_factories) {
-    subresource_loader_factories_ =
-        base::MakeRefCounted<URLLoaderFactoryBundle>(
-            std::move(subresource_loader_factories));
-  }
-
-  // If the Network Service is enabled, by this point the frame should always
-  // have subresource loader factories, even if they're from a previous (but
-  // same-document) commit.
-  DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService) ||
-         subresource_loader_factories_);
+  SetupLoaderFactoryBundle(std::move(subresource_loader_factories));
 
   // Used to determine whether this frame is actually loading a request as part
   // of a history navigation.
@@ -3307,11 +3279,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   GetContentClient()->SetActiveURL(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  if (subresource_loader_factories) {
-    subresource_loader_factories_ =
-        base::MakeRefCounted<URLLoaderFactoryBundle>(
-            std::move(subresource_loader_factories));
-  }
+  SetupLoaderFactoryBundle(std::move(subresource_loader_factories));
 
   pending_navigation_params_.reset(
       new NavigationParams(common_params, request_params));
@@ -3411,8 +3379,9 @@ void RenderFrameImpl::CommitFailedNavigation(
 
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) {
-  DCHECK(subresource_loader_factories_);
-  subresource_loader_factories_->Update(std::move(subresource_loaders));
+  DCHECK(loader_factories_);
+  static_cast<URLLoaderFactoryBundle*>(loader_factories_.get())
+      ->Update(std::move(subresource_loaders));
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
@@ -3537,14 +3506,10 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
-  ChildURLLoaderFactoryGetter* url_loader_factory_getter =
-      GetDefaultURLLoaderFactoryGetter();
-  DCHECK(url_loader_factory_getter);
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       std::make_unique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
-          std::move(container_host_ptr_info),
-          url_loader_factory_getter->GetClonedInfo(),
+          std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
           GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
               URLLoaderThrottleProviderType::kWorker));
 
@@ -4074,11 +4039,18 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     return;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  scoped_refptr<SharedURLLoaderFactory> direct_network_loader_factory;
+  if (render_thread) {
+    direct_network_loader_factory =
+        base::MakeRefCounted<PossiblyAssociatedWrapperSharedURLLoaderFactory>(
+            render_thread->blink_platform_impl()
+                ->CreateNetworkURLLoaderFactory());
+  }
   document_loader->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
           routing_id_, navigation_state->request_params(), frame_,
           content_initiated, std::move(controller_service_worker_info_),
-          render_thread ? GetDefaultURLLoaderFactoryGetter() : nullptr));
+          std::move(direct_network_loader_factory)));
 }
 
 void RenderFrameImpl::DidStartProvisionalLoad(
@@ -6494,19 +6466,39 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
   return request;
 }
 
-URLLoaderFactoryBundle* RenderFrameImpl::GetSubresourceLoaderFactories() {
-  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
-  if (!subresource_loader_factories_) {
+ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
+  if (!loader_factories_) {
     RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
         frame_->Parent() ? frame_->Parent() : frame_->Opener());
-    DCHECK(creator);
-    auto bundle_info =
-        base::WrapUnique(static_cast<URLLoaderFactoryBundleInfo*>(
-            creator->GetSubresourceLoaderFactories()->Clone().release()));
-    subresource_loader_factories_ =
-        base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(bundle_info));
+    if (creator) {
+      auto bundle_info =
+          base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+              creator->GetLoaderFactoryBundle()->Clone().release()));
+      loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
+          std::move(bundle_info));
+    } else {
+      SetupLoaderFactoryBundle(nullptr);
+    }
   }
-  return subresource_loader_factories_.get();
+  return loader_factories_.get();
+}
+
+void RenderFrameImpl::SetupLoaderFactoryBundle(
+    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+
+  // In some tests |render_thread| could be null.
+  if (render_thread) {
+    loader_factories_ = render_thread->blink_platform_impl()
+                            ->CreateDefaultURLLoaderFactoryBundle();
+  } else {
+    loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
+  }
+
+  if (info) {
+    static_cast<URLLoaderFactoryBundle*>(loader_factories_.get())
+        ->Update(std::move(info));
+  }
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
@@ -6577,14 +6569,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 
 void RenderFrameImpl::SetCustomURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtr factory) {
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    // When the network service is enabled, all subresource loads go through
-    // a factory from |subresource_loader_factories|. In this case we simply
-    // replace the existing default factory within the bundle.
-    GetSubresourceLoaderFactories()->SetDefaultFactory(std::move(factory));
-  } else {
-    custom_url_loader_factory_ = std::move(factory);
-  }
+  GetLoaderFactoryBundle()->SetDefaultFactory(std::move(factory));
 }
 
 void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
@@ -7051,8 +7036,7 @@ RenderFrameImpl::CreateURLLoaderFactory() {
     // use the platform's default WebURLLoaderFactoryImpl for them.
     return WebURLLoaderFactoryImpl::CreateTestOnlyFactory();
   }
-  return std::make_unique<FrameURLLoaderFactory>(
-      weak_factory_.GetWeakPtr(), GetDefaultURLLoaderFactoryGetter());
+  return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {
@@ -7085,28 +7069,13 @@ int RenderFrameImpl::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
-ChildURLLoaderFactoryGetter*
-RenderFrameImpl::GetDefaultURLLoaderFactoryGetter() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread);
-  if (!url_loader_factory_getter_) {
-    url_loader_factory_getter_ = render_thread->blink_platform_impl()
-                                     ->CreateDefaultURLLoaderFactoryGetter();
-  }
-  return url_loader_factory_getter_.get();
-}
-
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }
 
 network::mojom::URLLoaderFactory* RenderFrameImpl::GetURLLoaderFactory(
     const GURL& request_url) {
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    return GetSubresourceLoaderFactories()->GetFactoryForRequest(request_url);
-  }
-
-  return GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(request_url);
+  return GetLoaderFactoryBundle()->GetFactoryForURL(request_url);
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

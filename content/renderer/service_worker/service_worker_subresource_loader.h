@@ -23,7 +23,7 @@
 
 namespace content {
 
-class ChildURLLoaderFactoryGetter;
+class SharedURLLoaderFactory;
 class ControllerServiceWorkerConnector;
 
 // S13nServiceWorker:
@@ -47,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
+      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -130,7 +130,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   network::ResourceRequest resource_request_;
 
   // For network fallback.
-  scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter_;
+  scoped_refptr<SharedURLLoaderFactory> default_loader_factory_;
 
   enum class Status {
     kNotStarted,
@@ -154,11 +154,11 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
  public:
   // |controller_connector_| is used to get a connection to the controller
   // ServiceWorker.
-  // |default_loader_factory_getter| is used to get the associated loading
-  // context's default URLLoaderFactory for network fallback.
+  // |default_loader_factory| is used to get the associated loading context's
+  // default URLLoaderFactory for network fallback.
   ServiceWorkerSubresourceLoaderFactory(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
+      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -178,7 +178,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
   // Contains a set of default loader factories for the associated loading
   // context. Used to load a blob, and for network fallback.
-  scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter_;
+  scoped_refptr<SharedURLLoaderFactory> default_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };

@@ -33,7 +33,7 @@ class URLLoaderFactory;
 
 struct RequestNavigationParams;
 class ServiceWorkerProviderContext;
-class ChildURLLoaderFactoryGetter;
+class SharedURLLoaderFactory;
 class ThreadSafeSender;
 
 // ServiceWorkerNetworkProvider enables the browser process to recognize
@@ -60,11 +60,10 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // For S13nServiceWorker:
   // |controller_info| contains the endpoint and object info that is needed to
   // set up the controller service worker for the client.
-  // |default_loader_factory_getter| contains a set of default loader
-  // factories for the associated loading context, and is used when we
-  // create a subresource loader for controllees. This is non-null only
-  // if the provider is created for controllees, and if the loading context,
-  // e.g. a frame, provides the loading factory getter for default loaders.
+  // |default_loader_factory| is a default loader factory for network requests,
+  // and is used when we create a subresource loader for controllees. This is
+  // non-null only if the provider is created for controllees, and if the
+  // loading context, e.g. a frame, provides it.
   static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateForNavigation(
       int route_id,
@@ -72,11 +71,11 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::WebLocalFrame* frame,
       bool content_initiated,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
+      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
-  // TODO(kinuko): This should also take ChildURLLoaderFactoryGetter associated
+  // TODO(kinuko): This should also take SharedURLLoaderFactory associated
   // with the SharedWorker.
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker();
 
@@ -114,14 +113,14 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   //
   // For S13nServiceWorker:
   // See the comment at CreateForNavigation() for |controller_info| and
-  // |default_loader_factory_getter|.
+  // |default_loader_factory|.
   ServiceWorkerNetworkProvider(
       int route_id,
       blink::mojom::ServiceWorkerProviderType type,
       int provider_id,
       bool is_parent_frame_secure,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
+      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
 
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(

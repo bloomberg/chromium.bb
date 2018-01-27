@@ -39,7 +39,6 @@
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
@@ -52,6 +51,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/input/input_target_client_impl.h"
+#include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/media/media_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -148,7 +148,6 @@ namespace content {
 
 class AssociatedInterfaceProviderImpl;
 class BlinkInterfaceRegistryImpl;
-class ChildURLLoaderFactoryGetter;
 class CompositorDependencies;
 class DocumentState;
 class ExternalPopupMenu;
@@ -872,12 +871,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
   void DidChangeVisibleViewport();
 
-  // Returns non-null.
-  // It is invalid to call this in an incomplete env where
-  // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
-  // TODO(kinuko) We can remove this when network service is the only path.
-  ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter();
-
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
@@ -1113,13 +1106,16 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& body_url,
       bool is_same_document_navigation);
 
-  // Returns a URLLoaderFactoryBundle which can be used to request subresources
-  // for this frame. Only valid to call when the Network Service is enabled.
-  // For frames with committed navigations, this bundle is provided by the
-  // browser at navigation time. For any other frames (i.e. frames on the
-  // initial about:blank Document), the bundle returned here is lazily cloned
-  // from the parent or opener's own bundle.
-  URLLoaderFactoryBundle* GetSubresourceLoaderFactories();
+  // Returns a ChildURLLoaderFactoryBundle which can be used to request
+  // subresources for this frame.
+  // For frames with committed navigations, this bundle is created with the
+  // factories provided by the browser at navigation time. For any other frames
+  // (i.e. frames on the initial about:blank Document), the bundle returned here
+  // is lazily cloned from the parent or opener's own bundle.
+  ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle();
+
+  void SetupLoaderFactoryBundle(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> info);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1277,10 +1273,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type);
-
-  network::mojom::URLLoaderFactory* custom_url_loader_factory() {
-    return custom_url_loader_factory_.get();
-  }
 
   // Updates the Zoom level of the render view to match current content.
   void UpdateZoomLevel();
@@ -1597,22 +1589,14 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
 
-  // This frame might be given a custom default URLLoaderFactory (e.g.
-  // for AppCache).
-  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
-      custom_url_loader_factory_;
-
   // Non-null if this frame is to be controlled by a service worker.
   // Sent from the browser process on navigation commit. Valid until the
   // document loader for this frame is actually created (where this is
   // consumed to initialize a subresource loader).
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info_;
 
-  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
-
-  // URLLoaderFactory instances used for subresource loading when the Network
-  // Service is enabled.
-  scoped_refptr<URLLoaderFactoryBundle> subresource_loader_factories_;
+  // URLLoaderFactory instances used for subresource loading.
+  scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;

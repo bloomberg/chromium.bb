@@ -14,11 +14,11 @@
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/test/test_url_loader_client.h"
-#include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -280,9 +280,8 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(features::kNetworkService);
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
     fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
-    loader_factory_getter_ =
-        base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
-            std::move(fake_loader_factory), nullptr);
+    loader_factory_ = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+        std::move(fake_loader_factory));
   }
 
   void StartRequest(network::mojom::URLLoaderFactory* factory,
@@ -318,7 +317,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   // S13nServiceWorker:
   base::test::ScopedFeatureList scoped_feature_list_;
   FakeURLLoaderFactory fake_loader_factory_;
-  scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };
@@ -392,7 +391,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), nullptr /* host_ptr_info */,
-        nullptr /* controller_info */, nullptr /* loader_factory_getter */);
+        nullptr /* controller_info */, nullptr /* loader_factory*/);
 
     ipc_sink()->ClearMessages();
     auto info = mojom::ControllerServiceWorkerInfo::New();
@@ -435,7 +434,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
         std::move(container_request), std::move(host_ptr_info),
-        nullptr /* controller_info */, nullptr /* loader_factory_getter */);
+        nullptr /* controller_info */, nullptr /* loader_factory*/);
     auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
         thread_safe_sender(), provider_context.get());
     auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
@@ -470,7 +469,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
-      nullptr /* controller_info */, nullptr /* loader_factory_getter */);
+      nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
@@ -519,7 +518,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), nullptr /* host_ptr_info */,
-      std::move(controller_info1), loader_factory_getter_);
+      std::move(controller_info1), loader_factory_);
   ipc_sink()->ClearMessages();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0UL, ipc_sink()->message_count());
@@ -651,7 +650,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
-      nullptr /* controller_info */, nullptr /* loader_factory_getter */);
+      nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
@@ -683,7 +682,7 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
-      nullptr /* controller_info */, nullptr /* loader_factory_getter */);
+      nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
@@ -772,8 +771,7 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
-      nullptr, nullptr /* controller_info */,
-      nullptr /* loader_factory_getter */);
+      nullptr, nullptr /* controller_info */, nullptr /* loader_factory*/);
 
   auto active_host = std::make_unique<MockServiceWorkerObjectHost>(
       100 /* handle_id */, 200 /* version_id */);

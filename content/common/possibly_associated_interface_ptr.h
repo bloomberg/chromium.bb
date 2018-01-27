@@ -19,6 +19,9 @@ namespace content {
 template <typename T>
 class PossiblyAssociatedInterfacePtr final {
  public:
+  using InterfaceType = T;
+  using PtrInfoType = PossiblyAssociatedInterfacePtrInfo<T>;
+
   PossiblyAssociatedInterfacePtr() {}
   PossiblyAssociatedInterfacePtr(std::nullptr_t) {}
   PossiblyAssociatedInterfacePtr(mojo::InterfacePtr<T> independent_ptr)

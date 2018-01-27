@@ -12,7 +12,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
@@ -156,7 +156,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     blink::WebLocalFrame* frame,
     bool content_initiated,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
-    scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter) {
+    scoped_refptr<SharedURLLoaderFactory> default_loader_factory) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   bool should_create_provider_for_window = false;
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;
@@ -194,8 +194,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
       network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
           route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
           GetNextProviderId(), is_parent_frame_secure,
-          std::move(controller_info),
-          std::move(default_loader_factory_getter)));
+          std::move(controller_info), std::move(default_loader_factory)));
     } else {
       CHECK(browser_side_navigation);
       DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
@@ -203,8 +202,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
       network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
           route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
           service_worker_provider_id, is_parent_frame_secure,
-          std::move(controller_info),
-          std::move(default_loader_factory_getter)));
+          std::move(controller_info), std::move(default_loader_factory)));
     }
   } else {
     network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
@@ -216,14 +214,14 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForSharedWorker() {
-  // TODO(kinuko): Provide ChildURLLoaderFactoryGetter associated with
-  // the SharedWorker.
+  // TODO(kinuko): Provide SharedURLLoaderFactory associated with the
+  // SharedWorker.
   return base::WrapUnique(new ServiceWorkerNetworkProvider(
       MSG_ROUTING_NONE,
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       GetNextProviderId(), true /* is_parent_frame_secure */,
       nullptr /* controller_service_worker */,
-      nullptr /* default_loader_factory_getter */));
+      nullptr /* default_loader_factory*/));
 }
 
 // static
@@ -275,7 +273,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int browser_provider_id,
     bool is_parent_frame_secure,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
-    scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter) {
+    scoped_refptr<SharedURLLoaderFactory> default_loader_factory) {
   if (browser_provider_id == kInvalidServiceWorkerProviderId)
     return;
 
@@ -302,7 +300,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
-        default_loader_factory_getter);
+        std::move(default_loader_factory));
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_);
     dispatcher_host_->OnProviderCreated(std::move(host_info));
@@ -310,7 +308,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
-        default_loader_factory_getter);
+        std::move(default_loader_factory));
   }
 }
 

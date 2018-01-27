@@ -17,12 +17,11 @@ namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const GURL& worker_script_url,
-    ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info,
+    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
     int service_worker_provider_id,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
     : worker_script_url_(worker_script_url),
-      url_loader_factory_getter_info_(
-          std::move(url_loader_factory_getter_info)),
+      url_loader_factory_info_(std::move(url_loader_factory_info)),
       service_worker_provider_id_(service_worker_provider_id),
       throttle_provider_(std::move(throttle_provider)) {}
 
@@ -31,15 +30,15 @@ ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
 
-  url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
+  url_loader_factory_ =
+      SharedURLLoaderFactory::Create(std::move(url_loader_factory_info_));
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 ServiceWorkerFetchContextImpl::CreateURLLoaderFactory() {
-  DCHECK(url_loader_factory_getter_);
+  DCHECK(url_loader_factory_);
   return std::make_unique<content::WebURLLoaderFactoryImpl>(
-      resource_dispatcher_->GetWeakPtr(),
-      std::move(url_loader_factory_getter_));
+      resource_dispatcher_->GetWeakPtr(), std::move(url_loader_factory_));
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(
