@@ -225,20 +225,6 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
   return tmpl;
 }
 
-// CreateFunctionHandler installs a CallAsFunction handler on the given
-// object template that forwards to a provided C++ function or base::Callback.
-template <typename Sig>
-void CreateFunctionHandler(v8::Isolate* isolate,
-                           v8::Local<v8::ObjectTemplate> tmpl,
-                           base::RepeatingCallback<Sig> callback,
-                           int callback_flags = 0) {
-  typedef internal::CallbackHolder<Sig> HolderT;
-  HolderT* holder = new HolderT(isolate, std::move(callback), callback_flags);
-  tmpl->SetCallAsFunctionHandler(&internal::Dispatcher<Sig>::DispatchToCallback,
-                                 ConvertToV8<v8::Local<v8::External> >(
-                                     isolate, holder->GetHandle(isolate)));
-}
-
 }  // namespace gin
 
 #endif  // GIN_FUNCTION_TEMPLATE_H_
