@@ -36,6 +36,7 @@ void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
       host->ConvertDIPToScreenInPixels(&point);
       event.xmotion.x_root = point.x();
       event.xmotion.y_root = point.y();
+      break;
     }
     default:
       break;

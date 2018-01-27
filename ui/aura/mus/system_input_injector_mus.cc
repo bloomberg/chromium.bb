@@ -76,6 +76,7 @@ void SystemInputInjectorMus::InjectMouseButton(ui::EventFlags button,
       break;
     case ui::EF_MIDDLE_MOUSE_BUTTON:
       modifier = ui::MODIFIER_MIDDLE_MOUSE_BUTTON;
+      break;
     default:
       LOG(WARNING) << "Invalid flag: " << button << " for the button parameter";
       return;
