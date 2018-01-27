@@ -32,7 +32,6 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
 
   CSSUnparsedValue* fallback() { return fallback_.Get(); }
   const CSSUnparsedValue* fallback() const { return fallback_.Get(); }
-  void setFallback(CSSUnparsedValue* value) { fallback_ = value; }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(fallback_);

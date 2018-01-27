@@ -4,7 +4,5 @@ FAIL Updating CSSVariableReferenceValue.variable to an invalid variable name thr
 PASS CSSVariableReferenceValue can be constructed with no fallback
 PASS CSSVariableReferenceValue can be constructed with fallback
 PASS CSSVariableReferenceValue.variable can updated to a valid variable name
-PASS CSSVariableReferenceValue.fallback can updated to null
-PASS CSSVariableReferenceValue.fallback can updated to a CSSUnparsedValue
 Harness: the test ran to completion.
 
