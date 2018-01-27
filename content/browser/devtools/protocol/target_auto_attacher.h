@@ -61,6 +61,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   bool auto_attach_;
   bool wait_for_debugger_on_start_;
   bool attach_to_frames_;
+  bool auto_attaching_service_workers_ = false;
 
   Hosts auto_attached_hosts_;
 
