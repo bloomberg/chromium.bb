@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -51,6 +52,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -229,6 +232,20 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       !password_.empty() && profiles::IsLockAvailable(profile_)) {
     LocalAuth::SetLocalAuthCredentials(profile_, password_);
   }
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  if (!password_.empty()) {
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        PasswordStoreFactory::GetForProfile(profile_,
+                                            ServiceAccessType::EXPLICIT_ACCESS);
+    if (password_store) {
+      password_store->SaveSyncPasswordHash(base::UTF8ToUTF16(password_));
+      password_manager::metrics_util::LogSyncPasswordHashChange(
+          password_manager::metrics_util::SyncPasswordHashChange::
+              SAVED_ON_CHROME_SIGNIN);
+    }
+  }
+#endif
 
   if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
       reason == signin_metrics::Reason::REASON_UNLOCK ||
