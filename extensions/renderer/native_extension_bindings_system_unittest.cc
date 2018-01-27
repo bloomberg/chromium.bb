@@ -240,17 +240,21 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   EXPECT_TRUE(first_idle_object->IsObject());
 
   DisposeContext(context);
+  {
+    // Despite disposal, the context has been kept alive via the Local above.
+    v8::Context::Scope context_scope(context);
 
-  // Check an API that was instantiated....
-  v8::Local<v8::Value> second_idle_object =
-      V8ValueFromScriptSource(context, "chrome.idle");
-  ASSERT_FALSE(second_idle_object.IsEmpty());
-  EXPECT_TRUE(second_idle_object->IsUndefined());
-  // ... and also one that wasn't.
-  v8::Local<v8::Value> power_object =
-      V8ValueFromScriptSource(context, "chrome.power");
-  ASSERT_FALSE(power_object.IsEmpty());
-  EXPECT_TRUE(power_object->IsUndefined());
+    // Check an API that was instantiated....
+    v8::Local<v8::Value> second_idle_object =
+        V8ValueFromScriptSource(context, "chrome.idle");
+    ASSERT_FALSE(second_idle_object.IsEmpty());
+    EXPECT_TRUE(second_idle_object->IsUndefined());
+    // ... and also one that wasn't.
+    v8::Local<v8::Value> power_object =
+        V8ValueFromScriptSource(context, "chrome.power");
+    ASSERT_FALSE(power_object.IsEmpty());
+    EXPECT_TRUE(power_object->IsUndefined());
+  }
 }
 
 // Tests that traditional custom bindings can be used with the native bindings

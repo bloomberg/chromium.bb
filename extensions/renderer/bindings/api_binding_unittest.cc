@@ -763,8 +763,8 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
              false);
   ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']",
              false);
-  DisposeContext(context_a);
-  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']",
+  DisposeContext(context_b);
+  ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']",
              false);
 }
 

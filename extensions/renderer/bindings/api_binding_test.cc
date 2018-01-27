@@ -111,6 +111,7 @@ v8::Local<v8::Context> APIBindingTest::MainContext() {
 
 void APIBindingTest::DisposeContext(v8::Local<v8::Context> context) {
   if (main_context_holder_ && context == main_context_holder_->context()) {
+    context->Exit();
     OnWillDisposeContext(context);
     main_context_holder_.reset();
     return;
