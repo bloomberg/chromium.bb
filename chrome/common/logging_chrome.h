@@ -66,7 +66,7 @@ bool DialogsAreSuppressed();
 // "_yymmdd-hhmmss".
 base::FilePath GenerateTimestampedName(const base::FilePath& base_path,
                                        base::Time timestamp);
-#endif
+#endif  // OS_CHROMEOS
 }  // namespace logging
 
 #endif  // CHROME_COMMON_LOGGING_CHROME_H_

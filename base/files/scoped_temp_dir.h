@@ -5,11 +5,13 @@
 #ifndef BASE_FILES_SCOPED_TEMP_DIR_H_
 #define BASE_FILES_SCOPED_TEMP_DIR_H_
 
-// An object representing a temporary / scratch directory that should be cleaned
-// up (recursively) when this object goes out of scope.  Note that since
-// deletion occurs during the destructor, no further error handling is possible
-// if the directory fails to be deleted.  As a result, deletion is not
-// guaranteed by this class.
+// An object representing a temporary / scratch directory that should be
+// cleaned up (recursively) when this object goes out of scope.  Since deletion
+// occurs during the destructor, no further error handling is possible if the
+// directory fails to be deleted.  As a result, deletion is not guaranteed by
+// this class.  (However note that, whenever possible, by default
+// CreateUniqueTempDir creates the directory in a location that is
+// automatically cleaned up on reboot, or at other appropriate times.)
 //
 // Multiple calls to the methods which establish a temporary directory
 // (CreateUniqueTempDir, CreateUniqueTempDirUnderPath, and Set) must have
