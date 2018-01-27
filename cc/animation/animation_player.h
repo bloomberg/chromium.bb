@@ -14,6 +14,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/animation/element_animations.h"
 #include "cc/trees/element_id.h"
 
@@ -23,7 +24,6 @@ class AnimationDelegate;
 class AnimationEvents;
 class AnimationHost;
 class AnimationTimeline;
-class AnimationTicker;
 struct AnimationEvent;
 
 // An AnimationPlayer manages grouped sets of animations (each set of which are
@@ -37,9 +37,7 @@ struct AnimationEvent;
 // Each cc AnimationPlayer has a copy on the impl thread, and will take care of
 // synchronizing properties to/from the impl thread when requested.
 //
-// NOTE(smcgruer): As of 2017/09/06 there is a 1:1 relationship between
-// AnimationPlayer and the AnimationTicker. This is intended to become a 1:N
-// relationship to allow for grouped animations.
+// There is a 1:n relationship between AnimationPlayer and AnimationTicker.
 class CC_ANIMATION_EXPORT AnimationPlayer
     : public base::RefCounted<AnimationPlayer> {
  public:
@@ -47,7 +45,12 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   virtual scoped_refptr<AnimationPlayer> CreateImplInstance() const;
 
   int id() const { return id_; }
-  ElementId element_id() const;
+  // An AnimationPlayer is capable of handling group effects in which case each
+  // of the effects is owned by an AnimationTicker. The tickers are stored in
+  // tickers_ and indexed by TickerId.
+  typedef size_t TickerId;
+  ElementId element_id_of_ticker(TickerId ticker_id) const;
+  bool IsElementAttached(ElementId id) const;
 
   // Parent AnimationHost. AnimationPlayer can be detached from
   // AnimationTimeline.
@@ -61,26 +64,26 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   const AnimationTimeline* animation_timeline() const {
     return animation_timeline_;
   }
-  void SetAnimationTimeline(AnimationTimeline* timeline);
+  virtual void SetAnimationTimeline(AnimationTimeline* timeline);
 
-  AnimationTicker* animation_ticker() const { return animation_ticker_.get(); }
-
-  // TODO(smcgruer): Only used by a ui/ unittest: remove.
-  bool has_any_animation() const;
-
-  scoped_refptr<ElementAnimations> element_animations() const;
+  bool has_element_animations() const;
+  scoped_refptr<ElementAnimations> element_animations(TickerId ticker_id) const;
 
   void set_animation_delegate(AnimationDelegate* delegate) {
     animation_delegate_ = delegate;
   }
 
-  void AttachElement(ElementId element_id);
-  void DetachElement();
+  void AttachElementForTicker(ElementId element_id, TickerId ticker_id);
+  void DetachElementForTicker(ElementId element_id, TickerId ticker_id);
+  virtual void DetachElement();
 
-  void AddAnimation(std::unique_ptr<Animation> animation);
-  void PauseAnimation(int animation_id, double time_offset);
-  void RemoveAnimation(int animation_id);
-  void AbortAnimation(int animation_id);
+  void AddAnimationForTicker(std::unique_ptr<Animation> animation,
+                             TickerId ticker_id);
+  void PauseAnimationForTicker(int animation_id,
+                               double time_offset,
+                               TickerId ticker_id);
+  void RemoveAnimationForTicker(int animation_id, TickerId ticker_id);
+  void AbortAnimationForTicker(int animation_id, TickerId ticker_id);
   void AbortAnimations(TargetProperty::Type target_property,
                        bool needs_completion);
 
@@ -97,8 +100,6 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void NotifyAnimationFinished(const AnimationEvent& event);
   void NotifyAnimationAborted(const AnimationEvent& event);
   void NotifyAnimationTakeover(const AnimationEvent& event);
-  bool NotifyAnimationFinishedForTesting(TargetProperty::Type target_property,
-                                         int group_id);
   size_t TickingAnimationsCount() const;
 
   void SetNeedsPushProperties();
@@ -110,19 +111,33 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   // Returns the animation animating the given property that is either
   // running, or is next to run, if such an animation exists.
-  Animation* GetAnimation(TargetProperty::Type target_property) const;
+  Animation* GetAnimationForTicker(TargetProperty::Type target_property,
+                                   TickerId ticker_id) const;
 
   std::string ToString() const;
 
   void SetNeedsCommit();
 
   virtual bool IsWorkletAnimationPlayer() const;
+  void AddTicker(std::unique_ptr<AnimationTicker>);
+
+  AnimationTicker* GetTickerById(TickerId ticker_id) const;
+  TickerId NextTickerId() { return tickers_.size(); }
 
  private:
   friend class base::RefCounted<AnimationPlayer>;
 
-  void RegisterPlayer();
-  void UnregisterPlayer();
+  void RegisterTicker(ElementId element_id, TickerId ticker_id);
+  void UnregisterTicker(ElementId element_id, TickerId ticker_id);
+  void RegisterTickers();
+  void UnregisterTickers();
+
+  void PushAttachedTickersToImplThread(AnimationPlayer* player) const;
+  void PushPropertiesToImplThread(AnimationPlayer* player);
+
+ protected:
+  explicit AnimationPlayer(int id);
+  virtual ~AnimationPlayer();
 
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;
@@ -130,11 +145,16 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   int id_;
 
- protected:
-  explicit AnimationPlayer(int id);
-  virtual ~AnimationPlayer();
+  using ElementToTickerIdMap = std::
+      unordered_map<ElementId, std::unordered_set<TickerId>, ElementIdHash>;
+  using Tickers = std::vector<std::unique_ptr<AnimationTicker>>;
 
-  std::unique_ptr<AnimationTicker> animation_ticker_;
+  // It is possible for a ticker to be in tickers_ but not in
+  // element_to_ticker_id_map_ but the reverse is not possible.
+  ElementToTickerIdMap element_to_ticker_id_map_;
+  Tickers tickers_;
+
+  int ticking_tickers_count;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
 };
