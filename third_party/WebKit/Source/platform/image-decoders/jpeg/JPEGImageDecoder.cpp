@@ -530,7 +530,7 @@ class JPEGImageReader final {
           return true;
         }
       }
-      // FALL THROUGH
+      FALLTHROUGH;
       case JPEG_START_DECOMPRESS:
         // Set parameters for decompression.
         // FIXME -- Should reset dct_method and dither mode for final pass
@@ -559,7 +559,7 @@ class JPEGImageReader final {
         // If this is a progressive JPEG ...
         state_ = (info_.buffered_image) ? JPEG_DECOMPRESS_PROGRESSIVE
                                         : JPEG_DECOMPRESS_SEQUENTIAL;
-      // FALL THROUGH
+        FALLTHROUGH;
 
       case JPEG_DECOMPRESS_SEQUENTIAL:
         if (state_ == JPEG_DECOMPRESS_SEQUENTIAL) {
@@ -570,7 +570,7 @@ class JPEGImageReader final {
           DCHECK_EQ(info_.output_scanline, info_.output_height);
           state_ = JPEG_DONE;
         }
-      // FALL THROUGH
+        FALLTHROUGH;
 
       case JPEG_DECOMPRESS_PROGRESSIVE:
         if (state_ == JPEG_DECOMPRESS_PROGRESSIVE) {
@@ -626,7 +626,7 @@ class JPEGImageReader final {
 
           state_ = JPEG_DONE;
         }
-      // FALL THROUGH
+        FALLTHROUGH;
 
       case JPEG_DONE:
         // Finish decompression.

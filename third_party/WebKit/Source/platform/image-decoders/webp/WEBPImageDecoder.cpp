@@ -547,7 +547,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
         ApplyPostProcessing(frame_index);
         return false;
       }
-    // FALLTHROUGH
+      FALLTHROUGH;
     default:
       Clear();
       return SetFailed();
