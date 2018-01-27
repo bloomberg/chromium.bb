@@ -40,7 +40,7 @@ int TextDecorationOffsetBase::ComputeUnderlineOffset(
   switch (underline_position) {
     default:
       NOTREACHED();
-    // Fall through.
+      FALLTHROUGH;
     case ResolvedUnderlinePosition::kRoman:
       return ComputeUnderlineOffsetForRoman(font_metrics,
                                             text_decoration_thickness);
