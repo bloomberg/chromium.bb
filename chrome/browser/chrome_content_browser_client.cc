@@ -1078,7 +1078,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   // The audio manager outlives the host, so it's safe to hand a raw pointer to
   // it to the AudioDebugRecordingsHandler, which is owned by the host.
   AudioDebugRecordingsHandler* audio_debug_recordings_handler =
-      new AudioDebugRecordingsHandler(profile, media::AudioManager::Get());
+      new AudioDebugRecordingsHandler(profile);
   host->SetUserData(
       AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey,
       base::MakeUnique<base::UserDataAdapter<AudioDebugRecordingsHandler>>(

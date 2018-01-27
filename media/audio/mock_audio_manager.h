@@ -9,10 +9,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 
@@ -59,8 +61,9 @@ class MockAudioManager : public AudioManager {
       AudioLogFactory::AudioComponent component) override;
 
   void InitializeDebugRecording() override;
-  void EnableDebugRecording(const base::FilePath& base_file_name) override;
-  void DisableDebugRecording() override;
+  MOCK_METHOD1(EnableDebugRecording,
+               void(const base::FilePath& base_file_name));
+  MOCK_METHOD0(DisableDebugRecording, void());
 
   const char* GetName() override;
 

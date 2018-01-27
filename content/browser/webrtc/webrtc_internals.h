@@ -23,6 +23,10 @@
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace media {
+class AudioDebugRecordingSession;
+}
+
 namespace content {
 
 class WebContents;
@@ -218,8 +222,9 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   } selection_type_;
 
   // Diagnostic audio recording state.
-  bool audio_debug_recordings_;
   base::FilePath audio_debug_recordings_file_path_;
+  std::unique_ptr<media::AudioDebugRecordingSession>
+      audio_debug_recording_session_;
 
   // Diagnostic event log recording state.
   bool event_log_recordings_;

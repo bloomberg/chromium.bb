@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/audio_debug_recording_session.h"
 
 using content::BrowserThread;
 
@@ -52,15 +52,10 @@ base::FilePath GetLogDirectoryAndEnsureExists(
 }  // namespace
 
 AudioDebugRecordingsHandler::AudioDebugRecordingsHandler(
-    content::BrowserContext* browser_context,
-    media::AudioManager* audio_manager)
-    : browser_context_(browser_context),
-      is_audio_debug_recordings_in_progress_(false),
-      current_audio_debug_recordings_id_(0),
-      audio_manager_(audio_manager) {
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), current_audio_debug_recordings_id_(0) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context_);
-  DCHECK(audio_manager_);
 }
 
 AudioDebugRecordingsHandler::~AudioDebugRecordingsHandler() {}
@@ -102,22 +97,17 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
     const base::FilePath& log_directory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (is_audio_debug_recordings_in_progress_) {
+  if (audio_debug_recording_session_) {
     error_callback.Run("Audio debug recordings already in progress");
     return;
   }
 
-  is_audio_debug_recordings_in_progress_ = true;
   base::FilePath prefix_path = GetAudioDebugRecordingsPrefixPath(
       log_directory, ++current_audio_debug_recordings_id_);
   host->EnableAudioDebugRecordings(prefix_path);
 
-  // AudioManager is deleted on the audio thread, and the AudioManager outlives
-  // this object, which is owned by content::RenderProcessHost, so it's safe to
-  // post unretained.
-  audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&media::AudioManager::EnableDebugRecording,
-                                base::Unretained(audio_manager_), prefix_path));
+  audio_debug_recording_session_ =
+      media::AudioDebugRecordingSession::Create(prefix_path);
 
   if (delay.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;
@@ -158,21 +148,15 @@ void AudioDebugRecordingsHandler::DoStopAudioDebugRecordings(
     return;
   }
 
-  if (!is_audio_debug_recordings_in_progress_) {
+  if (!audio_debug_recording_session_) {
     error_callback.Run("No audio debug recording in progress");
     return;
   }
 
-  // AudioManager is deleted on the audio thread, and the AudioManager outlives
-  // this object, which is owned by content::RenderProcessHost, so it's safe to
-  // post unretained.
-  audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&media::AudioManager::DisableDebugRecording,
-                                base::Unretained(audio_manager_)));
+  audio_debug_recording_session_.reset();
 
   host->DisableAudioDebugRecordings();
 
-  is_audio_debug_recordings_in_progress_ = false;
   const bool is_stopped = true;
   callback.Run(prefix_path.AsUTF8Unsafe(), is_stopped, is_manual_stop);
 }
