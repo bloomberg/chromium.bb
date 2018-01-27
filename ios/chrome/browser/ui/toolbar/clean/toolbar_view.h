@@ -23,10 +23,6 @@
 // The view displaying the toolbar.
 @interface ToolbarView : UIView
 
-// Top anchor at the bottom of the safeAreaLayoutGuide. Used so views don't
-// overlap with the Status Bar.
-@property(nonatomic, strong) NSLayoutYAxisAnchor* topSafeAnchor;
-
 // The delegate used to handle frame changes.
 @property(nonatomic, weak) id<ToolbarViewFullscreenDelegate> delegate;
 

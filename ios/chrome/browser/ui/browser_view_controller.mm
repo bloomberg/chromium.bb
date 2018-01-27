@@ -704,6 +704,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Vertical offset for fullscreen toolbar.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarOffsetConstraint;
+// Height constraint for toolbar.
+@property(nonatomic, strong) NSLayoutConstraint* primaryToolbarHeightConstraint;
 // Y-dimension offset for placement of the header.
 @property(nonatomic, readonly) CGFloat headerOffset;
 // Height of the header view for the tab model's current tab.
@@ -939,6 +941,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
 @synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
+@synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
 @synthesize toolbarInterface = _toolbarInterface;
 @synthesize imageSaver = _imageSaver;
 // DialogPresenterDelegate property
@@ -1615,6 +1618,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsIPhoneX()) {
     [self setUpViewLayout:NO];
   }
+  // Update the toolbar height to account for the new top inset.
+  self.primaryToolbarHeightConstraint.constant =
+      [self primaryToolbarHeightWithInset];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  // Update the toolbar height to account for |topLayoutGuide| changes.
+  self.primaryToolbarHeightConstraint.constant =
+      [self primaryToolbarHeightWithInset];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -2011,6 +2024,31 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+// The height of the primary toolbar with the top safe area inset included.
+- (CGFloat)primaryToolbarHeightWithInset {
+  UIView* primaryToolbar = self.primaryToolbarCoordinator.viewController.view;
+  CGFloat intrinsicHeight = primaryToolbar.intrinsicContentSize.height;
+  // If the primary toolbar is not the topmost header, it does not overlap with
+  // the unsafe area.
+  // TODO(crbug.com/806437): Update implementation such that this calculates the
+  // topmost header's height.
+  UIView* topmostHeader = [self.headerViews firstObject].view;
+  if (primaryToolbar != topmostHeader)
+    return intrinsicHeight;
+  // If the primary toolbar is topmost, subtract the height of the portion of
+  // the unsafe area.
+  CGFloat unsafeHeight = 0.0;
+  if (@available(iOS 11, *)) {
+    unsafeHeight = self.view.safeAreaInsets.top;
+  } else {
+    unsafeHeight = self.topLayoutGuide.length;
+  }
+  // The topmost header is laid out |headerOffset| from the top of |view|, so
+  // subtract that from the unsafe height.
+  unsafeHeight -= self.headerOffset;
+  return primaryToolbar.intrinsicContentSize.height + unsafeHeight;
+}
+
 - (void)addConstraintsToToolbar {
   NSLayoutYAxisAnchor* topAnchor;
   // On iPad, the toolbar is underneath the tab strip.
@@ -2023,11 +2061,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [self.legacyToolbarCoordinator adjustToolbarHeight];
 
+  // Create a constraint for the vertical positioning of the toolbar.
+  UIView* primaryView = self.primaryToolbarCoordinator.viewController.view;
   self.primaryToolbarOffsetConstraint =
-      [self.primaryToolbarCoordinator.viewController.view.topAnchor
-          constraintEqualToAnchor:topAnchor];
+      [primaryView.topAnchor constraintEqualToAnchor:topAnchor];
+
+  // Create a constraint for the height of the toolbar to include the unsafe
+  // area height.
+  self.primaryToolbarHeightConstraint = [primaryView.heightAnchor
+      constraintEqualToConstant:[self primaryToolbarHeightWithInset]];
+
   [NSLayoutConstraint activateConstraints:@[
     self.primaryToolbarOffsetConstraint,
+    self.primaryToolbarHeightConstraint,
     [self.primaryToolbarCoordinator.viewController.view.leadingAnchor
         constraintEqualToAnchor:[self view].leadingAnchor],
     [self.primaryToolbarCoordinator.viewController.view.trailingAnchor

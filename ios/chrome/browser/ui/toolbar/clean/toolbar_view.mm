@@ -93,7 +93,6 @@
 @synthesize trailingFakeSafeAreaConstraint = _trailingFakeSafeAreaConstraint;
 @synthesize leadingSafeAreaConstraint = _leadingSafeAreaConstraint;
 @synthesize trailingSafeAreaConstraint = _trailingSafeAreaConstraint;
-@synthesize topSafeAnchor = _topSafeAnchor;
 @synthesize locationBarView = _locationBarView;
 @synthesize leadingMargin = _leadingMargin;
 
@@ -102,6 +101,10 @@
 - (void)setFrame:(CGRect)frame {
   [super setFrame:frame];
   [self.delegate toolbarViewFrameChanged];
+}
+
+- (CGSize)intrinsicContentSize {
+  return CGSizeMake(UIViewNoIntrinsicMetric, kToolbarHeight);
 }
 
 #pragma mark - Public
@@ -342,9 +345,6 @@
 // Sets the constraints for the different subviews.
 - (void)setConstraints {
   self.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.bottomAnchor constraintEqualToAnchor:self.topSafeAnchor
-                                    constant:kToolbarHeight]
-      .active = YES;
 
   // ProgressBar constraints.
   [NSLayoutConstraint activateConstraints:@[
