@@ -40,13 +40,6 @@ namespace blink {
 
 namespace {
 
-LocalCaretRect ComputeLocalCaretRect(const LayoutObject* layout_object,
-                                     const InlineBoxPosition box_position) {
-  return LocalCaretRect(
-      layout_object, layout_object->LocalCaretRect(box_position.inline_box,
-                                                   box_position.offset_in_box));
-}
-
 template <typename Strategy>
 LocalCaretRect LocalCaretRectOfPositionTemplate(
     const PositionWithAffinityTemplate<Strategy>& position) {
@@ -75,10 +68,13 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
         ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
     if (box_position.inline_box) {
-      return ComputeLocalCaretRect(
+      const LayoutObject* box_layout_object =
           LineLayoutAPIShim::LayoutObjectFrom(
-              box_position.inline_box->GetLineLayoutItem()),
-          box_position);
+              box_position.inline_box->GetLineLayoutItem());
+      return LocalCaretRect(
+          box_layout_object,
+          box_layout_object->LocalCaretRect(box_position.inline_box,
+                                            box_position.offset_in_box));
     }
   }
 
