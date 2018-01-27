@@ -1096,7 +1096,7 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
         OnMouseMoved(*event);
         return;
       }
-      // FALL-THROUGH
+      FALLTHROUGH;
     case ui::ET_MOUSE_DRAGGED:
       if (ProcessMouseDragged(*event))
         event->SetHandled();

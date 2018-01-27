@@ -1327,7 +1327,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     case ui::VKEY_F4:
       if (!is_combobox_)
         break;
-    // Fallthrough to accept or dismiss combobox menus on F4, like windows.
+      // Fallthrough to accept or dismiss combobox menus on F4, like windows.
+      FALLTHROUGH;
     case ui::VKEY_RETURN:
 #if defined(OS_MACOSX)
     case ui::VKEY_SPACE:
