@@ -19,6 +19,20 @@
 
 namespace content {
 
+namespace {
+
+bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
+  if (!body)
+    return true;
+  for (const auto& elem : *body->elements()) {
+    if (elem.type() == network::DataElement::TYPE_DATA_PIPE)
+      return false;
+  }
+  return true;
+}
+
+}  // namespace
+
 // This class waits for completion of a stream response from the service worker.
 // It calls ServiceWorkerURLLoader::CommitComplete() upon completion of the
 // response.
@@ -154,10 +168,25 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
     return;
   }
 
+  // ServiceWorkerFetchDispatcher requires a std::unique_ptr<ResourceRequest>
+  // so make one here.
+  // TODO(crbug.com/803125): Try to eliminate unnecessary copying?
+  auto request = std::make_unique<network::ResourceRequest>(resource_request_);
+
+  // Passing the request body over Mojo moves out the DataPipeGetter elements,
+  // which would mean we should clone the body like
+  // ServiceWorkerSubresourceLoader does. But we don't expect DataPipeGetters
+  // here yet: they are only created by the renderer when converting from a
+  // Blob, which doesn't happen for navigations. In interest of speed, just
+  // don't clone until proven necessary.
+  DCHECK(BodyHasNoDataPipeGetters(request->request_body.get()))
+      << "We assumed there would be no data pipe getter elements here, but "
+         "there are. Add code here to clone the body before proceeding.";
+
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::make_unique<network::ResourceRequest>(resource_request_),
-      active_worker, net::NetLogWithSource() /* TODO(scottmg): net log? */,
+      std::move(request), active_worker,
+      net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),

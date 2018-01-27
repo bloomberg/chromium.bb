@@ -1,4 +1,6 @@
 self.addEventListener('fetch', function(event) {
+    if (event.request.url.indexOf('NetworkFallback') != -1)
+      return;
     event.respondWith(new Promise(function(resolve) {
         var headers = [];
         for (var header of event.request.headers) {
