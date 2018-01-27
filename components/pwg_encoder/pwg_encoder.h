@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_
-#define CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_
+#ifndef COMPONENTS_PWG_ENCODER_PWG_ENCODER_H_
+#define COMPONENTS_PWG_ENCODER_PWG_ENCODER_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cloud_print {
+namespace pwg_encoder {
 
 class BitmapImage;
 
@@ -48,6 +48,6 @@ class PwgEncoder {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PwgEncoder);
 };
 
-}  // namespace cloud_print
+}  // namespace pwg_encoder
 
-#endif  // CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_
+#endif  // COMPONENTS_PWG_ENCODER_PWG_ENCODER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
-#define CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
+#ifndef COMPONENTS_PWG_ENCODER_BITMAP_IMAGE_H_
+#define COMPONENTS_PWG_ENCODER_BITMAP_IMAGE_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cloud_print {
+namespace pwg_encoder {
 
 class BitmapImage {
  public:
@@ -43,6 +43,6 @@ class BitmapImage {
   DISALLOW_COPY_AND_ASSIGN(BitmapImage);
 };
 
-}  // namespace cloud_print
+}  // namespace pwg_encoder
 
-#endif  // CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
+#endif  // COMPONENTS_PWG_ENCODER_BITMAP_IMAGE_H_

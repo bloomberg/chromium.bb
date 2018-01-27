@@ -317,6 +317,9 @@ test("components_unittests") {
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//components/printing/service:unit_tests" ]
   }
+  if (enable_print_preview) {
+    deps += [ "//components/pwg_encoder:unit_tests" ]
+  }
 
   if (safe_browsing_mode == 1) {
     deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]

@@ -3685,7 +3685,6 @@ test("unit_tests") {
       "../browser/ui/webui/print_preview/print_preview_handler_unittest.cc",
       "../browser/ui/webui/print_preview/print_preview_ui_unittest.cc",
       "../browser/ui/webui/print_preview/printer_capabilities_unittest.cc",
-      "../utility/cloud_print/pwg_encoder_unittest.cc",
     ]
 
     deps += [

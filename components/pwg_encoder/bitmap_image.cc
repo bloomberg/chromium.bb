@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#include "chrome/utility/cloud_print/bitmap_image.h"
+#include "components/pwg_encoder/bitmap_image.h"
 
-namespace cloud_print {
+#include "base/logging.h"
+
+namespace pwg_encoder {
 
 namespace {
 const uint8_t kCurrentlySupportedNumberOfChannels = 4;
@@ -16,8 +17,7 @@ BitmapImage::BitmapImage(const gfx::Size& size, Colorspace colorspace)
       colorspace_(colorspace),
       data_(new uint8_t[size.GetArea() * channels()]) {}
 
-BitmapImage::~BitmapImage() {
-}
+BitmapImage::~BitmapImage() {}
 
 uint8_t BitmapImage::channels() const {
   return kCurrentlySupportedNumberOfChannels;
@@ -29,4 +29,4 @@ const uint8_t* BitmapImage::GetPixel(const gfx::Point& point) const {
   return data_.get() + (point.y() * size_.width() + point.x()) * channels();
 }
 
-}  // namespace cloud_print
+}  // namespace pwg_encoder
