@@ -15,6 +15,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//components/pwg_encoder",
     "//mojo/public/cpp/bindings",
   ]
 

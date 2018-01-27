@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/cloud_print/pwg_encoder.h"
+#include "components/pwg_encoder/pwg_encoder.h"
 
 #include <stdint.h>
 
@@ -10,10 +10,10 @@
 
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/utility/cloud_print/bitmap_image.h"
+#include "components/pwg_encoder/bitmap_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cloud_print {
+namespace pwg_encoder {
 
 namespace {
 
@@ -41,7 +41,7 @@ std::unique_ptr<BitmapImage> MakeSampleBitmap() {
   for (int i = 0; i < kRasterWidth; i++) {
     for (int j = 400; j < 500; j++) {
       int row_start = j * kRasterWidth;
-      if ((i/40) % 2 == 0) {
+      if ((i / 40) % 2 == 0) {
         bitmap_data[row_start + i] = 255 << 8;
       } else {
         bitmap_data[row_start + i] = 255 << 16;
@@ -80,4 +80,4 @@ TEST(PwgRasterTest, Encode) {
             base::HexEncode(sha1.data(), sha1.size()));
 }
 
-}  // namespace cloud_print
+}  // namespace pwg_encoder

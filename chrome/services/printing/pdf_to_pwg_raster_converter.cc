@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "chrome/utility/cloud_print/bitmap_image.h"
-#include "chrome/utility/cloud_print/pwg_encoder.h"
+#include "components/pwg_encoder/bitmap_image.h"
+#include "components/pwg_encoder/pwg_encoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "pdf/pdf.h"
@@ -39,14 +39,14 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
     return false;
   }
 
-  std::string pwg_header = cloud_print::PwgEncoder::GetDocumentHeader();
+  std::string pwg_header = pwg_encoder::PwgEncoder::GetDocumentHeader();
   int bytes_written =
       bitmap_file.WriteAtCurrentPos(pwg_header.data(), pwg_header.size());
   if (bytes_written != static_cast<int>(pwg_header.size()))
     return false;
 
-  cloud_print::BitmapImage image(settings.area.size(),
-                                 cloud_print::BitmapImage::BGRA);
+  pwg_encoder::BitmapImage image(settings.area.size(),
+                                 pwg_encoder::BitmapImage::BGRA);
   for (int i = 0; i < total_page_count; ++i) {
     int page_number = i;
 
@@ -60,12 +60,12 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
       return false;
     }
 
-    cloud_print::PwgHeaderInfo header_info;
+    pwg_encoder::PwgHeaderInfo header_info;
     header_info.dpi = settings.dpi;
     header_info.total_pages = total_page_count;
     header_info.color_space = bitmap_settings.use_color
-                                  ? cloud_print::PwgHeaderInfo::SRGB
-                                  : cloud_print::PwgHeaderInfo::SGRAY;
+                                  ? pwg_encoder::PwgHeaderInfo::SRGB
+                                  : pwg_encoder::PwgHeaderInfo::SGRAY;
 
     // Transform odd pages.
     if (page_number % 2) {
@@ -91,7 +91,7 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
     }
 
     std::string pwg_page =
-        cloud_print::PwgEncoder::EncodePage(image, header_info);
+        pwg_encoder::PwgEncoder::EncodePage(image, header_info);
     if (pwg_page.empty())
       return false;
     bytes_written =
