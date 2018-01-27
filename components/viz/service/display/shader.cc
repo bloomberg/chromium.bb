@@ -348,7 +348,7 @@ std::string VertexShader::GetShaderString() const {
         break;
       case TEX_COORD_TRANSFORM_TRANSLATED_VEC4:
         SRC("texCoord = texCoord + vec2(0.5);");
-      // Fall through...
+        FALLTHROUGH;
       case TEX_COORD_TRANSFORM_VEC4:
         if (use_uniform_arrays_) {
           HDR("uniform TexCoordPrecision vec4 vertexTexTransform[NUM_QUADS];");

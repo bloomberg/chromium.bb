@@ -653,6 +653,7 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
           switch (x_ops->size()) {
             case 0:
               NOTREACHED();
+              break;
             case 1:
               if (x_ops->front().scale_factor == 3) {
                 current_shader = SHADER_BILINEAR3;
