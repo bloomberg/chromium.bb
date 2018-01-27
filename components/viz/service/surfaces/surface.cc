@@ -158,13 +158,13 @@ bool Surface::QueueFrame(
       std::move(pending_frame_data_);
   pending_frame_data_.reset();
 
-  UpdateActivationDependencies(frame);
+  uint32_t deadline_in_frames = UpdateActivationDependencies(frame);
 
   // Receive and track the resources referenced from the CompositorFrame
   // regardless of whether it's pending or active.
   surface_client_->ReceiveFromChild(frame.resource_list);
 
-  if (activation_dependencies_.empty()) {
+  if (activation_dependencies_.empty() || !deadline_in_frames) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(FrameData(std::move(frame), frame_index, std::move(callback),
                             aggregated_damage_callback,
@@ -175,17 +175,7 @@ bool Surface::QueueFrame(
                   aggregated_damage_callback, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
-    base::Optional<FrameDeadline> deadline =
-        GetPendingFrame().metadata.deadline;
-    if (deadline) {
-      uint32_t deadline_in_frames = deadline->value();
-      if (deadline->use_default_lower_bound_deadline()) {
-        uint32_t default_deadline = surface_manager_->dependency_tracker()
-                                        ->number_of_frames_to_deadline();
-        deadline_in_frames = std::max(deadline_in_frames, default_deadline);
-      }
-      deadline_.Set(deadline_in_frames);
-    }
+    deadline_.Set(deadline_in_frames);
 
     // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
     // are resolved.
@@ -329,8 +319,20 @@ void Surface::ActivateFrame(FrameData frame_data) {
   surface_manager_->SurfaceActivated(this);
 }
 
-void Surface::UpdateActivationDependencies(
+uint32_t Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
+  base::Optional<FrameDeadline> deadline = current_frame.metadata.deadline;
+  uint32_t deadline_in_frames =
+      surface_manager_->dependency_tracker()->number_of_frames_to_deadline();
+  if (deadline) {
+    deadline_in_frames = deadline->value();
+    if (deadline->use_default_lower_bound_deadline()) {
+      uint32_t default_deadline = surface_manager_->dependency_tracker()
+                                      ->number_of_frames_to_deadline();
+      deadline_in_frames = std::max(deadline_in_frames, default_deadline);
+    }
+  }
+
   base::flat_map<FrameSinkId, SequenceNumbers> new_frame_sink_id_dependencies;
   base::flat_set<SurfaceId> new_activation_dependencies;
 
@@ -340,22 +342,23 @@ void Surface::UpdateActivationDependencies(
     // If a activation dependency does not have a corresponding active frame in
     // the display compositor, then it blocks this frame.
     if (!dependency || !dependency->HasActiveFrame()) {
-      // Record the latest |parent_sequence_number| this surface is interested
-      // in observing for the provided FrameSinkId.
-      uint32_t& parent_sequence_number =
-          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
-              .parent_sequence_number;
-      parent_sequence_number =
-          std::max(parent_sequence_number,
-                   surface_id.local_surface_id().parent_sequence_number());
+      if (deadline_in_frames > 0) {
+        // Record the latest |parent_sequence_number| this surface is interested
+        // in observing for the provided FrameSinkId.
+        uint32_t& parent_sequence_number =
+            new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+                .parent_sequence_number;
+        parent_sequence_number =
+            std::max(parent_sequence_number,
+                     surface_id.local_surface_id().parent_sequence_number());
 
-      uint32_t& child_sequence_number =
-          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
-              .child_sequence_number;
-      child_sequence_number =
-          std::max(child_sequence_number,
-                   surface_id.local_surface_id().child_sequence_number());
-
+        uint32_t& child_sequence_number =
+            new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+                .child_sequence_number;
+        child_sequence_number =
+            std::max(child_sequence_number,
+                     surface_id.local_surface_id().child_sequence_number());
+      }
       new_activation_dependencies.insert(surface_id);
     }
   }
@@ -365,8 +368,16 @@ void Surface::UpdateActivationDependencies(
   // map.
   ComputeChangeInDependencies(new_frame_sink_id_dependencies);
 
-  activation_dependencies_ = std::move(new_activation_dependencies);
+  if (deadline_in_frames > 0) {
+    activation_dependencies_ = std::move(new_activation_dependencies);
+  } else {
+    // If the deadline is zero, then all dependencies are late.
+    activation_dependencies_.clear();
+    late_activation_dependencies_ = std::move(new_activation_dependencies);
+  }
+
   frame_sink_id_dependencies_ = std::move(new_frame_sink_id_dependencies);
+  return deadline_in_frames;
 }
 
 void Surface::ComputeChangeInDependencies(

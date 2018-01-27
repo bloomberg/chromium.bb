@@ -58,7 +58,9 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
   layer_impl->SetPrimarySurfaceId(primary_surface_id_, deadline_in_frames_);
-  deadline_in_frames_.reset();
+  // Unless the client explicitly specifies otherwise, don't block on
+  // |primary_surface_id_| more than once.
+  deadline_in_frames_ = 0u;
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }
@@ -82,11 +84,13 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
         append_quads_data->deadline_in_frames = 0u;
       append_quads_data->deadline_in_frames = std::max(
           *append_quads_data->deadline_in_frames, *deadline_in_frames_);
-      deadline_in_frames_.reset();
     } else {
       append_quads_data->use_default_lower_bound_deadline = true;
     }
   }
+  // Unless the client explicitly specifies otherwise, don't block on
+  // |primary_surface_id_| more than once.
+  deadline_in_frames_ = 0u;
 }
 
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(

@@ -124,21 +124,26 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
                 UnorderedElementsAre(surface_id1));
     // The deadline is reset after the first CompositorFrame submission with the
     // new dependency.
-    EXPECT_EQ(base::nullopt, data.deadline_in_frames);
-    EXPECT_TRUE(data.use_default_lower_bound_deadline);
+    EXPECT_EQ(0u, data.deadline_in_frames);
+    EXPECT_FALSE(data.use_default_lower_bound_deadline);
   }
 
-  // Update the fallback viz::SurfaceInfo and re-emit DrawQuads.
+  // Update the primary deadline and fallback viz::SurfaceId and
+  // re-emit DrawQuads.
   {
     AppendQuadsData data;
+    surface_layer_impl->SetPrimarySurfaceId(surface_id1, 4u);
     surface_layer_impl->SetFallbackSurfaceId(surface_id2);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
     // The the primary viz::SurfaceInfo will be added to
     // activation_dependencies.
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
-    EXPECT_EQ(base::nullopt, data.deadline_in_frames);
-    EXPECT_TRUE(data.use_default_lower_bound_deadline);
+    // The primary SurfaceId hasn't changed but a new deadline was explicitly
+    // requested in SetPrimarySurfaceId so we'll use it in the next
+    // CompositorFrame.
+    EXPECT_EQ(4u, data.deadline_in_frames);
+    EXPECT_FALSE(data.use_default_lower_bound_deadline);
   }
 
   ASSERT_EQ(3u, render_pass->quad_list.size());
