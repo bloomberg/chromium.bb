@@ -128,39 +128,69 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
 }
 
 // static
-string SpdyUtils::GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers) {
-  SpdyHeaderBlock::const_iterator it = headers.find(":scheme");
-  if (it == headers.end()) {
-    return "";
+string SpdyUtils::GetPromisedUrlFromHeaderBlock(
+    const SpdyHeaderBlock& headers) {
+  // RFC 7540, Section 8.1.2.3: All HTTP/2 requests MUST include exactly
+  // one valid value for the ":method", ":scheme", and ":path" pseudo-header
+  // fields, unless it is a CONNECT request.
+
+  // RFC 7540, Section  8.2.1:  The header fields in PUSH_PROMISE and any
+  // subsequent CONTINUATION frames MUST be a valid and complete set of request
+  // header fields (Section 8.1.2.3).  The server MUST include a method in the
+  // ":method" pseudo-header field that is safe and cacheable.
+  //
+  // RFC 7231, Section  4.2.1: Of the request methods defined by this
+  // specification, the GET, HEAD, OPTIONS, and TRACE methods are defined to be
+  // safe.
+  //
+  // RFC 7231, Section  4.2.1: ... this specification defines GET, HEAD, and
+  // POST as cacheable, ...
+  //
+  // So the only methods allowed in a PUSH_PROMISE are GET and HEAD.
+  SpdyHeaderBlock::const_iterator it = headers.find(":method");
+  if (it == headers.end() || (it->second != "GET" && it->second != "HEAD")) {
+    return string();
   }
-  std::string url = it->second.as_string();
 
-  url.append("://");
+  it = headers.find(":scheme");
+  if (it == headers.end() || it->second.empty()) {
+    return string();
+  }
+  QuicStringPiece scheme = it->second;
 
+  // RFC 7540, Section 8.2: The server MUST include a value in the
+  // ":authority" pseudo-header field for which the server is authoritative
+  // (see Section 10.1).
   it = headers.find(":authority");
-  if (it == headers.end()) {
-    return "";
+  if (it == headers.end() || it->second.empty()) {
+    return string();
   }
-  url.append(it->second.as_string());
+  QuicStringPiece authority = it->second;
 
+  // RFC 7540, Section 8.1.2.3 requires that the ":path" pseudo-header MUST
+  // NOT be empty for "http" or "https" URIs;
+  //
+  // However, to ensure the scheme is consistently canonicalized, that check
+  // is deferred to implementations in QuicUrlUtils::GetPushPromiseUrl().
   it = headers.find(":path");
   if (it == headers.end()) {
-    return "";
+    return string();
   }
-  url.append(it->second.as_string());
-  return url;
+  QuicStringPiece path = it->second;
+
+  return QuicUrlUtils::GetPushPromiseUrl(scheme, authority, path);
 }
 
 // static
 string SpdyUtils::GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers) {
   // TODO(fayang): Consider just checking out the value of the ":authority" key
   // in headers.
-  return QuicUrlUtils::HostName(GetUrlFromHeaderBlock(headers));
+  return QuicUrlUtils::HostName(GetPromisedUrlFromHeaderBlock(headers));
 }
 
 // static
 bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
-  string url(GetUrlFromHeaderBlock(headers));
+  string url(GetPromisedUrlFromHeaderBlock(headers));
   return !url.empty() && QuicUrlUtils::IsValidUrl(url);
 }
 

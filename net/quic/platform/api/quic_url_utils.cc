@@ -18,4 +18,11 @@ bool QuicUrlUtils::IsValidUrl(QuicStringPiece url) {
   return QuicUrlUtilsImpl::IsValidUrl(url);
 }
 
+// static
+string QuicUrlUtils::GetPushPromiseUrl(QuicStringPiece scheme,
+                                       QuicStringPiece authority,
+                                       QuicStringPiece path) {
+  return QuicUrlUtilsImpl::GetPushPromiseUrl(scheme, authority, path);
+}
+
 }  // namespace net
