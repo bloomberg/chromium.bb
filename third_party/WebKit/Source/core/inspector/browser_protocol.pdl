@@ -4569,6 +4569,8 @@ domain Page
       optional string referrer
       # Intended transition type.
       optional TransitionType transitionType
+      # Frame id to navigate, if not specified navigates the top frame.
+      optional FrameId frameId
     returns
       # Frame id that has navigated (or failed to navigate)
       FrameId frameId

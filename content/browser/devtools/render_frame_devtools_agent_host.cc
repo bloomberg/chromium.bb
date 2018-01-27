@@ -170,16 +170,26 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
 // static
 void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
     NavigationRequest* navigation_request) {
-  RenderFrameDevToolsAgentHost* agent_host =
-      FindAgentHost(navigation_request->frame_tree_node());
-  if (!agent_host)
-    return;
+  // Communicate network error to own agent host only.
   if (navigation_request->net_error() != net::OK) {
-    for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
-      network->NavigationFailed(navigation_request);
+    RenderFrameDevToolsAgentHost* agent_host =
+        FindAgentHost(navigation_request->frame_tree_node());
+    if (agent_host) {
+      for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
+        network->NavigationFailed(navigation_request);
+    }
   }
-  for (auto* page : protocol::PageHandler::ForAgentHost(agent_host))
-    page->NavigationReset(navigation_request);
+
+  // Traverse frame chain all the way to the top and report to all
+  // page handlers that the navigation completed.
+  for (FrameTreeNode* node = navigation_request->frame_tree_node(); node;
+       node = node->parent()) {
+    RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(node);
+    if (!agent_host)
+      continue;
+    for (auto* page : protocol::PageHandler::ForAgentHost(agent_host))
+      page->NavigationReset(navigation_request);
+  }
 }
 
 // static

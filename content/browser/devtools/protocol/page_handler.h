@@ -30,6 +30,10 @@
 
 class SkBitmap;
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace gfx {
 class Image;
 }  // namespace gfx
@@ -90,6 +94,7 @@ class PageHandler : public DevToolsDomainHandler,
   void Navigate(const std::string& url,
                 Maybe<std::string> referrer,
                 Maybe<std::string> transition_type,
+                Maybe<std::string> frame_id,
                 std::unique_ptr<NavigateCallback> callback) override;
   Response StopLoading() override;
 
@@ -194,7 +199,8 @@ class PageHandler : public DevToolsDomainHandler,
   NotificationRegistrar registrar_;
   JavaScriptDialogCallback pending_dialog_;
   scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
-  std::unique_ptr<NavigateCallback> navigate_callback_;
+  base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>
+      navigate_callbacks_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
