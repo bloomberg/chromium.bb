@@ -499,7 +499,9 @@ void UiSceneCreator::CreateScene() {
   CreateSystemIndicators();
   CreateUrlBar();
   CreateLoadingIndicator();
-  CreateSnackbars();
+  if (model_->update_ready_snackbar_enabled) {
+    CreateSnackbars();
+  }
   CreateOmnibox();
   CreateCloseButton();
   CreateFullscreenToast();
