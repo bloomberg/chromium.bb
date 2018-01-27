@@ -88,6 +88,11 @@
   CustomWallpaperThumbnailSuffix: '_thumbnail',
 
   /**
+   * Suffix to append to the base url of an online wallpaper thumbnail.
+   */
+  OnlineWallpaperThumbnailUrlSuffix: '_thumbnail.png',
+
+  /**
    * Wallpaper directory enum.
    */
   WallpaperDirNameEnum: {ORIGINAL: 'original', THUMBNAIL: 'thumbnail'},
