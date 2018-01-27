@@ -15,6 +15,9 @@ class I18NCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit I18NCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetL10nMessage(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetL10nUILanguage(const v8::FunctionCallbackInfo<v8::Value>& args);

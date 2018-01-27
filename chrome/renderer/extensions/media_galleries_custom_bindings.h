@@ -15,6 +15,9 @@ class MediaGalleriesCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit MediaGalleriesCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetMediaFileSystemObject(
       const v8::FunctionCallbackInfo<v8::Value>& args);

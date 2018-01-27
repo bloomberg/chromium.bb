@@ -15,13 +15,15 @@
 namespace extensions {
 
 PageCaptureCustomBindings::PageCaptureCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("CreateBlob", "pageCapture",
-                base::Bind(&PageCaptureCustomBindings::CreateBlob,
-                           base::Unretained(this)));
-  RouteFunction("SendResponseAck", "pageCapture",
-                base::Bind(&PageCaptureCustomBindings::SendResponseAck,
-                           base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void PageCaptureCustomBindings::AddRoutes() {
+  RouteHandlerFunction("CreateBlob", "pageCapture",
+                       base::Bind(&PageCaptureCustomBindings::CreateBlob,
+                                  base::Unretained(this)));
+  RouteHandlerFunction("SendResponseAck", "pageCapture",
+                       base::Bind(&PageCaptureCustomBindings::SendResponseAck,
+                                  base::Unretained(this)));
 }
 
 void PageCaptureCustomBindings::CreateBlob(

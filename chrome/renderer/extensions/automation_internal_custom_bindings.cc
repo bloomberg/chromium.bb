@@ -391,14 +391,18 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     should_ignore_context_ = background_page_url != "" &&
         background_page_url != context->url();
   }
+}
 
-  // It's safe to use base::Unretained(this) here because these bindings
-  // will only be called on a valid AutomationInternalCustomBindings instance
-  // and none of the functions have any side effects.
-#define ROUTE_FUNCTION(FN)                                        \
-  RouteFunction(#FN, "automation",                                \
-                base::Bind(&AutomationInternalCustomBindings::FN, \
-                           base::Unretained(this)))
+AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {}
+
+void AutomationInternalCustomBindings::AddRoutes() {
+// It's safe to use base::Unretained(this) here because these bindings
+// will only be called on a valid AutomationInternalCustomBindings instance
+// and none of the functions have any side effects.
+#define ROUTE_FUNCTION(FN)                                               \
+  RouteHandlerFunction(#FN, "automation",                                \
+                       base::Bind(&AutomationInternalCustomBindings::FN, \
+                                  base::Unretained(this)))
   ROUTE_FUNCTION(IsInteractPermitted);
   ROUTE_FUNCTION(GetSchemaAdditions);
   ROUTE_FUNCTION(StartCachingAccessibilityTrees);
@@ -799,8 +803,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       });
 }
 
-AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {}
-
 void AutomationInternalCustomBindings::Invalidate() {
   ObjectBackedNativeHandler::Invalidate();
 
@@ -1147,14 +1149,14 @@ void AutomationInternalCustomBindings::RouteTreeIDFunction(
     const std::string& name,
     TreeIDFunction callback) {
   scoped_refptr<TreeIDWrapper> wrapper = new TreeIDWrapper(this, callback);
-  RouteFunction(name, base::Bind(&TreeIDWrapper::Run, wrapper));
+  RouteHandlerFunction(name, base::Bind(&TreeIDWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDFunction(
     const std::string& name,
     NodeIDFunction callback) {
   scoped_refptr<NodeIDWrapper> wrapper = new NodeIDWrapper(this, callback);
-  RouteFunction(name, base::Bind(&NodeIDWrapper::Run, wrapper));
+  RouteHandlerFunction(name, base::Bind(&NodeIDWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
@@ -1162,7 +1164,8 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
     NodeIDPlusAttributeFunction callback) {
   scoped_refptr<NodeIDPlusAttributeWrapper> wrapper =
       new NodeIDPlusAttributeWrapper(this, callback);
-  RouteFunction(name, base::Bind(&NodeIDPlusAttributeWrapper::Run, wrapper));
+  RouteHandlerFunction(name,
+                       base::Bind(&NodeIDPlusAttributeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
@@ -1170,7 +1173,7 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
     NodeIDPlusRangeFunction callback) {
   scoped_refptr<NodeIDPlusRangeWrapper> wrapper =
       new NodeIDPlusRangeWrapper(this, callback);
-  RouteFunction(name, base::Bind(&NodeIDPlusRangeWrapper::Run, wrapper));
+  RouteHandlerFunction(name, base::Bind(&NodeIDPlusRangeWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::GetChildIDAtIndex(

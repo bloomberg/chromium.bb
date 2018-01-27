@@ -13,8 +13,10 @@ namespace extensions {
 
 ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
                                              ScriptContext* context)
-    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {}
+
+void ApiDefinitionsNatives::AddRoutes() {
+  RouteHandlerFunction(
       "GetExtensionAPIDefinitionsForTest", "test",
       base::Bind(&ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest,
                  base::Unretained(this)));

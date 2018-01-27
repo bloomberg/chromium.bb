@@ -14,6 +14,9 @@ class PageCaptureCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit PageCaptureCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // Creates a Blob with the content of the specified file.
   void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args);

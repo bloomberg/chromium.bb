@@ -25,8 +25,11 @@ void GetNextContextMenuId(const v8::FunctionCallbackInfo<v8::Value>& args) {
 namespace extensions {
 
 ContextMenusCustomBindings::ContextMenusCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetNextContextMenuId", base::Bind(&GetNextContextMenuId));
+    : ObjectBackedNativeHandler(context) {}
+
+void ContextMenusCustomBindings::AddRoutes() {
+  RouteHandlerFunction("GetNextContextMenuId",
+                       base::Bind(&GetNextContextMenuId));
 }
 
 }  // extensions

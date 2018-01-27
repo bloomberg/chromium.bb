@@ -21,6 +21,9 @@ class BlobNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit BlobNativeHandler(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void TakeBrowserProcessBlob(const v8::FunctionCallbackInfo<v8::Value>& args);
 };

@@ -13,6 +13,9 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit TestFeaturesNativeHandler(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetAPIFeatures(const v8::FunctionCallbackInfo<v8::Value>& args);
 };

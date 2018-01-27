@@ -17,6 +17,9 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   explicit GuestViewInternalCustomBindings(ScriptContext* context);
   ~GuestViewInternalCustomBindings() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // ResetMapEntry is called as a callback to SetWeak(). It resets the
   // weak view reference held in |view_map_|.

@@ -16,6 +16,9 @@ class FileManagerPrivateCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit FileManagerPrivateCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetExternalFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);

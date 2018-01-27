@@ -21,16 +21,17 @@
 namespace extensions {
 
 RuntimeCustomBindings::RuntimeCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+RuntimeCustomBindings::~RuntimeCustomBindings() {}
+
+void RuntimeCustomBindings::AddRoutes() {
+  RouteHandlerFunction(
       "GetManifest",
       base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
-  RouteFunction("GetExtensionViews",
-                base::Bind(&RuntimeCustomBindings::GetExtensionViews,
-                           base::Unretained(this)));
-}
-
-RuntimeCustomBindings::~RuntimeCustomBindings() {
+  RouteHandlerFunction("GetExtensionViews",
+                       base::Bind(&RuntimeCustomBindings::GetExtensionViews,
+                                  base::Unretained(this)));
 }
 
 void RuntimeCustomBindings::GetManifest(

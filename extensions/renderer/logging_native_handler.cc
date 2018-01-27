@@ -10,24 +10,23 @@
 namespace extensions {
 
 LoggingNativeHandler::LoggingNativeHandler(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
-      "DCHECK",
-      base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
-  RouteFunction(
-      "CHECK",
-      base::Bind(&LoggingNativeHandler::Check, base::Unretained(this)));
-  RouteFunction(
-      "DCHECK_IS_ON",
-      base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
-  RouteFunction("LOG",
-                base::Bind(&LoggingNativeHandler::Log, base::Unretained(this)));
-  RouteFunction(
-      "WARNING",
-      base::Bind(&LoggingNativeHandler::Warning, base::Unretained(this)));
-}
+    : ObjectBackedNativeHandler(context) {}
 
 LoggingNativeHandler::~LoggingNativeHandler() {}
+
+void LoggingNativeHandler::AddRoutes() {
+  RouteHandlerFunction("DCHECK", base::Bind(&LoggingNativeHandler::Dcheck,
+                                            base::Unretained(this)));
+  RouteHandlerFunction("CHECK", base::Bind(&LoggingNativeHandler::Check,
+                                           base::Unretained(this)));
+  RouteHandlerFunction(
+      "DCHECK_IS_ON",
+      base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
+  RouteHandlerFunction(
+      "LOG", base::Bind(&LoggingNativeHandler::Log, base::Unretained(this)));
+  RouteHandlerFunction("WARNING", base::Bind(&LoggingNativeHandler::Warning,
+                                             base::Unretained(this)));
+}
 
 void LoggingNativeHandler::Check(
     const v8::FunctionCallbackInfo<v8::Value>& args) {

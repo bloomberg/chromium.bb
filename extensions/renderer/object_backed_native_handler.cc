@@ -35,7 +35,17 @@ ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)
 ObjectBackedNativeHandler::~ObjectBackedNativeHandler() {
 }
 
+void ObjectBackedNativeHandler::Initialize() {
+  DCHECK_EQ(kUninitialized, init_state_)
+      << "Initialize() can only be called once!";
+  init_state_ = kInitializingRoutes;
+  AddRoutes();
+  init_state_ = kInitialized;
+}
+
 v8::Local<v8::Object> ObjectBackedNativeHandler::NewInstance() {
+  DCHECK_EQ(kInitialized, init_state_)
+      << "Initialize() must be called before a new instance is created!";
   return v8::Local<v8::ObjectTemplate>::New(GetIsolate(), object_template_)
       ->NewInstance();
 }
@@ -101,16 +111,19 @@ void ObjectBackedNativeHandler::Router(
   }
 }
 
-void ObjectBackedNativeHandler::RouteFunction(
+void ObjectBackedNativeHandler::RouteHandlerFunction(
     const std::string& name,
     const HandlerFunction& handler_function) {
-  RouteFunction(name, "", handler_function);
+  RouteHandlerFunction(name, "", handler_function);
 }
 
-void ObjectBackedNativeHandler::RouteFunction(
+void ObjectBackedNativeHandler::RouteHandlerFunction(
     const std::string& name,
     const std::string& feature_name,
     const HandlerFunction& handler_function) {
+  DCHECK_EQ(init_state_, kInitializingRoutes)
+      << "RouteHandlerFunction() can only be called from AddRoutes()!";
+
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());

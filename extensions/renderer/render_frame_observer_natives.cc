@@ -52,14 +52,16 @@ class LoadWatcher : public content::RenderFrameObserver {
 }  // namespace
 
 RenderFrameObserverNatives::RenderFrameObserverNatives(ScriptContext* context)
-    : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {}
+
+RenderFrameObserverNatives::~RenderFrameObserverNatives() {}
+
+void RenderFrameObserverNatives::AddRoutes() {
+  RouteHandlerFunction(
       "OnDocumentElementCreated", "app.window",
       base::Bind(&RenderFrameObserverNatives::OnDocumentElementCreated,
                  base::Unretained(this)));
 }
-
-RenderFrameObserverNatives::~RenderFrameObserverNatives() {}
 
 void RenderFrameObserverNatives::Invalidate() {
   weak_ptr_factory_.InvalidateWeakPtrs();

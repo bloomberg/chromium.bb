@@ -13,21 +13,23 @@
 namespace extensions {
 
 AppBindings::AppBindings(Dispatcher* dispatcher, ScriptContext* context)
-    : ObjectBackedNativeHandler(context), app_core_(dispatcher) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context), app_core_(dispatcher) {}
+
+AppBindings::~AppBindings() {}
+
+void AppBindings::AddRoutes() {
+  RouteHandlerFunction(
       "GetIsInstalled", "app.getIsInstalled",
       base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));
-  RouteFunction("GetDetails", "app.getDetails",
-                base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
-  RouteFunction(
+  RouteHandlerFunction(
+      "GetDetails", "app.getDetails",
+      base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
+  RouteHandlerFunction(
       "GetInstallState", "app.installState",
       base::Bind(&AppBindings::GetInstallState, base::Unretained(this)));
-  RouteFunction(
+  RouteHandlerFunction(
       "GetRunningState", "app.runningState",
       base::Bind(&AppBindings::GetRunningState, base::Unretained(this)));
-}
-
-AppBindings::~AppBindings() {
 }
 
 void AppBindings::GetIsInstalled(

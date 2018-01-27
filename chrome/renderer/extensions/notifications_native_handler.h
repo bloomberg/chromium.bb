@@ -19,6 +19,9 @@ class NotificationsNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit NotificationsNativeHandler(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // This implements notifications_private.GetImageSizes() which
   // informs the renderer of the actual rendered size of each

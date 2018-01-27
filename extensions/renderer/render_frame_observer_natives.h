@@ -18,6 +18,9 @@ class RenderFrameObserverNatives : public ObjectBackedNativeHandler {
   explicit RenderFrameObserverNatives(ScriptContext* context);
   ~RenderFrameObserverNatives() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void Invalidate() override;
 

@@ -15,6 +15,9 @@ class AppWindowCustomBindings : public ObjectBackedNativeHandler {
  public:
   AppWindowCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetFrame(const v8::FunctionCallbackInfo<v8::Value>& args);
 

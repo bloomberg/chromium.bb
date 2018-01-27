@@ -115,6 +115,12 @@ bool ScriptContext::IsSandboxedPage(const GURL& url) {
   return false;
 }
 
+void ScriptContext::SetModuleSystem(
+    std::unique_ptr<ModuleSystem> module_system) {
+  module_system_ = std::move(module_system);
+  module_system_->Initialize();
+}
+
 void ScriptContext::Invalidate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(is_valid_);

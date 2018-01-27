@@ -94,10 +94,12 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
 }  // namespace
 
 PlatformKeysNatives::PlatformKeysNatives(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("NormalizeAlgorithm",
-                base::Bind(&PlatformKeysNatives::NormalizeAlgorithm,
-                           base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void PlatformKeysNatives::AddRoutes() {
+  RouteHandlerFunction("NormalizeAlgorithm",
+                       base::Bind(&PlatformKeysNatives::NormalizeAlgorithm,
+                                  base::Unretained(this)));
 }
 
 void PlatformKeysNatives::NormalizeAlgorithm(

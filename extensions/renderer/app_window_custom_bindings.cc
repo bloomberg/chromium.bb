@@ -21,9 +21,12 @@
 namespace extensions {
 
 AppWindowCustomBindings::AppWindowCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetFrame", base::Bind(&AppWindowCustomBindings::GetFrame,
-                                       base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void AppWindowCustomBindings::AddRoutes() {
+  RouteHandlerFunction(
+      "GetFrame",
+      base::Bind(&AppWindowCustomBindings::GetFrame, base::Unretained(this)));
 }
 
 void AppWindowCustomBindings::GetFrame(

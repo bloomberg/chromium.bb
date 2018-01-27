@@ -37,8 +37,10 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
  public:
   AutomationInternalCustomBindings(ScriptContext* context,
                                    ExtensionBindingsSystem* bindings_system);
-
   ~AutomationInternalCustomBindings() override;
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
 
   void OnMessageReceived(const IPC::Message& message);
 

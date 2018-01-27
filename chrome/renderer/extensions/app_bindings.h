@@ -26,6 +26,9 @@ class AppBindings : public ObjectBackedNativeHandler {
   AppBindings(Dispatcher* dispatcher, ScriptContext* context);
   ~AppBindings() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetIsInstalled(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetDetails(const v8::FunctionCallbackInfo<v8::Value>& args);

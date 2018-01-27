@@ -56,22 +56,6 @@ MessagingBindings::MessagingBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context),
       weak_ptr_factory_(this) {
   g_messaging_map.Get()[context] = this;
-  RouteFunction("CloseChannel", base::Bind(&MessagingBindings::CloseChannel,
-                                           base::Unretained(this)));
-  RouteFunction("PostMessage", base::Bind(&MessagingBindings::PostMessage,
-                                          base::Unretained(this)));
-  // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
-  RouteFunction("BindToGC", base::Bind(&MessagingBindings::BindToGC,
-                                       base::Unretained(this)));
-  RouteFunction("OpenChannelToExtension", "runtime.connect",
-                base::Bind(&MessagingBindings::OpenChannelToExtension,
-                           base::Unretained(this)));
-  RouteFunction("OpenChannelToNativeApp", "runtime.connectNative",
-                base::Bind(&MessagingBindings::OpenChannelToNativeApp,
-                           base::Unretained(this)));
-  RouteFunction(
-      "OpenChannelToTab",
-      base::Bind(&MessagingBindings::OpenChannelToTab, base::Unretained(this)));
 }
 
 MessagingBindings::~MessagingBindings() {
@@ -80,6 +64,27 @@ MessagingBindings::~MessagingBindings() {
     UMA_HISTOGRAM_COUNTS_1000(
         "Extensions.Messaging.ExtensionPortsCreated.Total", next_js_id_);
   }
+}
+
+void MessagingBindings::AddRoutes() {
+  RouteHandlerFunction(
+      "CloseChannel",
+      base::Bind(&MessagingBindings::CloseChannel, base::Unretained(this)));
+  RouteHandlerFunction(
+      "PostMessage",
+      base::Bind(&MessagingBindings::PostMessage, base::Unretained(this)));
+  // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
+  RouteHandlerFunction("BindToGC", base::Bind(&MessagingBindings::BindToGC,
+                                              base::Unretained(this)));
+  RouteHandlerFunction("OpenChannelToExtension", "runtime.connect",
+                       base::Bind(&MessagingBindings::OpenChannelToExtension,
+                                  base::Unretained(this)));
+  RouteHandlerFunction("OpenChannelToNativeApp", "runtime.connectNative",
+                       base::Bind(&MessagingBindings::OpenChannelToNativeApp,
+                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "OpenChannelToTab",
+      base::Bind(&MessagingBindings::OpenChannelToTab, base::Unretained(this)));
 }
 
 // static

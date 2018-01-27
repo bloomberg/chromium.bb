@@ -16,6 +16,9 @@ class SyncFileSystemCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit SyncFileSystemCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // FileSystemObject GetSyncFileSystemObject(string name, string root_url):
   // construct a file system object from the given name and root_url.

@@ -24,11 +24,13 @@ void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
 namespace extensions {
 
 BlobNativeHandler::BlobNativeHandler(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
-  RouteFunction("TakeBrowserProcessBlob",
-                base::Bind(&BlobNativeHandler::TakeBrowserProcessBlob,
-                           base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void BlobNativeHandler::AddRoutes() {
+  RouteHandlerFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
+  RouteHandlerFunction("TakeBrowserProcessBlob",
+                       base::Bind(&BlobNativeHandler::TakeBrowserProcessBlob,
+                                  base::Unretained(this)));
 }
 
 // Take ownership of a Blob created on the browser process. Expects the Blob's

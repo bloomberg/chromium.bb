@@ -22,6 +22,9 @@ class MessagingBindings : public ObjectBackedNativeHandler {
   explicit MessagingBindings(ScriptContext* script_context);
   ~MessagingBindings() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Returns the MessagingBindings associated with the given |context|.
   static MessagingBindings* ForContext(ScriptContext* context);
 

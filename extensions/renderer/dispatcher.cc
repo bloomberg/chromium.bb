@@ -164,8 +164,11 @@ void CallModuleMethod(const std::string& module_name,
 class ChromeNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit ChromeNativeHandler(ScriptContext* context)
-      : ObjectBackedNativeHandler(context) {
-    RouteFunction(
+      : ObjectBackedNativeHandler(context) {}
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override {
+    RouteHandlerFunction(
         "GetChrome",
         base::Bind(&ChromeNativeHandler::GetChrome, base::Unretained(this)));
   }
@@ -296,7 +299,7 @@ void Dispatcher::DidCreateScriptContext(
   {
     std::unique_ptr<ModuleSystem> module_system(
         new ModuleSystem(context, &source_map_));
-    context->set_module_system(std::move(module_system));
+    context->SetModuleSystem(std::move(module_system));
   }
   ModuleSystem* module_system = context->module_system();
 
@@ -416,7 +419,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
-    context->set_module_system(
+    context->SetModuleSystem(
         std::make_unique<ModuleSystem>(context, &source_map_));
 
     ModuleSystem* module_system = context->module_system();
@@ -461,6 +464,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   // LoggingNativeHandler. Admire the neat base::Bind trick to both Invalidate
   // and delete the native handler.
   LoggingNativeHandler* logging = new LoggingNativeHandler(context);
+  logging->Initialize();
   context->AddInvalidationObserver(
       base::Bind(&NativeHandler::Invalidate, base::Owned(logging)));
 
