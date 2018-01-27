@@ -58,10 +58,6 @@ bool FakeWebTaskRunner::RunsTasksInCurrentSequence() const {
   return true;
 }
 
-double FakeWebTaskRunner::MonotonicallyIncreasingVirtualTimeSeconds() const {
-  return (data_->time_ - base::TimeTicks()).InSecondsF();
-}
-
 void FakeWebTaskRunner::RunUntilIdle() {
   while (!data_->task_queue_.empty()) {
     // Move the task to run into a local variable in case it touches the
