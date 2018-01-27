@@ -7,6 +7,7 @@ package org.chromium.content.browser.remoteobjects;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -199,6 +200,38 @@ public final class RemoteObjectImplTest {
                 "exposedMethodWithWrongArity", new RemoteInvocationArgument[] {}, response);
 
         verify(response, times(3)).call(resultHasError(RemoteInvocationError.METHOD_NOT_FOUND));
+    }
+
+    @Test
+    public void testObjectGetClassBlocked() {
+        Object target = new Object();
+        RemoteObjectImpl.Auditor auditor = mock(RemoteObjectImpl.Auditor.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        RemoteObject remoteObject = new RemoteObjectImpl(target, null, auditor);
+        remoteObject.invokeMethod("getClass", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultHasError(RemoteInvocationError.OBJECT_GET_CLASS_BLOCKED));
+        verify(auditor).onObjectGetClassInvocationAttempt();
+    }
+
+    @Test
+    public void testOverloadedGetClassPermitted() {
+        final Runnable runnable = mock(Runnable.class);
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public void getClass(Object o) {
+                runnable.run();
+            }
+        };
+        RemoteObjectImpl.Auditor auditor = mock(RemoteObjectImpl.Auditor.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        RemoteObject remoteObject =
+                new RemoteObjectImpl(target, TestJavascriptInterface.class, auditor);
+        remoteObject.invokeMethod("getClass", new RemoteInvocationArgument[] {null}, response);
+
+        verify(runnable).run();
+        verify(response).call(resultIsOk());
+        verify(auditor, never()).onObjectGetClassInvocationAttempt();
     }
 
     private RemoteInvocationResult resultHasError(final int error) {

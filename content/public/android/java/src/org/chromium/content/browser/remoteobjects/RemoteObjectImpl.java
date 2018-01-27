@@ -24,6 +24,32 @@ import java.util.TreeMap;
  */
 class RemoteObjectImpl implements RemoteObject {
     /**
+     * Receives notification about events for auditing.
+     *
+     * Separated from this class proper to allow for unit testing in content_junit_tests, where the
+     * Android framework is not fully initialized.
+     *
+     * Implementations should take care not to hold a strong reference to anything that might keep
+     * the WebView contents alive due to a GC cycle.
+     */
+    interface Auditor {
+        void onObjectGetClassInvocationAttempt();
+    }
+
+    /**
+     * Method which may not be called.
+     */
+    private static final Method sGetClassMethod;
+    static {
+        try {
+            sGetClassMethod = Object.class.getMethod("getClass");
+        } catch (NoSuchMethodException e) {
+            // java.lang.Object#getClass should always exist.
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * The object to which invocations should be directed.
      *
      * The target object cannot be referred to strongly, because it may contain
@@ -32,12 +58,23 @@ class RemoteObjectImpl implements RemoteObject {
     private final WeakReference<Object> mTarget;
 
     /**
+     * Receives notification about events for auditing.
+     */
+    private final Auditor mAuditor;
+
+    /**
      * Callable methods, indexed by name.
      */
     private final SortedMap<String, List<Method>> mMethods = new TreeMap<>();
 
     public RemoteObjectImpl(Object target, Class<? extends Annotation> safeAnnotationClass) {
+        this(target, safeAnnotationClass, null);
+    }
+
+    public RemoteObjectImpl(
+            Object target, Class<? extends Annotation> safeAnnotationClass, Auditor auditor) {
         mTarget = new WeakReference<>(target);
+        mAuditor = auditor;
 
         for (Method method : target.getClass().getMethods()) {
             if (safeAnnotationClass != null && !method.isAnnotationPresent(safeAnnotationClass)) {
@@ -78,6 +115,13 @@ class RemoteObjectImpl implements RemoteObject {
         Method method = findMethod(name, numArguments);
         if (method == null) {
             callback.call(makeErrorResult(RemoteInvocationError.METHOD_NOT_FOUND));
+            return;
+        }
+        if (method.equals(sGetClassMethod)) {
+            if (mAuditor != null) {
+                mAuditor.onObjectGetClassInvocationAttempt();
+            }
+            callback.call(makeErrorResult(RemoteInvocationError.OBJECT_GET_CLASS_BLOCKED));
             return;
         }
 

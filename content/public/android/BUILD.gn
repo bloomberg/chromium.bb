@@ -205,6 +205,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/picker/TwoFieldDatePickerDialog.java",
     "java/src/org/chromium/content/browser/picker/WeekPicker.java",
     "java/src/org/chromium/content/browser/picker/WeekPickerDialog.java",
+    "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectAuditorImpl.java",
     "java/src/org/chromium/content/browser/remoteobjects/RemoteObjectImpl.java",
     "java/src/org/chromium/content/browser/selection/FloatingActionModeCallback.java",
     "java/src/org/chromium/content/browser/selection/FloatingPastePopupMenu.java",
