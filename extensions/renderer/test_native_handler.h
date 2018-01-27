@@ -18,6 +18,9 @@ class TestNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit TestNativeHandler(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetWakeEventPage(const v8::FunctionCallbackInfo<v8::Value>& args);
 

@@ -17,6 +17,9 @@ class SetIconNatives : public ObjectBackedNativeHandler {
  public:
   explicit SetIconNatives(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
                                      v8::Local<v8::Value>* image_data_bitmap);

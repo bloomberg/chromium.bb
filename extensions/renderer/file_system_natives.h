@@ -17,6 +17,9 @@ class FileSystemNatives : public ObjectBackedNativeHandler {
  public:
   explicit FileSystemNatives(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetIsolatedFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);

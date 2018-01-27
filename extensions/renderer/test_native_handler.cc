@@ -9,8 +9,10 @@
 namespace extensions {
 
 TestNativeHandler::TestNativeHandler(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void TestNativeHandler::AddRoutes() {
+  RouteHandlerFunction(
       "GetWakeEventPage", "test",
       base::Bind(&TestNativeHandler::GetWakeEventPage, base::Unretained(this)));
 }

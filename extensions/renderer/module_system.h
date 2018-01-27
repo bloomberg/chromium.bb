@@ -71,6 +71,9 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   ModuleSystem(ScriptContext* context, const SourceMap* source_map);
   ~ModuleSystem() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
   v8::MaybeLocal<v8::Object> Require(const std::string& module_name);

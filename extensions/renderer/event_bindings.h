@@ -27,6 +27,9 @@ class EventBindings : public ObjectBackedNativeHandler {
   EventBindings(ScriptContext* context, IPCMessageSender* ipc_message_sender);
   ~EventBindings() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Dispatches the event in the given |context| with the provided
   // |event_args| and |filtering_info|.
   static void DispatchEventInContext(const std::string& event_name,

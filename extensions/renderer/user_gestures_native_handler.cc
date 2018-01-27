@@ -12,19 +12,21 @@
 namespace extensions {
 
 UserGesturesNativeHandler::UserGesturesNativeHandler(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("IsProcessingUserGesture",
-                "test",
-                base::Bind(&UserGesturesNativeHandler::IsProcessingUserGesture,
-                           base::Unretained(this)));
-  RouteFunction("RunWithUserGesture",
-                "test",
-                base::Bind(&UserGesturesNativeHandler::RunWithUserGesture,
-                           base::Unretained(this)));
-  RouteFunction("RunWithoutUserGesture",
-                "test",
-                base::Bind(&UserGesturesNativeHandler::RunWithoutUserGesture,
-                           base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void UserGesturesNativeHandler::AddRoutes() {
+  RouteHandlerFunction(
+      "IsProcessingUserGesture", "test",
+      base::Bind(&UserGesturesNativeHandler::IsProcessingUserGesture,
+                 base::Unretained(this)));
+  RouteHandlerFunction(
+      "RunWithUserGesture", "test",
+      base::Bind(&UserGesturesNativeHandler::RunWithUserGesture,
+                 base::Unretained(this)));
+  RouteHandlerFunction(
+      "RunWithoutUserGesture", "test",
+      base::Bind(&UserGesturesNativeHandler::RunWithoutUserGesture,
+                 base::Unretained(this)));
 }
 
 void UserGesturesNativeHandler::IsProcessingUserGesture(

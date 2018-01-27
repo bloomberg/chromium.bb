@@ -14,6 +14,9 @@ class CssNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit CssNativeHandler(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // Expects one string argument that's a comma-separated list of compound CSS
   // selectors (http://dev.w3.org/csswg/selectors4/#compound), and returns its

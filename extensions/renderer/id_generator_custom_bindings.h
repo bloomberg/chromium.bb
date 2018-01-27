@@ -16,6 +16,9 @@ class IdGeneratorCustomBindings : public ObjectBackedNativeHandler {
  public:
   IdGeneratorCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   void GetNextId(const v8::FunctionCallbackInfo<v8::Value>& args);
 };

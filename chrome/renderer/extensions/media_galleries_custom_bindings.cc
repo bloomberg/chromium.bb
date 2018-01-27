@@ -20,8 +20,10 @@ namespace extensions {
 
 MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
     ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void MediaGalleriesCustomBindings::AddRoutes() {
+  RouteHandlerFunction(
       "GetMediaFileSystemObject", "mediaGalleries",
       base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,
                  base::Unretained(this)));

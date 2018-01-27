@@ -28,31 +28,35 @@ ProcessInfoNativeHandler::ProcessInfoNativeHandler(
       is_incognito_context_(is_incognito_context),
       is_component_extension_(is_component_extension),
       manifest_version_(manifest_version),
-      send_request_disabled_(send_request_disabled) {
-  RouteFunction("GetExtensionId",
-                base::Bind(&ProcessInfoNativeHandler::GetExtensionId,
-                           base::Unretained(this)));
-  RouteFunction("GetContextType",
-                base::Bind(&ProcessInfoNativeHandler::GetContextType,
-                           base::Unretained(this)));
-  RouteFunction("InIncognitoContext",
-                base::Bind(&ProcessInfoNativeHandler::InIncognitoContext,
-                           base::Unretained(this)));
-  RouteFunction("IsComponentExtension",
-                base::Bind(&ProcessInfoNativeHandler::IsComponentExtension,
-                           base::Unretained(this)));
-  RouteFunction("GetManifestVersion",
-                base::Bind(&ProcessInfoNativeHandler::GetManifestVersion,
-                           base::Unretained(this)));
-  RouteFunction("IsSendRequestDisabled",
-                base::Bind(&ProcessInfoNativeHandler::IsSendRequestDisabled,
-                           base::Unretained(this)));
-  RouteFunction(
+      send_request_disabled_(send_request_disabled) {}
+
+void ProcessInfoNativeHandler::AddRoutes() {
+  RouteHandlerFunction("GetExtensionId",
+                       base::Bind(&ProcessInfoNativeHandler::GetExtensionId,
+                                  base::Unretained(this)));
+  RouteHandlerFunction("GetContextType",
+                       base::Bind(&ProcessInfoNativeHandler::GetContextType,
+                                  base::Unretained(this)));
+  RouteHandlerFunction("InIncognitoContext",
+                       base::Bind(&ProcessInfoNativeHandler::InIncognitoContext,
+                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "IsComponentExtension",
+      base::Bind(&ProcessInfoNativeHandler::IsComponentExtension,
+                 base::Unretained(this)));
+  RouteHandlerFunction("GetManifestVersion",
+                       base::Bind(&ProcessInfoNativeHandler::GetManifestVersion,
+                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "IsSendRequestDisabled",
+      base::Bind(&ProcessInfoNativeHandler::IsSendRequestDisabled,
+                 base::Unretained(this)));
+  RouteHandlerFunction(
       "HasSwitch",
       base::Bind(&ProcessInfoNativeHandler::HasSwitch, base::Unretained(this)));
-  RouteFunction("GetPlatform",
-                base::Bind(&ProcessInfoNativeHandler::GetPlatform,
-                           base::Unretained(this)));
+  RouteHandlerFunction("GetPlatform",
+                       base::Bind(&ProcessInfoNativeHandler::GetPlatform,
+                                  base::Unretained(this)));
 }
 
 void ProcessInfoNativeHandler::GetExtensionId(

@@ -44,6 +44,9 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
                              ExtensionBindingsSystem* bindings_system);
   ~CastStreamingNativeHandler() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  protected:
   // Shut down all sessions and cancel any in-progress operations because the
   // ScriptContext is about to become invalid.

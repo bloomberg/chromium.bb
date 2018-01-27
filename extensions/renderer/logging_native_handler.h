@@ -18,6 +18,9 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
   explicit LoggingNativeHandler(ScriptContext* context);
   ~LoggingNativeHandler() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Equivalent to CHECK(predicate) << message.
   //
   // void(predicate, message?)

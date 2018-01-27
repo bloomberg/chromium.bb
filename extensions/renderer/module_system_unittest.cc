@@ -16,12 +16,14 @@ namespace extensions {
 class CounterNatives : public ObjectBackedNativeHandler {
  public:
   explicit CounterNatives(ScriptContext* context)
-      : ObjectBackedNativeHandler(context), counter_(0) {
-    RouteFunction("Get",
-                  base::Bind(&CounterNatives::Get, base::Unretained(this)));
-    RouteFunction(
-        "Increment",
-        base::Bind(&CounterNatives::Increment, base::Unretained(this)));
+      : ObjectBackedNativeHandler(context), counter_(0) {}
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override {
+    RouteHandlerFunction(
+        "Get", base::Bind(&CounterNatives::Get, base::Unretained(this)));
+    RouteHandlerFunction("Increment", base::Bind(&CounterNatives::Increment,
+                                                 base::Unretained(this)));
   }
 
   void Get(const v8::FunctionCallbackInfo<v8::Value>& args) {

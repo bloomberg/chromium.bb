@@ -16,6 +16,9 @@ class UtilsNativeHandler : public ObjectBackedNativeHandler {
   explicit UtilsNativeHandler(ScriptContext* context);
   ~UtilsNativeHandler() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // |args| consists of one argument: an arbitrary value. Returns a deep copy of
   // that value. The copy will have no references to nested values of the

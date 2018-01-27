@@ -18,16 +18,19 @@
 namespace extensions {
 
 FileSystemNatives::FileSystemNatives(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void FileSystemNatives::AddRoutes() {
+  RouteHandlerFunction(
       "GetFileEntry",
       base::Bind(&FileSystemNatives::GetFileEntry, base::Unretained(this)));
-  RouteFunction("GetIsolatedFileSystem",
-                base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
-                           base::Unretained(this)));
-  RouteFunction("CrackIsolatedFileSystemName",
-                base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
-                           base::Unretained(this)));
+  RouteHandlerFunction("GetIsolatedFileSystem",
+                       base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
+                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "CrackIsolatedFileSystemName",
+      base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
+                 base::Unretained(this)));
 }
 
 void FileSystemNatives::GetIsolatedFileSystem(

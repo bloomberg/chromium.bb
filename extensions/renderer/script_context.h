@@ -61,6 +61,9 @@ class ScriptContext : public RequestSender::Source {
   // See comment in HasAccessOrThrowError.
   static bool IsSandboxedPage(const GURL& url);
 
+  // Initializes |module_system| and associates it with this context.
+  void SetModuleSystem(std::unique_ptr<ModuleSystem> module_system);
+
   // Clears the WebLocalFrame for this contexts and invalidates the associated
   // ModuleSystem.
   void Invalidate();
@@ -92,10 +95,6 @@ class ScriptContext : public RequestSender::Source {
   }
 
   const base::UnguessableToken& context_id() const { return context_id_; }
-
-  void set_module_system(std::unique_ptr<ModuleSystem> module_system) {
-    module_system_ = std::move(module_system);
-  }
 
   ModuleSystem* module_system() { return module_system_.get(); }
 

@@ -30,16 +30,18 @@ DisplaySourceCustomBindings::DisplaySourceCustomBindings(
     ExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       bindings_system_(bindings_system),
-      weak_factory_(this) {
-  RouteFunction("StartSession", "displaySource",
-                base::Bind(&DisplaySourceCustomBindings::StartSession,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("TerminateSession", "displaySource",
-                base::Bind(&DisplaySourceCustomBindings::TerminateSession,
-                           weak_factory_.GetWeakPtr()));
-}
+      weak_factory_(this) {}
 
-DisplaySourceCustomBindings::~DisplaySourceCustomBindings() {
+DisplaySourceCustomBindings::~DisplaySourceCustomBindings() {}
+
+void DisplaySourceCustomBindings::AddRoutes() {
+  RouteHandlerFunction("StartSession", "displaySource",
+                       base::Bind(&DisplaySourceCustomBindings::StartSession,
+                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "TerminateSession", "displaySource",
+      base::Bind(&DisplaySourceCustomBindings::TerminateSession,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DisplaySourceCustomBindings::Invalidate() {

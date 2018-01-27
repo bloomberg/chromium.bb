@@ -77,7 +77,7 @@ ScriptContext* NativeExtensionBindingsSystemUnittest::CreateScriptContext(
     Feature::Context context_type) {
   auto script_context = std::make_unique<ScriptContext>(
       v8_context, nullptr, extension, context_type, extension, context_type);
-  script_context->set_module_system(
+  script_context->SetModuleSystem(
       std::make_unique<ModuleSystem>(script_context.get(), source_map()));
   ScriptContext* raw_script_context = script_context.get();
   raw_script_contexts_.push_back(raw_script_context);

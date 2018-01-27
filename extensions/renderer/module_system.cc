@@ -169,17 +169,6 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
       source_map_(source_map),
       natives_enabled_(0),
       exception_handler_(new DefaultExceptionHandler(context)) {
-  RouteFunction(
-      "require",
-      base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
-  RouteFunction(
-      "requireNative",
-      base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
-  RouteFunction("loadScript",
-                base::Bind(&ModuleSystem::LoadScript, base::Unretained(this)));
-  RouteFunction("privates",
-                base::Bind(&ModuleSystem::Private, base::Unretained(this)));
-
   v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Isolate* isolate = context->isolate();
   SetPrivate(global, kModulesField, v8::Object::New(isolate));
@@ -193,6 +182,17 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
 }
 
 ModuleSystem::~ModuleSystem() {
+}
+
+void ModuleSystem::AddRoutes() {
+  RouteHandlerFunction("require", base::Bind(&ModuleSystem::RequireForJs,
+                                             base::Unretained(this)));
+  RouteHandlerFunction("requireNative", base::Bind(&ModuleSystem::RequireNative,
+                                                   base::Unretained(this)));
+  RouteHandlerFunction("loadScript", base::Bind(&ModuleSystem::LoadScript,
+                                                base::Unretained(this)));
+  RouteHandlerFunction(
+      "privates", base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 }
 
 void ModuleSystem::Invalidate() {
@@ -347,6 +347,7 @@ void ModuleSystem::RegisterNativeHandler(
     const std::string& name,
     std::unique_ptr<NativeHandler> native_handler) {
   ClobberExistingNativeHandler(name);
+  native_handler->Initialize();
   native_handler_map_[name] = std::move(native_handler);
 }
 

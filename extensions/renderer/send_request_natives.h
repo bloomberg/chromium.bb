@@ -19,6 +19,9 @@ class SendRequestNatives : public ObjectBackedNativeHandler {
  public:
   SendRequestNatives(RequestSender* request_sender, ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.

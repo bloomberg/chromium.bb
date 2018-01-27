@@ -15,10 +15,12 @@
 namespace extensions {
 
 DocumentCustomBindings::DocumentCustomBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("RegisterElement",
-                base::Bind(&DocumentCustomBindings::RegisterElement,
-                           base::Unretained(this)));
+    : ObjectBackedNativeHandler(context) {}
+
+void DocumentCustomBindings::AddRoutes() {
+  RouteHandlerFunction("RegisterElement",
+                       base::Bind(&DocumentCustomBindings::RegisterElement,
+                                  base::Unretained(this)));
 }
 
 // Attach an event name to an object.

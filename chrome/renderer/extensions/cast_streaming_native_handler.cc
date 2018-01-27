@@ -305,51 +305,59 @@ CastStreamingNativeHandler::CastStreamingNativeHandler(
               ? (((base::Hash(context->extension()->id()) & 0x7fff) << 16) + 1)
               : 1),
       bindings_system_(bindings_system),
-      weak_factory_(this) {
-  RouteFunction("CreateSession", "cast.streaming.session",
-                base::Bind(&CastStreamingNativeHandler::CreateCastSession,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("DestroyCastRtpStream", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::DestroyCastRtpStream,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction(
-      "GetSupportedParamsCastRtpStream", "cast.streaming.rtpStream",
-      base::Bind(&CastStreamingNativeHandler::GetSupportedParamsCastRtpStream,
-                 weak_factory_.GetWeakPtr()));
-  RouteFunction("StartCastRtpStream", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::StartCastRtpStream,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("StopCastRtpStream", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::StopCastRtpStream,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("DestroyCastUdpTransport", "cast.streaming.udpTransport",
-                base::Bind(&CastStreamingNativeHandler::DestroyCastUdpTransport,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction(
-      "SetDestinationCastUdpTransport", "cast.streaming.udpTransport",
-      base::Bind(&CastStreamingNativeHandler::SetDestinationCastUdpTransport,
-                 weak_factory_.GetWeakPtr()));
-  RouteFunction(
-      "SetOptionsCastUdpTransport", "cast.streaming.udpTransport",
-      base::Bind(&CastStreamingNativeHandler::SetOptionsCastUdpTransport,
-                 weak_factory_.GetWeakPtr()));
-  RouteFunction("ToggleLogging", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::ToggleLogging,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("GetRawEvents", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::GetRawEvents,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("GetStats", "cast.streaming.rtpStream",
-                base::Bind(&CastStreamingNativeHandler::GetStats,
-                           weak_factory_.GetWeakPtr()));
-  RouteFunction("StartCastRtpReceiver", "cast.streaming.receiverSession",
-                base::Bind(&CastStreamingNativeHandler::StartCastRtpReceiver,
-                           weak_factory_.GetWeakPtr()));
-}
+      weak_factory_(this) {}
 
 CastStreamingNativeHandler::~CastStreamingNativeHandler() {
   // Note: A superclass's destructor will call Invalidate(), but Invalidate()
   // may also be called at any time before destruction.
+}
+
+void CastStreamingNativeHandler::AddRoutes() {
+  RouteHandlerFunction(
+      "CreateSession", "cast.streaming.session",
+      base::Bind(&CastStreamingNativeHandler::CreateCastSession,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "DestroyCastRtpStream", "cast.streaming.rtpStream",
+      base::Bind(&CastStreamingNativeHandler::DestroyCastRtpStream,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "GetSupportedParamsCastRtpStream", "cast.streaming.rtpStream",
+      base::Bind(&CastStreamingNativeHandler::GetSupportedParamsCastRtpStream,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "StartCastRtpStream", "cast.streaming.rtpStream",
+      base::Bind(&CastStreamingNativeHandler::StartCastRtpStream,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "StopCastRtpStream", "cast.streaming.rtpStream",
+      base::Bind(&CastStreamingNativeHandler::StopCastRtpStream,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "DestroyCastUdpTransport", "cast.streaming.udpTransport",
+      base::Bind(&CastStreamingNativeHandler::DestroyCastUdpTransport,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "SetDestinationCastUdpTransport", "cast.streaming.udpTransport",
+      base::Bind(&CastStreamingNativeHandler::SetDestinationCastUdpTransport,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "SetOptionsCastUdpTransport", "cast.streaming.udpTransport",
+      base::Bind(&CastStreamingNativeHandler::SetOptionsCastUdpTransport,
+                 weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction("ToggleLogging", "cast.streaming.rtpStream",
+                       base::Bind(&CastStreamingNativeHandler::ToggleLogging,
+                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction("GetRawEvents", "cast.streaming.rtpStream",
+                       base::Bind(&CastStreamingNativeHandler::GetRawEvents,
+                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction("GetStats", "cast.streaming.rtpStream",
+                       base::Bind(&CastStreamingNativeHandler::GetStats,
+                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "StartCastRtpReceiver", "cast.streaming.receiverSession",
+      base::Bind(&CastStreamingNativeHandler::StartCastRtpReceiver,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void CastStreamingNativeHandler::Invalidate() {

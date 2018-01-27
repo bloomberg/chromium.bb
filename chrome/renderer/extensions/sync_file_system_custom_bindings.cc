@@ -16,8 +16,10 @@ namespace extensions {
 
 SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
     ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void SyncFileSystemCustomBindings::AddRoutes() {
+  RouteHandlerFunction(
       "GetSyncFileSystemObject", "syncFileSystem",
       base::Bind(&SyncFileSystemCustomBindings::GetSyncFileSystemObject,
                  base::Unretained(this)));

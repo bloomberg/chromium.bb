@@ -28,6 +28,9 @@ class APIActivityLogger : public ObjectBackedNativeHandler {
   APIActivityLogger(ScriptContext* context, Dispatcher* dispatcher);
   ~APIActivityLogger() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Notifies the browser that an API method has been called, if and only if
   // activity logging is enabled.
   static void LogAPICall(v8::Local<v8::Context> context,

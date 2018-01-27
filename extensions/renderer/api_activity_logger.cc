@@ -25,14 +25,17 @@ bool g_log_for_testing = false;
 
 APIActivityLogger::APIActivityLogger(ScriptContext* context,
                                      Dispatcher* dispatcher)
-    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
-  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogForJS,
-                                       base::Unretained(this), EVENT));
-  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogForJS,
-                                         base::Unretained(this), APICALL));
-}
+    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {}
 
 APIActivityLogger::~APIActivityLogger() {}
+
+void APIActivityLogger::AddRoutes() {
+  RouteHandlerFunction("LogEvent", base::Bind(&APIActivityLogger::LogForJS,
+                                              base::Unretained(this), EVENT));
+  RouteHandlerFunction("LogAPICall",
+                       base::Bind(&APIActivityLogger::LogForJS,
+                                  base::Unretained(this), APICALL));
+}
 
 // static
 void APIActivityLogger::LogAPICall(

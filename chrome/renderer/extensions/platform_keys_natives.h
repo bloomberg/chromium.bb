@@ -16,6 +16,9 @@ class PlatformKeysNatives : public ObjectBackedNativeHandler {
  public:
   explicit PlatformKeysNatives(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // Normalizes algorithm parameters, and then validates the expected parameters
   // for the algorithm/operation combination.

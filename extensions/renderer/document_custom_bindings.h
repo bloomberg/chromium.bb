@@ -13,7 +13,10 @@ class ScriptContext;
 // Implements custom bindings for document-level operations.
 class DocumentCustomBindings : public ObjectBackedNativeHandler {
  public:
-  DocumentCustomBindings(ScriptContext* context);
+  explicit DocumentCustomBindings(ScriptContext* context);
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
 
  private:
   // Registers the provided element as a custom element in Blink.

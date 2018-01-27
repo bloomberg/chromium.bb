@@ -17,8 +17,10 @@ namespace extensions {
 
 FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
     ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void FileBrowserHandlerCustomBindings::AddRoutes() {
+  RouteHandlerFunction(
       "GetExternalFileEntry", "fileBrowserHandler",
       base::Bind(
           &FileBrowserHandlerCustomBindings::GetExternalFileEntryCallback,

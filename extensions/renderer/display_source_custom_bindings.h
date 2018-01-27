@@ -22,8 +22,10 @@ class DisplaySourceCustomBindings : public ObjectBackedNativeHandler {
  public:
   DisplaySourceCustomBindings(ScriptContext* context,
                               ExtensionBindingsSystem* bindings_system);
-
   ~DisplaySourceCustomBindings() override;
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
 
  private:
   //  ObjectBackedNativeHandler override.

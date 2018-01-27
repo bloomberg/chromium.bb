@@ -18,15 +18,18 @@ namespace extensions {
 class ScriptContext;
 
 // An ObjectBackedNativeHandler is a factory for JS objects with functions on
-// them that map to native C++ functions. Subclasses should call RouteFunction()
-// in their constructor to define functions on the created JS objects.
+// them that map to native C++ functions. Subclasses should call
+// RouteHandlerFunction() in their constructor to define functions on the
+// created JS objects.
 class ObjectBackedNativeHandler : public NativeHandler {
  public:
   explicit ObjectBackedNativeHandler(ScriptContext* context);
   ~ObjectBackedNativeHandler() override;
 
+  // NativeHandler:
+  void Initialize() final;
   // Create an object with bindings to the native functions defined through
-  // RouteFunction().
+  // RouteHandlerFunction().
   v8::Local<v8::Object> NewInstance() override;
 
   v8::Isolate* GetIsolate() const;
@@ -34,6 +37,8 @@ class ObjectBackedNativeHandler : public NativeHandler {
  protected:
   typedef base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&)>
       HandlerFunction;
+
+  virtual void AddRoutes() = 0;
 
   // Installs a new 'route' from |name| to |handler_function|. This means that
   // NewInstance()s of this ObjectBackedNativeHandler will have a property
@@ -47,11 +52,11 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // for. If the associated ScriptContext does not have access to that feature,
   // the |handler_function| is not invoked.
   // TODO(devlin): Deprecate the version that doesn't take a |feature_name|.
-  void RouteFunction(const std::string& name,
-                     const HandlerFunction& handler_function);
-  void RouteFunction(const std::string& name,
-                     const std::string& feature_name,
-                     const HandlerFunction& handler_function);
+  void RouteHandlerFunction(const std::string& name,
+                            const HandlerFunction& handler_function);
+  void RouteHandlerFunction(const std::string& name,
+                            const std::string& feature_name,
+                            const HandlerFunction& handler_function);
 
   ScriptContext* context() const { return context_; }
 
@@ -90,12 +95,19 @@ class ObjectBackedNativeHandler : public NativeHandler {
                             const char* key);
 
  private:
-  // Callback for RouteFunction which routes the V8 call to the correct
+  // Callback for RouteHandlerFunction which routes the V8 call to the correct
   // base::Bound callback.
   static void Router(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // When RouteFunction is called we create a v8::Object to hold the data we
-  // need when handling it in Router() - this is the base::Bound function to
+  enum InitState {
+    kUninitialized,
+    kInitializingRoutes,
+    kInitialized,
+  };
+  InitState init_state_ = kUninitialized;
+
+  // When RouteHandlerFunction is called we create a v8::Object to hold the data
+  // we need when handling it in Router() - this is the base::Bound function to
   // route to.
   //
   // We need a v8::Object because it's possible for v8 to outlive the

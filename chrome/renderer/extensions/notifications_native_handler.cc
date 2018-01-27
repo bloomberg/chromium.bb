@@ -17,8 +17,10 @@
 namespace extensions {
 
 NotificationsNativeHandler::NotificationsNativeHandler(ScriptContext* context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction(
+    : ObjectBackedNativeHandler(context) {}
+
+void NotificationsNativeHandler::AddRoutes() {
+  RouteHandlerFunction(
       "GetNotificationImageSizes", "notifications",
       base::Bind(&NotificationsNativeHandler::GetNotificationImageSizes,
                  base::Unretained(this)));

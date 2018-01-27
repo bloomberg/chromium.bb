@@ -20,6 +20,9 @@ class NativeHandler {
   NativeHandler();
   virtual ~NativeHandler();
 
+  // Initializes the native handler.
+  virtual void Initialize() = 0;
+
   // Create a new instance of the object this handler specifies.
   virtual v8::Local<v8::Object> NewInstance() = 0;
 

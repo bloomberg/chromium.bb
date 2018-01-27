@@ -13,7 +13,10 @@ class ScriptContext;
 // Implements custom bindings for the contextMenus API.
 class ContextMenusCustomBindings : public ObjectBackedNativeHandler {
  public:
-  ContextMenusCustomBindings(ScriptContext* context);
+  explicit ContextMenusCustomBindings(ScriptContext* context);
+
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
 };
 
 }  // extensions

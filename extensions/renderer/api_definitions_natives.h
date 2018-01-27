@@ -18,6 +18,9 @@ class ApiDefinitionsNatives : public ObjectBackedNativeHandler {
  public:
   ApiDefinitionsNatives(Dispatcher* dispatcher, ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
  private:
   // Returns the list of all schemas that are available to the calling context.
   void GetExtensionAPIDefinitionsForTest(

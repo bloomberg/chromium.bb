@@ -29,6 +29,9 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
   explicit WebstoreBindings(ScriptContext* context);
   ~WebstoreBindings() override;
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // mojom::InlineInstallProgressListener:
   void InlineInstallStageChanged(api::webstore::InstallStage stage) override;
   void InlineInstallDownloadProgress(int percent_downloaded) override;

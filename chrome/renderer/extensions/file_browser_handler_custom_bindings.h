@@ -16,6 +16,9 @@ class FileBrowserHandlerCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit FileBrowserHandlerCustomBindings(ScriptContext* context);
 
+  // ObjectBackedNativeHandler:
+  void AddRoutes() override;
+
   // Public static implementation of GetExternalFileEntry() for use by
   // FileManagerPrivate native handler.
   static void GetExternalFileEntry(
