@@ -100,15 +100,19 @@ void PrivetPrinterHandler::LocalPrinterChanged(
     bool has_local_printing,
     const cloud_print::DeviceDescription& description) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (has_local_printing ||
-      command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
-    auto printer_info = std::make_unique<base::DictionaryValue>();
-    FillPrinterDescription(name, description, has_local_printing,
-                           printer_info.get());
-    base::ListValue printers;
-    printers.Set(0, std::move(printer_info));
-    added_printers_callback_.Run(printers);
+  if (!added_printers_callback_ ||
+      (!has_local_printing &&
+       !command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos))) {
+    // If Print Preview is not expecting this printer (callback reset or no
+    // registration promos and not a local printer), return early.
+    return;
   }
+  auto printer_info = std::make_unique<base::DictionaryValue>();
+  FillPrinterDescription(name, description, has_local_printing,
+                         printer_info.get());
+  base::ListValue printers;
+  printers.Set(0, std::move(printer_info));
+  added_printers_callback_.Run(printers);
 }
 
 void PrivetPrinterHandler::LocalPrinterRemoved(const std::string& name) {}
