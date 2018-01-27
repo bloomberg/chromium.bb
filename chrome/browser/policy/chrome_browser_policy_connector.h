@@ -42,6 +42,9 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   // class to notify observers.
   void OnResourceBundleCreated();
 
+  // TODO(sky): remove. Temporary until resolve ordering.
+  void InitPolicyProviders();
+
   void Init(
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;

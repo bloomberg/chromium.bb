@@ -71,6 +71,18 @@ void ChromeBrowserPolicyConnector::OnResourceBundleCreated() {
   BrowserPolicyConnectorBase::OnResourceBundleCreated();
 }
 
+void ChromeBrowserPolicyConnector::InitPolicyProviders() {
+  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers;
+  std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
+      CreatePlatformProvider();
+  if (platform_provider) {
+    platform_provider_ = platform_provider.get();
+    providers.push_back(std::move(platform_provider));
+  }
+  BuildPolicyProviders(&providers);
+  SetPolicyProviders(std::move(providers));
+}
+
 void ChromeBrowserPolicyConnector::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
@@ -83,16 +95,6 @@ void ChromeBrowserPolicyConnector::Init(
       kServiceInitializationStartupDelay);
 
   InitInternal(local_state, std::move(device_management_service));
-
-  std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers;
-  std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
-      CreatePlatformProvider();
-  if (platform_provider) {
-    platform_provider_ = platform_provider.get();
-    providers.push_back(std::move(platform_provider));
-  }
-  BuildPolicyProviders(&providers);
-  SetPolicyProviders(std::move(providers));
 }
 
 ConfigurationPolicyProvider*
