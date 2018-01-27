@@ -45,7 +45,7 @@
         "didRemoveDOMAttr",
         "domContentLoadedEventFired",
         "frameDocumentUpdated",
-        "frameDisconnected",
+        "frameOwnerContentUpdated",
         "pseudoElementCreated",
         "pseudoElementDestroyed",
         "willModifyDOMAttr",

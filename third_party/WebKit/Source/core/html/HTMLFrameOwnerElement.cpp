@@ -36,7 +36,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/RootScrollerController.h"
-#include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/heap/HeapAllocator.h"
@@ -107,12 +106,8 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
   if (!content_frame_)
     return;
 
-  Frame* frame = content_frame_;
   DCHECK_EQ(content_frame_->Owner(), this);
   content_frame_ = nullptr;
-
-  if (frame->IsLocalFrame())
-    probe::frameDisconnected(ToLocalFrame(frame), this);
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->DecrementConnectedSubframeCount();

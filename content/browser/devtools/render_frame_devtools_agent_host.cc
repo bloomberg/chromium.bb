@@ -321,11 +321,9 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
       protocol::TracingHandler::Renderer,
       frame_tree_node_ ? frame_tree_node_->frame_tree_node_id() : 0,
       GetIOContext())));
-  if (frame_tree_node_ && !frame_tree_node_->parent()) {
-    session->AddHandler(
-        base::WrapUnique(new protocol::PageHandler(emulation_handler)));
-    session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
-  }
+  session->AddHandler(
+      base::WrapUnique(new protocol::PageHandler(emulation_handler)));
+  session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
 
   if (EnsureAgent())
     session->AttachToAgent(agent_ptr_);

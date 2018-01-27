@@ -52,6 +52,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -2018,11 +2019,16 @@ void InspectorDOMAgent::FrameDocumentUpdated(LocalFrame* frame) {
   SetDocument(document);
 }
 
-void InspectorDOMAgent::FrameDisconnected(LocalFrame* frame,
-                                          HTMLFrameOwnerElement* frame_owner) {
-  // frame_owner does not point to frame at this point, so Unbind it explicitly.
-  Unbind(frame->GetDocument(), document_node_to_id_map_.Get());
-  // Revalidating owner will serialize empty frame owner - that's what we are
+void InspectorDOMAgent::FrameOwnerContentUpdated(
+    LocalFrame* frame,
+    HTMLFrameOwnerElement* frame_owner) {
+  if (!frame_owner->contentDocument()) {
+    // frame_owner does not point to frame at this point, so Unbind it
+    // explicitly.
+    Unbind(frame->GetDocument(), document_node_to_id_map_.Get());
+  }
+
+  // Revalidating owner can serialize empty frame owner - that's what we are
   // looking for when disconnecting.
   InvalidateFrameOwnerElement(frame_owner);
 }

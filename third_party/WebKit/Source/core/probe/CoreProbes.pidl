@@ -121,7 +121,7 @@ interface CoreProbes {
   void willCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void frameDocumentUpdated([Keep] LocalFrame*);
-  void frameDisconnected([Keep] LocalFrame*, HTMLFrameOwnerElement*);
+  void frameOwnerContentUpdated([Keep] LocalFrame*, HTMLFrameOwnerElement*);
   void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);
   void frameStoppedLoading([Keep] LocalFrame*);
   void frameScheduledNavigation([Keep] LocalFrame*, ScheduledNavigation*);

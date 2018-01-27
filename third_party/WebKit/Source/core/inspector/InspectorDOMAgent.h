@@ -230,7 +230,7 @@ class CORE_EXPORT InspectorDOMAgent final
   void DidPerformElementShadowDistribution(Element*);
   void DidPerformSlotDistribution(HTMLSlotElement*);
   void FrameDocumentUpdated(LocalFrame*);
-  void FrameDisconnected(LocalFrame*, HTMLFrameOwnerElement*);
+  void FrameOwnerContentUpdated(LocalFrame*, HTMLFrameOwnerElement*);
   void PseudoElementCreated(PseudoElement*);
   void PseudoElementDestroyed(PseudoElement*);
 
