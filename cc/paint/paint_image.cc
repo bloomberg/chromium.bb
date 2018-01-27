@@ -150,6 +150,10 @@ bool PaintImage::Decode(void* memory,
   // We only support decode to supported decode size.
   DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
 
+  // We don't support SkImageInfo's with color spaces on them. Color spaces
+  // should always be passed via the |color_space| arg.
+  DCHECK(!info->colorSpace());
+
   // TODO(vmpstr): If we're using a subset_rect_ then the info specifies the
   // requested size relative to the subset. However, the generator isn't aware
   // of this subsetting and would need a size that is relative to the original

@@ -157,6 +157,7 @@ class CC_EXPORT GpuImageDecodeCache
   void SetImageDecodingFailedForTesting(const DrawImage& image);
   bool DiscardableIsLockedForTesting(const DrawImage& image);
   bool IsInInUseCacheForTesting(const DrawImage& image) const;
+  sk_sp<SkImage> GetSWImageDecodeForTesting(const DrawImage& image);
 
  private:
   enum class DecodedDataMode { kGpu, kCpu, kTransferCache };
@@ -212,6 +213,9 @@ class CC_EXPORT GpuImageDecodeCache
       DCHECK(is_locked());
       return image_;
     }
+
+    // Test-only functions.
+    sk_sp<SkImage> ImageForTesting() const { return image_; }
 
     bool decode_failure = false;
     // Similar to |task|, but only is generated if there is no associated upload
