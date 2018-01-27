@@ -150,6 +150,7 @@ void ServiceWorkerDataPipeReader::AsyncComplete() {
   switch (state()) {
     case State::kStreaming:
       NOTREACHED();
+      break;
     case State::kCompleted:
       stream_pending_buffer_ = nullptr;
       stream_pending_buffer_size_ = 0;
