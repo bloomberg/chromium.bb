@@ -29,9 +29,6 @@ class FakeWebTaskRunner : public WebTaskRunner {
   // base::SingleThreadTaskRunner implementation:
   bool RunsTasksInCurrentSequence() const override;
 
-  // WebTaskRunner implementation:
-  double MonotonicallyIncreasingVirtualTimeSeconds() const override;
-
   void RunUntilIdle();
   void AdvanceTimeAndRun(base::TimeDelta delta);
   void AdvanceTimeAndRun(double delta_seconds) {

@@ -70,12 +70,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
                                base::OnceClosure,
                                base::TimeDelta) = 0;
 
-  // Returns a microsecond resolution platform dependant time source.
-  // This may represent either the real time, or a virtual time depending on
-  // whether or not the WebTaskRunner is associated with a virtual time domain
-  // or a real time domain.
-  virtual double MonotonicallyIncreasingVirtualTimeSeconds() const = 0;
-
   // Helpers for posting bound functions as tasks.
 
   // For same-thread posting. Must be called from the associated WebThread.

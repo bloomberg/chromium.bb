@@ -203,99 +203,102 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
 
 namespace {
 
-void RunVirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
-                                scoped_refptr<WebTaskRunner> task_runner,
-                                std::vector<base::TimeTicks>* out_real_times,
-                                std::vector<size_t>* out_virtual_times_ms) {
+void RunVirtualTimeRecorderTask(
+    base::SimpleTestTickClock* clock,
+    RendererSchedulerImpl* scheduler,
+    std::vector<base::TimeTicks>* out_real_times,
+    std::vector<base::TimeTicks>* out_virtual_times) {
   out_real_times->push_back(clock->NowTicks());
-  out_virtual_times_ms->push_back(
-      task_runner->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
+  out_virtual_times->push_back(scheduler->GetVirtualTimeDomain()->Now());
 }
 
 base::OnceClosure MakeVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
-    scoped_refptr<WebTaskRunner> task_runner,
+    RendererSchedulerImpl* scheduler,
     std::vector<base::TimeTicks>* out_real_times,
-    std::vector<size_t>* out_virtual_times_ms) {
+    std::vector<base::TimeTicks>* out_virtual_times) {
   return WTF::Bind(&RunVirtualTimeRecorderTask, WTF::Unretained(clock),
-                   WTF::Passed(std::move(task_runner)),
-                   WTF::Unretained(out_real_times),
-                   WTF::Unretained(out_virtual_times_ms));
+                   WTF::Unretained(scheduler), WTF::Unretained(out_real_times),
+                   WTF::Unretained(out_virtual_times));
 }
 }
 
 TEST_F(WebViewSchedulerImplTest, VirtualTime_TimerFastForwarding) {
   std::vector<base::TimeTicks> real_times;
-  std::vector<size_t> virtual_times_ms;
-  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
-  size_t initial_virtual_time_ms =
-      ThrottleableTaskRunner()->MonotonicallyIncreasingVirtualTimeSeconds() *
-      1000.0;
+  std::vector<base::TimeTicks> virtual_times;
 
   web_view_scheduler_->EnableVirtualTime();
 
+  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
+  base::TimeTicks initial_virtual_time =
+      scheduler_->GetVirtualTimeDomain()->Now();
+
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(2));
 
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(20));
 
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(200));
 
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time,
                                       initial_real_time));
-  EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 2,
-                                            initial_virtual_time_ms + 20,
-                                            initial_virtual_time_ms + 200));
+  EXPECT_THAT(
+      virtual_times,
+      ElementsAre(initial_virtual_time + TimeDelta::FromMilliseconds(2),
+                  initial_virtual_time + TimeDelta::FromMilliseconds(20),
+                  initial_virtual_time + TimeDelta::FromMilliseconds(200)));
 }
 
 TEST_F(WebViewSchedulerImplTest, VirtualTime_LoadingTaskFastForwarding) {
   std::vector<base::TimeTicks> real_times;
-  std::vector<size_t> virtual_times_ms;
-  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
-  size_t initial_virtual_time_ms =
-      ThrottleableTaskRunner()->MonotonicallyIncreasingVirtualTimeSeconds() *
-      1000.0;
+  std::vector<base::TimeTicks> virtual_times;
 
   web_view_scheduler_->EnableVirtualTime();
 
+  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
+  base::TimeTicks initial_virtual_time =
+      scheduler_->GetVirtualTimeDomain()->Now();
+
   LoadingTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, LoadingTaskRunner(), &real_times,
-                                  &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(2));
 
   LoadingTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, LoadingTaskRunner(), &real_times,
-                                  &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(20));
 
   LoadingTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, LoadingTaskRunner(), &real_times,
-                                  &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(200));
 
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time,
                                       initial_real_time));
-  EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 2,
-                                            initial_virtual_time_ms + 20,
-                                            initial_virtual_time_ms + 200));
+  EXPECT_THAT(
+      virtual_times,
+      ElementsAre(initial_virtual_time + TimeDelta::FromMilliseconds(2),
+                  initial_virtual_time + TimeDelta::FromMilliseconds(20),
+                  initial_virtual_time + TimeDelta::FromMilliseconds(200)));
 }
 
 TEST_F(WebViewSchedulerImplTest,
@@ -602,36 +605,36 @@ TEST_F(WebViewSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
 
 TEST_F(WebViewSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
   std::vector<base::TimeTicks> real_times;
-  std::vector<size_t> virtual_times_ms;
-  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
-  size_t initial_virtual_time_ms =
-      ThrottleableTaskRunner()->MonotonicallyIncreasingVirtualTimeSeconds() *
-      1000.0;
+  std::vector<base::TimeTicks> virtual_times;
 
   web_view_scheduler_->EnableVirtualTime();
 
+  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
+  base::TimeTicks initial_virtual_time =
+      scheduler_->GetVirtualTimeDomain()->Now();
+
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(1));
 
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(2));
 
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(5));
 
   ThrottleableTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      MakeVirtualTimeRecorderTask(&clock_, ThrottleableTaskRunner(),
-                                  &real_times, &virtual_times_ms),
+      MakeVirtualTimeRecorderTask(&clock_, scheduler_.get(), &real_times,
+                                  &virtual_times),
       TimeDelta::FromMilliseconds(7));
 
   web_view_scheduler_->GrantVirtualTimeBudget(
@@ -648,9 +651,11 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
   // expires will not run.
   EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time,
                                       initial_real_time));
-  EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 1,
-                                            initial_virtual_time_ms + 2,
-                                            initial_virtual_time_ms + 5));
+  EXPECT_THAT(
+      virtual_times,
+      ElementsAre(initial_virtual_time + base::TimeDelta::FromMilliseconds(1),
+                  initial_virtual_time + base::TimeDelta::FromMilliseconds(2),
+                  initial_virtual_time + base::TimeDelta::FromMilliseconds(5)));
 }
 
 namespace {

@@ -43,10 +43,6 @@ class WebTaskRunnerProxy : public WebTaskRunner {
         location, std::move(closure), time_delta);
   }
 
-  double MonotonicallyIncreasingVirtualTimeSeconds() const override {
-    return 0.0;
-  }
-
   bool RunsTasksInCurrentSequence() const override {
     return task_runner_->RunsTasksInCurrentSequence();
   }

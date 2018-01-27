@@ -29,9 +29,6 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   // base::SingleThreadTaskRunner implementation:
   bool RunsTasksInCurrentSequence() const override;
 
-  // WebTaskRunner implementation:
-  double MonotonicallyIncreasingVirtualTimeSeconds() const override;
-
   TaskQueue* GetTaskQueue() const { return task_queue_.get(); }
 
  protected:
@@ -46,8 +43,6 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
                     base::Optional<TaskType> task_type);
   ~WebTaskRunnerImpl() override;
-
-  base::TimeTicks Now() const;
 
   scoped_refptr<TaskQueue> task_queue_;
   base::Optional<TaskType> task_type_;
