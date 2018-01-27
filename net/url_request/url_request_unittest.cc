@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <limits>
 
 #include "base/base64url.h"
@@ -29,7 +30,6 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -7223,7 +7223,7 @@ std::unique_ptr<test_server::HttpResponse> SendNelHeader(
 
 std::unique_ptr<test_server::HttpResponse> SendEmptyResponse(
     const test_server::HttpRequest& request) {
-  return base::MakeUnique<test_server::RawHttpResponse>("", "");
+  return std::make_unique<test_server::RawHttpResponse>("", "");
 }
 
 }  // namespace

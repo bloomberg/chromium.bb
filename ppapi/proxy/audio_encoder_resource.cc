@@ -4,7 +4,8 @@
 
 #include "ppapi/proxy/audio_encoder_resource.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_codecs.h"
@@ -232,7 +233,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(0, &buffer_handle) ||
       !audio_buffer_manager_.SetBuffers(
           audio_buffer_count, audio_buffer_size,
-          base::MakeUnique<base::SharedMemory>(buffer_handle, false), true)) {
+          std::make_unique<base::SharedMemory>(buffer_handle, false), true)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;
   }
@@ -241,7 +242,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(1, &buffer_handle) ||
       !bitstream_buffer_manager_.SetBuffers(
           bitstream_buffer_count, bitstream_buffer_size,
-          base::MakeUnique<base::SharedMemory>(buffer_handle, false), false)) {
+          std::make_unique<base::SharedMemory>(buffer_handle, false), false)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;
   }

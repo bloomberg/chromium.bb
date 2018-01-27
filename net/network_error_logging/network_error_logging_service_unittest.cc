@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -107,7 +106,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   void CreateReportingService() {
     DCHECK(!reporting_service_);
 
-    reporting_service_ = base::MakeUnique<TestReportingService>();
+    reporting_service_ = std::make_unique<TestReportingService>();
     service_->SetReportingService(reporting_service_.get());
   }
 

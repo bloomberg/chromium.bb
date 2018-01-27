@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +68,7 @@ class PrintBackendCupsIppUtilTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ipp_ = ippNew();
-    printer_ = base::MakeUnique<MockCupsOptionProvider>();
+    printer_ = std::make_unique<MockCupsOptionProvider>();
   }
 
   void TearDown() override {

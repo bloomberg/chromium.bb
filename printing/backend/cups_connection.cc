@@ -5,12 +5,12 @@
 #include "printing/backend/cups_connection.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "printing/backend/cups_jobs.h"
 
@@ -140,7 +140,7 @@ std::unique_ptr<CupsPrinter> CupsConnection::GetPrinter(
     return nullptr;
 
   cups_dinfo_t* info = cupsCopyDestInfo(cups_http_.get(), dest);
-  return base::MakeUnique<CupsPrinter>(
+  return std::make_unique<CupsPrinter>(
       cups_http_.get(), std::unique_ptr<cups_dest_t, DestinationDeleter>(dest),
       std::unique_ptr<cups_dinfo_t, DestInfoDeleter>(info));
 }

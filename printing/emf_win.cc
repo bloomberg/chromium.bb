@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -260,7 +259,7 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
         if (!DIBFormatNativelySupported(hdc, CHECKPNGFORMAT, bits,
                                         bmih->biSizeImage)) {
           play_normally = false;
-          bitmap = base::MakeUnique<SkBitmap>();
+          bitmap = std::make_unique<SkBitmap>();
           gfx::PNGCodec::Decode(bits, bmih->biSizeImage, bitmap.get());
         }
       }

@@ -5,8 +5,8 @@
 #include "ppapi/proxy/flash_font_file_resource.h"
 
 #include <cstring>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -72,7 +72,7 @@ const std::string* FlashFontFileResource::GetFontTable(uint32_t table) const {
 const std::string* FlashFontFileResource::AddFontTable(
     uint32_t table,
     const std::string& contents) {
-  auto contents_copy = base::MakeUnique<std::string>(contents);
+  auto contents_copy = std::make_unique<std::string>(contents);
   std::string* contents_copy_ptr = contents_copy.get();
   font_tables_[table] = std::move(contents_copy);
   return contents_copy_ptr;

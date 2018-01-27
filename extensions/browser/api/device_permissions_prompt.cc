@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/device_permissions_prompt.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -253,7 +254,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   void DeviceAdded(device::mojom::HidDeviceInfoPtr device) override {
     if (HasUnprotectedCollections(*device) &&
         (filters_.empty() || HidDeviceFilter::MatchesAny(*device, filters_))) {
-      auto device_info = base::MakeUnique<HidDeviceInfo>(std::move(device));
+      auto device_info = std::make_unique<HidDeviceInfo>(std::move(device));
 #if defined(OS_CHROMEOS)
       chromeos::PermissionBrokerClient* client =
           chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();

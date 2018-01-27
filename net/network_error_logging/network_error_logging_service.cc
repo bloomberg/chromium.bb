@@ -335,7 +335,7 @@ void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
 std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
     const std::string& type,
     const NetworkErrorLoggingDelegate::ErrorDetails& details) const {
-  auto body = base::MakeUnique<base::DictionaryValue>();
+  auto body = std::make_unique<base::DictionaryValue>();
 
   body->SetString(kUriKey, details.uri.spec());
   body->SetString(kReferrerKey, details.referrer.spec());

@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -168,7 +169,7 @@ class FakeHidManager : public device::mojom::HidManager {
     // Strong binds a instance of FakeHidConnctionImpl.
     device::mojom::HidConnectionPtr client;
     mojo::MakeStrongBinding(
-        base::MakeUnique<FakeHidConnectionImpl>(devices_[device_guid]->Clone()),
+        std::make_unique<FakeHidConnectionImpl>(devices_[device_guid]->Clone()),
         mojo::MakeRequest(&client));
     std::move(callback).Run(std::move(client));
   }
@@ -255,7 +256,7 @@ class HidApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    fake_hid_manager_ = base::MakeUnique<FakeHidManager>();
+    fake_hid_manager_ = std::make_unique<FakeHidManager>();
     // Because Device Service also runs in this process(browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.

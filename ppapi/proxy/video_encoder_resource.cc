@@ -4,9 +4,9 @@
 
 #include "ppapi/proxy/video_encoder_resource.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_array_output.h"
@@ -351,7 +351,7 @@ void VideoEncoderResource::OnPluginMsgGetVideoFramesReply(
 
   if (!buffer_manager_.SetBuffers(
           frame_count, frame_length,
-          base::MakeUnique<base::SharedMemory>(buffer_handle, false), true)) {
+          std::make_unique<base::SharedMemory>(buffer_handle, false), true)) {
     NotifyError(PP_ERROR_FAILED);
     return;
   }
@@ -401,7 +401,7 @@ void VideoEncoderResource::OnPluginMsgBitstreamBuffers(
         new base::SharedMemory(shm_handles[i], true));
     CHECK(shm->Map(buffer_length));
 
-    auto buffer = base::MakeUnique<ShmBuffer>(i, std::move(shm));
+    auto buffer = std::make_unique<ShmBuffer>(i, std::move(shm));
     bitstream_buffer_map_.insert(
         std::make_pair(buffer->shm->memory(), buffer->id));
     shm_buffers_.push_back(std::move(buffer));
