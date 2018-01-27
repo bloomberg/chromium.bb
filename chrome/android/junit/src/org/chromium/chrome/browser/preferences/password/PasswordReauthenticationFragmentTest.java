@@ -11,6 +11,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.os.Bundle;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,11 @@ public class PasswordReauthenticationFragmentTest {
     private void checkPopFromBackStackOnResult(int resultCode) {
         PasswordReauthenticationFragment passwordReauthentication =
                 new PasswordReauthenticationFragment();
+        Bundle args = new Bundle();
+        args.putInt(PasswordReauthenticationFragment.DESCRIPTION_ID, 0);
+        args.putSerializable(PasswordReauthenticationFragment.SCOPE_ID,
+                ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
+        passwordReauthentication.setArguments(args);
 
         // Replacement fragment for PasswordEntryEditor, which is the fragment that
         // replaces PasswordReauthentication after popBackStack is called.
