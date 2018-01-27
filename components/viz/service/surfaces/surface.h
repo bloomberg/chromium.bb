@@ -229,7 +229,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void ActivatePendingFrame();
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data);
-  void UpdateActivationDependencies(const CompositorFrame& current_frame);
+
+  // Updates the set of unresolved activation dependenices of the
+  // |current_frame|. If the deadline requested by the frame is 0 then no
+  // dependencies will be added even if they're not yet available.
+  uint32_t UpdateActivationDependencies(const CompositorFrame& current_frame);
   void ComputeChangeInDependencies(
       const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies);
 

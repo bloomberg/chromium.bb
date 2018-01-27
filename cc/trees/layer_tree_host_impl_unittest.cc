@@ -4272,31 +4272,54 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     child->SetPosition(gfx::PointF(25.f * i, 0.f));
     child->SetBounds(gfx::Size(1, 1));
     child->SetDrawsContent(true);
-    child->SetPrimarySurfaceId(primary_surfaces[i], base::nullopt);
+    child->SetPrimarySurfaceId(primary_surfaces[i], 2u);
     child->SetFallbackSurfaceId(fallback_surfaces[i]);
     root->test_properties()->AddChild(std::move(child));
   }
 
   base::flat_set<viz::SurfaceId> fallback_surfaces_set;
-  for (size_t i = 0; i < fallback_surfaces.size(); ++i) {
+  for (size_t i = 0; i < fallback_surfaces.size(); ++i)
     fallback_surfaces_set.insert(fallback_surfaces[i]);
-  }
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->SetSurfaceLayerIds(fallback_surfaces_set);
+  host_impl_->SetFullViewportDamage();
   DrawFrame();
 
-  auto* fake_layer_tree_frame_sink =
-      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-  const viz::CompositorFrameMetadata& metadata =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-  EXPECT_THAT(
-      metadata.activation_dependencies,
-      testing::UnorderedElementsAre(primary_surfaces[0], primary_surfaces[1]));
-  EXPECT_THAT(
-      metadata.referenced_surfaces,
-      testing::UnorderedElementsAre(fallback_surfaces[0], fallback_surfaces[1],
-                                    fallback_surfaces[2]));
+  {
+    auto* fake_layer_tree_frame_sink = static_cast<FakeLayerTreeFrameSink*>(
+        host_impl_->layer_tree_frame_sink());
+    const viz::CompositorFrameMetadata& metadata =
+        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
+    EXPECT_THAT(metadata.activation_dependencies,
+                testing::UnorderedElementsAre(primary_surfaces[0],
+                                              primary_surfaces[1]));
+    EXPECT_THAT(
+        metadata.referenced_surfaces,
+        testing::UnorderedElementsAre(
+            fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
+    EXPECT_EQ(viz::FrameDeadline(2u, false), metadata.deadline);
+  }
+
+  // Verify that on the next frame generation that the deadline is reset.
+  host_impl_->SetFullViewportDamage();
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  DrawFrame();
+
+  {
+    auto* fake_layer_tree_frame_sink = static_cast<FakeLayerTreeFrameSink*>(
+        host_impl_->layer_tree_frame_sink());
+    const viz::CompositorFrameMetadata& metadata =
+        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
+    EXPECT_THAT(metadata.activation_dependencies,
+                testing::UnorderedElementsAre(primary_surfaces[0],
+                                              primary_surfaces[1]));
+    EXPECT_THAT(
+        metadata.referenced_surfaces,
+        testing::UnorderedElementsAre(
+            fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
+    EXPECT_EQ(viz::FrameDeadline(0u, false), metadata.deadline);
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {

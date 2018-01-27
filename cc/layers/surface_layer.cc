@@ -89,7 +89,9 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
   layer_impl->SetPrimarySurfaceId(primary_surface_id_,
                                   std::move(deadline_in_frames_));
-  deadline_in_frames_.reset();
+  // Unless the client explicitly calls SetPrimarySurfaceId again after this
+  // commit, don't block on |primary_surface_id_| again.
+  deadline_in_frames_ = 0u;
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }

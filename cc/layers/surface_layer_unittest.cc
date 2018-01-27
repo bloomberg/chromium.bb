@@ -135,7 +135,8 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
   EXPECT_EQ(fallback_id, layer_impl->fallback_surface_id());
   EXPECT_EQ(SK_ColorGREEN, layer_impl->background_color());
-  EXPECT_EQ(base::nullopt, layer_impl->deadline_in_frames());
+  // The deadline resets back to 0 (no deadline) after the first commit.
+  EXPECT_EQ(0u, layer_impl->deadline_in_frames());
   EXPECT_FALSE(layer_impl->stretch_content_to_fill_bounds());
 }
 
