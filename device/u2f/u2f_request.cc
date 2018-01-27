@@ -51,6 +51,7 @@ void U2fRequest::Transition() {
     case State::WINK:
       state_ = State::BUSY;
       TryDevice();
+      break;
     default:
       break;
   }
