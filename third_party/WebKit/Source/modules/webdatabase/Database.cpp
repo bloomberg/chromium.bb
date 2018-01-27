@@ -373,7 +373,9 @@ void Database::InProgressTransactionCompleted() {
 }
 
 void Database::ScheduleTransaction() {
-  DCHECK(!transaction_in_progress_mutex_.TryLock());  // Locked by caller.
+#if DCHECK_IS_ON()
+  DCHECK(transaction_in_progress_mutex_.Locked());  // Locked by caller.
+#endif                                              // DCHECK_IS_ON()
   SQLTransactionBackend* transaction = nullptr;
 
   if (is_transaction_queue_enabled_ && !transaction_queue_.IsEmpty())
