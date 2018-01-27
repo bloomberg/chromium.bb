@@ -134,7 +134,6 @@ class DatabaseImpl::IDBSequenceHelper {
                                    blink::mojom::QuotaStatusCode status,
                                    int64_t usage,
                                    int64_t quota);
-  void AckReceivedBlobs(const std::vector<std::string>& uuids);
 
  private:
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
@@ -471,11 +470,6 @@ void DatabaseImpl::Commit(int64_t transaction_id) {
   idb_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IDBSequenceHelper::Commit,
                                 base::Unretained(helper_), transaction_id));
-}
-
-void DatabaseImpl::AckReceivedBlobs(const std::vector<std::string>& uuids) {
-  for (const auto& uuid : uuids)
-    dispatcher_host_->DropBlobData(uuid);
 }
 
 DatabaseImpl::IDBSequenceHelper::IDBSequenceHelper(

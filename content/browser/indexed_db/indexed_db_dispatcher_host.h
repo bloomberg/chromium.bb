@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "storage/browser/blob/blob_data_handle.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -34,7 +33,6 @@ class Origin;
 }
 
 namespace content {
-class IndexedDBBlobInfo;
 class IndexedDBContextImpl;
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -66,9 +64,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
     return blob_storage_context_->context();
   }
   int ipc_process_id() const { return ipc_process_id_; }
-
-  std::string HoldBlobData(const IndexedDBBlobInfo& blob_info);
-  void DropBlobData(const std::string& uuid);
 
   // Must be called on the IO thread.
   base::WeakPtr<IndexedDBDispatcherHost> AsWeakPtr() {
@@ -119,13 +114,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-
-  // Maps blob uuid to a pair (handle, ref count). Entry is added and/or count
-  // is incremented in HoldBlobData(), and count is decremented and/or entry
-  // removed in DropBlobData().
-  std::map<std::string,
-           std::pair<std::unique_ptr<storage::BlobDataHandle>, int>>
-      blob_data_handle_map_;
 
   // Used to set file permissions for blob storage.
   const int ipc_process_id_;

@@ -285,20 +285,6 @@ void IDBRequest::SetResultCursor(IDBCursor* cursor,
   EnqueueResultInternal(IDBAny::Create(cursor));
 }
 
-void IDBRequest::AckReceivedBlobs(const IDBValue& value) {
-  if (!transaction_ || !transaction_->BackendDB())
-    return;
-  Vector<String> uuids = value.GetUUIDs();
-  if (!uuids.IsEmpty())
-    transaction_->BackendDB()->AckReceivedBlobs(uuids);
-}
-
-void IDBRequest::AckReceivedBlobs(
-    const Vector<std::unique_ptr<IDBValue>>& values) {
-  for (size_t i = 0; i < values.size(); ++i)
-    AckReceivedBlobs(*values[i]);
-}
-
 bool IDBRequest::ShouldEnqueueEvent() const {
   const ExecutionContext* execution_context = GetExecutionContext();
 
@@ -369,7 +355,6 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
                                 std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
     return EnqueueResponse(std::move(backend), std::move(key),
@@ -385,7 +370,6 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
 void IDBRequest::HandleResponse(std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(value));
@@ -398,7 +382,6 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBValue> value) {
 void IDBRequest::HandleResponse(Vector<std::unique_ptr<IDBValue>> values) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(values);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(values);
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(values));
@@ -413,7 +396,6 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
                                 std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  AckReceivedBlobs(*value);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
     return EnqueueResponse(std::move(key), std::move(primary_key),

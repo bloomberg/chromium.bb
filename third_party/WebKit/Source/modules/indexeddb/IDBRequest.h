@@ -367,8 +367,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                        std::unique_ptr<IDBKey>,
                        std::unique_ptr<IDBKey> primary_key,
                        std::unique_ptr<IDBValue>);
-  void AckReceivedBlobs(const IDBValue&);
-  void AckReceivedBlobs(const Vector<std::unique_ptr<IDBValue>>&);
 
   void EnqueueResponse(DOMException*);
   void EnqueueResponse(std::unique_ptr<IDBKey>);

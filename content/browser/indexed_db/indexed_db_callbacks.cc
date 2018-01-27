@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -172,7 +174,8 @@ class IndexedDBCallbacks::IOThreadHelper {
   void SendSuccessInteger(int64_t value);
   void SendSuccess();
 
-  std::string CreateBlobData(const IndexedDBBlobInfo& blob_info);
+  std::unique_ptr<storage::BlobDataHandle> CreateBlobData(
+      const IndexedDBBlobInfo& blob_info);
   bool CreateAllBlobs(
       const std::vector<IndexedDBBlobInfo>& blob_info,
       std::vector<::indexed_db::mojom::BlobInfoPtr>* blob_or_file_info);
@@ -733,12 +736,14 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccess() {
   callbacks_->Success();
 }
 
-std::string IndexedDBCallbacks::IOThreadHelper::CreateBlobData(
+std::unique_ptr<storage::BlobDataHandle>
+IndexedDBCallbacks::IOThreadHelper::CreateBlobData(
     const IndexedDBBlobInfo& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!blob_info.uuid().empty()) {
     // We're sending back a live blob, not a reference into our backing store.
-    return dispatcher_host_->HoldBlobData(blob_info);
+    return dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
+        blob_info.uuid());
   }
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(blob_info.file_path());
@@ -750,7 +755,13 @@ std::string IndexedDBCallbacks::IOThreadHelper::CreateBlobData(
     if (!blob_info.release_callback().is_null())
       shareable_file->AddFinalReleaseCallback(blob_info.release_callback());
   }
-  return dispatcher_host_->HoldBlobData(blob_info);
+  std::string uuid = base::GenerateGUID();
+  auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
+  blob_data_builder->set_content_type(base::UTF16ToUTF8(blob_info.type()));
+  blob_data_builder->AppendFile(blob_info.file_path(), 0, blob_info.size(),
+                                blob_info.last_modified());
+  return dispatcher_host_->blob_storage_context()->AddFinishedBlob(
+      std::move(blob_data_builder));
 }
 
 bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
@@ -768,12 +779,13 @@ bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
   if (!blob_context)
     return false;
   for (size_t i = 0; i < blob_info.size(); ++i) {
-    std::string uuid = CreateBlobData(blob_info[i]);
+    std::unique_ptr<storage::BlobDataHandle> blob_data =
+        CreateBlobData(blob_info[i]);
+    (*blob_or_file_info)[i]->uuid = blob_data->uuid();
     blink::mojom::BlobPtrInfo blob_ptr_info;
-    storage::BlobImpl::Create(blob_context->GetBlobDataFromUUID(uuid),
+    storage::BlobImpl::Create(std::move(blob_data),
                               MakeRequest(&blob_ptr_info));
     (*blob_or_file_info)[i]->blob = std::move(blob_ptr_info);
-    (*blob_or_file_info)[i]->uuid = std::move(uuid);
   }
   return true;
 }

@@ -152,7 +152,6 @@ class WebIDBDatabaseImpl::IOThreadHelper {
                    const base::string16& new_name);
   void Abort(int64_t transaction_id);
   void Commit(int64_t transaction_id);
-  void AckReceivedBlobs(const std::vector<std::string>& uuids);
 
  private:
   CallbacksAssociatedPtrInfo GetCallbacksProxy(
@@ -527,16 +526,6 @@ void WebIDBDatabaseImpl::Commit(long long transaction_id) {
                                 base::Unretained(helper_), transaction_id));
 }
 
-void WebIDBDatabaseImpl::AckReceivedBlobs(const WebVector<WebString>& uuids) {
-  DCHECK(uuids.size());
-  std::vector<std::string> param(uuids.size());
-  for (size_t i = 0; i < uuids.size(); ++i)
-    param[i] = uuids[i].Latin1().data();
-  io_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IOThreadHelper::AckReceivedBlobs,
-                                base::Unretained(helper_), std::move(param)));
-}
-
 WebIDBDatabaseImpl::IOThreadHelper::IOThreadHelper() {}
 
 WebIDBDatabaseImpl::IOThreadHelper::~IOThreadHelper() {}
@@ -724,11 +713,6 @@ void WebIDBDatabaseImpl::IOThreadHelper::Abort(int64_t transaction_id) {
 
 void WebIDBDatabaseImpl::IOThreadHelper::Commit(int64_t transaction_id) {
   database_->Commit(transaction_id);
-}
-
-void WebIDBDatabaseImpl::IOThreadHelper::AckReceivedBlobs(
-    const std::vector<std::string>& uuids) {
-  database_->AckReceivedBlobs(uuids);
 }
 
 CallbacksAssociatedPtrInfo
