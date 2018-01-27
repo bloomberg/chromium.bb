@@ -256,6 +256,12 @@
           </div>
           <template is="dom-if" if="[[hasWarnings_(data.*)]]">
             <div id="warnings" >
+              <div id="runtime-warnings" aria-describedby="a11yAssociation"
+                  hidden$="[[!data.runtimeWarnings.length]]">
+                <template is="dom-repeat" items="[[data.runtimeWarnings]]">
+                  [[item]]
+                </template>
+              </div>
               <div id="suspicious-warning" aria-describedby="a11yAssociation"
                   hidden$="[[!data.disableReasons.suspiciousInstall]]">
                 $i18n{itemSuspiciousInstall}

@@ -210,6 +210,7 @@ cr.define('extension_test_util', function() {
           manifestErrors: [],
           name: 'Wonderful Extension',
           runtimeErrors: [],
+          runtimeWarnings: [],
           permissions: [],
           state: 'ENABLED',
           type: 'EXTENSION',
