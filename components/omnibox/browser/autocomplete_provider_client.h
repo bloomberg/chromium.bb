@@ -92,6 +92,10 @@ class AutocompleteProviderClient {
   // most commonly-used URLs from that set.
   virtual std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() = 0;
 
+  // The timestamp for the last visit of the page being displayed in the current
+  // tab.
+  virtual base::Time GetCurrentVisitTimestamp() const = 0;
+
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;
 
