@@ -23,43 +23,73 @@ class HEADLESS_EXPORT VirtualTimeController
                         int max_task_starvation_count = 0);
   ~VirtualTimeController() override;
 
-  // Grants a |budget| of virtual time by applying the provided |policy|.
-  //
-  // |set_up_complete_callback|, if set, is run after the (initial) policy was
-  // applied via DevTools. |budget_expired_callback| will be called when the
-  // budget has been exhausted.
-  //
-  // Should not be called again until the previous invocation's
-  // budget_expired_callback was executed.
-  virtual void GrantVirtualTimeBudget(
-      emulation::VirtualTimePolicy policy,
-      base::TimeDelta budget,
-      const base::Callback<void()>& set_up_complete_callback,
-      const base::Callback<void()>& budget_expired_callback);
+  // Signals that virtual time should start advancing. If virtual time is
+  // already running, this does nothing.  When virtual time is ready to start
+  // the observers will be notified.
+  virtual void StartVirtualTime();
 
   class RepeatingTask {
    public:
+    // This policy controls whether or not StartVirtualTime() should wait for a
+    // navigation first.
+    enum StartPolicy {
+      WAIT_FOR_NAVIGATION,
+      START_IMMEDIATELY,
+    };
+
+    explicit RepeatingTask(StartPolicy start_policy, int priority)
+        : start_policy_(start_policy), priority_(priority) {}
+
     virtual ~RepeatingTask() {}
+
+    enum class ContinuePolicy {
+      CONTINUE_MORE_TIME_NEEDED,
+      NOT_REQUIRED,
+    };
 
     // Called when the tasks's requested virtual time interval has elapsed.
     // |virtual_time_offset| is the virtual time duration that has advanced
-    // since the page started loading (millisecond granularity). The task should
-    // call |continue_callback| when it is ready for virtual time to continue
-    // advancing.
+    // since the page started loading (millisecond granularity). When the task
+    // has completed it's perioodic work it should call |continue_callback|
+    // with CONTINUE_MORE_TIME_NEEDED if it wants virtual time to continue
+    // advancing, or NOT_REQUIRED otherwise.  Virtual time will continue to
+    // advance until all RepeatingTasks want it to stop.
     virtual void IntervalElapsed(
         base::TimeDelta virtual_time_offset,
-        const base::Callback<void()>& continue_callback) = 0;
+        base::OnceCallback<void(ContinuePolicy policy)> continue_callback) = 0;
 
-    // Called when a new virtual time budget grant was requested. The task
-    // should call |continue_callback| when it is ready for virtual time to
-    // continue advancing.
-    virtual void BudgetRequested(
-        base::TimeDelta virtual_time_offset,
-        base::TimeDelta requested_budget,
-        const base::Callback<void()>& continue_callback) = 0;
+    StartPolicy start_policy() const { return start_policy_; }
 
-    // Called when the latest virtual time budget has been used up.
-    virtual void BudgetExpired(base::TimeDelta virtual_time_offset) = 0;
+    int priority() const { return priority_; }
+
+   private:
+    const StartPolicy start_policy_;
+
+    // If more than one RepeatingTask is scheduled to run at any instant they
+    // are run in order of ascending |priority_|.
+    const int priority_;
+  };
+
+  // An API used by the CompositorController to defer the start of virtual time
+  // until it's ready.
+  class StartDeferrer {
+   public:
+    virtual ~StartDeferrer() {}
+
+    virtual void DeferStart(base::OnceClosure ready_callback) = 0;
+  };
+
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when StartVirtualTime was called. May be delayed by a
+    // StartDeferrer.
+    virtual void VirtualTimeStarted(base::TimeDelta virtual_time_offset) = 0;
+
+    // Called when all RepeatingTasks have either voted for virtual time to stop
+    // advancing, or all have been removed.
+    virtual void VirtualTimeStopped(base::TimeDelta virtual_time_offset) = 0;
   };
 
   // Interleaves execution of the provided |task| with progression of virtual
@@ -71,6 +101,10 @@ class HEADLESS_EXPORT VirtualTimeController
   virtual void ScheduleRepeatingTask(RepeatingTask* task,
                                      base::TimeDelta interval);
   virtual void CancelRepeatingTask(RepeatingTask* task);
+
+  // Adds an observer which is notified when virtual time starts and stops.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Returns the time that virtual time offsets are relative to.
   virtual base::Time GetVirtualTimeBase() const;
@@ -85,13 +119,18 @@ class HEADLESS_EXPORT VirtualTimeController
     return GetVirtualTimeBase() + GetCurrentVirtualTimeOffset();
   }
 
+  virtual void SetStartDeferrer(StartDeferrer* start_deferrer);
+
  private:
   struct TaskEntry {
-    RepeatingTask* task;
     base::TimeDelta interval;
     base::TimeDelta next_execution_time;
     bool ready_to_advance = true;
+    RepeatingTask::ContinuePolicy continue_policy =
+        RepeatingTask::ContinuePolicy::CONTINUE_MORE_TIME_NEEDED;
   };
+
+  void ObserverReadyToStart();
 
   // emulation::Observer implementation:
   void OnVirtualTimeBudgetExpired(
@@ -99,35 +138,40 @@ class HEADLESS_EXPORT VirtualTimeController
 
   void NotifyTasksAndAdvance();
   void NotifyTaskIntervalElapsed(TaskEntry* entry);
-  void NotifyTaskBudgetRequested(TaskEntry* entry, base::TimeDelta budget);
-  void TaskReadyToAdvance(TaskEntry* entry);
+  void NotifyTaskVirtualTimeStarted(TaskEntry* entry);
+  void TaskReadyToAdvance(TaskEntry* entry,
+                          RepeatingTask::ContinuePolicy continue_policy);
 
-  void DeleteTasksIfRequested();
-
-  void SetVirtualTimePolicy(base::TimeDelta next_budget);
+  void SetVirtualTimePolicy(base::TimeDelta next_budget,
+                            bool wait_for_navigation);
   void SetVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult>);
 
   HeadlessDevToolsClient* const devtools_client_;  // NOT OWNED
+  StartDeferrer* start_deferrer_ = nullptr;        // NOT OWNED
   const int max_task_starvation_count_;
 
-  emulation::VirtualTimePolicy virtual_time_policy_ =
-      emulation::VirtualTimePolicy::ADVANCE;
-  base::Callback<void()> set_up_complete_callback_;
-  base::Callback<void()> budget_expired_callback_;
-
-  bool virtual_time_active_ = false;
   base::TimeDelta total_elapsed_time_offset_;
-  base::TimeDelta requested_budget_;
-  base::TimeDelta last_used_budget_;
-  base::TimeDelta accumulated_budget_portion_;
+  base::TimeDelta last_budget_;
   // Initial virtual time that virtual time offsets are relative to.
   base::Time virtual_time_base_;
 
-  std::list<TaskEntry> tasks_;
-  std::set<RepeatingTask*> tasks_to_delete_;
+  struct RepeatingTaskOrdering {
+    bool operator()(RepeatingTask* a, RepeatingTask* b) const {
+      if (a->priority() == b->priority())
+        return a < b;
+      return a->priority() < b->priority();
+    };
+  };
+
+  std::map<RepeatingTask*, TaskEntry, RepeatingTaskOrdering> tasks_;
+  std::set<Observer*> observers_;
   bool in_notify_tasks_and_advance_ = false;
-  bool iterating_over_tasks_ = false;
+  bool virtual_time_started_ = false;
+  bool virtual_time_paused_ = true;
+  bool should_send_start_notification_ = false;
+
+  base::WeakPtrFactory<VirtualTimeController> weak_ptr_factory_;
 };
 
 }  // namespace headless

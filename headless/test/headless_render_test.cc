@@ -30,9 +30,56 @@ void HeadlessRenderTest::PostRunAsynchronousTest() {
   EXPECT_EQ(FINISHED, state_) << "The test did not finish.";
 }
 
+class HeadlessRenderTest::AdditionalVirtualTimeBudget
+    : public VirtualTimeController::RepeatingTask,
+      public VirtualTimeController::Observer {
+ public:
+  AdditionalVirtualTimeBudget(VirtualTimeController* virtual_time_controller,
+                              HeadlessRenderTest* test,
+                              base::RunLoop* run_loop,
+                              int budget_ms)
+      : RepeatingTask(StartPolicy::WAIT_FOR_NAVIGATION, 0),
+        virtual_time_controller_(virtual_time_controller),
+        test_(test),
+        run_loop_(run_loop) {
+    virtual_time_controller_->ScheduleRepeatingTask(
+        this, base::TimeDelta::FromMilliseconds(budget_ms));
+    virtual_time_controller_->AddObserver(this);
+    virtual_time_controller_->StartVirtualTime();
+  }
+
+  ~AdditionalVirtualTimeBudget() override {
+    virtual_time_controller_->RemoveObserver(this);
+    virtual_time_controller_->CancelRepeatingTask(this);
+  }
+
+  // headless::VirtualTimeController::RepeatingTask implementation:
+  void IntervalElapsed(
+      base::TimeDelta virtual_time,
+      base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
+    std::move(continue_callback).Run(ContinuePolicy::NOT_REQUIRED);
+  }
+
+  // headless::VirtualTimeController::Observer:
+  void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {
+    run_loop_->Quit();
+  }
+
+  void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
+    test_->HandleVirtualTimeExhausted();
+    delete this;
+  }
+
+ private:
+  headless::VirtualTimeController* const virtual_time_controller_;
+  HeadlessRenderTest* test_;
+  base::RunLoop* run_loop_;
+};
+
 void HeadlessRenderTest::RunDevTooledTest() {
   http_handler_->SetHeadlessBrowserContext(browser_context_);
 
+  // TODO(alexclarke): Use the compositor controller here too.
   virtual_time_controller_ =
       std::make_unique<VirtualTimeController>(devtools_client_.get());
 
@@ -59,6 +106,16 @@ void HeadlessRenderTest::RunDevTooledTest() {
             .Build(),
         base::Bind(&SetVirtualTimePolicyDoneCallback, &run_loop));
 
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    // Note AdditionalVirtualTimeBudget will self delete.
+    new AdditionalVirtualTimeBudget(virtual_time_controller_.get(), this,
+                                    &run_loop, 5000);
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
     run_loop.Run();
@@ -124,11 +181,6 @@ void HeadlessRenderTest::OnFrameStartedLoading(
   if (state_ == STARTING) {
     state_ = LOADING;
     main_frame_ = params.GetFrameId();
-    virtual_time_controller_->GrantVirtualTimeBudget(
-        emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING,
-        base::TimeDelta::FromMilliseconds(5000), base::Closure(),
-        base::Bind(&HeadlessRenderTest::HandleVirtualTimeExhausted,
-                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   auto it = unconfirmed_frame_redirects_.find(params.GetFrameId());

@@ -36,14 +36,13 @@ class TestVirtualTimeController : public VirtualTimeController {
       : VirtualTimeController(devtools_client) {}
   ~TestVirtualTimeController() override = default;
 
-  MOCK_METHOD4(GrantVirtualTimeBudget,
-               void(emulation::VirtualTimePolicy policy,
-                    base::TimeDelta budget,
-                    const base::Callback<void()>& set_up_complete_callback,
-                    const base::Callback<void()>& budget_expired_callback));
+  MOCK_METHOD0(StartVirtualTime, void());
   MOCK_METHOD2(ScheduleRepeatingTask,
                void(RepeatingTask* task, base::TimeDelta interval));
   MOCK_METHOD1(CancelRepeatingTask, void(RepeatingTask* task));
+  MOCK_METHOD1(AddObserver, void(Observer* observer));
+  MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD1(SetStartDeferrer, void(StartDeferrer* deferrer));
 
   MOCK_CONST_METHOD0(GetVirtualTimeBase, base::Time());
   MOCK_CONST_METHOD0(GetCurrentVirtualTimeOffset, base::TimeDelta());
@@ -64,6 +63,10 @@ class CompositorControllerTest : public ::testing::Test {
     EXPECT_CALL(*virtual_time_controller_,
                 ScheduleRepeatingTask(_, kAnimationFrameInterval))
         .WillOnce(testing::SaveArg<0>(&task_));
+    EXPECT_CALL(*virtual_time_controller_, AddObserver(_))
+        .WillOnce(testing::SaveArg<0>(&observer_));
+    EXPECT_CALL(*virtual_time_controller_, SetStartDeferrer(_))
+        .WillOnce(testing::SaveArg<0>(&deferer_));
     ExpectHeadlessExperimentalEnable();
     controller_ = std::make_unique<CompositorController>(
         task_runner_, &client_, virtual_time_controller_.get(),
@@ -73,7 +76,9 @@ class CompositorControllerTest : public ::testing::Test {
   }
 
   ~CompositorControllerTest() override {
+    EXPECT_CALL(*virtual_time_controller_, RemoveObserver(_));
     EXPECT_CALL(*virtual_time_controller_, CancelRepeatingTask(_));
+    EXPECT_CALL(*virtual_time_controller_, SetStartDeferrer(_));
   }
 
   void ExpectHeadlessExperimentalEnable() {
@@ -179,6 +184,8 @@ class CompositorControllerTest : public ::testing::Test {
   std::unique_ptr<CompositorController> controller_;
   int last_command_id_ = -2;
   TestVirtualTimeController::RepeatingTask* task_ = nullptr;
+  TestVirtualTimeController::Observer* observer_ = nullptr;
+  TestVirtualTimeController::StartDeferrer* deferer_ = nullptr;
   base::Time next_begin_frame_time_ =
       base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1);
 };
@@ -327,16 +334,15 @@ TEST_F(CompositorControllerTest, WaitForMainFrameContentUpdate) {
 }
 
 TEST_F(CompositorControllerTest, SendsAnimationFrames) {
-  bool can_continue = false;
+  base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>
+      continue_policy;
   auto continue_callback = base::BindRepeating(
-      [](bool* can_continue) { *can_continue = true; }, &can_continue);
-
-  // Task doesn't block virtual time request.
-  task_->BudgetRequested(base::TimeDelta(),
-                         base::TimeDelta::FromMilliseconds(100),
-                         continue_callback);
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+      [](base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>*
+             continue_policy,
+         VirtualTimeController::RepeatingTask::ContinuePolicy policy) {
+        *continue_policy = policy;
+      },
+      &continue_policy);
 
   // Doesn't send BeginFrames before virtual time started.
   SendNeedsBeginFramesEvent(true);
@@ -344,7 +350,8 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
 
   // Sends a BeginFrame after interval elapsed.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
+  continue_policy = base::nullopt;
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   ExpectVirtualTime(1000, kAnimationFrameInterval.InMillisecondsF());
@@ -354,12 +361,13 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
   // Lets virtual time continue after BeginFrame was completed.
   SendBeginFrameReply(false, false, std::string());
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
+  continue_policy = base::nullopt;
 
   // Sends another BeginFrame after next interval elapsed.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   ExpectVirtualTime(1000, kAnimationFrameInterval.InMillisecondsF() * 2);
@@ -369,14 +377,20 @@ TEST_F(CompositorControllerTest, SendsAnimationFrames) {
   // Lets virtual time continue after BeginFrame was completed.
   SendBeginFrameReply(false, false, std::string());
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
 }
 
 TEST_F(CompositorControllerTest, SkipsAnimationFrameForScreenshots) {
-  bool can_continue = false;
+  base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>
+      continue_policy;
   auto continue_callback = base::BindRepeating(
-      [](bool* can_continue) { *can_continue = true; }, &can_continue);
+      [](base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>*
+             continue_policy,
+         VirtualTimeController::RepeatingTask::ContinuePolicy policy) {
+        *continue_policy = policy;
+      },
+      &continue_policy);
 
   SendMainFrameReadyForScreenshotsEvent();
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -386,7 +400,7 @@ TEST_F(CompositorControllerTest, SkipsAnimationFrameForScreenshots) {
   // Doesn't send a BeginFrame after interval elapsed if a screenshot is taken
   // instead.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
   controller_->CaptureScreenshot(
       headless_experimental::ScreenshotParamsFormat::PNG, 100,
@@ -401,15 +415,21 @@ TEST_F(CompositorControllerTest, SkipsAnimationFrameForScreenshots) {
                  .Build());
   task_runner_->RunPendingTasks();
 
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
 }
 
 TEST_F(CompositorControllerTest,
-       PostponesAnimationFrameWhenBudgetExpired) {
-  bool can_continue = false;
+       PostponesAnimationFrameWhenVirtualTimeStopped) {
+  base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>
+      continue_policy;
   auto continue_callback = base::BindRepeating(
-      [](bool* can_continue) { *can_continue = true; }, &can_continue);
+      [](base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>*
+             continue_policy,
+         VirtualTimeController::RepeatingTask::ContinuePolicy policy) {
+        *continue_policy = policy;
+      },
+      &continue_policy);
 
   SendNeedsBeginFramesEvent(true);
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -417,33 +437,41 @@ TEST_F(CompositorControllerTest,
   // Doesn't send a BeginFrame after interval elapsed if the budget also
   // expired.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
-  task_->BudgetExpired(kAnimationFrameInterval);
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  observer_->VirtualTimeStopped(kAnimationFrameInterval);
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
+  continue_policy = base::nullopt;
   // Flush cancelled task.
   task_runner_->RunPendingTasks();
+
+  bool can_continue = false;
+  auto defer_callback = base::BindRepeating(
+      [](bool* can_continue) { *can_continue = true; }, &can_continue);
 
   // Sends a BeginFrame when more virtual time budget is requested.
   ExpectVirtualTime(0, 0);
   ExpectBeginFrame();
-  task_->BudgetRequested(kAnimationFrameInterval,
-                         base::TimeDelta::FromMilliseconds(100),
-                         continue_callback);
+  deferer_->DeferStart(defer_callback);
   EXPECT_FALSE(can_continue);
 
   SendBeginFrameReply(false, false, std::string());
   EXPECT_FALSE(task_runner_->HasPendingTask());
   EXPECT_TRUE(can_continue);
-  can_continue = false;
 }
 
 TEST_F(CompositorControllerTest,
-       SkipsAnimationFrameWhenBudgetExpiredAndScreenshotWasTaken) {
-  bool can_continue = false;
+       SkipsAnimationFrameWhenVirtualTimeStoppedAndScreenshotWasTaken) {
+  base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>
+      continue_policy;
   auto continue_callback = base::BindRepeating(
-      [](bool* can_continue) { *can_continue = true; }, &can_continue);
+      [](base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>*
+             continue_policy,
+         VirtualTimeController::RepeatingTask::ContinuePolicy policy) {
+        *continue_policy = policy;
+      },
+      &continue_policy);
 
   SendMainFrameReadyForScreenshotsEvent();
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -453,11 +481,12 @@ TEST_F(CompositorControllerTest,
   // Doesn't send a BeginFrame after interval elapsed if the budget also
   // expired.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
-  task_->BudgetExpired(kAnimationFrameInterval);
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  observer_->VirtualTimeStopped(kAnimationFrameInterval);
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
+  continue_policy = base::nullopt;
   // Flush cancelled task.
   task_runner_->RunPendingTasks();
 
@@ -474,12 +503,13 @@ TEST_F(CompositorControllerTest,
                  .Build());
   task_runner_->RunPendingTasks();
 
+  bool can_continue = false;
+  auto defer_callback = base::BindRepeating(
+      [](bool* can_continue) { *can_continue = true; }, &can_continue);
+
   // Sends a BeginFrame when more virtual time budget is requested.
-  task_->BudgetRequested(kAnimationFrameInterval,
-                         base::TimeDelta::FromMilliseconds(100),
-                         continue_callback);
+  deferer_->DeferStart(defer_callback);
   EXPECT_TRUE(can_continue);
-  can_continue = false;
 }
 
 TEST_F(CompositorControllerTest, WaitUntilIdle) {
@@ -496,7 +526,10 @@ TEST_F(CompositorControllerTest, WaitUntilIdle) {
   idle = false;
 
   // Send a BeginFrame.
-  task_->IntervalElapsed(kAnimationFrameInterval, base::BindRepeating([]() {}));
+  task_->IntervalElapsed(
+      kAnimationFrameInterval,
+      base::BindRepeating(
+          [](VirtualTimeController::RepeatingTask::ContinuePolicy) {}));
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   ExpectVirtualTime(0, 0);
@@ -521,9 +554,15 @@ class CompositorControllerNoDisplayUpdateTest
 
 TEST_F(CompositorControllerNoDisplayUpdateTest,
        SkipsDisplayUpdateOnlyForAnimationFrames) {
-  bool can_continue = false;
+  base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>
+      continue_policy;
   auto continue_callback = base::BindRepeating(
-      [](bool* can_continue) { *can_continue = true; }, &can_continue);
+      [](base::Optional<VirtualTimeController::RepeatingTask::ContinuePolicy>*
+             continue_policy,
+         VirtualTimeController::RepeatingTask::ContinuePolicy policy) {
+        *continue_policy = policy;
+      },
+      &continue_policy);
 
   // Wait for update BeginFrames update display.
   SendNeedsBeginFramesEvent(true);
@@ -542,7 +581,7 @@ TEST_F(CompositorControllerNoDisplayUpdateTest,
   // Sends an animation BeginFrame without display update after interval
   // elapsed.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   ExpectVirtualTime(1000, kAnimationFrameInterval.InMillisecondsF());
@@ -552,12 +591,13 @@ TEST_F(CompositorControllerNoDisplayUpdateTest,
   // Lets virtual time continue after BeginFrame was completed.
   SendBeginFrameReply(false, false, std::string());
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
+  continue_policy = base::nullopt;
 
   // Screenshots update display.
   task_->IntervalElapsed(kAnimationFrameInterval, continue_callback);
-  EXPECT_FALSE(can_continue);
+  EXPECT_FALSE(continue_policy);
 
   controller_->CaptureScreenshot(
       headless_experimental::ScreenshotParamsFormat::PNG, 100,
@@ -572,8 +612,8 @@ TEST_F(CompositorControllerNoDisplayUpdateTest,
                  .Build());
   task_runner_->RunPendingTasks();
 
-  EXPECT_TRUE(can_continue);
-  can_continue = false;
+  EXPECT_EQ(VirtualTimeController::RepeatingTask::ContinuePolicy::NOT_REQUIRED,
+            *continue_policy);
 }
 
 }  // namespace headless
