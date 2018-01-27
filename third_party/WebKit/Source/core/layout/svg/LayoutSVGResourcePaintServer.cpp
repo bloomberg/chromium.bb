@@ -98,6 +98,7 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
       color = apply_to_fill ? svg_style.FillPaintColor()
                             : svg_style.StrokePaintColor();
       has_color = true;
+      break;
     default:
       break;
   }

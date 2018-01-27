@@ -701,7 +701,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
         }
         break;
       }
-    // Fall through
+      FALLTHROUGH;
     case ETextAlign::kStart:
       if (direction == TextDirection::kLtr)
         UpdateLogicalWidthForLeftAlignedBlock(

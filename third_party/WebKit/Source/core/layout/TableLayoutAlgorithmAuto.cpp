@@ -400,10 +400,10 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
             // mozilla doesn't do this so I decided we don't neither.
             break;
           }
-        // fall through
+          FALLTHROUGH;
         case kAuto:
           have_auto = true;
-        // fall through
+          FALLTHROUGH;
         default:
           // If the column is a percentage width, do not let the spanning cell
           // overwrite the width value.  This caused a mis-layout on amazon.com.
