@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/platform/api/quic_flags.h"
-#include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/array_output_buffer.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/mock_spdy_framer_visitor.h"
@@ -25,6 +24,7 @@
 #include "net/spdy/core/spdy_frame_reader.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
+#include "net/spdy/platform/api/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
@@ -371,7 +371,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   explicit TestSpdyVisitor(SpdyFramer::CompressionOption option)
       : framer_(option),
-        deframer_(FLAGS_chromium_http2_flag_h2_on_stream_pad_length),
+        deframer_(GetSpdyReloadableFlag(h2_on_stream_pad_length)),
         error_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
@@ -737,7 +737,7 @@ class SpdyFramerTest : public ::testing::TestWithParam<Output> {
   SpdyFramerTest()
       : output_(output_buffer, kSize),
         framer_(SpdyFramer::ENABLE_COMPRESSION),
-        deframer_(FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {}
+        deframer_(GetSpdyReloadableFlag(h2_on_stream_pad_length)) {}
 
  protected:
   void SetUp() override {
@@ -959,7 +959,7 @@ TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
   {
     testing::InSequence seq;
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
-    if (FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {
+    if (GetSpdyReloadableFlag(h2_on_stream_pad_length)) {
       EXPECT_CALL(visitor, OnStreamPadLength(1, 4));
     } else {
       EXPECT_CALL(visitor, OnStreamPadding(1, 1));
@@ -3270,7 +3270,7 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += kDataFrameMinimumSize;
 
   // Send the padding length field.
-  if (FLAGS_chromium_http2_flag_h2_on_stream_pad_length) {
+  if (GetSpdyReloadableFlag(h2_on_stream_pad_length)) {
     EXPECT_CALL(visitor, OnStreamPadLength(1, kPaddingLen - 1));
   } else {
     EXPECT_CALL(visitor, OnStreamPadding(1, 1));
