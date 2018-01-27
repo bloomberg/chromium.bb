@@ -163,6 +163,7 @@ void EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
       break;
     case ui::ET_KEY_RELEASED:
       key_release_count_++;
+      break;
     default:
       break;
   }
