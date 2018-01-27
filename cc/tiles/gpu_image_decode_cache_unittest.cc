@@ -2144,6 +2144,43 @@ TEST_P(GpuImageDecodeCacheTest, ImagesUsedDuringDrawAreBudgeted) {
   cache->DrawWithImageFinished(second_draw_image, second_decoded_draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest,
+       ColorConversionDuringDecodeForLargeImageNonSRGBColorSpace) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
+
+  // Create an image that's too large to upload.
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(1, 24000));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+
+  sk_sp<SkImage> decoded_image = cache->GetSWImageDecodeForTesting(draw_image);
+  // Ensure that the "uploaded" image we get back is the same as the decoded
+  // image we've cached.
+  ExpectIfNotUsingTransferCache(decoded_image == decoded_draw_image.image());
+  // Ensure that the SW decoded image had colorspace conversion applied.
+  ExpectIfNotUsingTransferCache(decoded_image->colorSpace() ==
+                                color_space.ToSkColorSpace().get());
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
 INSTANTIATE_TEST_CASE_P(
     GpuImageDecodeCacheTests,
     GpuImageDecodeCacheTest,
