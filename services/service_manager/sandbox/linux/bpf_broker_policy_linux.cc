@@ -117,6 +117,7 @@ ResultExpr BrokerProcessPolicy::EvaluateSyscall(int sysno) const {
           allowed_command_set_.test(sandbox::syscall_broker::COMMAND_UNLINK)) {
         return Allow();
       }
+      break;
 #endif
 #if defined(__NR_unlinkat)
     case __NR_unlinkat:
@@ -125,6 +126,7 @@ ResultExpr BrokerProcessPolicy::EvaluateSyscall(int sysno) const {
           allowed_command_set_.test(sandbox::syscall_broker::COMMAND_UNLINK)) {
         return Allow();
       }
+      break;
 #endif
     default:
       break;
