@@ -337,6 +337,7 @@ void DesktopWindowTreeHostX11::OnFocusEvent(bool focus_in,
         //    (FocusOut with NotifyNonlinearVirtual)
         // |has_pointer_focus_| should be false before and after this event.
         has_pointer_focus_ = false;
+        break;
       default:
         break;
     }
@@ -2065,7 +2066,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
           num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
           if (num_coalesced > 0)
             xev = &last_event;
-          // fallthrough
+          FALLTHROUGH;
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED: {
           ui::TouchEvent touchev(xev);
