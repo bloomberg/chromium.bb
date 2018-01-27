@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "services/device/public/interfaces/constants.mojom.h"
@@ -87,7 +88,6 @@ WebRTCInternals::WebRTCInternals() : WebRTCInternals(500, true) {}
 WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
                                  bool should_block_power_saving)
     : selection_type_(SelectionType::kAudioDebugRecordings),
-      audio_debug_recordings_(false),
       event_log_recordings_(false),
       num_open_connections_(0),
       should_block_power_saving_(should_block_power_saving),
@@ -318,10 +318,9 @@ void WebRTCInternals::EnableAudioDebugRecordings(
 void WebRTCInternals::DisableAudioDebugRecordings() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_WEBRTC)
-  if (!audio_debug_recordings_)
+  if (!audio_debug_recording_session_)
     return;
-
-  audio_debug_recordings_ = false;
+  audio_debug_recording_session_.reset();
 
   // Tear down the dialog since the user has unchecked the audio debug
   // recordings box.
@@ -332,21 +331,12 @@ void WebRTCInternals::DisableAudioDebugRecordings() {
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->DisableAudioDebugRecordings();
   }
-
-  // It's safe to get the AudioManager pointer here. That pointer is invalidated
-  // on the UI thread, which we're on.
-  // AudioManager is deleted on the audio thread, and the AudioManager outlives
-  // this object, so it's safe to post unretained to the audio thread.
-  media::AudioManager* audio_manager = media::AudioManager::Get();
-  audio_manager->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&media::AudioManager::DisableDebugRecording,
-                                base::Unretained(audio_manager)));
 #endif
 }
 
 bool WebRTCInternals::IsAudioDebugRecordingsEnabled() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return audio_debug_recordings_;
+  return !!audio_debug_recording_session_;
 }
 
 const base::FilePath& WebRTCInternals::GetAudioDebugRecordingsFilePath() const {
@@ -517,8 +507,9 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
 #if BUILDFLAG(ENABLE_WEBRTC)
 void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  audio_debug_recordings_ = true;
+  DCHECK(!audio_debug_recording_session_);
+  audio_debug_recording_session_ = media::AudioDebugRecordingSession::Create(
+      audio_debug_recordings_file_path_);
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
@@ -526,16 +517,6 @@ void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
     i.GetCurrentValue()->EnableAudioDebugRecordings(
         audio_debug_recordings_file_path_);
   }
-
-  // It's safe to get the AudioManager pointer here. That pointer is invalidated
-  // on the UI thread, which we're on.
-  // AudioManager is deleted on the audio thread, and the AudioManager outlives
-  // this object, so it's safe to post unretained to the audio thread.
-  media::AudioManager* audio_manager = media::AudioManager::Get();
-  audio_manager->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&media::AudioManager::EnableDebugRecording,
-                                base::Unretained(audio_manager),
-                                audio_debug_recordings_file_path_));
 }
 #endif
 

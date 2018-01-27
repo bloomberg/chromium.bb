@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -21,7 +22,7 @@ class RenderProcessHost;
 }
 
 namespace media {
-class AudioManager;
+class AudioDebugRecordingSession;
 }
 
 // AudioDebugRecordingsHandler provides an interface to start and stop
@@ -37,8 +38,8 @@ class AudioDebugRecordingsHandler
   // Key used to attach the handler to the RenderProcessHost
   static const char kAudioDebugRecordingsHandlerKey[];
 
-  AudioDebugRecordingsHandler(content::BrowserContext* browser_context,
-                              media::AudioManager* audio_manager);
+  explicit AudioDebugRecordingsHandler(
+      content::BrowserContext* browser_context);
 
   // Starts an audio debug recording. The recording lasts the given |delay|,
   // unless |delay| is zero, in which case recording will continue until
@@ -82,14 +83,12 @@ class AudioDebugRecordingsHandler
   // The browser context associated with our renderer process.
   content::BrowserContext* const browser_context_;
 
-  // Set if recordings are in progress.
-  bool is_audio_debug_recordings_in_progress_;
-
   // This counter allows saving each debug recording in separate files.
   uint64_t current_audio_debug_recordings_id_;
 
-  // Audio manager, used for enabling output recordings.
-  media::AudioManager* const audio_manager_;
+  // Used for controlling debug recordings.
+  std::unique_ptr<media::AudioDebugRecordingSession>
+      audio_debug_recording_session_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingsHandler);
 };
