@@ -1605,12 +1605,9 @@ cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(
 
   int tag_value = 1;
   // Feature tag values could follow: <integer> | on | off
-  if (range.Peek().GetType() == kNumberToken &&
-      range.Peek().GetNumericValueType() == kIntegerValueType &&
-      range.Peek().NumericValue() >= 0) {
-    tag_value = clampTo<int>(range.ConsumeIncludingWhitespace().NumericValue());
-    if (tag_value < 0)
-      return nullptr;
+  if (CSSPrimitiveValue* value =
+          CSSPropertyParserHelpers::ConsumeInteger(range, 0)) {
+    tag_value = clampTo<int>(value->GetDoubleValue());
   } else if (range.Peek().Id() == CSSValueOn ||
              range.Peek().Id() == CSSValueOff) {
     tag_value = range.ConsumeIncludingWhitespace().Id() == CSSValueOn;
