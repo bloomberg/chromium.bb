@@ -56,6 +56,7 @@ bool Config::Matches(const EGLint* attrib_list) const {
               (requested_surface_type & surface_type_) !=
                   requested_surface_type)
             return false;
+          break;
         }
         default:
           break;
