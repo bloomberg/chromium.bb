@@ -18,9 +18,19 @@ import org.chromium.base.VisibleForTesting;
 
 /** Show the lock screen confirmation and lock the screen. */
 public class PasswordReauthenticationFragment extends Fragment {
-    // The key for the description argument, which is used to retrieve an explanation of the
-    // reauthentication prompt to the user.
+    /**
+     * The key for the description argument, which is used to retrieve an explanation of the
+     * reauthentication prompt to the user.
+     */
     public static final String DESCRIPTION_ID = "description";
+
+    /**
+     * The key for the scope, with values from {@link ReauthenticationManager.ReauthScope}. The
+     * scope enum value corresponds to what is indicated in the description message for the user
+     * (e.g., if the message mentions "export passwords", the scope should be BULK, but for "view
+     * password" it should be ONE_AT_A_TIME).
+     */
+    public static final String SCOPE_ID = "scope";
 
     protected static final int CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE = 2;
 
@@ -54,7 +64,8 @@ public class PasswordReauthenticationFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CONFIRM_DEVICE_CREDENTIAL_REQUEST_CODE) {
             if (resultCode == getActivity().RESULT_OK) {
-                ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+                ReauthenticationManager.recordLastReauth(
+                        System.currentTimeMillis(), getArguments().getInt(SCOPE_ID));
             }
             mFragmentManager.popBackStack();
         }

@@ -471,7 +471,8 @@ public class SavePasswordsPreferencesTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         // Before tapping the menu item for export, pretend that the last successful
         // reauthentication just happened. This will allow the export flow to continue.
-        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
@@ -501,7 +502,8 @@ public class SavePasswordsPreferencesTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         // Before tapping the menu item for export, pretend that the last successful
         // reauthentication just happened. This will allow the export flow to continue.
-        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
@@ -633,7 +635,8 @@ public class SavePasswordsPreferencesTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         // Before exporting, pretend that the last successful reauthentication just
         // happened. This will allow the export flow to continue.
-        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
 
@@ -701,7 +704,8 @@ public class SavePasswordsPreferencesTest {
 
         // Before tapping the view button, pretend that the last successful reauthentication just
         // happened. This will allow showing the password.
-        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
         Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
                 .perform(click());
         Espresso.onView(withText("test password")).check(matches(isDisplayed()));
@@ -985,8 +989,10 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(PHOBOS_AT_OLYMP.getUserName())).check(doesNotExist());
         Espresso.onView(withText(HADES_AT_UNDERWORLD.getUrl())).check(doesNotExist());
 
-        // Click "Zeus" to open edit field and verify the password. Pretend we had
-        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
+        // Click "Zeus" to open edit field and verify the password. Pretend the user just passed the
+        // reauthentication challenge.
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_ONE_AT_A_TIME);
         Espresso.onView(withText(ZEUS_ON_EARTH.getUserName())).perform(click());
         Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
                 .perform(click());
