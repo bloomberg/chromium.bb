@@ -46,9 +46,10 @@ void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
     web_state_list_observer_->Disconnect();
   web_state_list_ = web_state_list;
   web_state_list_observer_ =
-      web_state_list_ ? std::make_unique<FullscreenWebStateListObserver>(
-                            this, model_.get(), web_state_list_)
-                      : nullptr;
+      web_state_list_
+          ? std::make_unique<FullscreenWebStateListObserver>(
+                this, model_.get(), web_state_list_, mediator_.get())
+          : nullptr;
 }
 
 void FullscreenControllerImpl::AddObserver(

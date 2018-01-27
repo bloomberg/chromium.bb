@@ -30,3 +30,9 @@ void FullscreenUIUpdater::FullscreenScrollEventEnded(
     FullscreenScrollEndAnimator* animator) {
   [ui_element_ finishFullscreenScrollWithAnimator:animator];
 }
+
+void FullscreenUIUpdater::FullscreenWillScrollToTop(
+    FullscreenController* controller,
+    FullscreenScrollToTopAnimator* animator) {
+  [ui_element_ scrollFullscreenToTopWithAnimator:animator];
+}

@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/platform_test.h"
@@ -19,7 +21,7 @@
 // The values that are passed to the UI element through the UI updater.
 @property(nonatomic, readonly) CGFloat progress;
 @property(nonatomic, readonly, getter=isEnabled) BOOL enabled;
-@property(nonatomic, readonly) FullscreenScrollEndAnimator* animator;
+@property(nonatomic, readonly) FullscreenAnimator* animator;
 @end
 
 @implementation TestFullscreenUIElement
@@ -37,6 +39,11 @@
 
 - (void)finishFullscreenScrollWithAnimator:
     (FullscreenScrollEndAnimator*)animator {
+  _animator = animator;
+}
+
+- (void)scrollFullscreenToTopWithAnimator:
+    (FullscreenScrollToTopAnimator*)animator {
   _animator = animator;
 }
 

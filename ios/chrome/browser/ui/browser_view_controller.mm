@@ -150,6 +150,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
@@ -3931,14 +3932,32 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (void)scrollFullscreenToTopWithAnimator:
+    (FullscreenScrollToTopAnimator*)animator {
+  CGFloat finalProgress = animator.finalProgress;
+  [animator addAnimations:^{
+    [self updateHeadersForFullscreenProgress:finalProgress];
+    [self updateFootersForFullscreenProgress:finalProgress];
+    [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
+    // Scroll the content to the top.
+    id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
+    CRWWebViewScrollViewProxy* scrollProxy = webViewProxy.scrollViewProxy;
+    CGPoint contentOffset = scrollProxy.contentOffset;
+    contentOffset.y = webViewProxy.shouldUseInsetForTopPadding
+                          ? -webViewProxy.topContentPadding
+                          : 0;
+    scrollProxy.contentOffset = contentOffset;
+  }];
+}
+
 #pragma mark - FullscreenUIElement helpers
 
 // Translates the header views up and down according to |progress|, where a
 // progress of 1.0 fully shows the headers and a progress of 0.0 fully hides
 // them.
 - (void)updateHeadersForFullscreenProgress:(CGFloat)progress {
-  [self setFramesForHeaders:[self headerViews]
-                   atOffset:(1.0 - progress) * [self toolbarHeight]];
+  CGFloat offset = AlignValueToPixel((1.0 - progress) * [self toolbarHeight]);
+  [self setFramesForHeaders:[self headerViews] atOffset:offset];
 }
 
 // Translates the footer view up and down according to |progress|, where a
@@ -3950,8 +3969,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   UIView* footerView = [self footerView];
   DCHECK(footerView);
   CGRect frame = footerView.frame;
-  frame.origin.y = CGRectGetMaxY(footerView.superview.bounds) -
-                   progress * CGRectGetHeight(frame);
+  frame.origin.y =
+      AlignValueToPixel(CGRectGetMaxY(footerView.superview.bounds) -
+                        progress * CGRectGetHeight(frame));
   footerView.frame = frame;
 }
 
@@ -3961,7 +3981,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)updateContentViewTopPaddingForFullscreenProgress:(CGFloat)progress {
   if (self.currentWebState) {
     self.currentWebState->GetWebViewProxy().topContentPadding =
-        progress * [self toolbarHeight];
+        AlignValueToPixel(progress * [self toolbarHeight]);
   }
 }
 

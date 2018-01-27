@@ -11,6 +11,7 @@
 
 class FullscreenController;
 @class FullscreenScrollEndAnimator;
+@class FullscreenScrollToTopAnimator;
 
 // Interface for listening to fullscreen state.
 class FullscreenControllerObserver {
@@ -34,6 +35,13 @@ class FullscreenControllerObserver {
   virtual void FullscreenScrollEventEnded(
       FullscreenController* controller,
       FullscreenScrollEndAnimator* animator) {}
+
+  // Invoked to scroll the main content view to the top.  FullscreenUIElements
+  // are expected add animations that scroll the content to the top and fully
+  // show the toolbar.
+  virtual void FullscreenWillScrollToTop(
+      FullscreenController* controller,
+      FullscreenScrollToTopAnimator* animator) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerObserver);

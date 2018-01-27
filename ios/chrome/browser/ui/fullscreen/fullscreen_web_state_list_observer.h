@@ -10,6 +10,7 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 
 class FullscreenController;
+class FullscreenMediator;
 class FullscreenModel;
 
 // A WebStateListObserver that creates WebStateObservers that update a
@@ -21,7 +22,8 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
   // navigation events that require the toolbar to be visible.
   FullscreenWebStateListObserver(FullscreenController* controller,
                                  FullscreenModel* model,
-                                 WebStateList* web_state_list);
+                                 WebStateList* web_state_list,
+                                 FullscreenMediator* mediator);
   ~FullscreenWebStateListObserver() override;
 
   // Stops observing the the WebStateList.
