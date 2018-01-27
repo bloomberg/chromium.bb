@@ -189,12 +189,6 @@ void UpdateCheckerTest::RunThreads() {
   base::RunLoop runloop;
   quit_closure_ = runloop.QuitClosure();
   runloop.Run();
-
-  // Since some tests need to drain currently enqueued tasks such as network
-  // intercepts on the IO thread, run the threads until they are
-  // idle. The component updater service won't loop again until the loop count
-  // is set and the service is started.
-  scoped_task_environment_.RunUntilIdle();
 }
 
 void UpdateCheckerTest::Quit() {
@@ -569,9 +563,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
-  EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
-
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   IdToComponentPtrMap components;
@@ -580,6 +571,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   auto& component = components[kUpdateItemId];
   auto& crx_component = const_cast<CrxComponent&>(component->crx_component());
 
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -587,9 +580,11 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   RunThreads();
 
   EXPECT_EQ(string::npos,
-            post_interceptor_->GetRequests()[0].find("intallsource="));
+            post_interceptor_->GetRequests()[0].find("installsource="));
 
   component->set_on_demand(true);
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -601,6 +596,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
 
   component->set_on_demand(false);
   crx_component.install_source = "webstore";
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -612,6 +609,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
 
   component->set_on_demand(true);
   crx_component.install_source = "sideload";
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -623,9 +622,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
 }
 
 TEST_F(UpdateCheckerTest, ComponentDisabled) {
-  EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
-
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   IdToComponentPtrMap components;
@@ -634,6 +630,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   auto& component = components[kUpdateItemId];
   auto& crx_component = const_cast<CrxComponent&>(component->crx_component());
 
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -646,6 +644,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 
   crx_component.disabled_reasons = std::vector<int>();
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -657,6 +657,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
             post_interceptor_->GetRequests()[1].find("<disabled"));
 
   crx_component.disabled_reasons = std::vector<int>({0});
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -669,6 +671,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 
   crx_component.disabled_reasons = std::vector<int>({1});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -681,6 +685,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 
   crx_component.disabled_reasons = std::vector<int>({4, 8, 16});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -697,6 +703,8 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 
   crx_component.disabled_reasons = std::vector<int>({0, 4, 8, 16});
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -715,9 +723,6 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
-  EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
-
   config_->SetBrand("");
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -734,6 +739,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   EXPECT_FALSE(
       component->crx_component_.supports_group_policy_enable_component_updates);
 
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -751,6 +758,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   component->crx_component_.supports_group_policy_enable_component_updates =
       true;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -768,6 +777,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   component->crx_component_.supports_group_policy_enable_component_updates =
       false;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
@@ -785,6 +796,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   component->crx_component_.supports_group_policy_enable_component_updates =
       true;
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
       std::vector<std::string>{kUpdateItemId}, components, "", true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
