@@ -3165,7 +3165,13 @@ experimental domain Memory
   # Stop collecting native memory profile.
   command stopSampling
 
-  # Retrieve collected native memory profile.
+  # Retrieve native memory allocations profile collected since process startup.
+  command getAllTimeSamplingProfile
+    returns
+      SamplingProfile profile
+
+  # Retrieve native memory allocations profile collected since last
+  # `startSampling` call.
   command getSamplingProfile
     returns
       SamplingProfile profile
