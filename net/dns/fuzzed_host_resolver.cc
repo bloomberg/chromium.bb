@@ -174,14 +174,17 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
         IPEndPoint(FuzzIPAddress(data_provider_), FuzzPort(data_provider_)));
   }
 
-  // Fuzz suffix search list. Each case deliberately falls through.
+  // Fuzz suffix search list.
   switch (data_provider_->ConsumeUint32InRange(0, 3)) {
     case 3:
       config.search.push_back("foo.com");
+      FALLTHROUGH;
     case 2:
       config.search.push_back("bar");
+      FALLTHROUGH;
     case 1:
       config.search.push_back("com");
+      FALLTHROUGH;
     default:
       break;
   }
