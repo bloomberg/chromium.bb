@@ -139,7 +139,9 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_descendant_dependent_flags_update_(true),
       has_visible_descendant_(false),
 #if DCHECK_IS_ON()
-      needs_position_update_(true),
+      // The root layer (LayoutView) does not need position update at start
+      // because its Location() is always 0.
+      needs_position_update_(!IsRootLayer()),
 #endif
       has3d_transformed_descendant_(false),
       contains_dirty_overlay_scrollbars_(false),
