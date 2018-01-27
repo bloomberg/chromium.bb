@@ -34,6 +34,6 @@ class AomContentAxTree : public blink::WebComputedAXTree {
   DISALLOW_COPY_AND_ASSIGN(AomContentAxTree);
 };
 
-#endif  // CONTENT_RENDERER_ACCESSIBILITY_AOM_CONTENT_AX_TREE_H_
-
 }  // namespace content
+
+#endif  // CONTENT_RENDERER_ACCESSIBILITY_AOM_CONTENT_AX_TREE_H_
