@@ -169,7 +169,13 @@ struct macroblock {
   // to select transform kernel.
   int rd_model;
 
+  // Indicate if the encoder is running in the first pass partition search.
+  // In that case, apply certain speed features therein to reduce the overhead
+  // cost in the first pass search.
   int cb_partition_scan;
+
+  // Activate constrained coding block partition search range.
+  int use_cb_search_range;
 
   // Also save RD info on the TX size search level for square TX sizes.
   TX_SIZE_RD_RECORD

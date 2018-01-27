@@ -23,6 +23,17 @@ struct AV1_COMP;
 struct AV1Common;
 struct ThreadData;
 
+typedef enum {
+  // Search all the partition types in this plane.
+  SEARCH_FULL_PLANE = 0,
+  // Only search none_partition coding block.
+  NONE_PARTITION_PLANE = 1,
+  // Search all the partition types in this plane except split.
+  SEARCH_SAME_PLANE = 2,
+  // Skip search partition on this plane. Go split directly.
+  SPLIT_PLANE = 3,
+} CB_TREE_SEARCH;
+
 // Structure to hold snapshot of coding context during the mode picking process
 typedef struct {
   MODE_INFO mic;
@@ -80,6 +91,7 @@ typedef struct PC_TREE {
   PICK_MODE_CONTEXT horizontal4[4];
   PICK_MODE_CONTEXT vertical4[4];
 #endif
+  CB_TREE_SEARCH cb_search_range;
   struct PC_TREE *split[4];
 } PC_TREE;
 

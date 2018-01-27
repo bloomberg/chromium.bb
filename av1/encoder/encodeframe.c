@@ -2418,6 +2418,17 @@ static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 }
 #endif  // CONFIG_DIST_8X8
 
+static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
+  pc_tree->partitioning = PARTITION_NONE;
+  pc_tree->cb_search_range = SEARCH_FULL_PLANE;
+
+  if (bsize >= BLOCK_8X8) {
+    BLOCK_SIZE subsize = get_subsize(bsize, PARTITION_SPLIT);
+    for (int idx = 0; idx < 4; ++idx)
+      reset_partition(pc_tree->split[idx], subsize);
+  }
+}
+
 static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
                                   TileDataEnc *tile_data, TOKENEXTRA **tp,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -2433,7 +2444,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
   int tmp_partition_cost[PARTITION_TYPES];
   BLOCK_SIZE subsize;
-  RD_STATS this_rdc, sum_rdc, best_rdc;
+  RD_STATS this_rdc, sum_rdc, best_rdc, pn_rdc;
   const int bsize_at_least_8x8 = (bsize >= BLOCK_8X8);
   int do_square_split = bsize_at_least_8x8;
   const int pl = bsize_at_least_8x8
@@ -2508,6 +2519,8 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   // PARTITION_NONE
   if (partition_none_allowed) {
+    if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
+
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
 #if CONFIG_EXT_PARTITION_TYPES
                      PARTITION_NONE,
@@ -2536,6 +2549,8 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
         best_rdc = this_rdc;
         if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
 
+        pc_tree->cb_search_range = SEARCH_FULL_PLANE;
+
         // If all y, u, v transform blocks in this partition are skippable, and
         // the dist & rate are within the thresholds, the partition search is
         // terminated for current branch of the partition search tree.
@@ -2556,6 +2571,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
   int64_t temp_best_rdcost = best_rdc.rdcost;
+  pn_rdc = best_rdc;
 
 #if CONFIG_DIST_8X8
   uint8_t *src_plane_8x8[MAX_MB_PLANE], *dst_plane_8x8[MAX_MB_PLANE];
@@ -2622,6 +2638,26 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
         pc_tree->partitioning = PARTITION_SPLIT;
       }
     }
+
+    int has_split = 0;
+    if (pc_tree->partitioning == PARTITION_SPLIT) {
+      for (int cb_idx = 0; cb_idx <= AOMMIN(idx, 3); ++cb_idx) {
+        if (pc_tree->split[cb_idx]->partitioning == PARTITION_SPLIT)
+          ++has_split;
+      }
+
+      if (has_split >= 3 || sum_rdc.rdcost < (pn_rdc.rdcost >> 1)) {
+        pc_tree->cb_search_range = SPLIT_PLANE;
+      }
+    }
+
+    if (pc_tree->partitioning == PARTITION_NONE) {
+      pc_tree->cb_search_range = SEARCH_SAME_PLANE;
+      if (pn_rdc.dist <= sum_rdc.dist)
+        pc_tree->cb_search_range = NONE_PARTITION_PLANE;
+    }
+
+    if (pn_rdc.rate == INT_MAX) pc_tree->cb_search_range = NONE_PARTITION_PLANE;
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }  // if (do_split)
@@ -2794,6 +2830,24 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (cpi->sf.use_square_partition_only) {
     partition_horz_allowed &= !has_rows;
     partition_vert_allowed &= !has_cols;
+  }
+
+  if (x->use_cb_search_range && cpi->sf.auto_min_max_partition_size == 0) {
+    if (pc_tree->cb_search_range == SPLIT_PLANE) {
+      partition_none_allowed = 0;
+      partition_horz_allowed = 0;
+      partition_vert_allowed = 0;
+    }
+
+    if (pc_tree->cb_search_range == SEARCH_SAME_PLANE) {
+      do_square_split = 0;
+    }
+
+    if (pc_tree->cb_search_range == NONE_PARTITION_PLANE) {
+      do_square_split = 0;
+      partition_horz_allowed = 0;
+      partition_vert_allowed = 0;
+    }
   }
 
   xd->above_txfm_context =
@@ -3657,9 +3711,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                                 &x->min_partition_size, &x->max_partition_size);
       }
 
+      reset_partition(pc_root, cm->sb_size);
+      x->use_cb_search_range = 0;
       if (cpi->sf.two_pass_partition_search &&
           mi_row + mi_size_high[cm->sb_size] < cm->mi_rows &&
-          mi_col + mi_size_wide[cm->sb_size] < cm->mi_cols) {
+          mi_col + mi_size_wide[cm->sb_size] < cm->mi_cols &&
+          cm->frame_type != KEY_FRAME) {
         x->cb_partition_scan = 1;
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                               cm->sb_size, &dummy_rdc, INT64_MAX, pc_root,
@@ -3693,6 +3750,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           }
         }
 
+        x->use_cb_search_range = 1;
         rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
                           &dummy_rdc, INT64_MAX, pc_root, NULL);
       } else {
