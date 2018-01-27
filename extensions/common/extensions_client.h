@@ -80,7 +80,8 @@ class ExtensionsClient {
   // any origin.
   virtual const ScriptingWhitelist& GetScriptingWhitelist() const = 0;
 
-  // Get the set of chrome:// hosts that |extension| can run content scripts on.
+  // Get the set of chrome:// hosts that |extension| can have host permissions
+  // for.
   virtual URLPatternSet GetPermittedChromeSchemeHosts(
       const Extension* extension,
       const APIPermissionSet& api_permissions) const = 0;
