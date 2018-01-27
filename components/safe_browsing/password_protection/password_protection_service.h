@@ -18,6 +18,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -183,11 +184,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RecordWarningAction(WarningUIType ui_type, WarningAction action);
 
   // If we want to show password reuse modal warning.
-  static bool ShouldShowModalWarning(
+  bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
       bool matches_sync_password,
-      LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-          account_type,
       LoginReputationClientResponse::VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
@@ -221,6 +220,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // showing in the corresponding web contents.
   std::unique_ptr<PasswordProtectionNavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
+
+  // Returns if the warning UI is enabled.
+  bool IsWarningEnabled();
+
+  // Returns if the event logging is enabled.
+  bool IsEventLoggingEnabled();
+
+  // Returns the pref value of password protection trigger.
+  virtual PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
+      const std::string& pref_name) const = 0;
 
  protected:
   friend class PasswordProtectionRequest;
@@ -283,7 +292,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() = 0;
+  GetSyncAccountType() const = 0;
 
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
@@ -370,6 +379,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       LoginReputationClientRequest::TriggerType trigger_type,
       RequestOutcome reason,
       bool matches_sync_password);
+
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;
 

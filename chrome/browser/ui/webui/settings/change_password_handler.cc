@@ -60,7 +60,8 @@ void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
 void ChangePasswordHandler::UpdateChangePasswordCardVisibility() {
   FireWebUIListener(
       "change-password-visibility",
-      base::Value(safe_browsing::ChromePasswordProtectionService::
+      base::Value(service_->IsWarningEnabled() &&
+                  safe_browsing::ChromePasswordProtectionService::
                       ShouldShowChangePasswordSettingUI(profile_)));
 }
 

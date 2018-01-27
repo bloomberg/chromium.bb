@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 409
+#   For your editing convenience: highest ID currently used: 412
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10928,6 +10928,86 @@
       The wildcard character '*' can be used to match zero or more arbitrary characters. The escape character is '\\', so to match actual '*' or '\\' characters, you can put a '\\' in front of them.
 
       If this policy is left not set then all Google accounts on the device will be visible in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'PasswordProtectionWarningTrigger',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'PasswordProtectionWarningOff',
+          'value': 0,
+          'caption': '''Password protection warning is off''',
+        },
+        {
+          'name': 'PasswordProtectionWarningOnPasswordReuse',
+          'value': 1,
+          'caption': '''Password protection warning is triggered by password reuse''',
+        },
+        {
+          'name': 'PasswordProtectionWarningOnPhishingReuse',
+          'value': 2,
+          'caption': '''Password protection warning is triggered by password reuse on phishing page''',
+        },
+      ],
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 411,
+      'caption': '''Password protection warning trigger''',
+      'tags': [],
+      'desc': '''Allows you to control the triggering of passwore protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+
+      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when users reuse google passwords on any non-whitelisted sites.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when users reuse google passwords on phishing sites.
+      If this policy is left unset, password protection warning will be triggered when users reuse google passwords on phishing sites but the user can change it.''',
+    },
+    {
+      'name': 'PasswordProtectionRiskTrigger',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'PasswordProtectionRiskOff',
+          'value': 0,
+          'caption': '''Password protection at-risk account flagging is off''',
+        },
+        {
+          'name': 'PasswordProtectionRiskOnPasswordReuse',
+          'value': 1,
+          'caption': '''Password protection at-risk account flagging is triggered by password reuse''',
+        },
+        {
+          'name': 'PasswordProtectionRiskOnPhishingReuse',
+          'value': 2,
+          'caption': '''Password protection at-risk account flagging is triggered by password reuse on phishing page''',
+        },
+      ],
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 412,
+      'caption': '''Password protection at-risk account flagging trigger''',
+      'tags': [],
+      'desc': '''Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at-risk of being hijacked.
+
+      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
+      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when users reuse google passwords on any non-whitelisted sites.
+      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when users reuse google passwords on phishing sites.
+      If this policy is left unset, password protection at-risk account flagging will be triggered when users reuse google passwords on phishing sites but the user can change it.''',
     },
   ],
 

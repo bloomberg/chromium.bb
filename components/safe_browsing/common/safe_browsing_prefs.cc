@@ -154,6 +154,10 @@ const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
 const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
     "safebrowsing.unhandled_sync_password_reuses";
+const char kPasswordProtectionWarningTrigger[] =
+    "safe_browsing.password_protection_warning_trigger";
+const char kPasswordProtectionRiskTrigger[] =
+    "safe_browsing.password_protection_risk_trigger";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -343,6 +347,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterDictionaryPref(
       prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
+                                PASSWORD_PROTECTION_OFF);
+  registry->RegisterIntegerPref(prefs::kPasswordProtectionRiskTrigger,
+                                PASSWORD_PROTECTION_OFF);
 }
 
 void SetExtendedReportingPrefAndMetric(

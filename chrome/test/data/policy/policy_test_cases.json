@@ -3456,6 +3456,26 @@
   "RestrictAccountsToPatterns": {
   },
 
+  "PasswordProtectionWarningTrigger": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "PasswordProtectionWarningTrigger": 2
+    },
+    "pref_mappings": [
+      { "pref": "safe_browsing.password_protection_warning_trigger"}
+    ]
+  },
+
+  "PasswordProtectionRiskTrigger": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "PasswordProtectionRiskTrigger": 2
+    },
+    "pref_mappings": [
+      { "pref": "safe_browsing.password_protection_risk_trigger"}
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

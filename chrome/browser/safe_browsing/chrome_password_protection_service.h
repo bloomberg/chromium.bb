@@ -123,6 +123,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool UserClickedThroughSBInterstitial(
       content::WebContents* web_contents) override;
 
+  // For preference of |pref_name| is not managed by enterprise policy, this
+  // function should always return PHISHING_REUSE. Otherwise, returns the
+  // specified pref value.
+  PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
+      const std::string& pref_name) const override;
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
@@ -147,7 +153,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents) override;
 
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() override;
+  GetSyncAccountType() const override;
 
   void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,
@@ -165,7 +171,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       const history::URLRows& deleted_rows) override;
 
   // Gets |account_info_| based on |profile_|.
-  AccountInfo GetAccountInfo();
+  AccountInfo GetAccountInfo() const;
 
   // Gets change password URl based on |account_info_|.
   GURL GetChangePasswordURL();
