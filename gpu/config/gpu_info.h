@@ -129,6 +129,9 @@ struct GPU_EXPORT GPUInfo {
   GPUInfo(const GPUInfo& other);
   ~GPUInfo();
 
+  // The currently active gpu.
+  const GPUDevice& active_gpu() const;
+
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
   base::TimeDelta initialization_time;
@@ -144,9 +147,6 @@ struct GPU_EXPORT GPUInfo {
 
   // Secondary GPUs, for example, the integrated GPU in a dual GPU machine.
   std::vector<GPUDevice> secondary_gpus;
-
-  // The currently active gpu.
-  const GPUDevice& active_gpu() const;
 
   // The vendor of the graphics driver currently installed.
   std::string driver_vendor;
@@ -212,9 +212,6 @@ struct GPU_EXPORT GPUInfo {
 
   // Whether the gpu process is running in a sandbox.
   bool sandboxed;
-
-  // Number of GPU process crashes recorded.
-  int process_crash_count;
 
   // True if the GPU is running in the browser process instead of its own.
   bool in_process_gpu;

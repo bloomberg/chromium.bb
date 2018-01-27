@@ -228,10 +228,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 
   static bool sandboxed(const gpu::GPUInfo& input) { return input.sandboxed; }
 
-  static int process_crash_count(const gpu::GPUInfo& input) {
-    return input.process_crash_count;
-  }
-
   static bool in_process_gpu(const gpu::GPUInfo& input) {
     return input.in_process_gpu;
   }

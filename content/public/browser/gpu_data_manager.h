@@ -50,11 +50,6 @@ class GpuDataManager {
   // Check if basic and context GPU info have been collected.
   virtual bool IsEssentialGpuInfoAvailable() const = 0;
 
-  // On Windows, besides basic and context GPU info, it also checks if
-  // DxDiagnostics have been collected.
-  // On other platforms, it's the same as IsEsentialGpuInfoAvailable().
-  virtual bool IsCompleteGpuInfoAvailable() const = 0;
-
   // Requests that the GPU process report its current video memory usage stats.
   virtual void RequestVideoMemoryUsageStatsUpdate(
       const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&

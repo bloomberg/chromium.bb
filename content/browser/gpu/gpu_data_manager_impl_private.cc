@@ -369,11 +369,10 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
 }
 
 void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
-  if (complete_gpu_info_already_requested_ || IsCompleteGpuInfoAvailable() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGpuTestingNoCompleteInfoCollection)) {
+  if (complete_gpu_info_already_requested_)
     return;
-  }
+  if (!NeedsCompleteGpuInfoCollection())
+    return;
 
   complete_gpu_info_already_requested_ = true;
 
@@ -395,14 +394,6 @@ bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
   // Now we collect GPU info on the GPU side, so whatever returns is valid.
   return (gpu_info_.basic_info_state != gpu::kCollectInfoNone ||
           gpu_info_.context_info_state != gpu::kCollectInfoNone);
-}
-
-bool GpuDataManagerImplPrivate::IsCompleteGpuInfoAvailable() const {
-#if defined(OS_WIN)
-  if (gpu_info_.dx_diagnostics_info_state == gpu::kCollectInfoNone)
-    return false;
-#endif
-  return IsEssentialGpuInfoAvailable();
 }
 
 bool GpuDataManagerImplPrivate::IsGpuFeatureInfoAvailable() const {
@@ -468,7 +459,7 @@ void GpuDataManagerImplPrivate::Initialize() {
   if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
     // Skip collecting the basic driver info if SetGpuInfo() is already called.
-    if (!IsCompleteGpuInfoAvailable()) {
+    if (!IsEssentialGpuInfoAvailable()) {
       TRACE_EVENT0("startup",
                    "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
       gpu::CollectBasicGraphicsInfo(&gpu_info_);
@@ -491,12 +482,15 @@ void GpuDataManagerImplPrivate::Initialize() {
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
-  bool was_info_available = IsCompleteGpuInfoAvailable();
-  gpu::MergeGPUInfo(&gpu_info_, gpu_info);
-  if (IsCompleteGpuInfoAvailable()) {
-    complete_gpu_info_already_requested_ = true;
-  } else if (was_info_available) {
-    // Allow future requests to go through properly.
+  bool sandboxed = gpu_info_.sandboxed;
+  gpu_info_ = gpu_info;
+  // On certain platforms (for now, Windows), complete GPUInfo is
+  // collected through an unsandboxed GPU process, so the original
+  // |sandboxed| should be kept.
+  gpu_info_.sandboxed = sandboxed;
+
+  if (complete_gpu_info_already_requested_ &&
+      !NeedsCompleteGpuInfoCollection()) {
     complete_gpu_info_already_requested_ = false;
   }
 
@@ -623,7 +617,6 @@ void GpuDataManagerImplPrivate::DisableSwiftShader() {
 void GpuDataManagerImplPrivate::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
   DCHECK(!is_initialized_);
   gpu_info_ = gpu_info;
-  DCHECK(IsCompleteGpuInfoAvailable());
 }
 
 void GpuDataManagerImplPrivate::GetBlacklistReasons(
@@ -676,7 +669,6 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
     return;
   }
   {
-    gpu_info_.process_crash_count = GpuProcessHost::gpu_crash_count();
     GpuDataManagerImpl::UnlockedSession session(owner_);
     observer_list_->Notify(
         FROM_HERE, &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
@@ -921,6 +913,17 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
 
 int64_t GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
+}
+
+bool GpuDataManagerImplPrivate::NeedsCompleteGpuInfoCollection() const {
+#if defined(OS_MACOSX)
+  return gpu_info_.gl_vendor.empty();
+#elif defined(OS_WIN)
+  return (gpu_info_.dx_diagnostics.values.empty() &&
+          gpu_info_.dx_diagnostics.children.empty());
+#else
+  return false;
+#endif
 }
 
 void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& top_origin_url,

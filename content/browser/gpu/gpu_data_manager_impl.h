@@ -69,7 +69,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   bool GpuAccessAllowed(std::string* reason) const override;
   void RequestCompleteGpuInfoIfNeeded() override;
   bool IsEssentialGpuInfoAvailable() const override;
-  bool IsCompleteGpuInfoAvailable() const override;
   void RequestVideoMemoryUsageStatsUpdate(
       const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
           callback) const override;

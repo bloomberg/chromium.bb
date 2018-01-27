@@ -105,7 +105,6 @@ struct GpuInfo {
   bool software_rendering;
   bool direct_rendering;
   bool sandboxed;
-  int32 process_crash_count;
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
   bool direct_composition;

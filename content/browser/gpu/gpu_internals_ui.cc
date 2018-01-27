@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -242,7 +243,7 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
 
   basic_info->Append(NewDescriptionValuePair(
       "GPU process crash count",
-      std::make_unique<base::Value>(gpu_info.process_crash_count)));
+      std::make_unique<base::Value>(GpuProcessHost::GetGpuCrashCount())));
 
   auto info = std::make_unique<base::DictionaryValue>();
 

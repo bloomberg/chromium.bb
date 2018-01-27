@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
@@ -85,7 +86,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
   using RequestHDRStatusCallback = base::Callback<void(bool)>;
 
-  static int gpu_crash_count() { return gpu_crash_count_; }
+  static int GetGpuCrashCount();
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an
   // existing one, resulting in the launching of a GPU process if required.
@@ -286,7 +287,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   static bool hardware_gpu_enabled_;
 
-  static int gpu_crash_count_;
+  static base::subtle::Atomic32 gpu_crash_count_;
   static int gpu_recent_crash_count_;
   static bool crashed_before_;
   static int swiftshader_crash_count_;

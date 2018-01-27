@@ -44,7 +44,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
   bool IsEssentialGpuInfoAvailable() const;
-  bool IsCompleteGpuInfoAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
   void RequestVideoMemoryUsageStatsUpdate(
@@ -162,6 +161,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   GpuDataManagerImpl::DomainBlockStatus Are3DAPIsBlockedAtTime(
       const GURL& url, base::Time at_time) const;
   int64_t GetBlockAllDomainsDurationInMs() const;
+
+  // This is platform specific. At the moment:
+  //   1) on MacOSX, if GL strings are missing, this returns true;
+  //   2) on Windows, if DxDiagnostics are missing, this returns true;
+  //   3) all other platforms, this returns false.
+  bool NeedsCompleteGpuInfoCollection() const;
 
   bool complete_gpu_info_already_requested_;
 

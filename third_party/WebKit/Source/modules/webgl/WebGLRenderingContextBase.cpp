@@ -570,8 +570,6 @@ static String ExtractWebGLContextCreationError(
       "Reset notification strategy",
       String::Format("0x%04x", info.reset_notification_strategy).Utf8().data(),
       builder);
-  FormatWebGLStatusString("GPU process crash count",
-                          String::Number(info.process_crash_count), builder);
   FormatWebGLStatusString("ErrorMessage", info.error_message.Utf8().data(),
                           builder);
   builder.Append('.');

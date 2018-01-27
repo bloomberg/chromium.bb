@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
@@ -117,6 +118,9 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
       protocol::DictionaryValue::create();
   AuxGPUInfoEnumerator enumerator(aux_attributes.get());
   gpu_info.EnumerateFields(&enumerator);
+  enumerator.BeginAuxAttributes();
+  enumerator.AddInt("processCrashCount", GpuProcessHost::GetGpuCrashCount());
+  enumerator.EndAuxAttributes();
 
   std::unique_ptr<base::DictionaryValue> base_feature_status =
       GetFeatureStatus();

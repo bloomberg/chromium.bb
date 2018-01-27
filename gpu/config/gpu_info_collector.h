@@ -48,16 +48,6 @@ GPU_EXPORT CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info);
 // Each platform stores the driver version on the GL_VERSION string differently
 GPU_EXPORT CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info);
 
-// Merge GPUInfo from CollectContextGraphicsInfo into basic GPUInfo.
-// This is platform specific, depending on which info are collected at which
-// stage.
-GPU_EXPORT void MergeGPUInfo(GPUInfo* basic_gpu_info,
-                             const GPUInfo& context_gpu_info);
-
-// MergeGPUInfo() when GL driver is used.
-GPU_EXPORT void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
-                               const GPUInfo& context_gpu_info);
-
 // If more than one GPUs are identified, and GL strings are available,
 // identify the active GPU based on GL strings.
 GPU_EXPORT void IdentifyActiveGPU(GPUInfo* gpu_info);

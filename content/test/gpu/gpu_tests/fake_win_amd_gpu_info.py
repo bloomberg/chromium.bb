@@ -91,7 +91,6 @@ FAKE_GPU_INFO = {
             'min_resolution_width': 48,
             'optimus': False,
             'pixel_shader_version': '5.0',
-            'process_crash_count': 0,
             'profile': 12,
             'sandboxed': True,
             'software_rendering': False,

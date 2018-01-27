@@ -150,7 +150,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const bool software_rendering = true;
   const bool direct_rendering = true;
   const bool sandboxed = true;
-  const int process_crash_count = 0xdead;
   const bool in_process_gpu = true;
   const bool passthrough_cmd_decoder = true;
   const bool direct_composition = true;
@@ -199,7 +198,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.software_rendering = software_rendering;
   input.direct_rendering = direct_rendering;
   input.sandboxed = sandboxed;
-  input.process_crash_count = process_crash_count;
   input.in_process_gpu = in_process_gpu;
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
   input.direct_composition = direct_composition;
@@ -261,7 +259,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(software_rendering, output.software_rendering);
   EXPECT_EQ(direct_rendering, output.direct_rendering);
   EXPECT_EQ(sandboxed, output.sandboxed);
-  EXPECT_EQ(process_crash_count, output.process_crash_count);
   EXPECT_EQ(in_process_gpu, output.in_process_gpu);
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);
   EXPECT_EQ(direct_composition, output.direct_composition);

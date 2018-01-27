@@ -258,7 +258,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->supports_overlays = data.supports_overlays();
   out->can_support_threaded_texture_mailbox =
       data.can_support_threaded_texture_mailbox();
-  out->process_crash_count = data.process_crash_count();
   out->jpeg_decode_accelerator_supported =
       data.jpeg_decode_accelerator_supported();
 

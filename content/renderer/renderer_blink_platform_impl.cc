@@ -1051,7 +1051,6 @@ static void Collect3DContextInformation(
       gl_info->reset_notification_strategy =
           gpu_info.gl_reset_notification_strategy;
       gl_info->sandboxed = gpu_info.sandboxed;
-      gl_info->process_crash_count = gpu_info.process_crash_count;
       gl_info->amd_switchable = gpu_info.amd_switchable;
       gl_info->optimus = gpu_info.optimus;
       break;
