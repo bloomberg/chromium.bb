@@ -618,6 +618,9 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
                                       Maybe<int> max_width,
                                       Maybe<int> max_height,
                                       Maybe<int> every_nth_frame) {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::InternalError();
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (!widget_host)
@@ -759,9 +762,10 @@ void PageHandler::GetAppManifest(
 }
 
 WebContentsImpl* PageHandler::GetWebContents() {
-  return host_ ?
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :
-      nullptr;
+  return host_ && !host_->frame_tree_node()->parent()
+             ? static_cast<WebContentsImpl*>(
+                   WebContents::FromRenderFrameHost(host_))
+             : nullptr;
 }
 
 void PageHandler::NotifyScreencastVisibility(bool visible) {
