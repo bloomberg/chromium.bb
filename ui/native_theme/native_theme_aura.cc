@@ -148,7 +148,7 @@ void NativeThemeAura::PaintArrowButton(cc::PaintCanvas* canvas,
       break;
     case kHovered:
       bg_color = SkColorSetRGB(0xD2, 0xD2, 0xD2);
-    // Fall through.
+      FALLTHROUGH;
     case kNormal:
       arrow_color = SkColorSetRGB(0x50, 0x50, 0x50);
       break;
