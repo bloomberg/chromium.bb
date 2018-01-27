@@ -367,7 +367,7 @@ static void sgr_filter_block(const sgr_params_type *params, const uint8_t *dat8,
                              int width, int height, int dat_stride,
                              int use_highbd, int bit_depth, int32_t *flt1,
                              int32_t *flt2, int flt_stride) {
-#if CONFIG_FAST_SGR
+#if CONFIG_FAST_SGR == 2
   av1_selfguided_restoration_c(dat8, width, height, dat_stride, flt1, flt2,
                                flt_stride, params, bit_depth, use_highbd);
 #else
