@@ -37,12 +37,7 @@ void OnDecodeImageDone(
 }
 
 void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&BindToBrowserConnector, base::Passed(&request)));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::ServiceManagerConnection::GetForProcess()->GetConnector()
       ->BindConnectorRequest(std::move(request));
@@ -67,7 +62,9 @@ void DecodeImage(
   service_manager::mojom::ConnectorRequest connector_request;
   std::unique_ptr<service_manager::Connector> connector =
       service_manager::Connector::Create(&connector_request);
-  BindToBrowserConnector(std::move(connector_request));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&BindToBrowserConnector, std::move(connector_request)));
 
   data_decoder::DecodeImage(
       connector.get(), image_data, codec, shrink_to_fit, kMaxImageSizeInBytes,
