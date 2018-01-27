@@ -1,11 +1,6 @@
 /** @polymerBehavior */
   Polymer.PaperSpinnerBehavior = {
 
-    listeners: {
-      'animationend': '__reset',
-      'webkitAnimationEnd': '__reset'
-    },
-
     properties: {
       /**
        * Displays the spinner.
@@ -48,7 +43,7 @@
 
     __altChanged: function(alt) {
       // user-provided `aria-label` takes precedence over prototype default
-      if (alt === this.getPropertyInfo('alt').value) {
+      if (alt === 'loading') {
         this.alt = this.getAttribute('aria-label') || alt;
       } else {
         this.__setAriaHidden(alt==='');
