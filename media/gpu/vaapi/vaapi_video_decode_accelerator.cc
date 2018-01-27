@@ -1055,17 +1055,8 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   client_ptr_factory_.reset();
   weak_this_factory_.InvalidateWeakPtrs();
 
-  decoder_thread_task_runner_->DeleteSoon(FROM_HERE, decoder_.release());
-  if (h264_accelerator_) {
-    decoder_thread_task_runner_->DeleteSoon(FROM_HERE,
-                                            h264_accelerator_.release());
-  } else if (vp8_accelerator_) {
-    decoder_thread_task_runner_->DeleteSoon(FROM_HERE,
-                                            vp8_accelerator_.release());
-  } else if (vp9_accelerator_) {
-    decoder_thread_task_runner_->DeleteSoon(FROM_HERE,
-                                            vp9_accelerator_.release());
-  }
+  // TODO(mcasas): consider deleting |decoder_| and |*_accelerator_| on
+  // |decoder_thread_task_runner_|, https://crbug.com/789160.
 
   // Signal all potential waiters on the decoder_thread_, let them early-exit,
   // as we've just moved to the kDestroying state, and wait for all tasks
@@ -1154,7 +1145,8 @@ VaapiVideoDecodeAccelerator::VaapiH264Accelerator::VaapiH264Accelerator(
 }
 
 VaapiVideoDecodeAccelerator::VaapiH264Accelerator::~VaapiH264Accelerator() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<H264Picture>
@@ -1496,7 +1488,8 @@ VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::VaapiVP8Accelerator(
 }
 
 VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::~VaapiVP8Accelerator() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<VP8Picture>
@@ -1732,7 +1725,8 @@ VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::VaapiVP9Accelerator(
 }
 
 VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::~VaapiVP9Accelerator() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(mcasas): consider enabling the checker, https://crbug.com/789160
+  // CHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<VP9Picture>
