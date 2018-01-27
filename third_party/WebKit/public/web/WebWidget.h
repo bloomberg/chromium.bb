@@ -99,16 +99,22 @@ class WebWidget {
       LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
 
   // Called to paint the rectangular region within the WebWidget
-  // onto the specified canvas at (viewPort.x,viewPort.y). You MUST call
-  // Layout before calling this method. It is okay to call paint
-  // multiple times once layout has been called, assuming no other
-  // changes are made to the WebWidget (e.g., once events are
-  // processed, it should be assumed that another call to layout is
-  // warranted before painting again).
+  // onto the specified canvas at (viewPort.x,viewPort.y).
+  //
+  // Before calling Paint(), you must call
+  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle is
+  // clean. It is okay to call paint multiple times once the lifecycle is
+  // updated, assuming no other changes are made to the WebWidget (e.g., once
+  // events are processed, it should be assumed that another call to
+  // UpdateLifecycle is warranted before painting again).
   virtual void Paint(WebCanvas*, const WebRect& view_port) {}
 
   // Similar to paint() but ignores compositing decisions, squashing all
   // contents of the WebWidget into the output given to the WebCanvas.
+  //
+  // Before calling PaintIgnoringCompositing(), you must call
+  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle is
+  // clean.
   virtual void PaintIgnoringCompositing(WebCanvas*, const WebRect&) {}
 
   // Run layout and paint of all pending document changes asynchronously.

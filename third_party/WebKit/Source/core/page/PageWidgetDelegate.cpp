@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/TransformRecorder.h"
@@ -90,8 +91,9 @@ static void PaintInternal(Page& page,
 
     IntRect dirty_rect(rect);
     LocalFrameView* view = root.View();
-    view->UpdateAllLifecyclePhasesExceptPaint();
     if (view) {
+      DCHECK(view->GetLayoutView()->GetDocument().Lifecycle().GetState() ==
+             DocumentLifecycle::kPaintClean);
       ClipRecorder clip_recorder(paint_context, builder,
                                  DisplayItem::kPageWidgetDelegateClip,
                                  dirty_rect);

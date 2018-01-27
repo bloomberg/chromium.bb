@@ -2361,6 +2361,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
                          -zoom_rect.y() * device_scale_factor_);
 
         DCHECK(webview_->IsAcceleratedCompositingActive());
+        webview_->UpdateAllLifecyclePhases();
         webview_->PaintIgnoringCompositing(&canvas, zoom_rect);
       }
 
