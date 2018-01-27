@@ -531,7 +531,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   struct GraphicsInfo {
     unsigned vendor_id = 0;
     unsigned device_id = 0;
-    unsigned process_crash_count = 0;
     unsigned reset_notification_strategy = 0;
     bool sandboxed = false;
     bool amd_switchable = false;

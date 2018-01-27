@@ -103,7 +103,7 @@ namespace content {
 
 bool GpuProcessHost::gpu_enabled_ = true;
 bool GpuProcessHost::hardware_gpu_enabled_ = true;
-int GpuProcessHost::gpu_crash_count_ = 0;
+base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
 int GpuProcessHost::gpu_recent_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
 int GpuProcessHost::swiftshader_crash_count_ = 0;
@@ -473,6 +473,11 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   }
 
   return nullptr;
+}
+
+// static
+int GpuProcessHost::GetGpuCrashCount() {
+  return static_cast<int>(base::subtle::NoBarrier_Load(&gpu_crash_count_));
 }
 
 GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
@@ -1242,11 +1247,11 @@ void GpuProcessHost::RecordProcessCrash() {
         GpuDataManagerImpl::GetInstance()->DisableSwiftShader();
       }
     } else {
-      ++gpu_crash_count_;
+      int count = static_cast<int>(
+          base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1));
       UMA_HISTOGRAM_EXACT_LINEAR(
           "GPU.GPUProcessLifetimeEvents",
-          std::min(DIED_FIRST_TIME + gpu_crash_count_,
-                   GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
+          std::min(DIED_FIRST_TIME + count, GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
           static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
       // Allow about 1 GPU crash per hour to be removed from the crash count,

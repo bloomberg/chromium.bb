@@ -26,10 +26,6 @@ const char kEnableOOPRasterization[] = "enable-oop-rasterization";
 // Passes encoded GpuPreferences to GPU process.
 const char kGpuPreferences[] = "gpu-preferences";
 
-// Testing switch to not launch the gpu process for full gpu info collection.
-const char kGpuTestingNoCompleteInfoCollection[] =
-    "gpu-no-complete-info-collection";
-
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 

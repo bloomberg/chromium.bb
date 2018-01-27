@@ -225,60 +225,6 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   return CollectDriverInfoGL(gpu_info);
 }
 
-void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
-                    const GPUInfo& context_gpu_info) {
-  DCHECK(basic_gpu_info);
-  // Copy over GPUs because which one is active could change.
-  basic_gpu_info->gpu = context_gpu_info.gpu;
-  basic_gpu_info->secondary_gpus = context_gpu_info.secondary_gpus;
-
-  basic_gpu_info->gl_renderer = context_gpu_info.gl_renderer;
-  basic_gpu_info->gl_vendor = context_gpu_info.gl_vendor;
-  basic_gpu_info->gl_version = context_gpu_info.gl_version;
-  basic_gpu_info->gl_extensions = context_gpu_info.gl_extensions;
-  basic_gpu_info->pixel_shader_version =
-      context_gpu_info.pixel_shader_version;
-  basic_gpu_info->vertex_shader_version =
-      context_gpu_info.vertex_shader_version;
-  basic_gpu_info->max_msaa_samples =
-      context_gpu_info.max_msaa_samples;
-  basic_gpu_info->machine_model_name = context_gpu_info.machine_model_name;
-  basic_gpu_info->machine_model_version =
-      context_gpu_info.machine_model_version;
-  basic_gpu_info->gl_ws_vendor = context_gpu_info.gl_ws_vendor;
-  basic_gpu_info->gl_ws_version = context_gpu_info.gl_ws_version;
-  basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
-  basic_gpu_info->gl_reset_notification_strategy =
-      context_gpu_info.gl_reset_notification_strategy;
-  basic_gpu_info->software_rendering = context_gpu_info.software_rendering;
-
-  if (!context_gpu_info.driver_vendor.empty())
-    basic_gpu_info->driver_vendor = context_gpu_info.driver_vendor;
-  if (!context_gpu_info.driver_version.empty())
-    basic_gpu_info->driver_version = context_gpu_info.driver_version;
-
-  basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
-  basic_gpu_info->direct_rendering = context_gpu_info.direct_rendering;
-  basic_gpu_info->in_process_gpu = context_gpu_info.in_process_gpu;
-  basic_gpu_info->passthrough_cmd_decoder =
-      context_gpu_info.passthrough_cmd_decoder;
-  basic_gpu_info->direct_composition = context_gpu_info.direct_composition;
-  basic_gpu_info->supports_overlays = context_gpu_info.supports_overlays;
-  basic_gpu_info->context_info_state = context_gpu_info.context_info_state;
-  basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
-  basic_gpu_info->video_decode_accelerator_capabilities =
-      context_gpu_info.video_decode_accelerator_capabilities;
-  basic_gpu_info->video_encode_accelerator_supported_profiles =
-      context_gpu_info.video_encode_accelerator_supported_profiles;
-  basic_gpu_info->jpeg_decode_accelerator_supported =
-      context_gpu_info.jpeg_decode_accelerator_supported;
-
-#if defined(USE_X11)
-  basic_gpu_info->system_visual = context_gpu_info.system_visual;
-  basic_gpu_info->rgba_visual = context_gpu_info.rgba_visual;
-#endif
-}
-
 void IdentifyActiveGPU(GPUInfo* gpu_info) {
   const std::string kNVidiaName = "nvidia";
   const std::string kNouveauName = "nouveau";

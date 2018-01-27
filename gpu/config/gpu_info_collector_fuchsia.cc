@@ -24,8 +24,4 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   return kCollectInfoFatalFailure;
 }
 
-void MergeGPUInfo(GPUInfo* basic_gpu_info, const GPUInfo& context_gpu_info) {
-  MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
-}
-
 }  // namespace gpu

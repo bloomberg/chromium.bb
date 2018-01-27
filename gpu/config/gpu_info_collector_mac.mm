@@ -13,7 +13,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
-
   CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
   gpu_info->context_info_state = result;
   return result;
@@ -47,11 +46,6 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
     return kCollectInfoNonFatalFailure;
   gpu_info->driver_version = gpu_info->gl_version.substr(pos + 1);
   return kCollectInfoSuccess;
-}
-
-void MergeGPUInfo(GPUInfo* basic_gpu_info,
-                  const GPUInfo& context_gpu_info) {
-  MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 }
 
 }  // namespace gpu

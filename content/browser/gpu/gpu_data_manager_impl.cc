@@ -44,11 +44,6 @@ bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() const {
   return private_->IsEssentialGpuInfoAvailable();
 }
 
-bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsCompleteGpuInfoAvailable();
-}
-
 bool GpuDataManagerImpl::IsGpuFeatureInfoAvailable() const {
   base::AutoLock auto_lock(lock_);
   return private_->IsGpuFeatureInfoAvailable();
