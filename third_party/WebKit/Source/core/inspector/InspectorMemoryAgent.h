@@ -70,16 +70,19 @@ class CORE_EXPORT InspectorMemoryAgent final
   protocol::Response stopSampling() override;
   protocol::Response getSamplingProfile(
       std::unique_ptr<protocol::Memory::SamplingProfile>*) override;
+  protocol::Response getAllTimeSamplingProfile(
+      std::unique_ptr<protocol::Memory::SamplingProfile>*) override;
 
  private:
   explicit InspectorMemoryAgent(InspectedFrames*);
 
   std::vector<std::string> Symbolize(const std::vector<void*>& addresses);
+  std::unique_ptr<protocol::Memory::SamplingProfile> GetSamplingProfileById(
+      uint32_t id);
 
   std::unique_ptr<BlinkLeakDetector> detector_;
   std::unique_ptr<PrepareForLeakDetectionCallback> callback_;
   Member<InspectedFrames> frames_;
-  std::map<void*, std::string> symbols_cache_;
   uint32_t profile_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorMemoryAgent);

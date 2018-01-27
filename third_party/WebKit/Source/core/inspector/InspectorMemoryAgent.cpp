@@ -120,32 +120,42 @@ Response InspectorMemoryAgent::stopSampling() {
   return Response::OK();
 }
 
+Response InspectorMemoryAgent::getAllTimeSamplingProfile(
+    std::unique_ptr<protocol::Memory::SamplingProfile>* out_profile) {
+  *out_profile = GetSamplingProfileById(0);
+  return Response::OK();
+}
+
 Response InspectorMemoryAgent::getSamplingProfile(
     std::unique_ptr<protocol::Memory::SamplingProfile>* out_profile) {
+  *out_profile = GetSamplingProfileById(profile_id_);
+  return Response::OK();
+}
+
+std::unique_ptr<protocol::Memory::SamplingProfile>
+InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
   std::unique_ptr<protocol::Array<protocol::Memory::SamplingProfileNode>>
       samples =
           protocol::Array<protocol::Memory::SamplingProfileNode>::create();
   std::vector<SamplingNativeHeapProfiler::Sample> raw_samples =
-      SamplingNativeHeapProfiler::GetInstance()->GetSamples(profile_id_);
+      SamplingNativeHeapProfiler::GetInstance()->GetSamples(id);
 
-  for (auto it = raw_samples.begin(); it != raw_samples.end(); ++it) {
+  for (auto& it : raw_samples) {
     std::unique_ptr<protocol::Array<protocol::String>> stack =
         protocol::Array<protocol::String>::create();
-    std::vector<std::string> source_stack = Symbolize(it->stack);
-    for (auto it2 = source_stack.begin(); it2 != source_stack.end(); ++it2)
-      stack->addItem(it2->c_str());
+    std::vector<std::string> source_stack = Symbolize(it.stack);
+    for (auto& it2 : source_stack)
+      stack->addItem(it2.c_str());
     samples->addItem(protocol::Memory::SamplingProfileNode::create()
-                         .setSize(it->size)
-                         .setCount(it->count)
+                         .setSize(it.size)
+                         .setCount(it.count)
                          .setStack(std::move(stack))
                          .build());
   }
-  std::unique_ptr<protocol::Memory::SamplingProfile> result =
-      protocol::Memory::SamplingProfile::create()
-          .setSamples(std::move(samples))
-          .build();
-  *out_profile = std::move(result);
-  return Response::OK();
+
+  return protocol::Memory::SamplingProfile::create()
+      .setSamples(std::move(samples))
+      .build();
 }
 
 std::vector<std::string> InspectorMemoryAgent::Symbolize(
