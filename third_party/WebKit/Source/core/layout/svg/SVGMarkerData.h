@@ -147,6 +147,7 @@ class SVGMarkerData {
         break;
       case kPathElementMoveToPoint:
         subpath_start_ = points[0];
+        FALLTHROUGH;
       case kPathElementAddLineToPoint:
         UpdateInslope(points[0]);
         origin_ = points[0];

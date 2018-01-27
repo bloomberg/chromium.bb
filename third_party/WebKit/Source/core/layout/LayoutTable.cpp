@@ -171,7 +171,7 @@ void LayoutTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
           wrap_in_anonymous_section = false;
           break;
         }
-      // Fall through.
+        FALLTHROUGH;
       case EDisplay::kTableRowGroup:
         ResetSectionPointerIfNotBefore(first_body_, before_child);
         if (!first_body_)

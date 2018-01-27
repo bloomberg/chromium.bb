@@ -608,7 +608,7 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
       if (object_fit != EObjectFit::kScaleDown ||
           final_rect.Width() <= intrinsic_size.Width())
         break;
-    // fall through
+      FALLTHROUGH;
     case EObjectFit::kNone:
       final_rect.SetSize(intrinsic_size);
       break;

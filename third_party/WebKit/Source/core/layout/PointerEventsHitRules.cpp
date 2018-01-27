@@ -53,6 +53,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
                                    // SVG content
         require_fill = true;
         require_stroke = true;
+        FALLTHROUGH;
       case EPointerEvents::kVisible:
         require_visible = true;
         can_hit_fill = true;
@@ -69,6 +70,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hit_testing,
       case EPointerEvents::kPainted:
         require_fill = true;
         require_stroke = true;
+        FALLTHROUGH;
       case EPointerEvents::kAll:
         can_hit_fill = true;
         can_hit_stroke = true;
