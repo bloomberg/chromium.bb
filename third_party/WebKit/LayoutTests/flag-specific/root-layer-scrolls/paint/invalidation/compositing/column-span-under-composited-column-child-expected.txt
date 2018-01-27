@@ -28,11 +28,6 @@
       "position": [8, 8],
       "contentsOpaque": true,
       "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV",
-      "position": [8, 8],
-      "contentsOpaque": true
     }
   ],
   "objectPaintInvalidations": [
