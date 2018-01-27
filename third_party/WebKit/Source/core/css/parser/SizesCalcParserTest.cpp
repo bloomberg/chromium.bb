@@ -97,6 +97,14 @@ TEST(SizesCalcParserTest, Basic) {
       {"calc(100px @ 2)", 0, false, false},
       {"calc(1 flim 2)", 0, false, false},
       {"calc(1 flim (2))", 0, false, false},
+      {"calc((100vw - 2 * 40px - 2 * 30px) / 3)", 120, true, false},
+      {"calc((100vw - 40px - 60px - 40px) / 3)", 120, true, false},
+      {"calc((50vw + 40px + 30px + 40px) / 3)", 120, true, false},
+      {"calc((100vw - 2 / 2 * 40px - 2 * 30px) / 4)", 100, true, false},
+      {"calc((100vw - 2 * 2 / 2 * 40px - 2 * 30px) / 3)", 120, true, false},
+      {"calc((100vw - 2 * 2 / 2 * 40px - 2 * 30px) / 3)", 120, true, false},
+      {"calc((100vw - 2 * 2 * 20px - 2 * 30px) / 3)", 120, true, false},
+      {"calc((100vw - 320px / 2 / 2 - 2 * 30px) / 3)", 120, true, false},
       {nullptr, 0, true, false}  // Do not remove the terminator line.
   };
 

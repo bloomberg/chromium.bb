@@ -32,25 +32,31 @@ static bool OperatorPriority(UChar cc, bool& high_priority) {
 
 bool SizesCalcParser::HandleOperator(Vector<CSSParserToken>& stack,
                                      const CSSParserToken& token) {
-  // If the token is an operator, o1, then:
-  // while there is an operator token, o2, at the top of the stack, and
-  // either o1 is left-associative and its precedence is equal to that of o2,
-  // or o1 has precedence less than that of o2,
-  // pop o2 off the stack, onto the output queue;
-  // push o1 onto the stack.
-  bool stack_operator_priority;
+  // If the token is not an operator, then return. Else determine the
+  // precedence of the new operator (op1).
   bool incoming_operator_priority;
-
   if (!OperatorPriority(token.Delimiter(), incoming_operator_priority))
     return false;
-  if (!stack.IsEmpty() && stack.back().GetType() == kDelimiterToken) {
-    if (!OperatorPriority(stack.back().Delimiter(), stack_operator_priority))
+
+  while (!stack.IsEmpty()) {
+    // While there is an operator (op2) at the top of the stack,
+    // determine its precedence, and...
+    const CSSParserToken& top_of_stack = stack.back();
+    if (top_of_stack.GetType() != kDelimiterToken)
+      break;
+    bool stack_operator_priority;
+    if (!OperatorPriority(top_of_stack.Delimiter(), stack_operator_priority))
       return false;
-    if (!incoming_operator_priority || stack_operator_priority) {
-      AppendOperator(stack.back());
-      stack.pop_back();
-    }
+    // ...if op1 is left-associative (all currently supported
+    // operators are) and its precedence is equal to that of op2, or
+    // op1 has precedence less than that of op2, ...
+    if (incoming_operator_priority && !stack_operator_priority)
+      break;
+    // ...pop op2 off the stack and add it to the output queue.
+    AppendOperator(top_of_stack);
+    stack.pop_back();
   }
+  // Push op1 onto the stack.
   stack.push_back(token);
   return true;
 }
