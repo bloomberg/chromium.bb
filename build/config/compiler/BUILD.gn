@@ -123,6 +123,26 @@ declare_args() {
   use_cxx11_on_android = use_cxx11
 }
 
+declare_args() {
+  # Set to true to use icf, Identical Code Folding.
+  #
+  # TODO(thakis): Remove `!is_android` below once NDK gold has been rolled
+  # with the fix for https://sourceware.org/bugzilla/show_bug.cgi?id=17704
+  # merged.  See also https://crbug.com/663886
+  #
+  # `linux_use_bundled_binutils` is to avoid breaking Linux distros which may
+  # still have a buggy gold.
+  #
+  # chromeos binutils has been patched with the fix, so always use icf there.
+  #
+  # The bug only affects x86 and x64, so we can still use ICF when targeting
+  # other architectures.
+  use_icf = is_posix && (use_gold || (use_lld && !is_nacl)) &&
+            !using_sanitizer && !(is_android && use_order_profiling) &&
+            ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
+             !(current_cpu == "x86" || current_cpu == "x64"))
+}
+
 if (is_clang) {
   update_args = [ "--print-revision" ]
   if (llvm_force_head_revision) {
@@ -426,20 +446,8 @@ config("compiler") {
     ldflags += [ "-fuse-ld=bfd" ]
   }
 
-  if (is_posix && (use_gold || (use_lld && !is_nacl)) && !using_sanitizer &&
-      !(is_android && use_order_profiling)) {
-    # TODO(thakis): Remove `!is_android` below once NDK gold has been rolled
-    # with the fix for https://sourceware.org/bugzilla/show_bug.cgi?id=17704
-    # merged.  See also https://crbug.com/663886
-    # `linux_use_bundled_binutils` is to avoid breaking Linux distros which may
-    # still have a buggy gold.
-    # chromeos binutils has been patched with the fix, so always use icf there.
-    # The bug only affects x86 and x64, so we can still use ICF when targeting
-    # other architectures.
-    if ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
-        !(current_cpu == "x86" || current_cpu == "x64")) {
-      ldflags += [ "-Wl,--icf=all" ]
-    }
+  if (use_icf) {
+    ldflags += [ "-Wl,--icf=all" ]
   }
 
   if (linux_use_bundled_binutils) {
