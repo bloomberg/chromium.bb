@@ -231,14 +231,6 @@ void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
 }
 
-bool SharedWorkerHost::ServesExternalClient() {
-  for (const ClientInfo& info : clients_) {
-    if (info.process_id != process_id_)
-      return true;
-  }
-  return false;
-}
-
 void SharedWorkerHost::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
   worker_->BindDevToolsAgent(std::move(request));
