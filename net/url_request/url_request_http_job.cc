@@ -718,9 +718,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->url(), cookie_line, base::Time::Now(), options);
       if (!cookie || !CanSetCookie(*cookie, &options))
         continue;
-      request_->context()->cookie_store()->SetCanonicalCookieAsync(
-          std::move(cookie), request_->url().SchemeIsCryptographic(),
-          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+      request_->context()->cookie_store()->SetCookieWithOptionsAsync(
+          request_->url(), cookie_line, options,
+          CookieStore::SetCookiesCallback());
     }
   }
 
