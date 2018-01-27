@@ -114,9 +114,7 @@
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #include "components/data_usage/android/traffic_stats_amortizer.h"
-#include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc_android.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -129,6 +127,11 @@
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/cpu.h"
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#include "net/cert/cert_net_fetcher.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -588,7 +591,7 @@ void IOThread::CleanUp() {
   net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   net::ShutdownGlobalCertNetFetcher();
 #endif
 
@@ -831,7 +834,7 @@ void IOThread::ConstructSystemRequestContext() {
 #if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context);
 #endif
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   net::SetGlobalCertNetFetcher(
       net::CreateCertNetFetcher(globals_->system_request_context));
 #endif

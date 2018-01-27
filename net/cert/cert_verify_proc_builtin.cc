@@ -20,6 +20,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/cert_issuer_source_aia.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/common_cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -443,8 +444,17 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   // |input_cert|.
   path_builder.AddCertIssuerSource(intermediates);
 
-  // TODO(crbug.com/649017): Allow the path builder to discover intermediates
-  // through AIA fetching.
+  // Allow the path builder to discover intermediates through AIA fetching.
+  std::unique_ptr<CertIssuerSourceAia> aia_cert_issuer_source;
+  if (flags & CertVerifier::VERIFY_CERT_IO_ENABLED) {
+    if (net_fetcher) {
+      aia_cert_issuer_source =
+          std::make_unique<CertIssuerSourceAia>(net_fetcher);
+      path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
+    } else {
+      LOG(ERROR) << "VERIFY_CERT_IO_ENABLED specified but no net_fetcher";
+    }
+  }
 
   path_builder.Run();
 }
