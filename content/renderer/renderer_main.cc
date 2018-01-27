@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -31,6 +32,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
+#include "third_party/WebKit/public/platform/SamplingHeapProfiler.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
@@ -99,7 +101,19 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
-  const base::CommandLine& parsed_command_line = parameters.command_line;
+  const base::CommandLine& command_line = parameters.command_line;
+
+  if (command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
+    blink::SamplingHeapProfiler* profiler =
+        blink::SamplingHeapProfiler::GetInstance();
+    unsigned sampling_interval = 0;
+    bool parsed = base::StringToUint(
+        command_line.GetSwitchValueASCII(switches::kSamplingHeapProfiler),
+        &sampling_interval);
+    if (parsed && sampling_interval > 0)
+      profiler->SetSamplingInterval(sampling_interval * 1024);
+    profiler->Start();
+  }
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
@@ -110,9 +124,9 @@ int RendererMain(const MainFunctionParams& parameters) {
   // locale (at login time for Chrome OS), we have to set the ICU default
   // locale for renderer process here.
   // ICU locale will be used for fallback font selection etc.
-  if (parsed_command_line.HasSwitch(switches::kLang)) {
+  if (command_line.HasSwitch(switches::kLang)) {
     const std::string locale =
-        parsed_command_line.GetSwitchValueASCII(switches::kLang);
+        command_line.GetSwitchValueASCII(switches::kLang);
     base::i18n::SetICUDefaultLocale(locale);
   }
 #endif
@@ -148,7 +162,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // flag allowing us to attach a debugger.
   // Do not move this function down since that would mean we can't easily debug
   // whatever occurs before it.
-  HandleRendererErrorTestParameters(parsed_command_line);
+  HandleRendererErrorTestParameters(command_line);
 
   RendererMainPlatformDelegate platform(parameters);
 #if defined(OS_MACOSX)
@@ -165,7 +179,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
+  bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
 
 #if defined(OS_ANDROID)
   // If we have any pending LibraryLoader histograms, record them.

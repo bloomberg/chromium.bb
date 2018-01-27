@@ -3175,6 +3175,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceEffectiveConnectionTypeChoices)},
 
+    {"sampling-heap-profiler", flag_descriptions::kSamplingHeapProfilerName,
+     flag_descriptions::kSamplingHeapProfilerDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kSamplingHeapProfiler)},
+
     {"enable-heap-profiling", flag_descriptions::kEnableHeapProfilingName,
      flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableHeapProfilingChoices)},

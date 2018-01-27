@@ -26,12 +26,13 @@ namespace {
 const unsigned kMagicSignature = 0x14690ca5;
 const unsigned kDefaultAlignment = 16;
 const unsigned kSkipAllocatorFrames = 4;
+const size_t kDefaultSamplingInterval = 128 * 1024;
 
 bool g_deterministic;
 Atomic32 g_running;
 AtomicWord g_cumulative_counter = 0;
-AtomicWord g_threshold;
-AtomicWord g_sampling_interval = 128 * 1024;
+AtomicWord g_threshold = kDefaultSamplingInterval;
+AtomicWord g_sampling_interval = kDefaultSamplingInterval;
 uint32_t g_last_sample_ordinal = 0;
 
 inline bool HasBeenSampledFastCheck(void* address) {
@@ -45,6 +46,10 @@ SamplingNativeHeapProfiler::Sample::Sample(size_t size,
                                            unsigned ordinal,
                                            unsigned offset)
     : size(size), count(count), ordinal(ordinal), offset(offset) {}
+
+SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
+  return SamplingNativeHeapProfiler::GetInstance();
+}
 
 void* SamplingNativeHeapProfiler::AllocFn(const AllocatorDispatch* self,
                                           size_t size,
@@ -199,13 +204,13 @@ bool SamplingNativeHeapProfiler::InstallAllocatorHooks() {
 
 uint32_t SamplingNativeHeapProfiler::Start() {
   InstallAllocatorHooksOnce();
-  base::subtle::Release_Store(&g_threshold, g_sampling_interval);
-  base::subtle::Release_Store(&g_running, true);
+  base::subtle::Barrier_AtomicIncrement(&g_running, 1);
   return g_last_sample_ordinal;
 }
 
 void SamplingNativeHeapProfiler::Stop() {
-  base::subtle::Release_Store(&g_running, false);
+  AtomicWord count = base::subtle::Barrier_AtomicIncrement(&g_running, -1);
+  CHECK_GE(count, 0);
 }
 
 void SamplingNativeHeapProfiler::SetSamplingInterval(size_t sampling_interval) {

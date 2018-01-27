@@ -162,6 +162,7 @@ extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
 CONTENT_EXPORT extern const char kGpuSandboxStartEarly[];
 CONTENT_EXPORT extern const char kGpuStartupDialog[];
+CONTENT_EXPORT extern const char kSamplingHeapProfiler[];
 CONTENT_EXPORT extern const char kHistoryEntryRequiresUserGesture[];
 CONTENT_EXPORT extern const char kIgnoreCertificateErrorsSPKIList[];
 CONTENT_EXPORT extern const char kInProcessGPU[];
