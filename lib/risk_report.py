@@ -37,10 +37,10 @@ def GetCLRiskReport(build_id):
     risks = _GetCLRisks(build_id)
   except requests.exceptions.HTTPError:
     logging.exception('Encountered an error reaching CL-Scanner.')
-    return '(encountered exception reaching CL-Scanner)'
+    return {'(encountered exception reaching CL-Scanner)': ''}
   except timeout_util.TimeoutError:
     logging.exception('Timed out reaching CL-Scanner.')
-    return '(timeout reaching CL-Scanner)'
+    return {'(timeout reaching CL-Scanner)': ''}
 
   logging.info('CL-Scanner risks: %s', _PrettyPrintCLRisks(risks))
   if not risks:
