@@ -774,6 +774,7 @@ ResultExpr SimpleCondTestPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__NR_open)
     case __NR_open:
       flags_argument_position = 1;
+      FALLTHROUGH;
 #endif
     case __NR_openat: {  // open can be a wrapper for openat(2).
       if (sysno == __NR_openat)
