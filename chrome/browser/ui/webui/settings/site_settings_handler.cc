@@ -92,7 +92,7 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
         !(*extension)->permissions_data()->HasAPIPermission(permission))
       continue;
 
-    extensions::URLPatternSet web_extent = (*extension)->web_extent();
+    const extensions::URLPatternSet& web_extent = (*extension)->web_extent();
     // Add patterns from web extent.
     for (extensions::URLPatternSet::const_iterator pattern = web_extent.begin();
          pattern != web_extent.end(); ++pattern) {

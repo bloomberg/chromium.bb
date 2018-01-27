@@ -458,7 +458,7 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
       pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 
-      URLPatternSet patterns = extension_->web_extent();
+      const URLPatternSet& patterns = extension_->web_extent();
       for (URLPatternSet::const_iterator i = patterns.begin();
            i != patterns.end(); ++i) {
         if (!pattern.MatchesHost(i->host())) {
