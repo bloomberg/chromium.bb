@@ -14,7 +14,7 @@
 namespace vr {
 
 namespace {
-constexpr size_t kNumStars = 2000lu;
+constexpr size_t kNumStars = 500lu;
 
 // Position & opacity.
 constexpr size_t kFloatsPerStarVertex = 5lu;

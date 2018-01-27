@@ -1647,7 +1647,6 @@ void UiSceneCreator::CreateOmnibox() {
   auto omnibox_outer_layout = std::make_unique<LinearLayout>(LinearLayout::kUp);
   omnibox_outer_layout->set_hit_testable(false);
   omnibox_outer_layout->SetName(kOmniboxOuterLayout);
-  omnibox_outer_layout->set_margin(kSuggestionGapDMM);
   omnibox_outer_layout->SetTranslate(
       0, kUrlBarVerticalOffsetDMM - 0.5f * kOmniboxHeightDMM,
       kOmniboxShadowOffset);
@@ -1662,6 +1661,13 @@ void UiSceneCreator::CreateOmnibox() {
             e->SetTranslate(0, y_offset, kOmniboxShadowOffset);
           },
           omnibox_outer_layout.get())));
+
+  auto omnibox_outer_layout_spacer = Create<Rect>(kNone, kPhaseForeground);
+  omnibox_outer_layout_spacer->SetSize(kOmniboxWidthDMM, kSuggestionGapDMM);
+  VR_BIND_COLOR(model_, omnibox_outer_layout_spacer.get(),
+                &ColorScheme::url_bar_separator, &Rect::SetColor);
+  VR_BIND_VISIBILITY(omnibox_outer_layout_spacer,
+                     !model->omnibox_suggestions.empty());
 
   auto omnibox_container = std::make_unique<Rect>();
   omnibox_container->SetName(kOmniboxContainer);
@@ -1841,6 +1847,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_container->AddChild(std::move(text_field_layout));
 
   omnibox_outer_layout->AddChild(std::move(omnibox_container));
+  omnibox_outer_layout->AddChild(std::move(omnibox_outer_layout_spacer));
   omnibox_outer_layout->AddChild(std::move(suggestions_outer_layout));
 
   shadow->AddChild(std::move(omnibox_outer_layout));
