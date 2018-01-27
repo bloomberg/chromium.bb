@@ -89,12 +89,12 @@ ChromeAppListItem* FakeAppListModelUpdater::FindFolderItem(
   return (item && item->is_folder()) ? item : nullptr;
 }
 
-std::map<std::string, size_t>
-FakeAppListModelUpdater::GetIdToAppListIndexMap() {
-  std::map<std::string, size_t> id_to_app_list_index;
+void FakeAppListModelUpdater::GetIdToAppListIndexMap(
+    GetIdToAppListIndexMapCallback callback) {
+  std::unordered_map<std::string, size_t> id_to_app_list_index;
   for (size_t i = 0; i < items_.size(); ++i)
     id_to_app_list_index[items_[i]->id()] = i;
-  return id_to_app_list_index;
+  std::move(callback).Run(id_to_app_list_index);
 }
 
 size_t FakeAppListModelUpdater::BadgedItemCount() {

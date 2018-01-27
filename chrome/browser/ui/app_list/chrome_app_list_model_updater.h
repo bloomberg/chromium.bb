@@ -12,7 +12,6 @@
 
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater_delegate.h"
 
 namespace ui {
@@ -74,7 +73,7 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   ChromeAppListItem* FindFolderItem(const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   bool SearchEngineIsGoogle() override;
-  std::map<std::string, size_t> GetIdToAppListIndexMap() override;
+  void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   size_t BadgedItemCount() override;
   ui::MenuModel* GetContextMenuModel(const std::string& id);
 
@@ -84,14 +83,15 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
       app_list::AppListSyncableService::SyncItem* oem_sync_item,
       const std::string& oem_folder_id,
       const std::string& oem_folder_name,
-      const syncer::StringOrdinal& preffered_oem_position);
-  ChromeAppListItem* ResolveOemFolderPosition(
+      const syncer::StringOrdinal& preffered_oem_position) override;
+  void ResolveOemFolderPosition(
       const std::string& oem_folder_id,
-      const syncer::StringOrdinal& preffered_oem_position);
+      const syncer::StringOrdinal& preffered_oem_position,
+      ResolveOemFolderPositionCallback callback) override;
   void UpdateAppItemFromSyncItem(
       app_list::AppListSyncableService::SyncItem* sync_item,
       bool update_name,
-      bool update_folder);
+      bool update_folder) override;
 
   // Overridden frome app_list::AppListModelObserver:
   // TODO(hejq): We temporarily put them here to make tests happy.

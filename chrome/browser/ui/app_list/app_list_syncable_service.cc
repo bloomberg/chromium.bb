@@ -678,13 +678,21 @@ void AppListSyncableService::ResolveFolderPositions() {
 
   // Move the OEM folder if one exists and we have not synced its position.
   if (!FindSyncItem(kOemFolderId)) {
-    ChromeAppListItem* oem_folder = model_updater_->ResolveOemFolderPosition(
-        kOemFolderId, GetPreferredOemFolderPos());
-    if (oem_folder) {
-      VLOG(1) << "Creating new OEM folder sync item: "
-              << oem_folder->position().ToDebugString();
-      CreateSyncItemFromAppItem(oem_folder);
-    }
+    model_updater_->ResolveOemFolderPosition(
+        kOemFolderId, GetPreferredOemFolderPos(),
+        base::BindOnce(
+            [](base::WeakPtr<AppListSyncableService> self,
+               ChromeAppListItem* oem_folder) {
+              if (!self)
+                return;
+
+              if (oem_folder) {
+                VLOG(1) << "Creating new OEM folder sync item: "
+                        << oem_folder->position().ToDebugString();
+                self->CreateSyncItemFromAppItem(oem_folder);
+              }
+            },
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
