@@ -41,6 +41,7 @@ class CC_PAINT_EXPORT PaintOpReader {
                                       uint32_t* skip);
 
   bool valid() const { return valid_; }
+  size_t remaining_bytes() const { return remaining_bytes_; }
 
   void ReadData(size_t bytes, void* data);
   void ReadArray(size_t count, SkPoint* array);
