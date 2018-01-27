@@ -217,7 +217,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
 }
 
 // Tests that referencing APIs after the context data is disposed is safe (and
-// returns undefined).
+// returns undefined if not yet instantiated).
 TEST_F(NativeExtensionBindingsSystemUnittest,
        ReferencingAPIAfterDisposingContext) {
   scoped_refptr<Extension> extension =
@@ -247,8 +247,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
     // Check an API that was instantiated....
     v8::Local<v8::Value> second_idle_object =
         V8ValueFromScriptSource(context, "chrome.idle");
-    ASSERT_FALSE(second_idle_object.IsEmpty());
-    EXPECT_TRUE(second_idle_object->IsUndefined());
+    EXPECT_EQ(first_idle_object, second_idle_object);
     // ... and also one that wasn't.
     v8::Local<v8::Value> power_object =
         V8ValueFromScriptSource(context, "chrome.power");
