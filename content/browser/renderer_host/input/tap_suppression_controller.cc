@@ -132,6 +132,7 @@ bool TapSuppressionController::ShouldSuppressTapEnd() {
       return true;
     case LAST_CANCEL_STOPPED_FLING:
       NOTREACHED() << "Invalid tap end on LAST_CANCEL_STOPPED_FLING state";
+      return true;
     case SUPPRESSING_TAPS:
       return true;
   }

@@ -130,7 +130,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::kGestureTap:
       allow_current_double_tap_event_ =
           (allowed_touch_action_ & cc::kTouchActionDoubleTapZoom) != 0;
-      // Fall through.
+      FALLTHROUGH;
 
     case WebInputEvent::kGestureTapCancel:
       if (drop_current_tap_ending_event_) {

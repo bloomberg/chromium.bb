@@ -186,6 +186,7 @@ void GestureEventQueue::QueueAndForwardIfNecessary(
     case WebInputEvent::kGestureScrollBegin:
       if (OnScrollBegin(gesture_event))
         return;
+      break;
     default:
       break;
   }
