@@ -105,7 +105,7 @@ class RtcpClient : public media::cast::RtcpObserver {
   DISALLOW_COPY_AND_ASSIGN(RtcpClient);
 };
 
-void BindConnectorRequest(
+void CastBindConnectorRequest(
     service_manager::mojom::ConnectorRequest connector_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(content::ServiceManagerConnection::GetForProcess());
@@ -412,7 +412,7 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   auto connector = service_manager::Connector::Create(&connector_request);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&BindConnectorRequest, std::move(connector_request)));
+      base::BindOnce(&CastBindConnectorRequest, std::move(connector_request)));
 
   device::mojom::WakeLockProviderPtr wake_lock_provider;
   connector->BindInterface(device::mojom::kServiceName,
