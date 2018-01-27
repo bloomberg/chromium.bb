@@ -51,6 +51,7 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
         case GL_TEXTURE_EXTERNAL_OES:
           if (use_stream_video_draw_quad)
             return VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+          FALLTHROUGH;
         case GL_TEXTURE_2D:
           return (format == media::PIXEL_FORMAT_XRGB)
                      ? VideoFrameExternalResources::RGB_RESOURCE
@@ -64,7 +65,6 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
       break;
     case media::PIXEL_FORMAT_I420:
       return VideoFrameExternalResources::YUV_RESOURCE;
-      break;
     case media::PIXEL_FORMAT_NV12:
       DCHECK(target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_2D ||
              target == GL_TEXTURE_RECTANGLE_ARB)
@@ -76,7 +76,6 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
 
       *buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
       return VideoFrameExternalResources::RGB_RESOURCE;
-      break;
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_I444:
