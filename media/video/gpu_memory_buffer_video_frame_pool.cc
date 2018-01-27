@@ -610,6 +610,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     }
   }
 
+  TRACE_EVENT_ASYNC_END0("media", "CopyVideoFrameToGpuMemoryBuffers",
+                         video_frame->timestamp().InNanoseconds() /* id */);
+
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PoolImpl::BindAndCreateMailboxesHardwareFrameResources, this,
@@ -655,6 +658,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
     }
   }
 
+  TRACE_EVENT_ASYNC_BEGIN0("media", "CopyVideoFrameToGpuMemoryBuffers",
+                           video_frame->timestamp().InNanoseconds() /* id */);
   // Post all the async tasks.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     gfx::GpuMemoryBuffer* buffer =
