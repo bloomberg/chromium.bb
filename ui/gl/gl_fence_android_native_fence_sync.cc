@@ -61,7 +61,7 @@ std::unique_ptr<gfx::GpuFence> GLFenceAndroidNativeFenceSync::GetGpuFence() {
   handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
   handle.native_fd = base::FileDescriptor(sync_fd, /*auto_close=*/true);
 
-  return base::MakeUnique<gfx::GpuFence>(handle);
+  return std::make_unique<gfx::GpuFence>(handle);
 }
 
 }  // namespace gl

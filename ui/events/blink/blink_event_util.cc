@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <bitset>
 #include <limits>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -1175,9 +1175,9 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
       break;
     default:
       NOTREACHED() << "Unknown gesture event type";
-      return base::MakeUnique<WebGestureEvent>();
+      return std::make_unique<WebGestureEvent>();
   }
-  auto web_event = base::MakeUnique<WebGestureEvent>(
+  auto web_event = std::make_unique<WebGestureEvent>(
       event_type, WebInputEvent::kNoModifiers, event.time() / 1000.0);
   // NOTE: Source gesture events are synthetic ones that simulate
   // gesture from keyboard (zoom in/out) for now. Should populate Blink

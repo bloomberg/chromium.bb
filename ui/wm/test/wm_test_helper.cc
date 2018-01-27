@@ -4,9 +4,9 @@
 
 #include "ui/wm/test/wm_test_helper.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -63,15 +63,15 @@ void WMTestHelper::InitLocalHost(const gfx::Size& default_window_size) {
 void WMTestHelper::InitMusHost(service_manager::Connector* connector) {
   DCHECK(!aura::Env::GetInstance()->HasWindowTreeClient());
 
-  input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+  input_device_client_ = std::make_unique<ui::InputDeviceClient>();
   ui::mojom::InputDeviceServerPtr input_device_server;
   connector->BindInterface(ui::mojom::kServiceName, &input_device_server);
   input_device_client_->Connect(std::move(input_device_server));
 
-  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
+  property_converter_ = std::make_unique<aura::PropertyConverter>();
 
   const bool create_discardable_memory = false;
-  window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
+  window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
       connector, this, nullptr, nullptr, nullptr, create_discardable_memory);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
   window_tree_client_->ConnectViaWindowTreeHostFactory();
