@@ -299,6 +299,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   switch (event_with_callback->event().GetType()) {
     case blink::WebGestureEvent::kGestureScrollBegin:
       is_first_gesture_scroll_update_ = true;
+      FALLTHROUGH;
     case blink::WebGestureEvent::kGestureFlingStart:
     case blink::WebGestureEvent::kGesturePinchBegin:
     case blink::WebGestureEvent::kGestureScrollUpdate:
