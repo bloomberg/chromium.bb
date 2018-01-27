@@ -61,7 +61,7 @@ inline int FragmentainerBreakPrecedence(EBreakBetween break_value) {
   switch (break_value) {
     default:
       NOTREACHED();
-    // fall-through
+      FALLTHROUGH;
     case EBreakBetween::kAuto:
       return 0;
     case EBreakBetween::kAvoidColumn:

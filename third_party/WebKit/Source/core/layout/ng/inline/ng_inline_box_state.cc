@@ -493,7 +493,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
             break;
           }
           NOTREACHED();
-        // Fall through.
+          FALLTHROUGH;
         case EVerticalAlign::kBottom:
           if (box->metrics.IsEmpty())
             baseline_shift = -child.metrics.descent;
