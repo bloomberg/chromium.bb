@@ -7210,31 +7210,32 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="RESULT_CODE_KILLED"/>
   <int value="2" label="RESULT_CODE_HUNG"/>
   <int value="3" label="RESULT_CODE_KILLED_BAD_MESSAGE"/>
-  <int value="4" label="RESULT_CODE_INVALID_CMDLINE_URL"/>
-  <int value="5" label="RESULT_CODE_BAD_PROCESS_TYPE"/>
-  <int value="6" label="RESULT_CODE_MISSING_DATA"/>
-  <int value="7" label="RESULT_CODE_SHELL_INTEGRATION_FAILED"/>
-  <int value="8" label="RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS"/>
-  <int value="9" label="RESULT_CODE_UNINSTALL_CHROME_ALIVE"/>
-  <int value="10" label="RESULT_CODE_UNINSTALL_USER_CANCEL"/>
-  <int value="11" label="RESULT_CODE_UNINSTALL_DELETE_PROFILE"/>
-  <int value="12" label="RESULT_CODE_UNSUPPORTED_PARAM"/>
-  <int value="13" label="RESULT_CODE_IMPORTER_HUNG"/>
-  <int value="14" label="RESULT_CODE_RESPAWN_FAILED"/>
-  <int value="15" label="RESULT_CODE_NORMAL_EXIT_EXP1"/>
-  <int value="16" label="RESULT_CODE_NORMAL_EXIT_EXP2"/>
-  <int value="17" label="RESULT_CODE_NORMAL_EXIT_EXP3"/>
-  <int value="18" label="RESULT_CODE_NORMAL_EXIT_EXP4"/>
-  <int value="19" label="RESULT_CODE_NORMAL_EXIT_CANCEL"/>
-  <int value="20" label="RESULT_CODE_PROFILE_IN_USE"/>
-  <int value="21" label="RESULT_CODE_PACK_EXTENSION_ERROR"/>
-  <int value="22" label="RESULT_CODE_UNINSTALL_EXTENSION_ERROR"/>
-  <int value="23" label="RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED"/>
-  <int value="25" label="RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2"/>
-  <int value="27" label="RESULT_CODE_EULA_REFUSED"/>
-  <int value="28" label="RESULT_CODE_SXS_MIGRATION_FAILED"/>
-  <int value="29" label="RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
-  <int value="30" label="RESULT_CODE_INVALID_SANDBOX_STATE"/>
+  <int value="4" label="RESULT_CODE_GPU_DEAD_ON_ARRIVAL"/>
+  <int value="5" label="RESULT_CODE_INVALID_CMDLINE_URL"/>
+  <int value="6" label="RESULT_CODE_BAD_PROCESS_TYPE"/>
+  <int value="7" label="RESULT_CODE_MISSING_DATA"/>
+  <int value="8" label="RESULT_CODE_SHELL_INTEGRATION_FAILED"/>
+  <int value="9" label="RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS"/>
+  <int value="10" label="RESULT_CODE_UNINSTALL_CHROME_ALIVE"/>
+  <int value="11" label="RESULT_CODE_UNINSTALL_USER_CANCEL"/>
+  <int value="12" label="RESULT_CODE_UNINSTALL_DELETE_PROFILE"/>
+  <int value="13" label="RESULT_CODE_UNSUPPORTED_PARAM"/>
+  <int value="14" label="RESULT_CODE_IMPORTER_HUNG"/>
+  <int value="15" label="RESULT_CODE_RESPAWN_FAILED"/>
+  <int value="16" label="RESULT_CODE_NORMAL_EXIT_EXP1"/>
+  <int value="17" label="RESULT_CODE_NORMAL_EXIT_EXP2"/>
+  <int value="18" label="RESULT_CODE_NORMAL_EXIT_EXP3"/>
+  <int value="19" label="RESULT_CODE_NORMAL_EXIT_EXP4"/>
+  <int value="20" label="RESULT_CODE_NORMAL_EXIT_CANCEL"/>
+  <int value="21" label="RESULT_CODE_PROFILE_IN_USE"/>
+  <int value="22" label="RESULT_CODE_PACK_EXTENSION_ERROR"/>
+  <int value="23" label="RESULT_CODE_UNINSTALL_EXTENSION_ERROR"/>
+  <int value="24" label="RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED"/>
+  <int value="26" label="RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2"/>
+  <int value="28" label="RESULT_CODE_EULA_REFUSED"/>
+  <int value="29" label="RESULT_CODE_SXS_MIGRATION_FAILED_NOT_USED"/>
+  <int value="30" label="RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
+  <int value="31" label="RESULT_CODE_INVALID_SANDBOX_STATE"/>
   <int value="131" label="SIGQUIT"/>
   <int value="132" label="SIGILL"/>
   <int value="133" label="SIGTRAP"/>
@@ -45541,33 +45542,34 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="1" label="content::RESULT_CODE_KILLED"/>
   <int value="2" label="content::RESULT_CODE_HUNG"/>
   <int value="3" label="content::RESULT_CODE_KILLED_BAD_MESSAGE"/>
-  <int value="4" label="chrome::RESULT_CODE_INVALID_CMDLINE_URL"/>
-  <int value="5" label="chrome::RESULT_CODE_BAD_PROCESS_TYPE"/>
-  <int value="6" label="chrome::RESULT_CODE_MISSING_DATA"/>
-  <int value="7" label="chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED"/>
-  <int value="8" label="chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS"/>
-  <int value="9" label="chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE"/>
-  <int value="10" label="chrome::RESULT_CODE_UNINSTALL_USER_CANCEL"/>
-  <int value="11" label="chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE"/>
-  <int value="12" label="chrome::RESULT_CODE_UNSUPPORTED_PARAM"/>
-  <int value="13" label="chrome::RESULT_CODE_IMPORTER_HUNG"/>
-  <int value="14" label="chrome::RESULT_CODE_RESPAWN_FAILED"/>
-  <int value="15" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP1"/>
-  <int value="16" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP2"/>
-  <int value="17" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP3"/>
-  <int value="18" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP4"/>
-  <int value="19" label="chrome::RESULT_CODE_NORMAL_EXIT_CANCEL"/>
-  <int value="20" label="chrome::RESULT_CODE_PROFILE_IN_USE"/>
-  <int value="21" label="chrome::RESULT_CODE_PACK_EXTENSION_ERROR"/>
-  <int value="22" label="chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR"/>
-  <int value="23" label="chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED"/>
-  <int value="24" label="chrome::RESULT_CODE_NOTUSED_1"/>
-  <int value="25" label="chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2"/>
-  <int value="26" label="chrome::RESULT_CODE_NOTUSED_2"/>
-  <int value="27" label="chrome::RESULT_CODE_EULA_REFUSED"/>
-  <int value="28" label="chrome::RESULT_CODE_SXS_MIGRATION_FAILED"/>
-  <int value="29" label="chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
-  <int value="30" label="chrome::RESULT_CODE_INVALID_SANDBOX_STATE"/>
+  <int value="4" label="content::RESULT_CODE_GPU_DEAD_ON_ARRIVAL"/>
+  <int value="5" label="chrome::RESULT_CODE_INVALID_CMDLINE_URL"/>
+  <int value="6" label="chrome::RESULT_CODE_BAD_PROCESS_TYPE"/>
+  <int value="7" label="chrome::RESULT_CODE_MISSING_DATA"/>
+  <int value="8" label="chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED"/>
+  <int value="9" label="chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS"/>
+  <int value="10" label="chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE"/>
+  <int value="11" label="chrome::RESULT_CODE_UNINSTALL_USER_CANCEL"/>
+  <int value="12" label="chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE"/>
+  <int value="13" label="chrome::RESULT_CODE_UNSUPPORTED_PARAM"/>
+  <int value="14" label="chrome::RESULT_CODE_IMPORTER_HUNG"/>
+  <int value="15" label="chrome::RESULT_CODE_RESPAWN_FAILED"/>
+  <int value="16" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP1"/>
+  <int value="17" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP2"/>
+  <int value="18" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP3"/>
+  <int value="19" label="chrome::RESULT_CODE_NORMAL_EXIT_EXP4"/>
+  <int value="20" label="chrome::RESULT_CODE_NORMAL_EXIT_CANCEL"/>
+  <int value="21" label="chrome::RESULT_CODE_PROFILE_IN_USE"/>
+  <int value="22" label="chrome::RESULT_CODE_PACK_EXTENSION_ERROR"/>
+  <int value="23" label="chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR"/>
+  <int value="24" label="chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED"/>
+  <int value="25" label="chrome::RESULT_CODE_NOTUSED_1"/>
+  <int value="26" label="chrome::RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2"/>
+  <int value="27" label="chrome::RESULT_CODE_NOTUSED_2"/>
+  <int value="28" label="chrome::RESULT_CODE_EULA_REFUSED"/>
+  <int value="29" label="chrome::RESULT_CODE_SXS_MIGRATION_FAILED"/>
+  <int value="30" label="chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
+  <int value="31" label="chrome::RESULT_CODE_INVALID_SANDBOX_STATE"/>
   <int value="259" label="0x103 - STILL_ACTIVE."/>
   <int value="85436397" label="0x517a7ed - Crashpad simulated exception"/>
   <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>
