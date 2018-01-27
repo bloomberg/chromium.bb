@@ -39,6 +39,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/WorkletAnimationController.h"
 #include "core/dom/ContainerNode.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
@@ -216,25 +217,6 @@ enum ShadowCascadeOrder {
   kShadowCascadeNone,
   kShadowCascadeV0,
   kShadowCascadeV1
-};
-
-enum CreateElementFlags {
-  kCreatedByParser = 1 << 0,
-  // Synchronous custom elements flag:
-  // https://dom.spec.whatwg.org/#concept-create-element
-  // TODO(kojii): Remove these flags, add an option not to queue upgrade, and
-  // let parser/DOM methods to upgrade synchronously when necessary.
-  kSynchronousCustomElements = 0 << 1,
-  kAsynchronousCustomElements = 1 << 1,
-
-  // Aliases by callers.
-  // Clone a node: https://dom.spec.whatwg.org/#concept-node-clone
-  kCreatedByCloneNode = kAsynchronousCustomElements,
-  kCreatedByImportNode = kCreatedByCloneNode,
-  // https://dom.spec.whatwg.org/#dom-document-createelement
-  kCreatedByCreateElement = kSynchronousCustomElements,
-  // https://html.spec.whatwg.org/#create-an-element-for-the-token
-  kCreatedByFragmentParser = kCreatedByParser | kAsynchronousCustomElements,
 };
 
 // Collect data about deferred loading of offscreen cross-origin documents. All
