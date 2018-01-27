@@ -46,6 +46,8 @@ class AssetsLoader {
   // Returns the single assets instance and creates it on first call.
   static AssetsLoader* GetInstance();
 
+  static base::Version MinVersionWithGradients();
+
   // Tells VR assets that a new VR assets component version is ready for use.
   void OnComponentReady(const base::Version& version,
                         const base::FilePath& install_dir,

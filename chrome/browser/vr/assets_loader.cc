@@ -10,7 +10,6 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,8 +34,7 @@ static const base::FilePath::CharType kPngExtension[] =
 static const base::FilePath::CharType kJpegExtension[] =
     FILE_PATH_LITERAL("jpeg");
 
-constexpr uint32_t kMinMinorVersionWithGradients = 1;
-constexpr uint32_t kMinMajorVersionWithGradients = 1;
+constexpr char kMinVersionWithGradients[] = "1.1";
 
 }  // namespace
 
@@ -49,6 +47,11 @@ struct AssetsLoaderSingletonTrait
 // static
 AssetsLoader* AssetsLoader::GetInstance() {
   return base::Singleton<AssetsLoader, AssetsLoaderSingletonTrait>::get();
+}
+
+// static
+base::Version AssetsLoader::MinVersionWithGradients() {
+  return base::Version(kMinVersionWithGradients);
 }
 
 void AssetsLoader::OnComponentReady(
@@ -146,8 +149,7 @@ void AssetsLoader::LoadAssetsTask(
   status = LoadImage(component_install_dir, kBackgroundBaseFilename,
                      &assets->background);
 
-  if (component_version.components()[0] >= kMinMajorVersionWithGradients &&
-      component_version.components()[1] >= kMinMinorVersionWithGradients) {
+  if (component_version >= AssetsLoader::MinVersionWithGradients()) {
     if (status == AssetsLoadStatus::kSuccess) {
       status = LoadImage(component_install_dir, kNormalGradientBaseFilename,
                          &assets->normal_gradient);

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_COLOR_SCHEME_H_
 #define CHROME_BROWSER_VR_MODEL_COLOR_SCHEME_H_
 
+#include "base/version.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -43,6 +44,7 @@ struct ColorScheme {
   };
 
   static const ColorScheme& GetColorScheme(Mode mode);
+  static void UpdateForComponent(const base::Version& component_version);
 
   ColorScheme();
   ColorScheme(const ColorScheme& other);

@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "chrome/browser/vr/assets_loader.h"
 #include "ui/gfx/color_palette.h"
 
 namespace vr {
@@ -312,6 +313,83 @@ const ColorScheme& ColorScheme::GetColorScheme(ColorScheme::Mode mode) {
   if (mode == kModeFullscreen)
     return g_fullscreen_scheme.Get();
   return g_normal_scheme.Get();
+}
+
+void ColorScheme::UpdateForComponent(const base::Version& component_version) {
+  if (component_version >= AssetsLoader::MinVersionWithGradients()) {
+    ColorScheme& normal_scheme = g_normal_scheme.Get();
+    normal_scheme.element_background = 0xFFEEEEEE;
+    normal_scheme.element_background_hover = 0xFFFFFFFF;
+    normal_scheme.button_colors.foreground = 0xA6000000;
+    normal_scheme.button_colors.background = 0xCCEEEEEE;
+    normal_scheme.button_colors.foreground_disabled = 0x33000000;
+    normal_scheme.url_bar_separator = 0xFFD0D0D0;
+    normal_scheme.url_bar.emphasized = 0xFF333333;
+    normal_scheme.url_bar.deemphasized = 0x61333333;
+
+    normal_scheme.back_button.background = normal_scheme.element_background;
+    normal_scheme.back_button.background_down =
+        normal_scheme.element_background_down;
+    normal_scheme.back_button.background_hover =
+        normal_scheme.element_background_hover;
+    normal_scheme.back_button.foreground = normal_scheme.element_foreground;
+    normal_scheme.back_button.foreground_disabled = 0x33333333;
+
+    normal_scheme.button_colors.background = normal_scheme.element_background;
+    normal_scheme.button_colors.background_hover =
+        normal_scheme.element_background_hover;
+    normal_scheme.button_colors.background_down =
+        normal_scheme.element_background_down;
+    normal_scheme.system_indicator_foreground =
+        normal_scheme.element_foreground;
+    normal_scheme.system_indicator_background =
+        normal_scheme.element_background;
+
+    normal_scheme.audio_permission_prompt_secondary_button_colors
+        .foreground_disabled = normal_scheme.button_colors.foreground_disabled;
+    normal_scheme.audio_permission_prompt_secondary_button_colors.background =
+        normal_scheme.audio_permission_prompt_background;
+
+    ColorScheme& incognito_scheme = g_incognito_scheme.Get();
+    incognito_scheme.element_foreground = 0xA6FFFFFF;
+    incognito_scheme.element_background = 0xFF263238;
+    incognito_scheme.element_background_hover = 0xCC404A50;
+    incognito_scheme.element_background_down = 0xCC212B31;
+    incognito_scheme.url_bar_separator = 0xFF445056;
+    incognito_scheme.url_bar.deemphasized = 0x80FFFFFF;
+    incognito_scheme.url_bar.emphasized = 0xCCFFFFFF;
+    incognito_scheme.url_bar.separator = 0xFF445056;
+    incognito_scheme.url_bar.default_icon = 0xA7FFFFFF;
+    incognito_scheme.url_bar.dangerous_icon = 0xA7FFFFFF;
+    incognito_scheme.url_bar.offline_page_warning = 0xA7FFFFFF;
+    incognito_scheme.omnibox_background = incognito_scheme.element_background;
+    incognito_scheme.omnibox_icon = 0xA7FFFFFF;
+
+    incognito_scheme.button_colors.background =
+        incognito_scheme.element_background;
+    incognito_scheme.button_colors.background_hover =
+        incognito_scheme.element_background_hover;
+    incognito_scheme.button_colors.background_down =
+        incognito_scheme.element_background_down;
+
+    incognito_scheme.system_indicator_foreground =
+        incognito_scheme.element_foreground;
+    incognito_scheme.system_indicator_background =
+        incognito_scheme.element_background;
+    incognito_scheme.back_button.background =
+        incognito_scheme.element_background;
+    incognito_scheme.back_button.background_down =
+        incognito_scheme.element_background_down;
+    incognito_scheme.back_button.background_hover = 0xFF445056;
+    incognito_scheme.back_button.foreground =
+        incognito_scheme.element_foreground;
+    incognito_scheme.suggestion_button_colors.foreground =
+        incognito_scheme.suggestion_text;
+    incognito_scheme.suggestion_button_colors.background =
+        incognito_scheme.omnibox_background;
+    incognito_scheme.suggestion_button_colors.background_hover = 0xFF3A464C;
+    incognito_scheme.suggestion_button_colors.background_down = 0xFF3A464C;
+  }
 }
 
 }  // namespace vr

@@ -366,6 +366,7 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                                 std::move(assets->incognito_gradient),
                                 std::move(assets->fullscreen_gradient));
 
+  ColorScheme::UpdateForComponent(component_version);
   model_->background_loaded = true;
 }
 
