@@ -56,5 +56,7 @@ struct ControllerServiceWorkerInfo {
   // Non-null if the controller has fetch event handlers.
   ControllerServiceWorker? endpoint;
 
-  blink.mojom.ServiceWorkerObjectInfo object_info;
+  // Represents ServiceWorkerContainer#controller.
+  // Null if there is no controller.
+  blink.mojom.ServiceWorkerObjectInfo? object_info;
 };

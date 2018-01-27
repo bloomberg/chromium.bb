@@ -46,9 +46,10 @@ struct ServiceWorkerRegistrationObjectInfo {
   associated ServiceWorkerRegistrationObject&? request;
 
   // Corresponds to ServiceWorkerRegistration#{installing,waiting,active}.
-  ServiceWorkerObjectInfo installing;
-  ServiceWorkerObjectInfo waiting;
-  ServiceWorkerObjectInfo active;
+  // Null value means the corresponding object does not exist.
+  ServiceWorkerObjectInfo? installing;
+  ServiceWorkerObjectInfo? waiting;
+  ServiceWorkerObjectInfo? active;
 };
 
 // This interface lives in the browser process, it corresponds to one
@@ -95,9 +96,8 @@ interface ServiceWorkerRegistrationObject {
   // |changed_mask| indicates which objects of {|installing|,|waiting|,|active|}
   // have changed. See ChangedVersionAttributesMask in service_worker_types.h
   // for details.
-  // Changed objects always have non-null value, which may be invalid value
-  // describing that the object does not exist any more.
-  // Unchanged ones always have null value.
+  // Changed objects may be null to indicate that the object does not exist
+  // anymore. Unchanged ones are always null.
   // TODO(leonhsl): Use mojofied ChangedVersionAttributesMask directly instead
   // of an int32 for |changed_mask|.
   SetVersionAttributes(int32 changed_mask,

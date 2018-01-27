@@ -243,12 +243,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
     info->registration->host_ptr_info = host_ptr.PassInterface();
     info->registration->request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(out_ptr);
-
-    info->registration->installing =
-        blink::mojom::ServiceWorkerObjectInfo::New();
     info->registration->registration_id = 100;  // dummy
-    info->registration->waiting = blink::mojom::ServiceWorkerObjectInfo::New();
-    info->registration->active = blink::mojom::ServiceWorkerObjectInfo::New();
     return info;
   }
 

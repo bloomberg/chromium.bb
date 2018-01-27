@@ -65,12 +65,6 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
         blink::mojom::ServiceWorkerRegistrationOptions::New();
     registration_object_host_request_ =
         mojo::MakeRequest(&(provider_info->registration->host_ptr_info));
-    provider_info->registration->installing =
-        blink::mojom::ServiceWorkerObjectInfo::New();
-    provider_info->registration->waiting =
-        blink::mojom::ServiceWorkerObjectInfo::New();
-    provider_info->registration->active =
-        blink::mojom::ServiceWorkerObjectInfo::New();
     binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
     provider_info->client_request = mojo::MakeRequest(&client_);
     mojo::MakeRequest(&provider_info->interface_provider);

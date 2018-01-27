@@ -53,7 +53,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnMessageReceived(const IPC::Message& msg);
 
   // Returns the existing service worker or a newly created one with the given
-  // object info. Returns nullptr if the given object info is invalid.
+  // object info.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
       blink::mojom::ServiceWorkerObjectInfoPtr info);
 

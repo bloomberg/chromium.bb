@@ -998,17 +998,13 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
               mock_registration_object->set_version_attributes_called_count());
     ChangedVersionAttributesMask mask(mock_registration_object->changed_mask());
     EXPECT_TRUE(mask.installing_changed());
-    EXPECT_TRUE(mock_registration_object->installing());
+    EXPECT_FALSE(mock_registration_object->installing());
     EXPECT_TRUE(mask.waiting_changed());
     EXPECT_TRUE(mock_registration_object->waiting());
     EXPECT_FALSE(mask.active_changed());
     EXPECT_FALSE(mock_registration_object->active());
     EXPECT_EQ(version_2_id, mock_registration_object->waiting()->version_id);
     EXPECT_EQ(kScriptUrl, mock_registration_object->waiting()->url);
-    EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
-              mock_registration_object->installing()->version_id);
-    EXPECT_EQ(blink::mojom::kInvalidServiceWorkerHandleId,
-              mock_registration_object->installing()->handle_id);
   }
 
   // Remove the waiting worker.
@@ -1022,13 +1018,9 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
     EXPECT_FALSE(mask.installing_changed());
     EXPECT_FALSE(mock_registration_object->installing());
     EXPECT_TRUE(mask.waiting_changed());
-    EXPECT_TRUE(mock_registration_object->waiting());
+    EXPECT_FALSE(mock_registration_object->waiting());
     EXPECT_FALSE(mask.active_changed());
     EXPECT_FALSE(mock_registration_object->active());
-    EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
-              mock_registration_object->waiting()->version_id);
-    EXPECT_EQ(blink::mojom::kInvalidServiceWorkerHandleId,
-              mock_registration_object->waiting()->handle_id);
   }
 }
 

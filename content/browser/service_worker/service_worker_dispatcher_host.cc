@@ -78,10 +78,11 @@ bool IsValidSourceInfo(
 
 bool IsValidSourceInfo(
     const blink::mojom::ServiceWorkerObjectInfoPtr& source_info) {
-  return source_info->handle_id !=
-             blink::mojom::kInvalidServiceWorkerHandleId &&
-         source_info->version_id !=
-             blink::mojom::kInvalidServiceWorkerVersionId;
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId,
+            source_info->handle_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+            source_info->version_id);
+  return true;
 }
 
 }  // namespace
@@ -368,6 +369,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     const base::Optional<base::TimeDelta>& timeout,
     StatusCallback callback,
     SourceInfoPtr source_info) {
+  DCHECK(source_info);
   if (!IsValidSourceInfo(source_info)) {
     std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED);
     return;
