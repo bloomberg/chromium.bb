@@ -241,11 +241,11 @@ bool IDBValueUnwrapper::Parse(IDBValue* value) {
   if (!ReadVarInt(blob_offset))
     return Reset();
 
-  size_t value_blob_count = value->blob_data_.size();
+  size_t value_blob_count = value->blob_info_.size();
   if (!value_blob_count || blob_offset != value_blob_count - 1)
     return Reset();
 
-  blob_handle_ = value->blob_data_.back();
+  blob_handle_ = value->blob_info_.back().GetBlobHandle();
   if (blob_handle_->size() != blob_size_)
     return Reset();
 

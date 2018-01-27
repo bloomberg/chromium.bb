@@ -484,7 +484,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   IDBKeyPath key_path(String("primaryKey"));
 
   std::unique_ptr<IDBValue> wrapped_value =
-      IDBValue::Create(wrapped_marker_buffer, blob_data_handles, blob_infos);
+      IDBValue::Create(wrapped_marker_buffer, blob_infos);
   wrapped_value->SetIsolate(scope.GetIsolate());
   EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
 
@@ -497,9 +497,8 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   // return false.
   ASSERT_LT(3U, wrapped_marker_bytes.size());
   for (size_t i = 0; i < 3; ++i) {
-    std::unique_ptr<IDBValue> mutant_value =
-        IDBValue::Create(SharedBuffer::Create(wrapped_marker_bytes.data(), i),
-                         blob_data_handles, blob_infos);
+    std::unique_ptr<IDBValue> mutant_value = IDBValue::Create(
+        SharedBuffer::Create(wrapped_marker_bytes.data(), i), blob_infos);
     mutant_value->SetIsolate(scope.GetIsolate());
 
     EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
@@ -515,7 +514,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
       std::unique_ptr<IDBValue> mutant_value =
           IDBValue::Create(SharedBuffer::Create(wrapped_marker_bytes.data(),
                                                 wrapped_marker_bytes.size()),
-                           blob_data_handles, blob_infos);
+                           blob_infos);
       mutant_value->SetIsolate(scope.GetIsolate());
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
 
