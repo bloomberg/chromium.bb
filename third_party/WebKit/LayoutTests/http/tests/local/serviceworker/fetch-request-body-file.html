@@ -7,7 +7,7 @@
 <script>
 var ORIGIN = get_host_info()['HTTP_ORIGIN'];
 var IFRAME_BASE_URL = ORIGIN + '/local/serviceworker/resources/fetch-request-body-file-iframe.html';
-var SCOPE = ORIGIN + '/local/serviceworker/resources/fetch-request-body-file-test';
+var SCOPE = ORIGIN + '/local/serviceworker/resources/fetch-request-body-file-test.php';
 
 function register() {
   return new Promise(function(resolve, reject) {
@@ -134,12 +134,22 @@ function as_blob_test_frame_check(frame) {
   assert_equals(data.body_size, expected_body.length);
 }
 
+function network_fallback_test_frame_check(frame) {
+  const expected =
+    'testName1=testValue1&' +
+    'testName2=testValue2&' +
+    'testFile=file-for-drag-to-send.txt:text/plain:1234567890'
+  assert_equals(frame.contentDocument.body.textContent, expected);
+}
+
 async_test(function(t) {
     register()
       .then(function() { return send_post_frame_promise('asText'); })
       .then(as_text_test_frame_check)
       .then(function() { return send_post_frame_promise('asBlob'); })
       .then(as_blob_test_frame_check)
+      .then(function() { return send_post_frame_promise('NetworkFallback'); })
+      .then(network_fallback_test_frame_check)
       .then(function() { return unregister_and_done(t); })
       .catch(unreached_rejection(t));
   }, 'Service Worker fetch request body with file.');
