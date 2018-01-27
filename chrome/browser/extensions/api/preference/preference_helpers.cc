@@ -99,8 +99,7 @@ void DispatchEventToExtensions(Profile* profile,
     // TODO(bauerb): Only iterate over registered event listeners.
     if (router->ExtensionHasEventListener(extension->id(), event_name) &&
         extension->permissions_data()->HasAPIPermission(permission) &&
-        (!incognito || IncognitoInfo::IsSplitMode(extension.get()) ||
-         util::CanCrossIncognito(extension.get(), profile))) {
+        (!incognito || util::IsIncognitoEnabled(extension->id(), profile))) {
       // Inject level of control key-value.
       base::DictionaryValue* dict;
       bool rv = args->GetDictionary(0, &dict);
@@ -116,10 +115,19 @@ void DispatchEventToExtensions(Profile* profile,
       Profile* restrict_to_profile = nullptr;
       bool from_incognito = false;
       if (IncognitoInfo::IsSplitMode(extension.get())) {
-        if (incognito && util::IsIncognitoEnabled(extension->id(), profile)) {
+        if (incognito) {
+          // If off the record profile does not exist, there should be no
+          // extensions running in incognito at this time, and consequentially
+          // no need to dispatch an event restricted to an incognito extension.
+          // Furthermore, avoid calling GetOffTheRecordProfile() in this case -
+          // this method creates off the record profile if one does not exist.
+          // Unnecessarily creating off the record profile is undesirable, and
+          // can lead to a crash if incognito is disallowed for the current
+          // profile (see https://crbug.com/796814).
+          if (!profile->HasOffTheRecordProfile())
+            continue;
           restrict_to_profile = profile->GetOffTheRecordProfile();
-        } else if (!incognito &&
-                   PreferenceAPI::Get(profile)->DoesExtensionControlPref(
+        } else if (!PreferenceAPI::Get(profile)->DoesExtensionControlPref(
                        extension->id(), browser_pref, &from_incognito) &&
                    from_incognito) {
           restrict_to_profile = profile;
