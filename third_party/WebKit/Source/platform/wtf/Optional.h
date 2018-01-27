@@ -6,20 +6,15 @@
 #define Optional_h
 
 #include "base/optional.h"
-#include "platform/wtf/TypeTraits.h"
 
 namespace WTF {
 
 // WTF::Optional is base::Optional. See base/optional.h for documentation.
 //
 // A clang plugin enforces that garbage collected types are not allocated
-// outside of the heap, similarly we enforce that one doesn't create garbage
-// collected types nested inside an Optional.
+// outside of the heap. GC containers such as HeapVector are allowed though.
 template <typename T>
-using Optional =
-    typename std::enable_if<!IsGarbageCollectedType<T>::value ||
-                                IsPersistentReferenceType<T>::value,
-                            base::Optional<T>>::type;
+using Optional = base::Optional<T>;
 
 constexpr base::nullopt_t nullopt = base::nullopt;
 constexpr base::in_place_t in_place = base::in_place;
