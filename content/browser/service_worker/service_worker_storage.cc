@@ -80,6 +80,7 @@ ServiceWorkerStatusCode DatabaseStatusToStatusCode(
       return SERVICE_WORKER_ERROR_NOT_FOUND;
     case ServiceWorkerDatabase::STATUS_ERROR_MAX:
       NOTREACHED();
+      FALLTHROUGH;
     default:
       return SERVICE_WORKER_ERROR_FAILED;
   }
