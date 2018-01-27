@@ -1248,13 +1248,13 @@ void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
   switch (result) {
     case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
-    // Intentionally fall through.
+      FALLTHROUGH;
     case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(true);
       break;
     case CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
-    // Intentionally fall through.
+      FALLTHROUGH;
     case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(false);
       break;
