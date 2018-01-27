@@ -38,7 +38,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
     return factories_info_;
   }
 
- private:
+ protected:
   // SharedURLLoaderFactoryInfo implementation.
   scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
 
@@ -69,7 +69,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundle : public SharedURLLoaderFactory {
   // Returns a factory which can be used to acquire a loader for |url|. If no
   // registered factory matches |url|'s scheme, the default factory is used. It
   // is undefined behavior to call this when no default factory is set.
-  network::mojom::URLLoaderFactory* GetFactoryForRequest(const GURL& url);
+  virtual network::mojom::URLLoaderFactory* GetFactoryForURL(const GURL& url);
 
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -88,7 +88,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundle : public SharedURLLoaderFactory {
   // bundle.
   void Update(std::unique_ptr<URLLoaderFactoryBundleInfo> info);
 
- private:
+ protected:
   ~URLLoaderFactoryBundle() override;
 
   network::mojom::URLLoaderFactoryPtr default_factory_;

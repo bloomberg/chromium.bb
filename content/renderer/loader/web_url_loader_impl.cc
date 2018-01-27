@@ -27,13 +27,11 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/service_worker_modes.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/ftp_directory_listing_response_delegate.h"
@@ -362,9 +360,9 @@ StreamOverrideParameters::~StreamOverrideParameters() {
 
 WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
     base::WeakPtr<ResourceDispatcher> resource_dispatcher,
-    scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter)
+    scoped_refptr<SharedURLLoaderFactory> loader_factory)
     : resource_dispatcher_(std::move(resource_dispatcher)),
-      loader_factory_getter_(std::move(loader_factory_getter)) {}
+      loader_factory_(std::move(loader_factory)) {}
 
 WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
 
@@ -376,10 +374,9 @@ WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!loader_factory_getter_) {
-    // In some tests like RenderViewTests loader_factory_getter_ is not
-    // available. These tests can still use data URLs to bypass the
-    // ResourceDispatcher.
+  if (!loader_factory_) {
+    // In some tests like RenderViewTests loader_factory_ is not available.
+    // These tests can still use data URLs to bypass the ResourceDispatcher.
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get();
     return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
@@ -389,12 +386,8 @@ std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
 
   DCHECK(task_runner);
   DCHECK(resource_dispatcher_);
-  // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
-  // pointer into SharedURLLoaderFactory.
   return std::make_unique<WebURLLoaderImpl>(
-      resource_dispatcher_.get(), std::move(task_runner),
-      base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-          loader_factory_getter_->GetFactoryForURL(request.Url())));
+      resource_dispatcher_.get(), std::move(task_runner), loader_factory_);
 }
 
 // This inner class exists since the WebURLLoader may be deleted while inside a

@@ -6,13 +6,15 @@
 #define CONTENT_COMMON_WRAPPER_SHARED_URL_LOADER_FACTORY_H_
 
 #include "content/common/content_export.h"
+#include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/shared_url_loader_factory.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
 
 namespace content {
 
 // A SharedURLLoaderFactoryInfo implementation that wraps a
-// mojom::URLLoaderFactoryPtrInfo.
+// network::mojom::URLLoaderFactoryPtrInfo.
 class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
     : public SharedURLLoaderFactoryInfo {
  public:
@@ -30,14 +32,18 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactoryInfo
 };
 
 // A SharedURLLoaderFactory implementation that wraps a
-// mojom::URLLoaderFactoryPtr.
-class CONTENT_EXPORT WrapperSharedURLLoaderFactory
-    : public SharedURLLoaderFactory {
+// PtrTemplateType<network::mojom::URLLoaderFactory>.
+template <template <typename> class PtrTemplateType>
+class WrapperSharedURLLoaderFactoryBase : public SharedURLLoaderFactory {
  public:
-  explicit WrapperSharedURLLoaderFactory(
-      network::mojom::URLLoaderFactoryPtr factory_ptr);
-  explicit WrapperSharedURLLoaderFactory(
-      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
+  using PtrType = PtrTemplateType<network::mojom::URLLoaderFactory>;
+  using PtrInfoType = typename PtrType::PtrInfoType;
+
+  explicit WrapperSharedURLLoaderFactoryBase(PtrType factory_ptr)
+      : factory_ptr_(std::move(factory_ptr)) {}
+
+  explicit WrapperSharedURLLoaderFactoryBase(PtrInfoType factory_ptr_info)
+      : factory_ptr_(std::move(factory_ptr_info)) {}
 
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -48,15 +54,34 @@ class CONTENT_EXPORT WrapperSharedURLLoaderFactory
       const network::ResourceRequest& request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const Constraints& constraints) override;
+      const Constraints& constraints) override {
+    if (!factory_ptr_)
+      return;
+    factory_ptr_->CreateLoaderAndStart(std::move(loader), routing_id,
+                                       request_id, options, request,
+                                       std::move(client), traffic_annotation);
+  }
 
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
+    network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+    if (factory_ptr_)
+      factory_ptr_->Clone(mojo::MakeRequest(&factory_ptr_info));
+    return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(
+        std::move(factory_ptr_info));
+  }
 
  private:
-  ~WrapperSharedURLLoaderFactory() override;
+  ~WrapperSharedURLLoaderFactoryBase() override = default;
 
-  network::mojom::URLLoaderFactoryPtr factory_ptr_;
+  PtrType factory_ptr_;
 };
+
+using WrapperSharedURLLoaderFactory =
+    WrapperSharedURLLoaderFactoryBase<mojo::InterfacePtr>;
+using AssociatedWrapperSharedURLLoaderFactory =
+    WrapperSharedURLLoaderFactoryBase<mojo::AssociatedInterfacePtr>;
+using PossiblyAssociatedWrapperSharedURLLoaderFactory =
+    WrapperSharedURLLoaderFactoryBase<PossiblyAssociatedInterfacePtr>;
 
 }  // namespace content
 

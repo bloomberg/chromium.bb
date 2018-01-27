@@ -12,7 +12,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -145,7 +145,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter)
+    scoped_refptr<SharedURLLoaderFactory> default_loader_factory)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
@@ -157,7 +157,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       options_(options),
       traffic_annotation_(traffic_annotation),
       resource_request_(resource_request),
-      default_loader_factory_getter_(std::move(default_loader_factory_getter)),
+      default_loader_factory_(std::move(default_loader_factory)),
       weak_factory_(this) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
@@ -213,13 +213,14 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     auto controller_state = controller_connector_->state();
     if (controller_state ==
         ControllerServiceWorkerConnector::State::kNoController) {
+      SharedURLLoaderFactory::Constraints constraits;
+      constraits.bypass_custom_network_loader = true;
       // The controller was lost after this loader or its loader factory was
       // created.
-      default_loader_factory_getter_->GetNetworkLoaderFactory()
-          ->CreateLoaderAndStart(url_loader_binding_.Unbind(), routing_id_,
-                                 request_id_, options_, resource_request_,
-                                 std::move(url_loader_client_),
-                                 traffic_annotation_);
+      default_loader_factory_->CreateLoaderAndStart(
+          url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
+          resource_request_, std::move(url_loader_client_), traffic_annotation_,
+          constraits);
       DeleteSoon();
       return;
     }
@@ -344,7 +345,7 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
   SettleInflightFetchRequestIfNeeded();
-  DCHECK(default_loader_factory_getter_);
+  DCHECK(default_loader_factory_);
 
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
@@ -366,16 +367,17 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   }
 
   // Hand over to the network loader.
-  default_loader_factory_getter_->GetNetworkLoaderFactory()
-      ->CreateLoaderAndStart(
-          url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
-          resource_request_,
-          HeaderRewritingURLLoaderClient::CreateAndBind(
-              std::move(url_loader_client_),
-              base::Bind(&RewriteServiceWorkerTime,
-                         response_head_.service_worker_start_time,
-                         response_head_.service_worker_ready_time)),
-          traffic_annotation_);
+  SharedURLLoaderFactory::Constraints constraints;
+  constraints.bypass_custom_network_loader = true;
+  default_loader_factory_->CreateLoaderAndStart(
+      url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
+      resource_request_,
+      HeaderRewritingURLLoaderClient::CreateAndBind(
+          std::move(url_loader_client_),
+          base::BindRepeating(&RewriteServiceWorkerTime,
+                              response_head_.service_worker_start_time,
+                              response_head_.service_worker_ready_time)),
+      traffic_annotation_, constraints);
   // Per spec, redirects after this point are not intercepted by the service
   // worker again (https://crbug.com/517364). So this loader is done.
   DeleteSoon();
@@ -517,10 +519,10 @@ void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter)
+    scoped_refptr<SharedURLLoaderFactory> default_loader_factory)
     : controller_connector_(std::move(controller_connector)),
-      default_loader_factory_getter_(std::move(default_loader_factory_getter)) {
-  DCHECK(default_loader_factory_getter_);
+      default_loader_factory_(std::move(default_loader_factory)) {
+  DCHECK(default_loader_factory_);
 }
 
 ServiceWorkerSubresourceLoaderFactory::
@@ -541,7 +543,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   new ServiceWorkerSubresourceLoader(
       std::move(request), routing_id, request_id, options, resource_request,
       std::move(client), traffic_annotation, controller_connector_,
-      default_loader_factory_getter_);
+      default_loader_factory_);
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(

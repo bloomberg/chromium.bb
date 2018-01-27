@@ -15,10 +15,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/appcache/appcache_dispatcher.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
+#include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
@@ -251,14 +251,14 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   if (ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
-  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter =
+  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
       RenderThreadImpl::current()
           ->blink_platform_impl()
-          ->CreateDefaultURLLoaderFactoryGetter();
-  DCHECK(url_loader_factory_getter);
+          ->CreateDefaultURLLoaderFactoryBundle();
+  DCHECK(url_loader_factory_bundle);
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
-      url_loader_factory_getter->GetClonedInfo(),
+      url_loader_factory_bundle->Clone(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker));
 

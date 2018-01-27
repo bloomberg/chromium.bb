@@ -33,7 +33,6 @@ target(link_target_type, "renderer_sources") {
     "associated_resource_fetcher.h",
     "browser_plugin_delegate.cc",
     "browser_plugin_delegate.h",
-    "child_url_loader_factory_getter.h",
     "chrome_object_extensions_utils.cc",
     "chrome_object_extensions_utils.h",
     "content_renderer_client.cc",

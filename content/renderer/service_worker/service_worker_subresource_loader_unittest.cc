@@ -9,11 +9,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
-#include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -330,9 +331,8 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
     mojo::MakeStrongBinding(std::make_unique<FakeNetworkURLLoaderFactory>(),
                             MakeRequest(&fake_loader_factory));
-    loader_factory_getter_ =
-        base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
-            std::move(fake_loader_factory), nullptr);
+    loader_factory_ = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+        std::move(fake_loader_factory));
   }
 
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory>
@@ -342,7 +342,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
           &fake_container_host_);
     }
     return std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
-        connector_, loader_factory_getter_);
+        connector_, loader_factory_);
   }
 
   // Starts |request| using |loader_factory| and sets |out_loader| and
@@ -406,7 +406,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<SharedURLLoaderFactory> loader_factory_;
   scoped_refptr<ControllerServiceWorkerConnector> connector_;
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;

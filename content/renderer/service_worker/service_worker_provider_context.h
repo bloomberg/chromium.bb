@@ -15,7 +15,7 @@
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -68,18 +68,17 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // For S13nServiceWorker:
   // |controller_info| contains the endpoint and object info that is needed to
   // set up the controller service worker for the client.
-  // |default_loader_factory_getter| contains a set of default loader
-  // factories for the associated loading context, and is used when we
-  // create a subresource loader for controllees. This is non-null only
-  // if the provider is created for controllees, and if the loading context,
-  // e.g. a frame, provides the default URLLoaderFactoryGetter.
+  // |default_loader_factory| is a default loader factory for network requests,
+  // and is used when we create a subresource loader for controllees. This is
+  // non-null only if the provider is created for controllees, and if the
+  // loading context, e.g. a frame, provides it.
   ServiceWorkerProviderContext(
       int provider_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
       mojom::ServiceWorkerContainerAssociatedRequest request,
       mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
-      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
+      scoped_refptr<SharedURLLoaderFactory> default_loader_factory);
 
   // Constructor for service worker execution contexts.
   ServiceWorkerProviderContext(
