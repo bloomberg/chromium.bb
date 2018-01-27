@@ -507,7 +507,7 @@ blink::mojom::ServiceWorkerObjectInfoPtr
 ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
     ServiceWorkerVersion* version) {
   if (!context_ || !version)
-    return blink::mojom::ServiceWorkerObjectInfo::New();
+    return nullptr;
   if (!dispatcher_host_) {
     DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
     blink::mojom::ServiceWorkerObjectInfoPtr info;

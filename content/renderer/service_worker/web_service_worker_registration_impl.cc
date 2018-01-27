@@ -495,11 +495,8 @@ void WebServiceWorkerRegistrationImpl::SetActive(
 }
 
 void WebServiceWorkerRegistrationImpl::RefreshVersionAttributes() {
-  DCHECK(info_->installing);
   SetInstalling(std::move(info_->installing));
-  DCHECK(info_->waiting);
   SetWaiting(std::move(info_->waiting));
-  DCHECK(info_->active);
   SetActive(std::move(info_->active));
 }
 
@@ -527,16 +524,16 @@ void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   ChangedVersionAttributesMask mask(changed_mask);
+  DCHECK(mask.installing_changed() || !installing);
   if (mask.installing_changed()) {
-    DCHECK(installing);
     SetInstalling(std::move(installing));
   }
+  DCHECK(mask.waiting_changed() || !waiting);
   if (mask.waiting_changed()) {
-    DCHECK(waiting);
     SetWaiting(std::move(waiting));
   }
+  DCHECK(mask.active_changed() || !active);
   if (mask.active_changed()) {
-    DCHECK(active);
     SetActive(std::move(active));
   }
 }

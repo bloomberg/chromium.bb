@@ -296,18 +296,18 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   ProviderStateForClient* state = state_for_client_.get();
   DCHECK(state);
-  DCHECK(!state->controller || state->controller->handle_id !=
-                                   blink::mojom::kInvalidServiceWorkerHandleId);
 
-  auto& controller = controller_info->object_info;
-  state->controller_version_id = controller->version_id;
-  state->controller =
-      controller->handle_id != blink::mojom::kInvalidServiceWorkerHandleId
-          ? std::move(controller)
-          : nullptr;
+  state->controller = std::move(controller_info->object_info);
+  state->controller_version_id =
+      state->controller ? state->controller->version_id
+                        : blink::mojom::kInvalidServiceWorkerVersionId;
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId,
+              state->controller->handle_id);
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+              state->controller->version_id);
     for (const auto& worker : state->worker_clients) {
       // This is a Mojo interface call to the (dedicated or shared) worker
       // thread.

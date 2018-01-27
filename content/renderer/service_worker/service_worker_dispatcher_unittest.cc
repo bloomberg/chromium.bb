@@ -101,10 +101,9 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
   }
 
-  // Should return nullptr when a given object is invalid.
+  // Should return nullptr when given nullptr.
   scoped_refptr<WebServiceWorkerImpl> invalid_worker =
-      dispatcher()->GetOrCreateServiceWorker(
-          blink::mojom::ServiceWorkerObjectInfo::New());
+      dispatcher()->GetOrCreateServiceWorker(nullptr);
   EXPECT_FALSE(invalid_worker);
 }
 
