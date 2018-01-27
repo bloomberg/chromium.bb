@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 
+#include <unordered_map>
 #include <utility>
 
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -213,12 +214,12 @@ bool ChromeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_model_->search_engine_is_google();
 }
 
-std::map<std::string, size_t>
-ChromeAppListModelUpdater::GetIdToAppListIndexMap() {
-  std::map<std::string, size_t> id_to_app_list_index;
+void ChromeAppListModelUpdater::GetIdToAppListIndexMap(
+    GetIdToAppListIndexMapCallback callback) {
+  std::unordered_map<std::string, size_t> id_to_app_list_index;
   for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
     id_to_app_list_index[model_->top_level_item_list()->item_at(i)->id()] = i;
-  return id_to_app_list_index;
+  std::move(callback).Run(id_to_app_list_index);
 }
 
 size_t ChromeAppListModelUpdater::BadgedItemCount() {
@@ -233,9 +234,10 @@ size_t ChromeAppListModelUpdater::BadgedItemCount() {
 ////////////////////////////////////////////////////////////////////////////////
 // Methods for AppListSyncableService
 
-ChromeAppListItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
+void ChromeAppListModelUpdater::ResolveOemFolderPosition(
     const std::string& oem_folder_id,
-    const syncer::StringOrdinal& preffered_oem_position) {
+    const syncer::StringOrdinal& preffered_oem_position,
+    ResolveOemFolderPositionCallback callback) {
   // In ash:
   app_list::AppListFolderItem* ash_oem_folder =
       FindAshFolderItem(oem_folder_id);
@@ -253,7 +255,7 @@ ChromeAppListItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
     DCHECK(metadata);
     chrome_oem_folder->SetMetadata(std::move(metadata));
   }
-  return chrome_oem_folder;
+  std::move(callback).Run(chrome_oem_folder);
 }
 
 ui::MenuModel* ChromeAppListModelUpdater::GetContextMenuModel(

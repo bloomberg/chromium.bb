@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_
 
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class ChromeAppListItem;
 
@@ -78,7 +80,29 @@ class AppListModelUpdater {
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
   virtual ChromeAppListItem* FindFolderItem(const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
-  virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
+  using GetIdToAppListIndexMapCallback =
+      base::OnceCallback<void(const std::unordered_map<std::string, size_t>&)>;
+  virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
+  }
+
+  // Methods for AppListSyncableService:
+  virtual void AddItemToOemFolder(
+      std::unique_ptr<ChromeAppListItem> item,
+      app_list::AppListSyncableService::SyncItem* oem_sync_item,
+      const std::string& oem_folder_id,
+      const std::string& oem_folder_name,
+      const syncer::StringOrdinal& preffered_oem_position) {}
+  using ResolveOemFolderPositionCallback =
+      base::OnceCallback<void(ChromeAppListItem*)>;
+  virtual void ResolveOemFolderPosition(
+      const std::string& oem_folder_id,
+      const syncer::StringOrdinal& preffered_oem_position,
+      ResolveOemFolderPositionCallback callback) {}
+  virtual void UpdateAppItemFromSyncItem(
+      app_list::AppListSyncableService::SyncItem* sync_item,
+      bool update_name,
+      bool update_folder) {}
+
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
