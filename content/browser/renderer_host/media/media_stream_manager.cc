@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
@@ -91,6 +92,24 @@ std::string RandomLabel() {
     DCHECK(std::isalnum(c)) << c;
   }
   return label;
+}
+
+void CreateJpegDecodeAcceleratorOnIOThread(
+    media::mojom::JpegDecodeAcceleratorRequest request) {
+  auto* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+  if (host) {
+    host->gpu_service()->CreateJpegDecodeAccelerator(std::move(request));
+  } else {
+    LOG(ERROR) << "No GpuProcessHost";
+  }
+}
+
+void CreateJpegDecodeAccelerator(
+    media::mojom::JpegDecodeAcceleratorRequest request) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&CreateJpegDecodeAcceleratorOnIOThread,
+                                         base::Passed(std::move(request))));
 }
 
 void ParseStreamType(const StreamControls& controls,
@@ -466,7 +485,8 @@ MediaStreamManager::MediaStreamManager(
           std::make_unique<media::VideoCaptureSystemImpl>(
               media::VideoCaptureDeviceFactory::CreateFactory(
                   BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-                  BrowserGpuMemoryBufferManager::current())),
+                  BrowserGpuMemoryBufferManager::current(),
+                  base::BindRepeating(&CreateJpegDecodeAccelerator))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }

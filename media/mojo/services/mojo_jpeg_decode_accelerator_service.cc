@@ -42,9 +42,11 @@ bool VerifyDecodeParams(const gfx::Size& coded_size,
     return false;
   }
 
-  if (output_buffer_size <
-      media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, coded_size)) {
-    LOG(ERROR) << "output_buffer_size is too small: " << output_buffer_size;
+  uint32_t allocation_size =
+      media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, coded_size);
+  if (output_buffer_size < allocation_size) {
+    DLOG(ERROR) << "output_buffer_size is too small: " << output_buffer_size
+                << ". It needs: " << allocation_size;
     return false;
   }
 
@@ -101,7 +103,7 @@ void MojoJpegDecodeAcceleratorService::Initialize(InitializeCallback callback) {
   }
 
   if (!accelerator) {
-    DLOG(ERROR) << "JPEG accelerator Initialize failed";
+    DLOG(ERROR) << "JPEG accelerator initialization failed";
     std::move(callback).Run(false);
     return;
   }
@@ -119,8 +121,8 @@ void MojoJpegDecodeAcceleratorService::Decode(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("jpeg", "MojoJpegDecodeAcceleratorService::Decode");
 
-  DCHECK(!decode_cb_);
-  decode_cb_ = std::move(callback);
+  DCHECK_EQ(decode_cb_map_.count(input_buffer.id()), 0u);
+  decode_cb_map_[input_buffer.id()] = std::move(callback);
 
   if (!VerifyDecodeParams(coded_size, &output_handle, output_buffer_size)) {
     NotifyDecodeStatus(input_buffer.id(),
@@ -168,6 +170,57 @@ void MojoJpegDecodeAcceleratorService::Decode(
   accelerator_->Decode(input_buffer, frame);
 }
 
+void MojoJpegDecodeAcceleratorService::DecodeWithFD(
+    int32_t buffer_id,
+    mojo::ScopedHandle input_handle,
+    uint32_t input_buffer_size,
+    int32_t coded_size_width,
+    int32_t coded_size_height,
+    mojo::ScopedHandle output_handle,
+    uint32_t output_buffer_size,
+    DecodeWithFDCallback callback) {
+#if defined(OS_CHROMEOS)
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::PlatformFile input_fd;
+  base::PlatformFile output_fd;
+  MojoResult result;
+
+  result = mojo::UnwrapPlatformFile(std::move(input_handle), &input_fd);
+  if (result != MOJO_RESULT_OK) {
+    std::move(callback).Run(
+        buffer_id, ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+    return;
+  }
+
+  result = mojo::UnwrapPlatformFile(std::move(output_handle), &output_fd);
+  if (result != MOJO_RESULT_OK) {
+    std::move(callback).Run(
+        buffer_id, ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+    return;
+  }
+
+  base::UnguessableToken guid = base::UnguessableToken::Create();
+  base::SharedMemoryHandle input_shm_handle(
+      base::FileDescriptor(input_fd, true), 0u, guid);
+  base::SharedMemoryHandle output_shm_handle(
+      base::FileDescriptor(output_fd, true), 0u, guid);
+
+  media::BitstreamBuffer in_buffer(buffer_id, input_shm_handle,
+                                   input_buffer_size);
+  gfx::Size coded_size(coded_size_width, coded_size_height);
+
+  mojo::ScopedSharedBufferHandle output_scoped_handle =
+      mojo::WrapSharedMemoryHandle(
+          output_shm_handle, output_buffer_size,
+          mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+
+  Decode(in_buffer, coded_size, std::move(output_scoped_handle),
+         output_buffer_size, std::move(callback));
+#else
+  NOTREACHED();
+#endif
+}
+
 void MojoJpegDecodeAcceleratorService::Uninitialize() {
   // TODO(c.padhi): see http://crbug.com/699255.
   NOTIMPLEMENTED();
@@ -177,8 +230,12 @@ void MojoJpegDecodeAcceleratorService::NotifyDecodeStatus(
     int32_t bitstream_buffer_id,
     ::media::JpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(decode_cb_);
-  std::move(decode_cb_).Run(bitstream_buffer_id, error);
+
+  auto iter = decode_cb_map_.find(bitstream_buffer_id);
+  DCHECK(iter != decode_cb_map_.end());
+  DecodeCallback decode_cb = std::move(iter->second);
+  decode_cb_map_.erase(iter);
+  std::move(decode_cb).Run(bitstream_buffer_id, error);
 }
 
 }  // namespace media

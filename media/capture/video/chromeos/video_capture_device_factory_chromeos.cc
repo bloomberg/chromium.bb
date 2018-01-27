@@ -19,10 +19,11 @@ gpu::GpuMemoryBufferManager* g_gpu_buffer_manager = nullptr;
 
 VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
-    gpu::GpuMemoryBufferManager* gpu_buffer_manager)
+    gpu::GpuMemoryBufferManager* gpu_buffer_manager,
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory)
     : task_runner_for_screen_observer_(task_runner_for_screen_observer),
       camera_hal_ipc_thread_("CameraHalIpcThread"),
-      initialized_(Init()) {
+      initialized_(Init(jda_factory)) {
   g_gpu_buffer_manager = gpu_buffer_manager;
 }
 
@@ -84,14 +85,15 @@ void VideoCaptureDeviceFactoryChromeOS::SetBufferManagerForTesting(
   g_gpu_buffer_manager = buffer_manager;
 }
 
-bool VideoCaptureDeviceFactoryChromeOS::Init() {
+bool VideoCaptureDeviceFactoryChromeOS::Init(
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory) {
   if (!camera_hal_ipc_thread_.Start()) {
     LOG(ERROR) << "Module thread failed to start";
     return false;
   }
 
   if (!CameraHalDispatcherImpl::GetInstance()->IsStarted() &&
-      !CameraHalDispatcherImpl::GetInstance()->Start()) {
+      !CameraHalDispatcherImpl::GetInstance()->Start(jda_factory)) {
     LOG(ERROR) << "Failed to start CameraHalDispatcherImpl";
     return false;
   }
@@ -107,7 +109,8 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
 VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
-    gpu::GpuMemoryBufferManager* gpu_buffer_manager) {
+    gpu::GpuMemoryBufferManager* gpu_buffer_manager,
+    MojoJpegDecodeAcceleratorFactoryCB jda_factory) {
   // On Chrome OS we have to support two use cases:
   //
   // 1. For devices that have the camera HAL v3 service running on Chrome OS,
@@ -119,7 +122,7 @@ VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
   //    v3.
   if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
     return new VideoCaptureDeviceFactoryChromeOS(
-        task_runner_for_screen_observer, gpu_buffer_manager);
+        task_runner_for_screen_observer, gpu_buffer_manager, jda_factory);
   } else {
     return new VideoCaptureDeviceFactoryLinux(task_runner_for_screen_observer);
   }
