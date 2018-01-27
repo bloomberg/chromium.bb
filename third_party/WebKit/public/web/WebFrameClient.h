@@ -645,7 +645,6 @@ class BLINK_EXPORT WebFrameClient {
   // about the certificate. If it returns false, a generic warning will be
   // printed.
   virtual bool OverrideLegacySymantecCertConsoleMessage(const WebURL&,
-                                                        base::Time,
                                                         WebString*) {
     return false;
   }

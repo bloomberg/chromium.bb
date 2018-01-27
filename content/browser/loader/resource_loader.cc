@@ -112,8 +112,6 @@ void PopulateResourceResponse(
         (!net::IsCertStatusError(response->head.cert_status) ||
          net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
-    response->head.cert_validity_start =
-        request->ssl_info().cert->valid_start();
     if (info->ShouldReportRawHeaders()) {
       // Only pass these members when the network panel of the DevTools is open,
       // i.e. ShouldReportRawHeaders() is set. These data are used to populate

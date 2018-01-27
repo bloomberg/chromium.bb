@@ -222,7 +222,6 @@ class ChromeContentRendererClient
       override;
   bool OverrideLegacySymantecCertConsoleMessage(
       const GURL& url,
-      base::Time cert_validity_start,
       std::string* console_messsage) override;
   void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) override;

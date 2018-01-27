@@ -4969,11 +4969,10 @@ void RenderFrameImpl::DidRunContentWithCertificateErrors() {
 
 bool RenderFrameImpl::OverrideLegacySymantecCertConsoleMessage(
     const blink::WebURL& url,
-    base::Time cert_validity_start,
     blink::WebString* console_message) {
   std::string console_message_string;
   if (GetContentClient()->renderer()->OverrideLegacySymantecCertConsoleMessage(
-          GURL(url), cert_validity_start, &console_message_string)) {
+          GURL(url), &console_message_string)) {
     *console_message = blink::WebString::FromASCII(console_message_string);
     return true;
   }

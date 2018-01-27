@@ -57,9 +57,9 @@ unit tests.
 - twitter-chain.pem : A certificate chain for twitter.com which should be
      valid albeit expired.
 
-- tripadvisor-verisign-chain.pem: A certificate chain for www.tripadvisor.com
-  issued by VeriSign Class 3 Public Primary Certification Authority - G5.
-  Expires Apr 2 2018.
+- gms.hongleong.com.my-verisign-chain.pem: A certificate chain for
+  gms.hongleong.com.my issued by VeriSign Class 3 Public Primary Certification
+  Authority - G5. Expires Dec 30 2019.
 - verisign_class3_g5_crosssigned.pem: The SHA1 cross-signed version of
   VeriSign Class 3 Public Primary Certification Authority - G5
 - verisign_class3_g5_crosssigned-trusted.keychain: OSX Keychain set to Always

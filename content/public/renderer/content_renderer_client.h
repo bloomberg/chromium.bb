@@ -378,7 +378,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // generic mesage will be used.
   virtual bool OverrideLegacySymantecCertConsoleMessage(
       const GURL& url,
-      base::Time cert_validity_start,
       std::string* console_messsage);
 
   // Asks the embedder to bind |service_request| to its renderer-side service

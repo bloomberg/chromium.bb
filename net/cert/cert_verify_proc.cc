@@ -208,6 +208,13 @@ bool IsUntrustedSymantecCert(const X509Certificate& cert) {
   if (start >= kSymantecDeprecationDate)
     return true;
 
+  // Certificates issued prior to 2016-06-01 00:00:00 UTC are no longer
+  // trusted.
+  const base::Time kFirstAcceptedCertDate =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1464739200);
+  if (start < kFirstAcceptedCertDate)
+    return true;
+
   return false;
 }
 

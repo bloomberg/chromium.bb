@@ -53,9 +53,6 @@ struct ResourceResponseInfo {
   // certificate which will be distrusted in future.
   bool is_legacy_symantec_cert;
 
-  // The time at which the certificate (if any) of the resource expires.
-  base::Time cert_validity_start;
-
   // Content length if available. -1 if not available
   int64_t content_length;
 

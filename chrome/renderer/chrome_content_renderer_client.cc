@@ -1677,19 +1677,13 @@ void ChromeContentRendererClient::InitSafeBrowsingIfNecessary() {
 
 bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
     const GURL& url,
-    base::Time cert_validity_start,
     std::string* console_message) {
-  // Certificates issued before June 1, 2016 will be distrusted in Chrome
-  // 66; the rest will be distrusted in Chrome 70.
-  base::Time chrome_66_not_before = base::Time::FromDoubleT(1464739200);
-  const char* in_future_string =
-      cert_validity_start < chrome_66_not_before ? "in M66" : "in M70";
   *console_message = base::StringPrintf(
       "The SSL certificate used to load resources from %s"
-      " will be distrusted %s. Once distrusted, users will be prevented from "
-      "loading these resources. See https://g.co/chrome/symantecpkicerts for "
-      "more information.",
-      url::Origin::Create(url).Serialize().c_str(), in_future_string);
+      " will be distrusted in M70. Once distrusted, users will be prevented"
+      " from loading these resources. See https://g.co/chrome/symantecpkicerts"
+      " for more information.",
+      url::Origin::Create(url).Serialize().c_str());
   return true;
 }
 

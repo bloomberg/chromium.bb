@@ -1478,47 +1478,83 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
        0x68, 0xac, 0x53, 0x8e, 0x40, 0xab, 0xab, 0x5b, 0x19, 0xa6, 0x48,
        0x56, 0x61, 0x04, 0x2a, 0x10, 0x61, 0xc4, 0x61, 0x27, 0x76}};
 
-  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "dec_2017.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_TRUE(cert);
+  // Test that certificates from the legacy Symantec infrastructure are
+  // rejected:
+  // - dec_2017.pem : A certificate issued after 2017-12-01, which is rejected
+  //                  as of M65
+  // - pre_june_2016.pem : A certificate issued prior to 2016-06-01, which is
+  //                       rejected as of M66.
+  for (const char* rejected_cert : {"dec_2017.pem", "pre_june_2016.pem"}) {
+    scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+        GetTestCertsDirectory(), rejected_cert, X509Certificate::FORMAT_AUTO);
+    ASSERT_TRUE(cert);
 
-  scoped_refptr<CertVerifyProc> verify_proc;
-  int error = 0;
+    scoped_refptr<CertVerifyProc> verify_proc;
+    int error = 0;
 
-  // Test that a Symantec certificate is rejected if issued after 2017-12-01.
-  CertVerifyResult symantec_result;
-  symantec_result.verified_cert = cert;
-  symantec_result.public_key_hashes.push_back(HashValue(kSymantecHashValue));
-  symantec_result.is_issued_by_known_root = true;
-  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(symantec_result);
+    // Test that a legacy Symantec certificate is rejected.
+    CertVerifyResult symantec_result;
+    symantec_result.verified_cert = cert;
+    symantec_result.public_key_hashes.push_back(HashValue(kSymantecHashValue));
+    symantec_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(symantec_result);
 
-  CertVerifyResult test_result_1;
-  error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
-                              nullptr, CertificateList(), &test_result_1);
-  EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-  EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    CertVerifyResult test_result_1;
+    error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
+                                nullptr, CertificateList(), &test_result_1);
+    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+    EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 
-  // ... Unless the Symantec cert chains through a whitelisted intermediate.
-  CertVerifyResult whitelisted_result;
-  whitelisted_result.verified_cert = cert;
-  whitelisted_result.public_key_hashes.push_back(HashValue(kSymantecHashValue));
-  whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
-  whitelisted_result.is_issued_by_known_root = true;
-  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
+    // ... Unless the Symantec cert chains through a whitelisted intermediate.
+    CertVerifyResult whitelisted_result;
+    whitelisted_result.verified_cert = cert;
+    whitelisted_result.public_key_hashes.push_back(
+        HashValue(kSymantecHashValue));
+    whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
+    whitelisted_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
 
-  CertVerifyResult test_result_2;
-  error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
-                              nullptr, CertificateList(), &test_result_2);
-  EXPECT_THAT(error, IsOk());
-  EXPECT_FALSE(test_result_2.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    CertVerifyResult test_result_2;
+    error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
+                                nullptr, CertificateList(), &test_result_2);
+    EXPECT_THAT(error, IsOk());
+    EXPECT_FALSE(test_result_2.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 
-  // ... Or the caller disabled enforcement of Symantec policies.
-  CertVerifyResult test_result_3;
-  error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(),
-                              CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
-                              nullptr, CertificateList(), &test_result_3);
-  EXPECT_THAT(error, IsOk());
-  EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    // ... Or the caller disabled enforcement of Symantec policies.
+    CertVerifyResult test_result_3;
+    error =
+        verify_proc->Verify(cert.get(), "127.0.0.1", std::string(),
+                            CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
+                            nullptr, CertificateList(), &test_result_3);
+    EXPECT_THAT(error, IsOk());
+    EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+  }
+
+  // Test that certificates from the legacy Symantec infrastructure that
+  // should still be accepted (for now) are accepted.
+  // - post_june_2016.pem : A certificate issued after 2016-06-01, which is
+  //                        not scheduled for distrust until M70.
+  for (const char* accepted_cert : {"post_june_2016.pem"}) {
+    scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+        GetTestCertsDirectory(), accepted_cert, X509Certificate::FORMAT_AUTO);
+    ASSERT_TRUE(cert);
+
+    scoped_refptr<CertVerifyProc> verify_proc;
+    int error = 0;
+
+    // Test that a Symantec certificate is accepted.
+    CertVerifyResult symantec_result;
+    symantec_result.verified_cert = cert;
+    symantec_result.public_key_hashes.push_back(HashValue(kSymantecHashValue));
+    symantec_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(symantec_result);
+
+    CertVerifyResult test_result_1;
+    error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
+                                nullptr, CertificateList(), &test_result_1);
+    EXPECT_THAT(error, IsOk());
+    EXPECT_FALSE(test_result_1.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+  }
 }
 
 // While all SHA-1 certificates should be rejected, in the event that there
