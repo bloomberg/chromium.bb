@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineVerticalPositionType_h
-#define LineVerticalPositionType_h
+#ifndef FontVerticalPositionType_h
+#define FontVerticalPositionType_h
 
 namespace blink {
 
-enum class LineVerticalPositionType {
+enum class FontVerticalPositionType {
   // TextTop and TextBottom are the top/bottom of the content area.
   // This is where 'vertical-align: text-top/text-bottom' aligns to.
   // This is explicitly undefined in CSS2.
@@ -22,4 +22,4 @@ enum class LineVerticalPositionType {
 
 }  // namespace blink
 
-#endif  // LineVerticalPositionType_h
+#endif  // FontVerticalPositionType_h

@@ -27,7 +27,7 @@ class CORE_EXPORT TextDecorationOffset : public TextDecorationOffsetBase {
   ~TextDecorationOffset() = default;
 
   int ComputeUnderlineOffsetForUnder(float text_decoration_thickness,
-                                     LineVerticalPositionType) const override;
+                                     FontVerticalPositionType) const override;
 
  private:
   const InlineTextBox* inline_text_box_;

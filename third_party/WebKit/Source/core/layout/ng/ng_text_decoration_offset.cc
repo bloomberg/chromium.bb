@@ -14,8 +14,9 @@ namespace blink {
 
 int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
-    LineVerticalPositionType position_type) const {
+    FontVerticalPositionType position_type) const {
   LayoutUnit offset = LayoutUnit::Max();
+  FontBaseline baseline_type = text_fragment_.BaselineType();
 
   if (decorating_box_) {
     // TODO(eae): Replace with actual baseline once available.
@@ -31,7 +32,12 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
   if (offset == LayoutUnit::Max()) {
     // TODO(layout-dev): How do we compute the baseline offset with a
     // decorating_box?
-    offset = text_fragment_.Size().height;
+    const SimpleFontData* font_data =
+        text_fragment_.Style().GetFont().PrimaryFont();
+    if (!font_data)
+      return 0;
+    offset = font_data->GetFontMetrics().Ascent(baseline_type) -
+             font_data->VerticalPosition(position_type, baseline_type);
   }
 
   // Compute offset to the farthest position of the decorating box.
@@ -42,7 +48,7 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
 
   // Gaps are not needed for TextTop because it generally has internal
   // leadings.
-  if (position_type == LineVerticalPositionType::TextTop)
+  if (position_type == FontVerticalPositionType::TextTop)
     return offset_int;
 
   // TODO(layout-dev): Add or subtract one depending on side (IsLineOverSide).

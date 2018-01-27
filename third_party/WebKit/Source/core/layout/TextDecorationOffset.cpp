@@ -12,7 +12,7 @@ namespace blink {
 
 int TextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
-    LineVerticalPositionType position_type) const {
+    FontVerticalPositionType position_type) const {
   const RootInlineBox& root = inline_text_box_->Root();
   FontBaseline baseline_type = root.BaselineType();
   LayoutUnit offset = inline_text_box_->OffsetTo(position_type, baseline_type);
@@ -28,7 +28,7 @@ int TextDecorationOffset::ComputeUnderlineOffsetForUnder(
 
   // Gaps are not needed for TextTop because it generally has internal
   // leadings.
-  if (position_type == LineVerticalPositionType::TextTop)
+  if (position_type == FontVerticalPositionType::TextTop)
     return offset_int;
   return !IsLineOverSide(position_type) ? offset_int + 1 : offset_int - 1;
 }
