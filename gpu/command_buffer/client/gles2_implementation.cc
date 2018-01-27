@@ -5710,7 +5710,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
       if (capabilities_.major_version >= 3)
         break;
-      // Fall through
+      FALLTHROUGH;
     default:
       SetGLError(
           GL_INVALID_ENUM, "glBeginQueryEXT", "unknown query target");
