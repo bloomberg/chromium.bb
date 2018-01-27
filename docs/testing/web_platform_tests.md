@@ -156,16 +156,21 @@ should be derived from a specification's normative requirements, and not go
 beyond them. It is often necessary to change the specification to clarify what
 is and isn't required.
 
-When the standards discussion is still ongoing or blocked on some implementation
-successfully shipping the hoped-for behavior, write the tests outside of
-web-platform-tests and upstream them when the specification is finally updated.
-Optionally, it may be possible to write deliberately failing tests against the
-current specification and later update them.
+When implementation experience is needed to inform the specification work,
+[tentative tests](http://web-platform-tests.org/writing-tests/file-names.html)
+can be appropriate. It should be apparent in context why the test is tentative
+and what needs to be resolved to make it non-tentative.
 
 ### Tests that require testing APIs
 
-Tests that depend on `internals.*`, `eventSender.*` or other internal testing
-APIs cannot yet be written as part of web-platform-tests.
+[testdriver.js](http://web-platform-tests.org/writing-tests/testdriver.html)
+provides a means to automate tests that cannot be written purely using web
+platform APIs, similar to `internals.*` and `eventSender.*` in regular Blink
+layout tests.
+
+If no testdriver.js API exists, check if it's a
+[known issue](https://github.com/w3c/web-platform-tests/labels/testdriver.js)
+and otherwise consider filing a new issue.
 
 An alternative is to write manual tests that are automated with scripts from
 [wpt_automation](../../third_party/WebKit/LayoutTests/external/wpt_automation).
@@ -178,10 +183,6 @@ engines, but are more valuable than purely manual tests.
 Manual tests that have no automation are still imported, but skipped in
 [NeverFixTests](../../third_party/WebKit/LayoutTests/NeverFixTests); see
 [issue 738489](https://crbug.com/738489).
-
-*** note
-TODO(foolip): Figure out and document a more scalable test automation solution.
-***
 
 ### Adding new top-level directories
 
