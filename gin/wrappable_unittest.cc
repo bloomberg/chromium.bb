@@ -57,44 +57,12 @@ class MyObject : public BaseClass,
   int value_;
 };
 
-class MyCallableObject : public Wrappable<MyCallableObject> {
- public:
-  static WrapperInfo kWrapperInfo;
-
-  static gin::Handle<MyCallableObject> Create(v8::Isolate* isolate) {
-    return CreateHandle(isolate, new MyCallableObject());
-  }
-
-  int result() { return result_; }
-
- private:
-  ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) final {
-    return Wrappable<MyCallableObject>::GetObjectTemplateBuilder(isolate)
-        .SetCallAsFunctionHandler(&MyCallableObject::Call);
-  }
-
-  MyCallableObject() : result_(0) {
-  }
-
-  ~MyCallableObject() override = default;
-
-  void Call(int val1, int val2, int val3, const gin::Arguments& arguments) {
-    if (arguments.IsConstructCall())
-      arguments.ThrowTypeError("Cannot be called as constructor.");
-    else
-      result_ = val1;
-  }
-
-  int result_;
-};
-
 class MyObject2 : public Wrappable<MyObject2> {
  public:
   static WrapperInfo kWrapperInfo;
 };
 
 WrapperInfo MyObject::kWrapperInfo = { kEmbedderNativeGin };
-WrapperInfo MyCallableObject::kWrapperInfo = { kEmbedderNativeGin };
 WrapperInfo MyObject2::kWrapperInfo = { kEmbedderNativeGin };
 
 typedef V8Test WrappableTest;
@@ -167,55 +135,6 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   EXPECT_EQ("", try_catch.GetStackTrace());
 
   EXPECT_EQ(191, obj->value());
-}
-
-TEST_F(WrappableTest, CallAsFunction) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-
-  gin::Handle<MyCallableObject> object(MyCallableObject::Create(isolate));
-  EXPECT_EQ(0, object->result());
-  v8::Local<v8::String> source = StringToV8(isolate,
-                                             "(function(obj) {"
-                                             "obj(42, 2, 5);"
-                                             "})");
-  gin::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script =
-      v8::Script::Compile(context_.Get(isolate), source).ToLocalChecked();
-  v8::Local<v8::Value> val =
-      script->Run(context_.Get(isolate)).ToLocalChecked();
-  v8::Local<v8::Function> func;
-  EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Local<v8::Value> argv[] = {
-      ConvertToV8(isolate->GetCurrentContext(), object.get()).ToLocalChecked(),
-  };
-  func->Call(v8::Undefined(isolate), 1, argv);
-  EXPECT_FALSE(try_catch.HasCaught());
-  EXPECT_EQ(42, object->result());
-}
-
-TEST_F(WrappableTest, CallAsConstructor) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(isolate);
-
-  gin::Handle<MyCallableObject> object(MyCallableObject::Create(isolate));
-  EXPECT_EQ(0, object->result());
-  v8::Local<v8::String> source = StringToV8(isolate,
-                                             "(function(obj) {"
-                                             "new obj(42, 2, 5);"
-                                             "})");
-  gin::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script =
-      v8::Script::Compile(context_.Get(isolate), source).ToLocalChecked();
-  v8::Local<v8::Value> val =
-      script->Run(context_.Get(isolate)).ToLocalChecked();
-  v8::Local<v8::Function> func;
-  EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Local<v8::Value> argv[] = {
-      ConvertToV8(isolate->GetCurrentContext(), object.get()).ToLocalChecked(),
-  };
-  func->Call(v8::Undefined(isolate), 1, argv);
-  EXPECT_TRUE(try_catch.HasCaught());
 }
 
 }  // namespace gin

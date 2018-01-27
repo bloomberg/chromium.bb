@@ -85,11 +85,6 @@ class GIN_EXPORT ObjectTemplateBuilder {
     return SetPropertyImpl(name, CreateFunctionTemplate(isolate_, getter),
                            CreateFunctionTemplate(isolate_, setter));
   }
-  template<typename T>
-  ObjectTemplateBuilder& SetCallAsFunctionHandler(const T& callback) {
-    SetAsFunctionHandler(isolate_, template_, callback);
-    return *this;
-  }
   ObjectTemplateBuilder& AddNamedPropertyInterceptor();
   ObjectTemplateBuilder& AddIndexedPropertyInterceptor();
 
