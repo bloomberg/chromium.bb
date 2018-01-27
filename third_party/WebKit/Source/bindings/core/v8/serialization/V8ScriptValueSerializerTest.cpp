@@ -1337,8 +1337,8 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndex) {
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x69, 0x00});
   WebBlobInfoArray blob_info_array;
-  blob_info_array.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                               "text/plain", 12);
+  blob_info_array.emplace_back(WebBlobInfo::BlobForTesting(
+      "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "text/plain", 12));
   V8ScriptValueDeserializer::Options options;
   options.blob_info = &blob_info_array;
   V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1361,8 +1361,8 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
   }
   {
     WebBlobInfoArray blob_info_array;
-    blob_info_array.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                 "text/plain", 12);
+    blob_info_array.emplace_back(WebBlobInfo::BlobForTesting(
+        "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "text/plain", 12));
     V8ScriptValueDeserializer::Options options;
     options.blob_info = &blob_info_array;
     V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1596,8 +1596,9 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x00});
   WebBlobInfoArray blob_info_array;
-  blob_info_array.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                               "/native/path", "path", "text/plain");
+  blob_info_array.emplace_back(
+      WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                  "/native/path", "path", "text/plain"));
   V8ScriptValueDeserializer::Options options;
   options.blob_info = &blob_info_array;
   V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1621,8 +1622,9 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
   }
   {
     WebBlobInfoArray blob_info_array;
-    blob_info_array.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                 "/native/path", "path", "text/plain");
+    blob_info_array.emplace_back(
+        WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                    "/native/path", "path", "text/plain"));
     V8ScriptValueDeserializer::Options options;
     options.blob_info = &blob_info_array;
     V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,
@@ -1753,8 +1755,9 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x01, 0x00, 0x00});
   WebBlobInfoArray blob_info_array;
-  blob_info_array.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                               "/native/path", "name", "text/plain");
+  blob_info_array.emplace_back(
+      WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                  "/native/path", "name", "text/plain"));
   V8ScriptValueDeserializer::Options options;
   options.blob_info = &blob_info_array;
   V8ScriptValueDeserializer deserializer(scope.GetScriptState(), input,

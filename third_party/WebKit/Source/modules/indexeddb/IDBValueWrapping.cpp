@@ -147,8 +147,7 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
   wrapper_blob_data->AppendBytes(wire_data_.data(), wire_data_size);
   scoped_refptr<BlobDataHandle> wrapper_handle =
       BlobDataHandle::Create(std::move(wrapper_blob_data), wire_data_size);
-  blob_info_.emplace_back(wrapper_handle->Uuid(), wrapper_handle->GetType(),
-                          wire_data_size);
+  blob_info_.emplace_back(wrapper_handle);
   blob_handles_.push_back(std::move(wrapper_handle));
 
   wire_data_buffer_.clear();

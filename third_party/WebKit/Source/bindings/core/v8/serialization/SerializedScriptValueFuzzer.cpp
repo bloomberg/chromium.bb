@@ -44,10 +44,11 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   g_page_holder = DummyPageHolder::Create().release();
   g_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   g_blob_info_array = new WebBlobInfoArray();
-  g_blob_info_array->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                  "text/plain", 12);
-  g_blob_info_array->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                                  "/native/path", "path", "text/plain");
+  g_blob_info_array->emplace_back(WebBlobInfo::BlobForTesting(
+      "d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "text/plain", 12));
+  g_blob_info_array->emplace_back(
+      WebBlobInfo::FileForTesting("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                  "/native/path", "path", "text/plain"));
   return 0;
 }
 
