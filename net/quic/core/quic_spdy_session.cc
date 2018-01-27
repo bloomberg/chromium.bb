@@ -11,6 +11,7 @@
 
 #include "net/quic/core/quic_headers_stream.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -153,7 +154,7 @@ class QuicSpdySession::SpdyFramerVisitor
         if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
           break;
         }
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
       default:
         CloseConnection(
             QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id),

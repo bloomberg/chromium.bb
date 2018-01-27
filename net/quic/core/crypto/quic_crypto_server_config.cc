@@ -35,6 +35,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_endian.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_hostname_utils.h"
@@ -815,7 +816,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                               &params->token_binding_key_param, nullptr)) {
           break;
         }
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
       default:
         helper.Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
                     "Invalid Token Binding key parameter");

@@ -10,6 +10,7 @@
 #include "net/quic/core/congestion_control/rtt_stats.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -613,7 +614,7 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
       if (is_round_start) {
         recovery_state_ = GROWTH;
       }
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
 
     case GROWTH:
       // Exit recovery if appropriate.

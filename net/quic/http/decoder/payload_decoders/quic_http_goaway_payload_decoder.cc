@@ -13,6 +13,7 @@
 #include "net/quic/http/quic_http_constants.h"
 #include "net/quic/http/quic_http_structures.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 
 namespace net {
 
@@ -77,7 +78,7 @@ QuicHttpGoAwayQuicHttpPayloadDecoder::ResumeDecodingPayload(
     switch (payload_state_) {
       case PayloadState::kStartDecodingFixedFields:
         status = state->StartDecodingStructureInPayload(&goaway_fields_, db);
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
 
       case PayloadState::kHandleFixedFieldsStatus:
         if (status == QuicHttpDecodeStatus::kDecodeDone) {
@@ -95,7 +96,7 @@ QuicHttpGoAwayQuicHttpPayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kResumeDecodingFixedFields;
           return status;
         }
-        FALLTHROUGH;
+        QUIC_FALLTHROUGH_INTENDED;
 
       case PayloadState::kReadOpaqueData:
         // The opaque data is all the remains to be decoded, so anything left

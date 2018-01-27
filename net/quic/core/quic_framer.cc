@@ -22,6 +22,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -417,7 +418,8 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         }
         break;
       case MTU_DISCOVERY_FRAME:
-      // MTU discovery frames are serialized as ping frames.
+        // MTU discovery frames are serialized as ping frames.
+        QUIC_FALLTHROUGH_INTENDED;
       case PING_FRAME:
         // Ping has no payload.
         break;
@@ -1884,7 +1886,8 @@ size_t QuicFramer::ComputeFrameLength(
       return GetStopWaitingFrameSize(version_.transport_version,
                                      packet_number_length);
     case MTU_DISCOVERY_FRAME:
-    // MTU discovery frames are serialized as ping frames.
+      // MTU discovery frames are serialized as ping frames.
+      QUIC_FALLTHROUGH_INTENDED;
     case PING_FRAME:
       // Ping has no payload.
       return kQuicFrameTypeSize;

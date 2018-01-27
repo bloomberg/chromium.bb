@@ -8,6 +8,7 @@
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_fallthrough.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
@@ -245,7 +246,7 @@ QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
       reader.ReadTag(&message_tag);
       message_.set_tag(message_tag);
       state_ = STATE_READING_NUM_ENTRIES;
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
     case STATE_READING_NUM_ENTRIES:
       if (reader.BytesRemaining() < kNumEntriesSize + sizeof(uint16_t)) {
         break;
@@ -261,7 +262,7 @@ QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
       tags_and_lengths_.reserve(num_entries_);
       state_ = STATE_READING_TAGS_AND_LENGTHS;
       values_len_ = 0;
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
     case STATE_READING_TAGS_AND_LENGTHS: {
       if (reader.BytesRemaining() <
           num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
@@ -295,7 +296,7 @@ QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
       }
       values_len_ = last_end_offset;
       state_ = STATE_READING_VALUES;
-      FALLTHROUGH;
+      QUIC_FALLTHROUGH_INTENDED;
     }
     case STATE_READING_VALUES:
       if (reader.BytesRemaining() < values_len_) {
