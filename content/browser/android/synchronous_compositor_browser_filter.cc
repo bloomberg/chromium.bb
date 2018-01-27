@@ -167,6 +167,10 @@ void SynchronousCompositorBrowserFilter::OnChannelClosing() {
   SignalAllFutures();
 }
 
+void SynchronousCompositorBrowserFilter::OnChannelError() {
+  SignalAllFutures();
+}
+
 void SynchronousCompositorBrowserFilter::SignalAllFutures() {
   base::AutoLock lock(future_map_lock_);
   for (auto& pair : future_map_) {

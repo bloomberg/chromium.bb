@@ -49,6 +49,8 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
     filter_->OnChannelClosing();
   }
 
+  void OnChannelError() override { filter_->OnChannelError(); }
+
   void OnChannelConnected(int32_t peer_pid) override {
     filter_->peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
     filter_->OnChannelConnected(peer_pid);
