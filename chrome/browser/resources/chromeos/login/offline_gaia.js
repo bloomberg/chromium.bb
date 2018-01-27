@@ -141,6 +141,7 @@ Polymer((function() {
 
     onSlideAnimationEnd_: function() {
       this.animationInProgress = false;
+      this.focus();
     },
 
     onEmailSubmitted_: function() {
