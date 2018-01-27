@@ -48,7 +48,7 @@ class MediaTransferProtocolDeviceObserverChromeOS
   MediaTransferProtocolDeviceObserverChromeOS(
       StorageMonitor::Receiver* receiver,
       device::MediaTransferProtocolManager* mtp_manager,
-      GetMtpStorageInfoCallback get_mtp_storage_info_cb);
+      const GetMtpStorageInfoCallback& get_mtp_storage_info_cb);
 
   // device::MediaTransferProtocolManager::Observer implementation.
   // Exposed for unit tests.

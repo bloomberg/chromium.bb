@@ -239,7 +239,7 @@ class VolumeManager : public KeyedService,
  public:
   // Returns MediaTransferProtocolManager. Used for injecting
   // FakeMediaTransferProtocolManager for testing.
-  typedef base::Callback<const device::mojom::MtpStorageInfo*(
+  typedef base::RepeatingCallback<const device::mojom::MtpStorageInfo*(
       const std::string&)>
       GetMtpStorageInfoCallback;
 
@@ -249,7 +249,7 @@ class VolumeManager : public KeyedService,
       chromeos::PowerManagerClient* power_manager_client,
       chromeos::disks::DiskMountManager* disk_mount_manager,
       chromeos::file_system_provider::Service* file_system_provider_service,
-      GetMtpStorageInfoCallback get_mtp_storage_info_callback);
+      const GetMtpStorageInfoCallback& get_mtp_storage_info_callback);
   ~VolumeManager() override;
 
   // Returns the instance corresponding to the |context|.
