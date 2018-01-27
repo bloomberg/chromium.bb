@@ -259,6 +259,7 @@ bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
       // Alt-space on windows should show the window menu.
       if (event.IsAltDown())
         break;
+      FALLTHROUGH;
     case ui::VKEY_RETURN:
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
