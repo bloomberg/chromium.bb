@@ -55,6 +55,7 @@ class UiSceneCreator {
   void CreateAudioPermissionPrompt();
   void CreateFullscreenToast();
   void CreateVoiceSearchUiGroup();
+  void CreateContentRepositioningAffordance();
   void CreateExitWarning();
   void CreateWebVrSubtree();
   void CreateWebVrOverlayElements();

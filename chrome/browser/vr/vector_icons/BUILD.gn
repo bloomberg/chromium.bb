@@ -8,8 +8,9 @@ aggregate_vector_icons("vr_vector_icons") {
   icon_directory = "."
 
   icons = [
-    "sad_tab.icon",
     "file_download_done.icon",
+    "reposition.icon",
+    "sad_tab.icon",
   ]
 }
 

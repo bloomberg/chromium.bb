@@ -209,7 +209,8 @@ void VrTestContext::HandleInput(ui::Event* event) {
         model_->toggle_mode(kModeRepositionWindow);
         break;
       case ui::DomCode::US_X:
-        ui_->OnAppButtonClicked();
+        model_->experimental_features_enabled =
+            !model_->experimental_features_enabled;
         break;
       default:
         break;

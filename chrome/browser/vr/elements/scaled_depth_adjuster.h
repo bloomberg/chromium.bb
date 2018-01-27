@@ -28,7 +28,10 @@ class ScaledDepthAdjuster : public UiElement {
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Transform& head_pose) override;
   void OnSetType() override;
+
+#ifndef NDEBUG
   void DumpGeometry(std::ostringstream* os) const override;
+#endif
 
   gfx::Transform transform_;
 

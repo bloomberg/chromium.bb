@@ -262,6 +262,11 @@ void Ui::OnAppButtonClicked() {
     return;
   }
 
+  if (model_->reposition_window_enabled()) {
+    model_->pop_mode(kModeRepositionWindow);
+    return;
+  }
+
   // App button click exits the WebVR presentation and fullscreen.
   browser_->ExitPresent();
   browser_->ExitFullscreen();
@@ -332,12 +337,14 @@ bool Ui::SkipsRedrawWhenNotDirty() const {
 }
 
 void Ui::Dump(bool include_bindings) {
+#ifndef NDEBUG
   std::ostringstream os;
   os << std::setprecision(3);
   os << std::endl;
   scene_->root_element().DumpHierarchy(std::vector<size_t>(), &os,
                                        include_bindings);
   LOG(ERROR) << os.str();
+#endif
 }
 
 void Ui::OnAssetsLoading() {
