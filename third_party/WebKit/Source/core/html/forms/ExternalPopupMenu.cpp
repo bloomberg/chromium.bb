@@ -32,6 +32,7 @@
 
 #include "build/build_config.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/events/CurrentInputEvent.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -118,7 +119,7 @@ void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
 #if defined(OS_MACOSX)
-  const WebInputEvent* current_event = WebViewImpl::CurrentInputEvent();
+  const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event && current_event->GetType() == WebInputEvent::kMouseDown) {
     synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);

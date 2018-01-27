@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/events/CurrentInputEvent.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameClient.h"
@@ -298,8 +299,8 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!old_page)
     return nullptr;
 
-  policy = EffectiveNavigationPolicy(policy, WebViewImpl::CurrentInputEvent(),
-                                     features);
+  policy =
+      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(), features);
 
   const SandboxFlags sandbox_flags =
       opener_frame.GetDocument()->IsSandboxed(

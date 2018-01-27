@@ -104,7 +104,6 @@ class CORE_EXPORT WebViewImpl final
                              mojom::PageVisibilityState,
                              WebViewImpl* opener);
   static HashSet<WebViewImpl*>& AllInstances();
-  static const WebInputEvent* CurrentInputEvent();
   // Returns true if popup menus should be rendered by the browser, false if
   // they should be rendered by WebKit (which is the default).
   static bool UseExternalPopupMenus();
@@ -688,8 +687,6 @@ class CORE_EXPORT WebViewImpl final
   bool override_compositor_visibility_;
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
-
-  static const WebInputEvent* current_input_event_;
 };
 
 // We have no ways to check if the specified WebView is an instance of

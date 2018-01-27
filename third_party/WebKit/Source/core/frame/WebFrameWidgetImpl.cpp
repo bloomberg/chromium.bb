@@ -31,6 +31,7 @@
 #include "core/frame/WebFrameWidgetImpl.h"
 
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -41,6 +42,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/ime/InputMethodController.h"
+#include "core/events/CurrentInputEvent.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
 #include "core/exported/WebPagePopupImpl.h"
@@ -379,8 +381,6 @@ WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const WebPoint& point) {
   return CoreHitTestResultAt(point);
 }
 
-const WebInputEvent* WebFrameWidgetImpl::current_input_event_ = nullptr;
-
 WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
   if (doing_drag_and_drop_)
     return WebInputEventResult::kHandledSuppressed;
@@ -429,8 +429,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // FIXME: pass event to m_localRoot's WebDevToolsAgentImpl once available.
 
-  AutoReset<const WebInputEvent*> current_event_change(&current_input_event_,
-                                                       &input_event);
+  AutoReset<const WebInputEvent*> current_event_change(
+      &CurrentInputEvent::current_input_event_, &input_event);
 
   DCHECK(client_);
   if (client_->IsPointerLocked() &&

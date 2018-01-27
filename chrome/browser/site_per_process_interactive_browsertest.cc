@@ -1463,3 +1463,59 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(cached_date, date) << "Cached date was '" << cached_date
                                << "' but current date is '" << date << "'.";
 }
+
+// There is a problem of missing keyup events with the command key after
+// the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
+// This test is disabled on only the Mac until the problem is resolved.
+// See http://crbug.com/425859 for more information.
+#if !defined(OS_MACOSX)
+// Tests that ctrl-click in a subframe results in a background, not a foreground
+// tab - see https://crbug.com/804838.  This test is somewhat similar to
+// CtrlClickShouldEndUpIn*ProcessTest tests, but this test has to simulate an
+// actual mouse click.
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       SubframeAnchorOpenedInBackgroundTab) {
+  // Setup the test page - the ctrl-clicked link should be in a subframe.
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  GURL subframe_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/anchor_to_same_site_location.html"));
+  content::WebContents* old_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  ASSERT_TRUE(NavigateIframeToURL(old_contents, "test", subframe_url));
+  EXPECT_LE(2u, old_contents->GetAllFrames().size());
+  content::RenderFrameHost* subframe = old_contents->GetAllFrames()[1];
+  EXPECT_EQ(subframe_url, subframe->GetLastCommittedURL());
+
+  // Simulate the ctrl-return to open the anchor's link in a new background tab.
+  EXPECT_TRUE(ExecuteScript(
+      subframe, "document.getElementById('test-anchor-no-target').focus();"));
+  content::WebContents* new_contents = nullptr;
+  {
+    content::WebContentsAddedObserver new_tab_observer;
+#if defined(OS_MACOSX)
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        old_contents->GetTopLevelNativeWindow(), ui::VKEY_RETURN, false, false,
+        false, true /* cmd */));
+#else
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        old_contents->GetTopLevelNativeWindow(), ui::VKEY_RETURN,
+        true /* ctrl */, false, false, false));
+#endif
+    new_contents = new_tab_observer.GetWebContents();
+  }
+
+  // Verify that the new content has loaded the expected contents.
+  GURL target_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  EXPECT_EQ(target_url, new_contents->GetMainFrame()->GetLastCommittedURL());
+
+  // Verify that the anchor opened in a new background tab.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(0,
+            browser()->tab_strip_model()->GetIndexOfWebContents(old_contents));
+  EXPECT_EQ(1,
+            browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
+}
+#endif
