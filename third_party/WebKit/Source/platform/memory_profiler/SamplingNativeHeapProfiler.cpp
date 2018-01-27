@@ -13,6 +13,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/singleton.h"
 #include "base/rand_util.h"
+#include "base/sys_info.h"
 #include "build/build_config.h"
 
 namespace blink {
@@ -23,10 +24,11 @@ using base::subtle::AtomicWord;
 
 namespace {
 
-const unsigned kMagicSignature = 0x14690ca5;
+const uint32_t kMagicSignature = 0x14690ca5;
 const unsigned kDefaultAlignment = 16;
 const unsigned kSkipAllocatorFrames = 4;
 const size_t kDefaultSamplingInterval = 128 * 1024;
+const uintptr_t kPageMask = 0xfff;  // Assume page size is at least 4 KB.
 
 bool g_deterministic;
 Atomic32 g_running;
@@ -36,7 +38,11 @@ AtomicWord g_sampling_interval = kDefaultSamplingInterval;
 uint32_t g_last_sample_ordinal = 0;
 
 inline bool HasBeenSampledFastCheck(void* address) {
-  return address && reinterpret_cast<unsigned*>(address)[-1] == kMagicSignature;
+  // If address falls onto the beginning of a page pessimistically return true.
+  if (UNLIKELY((reinterpret_cast<uintptr_t>(address) & kPageMask) <
+               sizeof(uint32_t)))
+    return address;
+  return reinterpret_cast<uint32_t*>(address)[-1] == kMagicSignature;
 }
 
 }  // namespace
@@ -46,6 +52,11 @@ SamplingNativeHeapProfiler::Sample::Sample(size_t size,
                                            unsigned ordinal,
                                            unsigned offset)
     : size(size), count(count), ordinal(ordinal), offset(offset) {}
+
+SamplingNativeHeapProfiler::SamplingNativeHeapProfiler() {
+  size_t page_size = base::SysInfo::VMAllocationGranularity();
+  CHECK_GT(page_size, kPageMask);
+}
 
 SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
   return SamplingNativeHeapProfiler::GetInstance();
@@ -317,15 +328,22 @@ void* SamplingNativeHeapProfiler::RecordAlloc(size_t total_allocated,
 }
 
 void* SamplingNativeHeapProfiler::RecordFree(void* address) {
+  // We never record allocations made by profiler itself. Bailout if reentering.
+  if (entered_.Get())
+    return address;
   base::AutoLock lock(mutex_);
+  entered_.Set(true);
   auto& samples = GetInstance()->samples_;
   auto it = samples.find(address);
-  if (it == samples.end())
+  if (it == samples.end()) {
+    entered_.Set(false);
     return address;
+  }
   void* address_to_free = reinterpret_cast<char*>(address) - it->second.offset;
   samples.erase(it);
   if (it->second.offset)
     reinterpret_cast<unsigned*>(address)[-1] = 0;
+  entered_.Set(false);
   return address_to_free;
 }
 
@@ -345,11 +363,10 @@ SamplingNativeHeapProfiler::GetSamples(uint32_t profile_id) {
   CHECK(!entered_.Get());
   entered_.Set(true);
   std::vector<Sample> samples;
-  for (auto it = samples_.begin(); it != samples_.end(); ++it) {
-    Sample& sample = it->second;
-    if (sample.ordinal <= profile_id)
-      continue;
-    samples.push_back(sample);
+  for (auto& it : samples_) {
+    Sample& sample = it.second;
+    if (sample.ordinal > profile_id)
+      samples.push_back(sample);
   }
   entered_.Set(false);
   return samples;

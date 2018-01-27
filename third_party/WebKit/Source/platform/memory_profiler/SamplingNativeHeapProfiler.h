@@ -40,8 +40,6 @@ class PLATFORM_EXPORT SamplingNativeHeapProfiler : public SamplingHeapProfiler {
     uint32_t offset;
   };
 
-  SamplingNativeHeapProfiler() = default;
-
   uint32_t Start() override;
   void Stop() override;
   void SetSamplingInterval(size_t sampling_interval) override;
@@ -52,6 +50,8 @@ class PLATFORM_EXPORT SamplingNativeHeapProfiler : public SamplingHeapProfiler {
   static SamplingNativeHeapProfiler* GetInstance();
 
  private:
+  SamplingNativeHeapProfiler();
+
   static void InstallAllocatorHooksOnce();
   static bool InstallAllocatorHooks();
   static size_t GetNextSampleInterval(size_t base_interval);
