@@ -83,6 +83,7 @@ source_set("capture_device_specific") {
     "//gpu/command_buffer/client",
     "//media",
     "//media/capture/mojo:image_capture",
+    "//media/mojo/interfaces:interfaces",
     "//ui/gfx",
   ]
 }

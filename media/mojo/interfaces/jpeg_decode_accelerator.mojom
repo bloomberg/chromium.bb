@@ -51,6 +51,21 @@ interface JpegDecodeAccelerator {
          handle<shared_buffer> output_handle, uint32 output_buffer_size)
       => (int32 bitstream_buffer_id, DecodeError error);
 
+  // Decodes the given buffer that contains one JPEG image.
+  // |input_fd| and |output_fd| are file descriptors of shared memory.
+  // The image is decoded from memory of |input_fd|
+  // with size |input_buffer_size|. The input buffer is associated with
+  // |buffer_id| and the size of JPEG image is |coded_size|. Decoded I420
+  // frame data will be put onto memory associated with |output_fd|
+  // with allocated size |output_buffer_size|.
+  // Returns |buffer_id| and |error| in a callback to notify the
+  // decode status. |buffer_id| is the id of |input_buffer| and |error| is the
+  // error code.
+  DecodeWithFD(int32 buffer_id, handle input_fd, uint32 input_buffer_size,
+               int32 coded_size_width, int32 coded_size_height,
+               handle output_fd, uint32 output_buffer_size)
+      => (int32 buffer_id, DecodeError error);
+
   // TODO(c.padhi): This method might not be required, see
   // http://crbug.com/699255.
   Uninitialize();

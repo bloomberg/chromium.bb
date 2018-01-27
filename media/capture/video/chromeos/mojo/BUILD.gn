@@ -12,4 +12,8 @@ mojom("arc_camera3") {
     "camera_metadata.mojom",
     "camera_metadata_tags.mojom",
   ]
+
+  deps = [
+    "//media/mojo/interfaces",
+  ]
 }
