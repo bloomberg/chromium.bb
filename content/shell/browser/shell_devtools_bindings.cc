@@ -109,7 +109,7 @@ const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
 void ShellDevToolsBindings::InspectElementAt(int x, int y) {
   if (agent_host_) {
-    agent_host_->InspectElement(this, x, y);
+    agent_host_->InspectElement(inspected_contents_->GetFocusedFrame(), x, y);
   } else {
     inspect_element_at_x_ = x;
     inspect_element_at_y_ = y;
@@ -160,8 +160,8 @@ void ShellDevToolsBindings::Attach() {
   agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
   agent_host_->AttachClient(this);
   if (inspect_element_at_x_ != -1) {
-    agent_host_->InspectElement(this, inspect_element_at_x_,
-                                inspect_element_at_y_);
+    agent_host_->InspectElement(inspected_contents_->GetFocusedFrame(),
+                                inspect_element_at_x_, inspect_element_at_y_);
     inspect_element_at_x_ = -1;
     inspect_element_at_y_ = -1;
   }

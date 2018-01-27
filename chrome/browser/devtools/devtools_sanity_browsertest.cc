@@ -331,6 +331,20 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   DevToolsWindow* window_;
 };
 
+class SitePerProcessDevToolsSanityTest : public DevToolsSanityTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DevToolsSanityTest::SetUpCommandLine(command_line);
+    content::IsolateAllSitesForTesting(command_line);
+  };
+
+  void SetUpOnMainThread() override {
+    DevToolsSanityTest::SetUpOnMainThread();
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
+
 // Used to block until a dev tools window gets beforeunload event.
 class DevToolsWindowBeforeUnloadObserver
     : public content::WebContentsObserver {
@@ -2132,4 +2146,22 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
         base::StringPrintf("while testing URL: %s", pair.first.c_str()));
     EXPECT_EQ(opened_url, pair.second);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
+  GURL url(embedded_test_server()->GetURL("a.com", "/devtools/oopif.html"));
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+
+  std::vector<RenderFrameHost*> frames = GetInspectedTab()->GetAllFrames();
+  ASSERT_EQ(2u, frames.size());
+  ASSERT_NE(frames[0]->GetProcess(), frames[1]->GetProcess());
+  RenderFrameHost* frame_host = frames[0]->GetParent() ? frames[0] : frames[1];
+
+  DevToolsWindowCreationObserver observer;
+  DevToolsWindow::InspectElement(frame_host, 100, 100);
+  observer.WaitForLoad();
+  DevToolsWindow* window = observer.devtools_window();
+
+  DispatchOnTestSuite(window, "testInspectedElementIs", "INSPECTED-DIV");
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }

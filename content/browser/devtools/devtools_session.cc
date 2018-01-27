@@ -174,11 +174,6 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
   suspended_messages_.clear();
 }
 
-void DevToolsSession::InspectElement(const gfx::Point& point) {
-  if (session_ptr_)
-    session_ptr_->InspectElement(point);
-}
-
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {

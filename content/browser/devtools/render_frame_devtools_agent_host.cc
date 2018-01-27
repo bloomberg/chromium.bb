@@ -364,25 +364,27 @@ void RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
   session->DispatchProtocolMessage(message);
 }
 
-void RenderFrameDevToolsAgentHost::InspectElement(
-    DevToolsSession* session,
-    int x,
-    int y) {
-  // When there are nested WebContents, the renderer expects coordinates
-  // relative to the main frame, so we need to transform the coordinates from
-  // the root space to the current WebContents' main frame space.
+void RenderFrameDevToolsAgentHost::InspectElement(RenderFrameHost* frame_host,
+                                                  int x,
+                                                  int y) {
+  FrameTreeNode* ftn =
+      static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node();
+  RenderFrameDevToolsAgentHost* host =
+      static_cast<RenderFrameDevToolsAgentHost*>(GetOrCreateFor(ftn).get());
 
-  if (frame_tree_node_) {
-    if (auto* main_view =
-            frame_tree_node_->frame_tree()->GetMainFrame()->GetView()) {
-      gfx::Point transformed_point = gfx::ToRoundedPoint(
-          main_view->TransformRootPointToViewCoordSpace(gfx::PointF(x, y)));
-      x = transformed_point.x();
-      y = transformed_point.y();
+  gfx::Point point(x, y);
+  // The renderer expects coordinates relative to the local frame root,
+  // so we need to transform the coordinates from the root space
+  // to the local frame root widget's space.
+  if (host->frame_host_) {
+    if (RenderWidgetHostView* view = host->frame_host_->GetView()) {
+      point = gfx::ToRoundedPoint(
+          view->TransformRootPointToViewCoordSpace(gfx::PointF(point)));
     }
   }
 
-  session->InspectElement(gfx::Point(x, y));
+  if (host->EnsureAgent())
+    host->agent_ptr_->InspectElement(point);
 }
 
 RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {

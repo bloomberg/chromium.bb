@@ -105,6 +105,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       mojom::blink::DevToolsSessionAssociatedRequest main_session,
       mojom::blink::DevToolsSessionRequest io_session,
       const String& reattach_state) override;
+  void InspectElement(const WebPoint& point_in_local_root) override;
 
   // InspectorTracingAgent::Client implementation.
   void ShowReloadingBlanket() override;
@@ -130,6 +131,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   Member<InspectorResourceContentLoader> resource_content_loader_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorResourceContainer> resource_container_;
+  Member<Node> node_to_inspect_;
   bool include_view_agents_;
   int layer_tree_id_;
 };

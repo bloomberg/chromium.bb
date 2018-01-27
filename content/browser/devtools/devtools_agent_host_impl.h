@@ -42,7 +42,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                const std::string& message) override;
   bool IsAttached() override;
-  void InspectElement(DevToolsAgentHostClient* client, int x, int y) override;
+  void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
   std::string GetId() override;
   std::string GetParentId() override;
   std::string GetOpenerId() override;
@@ -67,7 +67,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   virtual void DetachSession(DevToolsSession* session);
   virtual void DispatchProtocolMessage(DevToolsSession* session,
                                        const std::string& message);
-  virtual void InspectElement(DevToolsSession* session, int x, int y);
 
   void NotifyCreated();
   void NotifyNavigated(DevToolsAgentHostImpl* host);

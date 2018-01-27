@@ -27,7 +27,7 @@ class MockDevToolsAgentHost : public content::DevToolsAgentHost {
                bool(int session_id, const std::string& message));
   MOCK_METHOD0(IsAttached, bool());
   MOCK_METHOD3(InspectElement,
-               void(content::DevToolsAgentHostClient* client, int x, int y));
+               void(content::RenderFrameHost* frame_host, int x, int y));
   MOCK_METHOD0(GetId, std::string());
   MOCK_METHOD0(GetParentId, std::string());
   MOCK_METHOD0(GetOpenerId, std::string());
