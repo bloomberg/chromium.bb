@@ -9,7 +9,6 @@ Loaded modules:
     dom_extension
     emulation
     extensions
-    help
     host
     main
     mobile_throttling
