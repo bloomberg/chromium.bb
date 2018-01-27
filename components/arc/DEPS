@@ -9,6 +9,7 @@ include_rules = [
   "+components/prefs",
   "+components/session_manager/core",
   "+components/signin/core/account_id",
+  "+components/timers",
   "+components/user_manager",
   "+media/base/video_codecs.h",
   "+media/video/video_encode_accelerator.h",

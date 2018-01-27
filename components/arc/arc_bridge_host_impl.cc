@@ -245,6 +245,11 @@ void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
                   std::move(storage_manager_ptr));
 }
 
+void ArcBridgeHostImpl::OnTimerInstanceReady(
+    mojom::TimerInstancePtr timer_ptr) {
+  OnInstanceReady(arc_bridge_service_->timer(), std::move(timer_ptr));
+}
+
 void ArcBridgeHostImpl::OnTracingInstanceReady(
     mojom::TracingInstancePtr tracing_ptr) {
   OnInstanceReady(arc_bridge_service_->tracing(), std::move(tracing_ptr));
