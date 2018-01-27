@@ -687,7 +687,7 @@ String DateComponents::ToStringForTime(SecondFormat format) const {
   switch (effective_format) {
     default:
       NOTREACHED();
-    // Fallback to None.
+      FALLTHROUGH;
     case kNone:
       return String::Format("%02d:%02d", hour_, minute_);
     case kSecond:
