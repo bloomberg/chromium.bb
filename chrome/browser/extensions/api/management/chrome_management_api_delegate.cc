@@ -27,8 +27,6 @@
 #include "chrome/common/web_application_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/management/management_api.h"
