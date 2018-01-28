@@ -211,22 +211,39 @@ TEST_F(U2fApduTest, TestCreateSign) {
 }
 
 TEST_F(U2fApduTest, TestCreateRegister) {
+  constexpr bool kNoIndividualAttestation = false;
+  constexpr bool kIndividualAttestation = true;
   std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
   std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
-  std::unique_ptr<U2fApduCommand> cmd =
-      U2fApduCommand::CreateRegister(appid, challenge);
+  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateRegister(
+      appid, challenge, kNoIndividualAttestation);
   ASSERT_NE(nullptr, cmd);
+  std::vector<uint8_t> encoded = cmd->GetEncodedCommand();
+  ASSERT_LE(2u, encoded.size());
+  // Individual attestation bit should be cleared.
+  EXPECT_EQ(0, encoded[2] & 0x80);
   EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
                   ->GetEncodedCommand(),
-              testing::ContainerEq(cmd->GetEncodedCommand()));
+              testing::ContainerEq(encoded));
+
+  cmd =
+      U2fApduCommand::CreateRegister(appid, challenge, kIndividualAttestation);
+  ASSERT_NE(nullptr, cmd);
+  encoded = cmd->GetEncodedCommand();
+  ASSERT_LE(2u, encoded.size());
+  // Individual attestation bit should be set.
+  EXPECT_EQ(0x80, encoded[2] & 0x80);
+
   // Expect null result with incorrectly sized appid
   appid.push_back(0xff);
-  cmd = U2fApduCommand::CreateRegister(appid, challenge);
+  cmd = U2fApduCommand::CreateRegister(appid, challenge,
+                                       kNoIndividualAttestation);
   EXPECT_EQ(nullptr, cmd);
   appid.pop_back();
   // Expect null result with incorrectly sized challenge
   challenge.push_back(0xff);
-  cmd = U2fApduCommand::CreateRegister(appid, challenge);
+  cmd = U2fApduCommand::CreateRegister(appid, challenge,
+                                       kNoIndividualAttestation);
   EXPECT_EQ(nullptr, cmd);
 }
 

@@ -49,7 +49,8 @@ class U2fApduCommand {
   void set_suffix(const std::vector<uint8_t>& suffix) { suffix_ = suffix; }
   static std::unique_ptr<U2fApduCommand> CreateRegister(
       const std::vector<uint8_t>& appid_digest,
-      const std::vector<uint8_t>& challenge_digest);
+      const std::vector<uint8_t>& challenge_digest,
+      bool individual_attestation_ok);
   static std::unique_ptr<U2fApduCommand> CreateVersion();
   // Early U2F drafts defined a non-ISO 7816-4 conforming layout.
   static std::unique_ptr<U2fApduCommand> CreateLegacyVersion();
@@ -96,6 +97,9 @@ class U2fApduCommand {
   // determine if the provided key handle was originally created by this token
   // and whether it was created for the provided application parameter.
   static constexpr uint8_t kP1CheckOnly = 0x07;
+  // Indicates that an individual attestation certificate is acceptable to
+  // return with this registration.
+  static constexpr uint8_t kP1IndividualAttestation = 0x80;
   static constexpr size_t kMaxKeyHandleLength = 255;
   static constexpr size_t kChallengeDigestLen = 32;
   static constexpr size_t kAppIdDigestLen = 32;

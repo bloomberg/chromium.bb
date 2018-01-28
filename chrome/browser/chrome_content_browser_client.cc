@@ -3875,6 +3875,25 @@ bool ChromeContentBrowserClient::ShowPaymentHandlerWindow(
 #endif
 }
 
+bool ChromeContentBrowserClient::
+    ShouldPermitIndividualAttestationForWebauthnRPID(
+        content::BrowserContext* browser_context,
+        const std::string& rp_id) {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  const Profile* profile = Profile::FromBrowserContext(browser_context);
+  const PrefService* prefs = profile->GetPrefs();
+  const base::ListValue* permit_attestation =
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
+
+  // If the RP ID is listed in the policy, enable individual attestation.
+  return std::any_of(
+      permit_attestation->begin(), permit_attestation->end(),
+      [&rp_id](const base::Value& v) { return v.GetString() == rp_id; });
+#endif
+}
+
 // Static; reverse URL handler for Web UI. Maps "chrome://chrome/foo/" to
 // "chrome://foo/".
 bool ChromeContentBrowserClient::HandleWebUIReverse(

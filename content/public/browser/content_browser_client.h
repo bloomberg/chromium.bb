@@ -1035,6 +1035,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // If false, a task scheduler has been created by the embedder, and browser
   // main loop should skip creating a second one.
   virtual bool ShouldCreateTaskScheduler();
+
+  // Returns true if the given Webauthn[1] RP ID[2] is permitted to receive
+  // individual attestation certificates. This a) triggers a signal to the
+  // security key that returning individual attestation certificates is
+  // permitted and b) skips any permission prompt for attestation.
+  //
+  // [1] https://www.w3.org/TR/webauthn/
+  // [2] https://www.w3.org/TR/webauthn/#relying-party-identifier
+  virtual bool ShouldPermitIndividualAttestationForWebauthnRPID(
+      content::BrowserContext* browser_context,
+      const std::string& rp_id);
 };
 
 }  // namespace content

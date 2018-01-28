@@ -11,7 +11,10 @@
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "content/browser/bad_message.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
@@ -238,6 +241,13 @@ void AuthenticatorImpl::MakeCredential(
                                              caller_origin.Serialize(),
                                              std::move(options->challenge));
 
+  const bool individual_attestation =
+      GetContentClient()
+          ->browser()
+          ->ShouldPermitIndividualAttestationForWebauthnRPID(
+              render_frame_host_->GetProcess()->GetBrowserContext(),
+              options->relying_party->id);
+
   // TODO(kpaulhamus): Mock U2fRegister for unit tests.
   // http://crbug.com/785955.
   // Per fido-u2f-raw-message-formats:
@@ -247,7 +257,7 @@ void AuthenticatorImpl::MakeCredential(
   u2f_request_ = device::U2fRegister::TryRegistration(
       options->relying_party->id, {u2f_discovery_.get()}, registered_keys,
       ConstructClientDataHash(client_data_.SerializeToJson()),
-      CreateAppId(options->relying_party->id),
+      CreateAppId(options->relying_party->id), individual_attestation,
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
 }

@@ -19,11 +19,13 @@ U2fRegister::U2fRegister(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
+    bool individual_attestation_ok,
     RegisterResponseCallback completion_callback)
     : U2fRequest(std::move(relying_party_id), std::move(discoveries)),
       registered_keys_(registered_keys),
       challenge_hash_(challenge_hash),
       app_param_(app_param),
+      individual_attestation_ok_(individual_attestation_ok),
       completion_callback_(std::move(completion_callback)),
       weak_factory_(this) {}
 
@@ -36,10 +38,12 @@ std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
+    bool individual_attestation_ok,
     RegisterResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
       std::move(relying_party_id), std::move(discoveries), registered_keys,
-      challenge_hash, app_param, std::move(completion_callback));
+      challenge_hash, app_param, individual_attestation_ok,
+      std::move(completion_callback));
   request->Start();
   return request;
 }
@@ -54,6 +58,7 @@ void U2fRegister::TryDevice() {
                           true);
   } else {
     current_device_->Register(app_param_, challenge_hash_,
+                              individual_attestation_ok_,
                               base::Bind(&U2fRegister::OnTryDevice,
                                          weak_factory_.GetWeakPtr(), false));
   }
@@ -70,6 +75,7 @@ void U2fRegister::OnTryCheckRegistration(
       // user presence (touch) and terminate the registration process.
       current_device_->Register(U2fRequest::GetBogusAppParam(),
                                 U2fRequest::GetBogusChallenge(),
+                                false /* no individual attestation */,
                                 base::Bind(&U2fRegister::OnTryDevice,
                                            weak_factory_.GetWeakPtr(), true));
       break;
