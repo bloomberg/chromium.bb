@@ -1113,7 +1113,6 @@ component("ash") {
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
-    "//ui/message_center/public/cpp",
     "//ui/native_theme",
     "//ui/ozone",
     "//ui/platform_window",

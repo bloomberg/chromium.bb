@@ -9,9 +9,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
-#include "ui/message_center/mojo/traits_test_service.mojom.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/message_center/public/mojo/traits_test_service.mojom.h"
 
 namespace message_center {
 namespace {

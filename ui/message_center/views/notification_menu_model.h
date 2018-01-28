@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace message_center {
 

@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
 

@@ -7,7 +7,7 @@
 
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace message_center {
 class MessageCenter;

@@ -22,7 +22,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/view.h"
 
 namespace ash {

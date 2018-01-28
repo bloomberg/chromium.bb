@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/notification_view_md.h"
 

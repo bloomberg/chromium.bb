@@ -39,8 +39,8 @@
 #include "storage/browser/quota/storage_observer.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/message_center/views/constants.h"
 
 using content::BrowserThread;

@@ -29,9 +29,12 @@ jumbo_component("message_center") {
   deps = [
     "//base",
     "//ui/base",
-    "//ui/message_center/public/cpp",
     "//ui/strings",
     "//url",
+  ]
+
+  public_deps = [
+    "//ui/message_center/public/cpp",
   ]
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
@@ -78,18 +81,10 @@ jumbo_component("message_center") {
       "message_center_style.cc",
       "message_center_style.h",
       "message_center_types.h",
-      "notification.cc",
-      "notification.h",
       "notification_blocker.cc",
       "notification_blocker.h",
-      "notification_delegate.cc",
-      "notification_delegate.h",
       "notification_list.cc",
       "notification_list.h",
-      "notification_types.cc",
-      "notification_types.h",
-      "notifier_id.cc",
-      "notifier_id.h",
       "popup_timer.cc",
       "popup_timer.h",
       "popup_timers_controller.cc",
@@ -169,21 +164,7 @@ jumbo_component("message_center") {
     # Notification service disabled.
     sources = [
       "dummy_message_center.cc",
-      "notification_delegate.cc",
-      "notification_delegate.h",
     ]
-
-    # Android implements its own notification UI manager instead of deferring to
-    # the message center (when notifications are enabled). Include a minimal
-    # set of files required for notifications on Android.
-    if (is_android) {
-      sources += [
-        "notification.cc",
-        "notification.h",
-        "notifier_id.cc",
-        "notifier_id.h",
-      ]
-    }
   }
 }
 
@@ -208,6 +189,7 @@ if (enable_message_center) {
 
     public_deps = [
       ":message_center",
+      "//ui/message_center/public/cpp",
     ]
   }
 
@@ -218,8 +200,8 @@ if (enable_message_center) {
       "cocoa/popup_collection_unittest.mm",
       "cocoa/popup_controller_unittest.mm",
       "message_center_impl_unittest.cc",
-      "notification_delegate_unittest.cc",
       "notification_list_unittest.cc",
+      "public/cpp/notification_delegate_unittest.cc",
       "test/run_all_unittests.cc",
       "ui_controller_unittest.cc",
     ]
@@ -253,10 +235,10 @@ if (enable_message_center) {
     ]
 
     if (is_chromeos) {
-      sources += [ "mojo/struct_traits_unittest.cc" ]
+      sources += [ "public/mojo/struct_traits_unittest.cc" ]
       deps += [
         "//mojo/edk/system",
-        "//ui/message_center/mojo:test_interfaces",
+        "//ui/message_center/public/mojo:test_interfaces",
       ]
     }
 

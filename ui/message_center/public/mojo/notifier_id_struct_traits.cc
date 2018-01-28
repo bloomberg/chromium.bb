@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/mojo/notifier_id_struct_traits.h"
+#include "ui/message_center/public/mojo/notifier_id_struct_traits.h"
 
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "url/mojo/url_gurl_struct_traits.h"

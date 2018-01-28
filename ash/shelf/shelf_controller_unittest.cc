@@ -30,7 +30,7 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace ash {
 namespace {

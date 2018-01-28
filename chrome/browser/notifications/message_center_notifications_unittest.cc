@@ -19,9 +19,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_ui_delegate.h"
 #include "ui/message_center/message_center_types.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_types.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/message_center/ui_controller.h"
 
 namespace message_center {

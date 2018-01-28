@@ -20,7 +20,7 @@
 #include "chromeos/network/network_handler.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
 namespace test {

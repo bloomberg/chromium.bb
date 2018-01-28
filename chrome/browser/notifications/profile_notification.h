@@ -9,7 +9,7 @@
 
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 class ScopedKeepAlive;
 

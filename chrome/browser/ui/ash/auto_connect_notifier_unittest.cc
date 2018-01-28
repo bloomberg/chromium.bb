@@ -19,7 +19,7 @@
 #include "components/cryptauth/remote_device_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace {
 

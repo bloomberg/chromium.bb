@@ -29,7 +29,7 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "url/gurl.h"
 
 class BackgroundContentsServiceTest : public testing::Test {

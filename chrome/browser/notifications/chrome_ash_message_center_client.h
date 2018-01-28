@@ -10,7 +10,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 #include "chrome/browser/notifications/notifier_controller.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 // This class serves as Chrome's AshMessageCenterClient, as well as the
 // NotificationPlatformBridge for ChromeOS. It dispatches notifications to Ash

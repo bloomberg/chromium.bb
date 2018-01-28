@@ -25,8 +25,8 @@
 #include "extensions/test/result_catcher.h"
 #include "net/base/net_errors.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::NetworkPortalDetector;

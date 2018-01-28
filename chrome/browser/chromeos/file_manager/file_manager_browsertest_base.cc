@@ -39,7 +39,7 @@
 #include "google_apis/drive/test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace file_manager {
 namespace {

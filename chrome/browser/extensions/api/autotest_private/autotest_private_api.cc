@@ -37,7 +37,7 @@
 #include "chromeos/printing/printer_configuration.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 #endif
 
 namespace extensions {

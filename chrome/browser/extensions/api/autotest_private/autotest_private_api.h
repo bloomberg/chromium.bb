@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "ui/message_center/notification_types.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"

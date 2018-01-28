@@ -4,7 +4,7 @@
 
 module message_center.mojom;
 
-import "ui/message_center/mojo/notification.mojom";
+import "ui/message_center/public/mojo/notification.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.
