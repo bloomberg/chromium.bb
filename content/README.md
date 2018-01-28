@@ -2,7 +2,7 @@ Content is the core code needed to render a page using a multi-process sandboxed
 browser.
 
 Developer documentation:
-http://www.chromium.org/developers/content-module
+https://www.chromium.org/developers/content-module
 
 Internal Documentation:
 
