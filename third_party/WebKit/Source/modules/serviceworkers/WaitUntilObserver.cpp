@@ -146,15 +146,15 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
                 script_state->GetIsolate())) {
           break;
         }
-      // Fall through:
-      // didDispatchEvent() is called after both the event handler
-      // execution finished and microtasks queued by the event handler execution
-      // finished, it's hard to get the precise time point between the 2
-      // execution phases.
-      // So even in EventDispatchState::kDispatching state at this time point,
-      // running microtask indicates that event handler execution has actually
-      // finished, in such case if there aren't any outstanding extend lifetime
-      // promises, we should throw here.
+        // didDispatchEvent() is called after both the event handler
+        // execution finished and microtasks queued by the event handler execution
+        // finished, it's hard to get the precise time point between the 2
+        // execution phases.
+        // So even in EventDispatchState::kDispatching state at this time point,
+        // running microtask indicates that event handler execution has actually
+        // finished, in such case if there aren't any outstanding extend lifetime
+        // promises, we should throw here.
+        FALLTHROUGH;
       case EventDispatchState::kDispatched:
       case EventDispatchState::kFailed:
         exception_state.ThrowDOMException(
