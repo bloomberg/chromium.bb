@@ -252,6 +252,8 @@ blink_core_sources("paint") {
     "ng/ng_fragment_painter.h",
     "ng/ng_paint_fragment.cc",
     "ng/ng_paint_fragment.h",
+    "ng/ng_paint_fragment_traversal.cc",
+    "ng/ng_paint_fragment_traversal.h",
     "ng/ng_text_fragment_painter.cc",
     "ng/ng_text_fragment_painter.h",
     "ng/ng_text_painter.cc",

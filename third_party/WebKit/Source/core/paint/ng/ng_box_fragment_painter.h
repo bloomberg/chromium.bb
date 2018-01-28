@@ -32,7 +32,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
  public:
   NGBoxFragmentPainter(const NGPaintFragment&);
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  // paint_offset is relative to the parent fragment
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintInlineBox(const PaintInfo&,
                       const LayoutPoint&,
                       const LayoutPoint& block_paint_offset);
