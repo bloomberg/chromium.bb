@@ -14,6 +14,11 @@
 
 namespace gpu {
 
+namespace {
+// A GpuMemoryBuffer with client_id = 0 behaves like anonymous shared memory.
+const int kAnonymousClientId = 0;
+}  // namespace
+
 GpuMemoryBufferFactoryIOSurface::GpuMemoryBufferFactoryIOSurface() {
 }
 
@@ -32,11 +37,12 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   bool should_clear = (client_id != 0);
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format, should_clear));
-  if (!io_surface)
+  if (!io_surface) {
+    DLOG(ERROR) << "Failed to allocate IOSurface.";
     return gfx::GpuMemoryBufferHandle();
+  }
 
-  // A GpuMemoryBuffer with client_id = 0 behaves like anonymous shared memory.
-  if (client_id != 0) {
+  if (client_id != kAnonymousClientId) {
     base::AutoLock lock(io_surfaces_lock_);
 
     IOSurfaceMapKey key(id, client_id);
@@ -80,13 +86,17 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
   DCHECK_EQ(handle.type, gfx::IO_SURFACE_BUFFER);
   IOSurfaceMapKey key(handle.id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
-  if (it == io_surfaces_.end())
+  if (it == io_surfaces_.end()) {
+    DLOG(ERROR) << "Failed to find IOSurface based on key.";
     return scoped_refptr<gl::GLImage>();
+  }
 
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));
-  if (!image->Initialize(it->second.get(), handle.id, format))
+  if (!image->Initialize(it->second.get(), handle.id, format)) {
+    DLOG(ERROR) << "Failed to initialize GLImage for IOSurface.";
     return scoped_refptr<gl::GLImage>();
+  }
 
   return image;
 }
@@ -101,7 +111,7 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
   // directly exposed to other processes, only via a mailbox.
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId(next_anonymous_image_id_++), size, format, usage,
-      0 /* client_id */, gpu::kNullSurfaceHandle);
+      kAnonymousClientId, gpu::kNullSurfaceHandle);
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));
@@ -109,8 +119,10 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
 
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));
-  if (!image->Initialize(io_surface.get(), handle.id, format))
+  if (!image->Initialize(io_surface.get(), handle.id, format)) {
+    DLOG(ERROR) << "Failed to initialize anonymous GLImage.";
     return scoped_refptr<gl::GLImage>();
+  }
 
   *is_cleared = false;
   return image;

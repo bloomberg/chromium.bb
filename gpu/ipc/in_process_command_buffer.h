@@ -215,6 +215,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     return decoder_->GetTransferCacheForTest();
   }
 
+  static const int kGpuMemoryBufferClientId;
+
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
    public:

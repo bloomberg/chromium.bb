@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
@@ -12,7 +13,9 @@ namespace viz {
 
 InProcessGpuMemoryBufferManager::InProcessGpuMemoryBufferManager(
     gpu::GpuChannelManager* channel_manager)
-    : client_id_(1), channel_manager_(channel_manager), weak_factory_(this) {
+    : client_id_(gpu::InProcessCommandBuffer::kGpuMemoryBufferClientId),
+      channel_manager_(channel_manager),
+      weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
