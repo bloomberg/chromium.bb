@@ -27,12 +27,19 @@
 namespace content {
 
 struct CONTENT_EXPORT DropData {
-  struct FileSystemFileInfo {
-    FileSystemFileInfo() : size(0) {}
-    ~FileSystemFileInfo() {}
+  struct CONTENT_EXPORT FileSystemFileInfo {
+    // Writes file system files to the pickle.
+    static void WriteFileSystemFilesToPickle(
+        const std::vector<FileSystemFileInfo>& file_system_files,
+        base::Pickle* pickle);
+
+    // Reads file system files from the pickle.
+    static bool ReadFileSystemFilesFromPickle(
+        const base::Pickle& pickle,
+        std::vector<FileSystemFileInfo>* file_system_files);
 
     GURL url;
-    int64_t size;
+    int64_t size = 0;
     std::string filesystem_id;
   };
 
