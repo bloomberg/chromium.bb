@@ -148,6 +148,13 @@ class BASE_EXPORT TaskScheduler {
   // other threads during the call. Returns immediately when shutdown completes.
   virtual void FlushForTesting() = 0;
 
+  // Returns and calls |flush_callback| when there are no incomplete undelayed
+  // tasks. |flush_callback| may be called back on any thread and should not
+  // perform a lot of work. May be used when additional work on the current
+  // thread needs to be performed during a flush. Only one
+  // FlushAsyncForTesting() may be pending at any given time.
+  virtual void FlushAsyncForTesting(OnceClosure flush_callback) = 0;
+
   // Joins all threads. Tasks that are already running are allowed to complete
   // their execution. This can only be called once. Using this task scheduler
   // instance to create task runners or post tasks is not permitted during or
