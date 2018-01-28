@@ -60,7 +60,7 @@ class TimeoutMonitor;
 // (if frame specific) or WebContentsImpl (if page specific).
 //
 // For context, please see https://crbug.com/467770 and
-// http://www.chromium.org/developers/design-documents/site-isolation.
+// https://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                                           public RenderWidgetHostOwnerDelegate,
                                           public RenderProcessHostObserver {

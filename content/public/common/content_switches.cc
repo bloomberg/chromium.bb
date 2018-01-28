@@ -423,10 +423,10 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
 // Enables slimming paint phase 1.75:
-// http://www.chromium.org/blink/slimming-paint
+// https://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV175[] = "enable-slimming-paint-v175";
 
-// Enables slimming paint phase 2: http://www.chromium.org/blink/slimming-paint
+// Enables slimming paint phase 2: https://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
 
 // On platforms that support it, enables smooth scroll animation.
@@ -682,7 +682,7 @@ const char kPpapiStartupDialog[]            = "ppapi-startup-dialog";
 // consolidates same-site pages so that they share a single process.
 //
 // More details here:
-// - http://www.chromium.org/developers/design-documents/process-models
+// - https://www.chromium.org/developers/design-documents/process-models
 // - The class comment in site_instance.h, listing the supported process models.
 //
 // IMPORTANT: This isn't to be confused with --site-per-process (which is about
@@ -780,8 +780,8 @@ const char kSingleProcess[]                 = "single-process";
 //  * <iframe>s are rendered out-of-process whenever the src= is cross-site.
 //
 // More details here:
-// - http://www.chromium.org/developers/design-documents/site-isolation
-// - http://www.chromium.org/developers/design-documents/process-models
+// - https://www.chromium.org/developers/design-documents/site-isolation
+// - https://www.chromium.org/developers/design-documents/process-models
 // - The class comment in site_instance.h, listing the supported process models.
 //
 // IMPORTANT: this isn't to be confused with --process-per-site (which is about

@@ -107,7 +107,7 @@ class CreateViewParams;
 // project. New code should be added to RenderFrameImpl instead.
 //
 // For context, please see https://crbug.com/467770 and
-// http://www.chromium.org/developers/design-documents/site-isolation.
+// https://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                                       public blink::WebViewClient,
                                       public RenderWidgetOwnerDelegate,
