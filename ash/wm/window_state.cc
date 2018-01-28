@@ -435,13 +435,21 @@ void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   }
 }
 
+void WindowState::OnDragStarted(int window_component) {
+  DCHECK(drag_details_);
+  if (delegate_)
+    delegate_->OnDragStarted(window_component);
+}
+
 void WindowState::OnCompleteDrag(const gfx::Point& location) {
-  if (drag_details_ && delegate_)
+  DCHECK(drag_details_);
+  if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/false, location);
 }
 
 void WindowState::OnRevertDrag(const gfx::Point& location) {
-  if (drag_details_ && delegate_)
+  DCHECK(drag_details_);
+  if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/true, location);
 }
 
@@ -450,8 +458,6 @@ void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
                                     ::wm::WindowMoveSource source) {
   drag_details_ = std::make_unique<DragDetails>(window_, point_in_parent,
                                                 window_component, source);
-  if (drag_details_ && delegate_)
-    delegate_->OnDragStarted(window_component);
 }
 
 void WindowState::DeleteDragDetails() {

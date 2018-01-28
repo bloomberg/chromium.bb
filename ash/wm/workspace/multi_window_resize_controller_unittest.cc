@@ -10,6 +10,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
@@ -350,6 +351,39 @@ TEST_F(MultiWindowResizeControllerTest, ClickOutside) {
   EXPECT_FALSE(IsShowing());
 }
 
+namespace {
+
+class TestWindowStateDelegate : public wm::WindowStateDelegate {
+ public:
+  TestWindowStateDelegate() = default;
+  ~TestWindowStateDelegate() override = default;
+
+  // wm::WindowStateDelegate:
+  void OnDragStarted(int component) override { component_ = component; }
+  void OnDragFinished(bool cancel, const gfx::Point& location) override {
+    location_ = location;
+  }
+
+  int GetComponentAndReset() {
+    int result = component_;
+    component_ = -1;
+    return result;
+  }
+
+  gfx::Point GetLocationAndReset() {
+    gfx::Point p = location_;
+    location_.SetPoint(0, 0);
+    return p;
+  }
+
+ private:
+  gfx::Point location_;
+  int component_ = -1;
+  DISALLOW_COPY_AND_ASSIGN(TestWindowStateDelegate);
+};
+
+}  // namespace
+
 // Tests dragging to resize two snapped windows.
 TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   UpdateDisplay("400x300");
@@ -382,6 +416,10 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
 
+  // Setup delegates
+  auto* window_state_delegate1 = new TestWindowStateDelegate();
+  w1_state->SetDelegate(base::WrapUnique(window_state_delegate1));
+
   // Move the mouse over the resize widget.
   ASSERT_TRUE(resize_widget());
   gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
@@ -403,6 +441,11 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   EXPECT_EQ(gfx::Rect(300, 0, 100, 252), w2->bounds());
   EXPECT_EQ(0.75f, *w1_state->snapped_width_ratio());
   EXPECT_EQ(0.25f, *w2_state->snapped_width_ratio());
+
+  // Dragging should call the WindowStateDelegate.
+  EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
+  EXPECT_EQ(gfx::Point(300, 173),
+            window_state_delegate1->GetLocationAndReset());
 }
 
 }  // namespace ash

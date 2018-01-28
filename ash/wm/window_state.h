@@ -322,6 +322,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Sets the currently stored restore bounds and clears the restore bounds.
   void SetAndClearRestoreBounds();
 
+  // Notifies that the drag operation has been started.
+  void OnDragStarted(int window_component);
+
   // Notifies that the drag operation has been either completed or reverted.
   // |location| is the last position of the pointer device used to drag.
   void OnCompleteDrag(const gfx::Point& location);
