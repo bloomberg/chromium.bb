@@ -526,7 +526,16 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     /**
      * Supplies the popup window with AwContents then waits for the popup window to finish loading.
      */
-    public PopupInfo connectPendingPopup(final AwContents parentAwContents) throws Exception {
+    public PopupInfo connectPendingPopup(AwContents parentAwContents) throws Exception {
+        PopupInfo popupInfo = createPopupContents(parentAwContents);
+        loadPopupContents(parentAwContents, popupInfo);
+        return popupInfo;
+    }
+
+    /**
+     * Creates a popup window with AwContents.
+     */
+    public PopupInfo createPopupContents(final AwContents parentAwContents) throws Exception {
         TestAwContentsClient popupContentsClient;
         AwTestContainerView popupContainerView;
         final AwContents popupContents;
@@ -534,7 +543,17 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         popupContainerView = createAwTestContainerViewOnMainSync(popupContentsClient);
         popupContents = popupContainerView.getAwContents();
         enableJavaScriptOnUiThread(popupContents);
+        return new PopupInfo(popupContentsClient, popupContainerView, popupContents);
+    }
 
+    /**
+     * Waits for the popup window to finish loading.
+     */
+    public void loadPopupContents(final AwContents parentAwContents, PopupInfo info)
+            throws Exception {
+        TestAwContentsClient popupContentsClient = info.popupContentsClient;
+        AwTestContainerView popupContainerView = info.popupContainerView;
+        final AwContents popupContents = info.popupContents;
         ThreadUtils.runOnUiThreadBlocking(
                 () -> parentAwContents.supplyContentsForPopup(popupContents));
 
@@ -548,8 +567,6 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
                 finishCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         onReceivedTitleHelper.waitForCallback(
                 titleCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-
-        return new PopupInfo(popupContentsClient, popupContainerView, popupContents);
     }
 
     private boolean testMethodHasAnnotation(Class<? extends Annotation> clazz) {

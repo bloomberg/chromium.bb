@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.webkit.JavascriptInterface;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -77,6 +78,48 @@ public class PopupWindowTest {
         AwContents popupContents =
                 mActivityTestRule.connectPendingPopup(mParentContents).popupContents;
         Assert.assertEquals(POPUP_TITLE, mActivityTestRule.getTitleOnUiThread(popupContents));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testJavascriptInterfaceForPopupWindow() throws Throwable {
+        // android.webkit.cts.WebViewTest#testJavascriptInterfaceForClientPopup
+        final String popupPath = "/popup.html";
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("",
+                "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script>");
+
+        final String popupPageHtml = CommonResources.makeHtmlPageFrom(
+                "<title>" + POPUP_TITLE + "</title>", "This is a popup window");
+
+        mActivityTestRule.triggerPopup(mParentContents, mParentContentsClient, mWebServer,
+                parentPageHtml, popupPageHtml, popupPath, "tryOpenWindow()");
+        PopupInfo popupInfo = mActivityTestRule.createPopupContents(mParentContents);
+        TestAwContentsClient popupContentsClient = popupInfo.popupContentsClient;
+        final AwContents popupContents = popupInfo.popupContents;
+
+        class DummyJavaScriptInterface {
+            @JavascriptInterface
+            public int test() {
+                return 42;
+            }
+        }
+        final DummyJavaScriptInterface obj = new DummyJavaScriptInterface();
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> popupContents.addJavascriptInterface(obj, "dummy"));
+
+        mActivityTestRule.loadPopupContents(mParentContents, popupInfo);
+
+        AwActivityTestRule.pollInstrumentationThread(() -> {
+            String ans = mActivityTestRule.executeJavaScriptAndWaitForResult(
+                    popupContents, popupContentsClient, "dummy.test()");
+
+            return ans.equals("42");
+        });
     }
 
     @Test
