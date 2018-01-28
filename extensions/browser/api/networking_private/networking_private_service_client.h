@@ -20,8 +20,6 @@
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi/wifi_service.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 #include "net/base/network_change_notifier.h"
 
