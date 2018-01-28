@@ -1752,6 +1752,14 @@ crbug.com/805061 external/wpt/custom-elements/upgrading/Node-cloneNode.html [ Cr
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-006.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-007.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-008.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-005.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
 crbug.com/626703 [ Linux Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
 crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html [ Crash ]
