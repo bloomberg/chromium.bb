@@ -199,6 +199,12 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
     return;
   }
 
+  if (GetParam() == gfx::BufferFormat::RGBA_F16 &&
+      !gl_.GetCapabilities().texture_half_float_linear) {
+    LOG(WARNING) << "texture_half_float_linear not supported. Skipping test.";
+    return;
+  }
+
   GLuint texture_id = 0;
   glGenTextures(1, &texture_id);
   ASSERT_NE(0u, texture_id);
