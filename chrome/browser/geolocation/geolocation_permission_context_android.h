@@ -74,8 +74,6 @@ class GeolocationPermissionContextAndroid
       const GURL& requesting_frame_origin,
       bool user_gesture,
       const BrowserPermissionCallback& callback) override;
-  void CancelPermissionRequest(content::WebContents* web_contents,
-                               const PermissionRequestID& id) override;
   void UserMadePermissionDecision(const PermissionRequestID& id,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,
@@ -143,13 +141,6 @@ class GeolocationPermissionContextAndroid
       std::unique_ptr<LocationSettings> settings);
 
   std::unique_ptr<LocationSettings> location_settings_;
-
-  // We need to be able to clean up upon cancel requests for permissions
-  // currently showing a permission update infobars or location settings
-  // dialog, as the callback is invalid after a cancel.
-
-  // This is owned by the InfoBarService (owner of the InfoBar).
-  infobars::InfoBar* permission_update_infobar_;
 
   PermissionRequestID location_settings_dialog_request_id_;
   BrowserPermissionCallback location_settings_dialog_callback_;

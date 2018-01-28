@@ -17,6 +17,7 @@
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
+#include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -491,7 +492,8 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
                              TabStripModel::ADD_ACTIVE);
 
   // Clear the request. There should be no crash.
-  GetPermissionRequestManager()->CancelRequest(owned_requests_.back().get());
+  test::PermissionRequestManagerTestApi(GetPermissionRequestManager())
+      .SimulateWebContentsDestroyed();
   owned_requests_.clear();
 }
 

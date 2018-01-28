@@ -41,10 +41,6 @@ PermissionPromptAndroid::PermissionPromptAndroid(
 
 PermissionPromptAndroid::~PermissionPromptAndroid() {}
 
-bool PermissionPromptAndroid::CanAcceptRequestUpdate() {
-  return false;
-}
-
 void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
 }

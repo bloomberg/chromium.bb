@@ -113,9 +113,6 @@ class GeolocationPermissionContextTests
                                     const GURL& requesting_frame,
                                     bool user_gesture);
 
-  void CancelGeolocationPermission(content::WebContents* web_contents,
-                                   const PermissionRequestID& id);
-
   void PermissionResponse(const PermissionRequestID& id,
                           ContentSetting content_setting);
   void CheckPermissionMessageSent(int request_id, bool allowed);
@@ -182,13 +179,6 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
       web_contents, id, requesting_frame, user_gesture,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
-  content::RunAllTasksUntilIdle();
-}
-
-void GeolocationPermissionContextTests::CancelGeolocationPermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  geolocation_permission_context_->CancelPermissionRequest(web_contents, id);
   content::RunAllTasksUntilIdle();
 }
 
@@ -828,30 +818,6 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffAcceptLSDResetsBackOff) {
   EXPECT_FALSE(RequestPermissionIsLSDShown(requesting_frame));
   AddDayOffsetForTesting(7);
   EXPECT_TRUE(RequestPermissionIsLSDShown(requesting_frame));
-}
-
-TEST_F(GeolocationPermissionContextTests, CancelWithLSDOpen) {
-  GURL requesting_frame("https://www.example.com/geolocation");
-  NavigateAndCommit(requesting_frame);
-  RequestManagerDocumentLoadCompleted();
-  MockLocationSettings::SetLocationStatus(true /* android */,
-                                          false /* system */);
-  MockLocationSettings::SetLocationSettingsDialogStatus(true /* enabled */,
-                                                        GRANTED);
-  MockLocationSettings::SetAsyncLocationSettingsDialog();
-  EXPECT_FALSE(HasActivePrompt());
-  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame,
-                               true);
-  ASSERT_TRUE(HasActivePrompt());
-  AcceptPrompt();
-
-  EXPECT_TRUE(MockLocationSettings::HasShownLocationSettingsDialog());
-
-  CancelGeolocationPermission(web_contents(), RequestID(0));
-  ASSERT_TRUE(responses_.empty());
-
-  MockLocationSettings::ResolveAsyncLocationSettingsDialog();
-  ASSERT_TRUE(responses_.empty());
 }
 
 #endif

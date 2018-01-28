@@ -23,7 +23,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
   ~PermissionPromptAndroid() override;
 
   // PermissionPrompt:
-  bool CanAcceptRequestUpdate() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 

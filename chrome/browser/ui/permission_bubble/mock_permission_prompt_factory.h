@@ -34,8 +34,6 @@ class MockPermissionPromptFactory {
       content::WebContents* web_contents,
       PermissionPrompt::Delegate* delegate);
 
-  void SetCanUpdateUi(bool can_update_ui);
-
   void ResetCounts();
 
   void DocumentOnLoadCompletedInMainFrame();
@@ -74,7 +72,6 @@ class MockPermissionPromptFactory {
 
   void HideView(MockPermissionPrompt* view);
 
-  bool can_update_ui_;
   int show_count_;
   int requests_count_;
   std::vector<PermissionRequestType> request_types_seen_;

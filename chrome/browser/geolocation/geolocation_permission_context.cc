@@ -60,16 +60,6 @@ void GeolocationPermissionContext::DecidePermission(
                                           callback);
 }
 
-void GeolocationPermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-
-    if (extensions_context_.CancelPermissionRequest(
-        web_contents, id.request_id()))
-      return;
-    PermissionContextBase::CancelPermissionRequest(web_contents, id);
-}
-
 void GeolocationPermissionContext::UpdateTabContext(
     const PermissionRequestID& id,
     const GURL& requesting_frame,

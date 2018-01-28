@@ -33,10 +33,6 @@ class GeolocationPermissionContext  : public PermissionContextBase {
                         bool user_gesture,
                         const BrowserPermissionCallback& callback) override;
 
-  // Adds special logic when called through an extension.
-  void CancelPermissionRequest(content::WebContents* web_contents,
-                               const PermissionRequestID& id) override;
-
  private:
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_frame,

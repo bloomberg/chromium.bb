@@ -184,16 +184,6 @@ void NotificationPermissionContext::ResetPermission(
   DesktopNotificationProfileUtil::ClearSetting(profile(), requesting_origin);
 }
 
-void NotificationPermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  if (profile()->IsOffTheRecord()) {
-    VisibilityTimerTabHelper::FromWebContents(web_contents)->CancelTask(id);
-  } else {
-    PermissionContextBase::CancelPermissionRequest(web_contents, id);
-  }
-}
-
 void NotificationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,

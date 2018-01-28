@@ -204,20 +204,6 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   EXPECT_TRUE(request_camera_.granted());
 }
 
-TEST_F(PermissionRequestManagerTest, CancelAfterTabSwitch) {
-  manager_->AddRequest(&request1_);
-  WaitForBubbleToBeShown();
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  MockTabSwitchAway();
-#if defined(OS_ANDROID)
-  EXPECT_TRUE(prompt_factory_->is_visible());
-#else
-  EXPECT_FALSE(prompt_factory_->is_visible());
-#endif
-  manager_->CancelRequest(&request1_);
-  EXPECT_TRUE(request1_.finished());
-}
-
 TEST_F(PermissionRequestManagerTest, NoRequests) {
   WaitForBubbleToBeShown();
   EXPECT_FALSE(prompt_factory_->is_visible());
@@ -296,17 +282,6 @@ TEST_F(PermissionRequestManagerTest, SameRequestRejected) {
   ASSERT_EQ(prompt_factory_->request_count(), 1);
 }
 
-TEST_F(PermissionRequestManagerTest, DuplicateRequestCancelled) {
-  manager_->AddRequest(&request1_);
-  MockPermissionRequest dupe_request("test1");
-  manager_->AddRequest(&dupe_request);
-  EXPECT_FALSE(dupe_request.finished());
-  EXPECT_FALSE(request1_.finished());
-  manager_->CancelRequest(&request1_);
-  EXPECT_TRUE(dupe_request.finished());
-  EXPECT_TRUE(request1_.finished());
-}
-
 TEST_F(PermissionRequestManagerTest, DuplicateQueuedRequest) {
   manager_->AddRequest(&request1_);
   WaitForBubbleToBeShown();
@@ -322,11 +297,12 @@ TEST_F(PermissionRequestManagerTest, DuplicateQueuedRequest) {
   EXPECT_FALSE(dupe_request2.finished());
   EXPECT_FALSE(request2_.finished());
 
-  manager_->CancelRequest(&request1_);
+  Accept();
   EXPECT_TRUE(dupe_request.finished());
   EXPECT_TRUE(request1_.finished());
 
-  manager_->CancelRequest(&request2_);
+  WaitForBubbleToBeShown();
+  Accept();
   EXPECT_TRUE(dupe_request2.finished());
   EXPECT_TRUE(request2_.finished());
 }
@@ -347,66 +323,6 @@ TEST_F(PermissionRequestManagerTest, ForgetRequestsOnPageNavigation) {
   EXPECT_TRUE(request1_.finished());
   EXPECT_TRUE(request2_.finished());
   EXPECT_TRUE(iframe_request_other_domain_.finished());
-}
-
-TEST_F(PermissionRequestManagerTest, TestCancelQueued) {
-  MockTabSwitchAway();
-
-  manager_->AddRequest(&request1_);
-  EXPECT_FALSE(prompt_factory_->is_visible());
-
-  manager_->CancelRequest(&request1_);
-  EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(prompt_factory_->is_visible());
-
-  MockTabSwitchBack();
-  EXPECT_FALSE(prompt_factory_->is_visible());
-
-  manager_->AddRequest(&request2_);
-  WaitForBubbleToBeShown();
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  ASSERT_EQ(prompt_factory_->request_count(), 1);
-}
-
-TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShown) {
-  manager_->AddRequest(&request1_);
-  WaitForBubbleToBeShown();
-
-  prompt_factory_->SetCanUpdateUi(true);
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  EXPECT_FALSE(request1_.finished());
-  manager_->CancelRequest(&request1_);
-  WaitForBubbleToBeShown();
-  EXPECT_TRUE(request1_.finished());
-  EXPECT_FALSE(prompt_factory_->is_visible());
-}
-
-TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShownNoUpdate) {
-  prompt_factory_->SetCanUpdateUi(false);
-  manager_->AddRequest(&request1_);
-  WaitForBubbleToBeShown();
-  prompt_factory_->SetCanUpdateUi(false);
-
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  EXPECT_FALSE(request1_.finished());
-  manager_->CancelRequest(&request1_);
-  EXPECT_TRUE(request1_.finished());
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  Closing();
-}
-
-TEST_F(PermissionRequestManagerTest, TestCancelPendingRequest) {
-  manager_->AddRequest(&request1_);
-  WaitForBubbleToBeShown();
-  manager_->AddRequest(&request2_);
-
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  ASSERT_EQ(prompt_factory_->request_count(), 1);
-  manager_->CancelRequest(&request2_);
-
-  EXPECT_TRUE(prompt_factory_->is_visible());
-  EXPECT_FALSE(request1_.finished());
-  EXPECT_TRUE(request2_.finished());
 }
 
 TEST_F(PermissionRequestManagerTest, MainFrameNoRequestIFrameRequest) {

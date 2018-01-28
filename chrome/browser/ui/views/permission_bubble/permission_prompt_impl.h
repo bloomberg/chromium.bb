@@ -17,7 +17,6 @@ class PermissionPromptImpl : public PermissionPrompt {
   ~PermissionPromptImpl() override;
 
   // PermissionPrompt:
-  bool CanAcceptRequestUpdate() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 

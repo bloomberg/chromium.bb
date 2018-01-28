@@ -326,39 +326,6 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
             permission_context.GetContentSettingFromMap(url, url));
 }
 
-// Tests that navigating cancels incognito permission requests without crashing.
-TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
-  TestNotificationPermissionContext permission_context(
-      profile()->GetOffTheRecordProfile());
-  GURL url("https://www.example.com");
-  NavigateAndCommit(url);
-
-  const PermissionRequestID id(
-      web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
-
-  base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
-
-  PermissionManager* permission_manager =
-      PermissionManagerFactory::GetForProfile(
-          profile()->GetOffTheRecordProfile());
-
-  // Request and cancel the permission via PermissionManager. That way if
-  // https://crbug.com/586944 regresses, then as well as the EXPECT_EQs below
-  // failing, PermissionManager::OnPermissionsRequestResponseStatus will crash.
-  int request_id = permission_manager->RequestPermission(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents()->GetMainFrame(),
-      url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing));
-
-  permission_manager->CancelPermissionRequest(request_id);
-
-  task_runner->FastForwardBy(base::TimeDelta::FromDays(1));
-
-  EXPECT_EQ(0, permission_context.permission_set_count());
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_context.GetContentSettingFromMap(url, url));
-}
-
 // Tests how multiple parallel permission requests get auto-denied in incognito.
 TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
   TestNotificationPermissionContext permission_context(

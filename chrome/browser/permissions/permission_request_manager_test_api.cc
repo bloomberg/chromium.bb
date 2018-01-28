@@ -59,4 +59,8 @@ gfx::NativeWindow PermissionRequestManagerTestApi::GetPromptWindow() {
   return manager_->view_ ? manager_->view_->GetNativeWindow() : nullptr;
 }
 
+void PermissionRequestManagerTestApi::SimulateWebContentsDestroyed() {
+  manager_->WebContentsDestroyed();
+}
+
 }  // namespace test

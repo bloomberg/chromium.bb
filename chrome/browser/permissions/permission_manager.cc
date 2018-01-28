@@ -454,33 +454,6 @@ void PermissionManager::OnPermissionsRequestResponseStatus(
   pending_requests_.Remove(request_id);
 }
 
-void PermissionManager::CancelPermissionRequest(int request_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PendingRequest* pending_request = pending_requests_.Lookup(request_id);
-  if (!pending_request)
-    return;
-
-  content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      pending_request->render_process_id(), pending_request->render_frame_id());
-  DCHECK(web_contents);
-
-  const PermissionRequestID request(pending_request->render_process_id(),
-                                    pending_request->render_frame_id(),
-                                    request_id);
-  for (ContentSettingsType permission : pending_request->permissions()) {
-    PermissionContextBase* context = GetPermissionContext(permission);
-    if (!context)
-      continue;
-    context->CancelPermissionRequest(web_contents, request);
-  }
-
-  // The request should be automatically removed from |pending_requests_| as a
-  // result of it being cancelled but not necessarily immediately.
-  // TODO(timloh): It would be nice to DCHECK that the request is removed, but
-  // currently the PermissionUpdateInfobar (and maybe other places) does this
-  // asynchronously.
-}
-
 void PermissionManager::ResetPermission(PermissionType permission,
                                         const GURL& requesting_origin,
                                         const GURL& embedding_origin) {

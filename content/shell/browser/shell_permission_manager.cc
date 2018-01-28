@@ -64,9 +64,6 @@ int ShellPermissionManager::RequestPermissions(
   return kNoPendingOperation;
 }
 
-void ShellPermissionManager::CancelPermissionRequest(int request_id) {
-}
-
 void ShellPermissionManager::ResetPermission(
     PermissionType permission,
     const GURL& requesting_origin,
