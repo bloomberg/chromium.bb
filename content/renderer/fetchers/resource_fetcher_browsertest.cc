@@ -150,7 +150,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -169,7 +169,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -188,7 +188,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -206,7 +206,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -226,7 +226,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<FetcherDelegate> delegate(new FetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
 
@@ -247,7 +247,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
     delegate->SetFetcher(fetcher.release());
@@ -267,7 +267,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     fetcher->SetMethod("POST");
     fetcher->SetBody(kBody);
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
@@ -286,7 +286,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     std::unique_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
     fetcher->SetHeader("header", kHeader);
     fetcher->Start(frame, WebURLRequest::kRequestContextInternal,
-                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(url),
+                   RenderFrame::FromWebFrame(frame)->GetURLLoaderFactory(),
                    TRAFFIC_ANNOTATION_FOR_TESTS, delegate->NewCallback());
 
     delegate->WaitForResponse();
