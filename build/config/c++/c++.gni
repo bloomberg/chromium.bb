@@ -39,4 +39,3 @@ use_custom_libcxx =
 
 libcxx_prefix = "//buildtools/third_party/libc++/trunk"
 libcxxabi_prefix = "//buildtools/third_party/libc++abi/trunk"
-libunwind_prefix = "//buildtools/third_party/libunwind/trunk"
