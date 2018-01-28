@@ -54,6 +54,7 @@ class PluginInstanceThrottler;
 class RenderAccessibility;
 class RenderFrameVisitor;
 class RenderView;
+class SharedURLLoaderFactory;
 struct ContextMenuParams;
 struct WebPluginInfo;
 struct WebPreferences;
@@ -261,9 +262,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Set the accessibility mode to force creation of RenderAccessibility.
   virtual void SetAccessibilityModeForTest(ui::AXMode new_mode) = 0;
 
-  // Returns the URLLoaderFactory for the given GURL
-  virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory(
-      const GURL& request_url) = 0;
+  virtual scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactory() = 0;
 
  protected:
   ~RenderFrame() override {}
