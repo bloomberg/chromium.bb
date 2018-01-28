@@ -1130,6 +1130,7 @@ public class AwContents implements SmartClipProvider {
             mWebContents = null;
             mWebContentsInternals = null;
             mNavigationController = null;
+            mJavascriptInjector = null;
         }
 
         assert mNativeAwContents == 0 && mCleanupReference == null && mContentViewCore == null;
