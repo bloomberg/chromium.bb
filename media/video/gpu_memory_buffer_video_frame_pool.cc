@@ -908,7 +908,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::BufferFormat buffer_format = GpuMemoryBufferFormat(format, i);
     plane_resource.gpu_memory_buffer = gpu_factories_->CreateGpuMemoryBuffer(
         plane_resource.size, buffer_format,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE);
 
     unsigned texture_target = gpu_factories_->ImageTextureTarget(buffer_format);
     gles2->GenTextures(1, &plane_resource.texture_id);
