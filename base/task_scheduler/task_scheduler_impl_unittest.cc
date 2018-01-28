@@ -118,7 +118,9 @@ void VerifyTimeAndTaskEnvironmentAndSignalEvent(const TaskTraits& traits,
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraitsAndExecutionMode(
     TaskScheduler* scheduler,
     const TaskTraits& traits,
-    test::ExecutionMode execution_mode) {
+    test::ExecutionMode execution_mode,
+    SingleThreadTaskRunnerThreadMode default_single_thread_task_runner_mode =
+        SingleThreadTaskRunnerThreadMode::SHARED) {
   switch (execution_mode) {
     case test::ExecutionMode::PARALLEL:
       return scheduler->CreateTaskRunnerWithTraits(traits);
@@ -126,7 +128,7 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithTraitsAndExecutionMode(
       return scheduler->CreateSequencedTaskRunnerWithTraits(traits);
     case test::ExecutionMode::SINGLE_THREADED: {
       return scheduler->CreateSingleThreadTaskRunnerWithTraits(
-          traits, SingleThreadTaskRunnerThreadMode::SHARED);
+          traits, default_single_thread_task_runner_mode);
     }
   }
   ADD_FAILURE() << "Unknown ExecutionMode";
@@ -393,6 +395,32 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
   task_running.Wait();
 }
 
+// Verifies that FlushAsyncForTesting() calls back correctly for all trait and
+// execution mode pairs.
+TEST_P(TaskSchedulerImplTest, FlushAsyncForTestingSimple) {
+  StartTaskScheduler();
+
+  WaitableEvent unblock_task(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+  CreateTaskRunnerWithTraitsAndExecutionMode(
+      &scheduler_,
+      TaskTraits::Override(GetParam().traits, {WithBaseSyncPrimitives()}),
+      GetParam().execution_mode, SingleThreadTaskRunnerThreadMode::DEDICATED)
+      ->PostTask(FROM_HERE,
+                 BindOnce(&WaitableEvent::Wait, Unretained(&unblock_task)));
+
+  WaitableEvent flush_event(WaitableEvent::ResetPolicy::MANUAL,
+                            WaitableEvent::InitialState::NOT_SIGNALED);
+  scheduler_.FlushAsyncForTesting(
+      BindOnce(&WaitableEvent::Signal, Unretained(&flush_event)));
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  EXPECT_FALSE(flush_event.IsSignaled());
+
+  unblock_task.Signal();
+
+  flush_event.Wait();
+}
+
 INSTANTIATE_TEST_CASE_P(OneTraitsExecutionModePair,
                         TaskSchedulerImplTest,
                         ::testing::ValuesIn(GetTraitsExecutionModePairs()));
@@ -602,6 +630,15 @@ TEST_F(TaskSchedulerImplTest, SequenceLocalStorage) {
                                        &slot));
 
   scheduler_.FlushForTesting();
+}
+
+TEST_F(TaskSchedulerImplTest, FlushAsyncNoTasks) {
+  StartTaskScheduler();
+  bool called_back = false;
+  scheduler_.FlushAsyncForTesting(
+      BindOnce([](bool* called_back) { *called_back = true; },
+               Unretained(&called_back)));
+  EXPECT_TRUE(called_back);
 }
 
 }  // namespace internal

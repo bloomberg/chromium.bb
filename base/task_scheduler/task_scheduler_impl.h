@@ -83,6 +83,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
       const TaskTraits& traits) const override;
   void Shutdown() override;
   void FlushForTesting() override;
+  void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
 
  private:
