@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-01-17
+#-updated: 2018-01-28
 
 # liblouis: Unified French Grade 2 Table
 
@@ -532,7 +532,6 @@ nofor partword on 346
 endword on 346
 
 always oom 135-135-134
-
 before con midword or 56
 endword or 56
 #nofor before conabr midword or 56
@@ -3777,7 +3776,6 @@ endword	ïcien	12456-14-256
 endword	ïdien	12456-145-256
 word	ignacien	24-2356-1-14-256
 word	ilerdien	24-123-236-145-256
-endword	illien	24-456-256
 word	illyrien	24-456-13456-1235-256
 word	indien	35-145-256
 partword	indien	35-145-256
@@ -4125,7 +4123,6 @@ word	westphalien	2456-15-234-2345-1234-125-1-123-256
 word	wormien	2456-56-134-256
 word	würmien	2456-1256-1235-134-256
 endword ygien 13456-1245-256
-endword	yllien	13456-456-256
 endword	yngien	13456-1345-1245-256
 word	yprésien	13456-235-123456-234-256
 word	zambien	1356-1-134-12-256
@@ -4410,16 +4407,17 @@ nofor correct $l["-te-"]"en" "-t-"
 nofor correct $l["-te-"]"on" "-t-"
 nofor correct $l["-te-"]"y" "-t-"
 
-noback pass2 $l[@26]@26 @15-1345
-noback correct `$l"e." "\x0084"*
-noback correct [$s]$l"e." "\s\x0084"
-noback correct `$l"e)" "\x0084"*
-noback correct [$s]$l"e)" "\s\x0084"
-noback correct `$l"e?" "\x0084"*
-noback correct [$s]$l"e?" "\s\x0084"
-nofor pass2 [@256-256-256]~ @368-368-368
-nofor pass2 [@256-256-256]$s @368-368-368
-nofor context [@368-368-368] "..."
+#noback pass2 $l[@26]@26 @15-1345
+#noback correct `$l"e." "\x0084"*
+#noback correct [$s]$l"e." "\s\x0084"
+#noback correct `$l"e)" "\x0084"*
+#noback correct [$s]$l"e)" "\s\x0084"
+#noback correct `$l"e?" "\x0084"*
+# .................
+#noback correct [$s]$l"e?" "\s\x0084"
+#nofor pass2 [@256-256-256]~ @368-368-368
+#nofor pass2 [@256-256-256]$s @368-368-368
+#nofor context [@368-368-368] "..."
 
 # lettres suivi nombre
 nofor pass2 $l[]@6$d @0-8-0
@@ -4541,3 +4539,37 @@ compbrl .gz
 compbrl .rar
 compbrl .tar
 compbrl .zip
+nofor pass4 @6-6-236[]!@0 @0-8-0
+nofor pass4 !@0[]@356-3-3 @0-8-0
+word avoir. 1-1235-56-256
+word caps. 14-1-1234-234-56-256
+word coulomb. 14-1256-123-2456-12-56-256
+word dan. 145-1-1345-56-256
+word diagnostic. 145-24-1-2356-135-234-2345-24-14-56-256
+word gord. 1245-56-145-56-256
+word indus. 35-145-136-234-56-256
+word le. 123-56-256
+word loustic. 123-1256-234-2345-24-14-56-256 
+word marx. 134-1-1235-1346-56-256
+word mastic. 134-1-234-2345-24-14-56-256
+word me. 134-56-256
+word pub. 1234-136-12-56-256
+word sal. 234-1-123-56-256
+word se. 234-56-256
+word tchad 2345-14-125-1-145-56-256
+word te. 2345-56-256
+word tyrol. 2345-13456-1235-135-123-56-256
+word tournais. 2345-12346-1345-34-234-56-256
+word sovkhoz. 234-135-1236-13-125-125-135-1356
+word spinal. 234-1234-24-1345-1-123-56-256
+word plastic. 1246-1-234-2345-24-14-56-256
+word polytric. 1234-135-123-13456-356-24-14-256
+word pronostic. 235-1345-135-234-2345-24-14-56-256
+
+word ce) 14-56-356
+word le) 123-56-356
+word me) 134-56-356
+word ne) 1345-56-356
+word te) 2345-56-356
+word sons) 246-234-56-356
+

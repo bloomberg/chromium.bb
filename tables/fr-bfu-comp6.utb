@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-01-17
+#-updated: 2018-01-28
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -51,7 +51,6 @@ display " 2356
 display ! 235
 display - 36
 display . 256
-display ? 26
 display / 34
 display * 35
 display | 456
@@ -67,6 +66,7 @@ display ó 346
 #display [ 12356
 #display ] 23456
 
+
 space \s 0      	# blank 32
 space \t 9 tab    # 9
 space \x001B 1b   # escape
@@ -79,37 +79,23 @@ space \x007f 0
 include latinLetterDef6Dots.uti
 
 punctuation , 2    # virgule
-postpunc , 2
 punctuation ; 23   # point-virgule
-postpunc ; 23
 punctuation : 25   # deux-points
-postpunc : 25
 punctuation . 256  # point
-postpunc . 256
 punctuation ? 26   # point d'interrogation
-postpunc ? 26
 punctuation ! 235  # point d'exclamation
-postpunc ! 235
 punctuation " 2356 # guillemet
-postpunc " 2356 	    # guillemet
-prepunc " 2356 	   # guillemet
 punctuation ( 236  # parenthèse ouvrante
 punctuation ) 356  # parenthèse fermante
-prepunc ( 236      # parenthèse ouvrante
-postpunc ) 356     # parenthèse fermante
 punctuation ' 3    #  apostrophe
 punctuation « 2356 # guillemet français ouvrant
-prepunc « 2356	    # guillemet français ouvrant
 punctuation » 2356 # guillemet français fermant
-postpunc » 2356	   # guillemet français fermant
+#math [ 12356
+#math ] 23456
 punctuation [ 45-236  # crochet droit ouvrant
-prepunc [ 45-236  # crochet droit ouvrant
 punctuation ] 356-12	#	crochet droit fermant
-postpunc ] 356-12	#	crochet droit fermant
 punctuation { 6-6-236	#	accolade de gauche
-prepunc { 6-6-236	#	accolade de gauche
 punctuation } 356-3-3	#	accolade de droite
-postpunc } 356-3-3	#	accolade de droite
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
 uplow \x00c6\x00E6 345     #*ae
@@ -142,9 +128,16 @@ uplow \x00d6\x00f6    246 # o tréma (Öö)
 uplow \x00dc\x00fc   1256 # u tréma (Üü)
 
 uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above
-uplow \x00c6\x00E6 345     #*ae
+letter \x00d8 3456
 
-noback math + 235  # plus
+digit 0 3456
+litdigit        0      3456
+comp6 0 3456
+
+include digits6DotsPlusDot6.uti
+include litdigits6DotsPlusDot6.uti
+
+math + 235  # plus
 math - 36
 math * 35   # astérisque
 math / 34   # barre oblique
@@ -191,6 +184,7 @@ noback sign \x2015 36-36 # horizontal bar (quotation dash long dash introducing 
 sign \xFE58 36           # small em dash
 sign \xFE63 36           # small hyphen-minus
 sign \xFF0D 36           # fullwidth hyphen-minus
+
 word — 456-36
 word – 36-36
 
@@ -247,9 +241,8 @@ sign \x00D7 5-35    # multiplication sign
 sign \x00D8 3456    # latin capital letter o with stroke
 sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
+uplow \x00c6\x00E6 345     #*ae
 sign \x00F0 12      # latin small letter eth
-sign \x00d8 3456
-sign \x00F8 56      # latin small letter o with stroke
 sign \x00FE 245     # latin small letter thorn
 sign © 5-14				  # copyright
 sign ° 5-135			  # degré
@@ -272,21 +265,16 @@ sign ½ 16-34-126    # un demi
 sign ¾ 146-34-1456  # trois quarts
 sign \x007E 5-26  # 126 ~    tilde
 
-digit 0 3456
-litdigit        0      3456
-comp6 0 3456
-
-include digits6DotsPlusDot6.uti
-include litdigits6DotsPlusDot6.uti
 # unicode braille
 include braille-patterns.cti
 # other signs: 8 and 6 dots
 include fr-bfu-comp68.cti
-
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=[]
+#numericnocontchars âêîôûëïüœ
 numericnocontchars 0123456789
+
 
 capsletter 46
 begcaps 46-46-46
@@ -314,6 +302,28 @@ endnum = 2356
 midnum / 34
 endnum / 34
 decpoint , 2
+#math [ 12356
+#math ] 23456
+#begnum [ 12356
+midnum [ 12356
+endnum [ 12356
+midnum ] 23456
+endnum ] 23456
+
+postpunc , 2
+postpunc ; 23
+postpunc : 25
+postpunc . 256
+postpunc ? 26
+postpunc ! 235
+prepunc « 2356	    # guillemet français ouvrant
+postpunc » 2356	   # guillemet français fermant
+prepunc ( 236      # parenthèse ouvrante
+postpunc ) 356     # parenthèse fermante
+prepunc [ 45-236  # crochet droit ouvrant
+postpunc ] 356-12	#	crochet droit fermant
+prepunc { 6-6-236	#	accolade de gauche
+postpunc } 356-3-3	#	accolade de droite
 
 
 repeated ... 256-256-256		#	points de suspension
@@ -329,5 +339,6 @@ midword = 6-2356
 endword + 6-235
 endword = 6-2356
 
-#nofor pass2 [@6-235]$d @6-235-6
-#nofor pass2 [@6-2356]$d @6-2356-6
+nofor pass2 [@6-235]$d @6-235-6
+nofor pass2 [@6-2356]$d @6-2356-6
+
