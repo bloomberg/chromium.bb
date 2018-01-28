@@ -19,7 +19,7 @@ class TabletModeObserver;
 namespace aura {
 class Window;
 namespace client {
-class CursorClientObserver;
+class CursorClient;
 class FocusChangeObserver;
 }  // namespace client
 }  // namespace aura
@@ -29,7 +29,6 @@ class ActivationChangeObserver;
 }
 
 namespace display {
-class Display;
 class ManagedDisplayInfo;
 }
 
@@ -70,8 +69,6 @@ class WMHelper : public aura::client::DragDropDelegate {
   void RemoveActivationObserver(wm::ActivationChangeObserver* observer);
   void AddFocusObserver(aura::client::FocusChangeObserver* observer);
   void RemoveFocusObserver(aura::client::FocusChangeObserver* observer);
-  void AddCursorObserver(aura::client::CursorClientObserver* observer);
-  void RemoveCursorObserver(aura::client::CursorClientObserver* observer);
   void AddTabletModeObserver(ash::TabletModeObserver* observer);
   void RemoveTabletModeObserver(ash::TabletModeObserver* observer);
   void AddInputDeviceEventObserver(ui::InputDeviceEventObserver* observer);
@@ -92,8 +89,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   aura::Window* GetPrimaryDisplayContainer(int container_id);
   aura::Window* GetActiveWindow() const;
   aura::Window* GetFocusedWindow() const;
-  ui::CursorSize GetCursorSize() const;
-  const display::Display& GetCursorDisplay() const;
+  aura::client::CursorClient* GetCursorClient();
   void AddPreTargetHandler(ui::EventHandler* handler);
   void PrependPreTargetHandler(ui::EventHandler* handler);
   void RemovePreTargetHandler(ui::EventHandler* handler);
