@@ -30,7 +30,7 @@ class ImageSlicePropertyFunctions {
     switch (property.PropertyID()) {
       default:
         NOTREACHED();
-      // Fall through.
+        FALLTHROUGH;
       case CSSPropertyBorderImageSlice:
         return ImageSlice(style.BorderImageSlices(),
                           style.BorderImageSlicesFill());
