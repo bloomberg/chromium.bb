@@ -592,7 +592,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
 
 void ManagePasswordsBubbleModel::UpdateManageStateTitle() {
   GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(), origin_,
-                                    &title_);
+                                    !local_credentials_.empty(), &title_);
 }
 
 metrics_util::UpdatePasswordSubmissionEvent

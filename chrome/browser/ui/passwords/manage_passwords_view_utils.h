@@ -62,13 +62,17 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
 // Sets the formatted |title| in the Manage Passwords bubble. If the registry
 // controlled domain of |user_visible_url| (i.e. the one seen in the omnibox)
 // differs from the domain of the managed password origin URL
-// |password_origin_url|, sets |IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN| as
+// |password_origin_url|, sets |IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_TITLE| or
+// |IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_NO_PASSWORDS_TITLE| as
 // the |title| so that it replaces "this site" in title text with output of
 // |FormatUrlForSecurityDisplay(password_origin_url)|.
-// Otherwise, sets |IDS_MANAGE_PASSWORDS_TITLE| as the |title| having
-// "this site".
+// Otherwise, sets |IDS_MANAGE_PASSWORDS_TITLE| or
+// |IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE| as |title| having "this site".
+// The *_NO_PASSWORDS_* variants of the title strings are used when no
+// credentials are present.
 void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
                                        const GURL& password_origin_url,
+                                       bool has_credentials,
                                        base::string16* title);
 
 // Sets the formatted |title| in the Account Chooser UI.

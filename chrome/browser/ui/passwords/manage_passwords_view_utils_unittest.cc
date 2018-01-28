@@ -211,7 +211,7 @@ TEST(ManagePasswordsViewUtilTest, GetManagePasswordsDialogTitleText) {
     base::string16 title;
     GetManagePasswordsDialogTitleText(
         GURL(kDomainsTestCases[i].user_visible_url),
-        GURL(kDomainsTestCases[i].form_origin_url), &title);
+        GURL(kDomainsTestCases[i].form_origin_url), true, &title);
 
     // Verify against expectations.
     base::string16 domain =
