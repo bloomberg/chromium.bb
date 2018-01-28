@@ -109,11 +109,11 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageRGBTestTypes);
 
 using GLImageBindTestTypes = testing::Types<
+    // TODO(mcasas): enable BGRX_1010102, https://crbug.com/803473.
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
-    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
-    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageBindTest,
