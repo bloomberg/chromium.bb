@@ -20,6 +20,8 @@
 
 namespace content {
 
+using FileSystemFileInfo = DropData::FileSystemFileInfo;
+
 TEST(DropDataTest, GetSafeFilenameForImageFileContents) {
   static constexpr struct {
     const char* const extension;
@@ -69,6 +71,43 @@ TEST(DropDataTest, GetSafeFilenameForImageFileContents) {
       EXPECT_EQ(CONVERT_IF_NEEDED(test_case.extension),
                 generated_name->Extension().substr(1));
     }
+  }
+}
+
+TEST(DropDataTest, ReadFileSystemFilesFromPickle) {
+  {
+    std::vector<FileSystemFileInfo> in_files = {
+        {GURL("filesystem:http://www.example.com/path1"), 1000, "filesystem1"},
+        {GURL("filesystem:http://www.example.com/path2"), 2000, "filesystem2"},
+        {GURL("filesystem:http://www.example.com/path3"), 3000, "filesystem3"},
+    };
+    std::vector<FileSystemFileInfo> out_files;
+    base::Pickle pickle;
+
+    FileSystemFileInfo::WriteFileSystemFilesToPickle(in_files, &pickle);
+
+    EXPECT_TRUE(
+        FileSystemFileInfo::ReadFileSystemFilesFromPickle(pickle, &out_files));
+
+    ASSERT_EQ(in_files.size(), out_files.size());
+    for (size_t i = 0; i < in_files.size(); i++) {
+      EXPECT_EQ(in_files[i].url, out_files[i].url);
+      EXPECT_EQ(in_files[i].size, out_files[i].size);
+      EXPECT_EQ(in_files[i].filesystem_id, out_files[i].filesystem_id);
+    }
+  }
+
+  {
+    std::vector<FileSystemFileInfo> in_files = {
+        {GURL("invalid-url"), 1000, "filesystem1"},
+    };
+    std::vector<FileSystemFileInfo> out_files;
+    base::Pickle pickle;
+
+    FileSystemFileInfo::WriteFileSystemFilesToPickle(in_files, &pickle);
+
+    EXPECT_FALSE(
+        FileSystemFileInfo::ReadFileSystemFilesFromPickle(pickle, &out_files));
   }
 }
 
