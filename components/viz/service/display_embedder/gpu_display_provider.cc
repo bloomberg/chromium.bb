@@ -35,6 +35,7 @@
 #if defined(OS_MACOSX)
 #include "components/viz/service/display_embedder/gl_output_surface_mac.h"
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #endif
 
 #if defined(USE_X11)
@@ -141,7 +142,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get());
+          synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get(),
+          renderer_settings.allow_overlays);
 #else
       NOTREACHED();
 #endif

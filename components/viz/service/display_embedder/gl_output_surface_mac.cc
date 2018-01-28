@@ -8,16 +8,12 @@
 
 namespace viz {
 
-namespace {
-// TODO(ccameron): Plumb this appropriately.
-const bool kDisableRemoteCoreAnimation = false;
-}  // namespace
-
 GLOutputSurfaceMac::GLOutputSurfaceMac(
     scoped_refptr<InProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    bool allow_overlays)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
                                  synthetic_begin_frame_source,
@@ -25,8 +21,8 @@ GLOutputSurfaceMac::GLOutputSurfaceMac(
                                  GL_TEXTURE_RECTANGLE_ARB,
                                  GL_RGBA,
                                  gfx::BufferFormat::RGBA_8888),
-      overlay_validator_(new CompositorOverlayCandidateValidatorMac(
-          kDisableRemoteCoreAnimation)) {}
+      overlay_validator_(
+          new CompositorOverlayCandidateValidatorMac(!allow_overlays)) {}
 
 GLOutputSurfaceMac::~GLOutputSurfaceMac() {}
 
