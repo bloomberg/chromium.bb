@@ -217,13 +217,8 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
   if (model()->local_credentials().empty()) {
+    // A LayoutManager is required for GetHeightForWidth() even without content.
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    views::Label* no_passwords_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS),
-        CONTEXT_BODY_TEXT_SMALL);
-    no_passwords_label->SetMultiLine(true);
-    no_passwords_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(no_passwords_label);
   } else {
     for (auto& password_form : model()->local_credentials()) {
       password_rows_.push_back(
@@ -238,7 +233,8 @@ PasswordItemsView::~PasswordItemsView() = default;
 
 void PasswordItemsView::RecreateLayout() {
   // This method should only be used when we have password rows, otherwise the
-  // dialog should only show the empty label which doesn't need to be recreated.
+  // dialog should only show the no-passwords title and doesn't need to be
+  // recreated.
   DCHECK(!model()->local_credentials().empty());
 
   RemoveAllChildViews(true);

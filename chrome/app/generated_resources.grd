@@ -9210,9 +9210,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
         Saved passwords for this site:
       </message>
-
-      <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
-        No passwords saved.
+      <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when no passwords are available.">
+        No passwords saved for this site
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
+        Saved passwords for <ph name="ORIGIN">$1<ex>example.com</ex></ph>:
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_NO_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when no passwords are available for a different domain.">
+        No passwords saved for <ph name="ORIGIN">$1<ex>example.com</ex></ph>
       </message>
       <message name="IDS_MANAGE_PASSWORDS_DELETED" desc="The text that is used in the manage passwords bubble when a password is deleted.">
         Password deleted
@@ -10673,9 +10678,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       </message>
       <message name="IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE" desc="The title of the update password bubble when the submitted form origin isn't equal to saved credentials origin.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
-        Saved passwords for <ph name="ORIGIN">$1<ex>example.com</ex></ph>:
       </message>
 
     <!-- WebUsb Notification -->
