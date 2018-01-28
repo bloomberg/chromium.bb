@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-ol-element
-
+[HTMLConstructor]
 interface HTMLOListElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean reversed;
     [CEReactions] attribute long start;

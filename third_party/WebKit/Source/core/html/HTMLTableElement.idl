@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-table-element
-
+[HTMLConstructor]
 interface HTMLTableElement : HTMLElement {
     [CEReactions, RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
     [CEReactions] HTMLTableCaptionElement createCaption();

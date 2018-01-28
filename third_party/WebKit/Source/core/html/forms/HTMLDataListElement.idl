@@ -29,7 +29,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-datalist-element
-
+[HTMLConstructor]
 interface HTMLDataListElement : HTMLElement {
     readonly attribute HTMLCollection options;
 };

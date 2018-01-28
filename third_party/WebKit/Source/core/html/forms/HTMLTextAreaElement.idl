@@ -20,7 +20,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-textarea-element
-
+[HTMLConstructor]
 interface HTMLTextAreaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString autocomplete;
     [CEReactions, Reflect] attribute boolean autofocus;

@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-body-element
-
+[HTMLConstructor]
 interface HTMLBodyElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLBodyElement-partial

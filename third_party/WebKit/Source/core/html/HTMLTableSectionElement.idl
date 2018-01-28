@@ -21,7 +21,7 @@
 // https://html.spec.whatwg.org/#the-tbody-element
 // https://html.spec.whatwg.org/#the-thead-element
 // https://html.spec.whatwg.org/#the-tfoot-element
-
+[HTMLConstructor]
 interface HTMLTableSectionElement : HTMLElement {
     readonly attribute HTMLCollection rows;
     [CEReactions, RaisesException] HTMLElement insertRow(optional long index = -1);

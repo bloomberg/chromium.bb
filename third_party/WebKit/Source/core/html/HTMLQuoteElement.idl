@@ -19,7 +19,7 @@
 
 // https://html.spec.whatwg.org/#the-blockquote-element
 // https://html.spec.whatwg.org/#the-q-element
-
+[HTMLConstructor]
 interface HTMLQuoteElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute DOMString cite;
 };

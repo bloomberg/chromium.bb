@@ -24,7 +24,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-output-element
-
+[HTMLConstructor]
 interface HTMLOutputElement : HTMLElement {
     [CEReactions, PutForwards=value] readonly attribute DOMTokenList htmlFor;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;

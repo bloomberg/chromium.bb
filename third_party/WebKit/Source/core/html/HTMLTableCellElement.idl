@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#attributes-common-to-td-and-th-elements
-
+[HTMLConstructor]
 interface HTMLTableCellElement : HTMLElement {
     [CEReactions] attribute unsigned long colSpan;
     [CEReactions] attribute unsigned long rowSpan;

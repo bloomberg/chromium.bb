@@ -24,7 +24,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-track-element
-
+[HTMLConstructor]
 interface HTMLTrackElement : HTMLElement {
     [CEReactions] attribute DOMString kind;
     [CEReactions, Reflect, URL] attribute DOMString src;

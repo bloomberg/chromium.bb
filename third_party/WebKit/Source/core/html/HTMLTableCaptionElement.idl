@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-caption-element
-
+[HTMLConstructor]
 interface HTMLTableCaptionElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLTableCaptionElement-partial

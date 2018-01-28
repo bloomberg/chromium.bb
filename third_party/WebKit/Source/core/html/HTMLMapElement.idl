@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-map-element
-
+[HTMLConstructor]
 interface HTMLMapElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     readonly attribute HTMLCollection areas;

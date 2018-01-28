@@ -24,7 +24,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-source-element
-
+[HTMLConstructor]
 interface HTMLSourceElement : HTMLElement {
     [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions] attribute DOMString type;

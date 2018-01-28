@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-ul-element
-
+[HTMLConstructor]
 interface HTMLUListElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLUListElement-partial

@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-label-element
-
+[HTMLConstructor]
 interface HTMLLabelElement : HTMLElement {
     readonly attribute HTMLFormElement? form;
     [CEReactions, Reflect=for] attribute DOMString htmlFor;
