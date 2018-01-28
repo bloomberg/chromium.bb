@@ -998,12 +998,9 @@ static bool ConsumeDeprecatedGradientColorStop(CSSParserTokenRange& range,
     position = (id == CSSValueFrom) ? 0 : 1;
   } else {
     DCHECK(id == CSSValueColorStop);
-    const CSSParserToken& arg = args.ConsumeIncludingWhitespace();
-    if (arg.GetType() == kPercentageToken)
-      position = arg.NumericValue() / 100.0;
-    else if (arg.GetType() == kNumberToken)
-      position = arg.NumericValue();
-    else
+    if (CSSPrimitiveValue* percent_value = ConsumePercent(args, kValueRangeAll))
+      position = percent_value->GetDoubleValue() / 100.0;
+    else if (!ConsumeNumberRaw(args, position))
       return false;
 
     if (!ConsumeCommaIncludingWhitespace(args))
@@ -1376,14 +1373,14 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
     return nullptr;
 
   CSSPrimitiveValue* percentage = nullptr;
-  const CSSParserToken& percentage_arg = args.ConsumeIncludingWhitespace();
-  if (percentage_arg.GetType() == kPercentageToken)
+  if (CSSPrimitiveValue* percent_value = ConsumePercent(args, kValueRangeAll))
     percentage = CSSPrimitiveValue::Create(
-        clampTo<double>(percentage_arg.NumericValue() / 100, 0, 1),
+        clampTo<double>(percent_value->GetDoubleValue() / 100.0, 0, 1),
         CSSPrimitiveValue::UnitType::kNumber);
-  else if (percentage_arg.GetType() == kNumberToken)
+  else if (CSSPrimitiveValue* number_value =
+               ConsumeNumber(args, kValueRangeAll))
     percentage = CSSPrimitiveValue::Create(
-        clampTo<double>(percentage_arg.NumericValue(), 0, 1),
+        clampTo<double>(number_value->GetDoubleValue(), 0, 1),
         CSSPrimitiveValue::UnitType::kNumber);
 
   if (!percentage)
