@@ -229,7 +229,6 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
     : db_thread_(base::ThreadTaskRunnerHandle::Get()),
-      worker_pool_owner_(2, "sync test worker pool"),
       signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_, &account_tracker_),

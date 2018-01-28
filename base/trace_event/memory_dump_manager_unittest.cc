@@ -14,15 +14,14 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/thread_heap_usage_tracker.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager_test_utils.h"
@@ -136,11 +135,7 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
 
 class TestSequencedTaskRunner : public SequencedTaskRunner {
  public:
-  TestSequencedTaskRunner()
-      : worker_pool_(2 /* max_threads */, "Test Task Runner"),
-        token_(worker_pool_.pool()->GetSequenceToken()),
-        enabled_(true),
-        num_of_post_tasks_(0) {}
+  TestSequencedTaskRunner() = default;
 
   void set_enabled(bool value) { enabled_ = value; }
   unsigned no_of_post_tasks() const { return num_of_post_tasks_; }
@@ -157,23 +152,22 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
                        TimeDelta delay) override {
     num_of_post_tasks_++;
     if (enabled_) {
-      return worker_pool_.pool()->PostSequencedWorkerTask(token_, from_here,
-                                                          std::move(task));
+      return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
     }
     return false;
   }
 
   bool RunsTasksInCurrentSequence() const override {
-    return worker_pool_.pool()->RunsTasksInCurrentSequence();
+    return task_runner_->RunsTasksInCurrentSequence();
   }
 
  private:
   ~TestSequencedTaskRunner() override = default;
 
-  SequencedWorkerPoolOwner worker_pool_;
-  const SequencedWorkerPool::SequenceToken token_;
-  bool enabled_;
-  unsigned num_of_post_tasks_;
+  const scoped_refptr<SequencedTaskRunner> task_runner_ =
+      CreateSequencedTaskRunnerWithTraits({});
+  bool enabled_ = true;
+  unsigned num_of_post_tasks_ = 0;
 };
 
 class TestingThreadHeapUsageTracker : public debug::ThreadHeapUsageTracker {
@@ -188,14 +182,14 @@ class MemoryDumpManagerTest : public testing::Test {
   MemoryDumpManagerTest() : testing::Test(), kDefaultOptions() {}
 
   void SetUp() override {
-    message_loop_.reset(new MessageLoop());
+    scoped_task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
     mdm_ = MemoryDumpManager::CreateInstanceForTesting();
     ASSERT_EQ(mdm_.get(), MemoryDumpManager::GetInstance());
   }
 
   void TearDown() override {
     mdm_.reset();
-    message_loop_.reset();
+    scoped_task_environment_.reset();
     TraceLog::DeleteForTesting();
   }
 
@@ -254,7 +248,7 @@ class MemoryDumpManagerTest : public testing::Test {
   std::unique_ptr<MemoryDumpManager> mdm_;
 
  private:
-  std::unique_ptr<MessageLoop> message_loop_;
+  std::unique_ptr<test::ScopedTaskEnvironment> scoped_task_environment_;
 
   // To tear down the singleton instance after each test.
   ShadowingAtExitManager at_exit_manager_;

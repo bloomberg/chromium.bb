@@ -28,10 +28,7 @@ namespace base {
 
 class CommandLine;
 struct LaunchOptions;
-class SequencedWorkerPoolOwner;
-class TaskRunner;
 class TestLauncher;
-class Thread;
 
 // Constants for GTest command-line flags.
 extern const char kGTestFilterFlag[];
@@ -188,10 +185,6 @@ class TestLauncher {
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
 
-  // Returns the TaskRunner to be used to launch child test processes. This
-  // TaskRunner will have TaskShutdownBehavior::BLOCK_SHUTDOWN semantics.
-  scoped_refptr<TaskRunner> GetTaskRunner();
-
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread.  Should be the first member so that it's destroyed last: when
   // destroying other members, especially the worker pool, we may check the code
@@ -253,11 +246,6 @@ class TestLauncher {
 
   // Number of jobs to run in parallel.
   size_t parallel_jobs_;
-
-  // Worker pool used to launch processes in parallel (|worker_thread_| is used
-  // instead if |parallel_jobs == 1|).
-  std::unique_ptr<SequencedWorkerPoolOwner> worker_pool_owner_;
-  std::unique_ptr<Thread> worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };
