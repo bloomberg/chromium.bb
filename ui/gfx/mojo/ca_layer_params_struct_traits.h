@@ -16,13 +16,6 @@ struct StructTraits<gfx::mojom::CALayerParamsDataView, gfx::CALayerParams> {
     return ca_layer_params.is_empty;
   }
 
-  static uint32_t ca_context_id(const gfx::CALayerParams& ca_layer_params) {
-    return ca_layer_params.ca_context_id;
-  }
-
-  static mojo::ScopedHandle io_surface_mach_port(
-      const gfx::CALayerParams& ca_layer_params);
-
   static gfx::Size pixel_size(const gfx::CALayerParams& ca_layer_params) {
     return ca_layer_params.pixel_size;
   }
@@ -30,6 +23,9 @@ struct StructTraits<gfx::mojom::CALayerParamsDataView, gfx::CALayerParams> {
   static float scale_factor(const gfx::CALayerParams& ca_layer_params) {
     return ca_layer_params.scale_factor;
   }
+
+  static gfx::mojom::CALayerContentPtr content(
+      const gfx::CALayerParams& ca_layer_params);
 
   static bool Read(gfx::mojom::CALayerParamsDataView data,
                    gfx::CALayerParams* out);

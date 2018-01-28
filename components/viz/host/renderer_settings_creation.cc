@@ -11,6 +11,10 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/remote_layer_api.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -59,6 +63,12 @@ RendererSettings CreateRendererSettings() {
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer =
       command_line->HasSwitch(switches::kUseSkiaRenderer);
+#if defined(OS_MACOSX)
+  renderer_settings.allow_overlays =
+      ui::RemoteLayerAPISupported() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMacOverlays);
+#endif
   if (command_line->HasSwitch(switches::kSlowDownCompositingScaleFactor)) {
     const int kMinSlowDownScaleFactor = 1;
     const int kMaxSlowDownScaleFactor = 1000;
