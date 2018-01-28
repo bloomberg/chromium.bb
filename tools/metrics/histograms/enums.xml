@@ -36850,6 +36850,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="LOAD_CORRUPT_VALUE"/>
 </enum>
 
+<enum name="RasterSourceClearType">
+  <int value="0" label="No clear"/>
+  <int value="1" label="Full clear"/>
+  <int value="2" label="Border clear"/>
+</enum>
+
 <enum name="ReadingListContextMenuActions">
   <int value="0" label="New Tab"/>
   <int value="1" label="New Incognito Tab"/>

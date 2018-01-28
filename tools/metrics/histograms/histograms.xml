@@ -70906,6 +70906,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.RasterSourceClearType" enum="RasterSourceClearType">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The type of clear which was needed for each cc::RasterSource rasterized.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.ReadyToDrawTileDrawStatus" enum="UsedInDraw">
   <obsolete>
     Deprecated 02/2017 in Issue 675840.
