@@ -641,4 +641,10 @@ bool ContentBrowserClient::ShouldCreateTaskScheduler() {
   return true;
 }
 
+bool ContentBrowserClient::ShouldPermitIndividualAttestationForWebauthnRPID(
+    content::BrowserContext* browser_context,
+    const std::string& rp_id) {
+  return false;
+}
+
 }  // namespace content

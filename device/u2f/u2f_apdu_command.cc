@@ -129,7 +129,8 @@ U2fApduCommand::~U2fApduCommand() = default;
 // static
 std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(
     const std::vector<uint8_t>& appid_digest,
-    const std::vector<uint8_t>& challenge_digest) {
+    const std::vector<uint8_t>& challenge_digest,
+    bool individual_attestation_ok) {
   if (appid_digest.size() != kAppIdDigestLen ||
       challenge_digest.size() != kChallengeDigestLen) {
     return nullptr;
@@ -139,7 +140,8 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(
   std::vector<uint8_t> data(challenge_digest.begin(), challenge_digest.end());
   data.insert(data.end(), appid_digest.begin(), appid_digest.end());
   command->set_ins(kInsU2fEnroll);
-  command->set_p1(kP1TupRequiredConsumed);
+  command->set_p1(kP1TupRequiredConsumed |
+                  (individual_attestation_ok ? kP1IndividualAttestation : 0));
   command->set_data(data);
   return command;
 }
