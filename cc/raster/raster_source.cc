@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
@@ -21,6 +22,23 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
+namespace {
+
+// These enum values are persisted to logs and must never by renumbered or
+// reused.
+enum class RasterSourceClearType {
+  kNone = 0,
+  kFull = 1,
+  kBorder = 2,
+  kCount = 3
+};
+
+void TrackRasterSourceNeededClear(RasterSourceClearType clear_type) {
+  UMA_HISTOGRAM_ENUMERATION("Renderer4.RasterSourceClearType", clear_type,
+                            RasterSourceClearType::kCount);
+}
+
+}  // namespace
 
 RasterSource::RasterSource(const RecordingSource* other)
     : display_list_(other->display_list_),
@@ -87,6 +105,7 @@ void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
   // clear this canvas ourselves.
   if (requires_clear_) {
     canvas->clear(SK_ColorTRANSPARENT);
+    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
     return;
   }
 
@@ -99,6 +118,7 @@ void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
   //               covers the whole clip region.
   if (!canvas->getTotalMatrix().rectStaysRect()) {
     canvas->clear(SK_ColorTRANSPARENT);
+    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
     return;
   }
 
@@ -112,8 +132,10 @@ void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
   SkIRect opaque_rect;
   content_device_rect.roundIn(&opaque_rect);
 
-  if (opaque_rect.contains(canvas->getDeviceClipBounds()))
+  if (opaque_rect.contains(canvas->getDeviceClipBounds())) {
+    TrackRasterSourceNeededClear(RasterSourceClearType::kNone);
     return;
+  }
 
   // Even if completely covered, for rasterizations that touch the edge of the
   // layer, we also need to raster the background color underneath the last
@@ -147,6 +169,10 @@ void RasterSource::ClearCanvasForPlayback(SkCanvas* canvas) const {
   canvas->clipRegion(interest_region);
   canvas->clear(background_color_);
   canvas->restore();
+
+  // If we reached this point, we didn't perform a full clear, but a smaller
+  // clear of the border pixels.
+  TrackRasterSourceNeededClear(RasterSourceClearType::kBorder);
 }
 
 void RasterSource::RasterCommon(SkCanvas* raster_canvas,
