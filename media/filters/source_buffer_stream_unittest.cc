@@ -5776,6 +5776,39 @@ TEST_P(SourceBufferStreamTest, NonZeroDurationBuffersThenIncreasingFudgeRoom) {
   CheckNoNextBuffer();
 }
 
+TEST_P(SourceBufferStreamTest, SapType2WithNonkeyframePtsInEarlierRange) {
+  // Buffer a standalone GOP [0,10).
+  NewCodedFrameGroupAppend("0D10K");
+  CheckExpectedRangesByTimestamp("{ [0,10) }");
+
+  // Following discontinuity (simulated by DTS gap, signalled by new coded frame
+  // group with time beyond fudge room of [0,10)), buffer 2 new GOPs in a later
+  // range: a SAP-2 GOP with a nonkeyframe with PTS belonging to the first
+  // range, and a subsequent minimal GOP.
+  NewCodedFrameGroupAppend("30D10K 1|40D10");
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    CheckExpectedRangesByTimestamp("{ [0,10) [30,50) }");
+  } else {
+    CheckExpectedRangesByTimestamp("{ [0,10) [30,40) }");
+  }
+
+  NewCodedFrameGroupAppend("40|50D10K");
+
+  // Verify that there are two distinct ranges, and that the SAP-2 nonkeyframe
+  // is buffered as part of the second range's first GOP.
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    CheckExpectedRangesByTimestamp("{ [0,10) [30,60) }");
+  } else {
+    CheckExpectedRangesByTimestamp("{ [0,10) [30,50) }");
+  }
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(30);
+  CheckExpectedBuffers("30K 1|40 40|50K");
+  CheckNoNextBuffer();
+}
+
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));

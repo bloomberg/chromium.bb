@@ -549,12 +549,12 @@ template <typename RangeClass>
 DecodeTimestamp SourceBufferStream<RangeClass>::PotentialNextAppendTimestamp()
     const {
   // The next potential append will either be just at or after (if buffering
-  // ByDts), or in a GOP adjacent if ByPts, to |last_appended_buffer_timestamp_|
-  // (if known), or if unknown and we are still at the beginning of a new coded
-  // frame group, then will be into the range (if any) to which
-  // |coded_frame_group_start_time_| belongs.
-  if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp())
-    return last_appended_buffer_timestamp_;
+  // ByDts), or in a GOP adjacent if ByPts, to
+  // |highest_timestamp_in_append_sequence_| (if known), or if unknown and we
+  // are still at the beginning of a new coded frame group, then will be into
+  // the range (if any) to which |coded_frame_group_start_time_| belongs.
+  if (highest_timestamp_in_append_sequence_ != kNoDecodeTimestamp())
+    return highest_timestamp_in_append_sequence_;
 
   if (new_coded_frame_group_)
     return coded_frame_group_start_time_;
