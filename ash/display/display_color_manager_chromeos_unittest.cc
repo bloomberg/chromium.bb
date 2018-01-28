@@ -10,9 +10,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "chromeos/chromeos_paths.h"
 #include "components/quirks/quirks_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -104,8 +104,6 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
 class DisplayColorManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    pool_owner_.reset(
-        new base::SequencedWorkerPoolOwner(3, "DisplayColorManagerTest"));
     log_.reset(new display::test::ActionLogger());
 
     native_display_delegate_ =
@@ -128,12 +126,11 @@ class DisplayColorManagerTest : public testing::Test {
     quirks::QuirksManager::Initialize(
         std::unique_ptr<quirks::QuirksManager::Delegate>(
             new QuirksManagerDelegateTestImpl(color_path_)),
-        pool_owner_->pool().get(), nullptr, nullptr);
+        base::CreateTaskRunnerWithTraits({base::MayBlock()}), nullptr, nullptr);
   }
 
   void TearDown() override {
     quirks::QuirksManager::Shutdown();
-    pool_owner_->pool()->Shutdown();
   }
 
   void WaitOnColorCalibration() {
@@ -147,7 +144,6 @@ class DisplayColorManagerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::FilePath color_path_;
   std::unique_ptr<display::test::ActionLogger> log_;

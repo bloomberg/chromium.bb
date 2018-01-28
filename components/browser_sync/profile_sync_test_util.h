@@ -11,8 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
@@ -169,7 +167,6 @@ class ProfileSyncServiceBundle {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;

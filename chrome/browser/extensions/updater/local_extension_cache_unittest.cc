@@ -16,10 +16,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/secure_hash.h"
@@ -40,18 +39,6 @@ class LocalExtensionCacheTest : public testing::Test {
  public:
   LocalExtensionCacheTest() {}
   ~LocalExtensionCacheTest() override {}
-
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner() {
-    return background_task_runner_;
-  }
-
-  // testing::Test overrides:
-  void SetUp() override {
-    pool_owner_.reset(
-        new base::SequencedWorkerPoolOwner(3, "Background Pool"));
-    background_task_runner_ = pool_owner_->pool()->GetSequencedTaskRunner(
-        pool_owner_->pool()->GetNamedSequenceToken("background"));
-  }
 
   base::FilePath CreateCacheDir() {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
@@ -117,22 +104,8 @@ class LocalExtensionCacheTest : public testing::Test {
         extensions::LocalExtensionCache::ExtensionFileName(id, version, hash));
   }
 
-  void WaitForCompletion() {
-    // In the worst case you need to repeat this up to 3 times to make sure that
-    // all pending tasks we sent from UI thread to task runner and back to UI.
-    for (int i = 0; i < 3; i++) {
-      // Wait for background task completion that sends replay to UI thread.
-      pool_owner_->pool()->FlushForTesting();
-      // Wait for UI thread task completion.
-      base::RunLoop().RunUntilIdle();
-    }
-  }
-
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  std::unique_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   base::ScopedTempDir cache_dir_;
   base::ScopedTempDir temp_dir_;
@@ -147,10 +120,9 @@ static void SimpleCallback(bool* ptr) {
 TEST_F(LocalExtensionCacheTest, Basic) {
   base::FilePath cache_dir(CreateCacheDir());
 
-  LocalExtensionCache cache(cache_dir,
-                            1000,
-                            base::TimeDelta::FromDays(30),
-                            background_task_runner());
+  LocalExtensionCache cache(
+      cache_dir, 1000, base::TimeDelta::FromDays(30),
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -170,7 +142,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
                       base::Time::Now() - base::TimeDelta::FromDays(41),
                       &file30);
 
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
   // Older version should be removed on cache initialization.
@@ -185,7 +157,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 
   bool did_shutdown = false;
   cache.Shutdown(base::Bind(&SimpleCallback, &did_shutdown));
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(did_shutdown);
 
   EXPECT_TRUE(base::PathExists(file10));
@@ -196,8 +168,9 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 TEST_F(LocalExtensionCacheTest, KeepHashed) {
   base::FilePath cache_dir(CreateCacheDir());
 
-  LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
-                            background_task_runner());
+  LocalExtensionCache cache(
+      cache_dir, 1000, base::TimeDelta::FromDays(30),
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -212,7 +185,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
   const std::string hash2 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "1.0", 123, time, &file2);
 
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
   // Unhashed version should be removed on cache initialization.
@@ -232,8 +205,9 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
 TEST_F(LocalExtensionCacheTest, KeepLatest) {
   base::FilePath cache_dir(CreateCacheDir());
 
-  LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
-                            background_task_runner());
+  LocalExtensionCache cache(
+      cache_dir, 1000, base::TimeDelta::FromDays(30),
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -249,7 +223,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
   const std::string hash22 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "2.0", 123, time, &file22);
 
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
   // Older version should be removed
@@ -267,8 +241,9 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
 TEST_F(LocalExtensionCacheTest, Complex) {
   base::FilePath cache_dir(CreateCacheDir());
 
-  LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
-                            background_task_runner());
+  LocalExtensionCache cache(
+      cache_dir, 1000, base::TimeDelta::FromDays(30),
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -288,7 +263,7 @@ TEST_F(LocalExtensionCacheTest, Complex) {
   const std::string hash22 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "2.0", 105, time, &file22);
 
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
   // Older and unhashed versions should be removed
@@ -333,8 +308,9 @@ static void PutExtensionAndWait(LocalExtensionCache& cache,
 TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   base::FilePath cache_dir(CreateCacheDir());
 
-  LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
-                            background_task_runner());
+  LocalExtensionCache cache(
+      cache_dir, 1000, base::TimeDelta::FromDays(30),
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -351,7 +327,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
                             &file2);
   CreateExtensionFile(cache_dir, kTestExtensionId3, "0.3", 300, time, &file3);
 
-  WaitForCompletion();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(initialized);
 
   // Create and initialize installation source directory.
