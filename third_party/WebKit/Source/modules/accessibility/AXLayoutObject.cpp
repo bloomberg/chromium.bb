@@ -1794,14 +1794,10 @@ AXObject::AXRange AXLayoutObject::Selection() const {
   VisiblePosition visible_start = selection.VisibleStart();
   Position start = visible_start.ToParentAnchoredPosition();
   TextAffinity start_affinity = visible_start.Affinity();
-  VisiblePosition visible_end = selection.VisibleEnd();
-  Position end = visible_end.ToParentAnchoredPosition();
-  TextAffinity end_affinity = visible_end.Affinity();
-
   Node* anchor_node = start.AnchorNode();
   DCHECK(anchor_node);
-
   AXLayoutObject* anchor_object = nullptr;
+
   // Find the closest node that has a corresponding AXObject.
   // This is because some nodes may be aria hidden or might not even have
   // a layout object if they are part of the shadow DOM.
@@ -1815,10 +1811,20 @@ AXObject::AXRange AXLayoutObject::Selection() const {
     else
       anchor_node = anchor_node->parentNode();
   }
+  if (!anchor_object)
+    return AXRange();
+  int anchor_offset = anchor_object->IndexForVisiblePosition(visible_start);
+  DCHECK_GE(anchor_offset, 0);
+  if (selection.IsCaret()) {
+    return AXRange(anchor_object, anchor_offset, start_affinity, anchor_object,
+                   anchor_offset, start_affinity);
+  }
 
+  VisiblePosition visible_end = selection.VisibleEnd();
+  Position end = visible_end.ToParentAnchoredPosition();
+  TextAffinity end_affinity = visible_end.Affinity();
   Node* focus_node = end.AnchorNode();
   DCHECK(focus_node);
-
   AXLayoutObject* focus_object = nullptr;
   while (focus_node) {
     focus_object = GetUnignoredObjectFromNode(*focus_node);
@@ -1830,12 +1836,8 @@ AXObject::AXRange AXLayoutObject::Selection() const {
     else
       focus_node = focus_node->parentNode();
   }
-
-  if (!anchor_object || !focus_object)
+  if (!focus_object)
     return AXRange();
-
-  int anchor_offset = anchor_object->IndexForVisiblePosition(visible_start);
-  DCHECK_GE(anchor_offset, 0);
   int focus_offset = focus_object->IndexForVisiblePosition(visible_end);
   DCHECK_GE(focus_offset, 0);
   return AXRange(anchor_object, anchor_offset, start_affinity, focus_object,

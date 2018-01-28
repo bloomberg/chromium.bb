@@ -816,7 +816,7 @@ editing.EditableLine.prototype = {
     var finder = this.lineStart_;
     while (finder.previousSibling) {
       finder = finder.previousSibling;
-      textCountBeforeLineStart += finder.name.length;
+      textCountBeforeLineStart += finder.name ? finder.name.length : 0;
     }
     this.localLineStartContainerOffset_ = textCountBeforeLineStart;
 
@@ -828,7 +828,7 @@ editing.EditableLine.prototype = {
     finder = this.lineEnd_;
     while (finder.nextSibling) {
       finder = finder.nextSibling;
-      textCountAfterLineEnd += finder.name.length;
+      textCountAfterLineEnd += finder.name ? finder.name.length : 0;
     }
 
     if (this.lineEndContainer_.name) {
