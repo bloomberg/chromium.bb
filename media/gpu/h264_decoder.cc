@@ -1342,7 +1342,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         if (state_ != kDecoding)
           break;
 
-      // else fallthrough
+        FALLTHROUGH;
       case H264NALU::kIDRSlice: {
         // TODO(posciak): the IDR may require an SPS that we don't have
         // available. For now we'd fail if that happens, but ideally we'd like
