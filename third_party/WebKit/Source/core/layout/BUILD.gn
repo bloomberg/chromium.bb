@@ -429,7 +429,6 @@ blink_core_sources("layout") {
     "ng/ng_layout_result.h",
     "ng/ng_length_utils.cc",
     "ng/ng_length_utils.h",
-    "ng/ng_macros.h",
     "ng/ng_out_of_flow_layout_part.cc",
     "ng/ng_out_of_flow_layout_part.h",
     "ng/ng_out_of_flow_positioned_descendant.h",
