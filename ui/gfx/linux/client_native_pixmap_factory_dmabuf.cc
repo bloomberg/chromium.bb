@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(OS_CHROMEOS)
@@ -64,10 +65,19 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
         return format == gfx::BufferFormat::BGRX_8888 ||
                format == gfx::BufferFormat::RGBX_8888;
       case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-        return format == gfx::BufferFormat::BGRX_8888 ||
-               format == gfx::BufferFormat::BGRA_8888 ||
-               format == gfx::BufferFormat::RGBX_8888 ||
-               format == gfx::BufferFormat::RGBA_8888;
+        return
+#if defined(ARCH_CPU_X86_FAMILY)
+            // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8
+            // RG_88 and NV12. https://crbug.com/356871
+            format == gfx::BufferFormat::R_8 ||
+            format == gfx::BufferFormat::RG_88 ||
+            format == gfx::BufferFormat::YUV_420_BIPLANAR ||
+#endif
+
+            format == gfx::BufferFormat::BGRX_8888 ||
+            format == gfx::BufferFormat::BGRA_8888 ||
+            format == gfx::BufferFormat::RGBX_8888 ||
+            format == gfx::BufferFormat::RGBA_8888;
       case gfx::BufferUsage::SCANOUT_VDA_WRITE:
         return false;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
