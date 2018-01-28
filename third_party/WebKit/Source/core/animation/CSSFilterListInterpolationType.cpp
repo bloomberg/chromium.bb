@@ -23,7 +23,7 @@ const FilterOperations& GetFilterList(const CSSProperty& property,
   switch (property.PropertyID()) {
     default:
       NOTREACHED();
-    // Fall through.
+      FALLTHROUGH;
     case CSSPropertyBackdropFilter:
       return style.BackdropFilter();
     case CSSPropertyFilter:
