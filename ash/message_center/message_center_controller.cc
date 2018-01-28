@@ -5,8 +5,8 @@
 #include "ash/message_center/message_center_controller.h"
 
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 using message_center::MessageCenter;
 using message_center::NotifierId;

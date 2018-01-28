@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 class PrefRegistrySimple;
 class Profile;

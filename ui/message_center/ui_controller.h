@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/message_center/ui_delegate.h"
 
 namespace message_center {

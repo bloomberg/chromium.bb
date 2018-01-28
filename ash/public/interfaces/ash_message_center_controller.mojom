@@ -5,8 +5,8 @@
 module ash.mojom;
 
 import "ui/gfx/image/mojo/image.mojom";
-import "ui/message_center/mojo/notification.mojom";
-import "ui/message_center/mojo/notifier_id.mojom";
+import "ui/message_center/public/mojo/notification.mojom";
+import "ui/message_center/public/mojo/notifier_id.mojom";
 import "mojo/common/string16.mojom";
 
 // A struct that contains information for presenting a notifier in a settings

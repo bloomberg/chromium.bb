@@ -25,8 +25,8 @@
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {

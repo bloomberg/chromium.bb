@@ -16,7 +16,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 using message_center::MessageCenter;
 using message_center::Notification;

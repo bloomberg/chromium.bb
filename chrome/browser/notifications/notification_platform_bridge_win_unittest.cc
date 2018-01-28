@@ -23,8 +23,8 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace mswr = Microsoft::WRL;
 namespace winui = ABI::Windows::UI;

@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//ui/message_center/mojo/notification.typemap",
-  "//ui/message_center/mojo/notifier_id.typemap",
+  "//ui/message_center/public/mojo/notification.typemap",
+  "//ui/message_center/public/mojo/notifier_id.typemap",
 ]

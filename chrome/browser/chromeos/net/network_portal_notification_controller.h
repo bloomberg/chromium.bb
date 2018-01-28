@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace extensions {
 class Extension;

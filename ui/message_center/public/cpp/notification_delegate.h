@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_
-#define UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_
+#ifndef UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFICATION_DELEGATE_H_
+#define UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFICATION_DELEGATE_H_
 
 #include <memory>
 #include <string>
@@ -13,14 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "ui/message_center/message_center_export.h"
+#include "ui/message_center/public/cpp/message_center_public_export.h"
 
 namespace message_center {
 
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
 // notification.
-class MESSAGE_CENTER_EXPORT NotificationDelegate
+class MESSAGE_CENTER_PUBLIC_EXPORT NotificationDelegate
     : public base::RefCountedThreadSafe<NotificationDelegate> {
  public:
   // To be called when the desktop notification is closed.  If closed by a
@@ -55,7 +55,7 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
 
 // A simple notification delegate which invokes the passed closure when the body
 // or a button is clicked.
-class MESSAGE_CENTER_EXPORT HandleNotificationClickDelegate
+class MESSAGE_CENTER_PUBLIC_EXPORT HandleNotificationClickDelegate
     : public NotificationDelegate {
  public:
   // The parameter is the index of the button that was clicked, or nullopt if
@@ -86,4 +86,4 @@ class MESSAGE_CENTER_EXPORT HandleNotificationClickDelegate
 
 }  //  namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_
+#endif  // UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFICATION_DELEGATE_H_

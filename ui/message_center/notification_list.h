@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_blocker.h"
-#include "ui/message_center/notification_types.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 namespace base {
 class TimeDelta;

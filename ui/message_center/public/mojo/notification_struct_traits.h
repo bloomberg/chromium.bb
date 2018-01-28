@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFICATION_STRUCT_TRAITS_H_
-#define UI_MESSAGE_CENTER_NOTIFICATION_STRUCT_TRAITS_H_
+#ifndef UI_MESSAGE_CENTER_PUBLIC_MOJO_NOTIFICATION_STRUCT_TRAITS_H_
+#define UI_MESSAGE_CENTER_PUBLIC_MOJO_NOTIFICATION_STRUCT_TRAITS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/message_center/mojo/notification.mojom-shared.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/mojo/notification.mojom-shared.h"
 
 namespace mojo {
 
@@ -98,4 +98,4 @@ struct StructTraits<message_center::mojom::NotificationDataView,
 
 }  // namespace mojo
 
-#endif  // UI_MESSAGE_CENTER_NOTIFICATION_STRUCT_TRAITS_H_
+#endif  // UI_MESSAGE_CENTER_PUBLIC_MOJO_NOTIFICATION_STRUCT_TRAITS_H_

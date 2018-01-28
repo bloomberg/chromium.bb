@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/message_center/mojo/notification.mojom"
-public_headers = [ "//ui/message_center/notification.h" ]
-traits_headers = [ "//ui/message_center/mojo/notification_struct_traits.h" ]
+mojom = "//ui/message_center/public/mojo/notification.mojom"
+public_headers = [ "//ui/message_center/public/cpp/notification.h" ]
+traits_headers =
+    [ "//ui/message_center/public/mojo/notification_struct_traits.h" ]
 deps = [
   "//ui/gfx/image/mojo:struct_traits",
-  "//ui/message_center/mojo:struct_traits",
+  "//ui/message_center/public/mojo:struct_traits",
 ]
 type_mappings = [
   "message_center.mojom.RichNotificationData=message_center::RichNotificationData",

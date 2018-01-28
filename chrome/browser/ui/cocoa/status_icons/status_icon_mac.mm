@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 @interface StatusItemController : NSObject {
   StatusIconMac* statusIcon_; // weak

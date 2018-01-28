@@ -17,7 +17,7 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 class Profile;
 

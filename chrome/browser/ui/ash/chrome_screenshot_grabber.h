@@ -14,7 +14,7 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 class Profile;

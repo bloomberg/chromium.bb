@@ -9,7 +9,7 @@
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace ash {
 

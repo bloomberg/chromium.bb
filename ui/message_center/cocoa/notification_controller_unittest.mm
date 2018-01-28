@@ -15,9 +15,9 @@
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/message_center/fake_message_center.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;

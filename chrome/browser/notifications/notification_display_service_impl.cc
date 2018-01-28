@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ui_features.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"

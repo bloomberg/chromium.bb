@@ -37,7 +37,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace mswr = Microsoft::WRL;
 namespace mswrw = Microsoft::WRL::Wrappers;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFIER_ID_H_
-#define UI_MESSAGE_CENTER_NOTIFIER_ID_H_
+#ifndef UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFIER_ID_H_
+#define UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFIER_ID_H_
 
 #include <stddef.h>
 
@@ -13,15 +13,14 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/message_center_export.h"
+#include "ui/message_center/public/cpp/message_center_public_export.h"
 #include "url/gurl.h"
 
 namespace message_center {
 
 // A struct that identifies the source of notifications. For example, a web page
 // might send multiple notifications but they'd all have the same NotifierId.
-// TODO(estade): move to public directory.
-struct MESSAGE_CENTER_EXPORT NotifierId {
+struct MESSAGE_CENTER_PUBLIC_EXPORT NotifierId {
   // This enum is being used for histogram reporting and the elements should not
   // be re-ordered.
   enum NotifierType : int {
@@ -62,4 +61,4 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_NOTIFIER_ID_H_
+#endif  // UI_MESSAGE_CENTER_PUBLIC_CPP_NOTIFIER_ID_H_

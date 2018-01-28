@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -33,7 +33,7 @@ HandleNotificationClickDelegate::HandleNotificationClickDelegate(
   if (!callback.is_null()) {
     // Create a callback that consumes and ignores the button index parameter,
     // and just runs the provided closure.
-    callback_ = base::Bind(
+    callback_ = base::BindRepeating(
         [](const base::RepeatingClosure& closure,
            base::Optional<int> button_index) {
           DCHECK(!button_index);

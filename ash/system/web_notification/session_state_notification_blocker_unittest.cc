@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 using base::UTF8ToUTF16;
 using session_manager::SessionState;

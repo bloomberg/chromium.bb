@@ -39,8 +39,8 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_types.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

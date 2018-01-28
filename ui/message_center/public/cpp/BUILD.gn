@@ -11,6 +11,13 @@ jumbo_component("cpp") {
     "message_center_public_export.h",
     "message_center_switches.cc",
     "message_center_switches.h",
+    "notification.cc",
+    "notification.h",
+    "notification_delegate.cc",
+    "notification_delegate.h",
+    "notification_types.h",
+    "notifier_id.cc",
+    "notifier_id.h",
   ]
 
   defines = [ "MESSAGE_CENTER_PUBLIC_IMPLEMENTATION" ]
@@ -19,5 +26,7 @@ jumbo_component("cpp") {
     "//base",
     "//skia",
     "//ui/gfx",
+    "//ui/strings",
+    "//url",
   ]
 }

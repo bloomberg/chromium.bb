@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 #include <memory>
 
 #include "base/logging.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 namespace message_center {
 
@@ -42,13 +41,9 @@ gfx::Image DeepCopyImage(const gfx::Image& image) {
 
 NotificationItem::NotificationItem(const base::string16& title,
                                    const base::string16& message)
-    : title(title),
-      message(message) {
-}
+    : title(title), message(message) {}
 
-ButtonInfo::ButtonInfo(const base::string16& title)
-    : title(title) {
-}
+ButtonInfo::ButtonInfo(const base::string16& title) : title(title) {}
 
 ButtonInfo::ButtonInfo(const ButtonInfo& other) = default;
 
@@ -241,7 +236,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const base::string16& message,
     const gfx::Image& icon,
     const std::string& system_component_id,
-    const base::Closure& click_callback) {
+    const base::RepeatingClosure& click_callback) {
   DCHECK(!click_callback.is_null());
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       NOTIFICATION_TYPE_SIMPLE, notification_id, title, message, icon,

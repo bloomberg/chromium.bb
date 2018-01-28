@@ -7,7 +7,7 @@
 #include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_view.h"
-#include "ui/message_center/notification.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view.h"
 
 namespace arc {

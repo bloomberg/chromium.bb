@@ -10,7 +10,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
-#include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

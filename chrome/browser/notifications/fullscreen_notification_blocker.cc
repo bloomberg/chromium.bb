@@ -9,7 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/fullscreen.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/message_center/notifier_id.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 using message_center::NotifierId;
 
