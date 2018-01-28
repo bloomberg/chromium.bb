@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/audio_input_resource.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -182,7 +184,8 @@ void AudioInputResource::SetStreamInfo(
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
-  shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
+  shared_memory_.reset(
+      new base::SharedMemory(shared_memory_handle, /*read_only*/ true));
   DCHECK(!shared_memory_->memory());
 
   // Ensure that the allocated memory is enough for the audio bus and buffer
