@@ -223,7 +223,9 @@ void NGBoxFragmentPainter::PaintObject(const PaintInfo& paint_info,
 
   if (ShouldPaintSelfOutline(paint_phase))
     NGFragmentPainter(box_fragment_).PaintOutline(paint_info, paint_offset);
-
+  if (ShouldPaintDescendantOutlines(paint_phase))
+    NGFragmentPainter(box_fragment_)
+        .PaintDescendantOutlines(paint_info, paint_offset);
   // TODO(layout-dev): Implement once we have selections in LayoutNG.
   // If the caret's node's layout object's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.

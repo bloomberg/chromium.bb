@@ -48,10 +48,7 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   // set beforehand.
   void UpdateVisualRectFromLayoutObject();
 
-  // Collects rectangles that the outline of this object would be drawing along
-  // the outside of, even if the object isn't styled with a outline for now. The
-  // rects also cover continuations.
-  void AddOutlineRects(Vector<LayoutRect>*, const LayoutPoint& offset) const;
+  void AddSelfOutlineRect(Vector<LayoutRect>*, const LayoutPoint& offset) const;
 
   // TODO(layout-dev): Implement when we have oveflow support.
   // TODO(eae): Switch to using NG geometry types.

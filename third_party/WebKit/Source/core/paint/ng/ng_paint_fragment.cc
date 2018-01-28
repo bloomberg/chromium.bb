@@ -120,18 +120,18 @@ void NGPaintFragment::UpdateVisualRectFromLayoutObject(
   }
 }
 
-void NGPaintFragment::AddOutlineRects(
+void NGPaintFragment::AddSelfOutlineRect(
     Vector<LayoutRect>* outline_rects,
     const LayoutPoint& additional_offset) const {
   DCHECK(outline_rects);
+  //
+  LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
+  // LayoutRect outline_rect = VisualRect();
+  // outline_rect.MoveBy(additional_offset);
+  // outline_rect.Inflate(-Style().OutlineOffset());
+  // outline_rect.Inflate(-Style().OutlineWidth());
 
-  // TODO(layout-dev): This isn't correct but is close enough until we have
-  // the right set of rects for outlines.
-  for (const auto& child : children_) {
-    LayoutRect outline_rect = child->VisualRect();
-    outline_rect.MoveBy(additional_offset);
-    outline_rects->push_back(outline_rect);
-  }
+  outline_rects->push_back(outline_rect);
 }
 
 void NGPaintFragment::PaintInlineBoxForDescendants(

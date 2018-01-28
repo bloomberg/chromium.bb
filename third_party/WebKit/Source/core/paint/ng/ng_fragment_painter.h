@@ -6,10 +6,11 @@
 #define ng_fragment_painter_h
 
 #include "core/paint/ObjectPainterBase.h"
-#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 
+class LayoutObject;
 class LayoutPoint;
 class NGPaintFragment;
 struct PaintInfo;
@@ -25,7 +26,15 @@ class NGFragmentPainter : public ObjectPainterBase {
 
   void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
 
+  void PaintDescendantOutlines(const PaintInfo&,
+                               const LayoutPoint& paint_offset);
+
  private:
+  void CollectDescendantOutlines(
+      const LayoutPoint& paint_offset,
+      HashMap<const LayoutObject*, NGPaintFragment*>* anchor_fragment_map,
+      HashMap<const LayoutObject*, Vector<LayoutRect>>* outline_rect_map);
+
   const NGPaintFragment& paint_fragment_;
 };
 
