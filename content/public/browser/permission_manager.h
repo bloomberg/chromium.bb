@@ -58,11 +58,6 @@ class CONTENT_EXPORT PermissionManager {
       const base::Callback<void(
           const std::vector<blink::mojom::PermissionStatus>&)>& callback) = 0;
 
-  // Cancels a previous permission request specified by |request_id|. Cancelling
-  // an already cancelled request or providing the |request_id|
-  // kNoPendingOperation is a no-op.
-  virtual void CancelPermissionRequest(int request_id) = 0;
-
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
   // outside of a frame context.

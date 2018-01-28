@@ -19,10 +19,6 @@ MockPermissionPrompt::~MockPermissionPrompt() {
     factory_->HideView(this);
 }
 
-bool MockPermissionPrompt::CanAcceptRequestUpdate() {
-  return can_update_ui_;
-}
-
 void MockPermissionPrompt::UpdateAnchorPosition() {}
 
 gfx::NativeWindow MockPermissionPrompt::GetNativeWindow() {
@@ -32,9 +28,8 @@ gfx::NativeWindow MockPermissionPrompt::GetNativeWindow() {
 }
 
 MockPermissionPrompt::MockPermissionPrompt(MockPermissionPromptFactory* factory,
-                                           Delegate* delegate,
-                                           bool can_update_ui)
-    : factory_(factory), delegate_(delegate), can_update_ui_(can_update_ui) {
+                                           Delegate* delegate)
+    : factory_(factory), delegate_(delegate) {
   for (const PermissionRequest* request : delegate_->Requests()) {
     // The actual prompt will call these, so test they're sane.
     EXPECT_FALSE(request->GetMessageTextFragment().empty());

@@ -31,6 +31,8 @@ class PermissionRequestManagerTestApi {
   // prompt currently showing.
   gfx::NativeWindow GetPromptWindow();
 
+  void SimulateWebContentsDestroyed();
+
  private:
   PermissionRequestManager* manager_;
 

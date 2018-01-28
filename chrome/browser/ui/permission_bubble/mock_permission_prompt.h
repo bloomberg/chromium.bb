@@ -18,7 +18,6 @@ class MockPermissionPrompt : public PermissionPrompt {
   ~MockPermissionPrompt() override;
 
   // PermissionPrompt:
-  bool CanAcceptRequestUpdate() override;
   void UpdateAnchorPosition() override;
   gfx::NativeWindow GetNativeWindow() override;
 
@@ -28,12 +27,10 @@ class MockPermissionPrompt : public PermissionPrompt {
   friend class MockPermissionPromptFactory;
 
   MockPermissionPrompt(MockPermissionPromptFactory* factory,
-                       Delegate* delegate,
-                       bool can_update_ui);
+                       Delegate* delegate);
 
   MockPermissionPromptFactory* factory_;
   Delegate* delegate_;
-  bool can_update_ui_;
 };
 
 #endif  // CHROME_BROWSER_UI_PERMISSION_BUBBLE_MOCK_PERMISSION_PROMPT_H_

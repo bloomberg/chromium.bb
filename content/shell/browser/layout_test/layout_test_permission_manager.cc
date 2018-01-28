@@ -101,10 +101,6 @@ int LayoutTestPermissionManager::RequestPermissions(
   return kNoPendingOperation;
 }
 
-void LayoutTestPermissionManager::CancelPermissionRequest(int request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 void LayoutTestPermissionManager::ResetPermission(
     PermissionType permission,
     const GURL& requesting_origin,

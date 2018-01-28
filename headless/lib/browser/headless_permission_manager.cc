@@ -50,8 +50,6 @@ int HeadlessPermissionManager::RequestPermissions(
   return kNoPendingOperation;
 }
 
-void HeadlessPermissionManager::CancelPermissionRequest(int request_id) {}
-
 void HeadlessPermissionManager::ResetPermission(
     content::PermissionType permission,
     const GURL& requesting_origin,

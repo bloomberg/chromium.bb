@@ -15,10 +15,10 @@ namespace content {
 GeolocationServiceImplContext::GeolocationServiceImplContext(
     PermissionManager* permission_manager)
     : permission_manager_(permission_manager),
-      request_id_(PermissionManager::kNoPendingOperation) {}
+      request_id_(PermissionManager::kNoPendingOperation),
+      weak_factory_(this) {}
 
 GeolocationServiceImplContext::~GeolocationServiceImplContext() {
-  permission_manager_->CancelPermissionRequest(request_id_);
 }
 
 void GeolocationServiceImplContext::RequestPermission(
@@ -38,7 +38,7 @@ void GeolocationServiceImplContext::RequestPermission(
       // NOTE: The permission request is canceled in the destructor, so it is
       // safe to pass |this| as Unretained.
       base::Bind(&GeolocationServiceImplContext::HandlePermissionStatus,
-                 base::Unretained(this), std::move(callback)));
+                 weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void GeolocationServiceImplContext::HandlePermissionStatus(
@@ -81,8 +81,8 @@ void GeolocationServiceImpl::CreateGeolocation(
 
   binding_set_.dispatch_context()->RequestPermission(
       render_frame_host_, user_gesture,
-      // NOTE: The request is canceled by the destructor of the
-      // dispatch_context, so it is safe to bind |this| as Unretained.
+      // There is an assumption here that the GeolocationServiceImplContext will
+      // outlive the GeolocationServiceImpl.
       base::Bind(&GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
                  base::Unretained(this), base::Passed(&request)));
 }

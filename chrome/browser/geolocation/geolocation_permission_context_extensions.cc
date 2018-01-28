@@ -102,19 +102,3 @@ bool GeolocationPermissionContextExtensions::DecidePermission(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
 }
-
-bool GeolocationPermissionContextExtensions::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    int bridge_id) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::WebViewPermissionHelper* web_view_permission_helper =
-      web_contents ?
-      extensions::WebViewPermissionHelper::FromWebContents(web_contents)
-      : NULL;
-  if (web_view_permission_helper) {
-    web_view_permission_helper->CancelGeolocationPermissionRequest(bridge_id);
-    return true;
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return false;
-}

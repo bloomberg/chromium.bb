@@ -78,8 +78,6 @@ class TestPermissionManager : public content::PermissionManager {
     return kNoPendingOperation;
   }
 
-  void CancelPermissionRequest(int request_id) override { NOTIMPLEMENTED(); }
-
   void ResetPermission(content::PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override {

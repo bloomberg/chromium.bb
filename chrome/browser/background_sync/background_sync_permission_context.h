@@ -22,10 +22,6 @@ class BackgroundSyncPermissionContext : public PermissionContextBase {
   explicit BackgroundSyncPermissionContext(Profile* profile);
   ~BackgroundSyncPermissionContext() override = default;
 
-  // PermissionContextBase:
-  void CancelPermissionRequest(content::WebContents* web_contents,
-                               const PermissionRequestID& id) override;
-
  private:
   // PermissionContextBase:
   void DecidePermission(content::WebContents* web_contents,

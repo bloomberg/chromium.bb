@@ -36,10 +36,6 @@ class GeolocationPermissionContextExtensions {
                         bool* permission_set,
                         bool* new_permission);
 
-  // Returns true if the cancellation request was handled.
-  bool CancelPermissionRequest(content::WebContents* web_contents,
-                               int bridge_id);
-
  private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile_;

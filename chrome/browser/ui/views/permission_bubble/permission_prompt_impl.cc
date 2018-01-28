@@ -270,10 +270,6 @@ PermissionPromptImpl::~PermissionPromptImpl() {
     bubble_delegate_->CloseBubble();
 }
 
-bool PermissionPromptImpl::CanAcceptRequestUpdate() {
-  return !(bubble_delegate_ && bubble_delegate_->IsMouseHovered());
-}
-
 void PermissionPromptImpl::UpdateAnchorPosition() {
   DCHECK(browser_);
   DCHECK(browser_->window());

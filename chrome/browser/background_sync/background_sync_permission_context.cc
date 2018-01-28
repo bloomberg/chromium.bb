@@ -13,14 +13,6 @@ BackgroundSyncPermissionContext::BackgroundSyncPermissionContext(
                             CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
                             blink::FeaturePolicyFeature::kNotFound) {}
 
-void BackgroundSyncPermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  // Background sync permission requests are resolved instantly without
-  // prompting the user, there is no way to cancel them.
-  NOTREACHED();
-}
-
 void BackgroundSyncPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,

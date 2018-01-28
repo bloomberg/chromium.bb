@@ -60,11 +60,6 @@ class PermissionPrompt {
       Delegate* delegate);
   virtual ~PermissionPrompt() {}
 
-  // Returns true if the view can accept a new Show() command to coalesce
-  // requests. Currently the policy is that this should return true if the view
-  // is being shown and the mouse is not over the view area (!IsMouseHovered).
-  virtual bool CanAcceptRequestUpdate() = 0;
-
   // Updates where the prompt should be anchored. ex: fullscreen toggle.
   virtual void UpdateAnchorPosition() = 0;
 

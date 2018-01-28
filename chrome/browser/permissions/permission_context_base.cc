@@ -286,19 +286,6 @@ void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
                                       CONTENT_SETTING_DEFAULT);
 }
 
-void PermissionContextBase::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  auto it = pending_requests_.find(id.ToString());
-  if (it != pending_requests_.end() && web_contents != nullptr &&
-      PermissionRequestManager::FromWebContents(web_contents) != nullptr) {
-    PermissionRequestManager::FromWebContents(web_contents)
-        ->CancelRequest(it->second.get());
-  }
-}
-
 bool PermissionContextBase::IsPermissionKillSwitchOn() const {
   const std::string param = variations::GetVariationParamValue(
       kPermissionsKillSwitchFieldStudy,

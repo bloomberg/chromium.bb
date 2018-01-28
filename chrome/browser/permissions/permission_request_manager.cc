@@ -31,61 +31,6 @@
 
 namespace {
 
-class CancelledRequest : public PermissionRequest {
- public:
-  explicit CancelledRequest(PermissionRequest* cancelled)
-      : icon_(cancelled->GetIconId()),
-#if defined(OS_ANDROID)
-        message_(cancelled->GetMessageText()),
-#endif
-        message_fragment_(cancelled->GetMessageTextFragment()),
-        origin_(cancelled->GetOrigin()),
-        request_type_(cancelled->GetPermissionRequestType()),
-        gesture_type_(cancelled->GetGestureType()),
-        content_settings_type_(cancelled->GetContentSettingsType()) {
-  }
-  ~CancelledRequest() override {}
-
-  IconId GetIconId() const override { return icon_; }
-#if defined(OS_ANDROID)
-  base::string16 GetMessageText() const override { return message_; }
-#endif
-  base::string16 GetMessageTextFragment() const override {
-    return message_fragment_;
-  }
-  GURL GetOrigin() const override { return origin_; }
-
-  // These are all no-ops since the placeholder is non-forwarding.
-  void PermissionGranted() override {}
-  void PermissionDenied() override {}
-  void Cancelled() override {}
-
-  void RequestFinished() override { delete this; }
-
-  PermissionRequestType GetPermissionRequestType() const override {
-    return request_type_;
-  }
-
-  PermissionRequestGestureType GetGestureType() const override {
-    return gesture_type_;
-  }
-
-  ContentSettingsType GetContentSettingsType() const override {
-    return content_settings_type_;
-  }
-
- private:
-  IconId icon_;
-#if defined(OS_ANDROID)
-  base::string16 message_;
-#endif
-  base::string16 message_fragment_;
-  GURL origin_;
-  PermissionRequestType request_type_;
-  PermissionRequestGestureType gesture_type_;
-  ContentSettingsType content_settings_type_;
-};
-
 bool IsMessageTextEqual(PermissionRequest* a,
                         PermissionRequest* b) {
   if (a == b)
@@ -201,56 +146,6 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
 
   if (!IsBubbleVisible())
     ScheduleShowBubble();
-}
-
-void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
-  // First look in the queued requests, where we can simply finish the request
-  // and go on.
-  base::circular_deque<PermissionRequest*>::iterator queued_requests_iter;
-  for (queued_requests_iter = queued_requests_.begin();
-       queued_requests_iter != queued_requests_.end(); queued_requests_iter++) {
-    if (*queued_requests_iter == request) {
-      RequestFinishedIncludingDuplicates(*queued_requests_iter);
-      queued_requests_.erase(queued_requests_iter);
-      return;
-    }
-  }
-
-  if (!requests_.empty() && requests_[0] == request) {
-    // Grouped (mic+camera) requests are currently never cancelled.
-    // TODO(timloh): We should fix this at some point.
-    DCHECK_EQ(static_cast<size_t>(1), requests_.size());
-
-    // We can finalize the prompt if we aren't showing the dialog (because we
-    // switched tabs with an active prompt), or if we are showing it and it
-    // can accept the update.
-    if (!view_ || view_->CanAcceptRequestUpdate()) {
-      FinalizeBubble(PermissionAction::IGNORED);
-      return;
-    }
-
-    // Cancel the existing request and replace it with a dummy.
-    PermissionRequest* cancelled_request = new CancelledRequest(request);
-    RequestFinishedIncludingDuplicates(request);
-    requests_[0] = cancelled_request;
-    return;
-  }
-
-  // Since |request| wasn't found in queued_requests_ or
-  // requests_ it must have been marked as a duplicate. We can't search
-  // duplicate_requests_ by value, so instead use GetExistingRequest to find the
-  // key (request it was duped against), and iterate through duplicates of that.
-  PermissionRequest* existing_request = GetExistingRequest(request);
-  auto range = duplicate_requests_.equal_range(existing_request);
-  for (auto it = range.first; it != range.second; ++it) {
-    if (request == it->second) {
-      it->second->RequestFinished();
-      duplicate_requests_.erase(it);
-      return;
-    }
-  }
-
-  NOTREACHED();  // Callers should not cancel requests that are not pending.
 }
 
 void PermissionRequestManager::UpdateAnchorPosition() {

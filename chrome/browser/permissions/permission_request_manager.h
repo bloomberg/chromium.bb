@@ -66,15 +66,6 @@ class PermissionRequestManager
   // callbacks called as the outstanding request.
   void AddRequest(PermissionRequest* request);
 
-  // Cancels an outstanding request. This may have different effects depending
-  // on what is going on with the bubble. If the request is pending, it will be
-  // removed and never shown. If the request is showing, it will continue to be
-  // shown, but the user's action won't be reported back to the request object.
-  // In some circumstances, we can remove the request from the bubble, and may
-  // do so. The request will have RequestFinished executed on it if it is found,
-  // at which time the caller is free to delete the request.
-  void CancelRequest(PermissionRequest* request);
-
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();
 

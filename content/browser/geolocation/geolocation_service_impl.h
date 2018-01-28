@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/geolocation.mojom.h"
@@ -37,6 +38,9 @@ class GeolocationServiceImplContext {
   void HandlePermissionStatus(
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback,
       blink::mojom::PermissionStatus permission_status);
+
+  base::WeakPtrFactory<GeolocationServiceImplContext> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceImplContext);
 };
 
