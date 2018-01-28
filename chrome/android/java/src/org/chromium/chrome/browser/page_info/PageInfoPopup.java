@@ -676,7 +676,8 @@ public class PageInfoPopup implements OnClickListener {
                 assert false : "Invalid setting " + permission.setting + " for permission "
                         + permission.type;
         }
-        if (WebsitePreferenceBridge.isPermissionControlledByDSE(permission.type, mFullUrl, false)) {
+        if (WebsitePreferenceBridge.isPermissionControlledByDSE(
+                    permission.type, mFullUrl, mTab.isIncognito())) {
             status_text = statusTextForDSEPermission(permission);
         }
         builder.append(status_text);
