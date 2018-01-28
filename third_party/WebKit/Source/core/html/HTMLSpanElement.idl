@@ -24,6 +24,6 @@
  */
 
 // https://html.spec.whatwg.org/#the-span-element
-
+[HTMLConstructor]
 interface HTMLSpanElement : HTMLElement {
 };

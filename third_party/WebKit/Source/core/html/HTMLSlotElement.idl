@@ -25,7 +25,7 @@
  */
 
 // https://w3c.github.io/webcomponents/spec/shadow/#the-slot-element
-
+[HTMLConstructor]
 interface HTMLSlotElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [ImplementedAs=AssignedNodesForBinding] sequence<Node> assignedNodes(optional AssignedNodesOptions options);

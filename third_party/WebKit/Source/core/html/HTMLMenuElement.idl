@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-menu-element
-
+[HTMLConstructor]
 interface HTMLMenuElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLMenuElement-partial

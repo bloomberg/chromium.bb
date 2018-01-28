@@ -29,7 +29,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-template-element
-
+[HTMLConstructor]
 interface HTMLTemplateElement : HTMLElement {
     readonly attribute DocumentFragment content;
 };

@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-tr-element
-
+[HTMLConstructor]
 interface HTMLTableRowElement : HTMLElement {
     readonly attribute long rowIndex;
     readonly attribute long sectionRowIndex;

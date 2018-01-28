@@ -26,6 +26,7 @@
 // https://html.spec.whatwg.org/#the-audio-element
 
 [
+    HTMLConstructor,
     NamedConstructor=Audio(optional DOMString src),
     ConstructorCallWith=Document
 ] interface HTMLAudioElement : HTMLMediaElement {

@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-fieldset-element
-
+[HTMLConstructor]
 interface HTMLFieldSetElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;

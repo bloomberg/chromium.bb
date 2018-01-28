@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-pre-element
-
+[HTMLConstructor]
 interface HTMLPreElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLPreElement-partial

@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-style-element
-
+[HTMLConstructor]
 interface HTMLStyleElement : HTMLElement {
     // TODO(foolip): The disabled attribute has been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703

@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-button-element
-
+[HTMLConstructor]
 interface HTMLButtonElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions, Reflect] attribute boolean disabled;

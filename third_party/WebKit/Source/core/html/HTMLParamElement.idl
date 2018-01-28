@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-param-element
-
+[HTMLConstructor]
 interface HTMLParamElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, Reflect] attribute DOMString value;

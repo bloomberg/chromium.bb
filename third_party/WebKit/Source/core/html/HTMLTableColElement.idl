@@ -20,7 +20,7 @@
 
 // https://html.spec.whatwg.org/#the-colgroup-element
 // https://html.spec.whatwg.org/#the-col-element
-
+[HTMLConstructor]
 interface HTMLTableColElement : HTMLElement {
     [CEReactions] attribute unsigned long span;
 

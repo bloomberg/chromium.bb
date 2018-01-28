@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-area-element
-
+[HTMLConstructor]
 interface HTMLAreaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, Reflect] attribute DOMString coords;

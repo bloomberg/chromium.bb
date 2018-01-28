@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-progress-element
-
+[HTMLConstructor]
 interface HTMLProgressElement : HTMLElement {
     [CEReactions] attribute double value;
     [CEReactions] attribute double max;

@@ -18,7 +18,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-script-element
-
+[HTMLConstructor]
 interface HTMLScriptElement : HTMLElement {
     [CEReactions, Reflect, URL, RaisesException=Setter] attribute ScriptURLString src;
     [CEReactions, Reflect] attribute DOMString type;

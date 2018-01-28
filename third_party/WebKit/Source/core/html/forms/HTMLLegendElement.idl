@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#the-legend-element
-
+[HTMLConstructor]
 interface HTMLLegendElement : HTMLElement {
     readonly attribute HTMLFormElement? form;
 
