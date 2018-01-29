@@ -16,6 +16,7 @@
 #include "core/html/custom/CustomElementReaction.h"
 #include "core/html/custom/CustomElementReactionStack.h"
 #include "core/html/custom/CustomElementUpgradeReaction.h"
+#include "core/html_element_factory.h"
 
 namespace blink {
 
@@ -106,8 +107,30 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
 
 HTMLElement* CustomElementDefinition::CreateElementAsync(
     Document& document,
-    const QualifiedName& tag_name) {
+    const QualifiedName& tag_name,
+    CreateElementFlags flags) {
   // https://dom.spec.whatwg.org/#concept-create-element
+  // 5. If definition is non-null, and definition’s name is not equal to
+  // its local name (i.e., definition represents a customized built-in
+  // element), then:
+  if (!descriptor_.IsAutonomous()) {
+    // 5.1. Let interface be the element interface for localName and the
+    // HTML namespace.
+    // 5.2. Set result to a new element that implements interface, with
+    // no attributes, namespace set to the HTML namespace, namespace
+    // prefix set to prefix, local name set to localName, custom element
+    // state set to "undefined", custom element definition set to null,
+    // is value set to is, and node document set to document.
+    auto* result = HTMLElementFactory::CreateRawHTMLElement(
+        tag_name.LocalName(), document, flags);
+    result->SetCustomElementState(CustomElementState::kUndefined);
+
+    // 5.4. Otherwise, enqueue a custom element upgrade reaction given
+    // result and definition.
+    EnqueueUpgradeReaction(result);
+    return result;
+  }
+
   // 6. If definition is non-null, then:
   // 6.2. If the synchronous custom elements flag is not set:
   // 6.2.1. Set result to a new element that implements the HTMLElement

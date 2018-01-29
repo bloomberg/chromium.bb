@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/html/custom/CustomElementDescriptor.h"
 #include "platform/bindings/ScriptWrappable.h"  // For TraceWrapperBase
 #include "platform/heap/Handle.h"
@@ -54,7 +55,9 @@ class CORE_EXPORT CustomElementDefinition
 
   HTMLElement* CreateElementForConstructor(Document&);
   virtual HTMLElement* CreateElementSync(Document&, const QualifiedName&) = 0;
-  HTMLElement* CreateElementAsync(Document&, const QualifiedName&);
+  HTMLElement* CreateElementAsync(Document&,
+                                  const QualifiedName&,
+                                  CreateElementFlags);
 
   void Upgrade(Element*);
 

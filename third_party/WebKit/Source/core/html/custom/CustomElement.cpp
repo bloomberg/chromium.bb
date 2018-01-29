@@ -138,7 +138,8 @@ HTMLElement* CustomElement::CreateCustomElementSync(
 
 HTMLElement* CustomElement::CreateCustomElementAsync(
     Document& document,
-    const QualifiedName& tag_name) {
+    const QualifiedName& tag_name,
+    CreateElementFlags flags) {
   DCHECK(ShouldCreateCustomElement(tag_name));
 
   // To create an element:
@@ -148,7 +149,7 @@ HTMLElement* CustomElement::CreateCustomElementAsync(
   if (CustomElementDefinition* definition = DefinitionFor(
           document,
           CustomElementDescriptor(tag_name.LocalName(), tag_name.LocalName())))
-    return definition->CreateElementAsync(document, tag_name);
+    return definition->CreateElementAsync(document, tag_name, flags);
 
   return CreateUndefinedElement(document, tag_name);
 }
@@ -257,8 +258,11 @@ void CustomElement::TryToUpgrade(Element* element) {
   CustomElementRegistry* registry = CustomElement::Registry(*element);
   if (!registry)
     return;
-  if (CustomElementDefinition* definition = registry->DefinitionFor(
-          CustomElementDescriptor(element->localName(), element->localName())))
+  const AtomicString& is_value = element->FastGetAttribute(HTMLNames::isAttr);
+  if (CustomElementDefinition* definition =
+          registry->DefinitionFor(CustomElementDescriptor(
+              is_value.IsNull() ? element->localName() : is_value,
+              element->localName())))
     definition->EnqueueUpgradeReaction(element);
   else
     registry->AddCandidate(element);

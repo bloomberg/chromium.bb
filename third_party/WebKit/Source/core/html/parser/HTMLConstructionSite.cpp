@@ -870,9 +870,7 @@ Element* HTMLConstructionSite::CreateElement(
   QualifiedName tag_name(g_null_atom, token->GetName(), namespace_uri);
   // "3. Let is be the value of the "is" attribute in the given token ..." etc.
   // "4. Let definition be the result of looking up a custom element ..." etc.
-  CustomElementDefinition* definition =
-      is_parsing_fragment_ ? nullptr
-                           : LookUpCustomElementDefinition(document, token);
+  auto* definition = LookUpCustomElementDefinition(document, token);
   // "5. If definition is non-null and the parser was not originally created
   // for the HTML fragment parsing algorithm, then let will execute script
   // be true."
@@ -911,7 +909,12 @@ Element* HTMLConstructionSite::CreateElement(
     // and ThrowOnDynamicMarkupInsertionCountIncrementer destructors implement
     // steps 9.1-3.
   } else {
-    element = document.createElement(tag_name, GetCreateElementFlags());
+    if (definition) {
+      element = definition->CreateElementAsync(document, tag_name,
+                                               GetCreateElementFlags());
+    } else {
+      element = document.createElement(tag_name, GetCreateElementFlags());
+    }
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.
     DCHECK_NE(element->GetCustomElementState(), CustomElementState::kCustom);
