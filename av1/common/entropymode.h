@@ -57,9 +57,7 @@ extern "C" {
 // 4096(BLOCK_64X64)                        -> 8
 #define PALATTE_BSIZE_CTXS 9
 
-#if CONFIG_KF_CTX
 #define KF_MODE_CONTEXTS 5
-#endif
 
 // A define to configure whether 4:1 and 1:4 partitions are allowed for 128x128
 // blocks. They seem not to be giving great results (and might be expensive to
@@ -176,16 +174,12 @@ typedef struct frame_contexts {
 #endif
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [CDF_SIZE(SWITCHABLE_FILTERS)];
-/* kf_y_cdf is discarded after use, so does not require persistent storage.
-   However, we keep it with the other CDFs in this struct since it needs to
-   be copied to each tile to support parallelism just like the others.
-*/
-#if CONFIG_KF_CTX
+  /* kf_y_cdf is discarded after use, so does not require persistent storage.
+     However, we keep it with the other CDFs in this struct since it needs to
+     be copied to each tile to support parallelism just like the others.
+  */
   aom_cdf_prob kf_y_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS]
                        [CDF_SIZE(INTRA_MODES)];
-#else
-  aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)];
-#endif
 
 #if CONFIG_EXT_INTRA_MOD
   aom_cdf_prob angle_delta_cdf[DIRECTIONAL_MODES]
@@ -215,11 +209,7 @@ typedef struct FRAME_COUNTS {
 // Note: This structure should only contain 'unsigned int' fields, or
 // aggregates built solely from 'unsigned int' fields/elements
 #if CONFIG_ENTROPY_STATS
-#if CONFIG_KF_CTX
   unsigned int kf_y_mode[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][INTRA_MODES];
-#else
-  unsigned int kf_y_mode[INTRA_MODES][INTRA_MODES][INTRA_MODES];
-#endif
   unsigned int angle_delta[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
 #if CONFIG_CFL
@@ -323,14 +313,9 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_FILTER_INTRA
 } FRAME_COUNTS;
 
-#if CONFIG_KF_CTX
 extern const aom_cdf_prob default_kf_y_mode_cdf[KF_MODE_CONTEXTS]
                                                [KF_MODE_CONTEXTS]
                                                [CDF_SIZE(INTRA_MODES)];
-#else
-extern const aom_cdf_prob default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
-                                               [CDF_SIZE(INTRA_MODES)];
-#endif
 
 // Decides what set to assign to 16x16 transforms.
 // Set 0:

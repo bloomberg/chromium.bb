@@ -815,13 +815,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #if CONFIG_ENTROPY_STATS
     const PREDICTION_MODE above = av1_above_block_mode(above_mi);
     const PREDICTION_MODE left = av1_left_block_mode(left_mi);
-#if CONFIG_KF_CTX
-    int above_ctx = intra_mode_context[above];
-    int left_ctx = intra_mode_context[left];
+    const int above_ctx = intra_mode_context[above];
+    const int left_ctx = intra_mode_context[left];
     ++counts->kf_y_mode[above_ctx][left_ctx][y_mode];
-#else
-    ++counts->kf_y_mode[above][left][y_mode];
-#endif
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(get_y_mode_cdf(fc, above_mi, left_mi), y_mode, INTRA_MODES);

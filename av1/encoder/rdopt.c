@@ -3436,14 +3436,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const MODE_INFO *left_mi = xd->left_mi;
   const PREDICTION_MODE A = av1_above_block_mode(above_mi);
   const PREDICTION_MODE L = av1_left_block_mode(left_mi);
-
-#if CONFIG_KF_CTX
   const int above_ctx = intra_mode_context[A];
   const int left_ctx = intra_mode_context[L];
   bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
-#else
-  bmode_costs = x->y_mode_costs[A][L];
-#endif
 
   mbmi->angle_delta[0] = 0;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
