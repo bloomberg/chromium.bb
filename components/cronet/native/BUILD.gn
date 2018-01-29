@@ -1,6 +1,13 @@
 import("//components/cronet/native/include/headers.gni")
 import("//testing/test.gni")
 
+config("cronet_native_include_config") {
+  include_dirs = [
+    "//components/cronet/native/generated",
+    "//components/cronet/native/include",
+  ]
+}
+
 # Cronet native API implementation.
 source_set("cronet_native_impl") {
   sources = [
@@ -24,6 +31,7 @@ source_set("cronet_native_impl") {
     "//components/cronet/native/generated",
     "//components/cronet/native/include",
   ]
+  public_configs = [ ":cronet_native_include_config" ]
 }
 
 # Unit tests for Cronet native API. Depends on cronet_native_impl to test

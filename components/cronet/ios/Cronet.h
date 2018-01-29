@@ -5,6 +5,9 @@
 #import <Foundation/Foundation.h>
 
 #include "bidirectional_stream_c.h"
+#include "cronet.idl_c.h"
+#include "cronet_c.h"
+#include "cronet_export.h"
 
 // Type of HTTP cache; public interface to private implementation defined in
 // URLRequestContextConfig class.
