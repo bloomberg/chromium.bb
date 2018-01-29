@@ -37,7 +37,7 @@ class MEDIA_EXPORT DecoderBuffer
     : public base::RefCountedThreadSafe<DecoderBuffer> {
  public:
   enum {
-    kPaddingSize = 32,
+    kPaddingSize = 64,
 #if defined(ARCH_CPU_ARM_FAMILY)
     kAlignmentSize = 16
 #else
