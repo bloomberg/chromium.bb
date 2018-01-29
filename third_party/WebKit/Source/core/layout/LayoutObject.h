@@ -1323,6 +1323,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   IntRect AbsoluteBoundingBoxRect(MapCoordinatesFlags = 0) const;
   // FIXME: This function should go away eventually
   IntRect AbsoluteBoundingBoxRectIgnoringTransforms() const;
+  // These two handles inline anchors without content as well.
+  LayoutRect AbsoluteBoundingBoxRectHandlingEmptyAnchor() const;
+  // This returns an IntRect expanded from
+  // AbsoluteBoundingBoxRectHandlingEmptyAnchor by ScrollMargin.
+  LayoutRect AbsoluteBoundingBoxRectForScrollIntoView() const;
 
   // Build an array of quads in absolute coords for line boxes
   virtual void AbsoluteQuads(Vector<FloatQuad>&,
@@ -2157,6 +2162,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void RemoveShapeImageClient(ShapeValue*);
   void RemoveCursorImageClient(const CursorList*);
+
+  // These are helper functions for AbsoluteBoudingBoxRectHandlingEmptyAnchor()
+  // and AbsoluteBoundingBoxRectForScrollIntoView().
+  enum class ExpandScrollMargin { kExpand, kIgnore };
+  LayoutRect AbsoluteBoundingBoxRectHelper(ExpandScrollMargin) const;
+  bool GetUpperLeftCorner(ExpandScrollMargin, FloatPoint&) const;
+  bool GetLowerRightCorner(ExpandScrollMargin, FloatPoint&) const;
 
 #if DCHECK_IS_ON()
   void CheckBlockPositionedObjectsNeedLayout();

@@ -550,6 +550,11 @@ class CORE_EXPORT Node : public EventTarget {
     return PixelSnappedIntRect(BoundingBox());
   }
 
+  // BoundingBoxForScrollIntoView() is the node's scroll snap area.
+  // It is expanded from the BoundingBox() by scroll-margin.
+  // https://drafts.csswg.org/css-scroll-snap-1/#scroll-snap-area
+  LayoutRect BoundingBoxForScrollIntoView() const;
+
   unsigned NodeIndex() const;
 
   // Returns the DOM ownerDocument attribute. This method never returns null,

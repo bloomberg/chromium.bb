@@ -1082,6 +1082,226 @@ IntRect LayoutObject::AbsoluteBoundingBoxRectIgnoringTransforms() const {
   return result;
 }
 
+LayoutRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyAnchor() const {
+  return AbsoluteBoundingBoxRectHelper(ExpandScrollMargin::kIgnore);
+}
+
+LayoutRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
+  return AbsoluteBoundingBoxRectHelper(ExpandScrollMargin::kExpand);
+}
+
+LayoutRect LayoutObject::AbsoluteBoundingBoxRectHelper(
+    ExpandScrollMargin expand) const {
+  FloatPoint upper_left, lower_right;
+  bool found_upper_left = GetUpperLeftCorner(expand, upper_left);
+  bool found_lower_right = GetLowerRightCorner(expand, lower_right);
+
+  // If we've found one corner, but not the other,
+  // then we should just return a point at the corner that we did find.
+  if (found_upper_left != found_lower_right) {
+    if (found_upper_left)
+      lower_right = upper_left;
+    else
+      upper_left = lower_right;
+  }
+
+  FloatSize size = lower_right.ExpandedTo(upper_left) - upper_left;
+  if (std::isnan(size.Width()) || std::isnan(size.Height()))
+    return LayoutRect();
+
+  return EnclosingLayoutRect(FloatRect(upper_left, size));
+}
+
+namespace {
+
+enum class MarginCorner { kTopLeft, kBottomRight };
+
+void MovePointByScrollMargin(const LayoutObject* layout_object,
+                             MarginCorner corner,
+                             FloatPoint& point) {
+  FloatSize offset;
+  const ComputedStyle* style = layout_object->Style();
+
+  if (corner == MarginCorner::kTopLeft)
+    offset = FloatSize(-style->ScrollMarginLeft(), -style->ScrollMarginTop());
+  else
+    offset = FloatSize(style->ScrollMarginRight(), style->ScrollMarginBottom());
+
+  point.Move(offset);
+}
+
+inline const LayoutObject* EndOfContinuations(
+    const LayoutObject* layout_object) {
+  const LayoutObject* prev = nullptr;
+  const LayoutObject* cur = layout_object;
+
+  if (!cur->IsLayoutInline() && !cur->IsLayoutBlockFlow())
+    return nullptr;
+
+  while (cur) {
+    prev = cur;
+    if (cur->IsLayoutInline())
+      cur = ToLayoutInline(cur)->Continuation();
+    else
+      cur = ToLayoutBlockFlow(cur)->Continuation();
+  }
+
+  return prev;
+}
+
+}  // namespace
+
+bool LayoutObject::GetUpperLeftCorner(ExpandScrollMargin expand,
+                                      FloatPoint& point) const {
+  if (!IsInline() || IsAtomicInlineLevel()) {
+    point = LocalToAbsolute(FloatPoint(), kUseTransforms);
+    if (expand == ExpandScrollMargin::kExpand)
+      MovePointByScrollMargin(this, MarginCorner::kTopLeft, point);
+    return true;
+  }
+
+  // Find the next text/image child, to get a position.
+  const LayoutObject* runner = this;
+  while (runner) {
+    const LayoutObject* const previous = runner;
+    if (LayoutObject* runner_first_child = runner->SlowFirstChild()) {
+      runner = runner_first_child;
+    } else if (runner->NextSibling()) {
+      runner = runner->NextSibling();
+    } else {
+      LayoutObject* next = nullptr;
+      while (!next && runner->Parent()) {
+        runner = runner->Parent();
+        next = runner->NextSibling();
+      }
+      runner = next;
+
+      if (!runner)
+        break;
+    }
+    DCHECK(runner);
+
+    if (!runner->IsInline() || runner->IsAtomicInlineLevel()) {
+      point = runner->LocalToAbsolute(FloatPoint(), kUseTransforms);
+      if (expand == ExpandScrollMargin::kExpand)
+        MovePointByScrollMargin(runner, MarginCorner::kTopLeft, point);
+      return true;
+    }
+
+    if (runner->IsText() && !runner->IsBR()) {
+      const Optional<FloatPoint> maybe_point =
+          ToLayoutText(runner)->GetUpperLeftCorner();
+      if (maybe_point.has_value()) {
+        point = runner->LocalToAbsolute(maybe_point.value(), kUseTransforms);
+        return true;
+      }
+      if (previous->GetNode() == GetNode()) {
+        // Do nothing - skip unrendered whitespace that is a child or next
+        // sibling of the anchor.
+        // FIXME: This fails to skip a whitespace sibling when there was also a
+        // whitespace child (because |previous| has moved).
+        continue;
+      }
+      point = runner->LocalToAbsolute(FloatPoint(), kUseTransforms);
+      if (expand == ExpandScrollMargin::kExpand)
+        MovePointByScrollMargin(runner, MarginCorner::kTopLeft, point);
+      return true;
+    }
+
+    if (runner->IsAtomicInlineLevel()) {
+      DCHECK(runner->IsBox());
+      const LayoutBox* box = ToLayoutBox(runner);
+      point = FloatPoint(box->Location());
+      point = runner->Container()->LocalToAbsolute(point, kUseTransforms);
+      if (expand == ExpandScrollMargin::kExpand)
+        MovePointByScrollMargin(box, MarginCorner::kTopLeft, point);
+      return true;
+    }
+  }
+
+  // If the target doesn't have any children or siblings that could be used to
+  // calculate the scroll position, we must be at the end of the
+  // document. Scroll to the bottom.
+  // FIXME: who said anything about scrolling?
+  if (!runner && GetDocument().View()) {
+    point = FloatPoint(0, GetDocument()
+                              .View()
+                              ->LayoutViewportScrollableArea()
+                              ->ContentsSize()
+                              .Height());
+    return true;
+  }
+  return false;
+}
+
+bool LayoutObject::GetLowerRightCorner(ExpandScrollMargin expand,
+                                       FloatPoint& point) const {
+  if (!IsInline() || IsAtomicInlineLevel()) {
+    const LayoutBox* box = ToLayoutBox(this);
+    point = LocalToAbsolute(FloatPoint(box->Size()), kUseTransforms);
+    if (expand == ExpandScrollMargin::kExpand)
+      MovePointByScrollMargin(this, MarginCorner::kBottomRight, point);
+    return true;
+  }
+
+  const LayoutObject* runner = this;
+  const LayoutObject* start_continuation = nullptr;
+  // Find the last text/image child, to get a position.
+  while (runner) {
+    if (LayoutObject* runner_last_child = runner->SlowLastChild()) {
+      runner = runner_last_child;
+    } else if (runner != this && runner->PreviousSibling()) {
+      runner = runner->PreviousSibling();
+    } else {
+      const LayoutObject* prev = nullptr;
+      while (!prev) {
+        // Check if the current layoutObject has contiunation and move the
+        // location for finding the layoutObject to the end of continuations if
+        // there is the continuation.  Skip to check the contiunation on
+        // contiunations section
+        if (start_continuation == runner) {
+          start_continuation = nullptr;
+        } else if (!start_continuation) {
+          if (const LayoutObject* continuation = EndOfContinuations(runner)) {
+            start_continuation = runner;
+            prev = continuation;
+            break;
+          }
+        }
+        // Prevent to overrun out of own layout tree
+        if (runner == this) {
+          return false;
+        }
+        runner = runner->Parent();
+        if (!runner)
+          return false;
+        prev = runner->PreviousSibling();
+      }
+      runner = prev;
+    }
+    DCHECK(runner);
+    if (runner->IsText() || runner->IsAtomicInlineLevel()) {
+      point = FloatPoint();
+      if (runner->IsText()) {
+        const LayoutText* text = ToLayoutText(runner);
+        IntRect lines_box = EnclosingIntRect(text->LinesBoundingBox());
+        if (!lines_box.MaxX() && !lines_box.MaxY())
+          continue;
+        point.MoveBy(lines_box.MaxXMaxYCorner());
+        point = runner->LocalToAbsolute(point, kUseTransforms);
+      } else {
+        const LayoutBox* box = ToLayoutBox(runner);
+        point.MoveBy(box->FrameRect().MaxXMaxYCorner());
+        point = runner->Container()->LocalToAbsolute(point, kUseTransforms);
+        if (expand == ExpandScrollMargin::kExpand)
+          MovePointByScrollMargin(box, MarginCorner::kBottomRight, point);
+      }
+      return true;
+    }
+  }
+  return true;
+}
+
 IntRect LayoutObject::AbsoluteElementBoundingBoxRect() const {
   Vector<LayoutRect> rects;
   const LayoutBoxModelObject& container = EnclosingLayer()->GetLayoutObject();

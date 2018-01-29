@@ -530,7 +530,7 @@ void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
   ScrollAlignment align_y =
       ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode);
 
-  LayoutRect bounds = BoundingBox();
+  LayoutRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
       bounds, {align_x, align_y, kProgrammaticScroll, false, behavior});
 
@@ -543,7 +543,7 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   if (!GetLayoutObject())
     return;
 
-  LayoutRect bounds = BoundingBox();
+  LayoutRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
         bounds,
@@ -2978,7 +2978,7 @@ void Element::UpdateFocusAppearanceWithOptions(
   } else if (GetLayoutObject() &&
              !GetLayoutObject()->IsLayoutEmbeddedContent()) {
     if (!options.preventScroll()) {
-      GetLayoutObject()->ScrollRectToVisible(BoundingBox(),
+      GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
                                              WebScrollIntoViewParams());
     }
   }

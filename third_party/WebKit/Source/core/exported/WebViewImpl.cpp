@@ -2463,7 +2463,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
     LayoutObject* layout_object = element->GetLayoutObject();
     if (!layout_object)
       return false;
-    layout_object->ScrollRectToVisible(element->BoundingBox(),
+    layout_object->ScrollRectToVisible(element->BoundingBoxForScrollIntoView(),
                                        WebScrollIntoViewParams());
     return true;
   }

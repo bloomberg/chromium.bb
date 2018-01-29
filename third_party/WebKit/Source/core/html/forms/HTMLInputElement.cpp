@@ -316,7 +316,7 @@ void HTMLInputElement::UpdateFocusAppearanceWithOptions(
     GetDocument().EnsurePaintLocationDataValidForNode(this);
     if (!options.preventScroll()) {
       if (GetLayoutObject()) {
-        GetLayoutObject()->ScrollRectToVisible(BoundingBox(),
+        GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
                                                WebScrollIntoViewParams());
       }
       if (GetDocument().GetFrame())
