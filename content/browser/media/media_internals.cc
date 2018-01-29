@@ -432,6 +432,7 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
       // before process exit, it will be logged during OnProcessTerminated().
       ReportUMAForPipelineStatus(player_info);
       player_info_map.erase(it);
+      break;
     }
     default:
       break;
