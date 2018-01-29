@@ -155,7 +155,7 @@ struct FileMetricsProvider::SourceInfo {
     switch (type) {
       case SOURCE_HISTOGRAMS_ACTIVE_FILE:
         DCHECK(prefs_key.empty());
-      // fall through
+        FALLTHROUGH;
       case SOURCE_HISTOGRAMS_ATOMIC_FILE:
         path = params.path;
         break;
