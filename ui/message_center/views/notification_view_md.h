@@ -137,6 +137,8 @@ class NotificationButtonMD : public views::LabelButton {
 
 class NotificationInputDelegate {
  public:
+  virtual void SetNormalImageToReplyButton() = 0;
+  virtual void SetPlaceholderImageToReplyButton() = 0;
   virtual void OnNotificationInputSubmit(size_t index,
                                          const base::string16& text) = 0;
   virtual ~NotificationInputDelegate() = default;
@@ -148,14 +150,21 @@ class NotificationInputTextfieldMD : public views::Textfield,
   NotificationInputTextfieldMD(NotificationInputDelegate* delegate);
   ~NotificationInputTextfieldMD() override;
 
+  void CheckUpdateImage();
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
+  bool HandleMouseEvent(views::Textfield* sender,
+                        const ui::MouseEvent& mouse_event) override;
+  bool HandleGestureEvent(views::Textfield* sender,
+                          const ui::GestureEvent& gesture_event) override;
 
   void set_index(size_t index) { index_ = index; }
   void set_placeholder(const base::string16& placeholder);
 
  private:
   NotificationInputDelegate* const delegate_;
+
+  bool is_empty_ = true;
 
   // |index_| is the notification action index that should be passed as the
   // argument of ClickOnNotificationButtonWithReply.
@@ -164,16 +173,29 @@ class NotificationInputTextfieldMD : public views::Textfield,
   DISALLOW_COPY_AND_ASSIGN(NotificationInputTextfieldMD);
 };
 
+class NotificationInputReplyButtonMD : public views::ImageView {
+ public:
+  NotificationInputReplyButtonMD();
+  ~NotificationInputReplyButtonMD() override;
+
+  void SetNormalImage();
+  void SetPlaceholderImage();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NotificationInputReplyButtonMD);
+};
+
 class NotificationInputContainerMD : public views::View {
  public:
   NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
 
   NotificationInputTextfieldMD* textfield() const { return textfield_; };
+  NotificationInputReplyButtonMD* button() const { return button_; };
 
  private:
   NotificationInputTextfieldMD* const textfield_;
-  views::ImageView* const button_;
+  NotificationInputReplyButtonMD* const button_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationInputContainerMD);
 };
@@ -214,6 +236,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnSettingsButtonPressed() override;
 
   // Overridden from NotificationInputDelegate:
+  void SetNormalImageToReplyButton() override;
+  void SetPlaceholderImageToReplyButton() override;
   void OnNotificationInputSubmit(size_t index,
                                  const base::string16& text) override;
 

@@ -95,6 +95,8 @@ const SkColor kInputPlaceholderColor = SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
 
 // The icon color of inline reply input field.
 const SkColor kInputReplyButtonColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+const SkColor kInputReplyButtonPlaceholderColor =
+    SkColorSetARGB(0x60, 0xFF, 0xFF, 0xFF);
 
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
@@ -153,20 +155,6 @@ class ClickActivator : public ui::EventHandler {
   NotificationViewMD* const owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickActivator);
-};
-
-class NotificationInputReplyButtonMD : public views::ImageView {
- public:
-  NotificationInputReplyButtonMD() {
-    SetImage(gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
-                                   kInputReplyButtonSize,
-                                   kInputReplyButtonColor));
-    SetBorder(views::CreateEmptyBorder(kInputReplyButtonPadding));
-  }
-  ~NotificationInputReplyButtonMD() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotificationInputReplyButtonMD);
 };
 
 }  // anonymous namespace
@@ -393,14 +381,39 @@ NotificationInputTextfieldMD::NotificationInputTextfieldMD(
 
 NotificationInputTextfieldMD::~NotificationInputTextfieldMD() = default;
 
+void NotificationInputTextfieldMD::CheckUpdateImage() {
+  if (is_empty_ && !text().empty()) {
+    is_empty_ = false;
+    delegate_->SetNormalImageToReplyButton();
+  } else if (!is_empty_ && text().empty()) {
+    is_empty_ = true;
+    delegate_->SetPlaceholderImageToReplyButton();
+  }
+}
+
 bool NotificationInputTextfieldMD::HandleKeyEvent(views::Textfield* sender,
                                                   const ui::KeyEvent& event) {
+  CheckUpdateImage();
   if (event.type() == ui::ET_KEY_PRESSED &&
       event.key_code() == ui::VKEY_RETURN) {
     delegate_->OnNotificationInputSubmit(index_, text());
     return true;
   }
   return event.type() == ui::ET_KEY_RELEASED;
+}
+
+bool NotificationInputTextfieldMD::HandleMouseEvent(
+    views::Textfield* sender,
+    const ui::MouseEvent& event) {
+  CheckUpdateImage();
+  return event.type() == ui::ET_MOUSE_RELEASED;
+}
+
+bool NotificationInputTextfieldMD::HandleGestureEvent(
+    views::Textfield* sender,
+    const ui::GestureEvent& event) {
+  CheckUpdateImage();
+  return false;
 }
 
 void NotificationInputTextfieldMD::set_placeholder(
@@ -411,6 +424,27 @@ void NotificationInputTextfieldMD::set_placeholder(
   } else {
     set_placeholder_text(placeholder);
   }
+}
+
+// NotificationInputReplyButtonMD //////////////////////////////////////////////
+
+NotificationInputReplyButtonMD::NotificationInputReplyButtonMD() {
+  SetPlaceholderImage();
+  SetBorder(views::CreateEmptyBorder(kInputReplyButtonPadding));
+}
+
+NotificationInputReplyButtonMD::~NotificationInputReplyButtonMD() = default;
+
+void NotificationInputReplyButtonMD::SetNormalImage() {
+  SetImage(gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
+                                 kInputReplyButtonSize,
+                                 kInputReplyButtonColor));
+}
+
+void NotificationInputReplyButtonMD::SetPlaceholderImage() {
+  SetImage(gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
+                                 kInputReplyButtonSize,
+                                 kInputReplyButtonPlaceholderColor));
 }
 
 // NotificationInputContainerMD ////////////////////////////////////////////////
@@ -729,6 +763,14 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
     ToggleInlineSettings();
     return;
   }
+}
+
+void NotificationViewMD::SetNormalImageToReplyButton() {
+  inline_reply_->button()->SetNormalImage();
+}
+
+void NotificationViewMD::SetPlaceholderImageToReplyButton() {
+  inline_reply_->button()->SetPlaceholderImage();
 }
 
 void NotificationViewMD::OnNotificationInputSubmit(size_t index,
