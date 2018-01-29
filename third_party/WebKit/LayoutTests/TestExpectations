@@ -3383,3 +3383,7 @@ crbug.com/805788 [ Linux Win7 Win10 ] virtual/threaded/animations/responsive/vie
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
 crbug.com/805794 [ Linux ] virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Pass Failure ]
 crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Pass Timeout ]
+
+# Sheriff failures 2018-01-29
+# Flaky on Win7 (dbg)
+crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
