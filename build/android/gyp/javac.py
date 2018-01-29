@@ -104,6 +104,7 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 
 ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
+  'ParameterName',
 ]
 
 
