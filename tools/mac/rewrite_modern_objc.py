@@ -16,6 +16,7 @@ re-run gn, and then run this script.
 import argparse
 import glob
 import json
+import math
 import os
 import shlex
 import subprocess
@@ -133,7 +134,7 @@ def main():
     if args.substr not in infile:
       # Ignore rewritten header files not containing args.substr too.
       continue
-    if os.path.getmtime(infile) != int(mtime):
+    if math.trunc(os.path.getmtime(infile)) != int(mtime):
       print '%s was modified since rewriting; exiting' % infile
       sys.exit(1)
     os.rename(outfile, infile)  # Copy rewritten file over.
