@@ -127,7 +127,6 @@
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
-#include "content/renderer/quota_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -166,7 +165,6 @@
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
@@ -5053,20 +5051,6 @@ void RenderFrameImpl::ReportFindInPageSelection(
     const blink::WebRect& selection_rect) {
   SendFindReply(request_id, -1 /* match_count */, active_match_ordinal,
                 selection_rect, false /* final_status_update */);
-}
-
-void RenderFrameImpl::RequestStorageQuota(
-    blink::mojom::StorageType type,
-    unsigned long long requested_size,
-    RequestStorageQuotaCallback callback) {
-  WebSecurityOrigin origin = frame_->GetDocument().GetSecurityOrigin();
-  if (origin.IsUnique()) {
-    // Unique origins cannot store persistent state.
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
-    return;
-  }
-  RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
-      routing_id_, origin, type, requested_size, std::move(callback));
 }
 
 blink::WebPresentationClient* RenderFrameImpl::PresentationClient() {

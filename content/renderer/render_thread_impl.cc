@@ -112,7 +112,6 @@
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/quota_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -704,7 +703,6 @@ void RenderThreadImpl::Init(
   AddFilter(notification_dispatcher_->GetFilter());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
-  quota_dispatcher_.reset(new QuotaDispatcher(message_loop()->task_runner()));
   url_loader_throttle_provider_ =
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kFrame);
@@ -1007,7 +1005,6 @@ RenderThreadImpl::~RenderThreadImpl() {
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
-  quota_dispatcher_.reset();
   file_system_dispatcher_.reset();
   WebFileSystemImpl::DeleteThreadSpecificInstance();
   // In a multi-process mode, we immediately exit the renderer.

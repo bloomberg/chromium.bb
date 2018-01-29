@@ -363,8 +363,6 @@ target(link_target_type, "renderer") {
     "push_messaging/push_messaging_client.h",
     "push_messaging/push_provider.cc",
     "push_messaging/push_provider.h",
-    "quota_dispatcher.cc",
-    "quota_dispatcher.h",
     "render_frame_impl.cc",
     "render_frame_impl.h",
     "render_frame_proxy.cc",

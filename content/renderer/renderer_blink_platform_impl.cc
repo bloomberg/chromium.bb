@@ -70,7 +70,6 @@
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/notifications/notification_manager.h"
 #include "content/renderer/push_messaging/push_provider.h"
-#include "content/renderer/quota_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
@@ -97,7 +96,6 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -1349,16 +1347,6 @@ void RendererBlinkPlatformImpl::StopListening(
   if (!observer)
     return;
   observer->Stop();
-}
-
-//------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
-    const blink::WebSecurityOrigin& storage_partition,
-    blink::mojom::StorageType type,
-    QueryStorageUsageAndQuotaCallback callback) {
-  QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
-      ->QueryStorageUsageAndQuota(storage_partition, type, std::move(callback));
 }
 
 //------------------------------------------------------------------------------

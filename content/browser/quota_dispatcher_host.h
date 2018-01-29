@@ -19,15 +19,20 @@ class Origin;
 
 namespace content {
 class QuotaPermissionContext;
+class RenderProcessHost;
 
 class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
  public:
-  static void Create(int process_id,
-                     storage::QuotaManager* quota_manager,
-                     scoped_refptr<QuotaPermissionContext> permission_context,
-                     blink::mojom::QuotaDispatcherHostRequest request);
+  static void CreateForWorker(blink::mojom::QuotaDispatcherHostRequest request,
+                              RenderProcessHost* host,
+                              const url::Origin& origin);
+
+  static void CreateForFrame(RenderProcessHost* host,
+                             int render_frame_id,
+                             blink::mojom::QuotaDispatcherHostRequest request);
 
   QuotaDispatcherHost(int process_id,
+                      int render_frame_id,
                       storage::QuotaManager* quota_manager,
                       scoped_refptr<QuotaPermissionContext> permission_context);
 
@@ -38,8 +43,7 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
       const url::Origin& origin,
       blink::mojom::StorageType storage_type,
       QueryStorageUsageAndQuotaCallback callback) override;
-  void RequestStorageQuota(int64_t render_frame_id,
-                           const url::Origin& origin,
+  void RequestStorageQuota(const url::Origin& origin,
                            blink::mojom::StorageType storage_type,
                            uint64_t requested_size,
                            RequestStorageQuotaCallback callback) override;
@@ -49,8 +53,7 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
                                     blink::mojom::QuotaStatusCode status,
                                     int64_t usage,
                                     int64_t quota);
-  void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
-                                     const url::Origin& origin,
+  void DidGetPersistentUsageAndQuota(const url::Origin& origin,
                                      blink::mojom::StorageType storage_type,
                                      uint64_t requested_quota,
                                      RequestStorageQuotaCallback callback,
@@ -75,7 +78,9 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
                                     int64_t quota);
 
   // The ID of this process.
-  int process_id_;
+  const int process_id_;
+  // The ID of this render frame, MSG_ROUTING_NONE for workers.
+  const int render_frame_id_;
 
   storage::QuotaManager* quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;

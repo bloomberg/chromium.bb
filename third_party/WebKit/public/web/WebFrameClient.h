@@ -71,7 +71,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom-shared.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "v8/include/v8.h"
 
@@ -713,21 +712,6 @@ class BLINK_EXPORT WebFrameClient {
   virtual void ReportFindInPageSelection(int identifier,
                                          int active_match_ordinal,
                                          const WebRect& selection) {}
-
-  // Quota ---------------------------------------------------------
-
-  // Requests a new quota size for the origin's storage.
-  // |newQuotaInBytes| indicates how much storage space (in bytes) the caller
-  // expects to need.
-  // The callback will be called when a new quota is granted, with kOk as the
-  // status code if successful or with an error code otherwise.
-  // Note that the requesting quota size may not always be granted and a smaller
-  // amount of quota than requested might be returned.
-  using RequestStorageQuotaCallback =
-      base::OnceCallback<void(mojom::QuotaStatusCode, int64_t, int64_t)>;
-  virtual void RequestStorageQuota(mojom::StorageType,
-                                   unsigned long long new_quota_in_bytes,
-                                   RequestStorageQuotaCallback) {}
 
   // MediaStream -----------------------------------------------------
 
