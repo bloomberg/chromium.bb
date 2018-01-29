@@ -140,11 +140,15 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
   const char* uri_protocol;
-  if (service_description.service_type() ==
-      base::StringPiece(kIppServiceName)) {
+  if ((service_description.service_type() ==
+       base::StringPiece(kIppServiceName)) ||
+      (service_description.service_type() ==
+       base::StringPiece(kIppEverywhereServiceName))) {
     uri_protocol = "ipp";
-  } else if (service_description.service_type() ==
-             base::StringPiece(kIppsServiceName)) {
+  } else if ((service_description.service_type() ==
+              base::StringPiece(kIppsServiceName)) ||
+             (service_description.service_type() ==
+              base::StringPiece(kIppsEverywhereServiceName))) {
     uri_protocol = "ipps";
   } else {
     // Since we only register for these services, we should never get back
