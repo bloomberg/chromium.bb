@@ -107,7 +107,6 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
-#include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
@@ -153,7 +152,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
@@ -1925,12 +1923,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::Bind(&metrics::CreateSingleSampleMetricsProvider));
-
-  registry->AddInterface(base::Bind(
-      QuotaDispatcherHost::Create, GetID(),
-      base::RetainedRef(storage_partition_impl_->GetQuotaManager()),
-      base::WrapRefCounted(
-          GetContentClient()->browser()->CreateQuotaPermissionContext())));
 
   registry->AddInterface(
       base::Bind(&CreateReportingServiceProxy, storage_partition_impl_));

@@ -16,10 +16,10 @@ blink_modules_sources("quota") {
     "DeprecatedStorageQuota.h",
     "NavigatorStorageQuota.cpp",
     "NavigatorStorageQuota.h",
+    "QuotaUtils.cpp",
+    "QuotaUtils.h",
     "StorageManager.cpp",
     "StorageManager.h",
-    "StorageQuotaClient.cpp",
-    "StorageQuotaClient.h",
     "WorkerNavigatorStorageQuota.cpp",
     "WorkerNavigatorStorageQuota.h",
   ]

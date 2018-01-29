@@ -61,7 +61,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom-shared.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -695,19 +694,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // |dom_key| values are based on the value defined in
   // ui/events/keycodes/dom3/dom_key_data.h.
   virtual bool IsDomKeyForModifier(int dom_key) { return false; }
-
-  // Quota -----------------------------------------------------------
-
-  // Queries the storage partition's storage usage and quota information.
-  // The callback will be called with the current usage and quota information
-  // for the partition. When an error occurs the callback is called with a
-  // status code other than kOk.
-  using QueryStorageUsageAndQuotaCallback =
-      base::OnceCallback<void(mojom::QuotaStatusCode, int64_t, int64_t)>;
-  virtual void QueryStorageUsageAndQuota(
-      const WebSecurityOrigin& storage_partition,
-      mojom::StorageType,
-      QueryStorageUsageAndQuotaCallback) {}
 
   // WebDatabase --------------------------------------------------------
 

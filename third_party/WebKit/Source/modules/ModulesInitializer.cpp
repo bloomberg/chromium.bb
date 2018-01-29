@@ -65,7 +65,6 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/push_messaging/PushController.h"
-#include "modules/quota/StorageQuotaClient.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
@@ -256,7 +255,6 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   MediaKeysController::ProvideMediaKeysTo(page);
   ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
   ::blink::ProvideDatabaseClientTo(page, new DatabaseClient);
-  ::blink::ProvideStorageQuotaClientTo(page, StorageQuotaClient::Create());
   StorageNamespaceController::ProvideStorageNamespaceTo(page, client);
   ::blink::ProvideSpeechRecognitionTo(
       page, SpeechRecognitionClientProxy::Create(

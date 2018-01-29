@@ -11,21 +11,31 @@ import "url/mojo/origin.mojom";
 // process.
 // TODO(sashab): Put callback parameters in an optional struct, only set on
 // success.
-// TODO(sashab): Remove origin_url and render_frame_id, moving this interface to
-// be per-execution context instead of per-process.
+// TODO(sashab): Remove |origin|, with the browser using the one directly from
+// the RenderFrameHost instead.
 // TODO(sashab): Move this API and the necessary types to WebKit/common/.
 interface QuotaDispatcherHost {
-  // Renderer process queries storage usage and quota from the browser process.
+  // Render process queries the storage partition's storage usage and quota
+  // information from the browser process. The callback will be called with the
+  // current usage and quota information for the partition. When an error occurs
+  // the callback is called with a status code other than kOk.
+  // Can be called from workers or frames.
   QueryStorageUsageAndQuota(url.mojom.Origin origin,
                             blink.mojom.StorageType storage_type) =>
       (blink.mojom.QuotaStatusCode error,
        int64 current_usage,
        int64 current_quota);
 
-  // Renderer process requests storage quota from the browser process.
-  // render_frame_id is used for showing the permissions UI.
-  RequestStorageQuota(int64 render_frame_id,
-                      url.mojom.Origin origin,
+  // Renderer process requests a new quota size for the origin's storage from
+  // the browser process. |requested_size| indicates how much storage space (in
+  // bytes) the caller expects to need.
+  // The callback will be called when a new quota is granted, with kOk as the
+  // status code if successful or with an error code otherwise.
+  // Note that the requested quota size may not always be granted and a smaller
+  // amount of quota than requested might be returned.
+  // Cannot be called from workers, only from frames, since it may require
+  // displaying permission UI.
+  RequestStorageQuota(url.mojom.Origin origin,
                       blink.mojom.StorageType storage_type,
                       uint64 requested_size) =>
       (blink.mojom.QuotaStatusCode error,
