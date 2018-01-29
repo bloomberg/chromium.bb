@@ -211,7 +211,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   snprintf(product_as_str, sizeof(product_as_str), "%04x", product_int);
   snprintf(version_as_str, sizeof(version_as_str), "%04x", version_int);
   state->mapper = GetGamepadStandardMappingFunction(
-      vendor_as_str, product_as_str, version_as_str);
+      vendor_as_str, product_as_str, version_as_str, GAMEPAD_BUS_UNKNOWN);
 
   NSString* ident =
       [NSString stringWithFormat:@"%@ (%sVendor: %04x Product: %04x)", product,

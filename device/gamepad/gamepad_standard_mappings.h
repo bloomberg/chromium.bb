@@ -10,13 +10,24 @@
 
 namespace device {
 
+// For a connected gamepad, specify the type of bus through which it is
+// connected. This allows for specialized mappings depending on how the device
+// is connected. For instance, a gamepad may require different mappers for USB
+// and Bluetooth.
+enum GamepadBusType {
+  GAMEPAD_BUS_UNKNOWN,
+  GAMEPAD_BUS_USB,
+  GAMEPAD_BUS_BLUETOOTH
+};
+
 typedef void (*GamepadStandardMappingFunction)(const Gamepad& original,
                                                Gamepad* mapped);
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const base::StringPiece& vendor_id,
     const base::StringPiece& product_id,
-    const base::StringPiece& version_number);
+    const base::StringPiece& version_number,
+    GamepadBusType bus_type);
 
 // This defines our canonical mapping order for gamepad-like devices. If these
 // items cannot all be satisfied, it is a case-by-case judgement as to whether

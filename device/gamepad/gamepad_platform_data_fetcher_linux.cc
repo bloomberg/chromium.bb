@@ -155,7 +155,8 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
 
   GamepadStandardMappingFunction& mapper = state->mapper;
   mapper = GetGamepadStandardMappingFunction(
-      vendor_id.c_str(), product_id.c_str(), version_number.c_str());
+      vendor_id.c_str(), product_id.c_str(), version_number.c_str(),
+      GAMEPAD_BUS_UNKNOWN);
 
   Gamepad& pad = state->data;
 
