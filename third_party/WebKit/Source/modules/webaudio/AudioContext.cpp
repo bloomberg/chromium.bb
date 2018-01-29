@@ -26,10 +26,12 @@
 
 namespace blink {
 
-// Don't allow more than this number of simultaneous AudioContexts
-// talking to hardware.
-const unsigned kMaxHardwareContexts = 6;
+// Number of AudioContexts still alive.  It's incremented when an
+// AudioContext is created and decremented when the context is closed.
 static unsigned g_hardware_context_count = 0;
+
+// A context ID that is incremented for each context that is created.
+// This initializes the internal id for the context.
 static unsigned g_context_id = 0;
 
 AudioContext* AudioContext::Create(Document& document,
@@ -39,15 +41,6 @@ AudioContext* AudioContext::Create(Document& document,
 
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kAudioContextCrossOriginIframe);
-
-  if (g_hardware_context_count >= kMaxHardwareContexts) {
-    exception_state.ThrowDOMException(
-        kNotSupportedError,
-        ExceptionMessages::IndexExceedsMaximumBound(
-            "number of hardware contexts", g_hardware_context_count,
-            kMaxHardwareContexts));
-    return nullptr;
-  }
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
   if (context_options.latencyHint().IsAudioContextLatencyCategory()) {
