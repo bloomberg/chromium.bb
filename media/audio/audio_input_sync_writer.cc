@@ -55,7 +55,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(
       shared_memory_segment_size_(
           (CHECK(shared_memory_segment_count > 0),
            shared_memory_->requested_size() / shared_memory_segment_count)),
-      creation_time_(base::Time::Now()),
+      creation_time_(base::TimeTicks::Now()),
       audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)) {
   // We use CHECKs since this class is used for IPC.
   CHECK(socket_);
@@ -231,15 +231,16 @@ void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
   static const base::TimeDelta kLogDelayThreadhold =
       base::TimeDelta::FromMilliseconds(500);
 
+  base::TimeTicks new_write_time = base::TimeTicks::Now();
   std::ostringstream oss;
   if (last_write_time_.is_null()) {
     // This is the first time Write is called.
-    base::TimeDelta interval = base::Time::Now() - creation_time_;
+    base::TimeDelta interval = new_write_time - creation_time_;
     oss << "AISW::Write: audio input data received for the first time: delay "
            "= "
         << interval.InMilliseconds() << "ms";
   } else {
-    base::TimeDelta interval = base::Time::Now() - last_write_time_;
+    base::TimeDelta interval = new_write_time - last_write_time_;
     if (interval > kLogDelayThreadhold) {
       oss << "AISW::Write: audio input data delay unexpectedly long: delay = "
           << interval.InMilliseconds() << "ms";
@@ -250,7 +251,7 @@ void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
     log_callback_.Run(log_message);
   }
 
-  last_write_time_ = base::Time::Now();
+  last_write_time_ = new_write_time;
 #endif
 }
 
