@@ -137,11 +137,11 @@ cr.define('settings_privacy_page', function() {
       teardown(function() { page.remove(); });
 
       test('showClearBrowsingDataDialog', function() {
-        assertFalse(!!page.$$('settings-clear-browsing-data-dialog-tabs'));
+        assertFalse(!!page.$$('settings-clear-browsing-data-dialog'));
         MockInteractions.tap(page.$$('#clearBrowsingData'));
         Polymer.dom.flush();
 
-        const dialog = page.$$('settings-clear-browsing-data-dialog-tabs');
+        const dialog = page.$$('settings-clear-browsing-data-dialog');
         assertTrue(!!dialog);
 
         // Ensure that the dialog is fully opened before returning from this
@@ -166,7 +166,7 @@ cr.define('settings_privacy_page', function() {
         settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
         PolymerTest.clearBody();
         element =
-            document.createElement('settings-clear-browsing-data-dialog-tabs');
+            document.createElement('settings-clear-browsing-data-dialog');
         element.set('prefs', getClearBrowsingDataPrefs());
         document.body.appendChild(element);
         return testBrowserProxy.whenCalled('initialize');
@@ -290,7 +290,7 @@ cr.define('settings_privacy_page', function() {
         loadTimeData.overrideValues({isSupervised: true});
 
         element =
-            document.createElement('settings-clear-browsing-data-dialog-tabs');
+            document.createElement('settings-clear-browsing-data-dialog');
         document.body.appendChild(element);
         Polymer.dom.flush();
 
@@ -323,7 +323,7 @@ cr.define('settings_privacy_page', function() {
       settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
       element =
-          document.createElement('settings-clear-browsing-data-dialog-tabs');
+          document.createElement('settings-clear-browsing-data-dialog');
       element.set('prefs', getClearBrowsingDataPrefs());
       document.body.appendChild(element);
       return testBrowserProxy.whenCalled('initialize').then(function() {

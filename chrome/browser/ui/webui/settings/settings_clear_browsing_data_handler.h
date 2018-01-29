@@ -80,10 +80,6 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // in user's account.
   void RefreshHistoryNotice();
 
-  // Called as an asynchronous response to |RefreshHistoryNotice()|. Shows or
-  // hides the footer about other forms of history stored in user's account.
-  void UpdateHistoryNotice(bool show);
-
   // Called as an asynchronous response to |RefreshHistoryNotice()|. Enables or
   // disables the dialog about other forms of history stored in user's account
   // that is shown when the history deletion is finished.
@@ -110,11 +106,6 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   browser_sync::ProfileSyncService* sync_service_;
   ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
-
-  // Whether the sentence about other forms of history stored in user's account
-  // should be displayed in the footer. This value is retrieved asynchronously,
-  // so we cache it here.
-  bool show_history_footer_;
 
   // Whether we should show a dialog informing the user about other forms of
   // history stored in their account after the history deletion is finished.

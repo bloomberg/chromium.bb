@@ -84,7 +84,6 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
     : profile_(Profile::FromWebUI(webui)),
       sync_service_(ProfileSyncServiceFactory::GetForProfile(profile_)),
       sync_service_observer_(this),
-      show_history_footer_(false),
       show_history_deletion_dialog_(false),
       weak_ptr_factory_(this) {}
 
@@ -441,25 +440,15 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
   auto* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  // TODO(dullweber): Remove "show_history_footer" attribute when the new UI
-  // is launched as it doesn't have this footer anymore. Instead the
-  // myactivity.google.com link is shown when a user is signed in or syncing.
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("update-sync-state"),
       base::Value(signin_manager && signin_manager->IsAuthenticated()),
       base::Value(sync_service_ && sync_service_->IsSyncActive() &&
                   sync_service_->GetActiveDataTypes().Has(
-                      syncer::HISTORY_DELETE_DIRECTIVES)),
-      base::Value(show_history_footer_));
+                      syncer::HISTORY_DELETE_DIRECTIVES)));
 }
 
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {
-  browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      sync_service_,
-      WebHistoryServiceFactory::GetForProfile(profile_),
-      base::Bind(&ClearBrowsingDataHandler::UpdateHistoryNotice,
-                 weak_ptr_factory_.GetWeakPtr()));
-
   // If the dialog with history notice has been shown less than
   // |kMaxTimesHistoryNoticeShown| times, we might have to show it when the
   // user deletes history. Find out if the conditions are met.
@@ -474,15 +463,6 @@ void ClearBrowsingDataHandler::RefreshHistoryNotice() {
         base::Bind(&ClearBrowsingDataHandler::UpdateHistoryDeletionDialog,
                    weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void ClearBrowsingDataHandler::UpdateHistoryNotice(bool show) {
-  show_history_footer_ = show;
-  UpdateSyncState();
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
-      show_history_footer_);
 }
 
 void ClearBrowsingDataHandler::UpdateHistoryDeletionDialog(bool show) {
