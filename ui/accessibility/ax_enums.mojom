@@ -452,7 +452,7 @@ enum IntAttribute {
   kSetSize,
   kPosInSet,
 
-   // In the case of AX_ROLE_COLOR_WELL, specifies the selected color.
+   // In the case of Role::kColorWell, specifies the selected color.
   kColorValue,
 
    // Indicates the element that represents the current item within a container
@@ -571,10 +571,10 @@ enum IntListAttribute {
 
    // For inline text. This is the pixel position of the end of this
    // character within the bounding rectangle of this object, in the
-   // direction given by AX_ATTR_TEXT_DIRECTION. For example, for left-to-right
-   // text, the first offset is the right coordinate of the first character
-   // within the object's bounds, the second offset is the right coordinate
-   // of the second character, and so on.
+   // direction given by StringAttribute::kTextDirection. For example,
+   // for left-to-right text, the first offset is the right coordinate of
+   // the first character within the object's bounds, the second offset
+   // is the right coordinate of the second character, and so on.
   kCharacterOffsets,
 
    // Used for caching. Do not read directly. Use
