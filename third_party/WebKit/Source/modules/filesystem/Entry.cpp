@@ -32,7 +32,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "platform/bindings/ScriptState.h"
@@ -97,14 +96,15 @@ void Entry::copyTo(ScriptState* script_state,
 }
 
 void Entry::remove(ScriptState* script_state,
-                   VoidCallback* success_callback,
+                   V8VoidCallback* success_callback,
                    V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_Remove_Method_IsolatedFileSystem);
   }
-  file_system_->Remove(this, success_callback,
-                       ScriptErrorCallback::Wrap(error_callback));
+  file_system_->Remove(
+      this, VoidCallbacks::OnDidSucceedV8Impl::Create(success_callback),
+      ScriptErrorCallback::Wrap(error_callback));
 }
 
 void Entry::getParent(ScriptState* script_state,

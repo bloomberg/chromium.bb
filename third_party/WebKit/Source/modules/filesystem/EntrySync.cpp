@@ -79,11 +79,10 @@ EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
 }
 
 void EntrySync::remove(ExceptionState& exception_state) const {
-  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::Create();
-  file_system_->Remove(this, helper->GetSuccessCallback(),
-                       helper->GetErrorCallback(),
+  VoidCallbacksSyncHelper* sync_helper = VoidCallbacksSyncHelper::Create();
+  file_system_->Remove(this, nullptr, sync_helper->GetErrorCallback(),
                        DOMFileSystemBase::kSynchronous);
-  helper->GetResult(exception_state);
+  sync_helper->GetResultOrThrow(exception_state);
 }
 
 EntrySync* EntrySync::getParent() const {

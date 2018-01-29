@@ -42,7 +42,7 @@ class DirectoryEntry;
 class V8EntryCallback;
 class V8ErrorCallback;
 class V8MetadataCallback;
-class VoidCallback;
+class V8VoidCallback;
 
 class MODULES_EXPORT Entry : public EntryBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -67,7 +67,7 @@ class MODULES_EXPORT Entry : public EntryBase {
               V8EntryCallback* success_callback = nullptr,
               V8ErrorCallback* = nullptr) const;
   void remove(ScriptState*,
-              VoidCallback* success_callback = nullptr,
+              V8VoidCallback* success_callback = nullptr,
               V8ErrorCallback* = nullptr) const;
   void getParent(ScriptState*,
                  V8EntryCallback* success_callback = nullptr,

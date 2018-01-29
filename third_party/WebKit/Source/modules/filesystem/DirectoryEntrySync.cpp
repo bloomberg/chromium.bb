@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
@@ -50,11 +51,11 @@ DirectoryReaderSync* DirectoryEntrySync::createReader() {
 FileEntrySync* DirectoryEntrySync::getFile(const String& path,
                                            const FileSystemFlags& options,
                                            ExceptionState& exception_state) {
-  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
-  file_system_->GetFile(this, path, options, helper->GetSuccessCallback(),
-                        helper->GetErrorCallback(),
+  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  file_system_->GetFile(this, path, options, sync_helper->GetSuccessCallback(),
+                        sync_helper->GetErrorCallback(),
                         DOMFileSystemBase::kSynchronous);
-  Entry* entry = helper->GetResultOrThrow(exception_state);
+  Entry* entry = sync_helper->GetResultOrThrow(exception_state);
   return entry ? ToFileEntrySync(EntrySync::Create(entry)) : nullptr;
 }
 
@@ -62,20 +63,20 @@ DirectoryEntrySync* DirectoryEntrySync::getDirectory(
     const String& path,
     const FileSystemFlags& options,
     ExceptionState& exception_state) {
-  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
-  file_system_->GetDirectory(this, path, options, helper->GetSuccessCallback(),
-                             helper->GetErrorCallback(),
-                             DOMFileSystemBase::kSynchronous);
-  Entry* entry = helper->GetResultOrThrow(exception_state);
+  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  file_system_->GetDirectory(
+      this, path, options, sync_helper->GetSuccessCallback(),
+      sync_helper->GetErrorCallback(), DOMFileSystemBase::kSynchronous);
+  Entry* entry = sync_helper->GetResultOrThrow(exception_state);
   return entry ? ToDirectoryEntrySync(EntrySync::Create(entry)) : nullptr;
 }
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& exception_state) {
-  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::Create();
-  file_system_->RemoveRecursively(this, helper->GetSuccessCallback(),
-                                  helper->GetErrorCallback(),
+  VoidCallbacksSyncHelper* sync_helper = VoidCallbacksSyncHelper::Create();
+  file_system_->RemoveRecursively(this, nullptr,
+                                  sync_helper->GetErrorCallback(),
                                   DOMFileSystemBase::kSynchronous);
-  helper->GetResult(exception_state);
+  sync_helper->GetResultOrThrow(exception_state);
 }
 
 void DirectoryEntrySync::Trace(blink::Visitor* visitor) {

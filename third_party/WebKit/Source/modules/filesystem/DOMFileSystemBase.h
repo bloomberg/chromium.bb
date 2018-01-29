@@ -54,7 +54,6 @@ class ExecutionContext;
 class File;
 class FileMetadata;
 class SecurityOrigin;
-class VoidCallback;
 
 // A common base class for DOMFileSystem and DOMFileSystemSync.
 class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
@@ -129,11 +128,11 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
             ErrorCallbackBase*,
             SynchronousType = kAsynchronous);
   void Remove(const EntryBase*,
-              VoidCallback*,
+              VoidCallbacks::OnDidSucceedCallback*,
               ErrorCallbackBase*,
               SynchronousType = kAsynchronous);
   void RemoveRecursively(const EntryBase*,
-                         VoidCallback*,
+                         VoidCallbacks::OnDidSucceedCallback*,
                          ErrorCallbackBase*,
                          SynchronousType = kAsynchronous);
   void GetParent(const EntryBase*,
