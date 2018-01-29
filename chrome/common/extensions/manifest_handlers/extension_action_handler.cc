@@ -123,7 +123,7 @@ bool ExtensionActionHandler::Validate(
 }
 
 bool ExtensionActionHandler::AlwaysParseForType(Manifest::Type type) const {
-  return type == Manifest::TYPE_EXTENSION;
+  return type == Manifest::TYPE_EXTENSION || type == Manifest::TYPE_USER_SCRIPT;
 }
 
 const std::vector<std::string> ExtensionActionHandler::Keys() const {

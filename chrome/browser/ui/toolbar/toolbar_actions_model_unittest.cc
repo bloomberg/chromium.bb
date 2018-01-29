@@ -1419,3 +1419,26 @@ TEST_F(ToolbarActionsModelUnitTest, AddComponentActionBeforeInitialization) {
   EXPECT_EQ(0u, toolbar_model->toolbar_items().size());
   EXPECT_FALSE(toolbar_model->HasComponentAction(component_action_id()));
 }
+
+// Test that user-script extensions show up on the toolbar.
+TEST_F(ToolbarActionsModelUnitTest, AddUserScriptExtension) {
+  Init();
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("a")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .MergeManifest(extensions::DictionaryBuilder()
+                             .SetBoolean("converted_from_user_script", true)
+                             .Build())
+          .Build();
+
+  // We should start off without any actions.
+  EXPECT_EQ(0u, num_toolbar_items());
+  EXPECT_EQ(0u, toolbar_model()->visible_icon_count());
+
+  // Add the extension. It should be visible.
+  service()->AddExtension(extension.get());
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(extension.get()->id(), GetActionIdAtIndex(0u));
+}
