@@ -30,12 +30,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -47,6 +49,15 @@ import org.chromium.ui.test.util.UiRestriction;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ModalDialogManagerTest {
+    private static class TestObserver implements UrlFocusChangeListener {
+        public final CallbackHelper onUrlFocusChangedCallback = new CallbackHelper();
+
+        @Override
+        public void onUrlFocusChange(boolean hasFocus) {
+            onUrlFocusChangedCallback.notifyCalled();
+        }
+    }
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -54,6 +65,7 @@ public class ModalDialogManagerTest {
     private ChromeTabbedActivity mActivity;
     private ModalDialogManager mManager;
     private ModalDialogView[] mModalDialogViews;
+    private TestObserver mTestObserver;
 
     @Before
     public void setUp() throws Exception {
@@ -62,6 +74,9 @@ public class ModalDialogManagerTest {
         mManager = mActivity.getModalDialogManager();
         mModalDialogViews = new ModalDialogView[MAX_DIALOGS];
         for (int i = 0; i < MAX_DIALOGS; i++) mModalDialogViews[i] = createDialog(i);
+        mTestObserver = new TestObserver();
+        mActivity.getToolbarManager().getToolbarLayout().getLocationBar().addUrlFocusChangeListener(
+                mTestObserver);
     }
 
     @Test
@@ -220,7 +235,6 @@ public class ModalDialogManagerTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/802254")
     public void testShow_UrlBarFocused() throws Exception {
         // Show a dialog. The dialog should be shown on top of the toolbar.
         showDialog(0, ModalDialogManager.TAB_MODAL);
@@ -237,14 +251,18 @@ public class ModalDialogManagerTest {
         });
 
         // When editing URL, it should be shown on top of the dialog.
+        int callCount = mTestObserver.onUrlFocusChangedCallback.getCallCount();
         onView(withId(R.id.url_bar)).perform(click());
+        mTestObserver.onUrlFocusChangedCallback.waitForCallback(callCount);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(containerParent.indexOfChild(dialogContainer)
                     < containerParent.indexOfChild(controlContainer));
         });
 
         // When URL bar is not focused, the dialog should be shown on top of the toolbar again.
+        callCount = mTestObserver.onUrlFocusChangedCallback.getCallCount();
         Espresso.pressBack();
+        mTestObserver.onUrlFocusChangedCallback.waitForCallback(callCount);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(containerParent.indexOfChild(dialogContainer)
                     > containerParent.indexOfChild(controlContainer));
