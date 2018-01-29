@@ -537,7 +537,8 @@ void StopAllocatorShimDangerous() {
     g_sender_pipe->Close();
 }
 
-void SerializeFramesFromAllocationContext(FrameSerializer* serializer) {
+void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
+                                          const char** context) {
   auto* tracker = AllocationContextTracker::GetInstanceForCurrentThread();
   if (!tracker)
     return;
@@ -547,6 +548,8 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer) {
     return;
 
   serializer->AddAllFrames(allocation_context.backtrace);
+  if (!*context)
+    *context = allocation_context.type_name;
 }
 
 void SerializeFramesFromBacktrace(FrameSerializer* serializer) {
@@ -602,7 +605,7 @@ void AllocatorShimLogAlloc(AllocatorType type,
     CaptureMode capture_mode = AllocationContextTracker::capture_mode();
     if (capture_mode == CaptureMode::PSEUDO_STACK ||
         capture_mode == CaptureMode::MIXED_STACK) {
-      SerializeFramesFromAllocationContext(&serializer);
+      SerializeFramesFromAllocationContext(&serializer, &context);
     } else {
       SerializeFramesFromBacktrace(&serializer);
     }

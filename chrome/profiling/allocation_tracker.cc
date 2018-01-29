@@ -32,9 +32,15 @@ void AllocationTracker::OnAlloc(const AllocPacket& alloc_packet,
   // Compute the context ID for this allocation, 0 means no context.
   int context_id = 0;
   if (!context.empty()) {
-    auto inserted_record = context_.emplace(
-        std::piecewise_construct, std::forward_as_tuple(std::move(context)),
-        std::forward_as_tuple(next_context_id_));
+    // Escape the strings before saving them, to simplify exporting a heap dump.
+    std::string escaped_context;
+    base::EscapeJSONString(context, false /* put_in_quotes */,
+                           &escaped_context);
+
+    auto inserted_record =
+        context_.emplace(std::piecewise_construct,
+                         std::forward_as_tuple(std::move(escaped_context)),
+                         std::forward_as_tuple(next_context_id_));
     context_id = inserted_record.first->second;
     if (inserted_record.second)
       next_context_id_++;
