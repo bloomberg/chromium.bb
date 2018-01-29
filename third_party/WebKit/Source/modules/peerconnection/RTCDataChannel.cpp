@@ -342,10 +342,10 @@ bool RTCDataChannel::HasPendingActivity() const {
   switch (ready_state_) {
     case kReadyStateConnecting:
       has_valid_listeners |= HasEventListeners(EventTypeNames::open);
-    // fallthrough intended
+      FALLTHROUGH;
     case kReadyStateOpen:
       has_valid_listeners |= HasEventListeners(EventTypeNames::message);
-    // fallthrough intended
+      FALLTHROUGH;
     case kReadyStateClosing:
       has_valid_listeners |= HasEventListeners(EventTypeNames::error) ||
                              HasEventListeners(EventTypeNames::close);
