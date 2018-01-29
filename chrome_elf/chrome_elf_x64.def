@@ -21,7 +21,7 @@ EXPORTS
   ; From chrome_elf/crash_helper.cc
   SetMetricsClientId
 
-  ; From chrome_elf_main.cc
+  ; From chrome_elf/chrome_elf_main.cc
   DumpProcessWithoutCrash
   GetUserDataDirectoryThunk
   SignalChromeElf
@@ -34,3 +34,7 @@ EXPORTS
   AddDllToBlacklist
   IsBlacklistInitialized
   SuccessfullyBlocked
+
+  ; From chrome_elf/whitelist_log
+  DrainLog
+  RegisterLogNotification

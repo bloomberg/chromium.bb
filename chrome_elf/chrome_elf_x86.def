@@ -5,7 +5,7 @@ LIBRARY  "chrome_elf.dll"
 
 EXPORTS
   ; When functions are added to this file, they must also be added to
-  ; chrome_elf_x86.def
+  ; chrome_elf_x64.def
 
   ; From components/crash/content/app/crash_export_stubs.cc
   CrashForException_ExportThunk
@@ -17,7 +17,7 @@ EXPORTS
   ; From chrome_elf/crash_helper.cc
   SetMetricsClientId
 
-  ; From chrome_elf_main.cc
+  ; From chrome_elf/chrome_elf_main.cc
   DumpProcessWithoutCrash
   GetUserDataDirectoryThunk
   SignalChromeElf
@@ -30,3 +30,7 @@ EXPORTS
   AddDllToBlacklist
   IsBlacklistInitialized
   SuccessfullyBlocked
+
+  ; From chrome_elf/whitelist_log
+  DrainLog
+  RegisterLogNotification

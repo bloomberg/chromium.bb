@@ -103,6 +103,7 @@ bool AddClassDllPath(const wchar_t* new_guid, const std::wstring& dll_path) {
 TEST(Whitelist, IMEInitExisting) {
   // Init IME!
   EXPECT_EQ(InitIMEs(), IMEStatus::kSuccess);
+  DeinitIMEsForTesting();
 }
 
 // Test initialization with a custom IME to exercise all of the code path for
@@ -134,6 +135,8 @@ TEST(Whitelist, IMEInitNonMs) {
 
   // 5. Disable reg override.
   ASSERT_NO_FATAL_FAILURE(CancelRegRedirect(nt::HKLM));
+
+  DeinitIMEsForTesting();
 }
 
 }  // namespace

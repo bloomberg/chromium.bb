@@ -34,6 +34,9 @@ extern const wchar_t kImeRegistryKey[];
 // Initialize internal list of registered IMEs.
 IMEStatus InitIMEs();
 
+// Removes initialization for use by tests.
+void DeinitIMEsForTesting();
+
 }  // namespace whitelist
 
 #endif  // CHROME_ELF_WHITELIST_WHITELIST_IME_H_
