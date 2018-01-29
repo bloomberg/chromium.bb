@@ -140,61 +140,6 @@ TEST(NetworkQualityEstimatorParamsTest, ObtainAlgorithmToUseFromParams) {
   }
 }
 
-// Verify that for a given connection type, the default network quality values
-// lie in the same range of ECT as the value returned by GetDefaultECT().
-TEST(NetworkQualityEstimatorParamsTest, GetDefaultECT) {
-  std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimatorParams params(variation_params);
-
-  for (size_t i = 0; i < NetworkChangeNotifier::ConnectionType::CONNECTION_LAST;
-       ++i) {
-    NetworkChangeNotifier::ConnectionType connection_type =
-        static_cast<NetworkChangeNotifier::ConnectionType>(i);
-    EffectiveConnectionType ect = params.GetDefaultECT(connection_type);
-    EXPECT_LE(EFFECTIVE_CONNECTION_TYPE_2G, ect);
-
-    const nqe::internal::NetworkQuality& default_nq =
-        params.DefaultObservation(connection_type);
-
-    // Now verify that |default_nq| corresponds to |ect|.
-    if (ect == EFFECTIVE_CONNECTION_TYPE_4G) {
-      // If the expected effective connection type is 4G, then RTT values in
-      // |default_nq| should be lower than the threshold for ECT of 3G.
-      const nqe::internal::NetworkQuality& threshold_3g =
-          params.ConnectionThreshold(EFFECTIVE_CONNECTION_TYPE_3G);
-
-      EXPECT_LT(default_nq.http_rtt(), threshold_3g.http_rtt());
-      EXPECT_LT(default_nq.transport_rtt(), threshold_3g.transport_rtt());
-      EXPECT_TRUE(default_nq.downstream_throughput_kbps() >
-                      threshold_3g.downstream_throughput_kbps() ||
-                  threshold_3g.downstream_throughput_kbps() < 0);
-    } else {
-      // If the expected effective connection type is |ect|, then RTT values in
-      // |default_nq| should be (i) higher than the threshold for ECT of |ect|
-      // (ii) Lower than the threshold for |slower_ect|.
-      const nqe::internal::NetworkQuality& threshold_ect =
-          params.ConnectionThreshold(ect);
-      EffectiveConnectionType slower_ect =
-          static_cast<EffectiveConnectionType>(static_cast<int>(ect) - 1);
-      const nqe::internal::NetworkQuality& threshold_slower_ect =
-          params.ConnectionThreshold(slower_ect);
-
-      EXPECT_GT(default_nq.http_rtt(), threshold_ect.http_rtt());
-      EXPECT_GT(default_nq.transport_rtt(), threshold_ect.transport_rtt());
-      EXPECT_TRUE(default_nq.downstream_throughput_kbps() <
-                      threshold_ect.downstream_throughput_kbps() ||
-                  threshold_ect.downstream_throughput_kbps() < 0);
-
-      EXPECT_LT(default_nq.http_rtt(), threshold_slower_ect.http_rtt());
-      EXPECT_LT(default_nq.transport_rtt(),
-                threshold_slower_ect.transport_rtt());
-      EXPECT_TRUE(default_nq.downstream_throughput_kbps() >
-                      threshold_slower_ect.downstream_throughput_kbps() ||
-                  threshold_slower_ect.downstream_throughput_kbps() < 0);
-    }
-  }
-}
-
 // Verify ECT when forced ECT is Slow-2G-On-Cellular.
 TEST(NetworkQualityEstimatorParamsTest, GetForcedECTCellularOnly) {
   std::map<std::string, std::string> variation_params;

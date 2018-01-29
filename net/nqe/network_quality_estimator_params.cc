@@ -634,23 +634,4 @@ NetworkQualityEstimatorParams::GetEffectiveConnectionTypeAlgorithm() const {
   return effective_connection_type_algorithm_;
 }
 
-EffectiveConnectionType NetworkQualityEstimatorParams::GetDefaultECT(
-    NetworkChangeNotifier::ConnectionType connection_type) const {
-  switch (connection_type) {
-    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    case NetworkChangeNotifier::CONNECTION_ETHERNET:
-    case NetworkChangeNotifier::CONNECTION_WIFI:
-    case NetworkChangeNotifier::CONNECTION_4G:
-    case NetworkChangeNotifier::CONNECTION_NONE:
-    case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return EFFECTIVE_CONNECTION_TYPE_4G;
-    case NetworkChangeNotifier::CONNECTION_2G:
-      return EFFECTIVE_CONNECTION_TYPE_2G;
-    case NetworkChangeNotifier::CONNECTION_3G:
-      return EFFECTIVE_CONNECTION_TYPE_3G;
-  }
-  NOTREACHED();
-  return EFFECTIVE_CONNECTION_TYPE_4G;
-}
-
 }  // namespace net
