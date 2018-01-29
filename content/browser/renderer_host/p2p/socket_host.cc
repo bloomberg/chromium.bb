@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 #include "third_party/webrtc/media/base/turnutils.h"
 
@@ -177,11 +178,13 @@ void P2PSocketHost::ReportSocketError(int result, const char* histogram_name) {
 }
 
 // static
-P2PSocketHost* P2PSocketHost::Create(IPC::Sender* message_sender,
-                                     int socket_id,
-                                     P2PSocketType type,
-                                     net::URLRequestContextGetter* url_context,
-                                     P2PMessageThrottler* throttler) {
+P2PSocketHost* P2PSocketHost::Create(
+    IPC::Sender* message_sender,
+    int socket_id,
+    P2PSocketType type,
+    net::URLRequestContextGetter* url_context,
+    network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory,
+    P2PMessageThrottler* throttler) {
   switch (type) {
     case P2P_SOCKET_UDP:
       return new P2PSocketHostUdp(
@@ -198,13 +201,15 @@ P2PSocketHost* P2PSocketHost::Create(IPC::Sender* message_sender,
     case P2P_SOCKET_TCP_CLIENT:
     case P2P_SOCKET_SSLTCP_CLIENT:
     case P2P_SOCKET_TLS_CLIENT:
-      return new P2PSocketHostTcp(message_sender, socket_id, type, url_context);
+      return new P2PSocketHostTcp(message_sender, socket_id, type, url_context,
+                                  proxy_resolving_socket_factory);
 
     case P2P_SOCKET_STUN_TCP_CLIENT:
     case P2P_SOCKET_STUN_SSLTCP_CLIENT:
     case P2P_SOCKET_STUN_TLS_CLIENT:
-      return new P2PSocketHostStunTcp(
-          message_sender, socket_id, type, url_context);
+      return new P2PSocketHostStunTcp(message_sender, socket_id, type,
+                                      url_context,
+                                      proxy_resolving_socket_factory);
   }
 
   NOTREACHED();

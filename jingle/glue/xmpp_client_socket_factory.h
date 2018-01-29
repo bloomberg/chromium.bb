@@ -12,6 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
+
+namespace network {
+class ProxyResolvingClientSocketFactory;
+}  // namespace network
 
 namespace net {
 class ClientSocketFactory;
@@ -46,6 +51,10 @@ class XmppClientSocketFactory : public ResolvingClientSocketFactory {
  private:
   net::ClientSocketFactory* const client_socket_factory_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // |proxy_resolving_socket_factory_| retains a reference to the raw
+  // net::URLRequestContext pointer, and thus must not outlive
+  // |request_context_getter_|.
+  network::ProxyResolvingClientSocketFactory proxy_resolving_socket_factory_;
   const net::SSLConfig ssl_config_;
   const bool use_fake_ssl_client_socket_;
 

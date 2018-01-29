@@ -37,11 +37,11 @@ class P2PSocketHostTcpTestBase : public testing::Test {
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
     if (socket_type_ == P2P_SOCKET_TCP_CLIENT) {
-      socket_host_.reset(
-          new P2PSocketHostTcp(&sender_, 0, P2P_SOCKET_TCP_CLIENT, nullptr));
+      socket_host_.reset(new P2PSocketHostTcp(
+          &sender_, 0, P2P_SOCKET_TCP_CLIENT, nullptr, nullptr));
     } else {
       socket_host_.reset(new P2PSocketHostStunTcp(
-          &sender_, 0, P2P_SOCKET_STUN_TCP_CLIENT, nullptr));
+          &sender_, 0, P2P_SOCKET_STUN_TCP_CLIENT, nullptr, nullptr));
     }
 
     socket_ = new FakeSocket(&sent_data_);

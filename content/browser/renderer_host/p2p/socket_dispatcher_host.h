@@ -28,6 +28,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class ProxyResolvingClientSocketFactory;
+}
+
 namespace rtc {
 struct PacketOptions;
 }
@@ -112,6 +116,9 @@ class P2PSocketDispatcherHost
 
   content::ResourceContext* resource_context_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
+  // Initialized on browser IO thread.
+  std::unique_ptr<network::ProxyResolvingClientSocketFactory>
+      proxy_resolving_socket_factory_;
 
   SocketsMap sockets_;
 

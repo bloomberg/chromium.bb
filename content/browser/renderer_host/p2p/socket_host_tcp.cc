@@ -23,6 +23,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/proxy_resolving_client_socket.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket_factory.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 #include "url/gurl.h"
 
@@ -65,13 +66,14 @@ P2PSocketHostTcpBase::P2PSocketHostTcpBase(
     IPC::Sender* message_sender,
     int socket_id,
     P2PSocketType type,
-    net::URLRequestContextGetter* url_context)
+    net::URLRequestContextGetter* url_context,
+    network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory)
     : P2PSocketHost(message_sender, socket_id, P2PSocketHost::TCP),
       write_pending_(false),
       connected_(false),
       type_(type),
-      url_context_(url_context) {
-}
+      url_context_(url_context),
+      proxy_resolving_socket_factory_(proxy_resolving_socket_factory) {}
 
 P2PSocketHostTcpBase::~P2PSocketHostTcpBase() {
   if (state_ == STATE_OPEN) {
@@ -123,10 +125,8 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
 
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
-  socket_ = std::make_unique<network::ProxyResolvingClientSocket>(
-      nullptr,  // Default socket pool provided by the net::Proxy.
-      url_context_, ssl_config,
-      GURL("https://" + dest_host_port_pair.ToString()));
+  socket_ = proxy_resolving_socket_factory_->CreateSocket(
+      ssl_config, GURL("https://" + dest_host_port_pair.ToString()));
 
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::OnConnected,
@@ -520,11 +520,17 @@ bool P2PSocketHostTcpBase::SetOption(P2PSocketOption option, int value) {
   }
 }
 
-P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender,
-                                   int socket_id,
-                                   P2PSocketType type,
-                                   net::URLRequestContextGetter* url_context)
-    : P2PSocketHostTcpBase(message_sender, socket_id, type, url_context) {
+P2PSocketHostTcp::P2PSocketHostTcp(
+    IPC::Sender* message_sender,
+    int socket_id,
+    P2PSocketType type,
+    net::URLRequestContextGetter* url_context,
+    network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory)
+    : P2PSocketHostTcpBase(message_sender,
+                           socket_id,
+                           type,
+                           url_context,
+                           proxy_resolving_socket_factory) {
   DCHECK(type == P2P_SOCKET_TCP_CLIENT ||
          type == P2P_SOCKET_SSLTCP_CLIENT ||
          type == P2P_SOCKET_TLS_CLIENT);
@@ -577,8 +583,13 @@ P2PSocketHostStunTcp::P2PSocketHostStunTcp(
     IPC::Sender* message_sender,
     int socket_id,
     P2PSocketType type,
-    net::URLRequestContextGetter* url_context)
-    : P2PSocketHostTcpBase(message_sender, socket_id, type, url_context) {
+    net::URLRequestContextGetter* url_context,
+    network::ProxyResolvingClientSocketFactory* proxy_resolving_socket_factory)
+    : P2PSocketHostTcpBase(message_sender,
+                           socket_id,
+                           type,
+                           url_context,
+                           proxy_resolving_socket_factory) {
   DCHECK(type == P2P_SOCKET_STUN_TCP_CLIENT ||
          type == P2P_SOCKET_STUN_SSLTCP_CLIENT ||
          type == P2P_SOCKET_STUN_TLS_CLIENT);

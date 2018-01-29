@@ -18,6 +18,8 @@ static_library("cpp") {
     "network_switches.h",
     "proxy_resolving_client_socket.cc",
     "proxy_resolving_client_socket.h",
+    "proxy_resolving_client_socket_factory.cc",
+    "proxy_resolving_client_socket_factory.h",
   ]
 
   public_deps = [
