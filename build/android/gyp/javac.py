@@ -107,13 +107,21 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
 ]
 
 
-def ColorJavacOutput(output):
+def ProcessJavacOutput(output):
   fileline_prefix = r'(?P<fileline>(?P<file>[-.\w/\\]+.java):(?P<line>[0-9]+):)'
   warning_re = re.compile(
       fileline_prefix + r'(?P<full_message> warning: (?P<message>.*))$')
   error_re = re.compile(
       fileline_prefix + r'(?P<full_message> (?P<message>.*))$')
   marker_re = re.compile(r'\s*(?P<marker>\^)\s*$')
+
+  # These warnings cannot be suppressed even for third party code. Deprecation
+  # warnings especially do not help since we must support older android version.
+  deprecated_re = re.compile(
+      r'(Note: .* uses? or overrides? a deprecated API.)$')
+  unchecked_re = re.compile(
+      r'(Note: .* uses? unchecked or unsafe operations.)$')
+  recompile_re = re.compile(r'(Note: Recompile with -Xlint:.* for details.)$')
 
   warning_color = ['full_message', colorama.Fore.YELLOW + colorama.Style.DIM]
   error_color = ['full_message', colorama.Fore.MAGENTA + colorama.Style.BRIGHT]
@@ -128,7 +136,12 @@ def ColorJavacOutput(output):
             + colorama.Fore.RESET + colorama.Style.RESET_ALL
             + line[end:])
 
-  def ApplyColor(line):
+  def ApplyFilters(line):
+    return not (deprecated_re.match(line)
+        or unchecked_re.match(line)
+        or recompile_re.match(line))
+
+  def ApplyColors(line):
     if warning_re.match(line):
       line = Colorize(line, warning_re, warning_color)
     elif error_re.match(line):
@@ -137,7 +150,7 @@ def ColorJavacOutput(output):
       line = Colorize(line, marker_re, marker_color)
     return line
 
-  return '\n'.join(map(ApplyColor, output.split('\n')))
+  return '\n'.join(map(ApplyColors, filter(ApplyFilters, output.split('\n'))))
 
 
 def _ExtractClassFiles(jar_path, dest_dir, java_files):
@@ -332,7 +345,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
           cmd,
           print_stdout=options.chromium_code,
           stdout_filter=stdout_filter,
-          stderr_filter=ColorJavacOutput)
+          stderr_filter=ProcessJavacOutput)
       try:
         attempt_build()
       except build_utils.CalledProcessError as e:
@@ -508,7 +521,7 @@ def main(argv):
     ])
 
   if options.chromium_code:
-    javac_cmd.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
+    javac_cmd.extend(['-Xlint:unchecked'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not
