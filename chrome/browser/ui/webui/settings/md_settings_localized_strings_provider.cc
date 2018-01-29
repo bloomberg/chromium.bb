@@ -1572,6 +1572,7 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
     {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
     {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
+    {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
     {"printerName", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME},
     {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
