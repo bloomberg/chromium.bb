@@ -68,6 +68,7 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
       break;
     case TranslateEventProto::INITIALIZATION_ERROR:
       translation->set_interaction(Translation::INITIALIZATION_ERROR);
+      break;
     default:  // We don't care about other events.
       return false;
   }
