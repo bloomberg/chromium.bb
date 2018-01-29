@@ -12,6 +12,7 @@
 @protocol BrowserCommands;
 @class KeyCommandsProvider;
 @class MessageBubbleView;
+@protocol OmniboxFocuser;
 @class PKPass;
 @class PKAddPassesViewController;
 @class TabModel;
@@ -54,6 +55,7 @@ class ChromeBrowserState;
                                       urlLoader:(id<UrlLoader>)urlLoader
                                      dispatcher:(id<ApplicationCommands,
                                                     BrowserCommands,
+                                                    OmniboxFocuser,
                                                     ToolbarCommands>)dispatcher;
 
 // Returns a new keyboard commands coordinator to handle keyboard commands.

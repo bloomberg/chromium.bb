@@ -67,6 +67,7 @@
                                      dispatcher:
                                          (id<ApplicationCommands,
                                              BrowserCommands,
+                                             OmniboxFocuser,
                                              ToolbarCommands>)dispatcher {
   id<Toolbar> toolbarController;
   if (base::FeatureList::IsEnabled(kCleanToolbar)) {

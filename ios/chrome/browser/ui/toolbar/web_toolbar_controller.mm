@@ -227,12 +227,13 @@ using ios::material::TimingFunction;
 @synthesize animatingStop = _animatingStop;
 @synthesize animatingPrerender = _animatingPrerender;
 
-- (instancetype)
-initWithDelegate:(id<WebToolbarDelegate>)delegate
-       urlLoader:(id<UrlLoader>)urlLoader
-    browserState:(ios::ChromeBrowserState*)browserState
-      dispatcher:(id<ApplicationCommands, BrowserCommands, ToolbarCommands>)
-                     dispatcher {
+- (instancetype)initWithDelegate:(id<WebToolbarDelegate>)delegate
+                       urlLoader:(id<UrlLoader>)urlLoader
+                    browserState:(ios::ChromeBrowserState*)browserState
+                      dispatcher:(id<ApplicationCommands,
+                                     BrowserCommands,
+                                     OmniboxFocuser,
+                                     ToolbarCommands>)dispatcher {
   DCHECK(delegate);
   DCHECK(urlLoader);
   DCHECK(browserState);

@@ -13,6 +13,7 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+@protocol OmniboxFocuser;
 @class Tab;
 @class TabModel;
 @protocol TabSwitcher;
@@ -67,7 +68,7 @@
 
 // Dispatcher for anything that acts in a "browser" role.
 @property(nonatomic, readonly)
-    id<ApplicationCommands, BrowserCommands, ToolbarCommands>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
         dispatcher;
 
 // Restores the internal state of the tab switcher with the given tab models,
