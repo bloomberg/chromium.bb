@@ -41,7 +41,7 @@ _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
 _TEST_CODE_EXCLUDED_PATHS = (
     r'.*[\\\/](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.+_(api|browser|eg|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
+    r'.+_(api|browser|eg|int|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[\\\/](test|tool(s)?)[\\\/].*',
