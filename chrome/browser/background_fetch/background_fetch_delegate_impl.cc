@@ -306,9 +306,11 @@ void BackgroundFetchDelegateImpl::OnDownloadReceived(
       // This really should never happen since we're supplying the
       // DownloadClient.
       NOTREACHED();
+      break;
     case StartResult::UNEXPECTED_GUID:
       // TODO(delphick): try again with a different GUID.
       NOTREACHED();
+      break;
     case StartResult::CLIENT_CANCELLED:
       // TODO(delphick): do we need to do anything here, since we will have
       // cancelled it?
@@ -316,8 +318,10 @@ void BackgroundFetchDelegateImpl::OnDownloadReceived(
     case StartResult::INTERNAL_ERROR:
       // TODO(delphick): We need to handle this gracefully.
       NOTREACHED();
+      break;
     case StartResult::COUNT:
       NOTREACHED();
+      break;
   }
 }
 
