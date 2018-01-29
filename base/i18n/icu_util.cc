@@ -63,14 +63,6 @@ bool g_called_once = false;
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
-// To debug http://crbug.com/445616.
-int g_debug_icu_last_error;
-int g_debug_icu_load;
-int g_debug_icu_pf_error_details;
-int g_debug_icu_pf_last_error;
-#if defined(OS_WIN)
-wchar_t g_debug_icu_pf_filename[_MAX_PATH];
-#endif  // OS_WIN
 // Use an unversioned file name to simplify a icu version update down the road.
 // No need to change the filename in multiple places (gyp files, windows
 // build pkg configurations, etc). 'l' stands for Little Endian.
@@ -105,10 +97,6 @@ void LazyInitIcuDataFile() {
 #if defined(OS_WIN)
   // The data file will be in the same directory as the current module.
   bool path_ok = PathService::Get(DIR_MODULE, &data_path);
-  wchar_t tmp_buffer[_MAX_PATH] = {0};
-  wcscpy_s(tmp_buffer, data_path.value().c_str());
-  debug::Alias(tmp_buffer);
-  CHECK(path_ok);  // TODO(scottmg): http://crbug.com/445616
 #elif defined(OS_ANDROID)
   bool path_ok = PathService::Get(DIR_ANDROID_APP_DATA, &data_path);
 #elif defined(OS_FUCHSIA)
@@ -121,14 +109,6 @@ void LazyInitIcuDataFile() {
 #endif
   DCHECK(path_ok);
   data_path = data_path.AppendASCII(kIcuDataFileName);
-
-#if defined(OS_WIN)
-  // TODO(scottmg): http://crbug.com/445616
-  wchar_t tmp_buffer2[_MAX_PATH] = {0};
-  wcscpy_s(tmp_buffer2, data_path.value().c_str());
-  debug::Alias(tmp_buffer2);
-#endif
-
 #else
   // Assume it is in the framework bundle's Resources directory.
   ScopedCFTypeRef<CFStringRef> data_file_name(
@@ -147,24 +127,9 @@ void LazyInitIcuDataFile() {
 #endif  // !defined(OS_MACOSX)
   File file(data_path, File::FLAG_OPEN | File::FLAG_READ);
   if (file.IsValid()) {
-    // TODO(scottmg): http://crbug.com/445616.
-    g_debug_icu_pf_last_error = 0;
-    g_debug_icu_pf_error_details = 0;
-#if defined(OS_WIN)
-    g_debug_icu_pf_filename[0] = 0;
-#endif  // OS_WIN
-
     g_icudtl_pf = file.TakePlatformFile();
     g_icudtl_region = MemoryMappedFile::Region::kWholeFile;
   }
-#if defined(OS_WIN)
-  else {
-    // TODO(scottmg): http://crbug.com/445616.
-    g_debug_icu_pf_last_error = ::GetLastError();
-    g_debug_icu_pf_error_details = file.error_details();
-    wcscpy_s(g_debug_icu_pf_filename, data_path.value().c_str());
-  }
-#endif  // OS_WIN
 }
 
 bool InitializeICUWithFileDescriptorInternal(
@@ -172,18 +137,15 @@ bool InitializeICUWithFileDescriptorInternal(
     const MemoryMappedFile::Region& data_region) {
   // This can be called multiple times in tests.
   if (g_icudtl_mapped_file) {
-    g_debug_icu_load = 0;  // To debug http://crbug.com/445616.
     return true;
   }
   if (data_fd == kInvalidPlatformFile) {
-    g_debug_icu_load = 1;  // To debug http://crbug.com/445616.
     LOG(ERROR) << "Invalid file descriptor to ICU data received.";
     return false;
   }
 
   std::unique_ptr<MemoryMappedFile> icudtl_mapped_file(new MemoryMappedFile());
   if (!icudtl_mapped_file->Initialize(File(data_fd), data_region)) {
-    g_debug_icu_load = 2;  // To debug http://crbug.com/445616.
     LOG(ERROR) << "Couldn't mmap icu data file";
     return false;
   }
@@ -191,12 +153,8 @@ bool InitializeICUWithFileDescriptorInternal(
 
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(const_cast<uint8_t*>(g_icudtl_mapped_file->data()), &err);
-  if (err != U_ZERO_ERROR) {
-    g_debug_icu_load = 3;  // To debug http://crbug.com/445616.
-    g_debug_icu_last_error = err;
-  }
 #if defined(OS_ANDROID)
-  else {
+  if (err == U_ZERO_ERROR) {
     // On Android, we can't leave it up to ICU to set the default timezone
     // because ICU's timezone detection does not work in many timezones (e.g.
     // Australia/Sydney, Asia/Seoul, Europe/Paris ). Use JNI to detect the host
@@ -297,20 +255,6 @@ bool InitializeICU() {
   LazyInitIcuDataFile();
   result =
       InitializeICUWithFileDescriptorInternal(g_icudtl_pf, g_icudtl_region);
-#if defined(OS_WIN)
-  int debug_icu_load = g_debug_icu_load;
-  debug::Alias(&debug_icu_load);
-  int debug_icu_last_error = g_debug_icu_last_error;
-  debug::Alias(&debug_icu_last_error);
-  int debug_icu_pf_last_error = g_debug_icu_pf_last_error;
-  debug::Alias(&debug_icu_pf_last_error);
-  int debug_icu_pf_error_details = g_debug_icu_pf_error_details;
-  debug::Alias(&debug_icu_pf_error_details);
-  wchar_t debug_icu_pf_filename[_MAX_PATH] = {0};
-  wcscpy_s(debug_icu_pf_filename, g_debug_icu_pf_filename);
-  debug::Alias(&debug_icu_pf_filename);
-  CHECK(result);  // TODO(scottmg): http://crbug.com/445616
-#endif
 #endif
 
 // To respond to the timezone change properly, the default timezone
