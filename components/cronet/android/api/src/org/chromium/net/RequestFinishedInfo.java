@@ -212,7 +212,6 @@ public abstract class RequestFinishedInfo {
          * @return whether this request reused a socket from a previous request. When {@code true},
          * DNS, connection, and SSL times will be {@code null}.
          */
-        @Nullable
         public abstract boolean getSocketReused();
 
         /**

@@ -845,7 +845,7 @@ final class JavaUrlRequest extends UrlRequestBase {
     @Override
     public boolean isDone() {
         State state = mState.get();
-        return state == State.COMPLETE | state == State.ERROR | state == State.CANCELLED;
+        return state == State.COMPLETE || state == State.ERROR || state == State.CANCELLED;
     }
 
     @Override
