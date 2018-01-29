@@ -27,9 +27,17 @@ bool LeakyBucket::RefillOrSpill(int drops, base::TimeTicks now) {
 }
 
 base::TimeTicks LeakyBucket::GetEmptyTime() {
-  return level_updated_time_ +
-         base::TimeDelta::FromMicroseconds(
-             base::TimeTicks::kMicrosecondsPerSecond * current_level_ / rate_);
+  // To avoid unnecessary complexity in WebrtcFrameSchedulerSimple, we return
+  // a fairly large value (1 minute) here if the b/w estimate is 0 (which means
+  // that the video stream should be paused). This means that
+  // WebrtcFrameSchedulerSimple does not need to handle any overflow isssues
+  // caused by returning TimeDelta::Max().
+  base::TimeDelta time_to_empty =
+      (rate_ != 0) ? base::TimeDelta::FromMicroseconds(
+                         base::TimeTicks::kMicrosecondsPerSecond *
+                         current_level_ / rate_)
+                   : base::TimeDelta::FromMinutes(1);
+  return level_updated_time_ + time_to_empty;
 }
 
 void LeakyBucket::UpdateRate(int new_rate, base::TimeTicks now) {
