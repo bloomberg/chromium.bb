@@ -1537,6 +1537,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // the LocalFrameClient.
   void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
 
+  Element* CreateRawElement(const QualifiedName&, CreateElementFlags);
+
   DocumentLifecycle lifecycle_;
 
   bool has_nodes_with_placeholder_style_;
