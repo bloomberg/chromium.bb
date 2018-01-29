@@ -63,7 +63,7 @@ message TranslateEventProto {
     DONT_SHOW = 1;
     NOT_QUERIED = 2;
   }
-  optional RankerResponse ranker_response = 9;
+  optional RankerResponse ranker_response = 9 [default = NOT_QUERIED];
 
   // The action performed by the user in the translate UI.
   // Next tag: 28
