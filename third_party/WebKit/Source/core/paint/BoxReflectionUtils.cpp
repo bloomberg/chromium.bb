@@ -70,8 +70,7 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
       node = layout_object->GeneratingNode();
     NinePieceImagePainter::Paint(builder.Context(), layer.GetLayoutObject(),
                                  layer.GetLayoutObject().GetDocument(), node,
-                                 mask_rect, style, mask_nine_piece,
-                                 SkBlendMode::kSrcOver);
+                                 mask_rect, style, mask_nine_piece);
   }
   return BoxReflection(direction, offset, builder.EndRecording(),
                        FloatRect(mask_bounding_rect));

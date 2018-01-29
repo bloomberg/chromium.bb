@@ -363,27 +363,16 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
-  SkBlendMode composite_op = SkBlendMode::kSrcOver;
+  LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   DCHECK(box_model.HasLayer());
   if (!box_model.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
-    if ((mask_box_image && box_model.StyleRef().MaskLayers().HasImage()) ||
-        box_model.StyleRef().MaskLayers().Next()) {
-      push_transparency_layer = true;
-      paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn);
-    } else {
-      // TODO(fmalita): passing a dst-in xfer mode down to
-      // paintFillLayers/paintNinePieceImage seems dangerous: it is only
-      // correct if applied atomically (single draw call). While the heuristic
-      // above presumably ensures that is the case, this approach seems super
-      // fragile. We should investigate dropping this optimization in favour
-      // of the more robust layer branch above.
-      composite_op = SkBlendMode::kDstIn;
-    }
+    push_transparency_layer = true;
+    FloatRect bounds(paint_rect);
+    paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn, &bounds);
   }
 
-  LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   PaintFillLayers(paint_info, Color::kTransparent,
-                  box_model.StyleRef().MaskLayers(), paint_rect, composite_op);
+                  box_model.StyleRef().MaskLayers(), paint_rect);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
   if (!has_box_image || !mask_box_image->IsLoaded()) {
@@ -398,7 +387,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     NinePieceImagePainter::Paint(paint_info.context, box_model,
                                  box_model.GetDocument(), GetNode(&box_model),
                                  paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image, composite_op);
+                                 mask_nine_piece_image);
   } else {
     // We have a mask image that spans multiple lines.
     // FIXME: What the heck do we do with RTL here? The math we're using is
@@ -413,7 +402,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     NinePieceImagePainter::Paint(paint_info.context, box_model,
                                  box_model.GetDocument(), GetNode(&box_model),
                                  image_strip_paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image, composite_op);
+                                 mask_nine_piece_image);
   }
 
   if (push_transparency_layer)

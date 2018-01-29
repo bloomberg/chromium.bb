@@ -24,8 +24,7 @@ void PaintPieces(GraphicsContext& context,
                  const ComputedStyle& style,
                  const NinePieceImage& nine_piece_image,
                  Image* image,
-                 IntSize image_size,
-                 SkBlendMode op) {
+                 IntSize image_size) {
   IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
                                style.BorderBottomWidth(),
                                style.BorderLeftWidth());
@@ -42,12 +41,12 @@ void PaintPieces(GraphicsContext& context,
         // Since there is no way for the developer to specify decode behavior,
         // use kSync by default.
         context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
-                          &draw_info.source, op);
+                          &draw_info.source);
       } else {
         context.DrawTiledImage(image, draw_info.destination, draw_info.source,
                                draw_info.tile_scale,
                                draw_info.tile_rule.horizontal,
-                               draw_info.tile_rule.vertical, op);
+                               draw_info.tile_rule.vertical);
       }
     }
   }
@@ -61,8 +60,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                                   Node* node,
                                   const LayoutRect& rect,
                                   const ComputedStyle& style,
-                                  const NinePieceImage& nine_piece_image,
-                                  SkBlendMode op) {
+                                  const NinePieceImage& nine_piece_image) {
   StyleImage* style_image = nine_piece_image.GetImage();
   if (!style_image)
     return false;
@@ -104,7 +102,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   ScopedInterpolationQuality interpolation_quality_scope(
       graphics_context, style.GetInterpolationQuality());
   PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
-              image.get(), image_size, op);
+              image.get(), image_size);
 
   return true;
 }
