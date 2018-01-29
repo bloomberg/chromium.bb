@@ -22,6 +22,20 @@ namespace blink {
 
 namespace {
 
+// Token payloads can be at most 4KB in size, as a guard against trying to parse
+// excessively large tokens (see crbug.com/802377). The origin is the only part
+// of the payload that is user-supplied. The 4KB payload limit allows for the
+// origin to be ~3900 chars. In some cases, 2KB is suggested as the practical
+// limit for URLs, e.g.:
+// https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+// This means tokens can contain origins that are nearly twice as long as any
+// expected to be seen in the wild.
+const size_t kMaxPayloadSize = 4096;
+// Encoded tokens can be at most 6KB in size. Based on the 4KB payload limit,
+// this allows for the payload, signature, and other format bits, plus the
+// Base64 encoding overhead (~4/3 of the input).
+const size_t kMaxTokenSize = 6144;
+
 // Version is a 1-byte field at offset 0.
 const size_t kVersionOffset = 0;
 const size_t kVersionSize = 1;
@@ -87,6 +101,12 @@ OriginTrialTokenStatus TrialToken::Extract(const std::string& token_text,
     return OriginTrialTokenStatus::kMalformed;
   }
 
+  // Protect against attempting to extract arbitrarily large tokens.
+  // See crbug.com/802377.
+  if (token_text.length() > kMaxTokenSize) {
+    return OriginTrialTokenStatus::kMalformed;
+  }
+
   // Token is base64-encoded; decode first.
   std::string token_contents;
   if (!base::Base64Decode(token_text, &token_contents)) {
@@ -142,6 +162,14 @@ OriginTrialTokenStatus TrialToken::Extract(const std::string& token_text,
 // static
 std::unique_ptr<TrialToken> TrialToken::Parse(
     const std::string& token_payload) {
+  // Protect against attempting to parse arbitrarily large tokens. This check is
+  // required here because the fuzzer calls Parse() directly, bypassing the size
+  // check in Extract().
+  // See crbug.com/802377.
+  if (token_payload.length() > kMaxPayloadSize) {
+    return nullptr;
+  }
+
   std::unique_ptr<base::DictionaryValue> datadict =
       base::DictionaryValue::From(base::JSONReader::Read(token_payload));
   if (!datadict) {
