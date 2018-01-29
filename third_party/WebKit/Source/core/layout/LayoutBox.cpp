@@ -1931,24 +1931,12 @@ PaintInvalidationReason LayoutBox::InvalidatePaint(
 LayoutRect LayoutBox::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  LayoutRect clip_rect;
-  CalculateOverflowClipRect(location, overlay_scrollbar_clip_behavior,
-                            clip_rect);
-  return clip_rect;
-}
-
-void LayoutBox::CalculateOverflowClipRect(
-    const LayoutPoint& location,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
-    LayoutRect& clip_rect) const {
-  if (RootScrollerUtil::IsEffective(*this)) {
-    clip_rect = View()->ViewRect();
-    return;
-  }
+  if (RootScrollerUtil::IsEffective(*this))
+    return View()->ViewRect();
 
   // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the property
   // here.
-  clip_rect = BorderBoxRect();
+  LayoutRect clip_rect = BorderBoxRect();
   clip_rect.SetLocation(location + clip_rect.Location() +
                         LayoutSize(BorderLeft(), BorderTop()));
   clip_rect.SetSize(clip_rect.Size() -
@@ -1959,6 +1947,8 @@ void LayoutBox::CalculateOverflowClipRect(
 
   if (HasControlClip())
     clip_rect.Intersect(ControlClipRect(location));
+
+  return clip_rect;
 }
 
 void LayoutBox::ExcludeScrollbars(
