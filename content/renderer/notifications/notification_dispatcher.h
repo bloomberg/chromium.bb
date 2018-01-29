@@ -17,9 +17,10 @@ class NotificationDispatcher : public WorkerThreadMessageFilter {
  public:
   explicit NotificationDispatcher(ThreadSafeSender* thread_safe_sender);
 
-  // Generates a, process-unique new notification Id mapped to |thread_id|, and
-  // return the notification Id. This method can be called on any thread.
-  int GenerateNotificationId(int thread_id);
+  // Generates and stores a new process-unique notification request ID mapped to
+  // |thread_id|, and returns the generated request ID. This method can be
+  // called on any thread.
+  int GenerateNotificationRequestId(int thread_id);
 
  protected:
   ~NotificationDispatcher() override;
@@ -31,11 +32,11 @@ class NotificationDispatcher : public WorkerThreadMessageFilter {
   bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
                                    int* ipc_thread_id) override;
 
-  using NotificationIdToThreadId = std::map<int, int>;
+  using NotificationRequestIdToThreadId = std::map<int, int>;
 
-  base::Lock notification_id_map_lock_;
-  NotificationIdToThreadId notification_id_map_;
-  int next_notification_id_ = 0;
+  base::Lock notification_request_id_map_lock_;
+  NotificationRequestIdToThreadId notification_request_id_map_;
+  int next_notification_request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationDispatcher);
 };

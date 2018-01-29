@@ -16,12 +16,12 @@ NotificationDispatcher::NotificationDispatcher(
 
 NotificationDispatcher::~NotificationDispatcher() {}
 
-int NotificationDispatcher::GenerateNotificationId(int thread_id) {
-  base::AutoLock lock(notification_id_map_lock_);
-  CHECK_LT(next_notification_id_, std::numeric_limits<int>::max());
+int NotificationDispatcher::GenerateNotificationRequestId(int thread_id) {
+  base::AutoLock lock(notification_request_id_map_lock_);
+  CHECK_LT(next_notification_request_id_, std::numeric_limits<int>::max());
 
-  notification_id_map_[next_notification_id_] = thread_id;
-  return next_notification_id_++;
+  notification_request_id_map_[next_notification_request_id_] = thread_id;
+  return next_notification_request_id_++;
 }
 
 bool NotificationDispatcher::ShouldHandleMessage(
@@ -38,13 +38,14 @@ void NotificationDispatcher::OnFilteredMessageReceived(
 bool NotificationDispatcher::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
-  int notification_id = -1;
-  const bool success = base::PickleIterator(msg).ReadInt(&notification_id);
+  int notification_request_id = -1;
+  const bool success =
+      base::PickleIterator(msg).ReadInt(&notification_request_id);
   DCHECK(success);
 
-  base::AutoLock lock(notification_id_map_lock_);
-  auto iterator = notification_id_map_.find(notification_id);
-  if (iterator != notification_id_map_.end()) {
+  base::AutoLock lock(notification_request_id_map_lock_);
+  auto iterator = notification_request_id_map_.find(notification_request_id);
+  if (iterator != notification_request_id_map_.end()) {
     *ipc_thread_id = iterator->second;
     return true;
   }
