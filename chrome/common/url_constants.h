@@ -234,6 +234,9 @@ extern const char kTPMFirmwareUpdateLearnMoreURL[];
 #if defined(OS_MACOSX)
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
+
+// The URL for the "learn more" link on the 10.9 obsolescence infobar.
+extern const char kMac10_9_ObsoleteURL[];
 #endif
 
 #if defined(OS_WIN)

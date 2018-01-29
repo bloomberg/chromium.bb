@@ -285,6 +285,9 @@ const char kTPMFirmwareUpdateLearnMoreURL[] =
 #if defined(OS_MACOSX)
 const char kChromeEnterpriseSignInLearnMoreURL[] =
     "https://support.google.com/chromebook/answer/1331549";
+
+const char kMac10_9_ObsoleteURL[] =
+    "https://support.google.com/chrome/?p=unsupported_mac";
 #endif
 
 #if defined(OS_WIN)
