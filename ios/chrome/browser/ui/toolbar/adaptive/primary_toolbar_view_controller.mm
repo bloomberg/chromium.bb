@@ -101,6 +101,11 @@
   [self addLongPressGestureToView:self.view.forwardTrailingButton];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  ConstrainNamedGuideToView(kOmniboxGuide, self.view.locationBarContainer);
+}
+
 #pragma mark - Property accessors
 
 - (void)setLocationBarView:(UIView*)locationBarView {
