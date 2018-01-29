@@ -297,6 +297,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
     }
     default_task_runner_ = scheduler_->DefaultTaskQueue();
     compositor_task_runner_ = scheduler_->CompositorTaskQueue();
+    input_task_runner_ = scheduler_->InputTaskQueue();
     loading_task_runner_ = scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
     loading_control_task_runner_ = scheduler_->NewLoadingTaskQueue(
@@ -606,6 +607,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
   // task identifier specifies the task type:
   // - 'D': Default task
   // - 'C': Compositor task
+  // - 'P': Input task
   // - 'L': Loading task
   // - 'M': Loading Control task
   // - 'I': Idle task
@@ -624,6 +626,10 @@ class RendererSchedulerImplTest : public ::testing::Test {
           break;
         case 'C':
           compositor_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+          break;
+        case 'P':
+          input_task_runner_->PostTask(
               FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
           break;
         case 'L':
@@ -720,6 +726,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
   std::unique_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<TaskQueue> loading_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_control_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
@@ -744,10 +751,11 @@ TEST_F(RendererSchedulerImplTest, TestPostDefaultTask) {
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultAndCompositor) {
   std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "D1 C1");
+  PostTestTasks(&run_order, "D1 C1 P1");
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::Contains("D1"));
   EXPECT_THAT(run_order, ::testing::Contains("C1"));
+  EXPECT_THAT(run_order, ::testing::Contains("P1"));
 }
 
 TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
@@ -882,13 +890,14 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
 TEST_F(RendererSchedulerImplTest, TestDefaultPolicy) {
   std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+  PostTestTasks(&run_order, "L1 I1 D1 P1 C1 D2 P2 C2");
 
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                     std::string("C1"), std::string("D2"),
+                                     std::string("P1"), std::string("C1"),
+                                     std::string("D2"), std::string("P2"),
                                      std::string("C2"), std::string("I1")));
   EXPECT_EQ(RendererSchedulerImpl::UseCase::kNone, CurrentUseCase());
 }

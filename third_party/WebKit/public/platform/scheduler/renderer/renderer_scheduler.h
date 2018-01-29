@@ -56,6 +56,9 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   CompositorTaskRunner() = 0;
 
+  // Returns the input task runner.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() = 0;
+
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<WebThread> CreateMainThread() = 0;
 

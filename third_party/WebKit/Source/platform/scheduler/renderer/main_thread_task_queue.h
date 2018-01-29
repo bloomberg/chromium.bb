@@ -45,10 +45,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     kFrameUnpausable = 15,
     kV8 = 16,
     kIPC = 17,
+    kInput = 18,
 
     // Used to group multiple types when calculating Expected Queueing Time.
-    kOther = 18,
-    kCount = 19
+    kOther = 19,
+    kCount = 20
   };
 
   // Returns name of the given queue type. Returned string has application

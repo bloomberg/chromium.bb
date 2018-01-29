@@ -44,6 +44,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "v8_tq";
     case MainThreadTaskQueue::QueueType::kIPC:
       return "ipc_tq";
+    case MainThreadTaskQueue::QueueType::kInput:
+      return "input_tq";
     case MainThreadTaskQueue::QueueType::kOther:
       return "other_tq";
     case MainThreadTaskQueue::QueueType::kCount:
@@ -75,6 +77,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kFrameUnpausable:
       return QueueClass::kTimer;
     case QueueType::kCompositor:
+    case QueueType::kInput:
       return QueueClass::kCompositor;
     case QueueType::kOther:
     case QueueType::kCount:
