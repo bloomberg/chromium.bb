@@ -9,19 +9,35 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
+    /** @type {?print_preview.DestinationStore} */
+    destinationStore: Object,
+
+    /** @type {!print_preview.UserInfo} */
+    userInfo: Object,
+
     /** @private {boolean} */
-    loadingDestination_: Boolean,
+    loadingDestination_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
-  /** @override */
-  ready: function() {
-    this.loadingDestination_ = true;
-    // Simulate transition from spinner to destination.
-    setTimeout(this.doneLoading_.bind(this), 5000);
+  observers: ['onDestinationSet_(destination, destination.id)'],
+
+  /** @private */
+  onDestinationSet_: function() {
+    if (this.destination && this.destination.id)
+      this.loadingDestination_ = false;
   },
 
   /** @private */
-  doneLoading_: function() {
-    this.loadingDestination_ = false;
+  onChangeButtonTap_: function() {
+    this.destinationStore.startLoadAllDestinations();
+    const dialog = this.$.destinationDialog.get();
+    // This async() call is a workaround to prevent a DCHECK - see
+    // https://crbug.com/804047.
+    this.async(() => {
+      dialog.show();
+    }, 1);
   },
 });
