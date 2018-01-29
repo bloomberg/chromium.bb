@@ -159,7 +159,6 @@ public class ContentViewCoreImpl
 
     private boolean mAttachedToWindow;
 
-    private PopupZoomer mPopupZoomer;
     private SelectPopup mSelectPopup;
     private long mNativeSelectPopupSourceFrame;
 
@@ -325,10 +324,10 @@ public class ContentViewCoreImpl
                 mContext, containerView, webContents, mProductVersion);
         setContainerViewInternals(internalDispatcher);
 
-        mPopupZoomer = new PopupZoomer(mContext, mWebContents, mContainerView);
         ImeAdapterImpl imeAdapter = ImeAdapterImpl.create(
                 mWebContents, mContainerView, new InputMethodManagerWrapper(mContext));
         imeAdapter.addEventObserver(this);
+        imeAdapter.addEventObserver(TapDisambiguator.create(mContext, mWebContents, containerView));
         mTextSuggestionHost =
                 new TextSuggestionHost(mContext, mWebContents, windowAndroid, mContainerView);
         addWindowAndroidChangedObserver(mTextSuggestionHost);
@@ -392,7 +391,6 @@ public class ContentViewCoreImpl
             TraceEvent.begin("ContentViewCore.setContainerView");
             if (mContainerView != null) {
                 hideSelectPopupWithCancelMessage();
-                mPopupZoomer.hide(false);
                 getImeAdapter().setContainerView(containerView);
                 mTextSuggestionHost.setContainerView(containerView);
             }
@@ -417,6 +415,10 @@ public class ContentViewCoreImpl
         return ImeAdapterImpl.fromWebContents(mWebContents);
     }
 
+    private TapDisambiguator getTapDisambiguator() {
+        return TapDisambiguator.fromWebContents(mWebContents);
+    }
+
     @CalledByNative
     private void onNativeContentViewCoreDestroyed(long nativeContentViewCore) {
         assert nativeContentViewCore == mNativeContentViewCore;
@@ -426,12 +428,6 @@ public class ContentViewCoreImpl
     @Override
     public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {
         mContainerViewInternals = internalDispatcher;
-    }
-
-    @VisibleForTesting
-    @Override
-    public void setPopupZoomerForTest(PopupZoomer popupZoomer) {
-        mPopupZoomer = popupZoomer;
     }
 
     @Override
@@ -515,7 +511,8 @@ public class ContentViewCoreImpl
             return true;
         }
 
-        if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(x, y);
+        TapDisambiguator tapDisambiguator = getTapDisambiguator();
+        if (!tapDisambiguator.isShowing()) tapDisambiguator.setLastTouch(x, y);
 
         return false;
     }
@@ -565,26 +562,27 @@ public class ContentViewCoreImpl
     }
 
     private void hidePopupsAndClearSelection() {
-        if (isAlive()) {
+        if (mWebContents != null) {
             getSelectionPopupController().destroyActionModeAndUnselect();
             destroyPastePopup();
+            getTapDisambiguator().hidePopup(false);
+            mWebContents.dismissTextHandles();
         }
         hidePopups();
-        if (mWebContents != null) mWebContents.dismissTextHandles();
     }
 
     @CalledByNative
     private void hidePopupsAndPreserveSelection() {
-        if (isAlive()) {
+        if (mWebContents != null) {
             getSelectionPopupController().destroyActionModeAndKeepSelection();
             destroyPastePopup();
+            getTapDisambiguator().hidePopup(false);
         }
         hidePopups();
     }
 
     private void hidePopups() {
         hideSelectPopupWithCancelMessage();
-        mPopupZoomer.hide(false);
         mTextSuggestionHost.hidePopups();
     }
 
@@ -696,11 +694,10 @@ public class ContentViewCoreImpl
         if (mHasViewFocus != null && mHasViewFocus == gainFocus) return;
         mHasViewFocus = gainFocus;
 
-        if (!isAlive()) {
+        if (mWebContents == null) {
             // CVC is on its way to destruction. The rest needs not running as all the states
             // will be discarded, or WebContentsUserData-based objects are not reachable
-            // any more. Simply hide popups and return.
-            hidePopups();
+            // any more. Simply return here.
             return;
         }
 
@@ -729,8 +726,9 @@ public class ContentViewCoreImpl
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (mPopupZoomer.isShowing() && keyCode == KeyEvent.KEYCODE_BACK) {
-            mPopupZoomer.backButtonPressed();
+        TapDisambiguator tapDisambiguator = getTapDisambiguator();
+        if (tapDisambiguator.isShowing() && keyCode == KeyEvent.KEYCODE_BACK) {
+            tapDisambiguator.backButtonPressed();
             return true;
         }
         return mContainerViewInternals.super_onKeyUp(keyCode, event);
@@ -959,9 +957,7 @@ public class ContentViewCoreImpl
                 || scrollOffsetX != mRenderCoordinates.getScrollX()
                 || scrollOffsetY != mRenderCoordinates.getScrollY();
 
-        final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
-
-        if (needHidePopupZoomer) mPopupZoomer.hide(true);
+        if (contentSizeChanged || scrollChanged) getTapDisambiguator().hidePopup(true);
 
         if (scrollChanged) {
             mContainerViewInternals.onScrollChanged(
@@ -988,11 +984,6 @@ public class ContentViewCoreImpl
     }
 
     // ImeEventObserver
-
-    @Override
-    public void onImeEvent() {
-        mPopupZoomer.hide(true);
-    }
 
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {

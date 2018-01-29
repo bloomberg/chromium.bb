@@ -51,11 +51,11 @@ namespace content {
 class ContentViewCore;
 class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
-class PopupZoomer;
 class RenderWidgetHostImpl;
 class SelectionPopupController;
 class SynchronousCompositorHost;
 class SynchronousCompositorClient;
+class TapDisambiguator;
 class TextSuggestionHostAndroid;
 class TouchSelectionControllerClientManagerAndroid;
 class WebContentsAccessibilityAndroid;
@@ -257,8 +257,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void set_ime_adapter(ImeAdapterAndroid* ime_adapter) {
     ime_adapter_android_ = ime_adapter;
   }
-  void set_popup_zoomer(PopupZoomer* popup_zoomer) {
-    popup_zoomer_ = popup_zoomer;
+  void set_tap_disambiguator(TapDisambiguator* tap_disambiguator) {
+    tap_disambiguator_ = tap_disambiguator;
   }
   void set_selection_popup_controller(SelectionPopupController* controller) {
     selection_popup_controller_ = controller;
@@ -411,7 +411,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   ContentViewCore* content_view_core_;
 
   ImeAdapterAndroid* ime_adapter_android_;
-  PopupZoomer* popup_zoomer_;
+  TapDisambiguator* tap_disambiguator_;
   SelectionPopupController* selection_popup_controller_;
   TextSuggestionHostAndroid* text_suggestion_host_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_POPUP_ZOOMER_H_
-#define CONTENT_BROWSER_ANDROID_POPUP_ZOOMER_H_
+#ifndef CONTENT_BROWSER_ANDROID_TAP_DISAMBIGUATOR_H_
+#define CONTENT_BROWSER_ANDROID_TAP_DISAMBIGUATOR_H_
 
 #include <jni.h>
 
@@ -15,11 +15,11 @@ namespace content {
 
 class RenderWidgetHostViewAndroid;
 
-class PopupZoomer : public RenderWidgetHostConnector {
+class TapDisambiguator : public RenderWidgetHostConnector {
  public:
-  PopupZoomer(JNIEnv* env,
-              const base::android::JavaParamRef<jobject>& obj,
-              WebContents* web_contents);
+  TapDisambiguator(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   WebContents* web_contents);
 
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(
@@ -38,14 +38,14 @@ class PopupZoomer : public RenderWidgetHostConnector {
 
   // Called from native -> java
 
-  // Shows the disambiguation popup
+  // Shows the disambiguator popup
   // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents
   // |zoomed_bitmap| --> magnified image of potential touch targets
   void ShowPopup(const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap);
   void HidePopup();
 
  private:
-  ~PopupZoomer() override;
+  ~TapDisambiguator() override;
 
   // Current RenderWidgetHostView connected to this instance. Can be null.
   RenderWidgetHostViewAndroid* rwhva_;
@@ -54,4 +54,4 @@ class PopupZoomer : public RenderWidgetHostConnector {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_POPUP_ZOOMER_H_
+#endif  // CONTENT_BROWSER_ANDROID_TAP_DISAMBIGUATOR_H_
