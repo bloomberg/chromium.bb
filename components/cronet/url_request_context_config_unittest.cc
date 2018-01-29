@@ -52,6 +52,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       "\"race_cert_verification\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true},"
+      "\"NetworkErrorLogging\":{\"enable\":true},"
       "\"UnknownOption\":{\"foo\":true},"
       "\"HostResolverRules\":{\"host_resolver_rules\":"
       "\"MAP * 127.0.0.1\"},"
@@ -105,6 +106,13 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check AsyncDNS resolver is enabled (not supported on iOS).
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
 #endif  // defined(ENABLE_BUILT_IN_DNS)
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Check Reporting and Network Error Logging are enabled (can be disabled at
+  // build time).
+  EXPECT_TRUE(context->reporting_service());
+  EXPECT_TRUE(context->network_error_logging_delegate());
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Check IPv6 is disabled when on wifi.
   EXPECT_TRUE(context->host_resolver()->GetNoIPv6OnWifi());
