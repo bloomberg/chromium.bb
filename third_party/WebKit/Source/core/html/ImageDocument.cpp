@@ -242,6 +242,10 @@ void ImageDocument::CreateDocumentStructure() {
     HTMLSlotElement* slot = HTMLSlotElement::CreateUserAgentDefaultSlot(*this);
     div_element_->AppendChild(slot);
 
+    // Adding a UA shadow root here is because the container <div> should be
+    // hidden so that only the <img> element should be visible in <body>,
+    // according to the spec:
+    // https://html.spec.whatwg.org/multipage/browsing-the-web.html#read-media
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
