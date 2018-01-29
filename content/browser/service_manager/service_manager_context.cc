@@ -71,7 +71,6 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
-#include "services/video_capture/public/cpp/constants.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -571,7 +570,7 @@ ServiceManagerContext::ServiceManagerContext() {
     GetNetworkService();
   }
 
-  if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
+  if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {
     out_of_process_services[video_capture::mojom::kServiceName] =
         base::ASCIIToUTF16("Video Capture Service");
   }

@@ -8,6 +8,7 @@
 #include "content/browser/webrtc/webrtc_webcam_browsertest.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
@@ -16,7 +17,6 @@
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/video_capture/public/cpp/constants.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/interfaces/testing_controls.mojom.h"
 
@@ -48,7 +48,7 @@ static const char kVerifyHasReceivedTrackEndedEvent[] =
 class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
  protected:
   WebRtcVideoCaptureBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(video_capture::kMojoVideoCapture);
+    scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
   ~WebRtcVideoCaptureBrowserTest() override {}
