@@ -14,6 +14,7 @@
 @interface NewTabPageView : UIView
 @property(nonatomic, weak, readonly) NewTabPageBar* tabBar;
 @property(nonatomic, weak) UIView* contentView;
+@property(nonatomic, weak) UICollectionView* contentCollectionView;
 // Safe area to be used for toolbar. Once the view is part of the view hierarchy
 // and has its own safe area set, this is equal to safeAreaInsets. But as a
 // snapshot of the view is taken before it is inserted in the view hierarchy,
