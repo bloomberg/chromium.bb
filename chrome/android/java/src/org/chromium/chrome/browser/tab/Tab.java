@@ -633,8 +633,8 @@ public class Tab
     }
 
     private int calculateDefaultThemeColor() {
-        boolean useModernDesign = FeatureUtilities.isChromeModernDesignEnabled()
-                && getActivity().supportsModernDesign();
+        boolean useModernDesign = getActivity() != null && getActivity().supportsModernDesign()
+                && FeatureUtilities.isChromeModernDesignEnabled();
         Resources resources = mThemedApplicationContext.getResources();
         return ColorUtils.getDefaultThemeColor(resources, useModernDesign, mIncognito);
     }
