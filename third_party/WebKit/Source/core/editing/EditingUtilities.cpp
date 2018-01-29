@@ -1479,9 +1479,13 @@ int IndexForVisiblePosition(const VisiblePosition& visible_position,
   EphemeralRange range(Position::FirstPositionInNode(*scope),
                        p.ParentAnchoredEquivalent());
 
-  return TextIterator::RangeLength(
-      range.StartPosition(), range.EndPosition(),
-      TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior());
+  const TextIteratorBehavior& behavior =
+      TextIteratorBehavior::Builder(
+          TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior())
+          .SetSuppressesExtraNewlineEmission(true)
+          .Build();
+  return TextIterator::RangeLength(range.StartPosition(), range.EndPosition(),
+                                   behavior);
 }
 
 EphemeralRange MakeRange(const VisiblePosition& start,
@@ -1534,7 +1538,8 @@ VisiblePosition VisiblePositionForIndex(int index, ContainerNode* scope) {
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       scope->GetDocument().Lifecycle());
 
-  EphemeralRange range = PlainTextRange(index).CreateRangeForSelection(*scope);
+  EphemeralRange range =
+      PlainTextRange(index).CreateRangeForSelectionIndexing(*scope);
   // Check for an invalid index. Certain editing operations invalidate indices
   // because of problems with
   // TextIteratorEmitsCharactersBetweenAllVisiblePositions.
