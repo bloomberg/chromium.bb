@@ -146,8 +146,9 @@ def GetAndroidApiLevelAndToolchainVersion():
                                     'android', 'config.gni')
   with open(android_config_gni, 'r') as f:
     gni_contents = f.read()
-    api64_match = re.search('_android64_api_level\s*=\s*(\d{2})', gni_contents)
-    api_match = re.search('_android_api_level\s*=\s*(\d{2})', gni_contents)
+    api64_match = re.search('android64_ndk_api_level\s*=\s*(\d{2})',
+                            gni_contents)
+    api_match = re.search('android32_ndk_api_level\s*=\s*(\d{2})', gni_contents)
     toolchain_match = re.search('_android_toolchain_version\s*=\s*"([.\d]+)"',
                                 gni_contents)
     if not api_match or not toolchain_match or not api64_match:
