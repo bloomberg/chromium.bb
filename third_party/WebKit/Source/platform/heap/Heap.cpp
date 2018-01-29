@@ -61,30 +61,6 @@ void ThreadHeap::FlushHeapDoesNotContainCache() {
   heap_does_not_contain_cache_->Flush();
 }
 
-void ProcessHeap::Init() {
-  total_allocated_space_ = 0;
-  total_allocated_object_size_ = 0;
-  total_marked_object_size_ = 0;
-
-  GCInfoTable::Init();
-  CallbackStackMemoryPool::Instance().Initialize();
-}
-
-void ProcessHeap::ResetHeapCounters() {
-  total_allocated_object_size_ = 0;
-  total_marked_object_size_ = 0;
-}
-
-CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadPersistentRegion() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion,
-                                  persistent_region, ());
-  return persistent_region;
-}
-
-size_t ProcessHeap::total_allocated_space_ = 0;
-size_t ProcessHeap::total_allocated_object_size_ = 0;
-size_t ProcessHeap::total_marked_object_size_ = 0;
-
 ThreadHeapStats::ThreadHeapStats()
     : allocated_space_(0),
       allocated_object_size_(0),
