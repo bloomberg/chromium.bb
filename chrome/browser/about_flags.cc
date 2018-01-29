@@ -3606,6 +3606,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshDisableLoginDimAndBlurName,
      flag_descriptions::kAshDisableLoginDimAndBlurDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableLoginDimAndBlur)},
+
+    {"ash-enable-persistent-window-bounds",
+     flag_descriptions::kAshEnablePersistentWindowBoundsName,
+     flag_descriptions::kAshEnablePersistentWindowBoundsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnablePersistentWindowBounds)},
 #endif  // OS_CHROMEOS
 
     {"clipboard-content-setting",
