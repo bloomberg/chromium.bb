@@ -31,7 +31,7 @@ def get_swarming_py_path():
       path_util.GetChromiumSrcDir(), 'tools', 'swarming_client', 'swarming.py')
 
 
-def modify_args(all_args, bot_id, temp_file):
+def modify_args(all_args, bot_id, temp_file, total_shards, shard_num):
   """Modifies the given argument list.
 
   Specifically, it does the following:
@@ -50,9 +50,16 @@ def modify_args(all_args, bot_id, temp_file):
       'Malformed trigger command; -- argument expected but not found')
   dash_ind = all_args.index('--')
 
-  return all_args[:dash_ind] + [
-      '--dump-json', temp_file, '--dimension', 'id', bot_id] + all_args[
-          dash_ind:] + ['--bot', bot_id]
+  # These two flags are required for the swarming task.
+  # In essence we are re-using swarmings existing sharding concept
+  # to be able to collect all n triggered tasks at once.
+  shard_index_flag = 'GTEST_SHARD_INDEX %d' % shard_num
+  total_shards_flag = 'GTEST_SHARD_SHARDS %d' % total_shards
+  # TODO: Do we need to drop the shard flag from swarming?
+  return (all_args[:dash_ind] + [
+      '--dump-json', temp_file, '--dimension', 'id', bot_id]
+      + ['--env', shard_index_flag] + ['--env', total_shards_flag]
+          + all_args[dash_ind:] + ['--bot', bot_id])
 
 
 def trigger_tasks(args, remaining):
@@ -70,10 +77,12 @@ def trigger_tasks(args, remaining):
 
   # TODO: Do these in parallel
   for shard_num, bot_id in enumerate(args.bot_id):
+    print "Triggering shard %d on bot %s " % (shard_num, bot_id)
     # Holds the results of the swarming.py trigger call.
     temp_fd, json_temp = tempfile.mkstemp(prefix='perf_device_trigger')
     try:
-      args_to_pass = modify_args(remaining[:], bot_id, json_temp)
+      args_to_pass = modify_args(
+          remaining[:], bot_id, json_temp, len(args.bot_id), shard_num)
 
       ret = subprocess.call([get_swarming_py_path()] + args_to_pass)
       if ret:
@@ -104,18 +113,8 @@ def main():
                       help='(Swarming Trigger Script API) Where to dump the'
                       ' resulting json which indicates which tasks were'
                       ' triggered for which shards.')
-  parser.add_argument('--shards',
-                      help='How many shards to trigger. Duplicated from the'
-                      ' `swarming.py trigger` command. If passed, will be'
-                      ' checked to ensure there are as many shards as bots'
-                      ' specified by the --bot-id argument. If omitted,'
-                      ' --bot-id will be used to determine the number of shards'
-                      ' to create.')
   args, remaining = parser.parse_known_args()
 
-  if args.shards and args.shards != len(args.bot_id):
-    raise parser.error(
-        'Number of bots to use must equal number of shards (--shards)')
   return trigger_tasks(args, remaining)
 
 
