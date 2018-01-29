@@ -5,7 +5,6 @@
 #include "chrome/installer/zucchini/ensemble_matcher.h"
 
 #include <limits>
-#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -20,17 +19,6 @@ EnsembleMatcher::~EnsembleMatcher() = default;
 
 void EnsembleMatcher::Trim() {
   // TODO(huangs): Add MultiDex handling logic when we add DEX support.
-}
-
-void EnsembleMatcher::GenerateSeparators(ConstBufferView new_image) {
-  ConstBufferView::iterator it = new_image.begin();
-  for (ElementMatch& match : matches_) {
-    ConstBufferView new_sub_image(new_image[match.new_element.region()]);
-    separators_.push_back(
-        ConstBufferView::FromRange(it, new_sub_image.begin()));
-    it = new_sub_image.end();
-  }
-  separators_.push_back(ConstBufferView::FromRange(it, new_image.end()));
 }
 
 }  // namespace zucchini

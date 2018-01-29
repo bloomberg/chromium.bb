@@ -241,7 +241,6 @@ HeuristicEnsembleMatcher::~HeuristicEnsembleMatcher() = default;
 bool HeuristicEnsembleMatcher::RunMatch(ConstBufferView old_image,
                                         ConstBufferView new_image) {
   DCHECK(matches_.empty());
-  DCHECK(separators_.empty());
   LOG(INFO) << "Start matching.";
 
   // Find all elements in "old" and "new".
@@ -364,7 +363,6 @@ bool HeuristicEnsembleMatcher::RunMatch(ConstBufferView old_image,
   }
 
   Trim();
-  GenerateSeparators(new_image);
   return true;
 }
 

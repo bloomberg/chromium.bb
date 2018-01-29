@@ -39,25 +39,15 @@ class EnsembleMatcher {
   // Accessors to RunMatch() results.
   const std::vector<ElementMatch>& matches() const { return matches_; }
 
-  const std::vector<ConstBufferView>& separators() const { return separators_; }
-
   size_t num_identical() const { return num_identical_; }
 
  protected:
   // Post-processes |matches_| to remove potentially unfavorable entries.
   void Trim();
 
-  // Populates |separators_| from |new_image_| and |matches_|.
-  void GenerateSeparators(ConstBufferView new_image);
-
   // Storage of matched elements: A list of matched pairs, where the list of
   // "new" elements have increasing offsets and don't overlap. May be empty.
   std::vector<ElementMatch> matches_;
-
-  // Storage of regions before / between (successive) / after |new_ensemble|
-  // elements in |matches_|, including empty regions. Contains 1 more element
-  // than |matches_|.
-  std::vector<ConstBufferView> separators_;
 
   // Number of identical matches found in match candidates. These should be
   // excluded from |matches_|.
