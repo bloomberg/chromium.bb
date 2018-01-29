@@ -193,6 +193,7 @@ TextSegmentationMachineState BackspaceStateMachine::FeedPrecedingCodeUnit(
       return MoveToNextState(BackspaceState::kOddNumberedRIS);
     case BackspaceState::kFinished:
       NOTREACHED() << "Do not call feedPrecedingCodeUnit() once it finishes.";
+      break;
     default:
       NOTREACHED() << "Unhandled state: " << state_;
   }
