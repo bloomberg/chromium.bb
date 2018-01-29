@@ -35,12 +35,9 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
                                       size_t* final_byte_offset,
                                       SpdyHeaderBlock* trailers);
 
-  // Returns a canonicalized URL composed from the :scheme, :authority, and
-  // :path headers of a PUSH_PROMISE. Returns empty string if the headers do not
-  // conform to HTTP/2 spec or if the ":method" header contains a forbidden
-  // method for PUSH_PROMISE.
-  static std::string GetPromisedUrlFromHeaderBlock(
-      const SpdyHeaderBlock& headers);
+  // Returns URL composed from scheme, authority, and path header
+  // values, or empty string if any of those fields are missing.
+  static std::string GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers);
 
   // Returns hostname, or empty string if missing.
   static std::string GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers);
