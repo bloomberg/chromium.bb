@@ -28,6 +28,11 @@ const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
 const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
     "AppleScriptExecuteJavaScriptMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the "this OS is obsolete" infobar on Mac 10.9.
+// TODO(ellyjones): Remove this after the last 10.9 release.
+const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the fullscreen toolbar to reveal itself if it's hidden.
 const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
