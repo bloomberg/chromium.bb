@@ -627,8 +627,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
   // 'normal'.
   if (style.JustifyItemsPosition() == ItemPosition::kAuto) {
-    if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy)
+    if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy) {
+      UseCounter::Count(element->GetDocument(),
+                        WebFeature::kCSSLegacyAlignment);
       style.SetJustifyItems(parent_style.JustifyItems());
+    }
   }
 
   AdjustEffectiveTouchAction(style, parent_style, element, is_svg_root);

@@ -17701,6 +17701,7 @@ Called by update_net_error_codes.py.-->
   <int value="2348" label="ImageDecodeAPI"/>
   <int value="2349" label="V8HTMLElement_Autocapitalize_AttributeGetter"/>
   <int value="2350" label="V8HTMLElement_Autocapitalize_AttributeSetter"/>
+  <int value="2351" label="CSSLegacyAlignment"/>
 </enum>
 
 <enum name="FeedbackSource">
