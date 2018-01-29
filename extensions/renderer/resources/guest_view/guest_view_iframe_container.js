@@ -16,6 +16,15 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   return iframeElement;
 };
 
+GuestViewContainer.prototype.prepareForReattach_ = function() {
+  // Since attachment swaps a local frame for a remote frame, we need our
+  // internal iframe element to be local again before we can reattach.
+  var newFrame = this.createInternalElement$();
+  var oldFrame = privates(this).internalElement;
+  privates(this).internalElement = newFrame;
+  oldFrame.parentNode.replaceChild(newFrame, oldFrame);
+};
+
 GuestViewContainer.prototype.attachWindow$ = function() {
   var generatedId = IdGenerator.GetNextId();
   // Generate an instance id for the container.
