@@ -4,11 +4,11 @@
 
 #include "base/containers/mru_cache.h"
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -379,6 +379,16 @@ TEST(MRUCacheTest, Swap) {
     EXPECT_EQ(kItem1Key, iter->first);
     EXPECT_EQ(item1.value, iter->second.value);
   }
+}
+
+TEST(MRUCacheTest, EstimateMemory) {
+  base::MRUCache<std::string, int> cache(10);
+
+  const std::string key(100u, 'a');
+  cache.Put(key, 1);
+
+  EXPECT_GT(trace_event::EstimateMemoryUsage(cache),
+            trace_event::EstimateMemoryUsage(key));
 }
 
 }  // namespace base

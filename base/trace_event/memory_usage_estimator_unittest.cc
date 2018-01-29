@@ -240,5 +240,26 @@ TEST(EstimateMemoryUsageTest, Deque) {
   EXPECT_LE(min_expected_usage, EstimateMemoryUsage(deque));
 }
 
+TEST(EstimateMemoryUsageTest, IsStandardContainerComplexIteratorTest) {
+  struct abstract {
+    virtual void method() = 0;
+  };
+
+  static_assert(
+      internal::IsStandardContainerComplexIterator<std::list<int>::iterator>(),
+      "");
+  static_assert(internal::IsStandardContainerComplexIterator<
+                    std::list<int>::const_iterator>(),
+                "");
+  static_assert(internal::IsStandardContainerComplexIterator<
+                    std::list<int>::reverse_iterator>(),
+                "");
+  static_assert(internal::IsStandardContainerComplexIterator<
+                    std::list<int>::const_reverse_iterator>(),
+                "");
+  static_assert(!internal::IsStandardContainerComplexIterator<int>(), "");
+  static_assert(!internal::IsStandardContainerComplexIterator<abstract*>(), "");
+}
+
 }  // namespace trace_event
 }  // namespace base
