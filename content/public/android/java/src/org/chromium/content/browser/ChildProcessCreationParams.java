@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.os.Bundle;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 
 /**
@@ -49,24 +50,29 @@ public class ChildProcessCreationParams {
         mIgnoreVisibilityForImportance = ignoreVisibilityForImportance;
     }
 
-    public String getPackageNameForSandboxedService() {
-        return mPackageNameForSandboxedService;
-    }
-
-    public boolean getIsSandboxedServiceExternal() {
-        return mIsSandboxedServiceExternal;
-    }
-
-    public boolean getBindToCallerCheck() {
-        return mBindToCallerCheck;
-    }
-
-    public boolean getIgnoreVisibilityForImportance() {
-        return mIgnoreVisibilityForImportance;
-    }
-
     public void addIntentExtras(Bundle extras) {
         extras.putInt(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
+    }
+
+    public static String getPackageNameForSandboxedService() {
+        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        return params != null ? params.mPackageNameForSandboxedService
+                              : ContextUtils.getApplicationContext().getPackageName();
+    }
+
+    public static boolean getIsSandboxedServiceExternal() {
+        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        return params != null && params.mIsSandboxedServiceExternal;
+    }
+
+    public static boolean getBindToCallerCheck() {
+        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        return params != null && params.mBindToCallerCheck;
+    }
+
+    public static boolean getIgnoreVisibilityForImportance() {
+        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        return params != null && params.mIgnoreVisibilityForImportance;
     }
 
     public static int getLibraryProcessType(Bundle extras) {
