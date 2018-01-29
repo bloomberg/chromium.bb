@@ -423,14 +423,16 @@ void ServiceWorkerVersion::SetStatus(Status status) {
       case ACTIVATED:
         // Resolve skip waiting promises.
         ClearTick(&skip_waiting_time_);
-        for (int request_id : pending_skip_waiting_requests_) {
-          embedded_worker_->SendIpcMessage(
-              ServiceWorkerMsg_DidSkipWaiting(request_id));
+        for (SkipWaitingCallback& callback : pending_skip_waiting_requests_) {
+          std::move(callback).Run(true);
         }
         pending_skip_waiting_requests_.clear();
         break;
       case REDUNDANT:
-        // Clear any pending skip waiting requests since this version is dead.
+        // Fail any pending skip waiting requests since this version is dead.
+        for (SkipWaitingCallback& callback : pending_skip_waiting_requests_) {
+          std::move(callback).Run(false);
+        }
         pending_skip_waiting_requests_.clear();
         break;
     }
@@ -1062,8 +1064,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
                         OnFocusClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NavigateClient, OnNavigateClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
-                        OnSkipWaiting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1152,6 +1152,42 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     return;
   }
   service_worker_client_utils::GetClient(provider_host, std::move(callback));
+}
+
+void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
+  skip_waiting_ = true;
+
+  // Per spec, resolve the skip waiting promise now if activation won't be
+  // triggered here. The ActivateWaitingVersionWhenReady() call below only
+  // triggers it if we're in INSTALLED state. So if we're not in INSTALLED
+  // state, resolve the promise now. Even if we're in INSTALLED state, there are
+  // still cases where ActivateWaitingVersionWhenReady() won't trigger the
+  // activation. In that case, it's a slight spec violation to not resolve now,
+  // but we'll eventually resolve the promise in SetStatus().
+  if (status_ != INSTALLED) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  if (!context_) {
+    std::move(callback).Run(false);
+    return;
+  }
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  // TODO(leonhsl): Here we should be guaranteed a registration since
+  // ServiceWorkerGlobalScope#registration should be keeping the registration
+  // alive currently. So we need to confirm and remove this nullable check
+  // later.
+  if (!registration) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (skip_waiting_time_.is_null())
+    RestartTick(&skip_waiting_time_);
+  pending_skip_waiting_requests_.push_back(std::move(callback));
+  if (pending_skip_waiting_requests_.size() == 1)
+    registration->ActivateWaitingVersionWhenReady();
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
@@ -1419,35 +1455,6 @@ void ServiceWorkerVersion::OnNavigateClientFinished(
   DCHECK(client_info);
   embedded_worker_->SendIpcMessage(
       ServiceWorkerMsg_NavigateClientResponse(request_id, *client_info));
-}
-
-void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
-  skip_waiting_ = true;
-
-  // Per spec, resolve the skip waiting promise now if activation won't be
-  // triggered here. The ActivateWaitingVersionWhenReady() call below only
-  // triggers it if we're in INSTALLED state. So if we're not in INSTALLED
-  // state, resolve the promise now. Even if we're in INSTALLED state, there are
-  // still cases where ActivateWaitingVersionWhenReady() won't trigger the
-  // activation. In that case, it's a slight spec violation to not resolve now,
-  // but we'll eventually resolve the promise in SetStatus().
-  if (status_ != INSTALLED) {
-    embedded_worker_->SendIpcMessage(
-        ServiceWorkerMsg_DidSkipWaiting(request_id));
-    return;
-  }
-
-  if (!context_)
-    return;
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id_);
-  if (!registration)
-    return;
-  if (skip_waiting_time_.is_null())
-    RestartTick(&skip_waiting_time_);
-  pending_skip_waiting_requests_.push_back(request_id);
-  if (pending_skip_waiting_requests_.size() == 1)
-    registration->ActivateWaitingVersionWhenReady();
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
