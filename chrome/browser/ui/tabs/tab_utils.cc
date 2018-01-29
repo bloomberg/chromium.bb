@@ -170,10 +170,11 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
     return TabAlertState::USB_CONNECTED;
 
-  if (contents->IsAudioMuted())
-    return TabAlertState::AUDIO_MUTING;
-  if (contents->WasRecentlyAudible())
+  if (contents->WasRecentlyAudible()) {
+    if (contents->IsAudioMuted())
+      return TabAlertState::AUDIO_MUTING;
     return TabAlertState::AUDIO_PLAYING;
+  }
 
   return TabAlertState::NONE;
 }

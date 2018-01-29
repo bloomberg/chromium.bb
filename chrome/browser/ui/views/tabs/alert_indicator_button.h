@@ -85,6 +85,7 @@ class AlertIndicatorButton : public views::ImageButton,
 
  private:
   friend class AlertIndicatorButtonTest;
+  friend class TabTest;
   class FadeAnimationDelegate;
 
   // Returns the tab (parent view) of this AlertIndicatorButton.

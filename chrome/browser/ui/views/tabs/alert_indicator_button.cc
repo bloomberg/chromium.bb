@@ -93,9 +93,7 @@ void AlertIndicatorButton::TransitionToAlertState(TabAlertState next_state) {
   if ((alert_state_ == TabAlertState::AUDIO_PLAYING &&
        next_state == TabAlertState::AUDIO_MUTING) ||
       (alert_state_ == TabAlertState::AUDIO_MUTING &&
-       next_state == TabAlertState::AUDIO_PLAYING) ||
-      (alert_state_ == TabAlertState::AUDIO_MUTING &&
-       next_state == TabAlertState::NONE)) {
+       next_state == TabAlertState::AUDIO_PLAYING)) {
     // Instant user feedback: No fade animation.
     showing_alert_state_ = next_state;
     fade_animation_.reset();
