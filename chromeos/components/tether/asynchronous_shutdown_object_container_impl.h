@@ -80,14 +80,6 @@ class AsynchronousShutdownObjectContainerImpl
     static Factory* factory_instance_;
   };
 
-  AsynchronousShutdownObjectContainerImpl(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      cryptauth::CryptAuthService* cryptauth_service,
-      TetherHostFetcher* tether_host_fetcher,
-      NetworkStateHandler* network_state_handler,
-      ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
-      NetworkConnectionHandler* network_connection_handler,
-      PrefService* pref_service);
   ~AsynchronousShutdownObjectContainerImpl() override;
 
   // AsynchronousShutdownObjectContainer:
@@ -100,6 +92,15 @@ class AsynchronousShutdownObjectContainerImpl
   WifiHotspotDisconnector* wifi_hotspot_disconnector() override;
 
  protected:
+  AsynchronousShutdownObjectContainerImpl(
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      cryptauth::CryptAuthService* cryptauth_service,
+      TetherHostFetcher* tether_host_fetcher,
+      NetworkStateHandler* network_state_handler,
+      ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
+      NetworkConnectionHandler* network_connection_handler,
+      PrefService* pref_service);
+
   // BleAdvertiser::Observer:
   void OnAllAdvertisementsUnregistered() override;
 

@@ -40,8 +40,8 @@ std::unique_ptr<DisconnectTetheringRequestSender>
 DisconnectTetheringRequestSenderImpl::Factory::BuildInstance(
     BleConnectionManager* ble_connection_manager,
     TetherHostFetcher* tether_host_fetcher) {
-  return std::make_unique<DisconnectTetheringRequestSenderImpl>(
-      ble_connection_manager, tether_host_fetcher);
+  return base::WrapUnique(new DisconnectTetheringRequestSenderImpl(
+      ble_connection_manager, tether_host_fetcher));
 }
 
 DisconnectTetheringRequestSenderImpl::DisconnectTetheringRequestSenderImpl(

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_ad_hoc_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_advertiser.h"
@@ -81,12 +82,12 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     // Note: The null pointers passed to the constructor are not actually used
     // by the object itself; rather, they are simply passed to the constructors
     // of objects created by the container.
-    container_ = std::make_unique<AsynchronousShutdownObjectContainerImpl>(
+    container_ = base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
         mock_adapter_, fake_cryptauth_service_.get(),
         nullptr /* tether_host_fetcher */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
         nullptr /* network_connection_handler */,
-        test_pref_service_.get() /* pref_service */);
+        test_pref_service_.get() /* pref_service */));
 
     fake_ble_advertiser_ = new FakeBleAdvertiser(
         false /* automatically_update_active_advertisements */);

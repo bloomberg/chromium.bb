@@ -154,7 +154,7 @@ class TetherComponentImplTest : public testing::Test {
     CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
         fake_crash_recovery_manager_factory_.get());
 
-    component_ = std::make_unique<TetherComponentImpl>(
+    component_ = TetherComponentImpl::Factory::NewInstance(
         nullptr /* cryptauth_service */, nullptr /* tether_host_fetcher */,
         nullptr /* notification_presenter */,
         nullptr /* gms_core_notifications_state_tracker */,
@@ -208,7 +208,7 @@ class TetherComponentImplTest : public testing::Test {
   std::unique_ptr<FakeCrashRecoveryManagerFactory>
       fake_crash_recovery_manager_factory_;
 
-  std::unique_ptr<TetherComponentImpl> component_;
+  std::unique_ptr<TetherComponent> component_;
 
   std::unique_ptr<TestTetherComponentObserver> test_observer_;
 

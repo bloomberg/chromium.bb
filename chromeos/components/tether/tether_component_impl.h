@@ -82,6 +82,12 @@ class TetherComponentImpl : public TetherComponent {
     static Factory* factory_instance_;
   };
 
+  ~TetherComponentImpl() override;
+
+  // TetherComponent:
+  void RequestShutdown(const ShutdownReason& shutdown_reason) override;
+
+ protected:
   TetherComponentImpl(
       cryptauth::CryptAuthService* cryptauth_service,
       TetherHostFetcher* tether_host_fetcher,
@@ -94,10 +100,6 @@ class TetherComponentImpl : public TetherComponent {
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter);
-  ~TetherComponentImpl() override;
-
-  // TetherComponent:
-  void RequestShutdown(const ShutdownReason& shutdown_reason) override;
 
  private:
   void OnPreCrashStateRestored();

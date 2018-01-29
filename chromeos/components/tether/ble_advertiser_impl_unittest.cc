@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -143,9 +144,9 @@ class BleAdvertiserImplTest : public testing::Test {
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
         fake_advertisement_factory_.get());
 
-    ble_advertiser_ = std::make_unique<BleAdvertiserImpl>(
+    ble_advertiser_ = base::WrapUnique(new BleAdvertiserImpl(
         mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
-        fake_ble_synchronizer_.get());
+        fake_ble_synchronizer_.get()));
 
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     ble_advertiser_->SetTaskRunnerForTesting(test_task_runner_);

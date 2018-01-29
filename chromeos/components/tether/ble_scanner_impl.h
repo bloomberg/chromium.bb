@@ -56,11 +56,6 @@ class BleScannerImpl : public BleScanner,
    private:
     static Factory* factory_instance_;
   };
-
-  BleScannerImpl(scoped_refptr<device::BluetoothAdapter> adapter,
-                 cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-                 BleSynchronizerBase* ble_synchronizer,
-                 TetherHostFetcher* tether_host_fetcher);
   ~BleScannerImpl() override;
 
   // BleScanner:
@@ -70,6 +65,11 @@ class BleScannerImpl : public BleScanner,
   bool IsDiscoverySessionActive() override;
 
  protected:
+  BleScannerImpl(scoped_refptr<device::BluetoothAdapter> adapter,
+                 cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+                 BleSynchronizerBase* ble_synchronizer,
+                 TetherHostFetcher* tether_host_fetcher);
+
   // device::BluetoothAdapter::Observer:
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* bluetooth_device) override;

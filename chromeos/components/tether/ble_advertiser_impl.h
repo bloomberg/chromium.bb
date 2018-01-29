@@ -51,16 +51,18 @@ class BleAdvertiserImpl : public BleAdvertiser {
     static Factory* factory_instance_;
   };
 
-  BleAdvertiserImpl(
-      cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-      BleSynchronizerBase* ble_synchronizer);
   ~BleAdvertiserImpl() override;
 
   // BleAdvertiser:
   bool StartAdvertisingToDevice(const std::string& device_id) override;
   bool StopAdvertisingToDevice(const std::string& device_id) override;
   bool AreAdvertisementsRegistered() override;
+
+ protected:
+  BleAdvertiserImpl(
+      cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+      cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+      BleSynchronizerBase* ble_synchronizer);
 
  private:
   friend class BleAdvertiserImplTest;

@@ -81,6 +81,15 @@ class SynchronousShutdownObjectContainerImpl
     static Factory* factory_instance_;
   };
 
+  ~SynchronousShutdownObjectContainerImpl() override;
+
+  // SynchronousShutdownObjectContainer:
+  ActiveHost* active_host() override;
+  HostScanCache* host_scan_cache() override;
+  HostScanScheduler* host_scan_scheduler() override;
+  TetherDisconnector* tether_disconnector() override;
+
+ protected:
   SynchronousShutdownObjectContainerImpl(
       AsynchronousShutdownObjectContainer* asychronous_container,
       NotificationPresenter* notification_presenter,
@@ -90,13 +99,6 @@ class SynchronousShutdownObjectContainerImpl
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler);
-  ~SynchronousShutdownObjectContainerImpl() override;
-
-  // SynchronousShutdownObjectContainer:
-  ActiveHost* active_host() override;
-  HostScanCache* host_scan_cache() override;
-  HostScanScheduler* host_scan_scheduler() override;
-  TetherDisconnector* tether_disconnector() override;
 
  private:
   NetworkStateHandler* network_state_handler_;

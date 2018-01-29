@@ -62,10 +62,10 @@ AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
-  return std::make_unique<AsynchronousShutdownObjectContainerImpl>(
+  return base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
       adapter, cryptauth_service, tether_host_fetcher, network_state_handler,
       managed_network_configuration_handler, network_connection_handler,
-      pref_service);
+      pref_service));
 }
 
 AsynchronousShutdownObjectContainerImpl::
@@ -89,15 +89,15 @@ AsynchronousShutdownObjectContainerImpl::
       ble_advertisement_device_queue_(
           std::make_unique<BleAdvertisementDeviceQueue>()),
       ble_synchronizer_(std::make_unique<BleSynchronizer>(adapter)),
-      ble_advertiser_(
-          std::make_unique<BleAdvertiserImpl>(local_device_data_provider_.get(),
-                                              remote_beacon_seed_fetcher_.get(),
-                                              ble_synchronizer_.get())),
-      ble_scanner_(
-          std::make_unique<BleScannerImpl>(adapter,
-                                           local_device_data_provider_.get(),
-                                           ble_synchronizer_.get(),
-                                           tether_host_fetcher_)),
+      ble_advertiser_(BleAdvertiserImpl::Factory::NewInstance(
+          local_device_data_provider_.get(),
+          remote_beacon_seed_fetcher_.get(),
+          ble_synchronizer_.get())),
+      ble_scanner_(BleScannerImpl::Factory::NewInstance(
+          adapter,
+          local_device_data_provider_.get(),
+          ble_synchronizer_.get(),
+          tether_host_fetcher_)),
       ad_hoc_ble_advertiser_(std::make_unique<AdHocBleAdvertiserImpl>(
           local_device_data_provider_.get(),
           remote_beacon_seed_fetcher_.get(),
@@ -110,7 +110,7 @@ AsynchronousShutdownObjectContainerImpl::
           ble_scanner_.get(),
           ad_hoc_ble_advertiser_.get())),
       disconnect_tethering_request_sender_(
-          std::make_unique<DisconnectTetheringRequestSenderImpl>(
+          DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
               ble_connection_manager_.get(),
               tether_host_fetcher_)),
       network_configuration_remover_(

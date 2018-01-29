@@ -37,8 +37,8 @@ void KeepAliveOperation::Factory::SetInstanceForTesting(Factory* factory) {
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::BuildInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager) {
-  return std::make_unique<KeepAliveOperation>(device_to_connect,
-                                              connection_manager);
+  return base::WrapUnique(
+      new KeepAliveOperation(device_to_connect, connection_manager));
 }
 
 KeepAliveOperation::KeepAliveOperation(
