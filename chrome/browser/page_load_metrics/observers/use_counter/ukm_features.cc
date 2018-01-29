@@ -8,8 +8,7 @@
 using WebFeature = blink::mojom::WebFeature;
 
 // UKM-based UseCounter features (WebFeature) should be defined in
-// opt_in_features list. Currently there have been no features opt-in for
-// UKM-based UseCounter, which is why the list is empty.
+// opt_in_features list.
 bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
   CR_DEFINE_STATIC_LOCAL(
       const base::flat_set<WebFeature>, opt_in_features,
@@ -21,6 +20,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           // kDataUriHasOctothorpe may not be recorded correctly for iframes.
           // See https://crbug.com/796173 for details.
           WebFeature::kDataUriHasOctothorpe,
+          WebFeature::kApplicationCacheManifestSelectInsecureOrigin,
+          WebFeature::kApplicationCacheManifestSelectSecureOrigin,
       }));
   return opt_in_features.count(feature);
 }
