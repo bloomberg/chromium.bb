@@ -4405,4 +4405,32 @@ TEST_F(DisplayManagerTest, MixedMirrorModeRestore) {
   EXPECT_EQ(first_display_id, destination_ids[0]);
 }
 
+TEST_F(DisplayManagerTest, MirrorModeRestoreAfterResume) {
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  constexpr int64_t external_display_id = 210000001;
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.emplace_back(display::CreateDisplayInfo(
+      internal_display_id, gfx::Rect(0, 0, 100, 100)));
+  display_info_list.emplace_back(display::CreateDisplayInfo(
+      external_display_id, gfx::Rect(1, 1, 500, 500)));
+
+  // Turn on mirror mode.
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+
+  // Suspend.
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
+  display_manager()->OnNativeDisplaysChanged(
+      std::vector<display::ManagedDisplayInfo>());
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+
+  // Resume.
+  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+}
+
 }  // namespace ash
