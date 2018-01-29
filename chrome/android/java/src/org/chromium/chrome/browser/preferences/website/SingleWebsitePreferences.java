@@ -352,7 +352,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
         } else if (PREF_SOUND_PERMISSION.equals(key)) {
-            setUpListPreference(preference, mSite.getSoundPermission());
+            setUpSoundPreference(preference);
         }
     }
 
@@ -642,6 +642,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 && permission != null) {
             updatePreferenceForDSESetting(preference);
         }
+    }
+
+    private void setUpSoundPreference(Preference preference) {
+        ContentSetting currentValue = mSite.getSoundPermission();
+        // In order to always show the sound permission, set it up with the default value if it
+        // doesn't have a current value.
+        if (currentValue == null) {
+            currentValue = PrefServiceBridge.getInstance().isSoundEnabled() ? ContentSetting.ALLOW
+                                                                            : ContentSetting.BLOCK;
+        }
+        setUpListPreference(preference, currentValue);
     }
 
     /**
