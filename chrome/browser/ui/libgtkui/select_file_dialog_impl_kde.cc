@@ -285,7 +285,6 @@ bool SelectFileDialogImplKDE::HasMultipleFileTypeChoicesImpl() {
 
 std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
   DCHECK(pipe_task_runner_->RunsTasksInCurrentSequence());
-  std::string filter_string;
   // We need a filter set because the same mime type can appear multiple times.
   std::set<std::string> filter_set;
   for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
@@ -297,17 +296,16 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
       }
     }
   }
+  std::vector<std::string> filter_vector(filter_set.cbegin(),
+                                         filter_set.cend());
   // Add the *.* filter, but only if we have added other filters (otherwise it
-  // is implied).
-  if (file_types_.include_all_files && !file_types_.extensions.empty())
-    filter_set.insert("application/octet-stream");
-  // Create the final output string.
-  filter_string.clear();
-  for (std::set<std::string>::iterator it = filter_set.begin();
-       it != filter_set.end(); ++it) {
-    filter_string.append(*it + " ");
+  // is implied). It needs to be added last to avoid being picked as the default
+  // filter.
+  if (file_types_.include_all_files && !file_types_.extensions.empty()) {
+    DCHECK(filter_set.find("application/octet-stream") == filter_set.end());
+    filter_vector.push_back("application/octet-stream");
   }
-  return filter_string;
+  return base::JoinString(filter_vector, " ");
 }
 
 std::unique_ptr<SelectFileDialogImplKDE::KDialogOutputParams>
