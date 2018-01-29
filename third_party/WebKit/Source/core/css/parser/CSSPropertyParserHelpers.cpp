@@ -301,7 +301,7 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
       case CSSPrimitiveValue::UnitType::kQuirkyEms:
         if (css_parser_mode != kUASheetMode)
           return nullptr;
-      /* fallthrough intentional */
+        FALLTHROUGH;
       case CSSPrimitiveValue::UnitType::kEms:
       case CSSPrimitiveValue::UnitType::kRems:
       case CSSPrimitiveValue::UnitType::kChs:

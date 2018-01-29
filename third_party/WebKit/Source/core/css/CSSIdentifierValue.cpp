@@ -51,6 +51,7 @@ CSSIdentifierValue::CSSIdentifierValue(const Length& length)
       break;
     case kExtendToZoom:
       value_id_ = CSSValueInternalExtendToZoom;
+      break;
     case kPercent:
     case kFixed:
     case kCalculated:

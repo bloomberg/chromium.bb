@@ -228,6 +228,7 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
         DCHECK(calc_value->ExpressionNode());
         return CalcToNumericValue(*calc_value->ExpressionNode());
       }
+      break;
     default:
       break;
   }

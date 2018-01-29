@@ -59,7 +59,8 @@ CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
         return CSSSkew::Create(CSSNumericValue::FromCSSValue(x_value),
                                CSSNumericValue::FromCSSValue(y_value));
       }
-    // Else fall through; skew(ax) == skewX(ax).
+      // Else fall through; skew(ax) == skewX(ax).
+      FALLTHROUGH;
     case CSSValueSkewX:
       DCHECK_EQ(value.length(), 1U);
       return CSSSkew::Create(

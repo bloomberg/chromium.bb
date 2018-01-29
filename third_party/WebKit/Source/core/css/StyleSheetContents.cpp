@@ -530,6 +530,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kImport:
       case StyleRuleBase::kNamespace:
         NOTREACHED();
+        break;
       case StyleRuleBase::kPage:
       case StyleRuleBase::kKeyframes:
       case StyleRuleBase::kKeyframe:

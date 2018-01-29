@@ -63,7 +63,7 @@ const CSSValue* WebkitTextEmphasisStyle::CSSValueFromComputedStyleInternal(
       return CSSStringValue::Create(style.TextEmphasisCustomMark());
     case TextEmphasisMark::kAuto:
       NOTREACHED();
-    // Fall through
+      FALLTHROUGH;
     case TextEmphasisMark::kDot:
     case TextEmphasisMark::kCircle:
     case TextEmphasisMark::kDoubleCircle:
