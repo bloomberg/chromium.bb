@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/render_text_test_api.h"
 #include "ui/gfx/text_utils.h"
 
 namespace vr {
@@ -71,7 +72,7 @@ TEST(OmniboxFormatting, MultiLine) {
 
 struct ElisionTestcase {
   std::string url_string;
-  std::string reference_url_string;
+  std::string field_size_string;
   bool has_offset;
   bool fade_left;
   bool fade_right;
@@ -80,18 +81,14 @@ struct ElisionTestcase {
 class ElisionTest : public ::testing::TestWithParam<ElisionTestcase> {};
 
 TEST_P(ElisionTest, ProperOffsetAndFading) {
-  // Use the reference URL to compute a text field width into which the actual
-  // URL will be rendered.
-  GURL reference_gurl(base::UTF8ToUTF16(GetParam().reference_url_string));
-  ASSERT_TRUE(reference_gurl.is_valid());
-  const base::string16 reference_text = url_formatter::FormatUrl(
-      reference_gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, nullptr,
-      nullptr, nullptr);
+  constexpr int kCharacterWidth = 10;
+  constexpr int kMinPathWidth = 3 * kCharacterWidth;
+
   gfx::FontList font_list;
-  auto field_width = gfx::GetStringWidth(reference_text, font_list);
+  auto field_width = GetParam().field_size_string.size() * kCharacterWidth;
   gfx::Rect field(field_width, font_list.GetHeight());
 
-  // Format the actual test URL.
+  // Format the test URL.
   GURL gurl(base::UTF8ToUTF16(GetParam().url_string));
   ASSERT_TRUE(gurl.is_valid());
   url::Parsed parsed;
@@ -107,10 +104,12 @@ TEST_P(ElisionTest, ProperOffsetAndFading) {
   render_text->SetDisplayRect(field);
   render_text->SetCursorEnabled(false);
 
-  auto min_path_width =
-      gfx::GetStringWidth(base::UTF8ToUTF16("aaa"), font_list);
+  // Use a fixed glyph width for testing to avoid having to measure text.
+  gfx::test::RenderTextTestApi render_text_test_api(render_text.get());
+  render_text_test_api.SetGlyphWidth(kCharacterWidth);
+
   ElisionParameters result =
-      GetElisionParameters(gurl, parsed, render_text.get(), min_path_width);
+      GetElisionParameters(gurl, parsed, render_text.get(), kMinPathWidth);
 
   EXPECT_EQ(result.offset != 0, GetParam().has_offset);
   EXPECT_EQ(result.fade_left, GetParam().fade_left);
@@ -119,22 +118,22 @@ TEST_P(ElisionTest, ProperOffsetAndFading) {
 
 const std::vector<ElisionTestcase> elision_test_cases = {
     // URL exactly matches the field width.
-    {"http://abc.com", "http://abc.com", kNoOffset, false, false},
-    {"http://abc.com/aaa", "http://abc.com/aaa", kNoOffset, false, false},
+    {"http://abc.com", "abc.com", kNoOffset, false, false},
+    {"http://abc.com/aaa", "abc.com/aaa", kNoOffset, false, false},
     // URL is narrower than the field.
-    {"http://abc.com/a", "http://abc.com/aaa", kNoOffset, false, false},
+    {"http://abc.com/a", "abc.com/aaa", kNoOffset, false, false},
     // A really long path should not interfere with a short domain.
-    {"http://abc.com/aaaaaaaaaaaaaaaaaaaaaaaaa", "http://abc.com/aaa",
-     kNoOffset, false, true},
+    {"http://abc.com/aaaaaaaaaaaaaaaaaaaaaaaaa", "abc.com/aaa", kNoOffset,
+     false, true},
     // A long domain should be offset and fade on the left.
-    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com", "http://abc.com/aaa",
-     kHasOffset, true, false},
+    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com", "abc.com/aaa", kHasOffset, true,
+     false},
     // A long domain with a tiny path should preserve the path.
-    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/a", "http://abc.com/aaa",
-     kHasOffset, true, false},
+    {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/a", "abc.com/aaa", kHasOffset,
+     true, false},
     // A long domain and path should see fading at both ends.
     {"http://aaaaaaaaaaaaaaaaaaaaaaaa.abc.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-     "http://abc.com/aaa", kHasOffset, true, true},
+     "abc.com/aaa", kHasOffset, true, true},
     // A file URL should always fade to the right.
     {"file://filer/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "file://filer/aaa",
      kNoOffset, false, true},

@@ -1723,4 +1723,18 @@ Range RenderText::ExpandRangeToWordBoundary(const Range& range) const {
                              : Range(range_min, range_max);
 }
 
+internal::TextRunList* RenderText::GetRunList() {
+  NOTREACHED();
+  return nullptr;
+}
+
+const internal::TextRunList* RenderText::GetRunList() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+void RenderText::SetGlyphWidthForTest(float test_width) {
+  NOTREACHED();
+}
+
 }  // namespace gfx

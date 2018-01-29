@@ -193,13 +193,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   friend class test::RenderTextTestApi;
   friend class RenderTextHarfBuzzTest;
 
-  // Specify the width of a glyph for test. The width of glyphs is very
-  // platform-dependent and environment-dependent. Otherwise multiline test
-  // will become really flaky.
-  void set_glyph_width_for_test(float test_width) {
-    glyph_width_for_test_ = test_width;
-  }
-
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingCaret(const SelectionModel& caret);
@@ -245,14 +238,12 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // Makes sure that text runs for layout text are shaped.
   void EnsureLayoutRunList();
 
-  // Returns the current run list, |display_run_list_| if the text is
-  // elided, or |layout_run_list_| otherwise.
-  internal::TextRunList* GetRunList();
-  const internal::TextRunList* GetRunList() const;
-
   // RenderText:
+  internal::TextRunList* GetRunList() override;
+  const internal::TextRunList* GetRunList() const override;
   bool GetDecoratedTextForRange(const Range& range,
                                 DecoratedText* decorated_text) override;
+  void SetGlyphWidthForTest(float test_width) override;
 
   // Text run list for |layout_text_| and |display_text_|.
   // |display_run_list_| is created only when the text is elided.

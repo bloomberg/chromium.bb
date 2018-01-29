@@ -39,6 +39,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/render_text_harfbuzz.h"
+#include "ui/gfx/render_text_test_api.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/text_utils.h"
 
@@ -58,77 +59,6 @@ using base::UTF8ToUTF16;
 using base::WideToUTF16;
 
 namespace gfx {
-namespace test {
-
-class RenderTextTestApi {
- public:
-  RenderTextTestApi(RenderText* render_text) : render_text_(render_text) {}
-
-  static cc::PaintFlags& GetRendererPaint(
-      internal::SkiaTextRenderer* renderer) {
-    return renderer->flags_;
-  }
-
-  // Callers should ensure that the associated RenderText object is a
-  // RenderTextHarfBuzz instance.
-  const internal::TextRunList* GetHarfBuzzRunList() const {
-    RenderTextHarfBuzz* render_text =
-        static_cast<RenderTextHarfBuzz*>(render_text_);
-    return render_text->GetRunList();
-  }
-
-  void DrawVisualText(internal::SkiaTextRenderer* renderer) {
-    render_text_->EnsureLayout();
-    render_text_->DrawVisualText(renderer);
-  }
-
-  const BreakList<SkColor>& colors() const { return render_text_->colors(); }
-
-  const BreakList<BaselineStyle>& baselines() const {
-    return render_text_->baselines();
-  }
-
-  const BreakList<Font::Weight>& weights() const {
-    return render_text_->weights();
-  }
-
-  const std::vector<BreakList<bool>>& styles() const {
-    return render_text_->styles();
-  }
-
-  const std::vector<internal::Line>& lines() const {
-    return render_text_->lines();
-  }
-
-  SelectionModel EdgeSelectionModel(VisualCursorDirection direction) {
-    return render_text_->EdgeSelectionModel(direction);
-  }
-
-  size_t TextIndexToDisplayIndex(size_t index) {
-    return render_text_->TextIndexToDisplayIndex(index);
-  }
-
-  size_t DisplayIndexToTextIndex(size_t index) {
-    return render_text_->DisplayIndexToTextIndex(index);
-  }
-
-  void EnsureLayout() { render_text_->EnsureLayout(); }
-
-  Vector2d GetAlignmentOffset(size_t line_number) {
-    return render_text_->GetAlignmentOffset(line_number);
-  }
-
-  int GetDisplayTextBaseline() {
-    return render_text_->GetDisplayTextBaseline();
-  }
-
- private:
-  RenderText* render_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderTextTestApi);
-};
-
-}  // namespace test
 
 namespace {
 
@@ -615,7 +545,7 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
 
  protected:
   void SetGlyphWidth(float test_width) {
-    GetRenderTextHarfBuzz()->set_glyph_width_for_test(test_width);
+    test_api()->SetGlyphWidth(test_width);
   }
 
   bool ShapeRunWithFont(const base::string16& text,
