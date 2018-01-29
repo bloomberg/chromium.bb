@@ -106,6 +106,14 @@ template("crazy_linker_library") {
         "UNIT_TESTS",
         "CRAZY_DEBUG=1",
       ]
+    } else {
+      # Disable r_brk() calls for release builds. This is a work-around for
+      # unexplained runtime crashes that happen on Intel-based Android
+      # devices that run ARM binaries through Houdini. For more details
+      # see https://crbug.com/796938
+      if (!is_debug) {
+        defines = [ "CRAZY_DISABLE_R_BRK" ]
+      }
     }
 
     public_configs = [ ":crazy_config" ]
