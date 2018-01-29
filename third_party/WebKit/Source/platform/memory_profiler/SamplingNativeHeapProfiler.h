@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
@@ -34,10 +33,9 @@ class PLATFORM_EXPORT SamplingNativeHeapProfiler : public SamplingHeapProfiler {
    private:
     friend class SamplingNativeHeapProfiler;
 
-    Sample(size_t, size_t count, unsigned ordinal, unsigned offset);
+    Sample(size_t, size_t count, uint32_t ordinal);
 
     uint32_t ordinal;
-    uint32_t offset;
   };
 
   uint32_t Start() override;
@@ -56,14 +54,13 @@ class PLATFORM_EXPORT SamplingNativeHeapProfiler : public SamplingHeapProfiler {
   static bool InstallAllocatorHooks();
   static size_t GetNextSampleInterval(size_t base_interval);
 
-  static inline bool ShouldRecordSample(size_t, size_t* accumulated);
-  void* RecordAlloc(size_t total_allocated,
-                    size_t allocation_size,
-                    void* address,
-                    uint32_t offset,
-                    unsigned skip_frames,
-                    bool preserve_data = false);
-  void* RecordFree(void* address);
+  static inline void MaybeRecordAlloc(void* address, size_t);
+  static inline void MaybeRecordFree(void* address);
+  void RecordAlloc(size_t total_allocated,
+                   size_t allocation_size,
+                   void* address,
+                   unsigned skip_frames);
+  void RecordFree(void* address);
   void RecordStackTrace(Sample*, unsigned skip_frames);
 
   static void* AllocFn(const base::allocator::AllocatorDispatch* self,
