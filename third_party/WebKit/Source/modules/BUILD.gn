@@ -297,6 +297,7 @@ jumbo_source_set("unit_tests") {
     "presentation/PresentationRequestTest.cpp",
     "push_messaging/PushManagerTest.cpp",
     "push_messaging/PushMessageDataTest.cpp",
+    "push_messaging/PushSubscriptionTest.cpp",
     "remoteplayback/RemotePlaybackTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "serviceworkers/WebEmbeddedWorkerImplTest.cpp",
