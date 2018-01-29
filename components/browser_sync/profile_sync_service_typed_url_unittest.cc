@@ -44,6 +44,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using history::DeletionTimeRange;
 using history::HistoryBackend;
 using history::HistoryBackendNotifier;
 using history::TypedUrlSyncableService;
@@ -328,13 +329,13 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                 rows));
   }
 
-  void SendNotificationURLsDeleted(bool all_history,
+  void SendNotificationURLsDeleted(const DeletionTimeRange& time_range,
                                    bool expired,
                                    const history::URLRows& deleted_rows,
                                    const std::set<GURL>& favicon_urls) {
     SendNotification(base::Bind(&HistoryBackendNotifier::NotifyURLsDeleted,
                                 base::Unretained(history_backend_.get()),
-                                all_history, expired, deleted_rows,
+                                time_range, expired, deleted_rows,
                                 favicon_urls));
   }
 
@@ -807,7 +808,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
 
   history::URLRows rows;
   rows.push_back(history::URLRow(GURL("http://mine.com")));
-  SendNotificationURLsDeleted(false, false, rows, std::set<GURL>());
+  SendNotificationURLsDeleted(DeletionTimeRange::Invalid(), false, rows,
+                              std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
@@ -835,7 +837,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   // Setting expired=true should cause the sync code to ignore this deletion.
   history::URLRows rows;
   rows.push_back(history::URLRow(GURL("http://mine.com")));
-  SendNotificationURLsDeleted(false, true, rows, std::set<GURL>());
+  SendNotificationURLsDeleted(DeletionTimeRange::Invalid(), true, rows,
+                              std::set<GURL>());
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   // Both URLs should still be there.
@@ -864,8 +867,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(2U, new_sync_entries.size());
 
-  SendNotificationURLsDeleted(true, false, history::URLRows(),
-                              std::set<GURL>());
+  SendNotificationURLsDeleted(DeletionTimeRange::AllTime(), false,
+                              history::URLRows(), std::set<GURL>());
 
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(0U, new_sync_entries.size());

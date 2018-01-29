@@ -357,4 +357,22 @@ void ExpireHistoryArgs::SetTimeRangeForOneDay(base::Time time) {
   end_time = (begin_time + base::TimeDelta::FromHours(36)).LocalMidnight();
 }
 
+// DeletionTimeRange ----------------------------------------------------------
+
+DeletionTimeRange DeletionTimeRange::Invalid() {
+  return DeletionTimeRange();
+}
+
+DeletionTimeRange DeletionTimeRange::AllTime() {
+  return DeletionTimeRange(base::Time(), base::Time::Max());
+}
+
+bool DeletionTimeRange::IsValid() const {
+  return end_.is_null() || begin_ <= end_;
+}
+
+bool DeletionTimeRange::IsAllTime() const {
+  return begin_.is_null() && (end_.is_null() || end_.is_max());
+}
+
 }  // namespace history

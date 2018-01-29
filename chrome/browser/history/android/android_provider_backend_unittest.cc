@@ -91,7 +91,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
-  void NotifyURLsDeleted(bool all_history,
+  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                          bool expired,
                          const URLRows& deleted_rows,
                          const std::set<GURL>& favicon_urls) override {
@@ -140,7 +140,7 @@ class AndroidProviderBackendNotifier : public HistoryBackendNotifier {
   void NotifyURLsModified(const history::URLRows& rows) override {
     modified_details_.reset(new history::URLRows(rows));
   }
-  void NotifyURLsDeleted(bool all_history,
+  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                          bool expired,
                          const history::URLRows& rows,
                          const std::set<GURL>& favicon_urls) override {

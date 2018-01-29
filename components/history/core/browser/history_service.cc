@@ -152,14 +152,14 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, changed_urls));
   }
 
-  void NotifyURLsDeleted(bool all_history,
+  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                          bool expired,
                          const URLRows& deleted_rows,
                          const std::set<GURL>& favicon_urls) override {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&HistoryService::NotifyURLsDeleted, history_service_,
-                   all_history, expired, deleted_rows, favicon_urls));
+                   time_range, expired, deleted_rows, favicon_urls));
   }
 
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
@@ -1165,11 +1165,12 @@ void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {
     observer.OnURLsModified(this, changed_urls);
 }
 
-void HistoryService::NotifyURLsDeleted(bool all_history,
+void HistoryService::NotifyURLsDeleted(const DeletionTimeRange& time_range,
                                        bool expired,
                                        const URLRows& deleted_rows,
                                        const std::set<GURL>& favicon_urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!time_range.IsAllTime() || deleted_rows.empty());
   if (!backend_task_runner_)
     return;
 
@@ -1182,7 +1183,7 @@ void HistoryService::NotifyURLsDeleted(bool all_history,
   // respectful of privacy and never tell the user something is gone when it
   // isn't. Therefore, we update the delete URLs after the fact.
   if (visit_delegate_) {
-    if (all_history) {
+    if (time_range.IsAllTime()) {
       visit_delegate_->DeleteAllURLs();
     } else {
       std::vector<GURL> urls;
@@ -1194,7 +1195,9 @@ void HistoryService::NotifyURLsDeleted(bool all_history,
   }
 
   for (HistoryServiceObserver& observer : observers_) {
-    observer.OnURLsDeleted(this, all_history, expired, deleted_rows,
+    observer.OnURLsDeleted(this, time_range.IsAllTime(), expired, deleted_rows,
+                           favicon_urls);
+    observer.OnURLsDeleted(this, time_range, expired, deleted_rows,
                            favicon_urls);
   }
 }

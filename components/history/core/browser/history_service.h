@@ -617,7 +617,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // |expired| is set to true, if the URL deletion is due to expiration.
   // |deleted_rows| list of the deleted URLs.
   // |favicon_urls| list of favicon URLs that correspond to the deleted URLs.
-  void NotifyURLsDeleted(bool all_history,
+  void NotifyURLsDeleted(const DeletionTimeRange& time_range,
                          bool expired,
                          const URLRows& deleted_rows,
                          const std::set<GURL>& favicon_urls);
