@@ -322,12 +322,10 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_),
         base::nullopt, SK_ColorWHITE, false);
 
-    bool result = child_support_->SubmitCompositorFrame(child_local_surface_id_,
-                                                        std::move(frame));
-    DCHECK(result);
-    result = root_support_->SubmitCompositorFrame(root_local_surface_id_,
-                                                  std::move(embed_frame));
-    DCHECK(result);
+    child_support_->SubmitCompositorFrame(child_local_surface_id_,
+                                          std::move(frame));
+    root_support_->SubmitCompositorFrame(root_local_surface_id_,
+                                         std::move(embed_frame));
     display_->DrawAndSwap();
   } else {
     // For hardware draws we send the whole frame to the client so it can draw

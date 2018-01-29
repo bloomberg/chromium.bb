@@ -170,18 +170,23 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
+  bool success;
   SubmitCompositorFrame(local_surface_id, std::move(frame),
-                        std::move(hit_test_region_list));
+                        std::move(hit_test_region_list), &success);
+  DCHECK(success);
 }
 
-bool CompositorFrameSinkSupport::SubmitCompositorFrame(
+void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list) {
+    mojom::HitTestRegionListPtr hit_test_region_list,
+    bool* success) {
   TRACE_EVENT1("viz", "CompositorFrameSinkSupport::SubmitCompositorFrame",
                "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
+  DCHECK(success);
+  *success = true;
 
   uint64_t frame_index = ++last_frame_index_;
   ++ack_pending_count_;
@@ -240,7 +245,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
         DidPresentCompositorFrame(frame.metadata.presentation_token,
                                   base::TimeTicks(), base::TimeDelta(), 0);
       }
-      return false;
+      *success = false;
+      return;
     }
 
     current_surface = CreateSurface(surface_info);
@@ -261,7 +267,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
           : Surface::PresentedCallback());
   if (!result) {
     EvictCurrentSurface();
-    return false;
+    *success = false;
+    return;
   }
 
   if (prev_surface && prev_surface != current_surface) {
@@ -274,8 +281,6 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
-
-  return true;
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(

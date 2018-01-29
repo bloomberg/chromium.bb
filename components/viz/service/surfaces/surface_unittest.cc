@@ -58,32 +58,6 @@ TEST(SurfaceTest, PresentationCallback) {
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
     testing::Mock::VerifyAndClearExpectations(&client);
   }
-
-  {
-    // Submits a frame with token 3 and different size. This frame with token 3
-    // will be discarded immediately.
-    CompositorFrame frame = CompositorFrameBuilder()
-                                .AddRenderPass(gfx::Rect(400, 400), kDamageRect)
-                                .SetPresentationToken(3)
-                                .Build();
-    EXPECT_CALL(client, DidDiscardCompositorFrame(3)).Times(1);
-    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    testing::Mock::VerifyAndClearExpectations(&client);
-  }
-
-  {
-    // Submits a frame with token 4 and different scale factor, this frame with
-    // token 4 will be discarded immediately.
-    CompositorFrame frame =
-        CompositorFrameBuilder()
-            .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
-            .SetDeviceScaleFactor(2.f)
-            .SetPresentationToken(4)
-            .Build();
-    EXPECT_CALL(client, DidDiscardCompositorFrame(2)).Times(1);
-    EXPECT_CALL(client, DidDiscardCompositorFrame(4)).Times(1);
-    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-  }
 }
 
 TEST(SurfaceTest, SurfaceIds) {
