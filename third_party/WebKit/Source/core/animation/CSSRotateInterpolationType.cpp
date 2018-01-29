@@ -163,7 +163,7 @@ class InheritedRotationChecker
                const InterpolationValue& underlying) const final {
     OptionalRotation inherited_rotation = GetRotation(*state.ParentStyle());
     if (inherited_rotation_.IsNone() || inherited_rotation.IsNone())
-      return inherited_rotation.IsNone() == inherited_rotation.IsNone();
+      return inherited_rotation_.IsNone() == inherited_rotation.IsNone();
     return inherited_rotation_.GetRotation().axis ==
                inherited_rotation.GetRotation().axis &&
            inherited_rotation_.GetRotation().angle ==
