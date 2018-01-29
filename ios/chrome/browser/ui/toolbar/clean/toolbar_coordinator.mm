@@ -10,7 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
@@ -24,12 +24,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"
@@ -55,7 +51,6 @@
 #endif
 
 @interface ToolbarCoordinator ()<OmniboxPopupPositioner> {
-  std::unique_ptr<LocationBarControllerImpl> _locationBar;
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -69,8 +64,6 @@
 // Button observer for the ToolsMenu button.
 @property(nonatomic, strong)
     ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge;
-// Coordinator for the omnibox popup.
-@property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 // The coordinator for the location bar in the toolbar.
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 
@@ -82,7 +75,6 @@
 @synthesize buttonUpdater = _buttonUpdater;
 @synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
-@synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
 @synthesize started = _started;
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolsMenuButtonObserverBridge = _toolsMenuButtonObserverBridge;
@@ -130,18 +122,8 @@
   self.locationBarCoordinator.URLLoader = self.URLLoader;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.webStateList = self.webStateList;
+  self.locationBarCoordinator.popupPositioner = self;
   [self.locationBarCoordinator start];
-
-  // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
-  // created.
-  _locationBar = std::make_unique<LocationBarControllerImpl>(
-      self.locationBarCoordinator.locationBarView, self.browserState,
-      self.locationBarCoordinator, self.dispatcher);
-  self.locationBarCoordinator.locationBarController = _locationBar.get();
-  _locationBar->SetURLLoader(self.locationBarCoordinator);
-  self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
-  [self.omniboxPopupCoordinator start];
-  // End of TODO(crbug.com/785253):.
 
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
@@ -193,9 +175,6 @@
   self.started = NO;
   self.delegate = nil;
   [self.mediator disconnect];
-  // The popup has to be destroyed before the location bar.
-  [self.omniboxPopupCoordinator stop];
-  _locationBar.reset();
   [self.locationBarCoordinator stop];
   [self stopObservingTTSNotifications];
 
@@ -261,9 +240,7 @@
 }
 
 - (BOOL)showingOmniboxPopup {
-  OmniboxViewIOS* omniboxViewIOS =
-      static_cast<OmniboxViewIOS*>(_locationBar.get()->GetLocationEntry());
-  return omniboxViewIOS->IsPopupOpen();
+  return [self.locationBarCoordinator showingOmniboxPopup];
 }
 
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
@@ -313,21 +290,16 @@
 
 - (void)focusFakebox {
   if (IsIPadIdiom()) {
-    OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();
-    // Setting the caret visibility to false causes OmniboxEditModel to indicate
-    // that omnibox interaction was initiated from the fakebox. Note that
-    // SetCaretVisibility is a no-op unless OnSetFocus is called first.  Only
-    // set fakebox on iPad, where there is a distinction between the omnibox
-    // and the fakebox on the NTP.  On iPhone there is no visible omnibox, so
-    // there's no need to indicate interaction was initiated from the fakebox.
-    model->OnSetFocus(false);
-    model->SetCaretVisibility(false);
+    // On iPhone there is no visible omnibox, so there's no need to indicate
+    // interaction was initiated from the fakebox.
+    [self.locationBarCoordinator focusOmniboxFromFakebox];
   } else {
     [self expandOmniboxAnimated:NO];
   }
 
   [self.locationBarCoordinator focusOmnibox];
-  if (self.omniboxPopupCoordinator.hasResults) {
+
+  if ([self.locationBarCoordinator omniboxPopupHasAutocompleteResults]) {
     [self onFakeboxAnimationComplete];
   }
 }

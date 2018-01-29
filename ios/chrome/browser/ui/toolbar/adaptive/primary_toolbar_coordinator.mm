@@ -10,17 +10,14 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/google/core/browser/google_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
@@ -35,7 +32,6 @@
 #endif
 
 @interface PrimaryToolbarCoordinator ()<OmniboxPopupPositioner> {
-  std::unique_ptr<LocationBarControllerImpl> _locationBar;
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -44,8 +40,6 @@
 @property(nonatomic, strong) PrimaryToolbarViewController* viewController;
 // The coordinator for the location bar in the toolbar.
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
-// Coordinator for the omnibox popup.
-@property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 
 @end
 
@@ -53,7 +47,6 @@
 
 @dynamic viewController;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
-@synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
 @synthesize delegate = _delegate;
 @synthesize URLLoader = _URLLoader;
 
@@ -110,9 +103,7 @@
 }
 
 - (BOOL)showingOmniboxPopup {
-  OmniboxViewIOS* omniboxViewIOS =
-      static_cast<OmniboxViewIOS*>(_locationBar.get()->GetLocationEntry());
-  return omniboxViewIOS->IsPopupOpen();
+  return [self.locationBarCoordinator showingOmniboxPopup];
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
@@ -187,18 +178,8 @@
   self.locationBarCoordinator.URLLoader = self.URLLoader;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.webStateList = self.webStateList;
+  self.locationBarCoordinator.popupPositioner = self;
   [self.locationBarCoordinator start];
-
-  // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
-  // created.
-  _locationBar = std::make_unique<LocationBarControllerImpl>(
-      self.locationBarCoordinator.locationBarView, self.browserState,
-      self.locationBarCoordinator, self.dispatcher);
-  self.locationBarCoordinator.locationBarController = _locationBar.get();
-  _locationBar->SetURLLoader(self.locationBarCoordinator);
-  self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
-  [self.omniboxPopupCoordinator start];
-  // End of TODO(crbug.com/785253):.
 }
 
 @end
