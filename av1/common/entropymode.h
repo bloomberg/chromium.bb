@@ -317,19 +317,6 @@ extern const aom_cdf_prob default_kf_y_mode_cdf[KF_MODE_CONTEXTS]
                                                [KF_MODE_CONTEXTS]
                                                [CDF_SIZE(INTRA_MODES)];
 
-// Decides what set to assign to 16x16 transforms.
-// Set 0:
-//        Inter: All 16 txfms
-//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1) +
-//               1D Hor/vert DCT (2)
-// Set 1:
-//        Inter: Discrete Trig transforms w/ flip (9) + Identity (1) +
-//               1D Hor/Ver DCT (2)
-//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1)
-// Set 2:
-//        Inter: Discrete Trig transforms w/ flip (9) + Identity (1)
-//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1)
-#define EXT_TX_16X16_SET 1
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

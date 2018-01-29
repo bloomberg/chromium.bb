@@ -767,49 +767,24 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
-  if (is_inter)
-    return (tx_size_sqr == TX_16X16 ?
-#if EXT_TX_16X16_SET == 0
-                                    EXT_TX_SET_ALL16_16X16
-#elif EXT_TX_16X16_SET == 1
-                                    EXT_TX_SET_DTT9_IDTX_1DDCT
-#else
-                                    EXT_TX_SET_DTT9_IDTX
-#endif  // EXT_TX_16X16_SET
+  if (is_inter) {
+    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
                                     : EXT_TX_SET_ALL16);
-  else
-    return (tx_size_sqr == TX_16X16 ?
-#if EXT_TX_16X16_SET == 0
-                                    EXT_TX_SET_DTT4_IDTX_1DDCT_16X16
-#else
-                                    EXT_TX_SET_DTT4_IDTX
-#endif  // EXT_TX_16X16_SET
+  } else {
+    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
                                     : EXT_TX_SET_DTT4_IDTX_1DDCT);
+  }
 }
 
 // Maps tx set types to the indices.
 static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
   {
       // Intra
-      0, -1,
-#if EXT_TX_16X16_SET == 0
-      -1, 2,
-#else
-      2, -1,
-#endif  // EXT_TX_16X16_SET
-      1, -1, -1, -1, -1,
+      0, -1, 2, -1, 1, -1, -1, -1, -1,
   },
   {
       // Inter
-      0, 3, -1, -1, -1,
-#if EXT_TX_16X16_SET == 0
-      -1, -1, 2,
-#elif EXT_TX_16X16_SET == 1
-      -1, 2, -1,
-#else
-      2, -1, -1,
-#endif  // EXT_TX_16X16_SET
-      1,
+      0, 3, -1, -1, -1, -1, 2, -1, 1,
   },
 };
 
