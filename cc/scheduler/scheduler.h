@@ -34,7 +34,8 @@ class CompositorTimingHistory;
 
 class SchedulerClient {
  public:
-  virtual void WillBeginImplFrame(const viz::BeginFrameArgs& args) = 0;
+  // Returns whether the frame has damage.
+  virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame(
       const viz::BeginFrameArgs& args) = 0;
   virtual DrawResult ScheduledActionDrawIfPossible() = 0;

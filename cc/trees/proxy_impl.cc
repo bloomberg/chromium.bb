@@ -512,9 +512,9 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
                                 refresh, flags));
 }
 
-void ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
+bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
-  host_impl_->WillBeginImplFrame(args);
+  return host_impl_->WillBeginImplFrame(args);
 }
 
 void ProxyImpl::DidFinishImplFrame() {
@@ -637,8 +637,7 @@ void ProxyImpl::ScheduledActionPrepareTiles() {
 void ProxyImpl::ScheduledActionInvalidateLayerTreeFrameSink() {
   TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionInvalidateLayerTreeFrameSink");
   DCHECK(IsImplThread());
-  DCHECK(host_impl_->layer_tree_frame_sink());
-  host_impl_->layer_tree_frame_sink()->Invalidate();
+  host_impl_->InvalidateLayerTreeFrameSink();
 }
 
 void ProxyImpl::ScheduledActionPerformImplSideInvalidation() {
