@@ -136,6 +136,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
           break;
         case DecodeStatus::ABORTED:
           NOTREACHED();
+          FALLTHROUGH;
         case DecodeStatus::DECODE_ERROR:
           DCHECK(output_frames_.empty());
           return status;

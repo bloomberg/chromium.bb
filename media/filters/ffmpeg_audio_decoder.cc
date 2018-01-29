@@ -193,6 +193,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
           << GetDisplayName() << " failed to decode an audio buffer: "
           << AVErrorToString(decoding_loop_->last_averror_code()) << ", at "
           << buffer->AsHumanReadableString();
+      break;
     case FFmpegDecodingLoop::DecodeStatus::kOkay:
       break;
   }
