@@ -49,6 +49,7 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
     self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
                                        self._finder_options.shared_prefs_file))
     self._InstallNfcApk()
+    self._InstallKeyboardApk()
 
   def _InstallVrCore(self):
     """Installs the VrCore APK."""
@@ -85,6 +86,13 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
     newest_apk_path = sorted(candidate_apks)[-1][1]
     self._platform.InstallApplication(
         os.path.join(chromium_root, newest_apk_path))
+
+  def _InstallKeyboardApk(self):
+    """Installs the VR Keyboard APK."""
+    self._platform.InstallApplication(
+        os.path.join(path_util.GetChromiumSrcDir(), 'third_party',
+                     'gvr-android-sdk', 'test-apks', 'vr_keyboard',
+                     'vr_keyboard_current.apk'))
 
   def WillRunStory(self, page):
     super(SharedAndroidVrPageState, self).WillRunStory(page)
