@@ -474,8 +474,13 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
   if (text.parentElement())
     parent_name = &(text.parentElement())->TagQName();
 
-  if (parent_name && (*parent_name == scriptTag || *parent_name == styleTag ||
-                      *parent_name == xmpTag))
+  if (parent_name &&
+      (*parent_name == scriptTag || *parent_name == styleTag ||
+       *parent_name == xmpTag || *parent_name == iframeTag ||
+       *parent_name == plaintextTag || *parent_name == noembedTag ||
+       *parent_name == noframesTag ||
+       (*parent_name == noscriptTag &&
+        text.GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))))
     return kEntityMaskInCDATA;
   return kEntityMaskInHTMLPCDATA;
 }
