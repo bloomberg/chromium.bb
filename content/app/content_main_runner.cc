@@ -305,8 +305,7 @@ struct MainFunction {
 // subprocesses that are launched via the zygote.  This function
 // fills in some process-launching bits around ZygoteMain().
 // Returns the exit code of the subprocess.
-int RunZygote(const MainFunctionParams& main_function_params,
-              ContentMainDelegate* delegate) {
+int RunZygote(ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
     { switches::kRendererProcess,    RendererMain },
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -322,10 +321,11 @@ int RunZygote(const MainFunctionParams& main_function_params,
   }
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params, std::move(zygote_fork_delegates)))
+  if (!ZygoteMain(std::move(zygote_fork_delegates)))
     return 1;
 
-  if (delegate) delegate->ZygoteForked();
+  if (delegate)
+    delegate->ZygoteForked();
 
   // Zygote::HandleForkRequest may have reallocated the command
   // line so update it here with the new version.
@@ -428,7 +428,7 @@ int RunNamedProcessTypeMain(
   // Zygote startup is special -- see RunZygote comments above
   // for why we don't use ZygoteMain directly.
   if (process_type == switches::kZygoteProcess)
-    return RunZygote(main_function_params, delegate);
+    return RunZygote(delegate);
 #endif
 
   // If it's a process we don't know about, the embedder should know.

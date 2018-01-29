@@ -36,7 +36,6 @@
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "content/zygote/zygote_linux.h"
 #include "media/media_features.h"
@@ -296,7 +295,6 @@ static void EnterLayerOneSandbox(service_manager::SandboxLinux* linux_sandbox,
 }
 
 bool ZygoteMain(
-    const MainFunctionParams& params,
     std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates) {
   sandbox::SetAmZygoteOrRenderer(true, GetSandboxFD());
 
