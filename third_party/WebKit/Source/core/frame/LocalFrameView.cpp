@@ -4217,6 +4217,23 @@ IntRect LocalFrameView::VisibleContentRect(
                  VisibleContentSize(scrollbar_inclusion));
 }
 
+LayoutRect LocalFrameView::VisibleScrollSnapportRect() const {
+  const ComputedStyle* style = GetLayoutBox()->Style();
+  LayoutRect visible_content_rect = LayoutRect(
+      FloatPoint(scroll_offset_), VisibleContentSize(kExcludeScrollbars));
+  LayoutRectOutsets padding(
+      MinimumValueForLength(style->ScrollPaddingTop(),
+                            visible_content_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingRight(),
+                            visible_content_rect.Width()),
+      MinimumValueForLength(style->ScrollPaddingBottom(),
+                            visible_content_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingLeft(),
+                            visible_content_rect.Width()));
+  visible_content_rect.Contract(padding);
+  return visible_content_rect;
+}
+
 IntSize LocalFrameView::ContentsSize() const {
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return Size();
@@ -4903,30 +4920,31 @@ LayoutRect LocalFrameView::ScrollIntoView(
     const WebScrollIntoViewParams& params) {
   GetLayoutBox()->SetPendingOffsetToScroll(LayoutSize());
 
-  LayoutRect view_rect(VisibleContentRect());
-  LayoutRect expose_rect = ScrollAlignment::GetRectToExpose(
-      view_rect, rect_in_content, params.GetScrollAlignmentX(),
-      params.GetScrollAlignmentY());
-  ScrollOffset old_scroll_offset = GetScrollOffset();
-  if (expose_rect != view_rect) {
-    ScrollOffset target_offset(expose_rect.X().ToFloat(),
-                               expose_rect.Y().ToFloat());
-    target_offset = ShouldUseIntegerScrollOffset()
-                        ? ScrollOffset(FlooredIntSize(target_offset))
-                        : target_offset;
+  LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
 
+  ScrollOffset new_scroll_offset =
+      ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
+          scroll_snapport_rect, rect_in_content, params.GetScrollAlignmentX(),
+          params.GetScrollAlignmentY(), GetScrollOffset()));
+  ScrollOffset old_scroll_offset = GetScrollOffset();
+
+  if (new_scroll_offset != old_scroll_offset) {
+    new_scroll_offset = ShouldUseIntegerScrollOffset()
+                            ? ScrollOffset(FlooredIntSize(new_scroll_offset))
+                            : new_scroll_offset;
     if (params.is_for_scroll_sequence) {
       DCHECK(params.GetScrollType() == kProgrammaticScroll);
       ScrollBehavior behavior =
           DetermineScrollBehavior(params.GetScrollBehavior(),
                                   GetLayoutBox()->Style()->GetScrollBehavior());
-      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
+      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                                 behavior);
       ScrollOffset scroll_offset_difference =
-          ClampScrollOffset(target_offset) - old_scroll_offset;
+          new_scroll_offset - old_scroll_offset;
       GetLayoutBox()->SetPendingOffsetToScroll(
           -LayoutSize(scroll_offset_difference));
     } else {
-      SetScrollOffset(target_offset, params.GetScrollType());
+      SetScrollOffset(new_scroll_offset, params.GetScrollType());
     }
   }
 

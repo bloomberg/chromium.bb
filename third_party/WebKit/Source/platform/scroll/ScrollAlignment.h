@@ -45,6 +45,7 @@
 #define ScrollAlignment_h
 
 #include "platform/PlatformExport.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -73,11 +74,21 @@ struct PLATFORM_EXPORT ScrollAlignment {
     return s.rect_hidden_;
   }
 
+  // Returns the scroll offset the scroller needs to scroll to in order to put
+  // |expose_rect| into |visible_scroll_snapport_rect| aligned by |align_x| and
+  // |align_y|.
+  // The coordinates for |visible_scroll_snapport_rect|, |expose_rect| and
+  // |current_scroll_position| are based on the scroller's scroll_origin
+  // Note that the |current_scroll_offset| is not the location of
+  // |visible_scroll_snapport_rect|, as |visible_scroll_snapport_rect| is the
+  // visible rect contracted by its scroll-padding.
   // FIXME: This function should probably go somewhere else but where?
-  static LayoutRect GetRectToExpose(const LayoutRect& visible_rect,
-                                    const LayoutRect& expose_rect,
-                                    const ScrollAlignment& align_x,
-                                    const ScrollAlignment& align_y);
+  static ScrollOffset GetScrollOffsetToExpose(
+      const LayoutRect& visible_scroll_snapport_rect,
+      const LayoutRect& expose_rect,
+      const ScrollAlignment& align_x,
+      const ScrollAlignment& align_y,
+      const ScrollOffset& current_scroll_offset);
 
   static const ScrollAlignment kAlignCenterIfNeeded;
   static const ScrollAlignment kAlignToEdgeIfNeeded;
