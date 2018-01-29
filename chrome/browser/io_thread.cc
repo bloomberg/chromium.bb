@@ -628,7 +628,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
   registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 #if defined(OS_POSIX)
-  registry->RegisterBooleanPref(prefs::kNtlmV2Enabled, false);
+  registry->RegisterBooleanPref(prefs::kNtlmV2Enabled, true);
 #endif
 }
 

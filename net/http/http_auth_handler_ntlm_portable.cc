@@ -40,7 +40,7 @@ HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
     const HttpAuthPreferences* http_auth_preferences)
     : ntlm_client_(ntlm::NtlmFeatures(
           http_auth_preferences ? http_auth_preferences->NtlmV2Enabled()
-                                : false)) {}
+                                : true)) {}
 
 bool HttpAuthHandlerNTLM::NeedsIdentity() {
   // This gets called for each round-trip.  Only require identity on
