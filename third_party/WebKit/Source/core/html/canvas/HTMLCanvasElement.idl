@@ -25,6 +25,7 @@
  */
 
 // https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element
+[HTMLConstructor]
 interface HTMLCanvasElement : HTMLElement
 {
     // Note: Due to dependecies on modules, getContext is defined in a partial
