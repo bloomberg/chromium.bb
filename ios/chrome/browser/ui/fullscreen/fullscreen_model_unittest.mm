@@ -40,14 +40,23 @@ class FullscreenModelTest : public PlatformTest {
 };
 
 // Tests that incremending and decrementing the disabled counter correctly
-// disabled/enables the model.
+// disabled/enables the model, and that the model state is updated correctly
+// when disabled.
 TEST_F(FullscreenModelTest, EnableDisable) {
   ASSERT_TRUE(model().enabled());
   ASSERT_TRUE(observer().enabled());
+  // Scroll in order to hide the Toolbar.
+  SimulateFullscreenUserScrollWithDelta(&model(), kToolbarHeight * 3);
+  EXPECT_EQ(observer().progress(), 0.0);
+  EXPECT_TRUE(model().has_base_offset());
   // Increment the disabled counter and check that the model is disabled.
   model().IncrementDisabledCounter();
   EXPECT_FALSE(model().enabled());
   EXPECT_FALSE(observer().enabled());
+  // Since the model has been disabled the Toolbar is shown, verify that the
+  // model state reflects that.
+  EXPECT_EQ(observer().progress(), 1.0);
+  EXPECT_FALSE(model().has_base_offset());
   // Increment again and check that the model is still disabled.
   model().IncrementDisabledCounter();
   EXPECT_FALSE(model().enabled());

@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -104,6 +105,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // The disabler that prevents the toolbar from being scrolled away when the
   // side swipe gesture is being recognized.
   std::unique_ptr<ScopedFullscreenDisabler> fullscreenDisabler_;
+
+  // The animated disabler displays the toolbar when a side swipe navigation
+  // gesture is being recognized.
+  std::unique_ptr<AnimatedScopedFullscreenDisabler> animatedFullscreenDisabler_;
 
   // Browser state passed to the initialiser.
   ios::ChromeBrowserState* browserState_;
@@ -426,6 +431,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       // If the toolbar is hidden, move it to visible.
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
+    } else {
+      // Make sure the Toolbar is visible by disabling Fullscreen.
+      animatedFullscreenDisabler_ =
+          std::make_unique<AnimatedScopedFullscreenDisabler>(
+              FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+                  browserState_));
     }
 
     inSwipe_ = YES;
@@ -454,6 +465,13 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [gesture.view
         insertSubview:pageSideSwipeView_
          belowSubview:[self.primaryToolbarInteractionHandler toolbarView]];
+  } else if (gesture.state == UIGestureRecognizerStateCancelled ||
+             gesture.state == UIGestureRecognizerStateEnded ||
+             gesture.state == UIGestureRecognizerStateFailed) {
+    // Enable fullscreen functionality after the Toolbar has been shown, and
+    // the gesture is over.
+    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+      animatedFullscreenDisabler_ = nullptr;
   }
 
   __weak Tab* weakCurrentTab = [model_ currentTab];
