@@ -90,6 +90,17 @@ bool DeviceSingleWindowEventController::IsSameSecurityOriginAsMainFrame()
   return false;
 }
 
+bool DeviceSingleWindowEventController::CheckPolicyFeatures(
+    const Vector<FeaturePolicyFeature>& features) const {
+  LocalFrame* frame = GetDocument().GetFrame();
+  if (!frame)
+    return false;
+  return std::all_of(features.begin(), features.end(),
+                     [frame](FeaturePolicyFeature feature) {
+                       return frame->IsFeatureEnabled(feature);
+                     });
+}
+
 void DeviceSingleWindowEventController::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   PlatformEventController::Trace(visitor);

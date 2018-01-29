@@ -472,8 +472,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
   // Main frame is on a.com, iframe is on b.com.
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
-  GURL iframe_url =
-      https_embedded_test_server_->GetURL("b.com", "/device_motion_test.html");
+  GURL iframe_url = https_embedded_test_server_->GetURL(
+      "b.com", "/device_motion_test.html?failure_timeout=100");
 
   // Wait for the main frame, subframe, and the #pass/#fail commits.
   TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
   GURL iframe_url = https_embedded_test_server_->GetURL(
-      "b.com", "/device_orientation_test.html");
+      "b.com", "/device_orientation_test.html?failure_timeout=100");
 
   // Wait for the main frame, subframe, and the #pass/#fail commits.
   TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
@@ -565,6 +565,32 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
       ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
   ASSERT_TRUE(iframe);
   EXPECT_EQ("pass", iframe->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
+                       DeviceOrientationFeaturePolicyWarning) {
+  // Main frame is on a.com, iframe is on b.com.
+  GURL main_frame_url =
+      https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
+  GURL iframe_url = https_embedded_test_server_->GetURL(
+      "b.com", "/device_orientation_absolute_test.html");
+
+  const char kWarningMessage[] =
+      "The deviceorientationabsolute events are blocked by "
+      "feature policy. See "
+      "https://github.com/WICG/feature-policy/blob/"
+      "gh-pages/features.md#sensor-features";
+
+  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(), kWarningMessage);
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
+                                  "cross_origin_iframe", iframe_url));
+
+  console_delegate->Wait();
+  EXPECT_EQ(kWarningMessage, console_delegate->message());
 }
 
 }  //  namespace

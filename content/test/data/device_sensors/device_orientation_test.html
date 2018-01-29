@@ -2,6 +2,8 @@
   <head>
     <title>DeviceOrientation test</title>
     <script type="text/javascript">
+      let eventTimeoutId; // To be set in start().
+
       function checkOrientationEvent(event) {
         // Return true iff the orientation is close enough to (1, 2, 3).
         return Math.abs(event.alpha - 1) < 0.01 &&
@@ -13,6 +15,7 @@
       function onOrientation(event) {
         if (checkOrientationEvent(event)) {
           window.removeEventListener('deviceorientation', onOrientation);
+          window.clearTimeout(eventTimeoutId);
           pass();
         } else {
           fail();
@@ -27,9 +30,21 @@
       function fail() {
         document.location = '#fail';
       }
+
+      function failOnTimeoutIfNeeded() {
+        let params = new URLSearchParams(location.search);
+        let timeout = Number(params.get("failure_timeout"));
+        if (timeout > 0)
+          eventTimeoutId = window.setTimeout(fail, timeout);
+      }
+
+      function start() {
+        window.addEventListener('deviceorientation', onOrientation);
+        failOnTimeoutIfNeeded();
+      }
     </script>
   </head>
-  <body onLoad="window.addEventListener('deviceorientation', onOrientation)">
+  <body onLoad="start()">
     <div id="status">FAIL</div>
   </body>
 </html>
