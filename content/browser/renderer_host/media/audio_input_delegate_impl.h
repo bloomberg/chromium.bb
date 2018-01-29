@@ -18,13 +18,13 @@ namespace media {
 class AudioLog;
 class AudioManager;
 class AudioInputController;
+class AudioInputSyncWriter;
 class AudioParameters;
 class UserInputMonitor;
 }  // namespace media
 
 namespace content {
 
-class AudioInputSyncWriter;
 class AudioInputDeviceManager;
 class AudioMirroringManager;
 struct MediaStreamDevice;
@@ -73,7 +73,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       bool automatic_gain_control,
       EventHandler* subscriber,
       const MediaStreamDevice* device,
-      std::unique_ptr<AudioInputSyncWriter> writer,
+      std::unique_ptr<media::AudioInputSyncWriter> writer,
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket);
 
   void SendCreatedNotification(bool initially_muted);
@@ -89,7 +89,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
   // |controller_event_handler_| and |writer_| outlive |this|, see the
   // destructor for details.
   std::unique_ptr<ControllerEventHandler> controller_event_handler_;
-  std::unique_ptr<AudioInputSyncWriter> writer_;
+  std::unique_ptr<media::AudioInputSyncWriter> writer_;
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
   media::AudioLog* const audio_log_;
   scoped_refptr<media::AudioInputController> controller_;

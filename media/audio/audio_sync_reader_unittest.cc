@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_sync_reader.h"
+#include "media/audio/audio_sync_reader.h"
 
 #include <limits>
 #include <memory>
@@ -21,13 +21,13 @@
 
 using ::testing::TestWithParam;
 
-namespace content {
+namespace media {
 
 void NoLog(const std::string&) {}
 
 static_assert(
-    std::is_unsigned<decltype(
-        media::AudioOutputBufferParameters::bitstream_data_size)>::value,
+    std::is_unsigned<
+        decltype(AudioOutputBufferParameters::bitstream_data_size)>::value,
     "If |bitstream_data_size| is ever made signed, add tests for negative "
     "buffer sizes.");
 
@@ -55,17 +55,17 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   const int kSampleRate = 44100;
   const int kBitsPerSample = 32;
   const int kFramesPerBuffer = 1;
-  media::AudioParameters params(media::AudioParameters::AUDIO_BITSTREAM_AC3,
-                                media::CHANNEL_LAYOUT_STEREO, kSampleRate,
-                                kBitsPerSample, kFramesPerBuffer);
+  AudioParameters params(AudioParameters::AUDIO_BITSTREAM_AC3,
+                         CHANNEL_LAYOUT_STEREO, kSampleRate, kBitsPerSample,
+                         kFramesPerBuffer);
 
   auto socket = std::make_unique<base::CancelableSyncSocket>();
-  std::unique_ptr<media::AudioBus> output_bus = media::AudioBus::Create(params);
+  std::unique_ptr<AudioBus> output_bus = AudioBus::Create(params);
   std::unique_ptr<AudioSyncReader> reader = AudioSyncReader::Create(
       base::BindRepeating(&NoLog), params, socket.get());
   const base::SharedMemory* shmem = reader->shared_memory();
-  media::AudioOutputBuffer* buffer =
-      reinterpret_cast<media::AudioOutputBuffer*>(shmem->memory());
+  AudioOutputBuffer* buffer =
+      reinterpret_cast<AudioOutputBuffer*>(shmem->memory());
   reader->RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);
 
   uint32_t signal;
@@ -80,16 +80,15 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
       break;
     case kNoOverflow:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(media::AudioOutputBufferParameters);
+          shmem->mapped_size() - sizeof(AudioOutputBufferParameters);
       break;
     case kOverflowByOne:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(media::AudioOutputBufferParameters) + 1;
+          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1;
       break;
     case kOverflowByOneThousand:
       buffer->params.bitstream_data_size =
-          shmem->mapped_size() - sizeof(media::AudioOutputBufferParameters) +
-          1000;
+          shmem->mapped_size() - sizeof(AudioOutputBufferParameters) + 1000;
       break;
     case kOverflowByMax:
       buffer->params.bitstream_data_size = std::numeric_limits<decltype(
@@ -109,4 +108,4 @@ INSTANTIATE_TEST_CASE_P(AudioSyncReaderTest,
                         AudioSyncReaderBitstreamTest,
                         ::testing::ValuesIn(overflow_test_case_values));
 
-}  // namespace content
+}  // namespace media

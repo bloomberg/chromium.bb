@@ -16,7 +16,6 @@
 
 namespace content {
 class AudioMirroringManager;
-class AudioSyncReader;
 class MediaObserver;
 }
 
@@ -25,6 +24,7 @@ class AudioLog;
 class AudioManager;
 class AudioOutputController;
 class AudioParameters;
+class AudioSyncReader;
 }
 
 namespace content {
@@ -48,7 +48,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
       const std::string& output_device_id);
 
   AudioOutputDelegateImpl(
-      std::unique_ptr<AudioSyncReader> reader,
+      std::unique_ptr<media::AudioSyncReader> reader,
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
       EventHandler* handler,
       media::AudioManager* audio_manager,
@@ -88,7 +88,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   // |controller_event_handler_|, |reader_| and |mirroring_manager_| will
   // outlive |this|, see the destructor for details.
   std::unique_ptr<ControllerEventHandler> controller_event_handler_;
-  std::unique_ptr<AudioSyncReader> reader_;
+  std::unique_ptr<media::AudioSyncReader> reader_;
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
   AudioMirroringManager* mirroring_manager_;
   scoped_refptr<media::AudioOutputController> controller_;

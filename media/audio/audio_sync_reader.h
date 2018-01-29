@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
+#ifndef MEDIA_AUDIO_AUDIO_SYNC_READER_H_
+#define MEDIA_AUDIO_AUDIO_SYNC_READER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,9 +17,9 @@
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/base/audio_bus.h"
+#include "media/base/media_export.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -29,20 +29,19 @@ namespace base {
 class SharedMemory;
 }
 
-namespace content {
+namespace media {
 
 // A AudioOutputController::SyncReader implementation using SyncSocket. This
 // is used by AudioOutputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
 // process.
-class CONTENT_EXPORT AudioSyncReader
-    : public media::AudioOutputController::SyncReader {
+class MEDIA_EXPORT AudioSyncReader : public AudioOutputController::SyncReader {
  public:
   // Create() automatically initializes the AudioSyncReader correctly,
   // and should be strongly preferred over calling the constructor directly!
   AudioSyncReader(
       base::RepeatingCallback<void(const std::string&)> log_callback,
-      const media::AudioParameters& params,
+      const AudioParameters& params,
       std::unique_ptr<base::SharedMemory> shared_memory,
       std::unique_ptr<base::CancelableSyncSocket> socket);
 
@@ -51,18 +50,18 @@ class CONTENT_EXPORT AudioSyncReader
   // Returns null on failure.
   static std::unique_ptr<AudioSyncReader> Create(
       base::RepeatingCallback<void(const std::string&)> log_callback,
-      const media::AudioParameters& params,
+      const AudioParameters& params,
       base::CancelableSyncSocket* foreign_socket);
 
   const base::SharedMemory* shared_memory() const {
     return shared_memory_.get();
   }
 
-  // media::AudioOutputController::SyncReader implementations.
+  // AudioOutputController::SyncReader implementations.
   void RequestMoreData(base::TimeDelta delay,
                        base::TimeTicks delay_timestamp,
                        int prior_frames_skipped) override;
-  void Read(media::AudioBus* dest) override;
+  void Read(AudioBus* dest) override;
   void Close() override;
 
  private:
@@ -88,7 +87,7 @@ class CONTENT_EXPORT AudioSyncReader
   const uint32_t output_bus_buffer_size_;
 
   // Shared memory wrapper used for transferring audio data to Read() callers.
-  std::unique_ptr<media::AudioBus> output_bus_;
+  std::unique_ptr<AudioBus> output_bus_;
 
   // Track the number of times the renderer missed its real-time deadline and
   // report a UMA stat during destruction.
@@ -107,6 +106,6 @@ class CONTENT_EXPORT AudioSyncReader
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
+#endif  // MEDIA_AUDIO_AUDIO_SYNC_READER_H_

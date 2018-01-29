@@ -18,12 +18,12 @@
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
-#include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_input_controller.h"
+#include "media/audio/audio_input_sync_writer.h"
 #include "media/audio/audio_logging.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
@@ -133,9 +133,10 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
 
   auto foreign_socket = std::make_unique<base::CancelableSyncSocket>();
 
-  std::unique_ptr<AudioInputSyncWriter> writer = AudioInputSyncWriter::Create(
-      base::BindRepeating(&LogMessage, stream_id), shared_memory_count,
-      possibly_modified_parameters, foreign_socket.get());
+  std::unique_ptr<media::AudioInputSyncWriter> writer =
+      media::AudioInputSyncWriter::Create(
+          base::BindRepeating(&LogMessage, stream_id), shared_memory_count,
+          possibly_modified_parameters, foreign_socket.get());
 
   if (!writer) {
     LogMessage(stream_id, "Failed to set up sync writer.");
@@ -170,7 +171,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
     bool automatic_gain_control,
     EventHandler* subscriber,
     const MediaStreamDevice* device,
-    std::unique_ptr<AudioInputSyncWriter> writer,
+    std::unique_ptr<media::AudioInputSyncWriter> writer,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket)
     : subscriber_(subscriber),
       controller_event_handler_(),
@@ -244,7 +245,7 @@ AudioInputDelegateImpl::~AudioInputDelegateImpl() {
   // stay alive until |controller_| has finished closing.
   controller_->Close(base::BindOnce(
       [](int stream_id, std::unique_ptr<ControllerEventHandler>,
-         std::unique_ptr<AudioInputSyncWriter>) {
+         std::unique_ptr<media::AudioInputSyncWriter>) {
         LogMessage(stream_id, "Stream is now closed");
       },
       stream_id_, std::move(controller_event_handler_), std::move(writer_)));

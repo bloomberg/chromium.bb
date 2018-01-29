@@ -13,11 +13,11 @@
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_observer.h"
 #include "media/audio/audio_output_controller.h"
+#include "media/audio/audio_sync_reader.h"
 
 namespace content {
 
@@ -109,7 +109,7 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     media::mojom::AudioOutputStreamObserverPtr observer,
     const std::string& output_device_id) {
   auto socket = std::make_unique<base::CancelableSyncSocket>();
-  auto reader = AudioSyncReader::Create(
+  auto reader = media::AudioSyncReader::Create(
       base::BindRepeating(&AudioOutputLogMessage, stream_id), params,
       socket.get());
   if (!reader)
@@ -122,7 +122,7 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
 }
 
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
-    std::unique_ptr<AudioSyncReader> reader,
+    std::unique_ptr<media::AudioSyncReader> reader,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
     EventHandler* handler,
     media::AudioManager* audio_manager,
@@ -181,7 +181,7 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
   controller_->Close(base::BindOnce(
       [](AudioMirroringManager* mirroring_manager,
          std::unique_ptr<ControllerEventHandler> event_handler,
-         std::unique_ptr<AudioSyncReader> reader,
+         std::unique_ptr<media::AudioSyncReader> reader,
          scoped_refptr<media::AudioOutputController> controller) {
         // De-register the controller from the AudioMirroringManager now that
         // the controller has closed the AudioOutputStream and shut itself down.

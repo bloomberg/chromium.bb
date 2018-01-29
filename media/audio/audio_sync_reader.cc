@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_sync_reader.h"
+#include "media/audio/audio_sync_reader.h"
 
 #include <algorithm>
 #include <limits>
@@ -22,9 +22,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/media_switches.h"
 
-using media::AudioBus;
-using media::AudioOutputBuffer;
-
 namespace {
 
 // Used to log if any audio glitches have been detected during an audio session.
@@ -36,18 +33,17 @@ enum AudioGlitchResult {
 };
 
 void LogAudioGlitchResult(AudioGlitchResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererAudioGlitches",
-                            result,
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererAudioGlitches", result,
                             AUDIO_RENDERER_AUDIO_GLITCHES_MAX + 1);
 }
 
 }  // namespace
 
-namespace content {
+namespace media {
 
 AudioSyncReader::AudioSyncReader(
     base::RepeatingCallback<void(const std::string&)> log_callback,
-    const media::AudioParameters& params,
+    const AudioParameters& params,
     std::unique_ptr<base::SharedMemory> shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket)
     : log_callback_(std::move(log_callback)),
@@ -71,7 +67,7 @@ AudioSyncReader::AudioSyncReader(
 #endif
       buffer_index_(0) {
   DCHECK_EQ(base::checked_cast<uint32_t>(shared_memory_->requested_size()),
-            media::ComputeAudioOutputBufferSize(params));
+            ComputeAudioOutputBufferSize(params));
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
   output_bus_ = AudioBus::WrapMemory(params, buffer->audio);
@@ -105,15 +101,15 @@ AudioSyncReader::~AudioSyncReader() {
   // how many users might be running into audio glitches.
   int percentage_missed =
       100.0 * renderer_missed_callback_count_ / renderer_callback_count_;
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Media.AudioRendererMissedDeadline", percentage_missed);
+  UMA_HISTOGRAM_PERCENTAGE("Media.AudioRendererMissedDeadline",
+                           percentage_missed);
 
   // Add more detailed information regarding detected audio glitches where
   // a non-zero value of |renderer_missed_callback_count_| is added to the
   // AUDIO_RENDERER_AUDIO_GLITCHES bin.
-  renderer_missed_callback_count_ > 0 ?
-      LogAudioGlitchResult(AUDIO_RENDERER_AUDIO_GLITCHES) :
-      LogAudioGlitchResult(AUDIO_RENDERER_NO_AUDIO_GLITCHES);
+  renderer_missed_callback_count_ > 0
+      ? LogAudioGlitchResult(AUDIO_RENDERER_AUDIO_GLITCHES)
+      : LogAudioGlitchResult(AUDIO_RENDERER_NO_AUDIO_GLITCHES);
   log_callback_.Run(base::StringPrintf(
       "ASR: number of detected audio glitches: %" PRIuS " out of %" PRIuS,
       renderer_missed_callback_count_, renderer_callback_count_));
@@ -122,10 +118,10 @@ AudioSyncReader::~AudioSyncReader() {
 // static
 std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
     base::RepeatingCallback<void(const std::string&)> log_callback,
-    const media::AudioParameters& params,
+    const AudioParameters& params,
     base::CancelableSyncSocket* foreign_socket) {
   base::CheckedNumeric<size_t> memory_size =
-      media::ComputeAudioOutputBufferSizeChecked(params);
+      ComputeAudioOutputBufferSizeChecked(params);
 
   auto shared_memory = std::make_unique<base::SharedMemory>();
   auto socket = std::make_unique<base::CancelableSyncSocket>();
@@ -141,7 +137,7 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
                                            std::move(socket));
 }
 
-// media::AudioOutputController::SyncReader implementations.
+// AudioOutputController::SyncReader implementations.
 void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
                                       base::TimeTicks delay_timestamp,
                                       int prior_frames_skipped) {
@@ -153,8 +149,8 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
   // Increase the number of skipped frames stored in shared memory.
   buffer->params.frames_skipped += prior_frames_skipped;
   buffer->params.delay = delay.InMicroseconds();
-  buffer->params.delay_timestamp
-      = (delay_timestamp - base::TimeTicks()).InMicroseconds();
+  buffer->params.delay_timestamp =
+      (delay_timestamp - base::TimeTicks()).InMicroseconds();
 
   // Zero out the entire output buffer to avoid stuttering/repeating-buffers
   // in the anomalous case if the renderer is unable to keep up with real-time.
@@ -281,12 +277,11 @@ bool AudioSyncReader::WaitUntilDataIsReady() {
     UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioOutputControllerDataNotReady",
                                time_since_start,
                                base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(1000),
-                               50);
+                               base::TimeDelta::FromMilliseconds(1000), 50);
     return false;
   }
 
   return true;
 }
 
-}  // namespace content
+}  // namespace media

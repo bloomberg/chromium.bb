@@ -20,7 +20,6 @@
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
-#include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
