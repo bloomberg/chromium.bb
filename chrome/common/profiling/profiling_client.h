@@ -6,7 +6,7 @@
 #define CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
 
 #include "chrome/common/profiling/profiling_client.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace content {
@@ -36,8 +36,13 @@ class ProfilingClient : public mojom::ProfilingClient {
   void BindToInterface(profiling::mojom::ProfilingClientRequest request);
 
  private:
-  // The most recent client request is bound and kept alive.
-  mojo::Binding<mojom::ProfilingClient> binding_;
+  // Ideally, this would be a mojo::Binding that would only keep alive one
+  // client request. However, the service that makes the client requests
+  // [content_browser] is different from the service that dedupes the client
+  // requests [profiling service]. This means that there may be a brief
+  // intervals where there are two active bindings, until the profiling service
+  // has a chance to figure out which one to keep.
+  mojo::BindingSet<mojom::ProfilingClient> bindings_;
 
   bool started_profiling_;
 

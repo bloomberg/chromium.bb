@@ -159,6 +159,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Starts profiling the process with the given id.
   void StartManualProfiling(base::ProcessId pid);
 
+  // This function starts profiling all renderers. Attempting to start profiling
+  // a renderer that is already being profiled is a no-op [the new request is
+  // dropped by the profiling service].
+  void StartProfilingRenderersForTesting();
+
  private:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   friend class BackgroundProfilingTriggersTest;
