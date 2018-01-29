@@ -189,7 +189,7 @@ base::string16 InterruptReasonStatusMessage(
 
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();
-      // fallthrough
+      FALLTHROUGH;
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
@@ -279,7 +279,7 @@ base::string16 InterruptReasonMessage(content::DownloadInterruptReason reason) {
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();
-      // fallthrough
+      FALLTHROUGH;
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
@@ -497,7 +497,7 @@ bool DownloadItemModel::MightBeMalicious() const {
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       // We shouldn't get any of these due to the IsDangerous() test above.
       NOTREACHED();
-      // Fallthrough.
+      FALLTHROUGH;
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       return false;
   }
@@ -524,7 +524,7 @@ bool DownloadItemModel::IsMalicious() const {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       // We shouldn't get any of these due to the MightBeMalicious() test above.
       NOTREACHED();
-      // Fallthrough.
+      FALLTHROUGH;
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       return false;
   }
