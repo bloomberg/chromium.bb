@@ -17,6 +17,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -69,6 +70,8 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
     const JavaParamRef<jintArray>& jexcluding_domain_reasons,
     const JavaParamRef<jobjectArray>& jignoring_domains,
     const JavaParamRef<jintArray>& jignoring_domain_reasons) {
+  TRACE_EVENT0("browsing_data", "BrowsingDataBridge_ClearBrowsingData");
+
   BrowsingDataRemover* browsing_data_remover =
       content::BrowserContext::GetBrowsingDataRemover(GetOriginalProfile());
 
@@ -163,6 +166,9 @@ static void JNI_BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& listener) {
+  TRACE_EVENT0(
+      "browsing_data",
+      "BrowsingDataBridge_RequestInfoAboutOtherFormsOfBrowsingHistory");
   // The one-time notice in the dialog.
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
@@ -176,6 +182,7 @@ static void JNI_BrowsingDataBridge_FetchImportantSites(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_callback) {
+  TRACE_EVENT0("browsing_data", "BrowsingDataBridge_FetchImportantSites");
   Profile* profile = GetOriginalProfile();
   std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
       ImportantSitesUtil::GetImportantRegisterableDomains(
