@@ -158,7 +158,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   void MergeStyleFromRulesForSerialization(Element*);
   void RemoveStyleFromRulesAndContext(Element*, ContainerNode* context);
   void RemovePropertiesInElementDefaultStyle(Element*);
-  void AddAbsolutePositioningFromElement(const Element&);
   void ForceInline();
   int LegacyFontSize(Document*) const;
 

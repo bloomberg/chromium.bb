@@ -1509,38 +1509,6 @@ void EditingStyle::RemovePropertiesInElementDefaultStyle(Element* element) {
   RemovePropertiesInStyle(mutable_style_.Get(), default_style);
 }
 
-void EditingStyle::AddAbsolutePositioningFromElement(const Element& element) {
-  LayoutRect rect = element.BoundingBox();
-  LayoutObject* layout_object = element.GetLayoutObject();
-
-  LayoutUnit x = rect.X();
-  LayoutUnit y = rect.Y();
-  LayoutUnit width = rect.Width();
-  LayoutUnit height = rect.Height();
-  if (layout_object && layout_object->IsBox()) {
-    LayoutBox* layout_box = ToLayoutBox(layout_object);
-
-    x -= layout_box->MarginLeft();
-    y -= layout_box->MarginTop();
-
-    mutable_style_->SetProperty(CSSPropertyBoxSizing, CSSValueBorderBox);
-  }
-
-  mutable_style_->SetProperty(CSSPropertyPosition, CSSValueAbsolute);
-  mutable_style_->SetProperty(
-      CSSPropertyLeft,
-      *CSSPrimitiveValue::Create(x, CSSPrimitiveValue::UnitType::kPixels));
-  mutable_style_->SetProperty(
-      CSSPropertyTop,
-      *CSSPrimitiveValue::Create(y, CSSPrimitiveValue::UnitType::kPixels));
-  mutable_style_->SetProperty(
-      CSSPropertyWidth,
-      *CSSPrimitiveValue::Create(width, CSSPrimitiveValue::UnitType::kPixels));
-  mutable_style_->SetProperty(
-      CSSPropertyHeight,
-      *CSSPrimitiveValue::Create(height, CSSPrimitiveValue::UnitType::kPixels));
-}
-
 void EditingStyle::ForceInline() {
   if (!mutable_style_)
     mutable_style_ = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
