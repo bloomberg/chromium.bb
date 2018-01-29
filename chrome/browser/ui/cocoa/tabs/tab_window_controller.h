@@ -13,7 +13,8 @@
 // to fill in the details.
 // Note that under the hood the TabWindowController is neither an
 // NSWindowController nor its window's delegate, though it receives all
-// NSWindowDelegate methods as if it were.
+// NSWindowDelegate methods as if it were. It also resides in the responder
+// chain.
 
 #import <Cocoa/Cocoa.h>
 
@@ -26,7 +27,7 @@
 @class TabStripView;
 @class TabView;
 
-@interface TabWindowController : NSObject<NSWindowDelegate> {
+@interface TabWindowController : NSResponder<NSWindowDelegate> {
  @private
   // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
