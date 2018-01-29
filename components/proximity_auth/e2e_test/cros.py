@@ -365,6 +365,7 @@ class ChromeOS(object):
     self._username = username
     self._password = password
     self._ssh_port = ssh_port
+    self._browser_to_create = None
     self._browser = None
     self._cros_interface = None
     self._background_page = None
@@ -412,6 +413,8 @@ class ChromeOS(object):
   def __exit__(self, *args):
     if self._browser is not None:
       self._browser.Close()
+    if self._browser_to_create is not None:
+      self._browser_to_create.CleanUpEnvironment()
     if self._cros_interface is not None:
       self._cros_interface.CloseConnection()
     for process in self._processes:
@@ -455,11 +458,13 @@ class ChromeOS(object):
           is_component=True)
       finder_opts.extensions_to_load.append(easy_unlock_app)
 
+    self._browser_to_create = browser_finder.FindBrowser(finder_opts)
+    self._browser_to_create.SetUpEnvironment(browser_opts)
+
     retries = 3
     while self._browser is not None or retries > 0:
       try:
-        browser_to_create = browser_finder.FindBrowser(finder_opts)
-        self._browser = browser_to_create.Create(finder_opts);
+        self._browser = self._browser_to_create.Create()
         break;
       except (exceptions.LoginException) as e:
         logger.error('Timed out logging in: %s' % e);
