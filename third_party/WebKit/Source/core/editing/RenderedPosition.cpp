@@ -248,16 +248,19 @@ Position RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
       PrevLeafChild()->CaretRightmostOffset());
 }
 
-IntRect RenderedPosition::AbsoluteRect(
-    LayoutUnit* extra_width_to_end_of_line) const {
-  if (IsNull())
+// static
+IntRect RenderedPosition::AbsoluteRect(const PositionWithAffinity& position,
+                                       LayoutUnit* extra_width_to_end_of_line) {
+  const LocalCaretRect local_caret_rect =
+      LocalCaretRectOfPosition(position, extra_width_to_end_of_line);
+  if (!local_caret_rect.layout_object)
     return IntRect();
 
-  IntRect local_rect = PixelSnappedIntRect(layout_object_->LocalCaretRect(
-      inline_box_, offset_, extra_width_to_end_of_line));
+  IntRect local_rect = PixelSnappedIntRect(local_caret_rect.rect);
   return local_rect == IntRect()
              ? IntRect()
-             : layout_object_->LocalToAbsoluteQuad(FloatRect(local_rect))
+             : local_caret_rect.layout_object
+                   ->LocalToAbsoluteQuad(FloatRect(local_rect))
                    .EnclosingBoundingBox();
 }
 
