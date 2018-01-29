@@ -12,11 +12,9 @@
 
 namespace content {
 
-struct MainFunctionParams;
 class ZygoteForkDelegate;
 
 bool ZygoteMain(
-    const MainFunctionParams& params,
     std::vector<std::unique_ptr<ZygoteForkDelegate>> fork_delegates);
 
 }  // namespace content
