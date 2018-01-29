@@ -32,6 +32,7 @@ ASH_PUBLIC_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableNewOverviewUi[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableNightLight[];
 ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
+ASH_PUBLIC_EXPORT extern const char kAshEnablePersistentWindowBounds[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableScaleSettingsTray[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletMode[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableWaylandServer[];

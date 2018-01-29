@@ -2926,6 +2926,11 @@ const char kAshEnableMirroredScreenDescription[] =
     "Enable the mirrored screen mode. This mode flips the screen image "
     "horizontally.";
 
+const char kAshEnablePersistentWindowBoundsName[] =
+    "Enable persistent window bounds in multi-displays scenario.";
+const char kAshEnablePersistentWindowBoundsDescription[] =
+    "Enable persistent window bounds in multi-displays scenario.";
+
 const char kAshShelfColorName[] = "Shelf color in Chrome OS system UI";
 const char kAshShelfColorDescription[] =
     "Enables/disables the shelf color to be a derived from the wallpaper. The "

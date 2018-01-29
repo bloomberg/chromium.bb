@@ -25429,6 +25429,7 @@ from previous Chrome versions.
   <int value="-1613583483" label="UseNewAcceptLanguageHeader:enabled"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
   <int value="-1607691647" label="MojoVideoEncodeAccelerator:disabled"/>
+  <int value="-1607297082" label="ash-enable-persistent-window-bounds"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1603404046" label="V8VmFuture:disabled"/>

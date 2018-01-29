@@ -75,6 +75,11 @@ const char kAshEnableNightLight[] = "ash-enable-night-light";
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
+// Enables persistent window bounds in multi-displays scenario.
+// TODO(warx): Remove this once the feature is launched. crbug.com/805046.
+const char kAshEnablePersistentWindowBounds[] =
+    "ash-enable-persistent-window-bounds";
+
 // Enables the sidebar.
 const char kAshSidebarEnabled[] = "enable-ash-sidebar";
 const char kAshSidebarDisabled[] = "disable-ash-sidebar";

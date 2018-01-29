@@ -1805,6 +1805,9 @@ extern const char kAshEnableKeyboardShortcutViewerDescription[];
 extern const char kAshEnableMirroredScreenName[];
 extern const char kAshEnableMirroredScreenDescription[];
 
+extern const char kAshEnablePersistentWindowBoundsName[];
+extern const char kAshEnablePersistentWindowBoundsDescription[];
+
 extern const char kAshShelfColorName[];
 extern const char kAshShelfColorDescription[];
 
