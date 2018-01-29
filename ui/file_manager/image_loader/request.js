@@ -112,6 +112,14 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
 ImageRequest.VIDEO_THUMBNAIL_POSITION = 3; // [sec]
 
 /**
+ * The maximum milliseconds to load video. If loading video exceeds the limit,
+ * we give up generating video thumbnail and free the consumed memory.
+ * @const
+ * @type {number}
+ */
+ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO = 3000;
+
+/**
  * Returns ID of the request.
  * @return {string} Request ID.
  */
@@ -299,20 +307,34 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
  * @private
  */
 ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
-  var video = document.createElement('video');
-  return new Promise(function(resolve, reject) {
-    video.addEventListener('canplay', resolve);
-    video.addEventListener('error', reject);
-    video.currentTime = ImageRequest.VIDEO_THUMBNAIL_POSITION;
-    video.preload = 'auto';
-    video.src = url;
-  }).then(function() {
-    var canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    return canvas.toDataURL();
-  });
+  const video = document.createElement('video');
+  return Promise
+      .race([
+        new Promise((resolve, reject) => {
+          video.addEventListener('canplay', resolve);
+          video.addEventListener('error', reject);
+          video.currentTime = ImageRequest.VIDEO_THUMBNAIL_POSITION;
+          video.preload = 'auto';
+          video.src = url;
+        }),
+        new Promise((resolve) => {
+          setTimeout(resolve, ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO);
+        }).then(() => {
+          // If we don't receive 'canplay' event after 3 seconds have passed for
+          // some reason (e.g. unseekable video), we give up generating
+          // thumbnail.
+          video.src =
+              '';  // Make sure to stop loading remaining part of the video.
+          throw new Error('Seeking video failed.');
+        })
+      ])
+      .then(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        return canvas.toDataURL();
+      });
 };
 
 /**
