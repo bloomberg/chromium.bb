@@ -16,25 +16,18 @@
 
 namespace cc {
 
-AnimationTicker::AnimationTicker(TickerId id)
-    : animation_player_(),
-      id_(id),
+AnimationTicker::AnimationTicker(AnimationPlayer* animation_player)
+    : animation_player_(animation_player),
       element_animations_(),
       needs_to_start_animations_(false),
       scroll_offset_animation_was_interrupted_(false),
       is_ticking_(false),
-      needs_push_properties_(false) {}
+      needs_push_properties_(false) {
+  DCHECK(animation_player_);
+}
 
 AnimationTicker::~AnimationTicker() {
   DCHECK(!has_bound_element_animations());
-}
-
-std::unique_ptr<AnimationTicker> AnimationTicker::Create(TickerId id) {
-  return base::MakeUnique<AnimationTicker>(id);
-}
-
-std::unique_ptr<AnimationTicker> AnimationTicker::CreateImplInstance() const {
-  return AnimationTicker::Create(id());
 }
 
 void AnimationTicker::SetNeedsPushProperties() {
@@ -709,18 +702,14 @@ void AnimationTicker::PushPropertiesTo(AnimationTicker* animation_ticker_impl) {
     return;
   needs_push_properties_ = false;
 
-  // Synchronize the animation target between main and impl side.
+  // Synchronize the animation target between main and impl size.
   if (element_id_ != animation_ticker_impl->element_id_) {
     // We have to detach/attach via the AnimationPlayer as it may need to inform
     // the host as well.
-    if (animation_ticker_impl->has_attached_element()) {
-      animation_ticker_impl->animation_player_->DetachElementForTicker(
-          animation_ticker_impl->element_id_, animation_ticker_impl->id_);
-    }
-    if (element_id_) {
-      animation_ticker_impl->animation_player_->AttachElementForTicker(
-          element_id_, id_);
-    }
+    if (animation_ticker_impl->has_attached_element())
+      animation_ticker_impl->animation_player_->DetachElement();
+    if (element_id_)
+      animation_ticker_impl->animation_player_->AttachElement(element_id_);
   }
 
   // If neither main nor impl have any animations, there is nothing further to
@@ -752,10 +741,6 @@ void AnimationTicker::PushPropertiesTo(AnimationTicker* animation_ticker_impl) {
   scroll_offset_animation_was_interrupted_ = false;
 
   animation_ticker_impl->UpdateTickingState(UpdateTickingType::NORMAL);
-}
-
-void AnimationTicker::SetAnimationPlayer(AnimationPlayer* animation_player) {
-  animation_player_ = animation_player;
 }
 
 std::string AnimationTicker::AnimationsToString() const {
