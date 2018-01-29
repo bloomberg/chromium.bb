@@ -581,7 +581,6 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
-#if defined(GOOGLE_CHROME_BUILD)
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   // Skip for non-regular users.
@@ -595,9 +594,6 @@ void WizardController::ShowSyncConsentScreen() {
   VLOG(1) << "Showing Sync Consent screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
-#else
-  ShowArcTermsOfServiceScreen();
-#endif
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
