@@ -42,15 +42,9 @@ constexpr size_t kTrimEvents = 24;  // 1 sec at 24fps, or 0.4 sec at 60 fps.
 constexpr size_t kMinDataPoints = 100;  // ~5 sec at 24fps.
 
 enum TestFlags {
-  // TODO(miu): Remove kUseGpu (since the GPU is required), kForceGpuComposited
-  // (because there's no longer a such thing as Chrome w/o a compositor), and
-  // maybe kDisableVsync. http://crbug.com/567848
   kUseGpu = 1 << 0,              // Only execute test if --enable-gpu was given
                                  // on the command line.  This is required for
                                  // tests that run on GPU.
-  kForceGpuComposited = 1 << 1,  // Force the test to use the compositor.
-  kDisableVsync = 1 << 2,        // Do not limit framerate to vertical refresh.
-                                 // when on GPU, nor to 60hz when not on GPU.
   kTestThroughWebRTC = 1 << 3,   // Send video through a webrtc loopback.
   kSmallWindow = 1 << 4,         // Window size: 1 = 800x600, 0 = 2000x1000
 };
@@ -71,12 +65,8 @@ class TabCapturePerformanceTest
 
   std::string GetSuffixForTestFlags() {
     std::string suffix;
-    if (HasFlag(kForceGpuComposited))
-      suffix += "_comp";
     if (HasFlag(kUseGpu))
-      suffix += "_gpu";
-    if (HasFlag(kDisableVsync))
-      suffix += "_novsync";
+      suffix += "_comp_gpu";
     if (HasFlag(kTestThroughWebRTC))
       suffix += "_webrtc";
     if (HasFlag(kSmallWindow))
@@ -86,6 +76,8 @@ class TabCapturePerformanceTest
 
   void SetUp() override {
     EnablePixelOutput();
+    if (!HasFlag(kUseGpu))
+      UseSoftwareCompositing();
     ExtensionApiTest::SetUp();
   }
 
@@ -105,12 +97,10 @@ class TabCapturePerformanceTest
     if (!HasFlag(kUseGpu))
       command_line->AppendSwitch(switches::kDisableGpu);
 
-    if (HasFlag(kDisableVsync))
-      command_line->AppendSwitch(switches::kDisableGpuVsync);
-
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         kExtensionId);
+
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
@@ -258,9 +248,6 @@ class TabCapturePerformanceTest
     ASSERT_TRUE(tracing::BeginTracing("gpu,gpu.capture"));
     std::string page = "performance.html";
     page += HasFlag(kTestThroughWebRTC) ? "?WebRTC=1" : "?WebRTC=0";
-    // Ideally we'd like to run a higher capture rate when vsync is disabled,
-    // but libjingle currently doesn't allow that.
-    // page += HasFlag(kDisableVsync) ? "&fps=300" : "&fps=30";
     page += "&fps=60";
     ASSERT_TRUE(RunExtensionSubtest("tab_capture", page)) << message_;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
@@ -303,15 +290,9 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
-    ,
-    TabCapturePerformanceTest,
-    testing::Values(
-        0,
-        kUseGpu | kForceGpuComposited,
-        kDisableVsync,
-        kDisableVsync | kUseGpu | kForceGpuComposited,
-        kTestThroughWebRTC,
-        kTestThroughWebRTC | kUseGpu | kForceGpuComposited,
-        kTestThroughWebRTC | kDisableVsync,
-        kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
+INSTANTIATE_TEST_CASE_P(,
+                        TabCapturePerformanceTest,
+                        testing::Values(0,
+                                        kUseGpu,
+                                        kTestThroughWebRTC,
+                                        kTestThroughWebRTC | kUseGpu));
