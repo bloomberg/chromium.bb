@@ -319,11 +319,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   passwordItem.text = base::SysUTF8ToNSString(
       password_manager::GetShownOriginAndLinkUrl(*form).first);
   passwordItem.detailText = base::SysUTF16ToNSString(form->username_value);
-  if (experimental_flags::IsViewCopyPasswordsEnabled()) {
-    passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
-    passwordItem.accessoryType =
-        MDCCollectionViewCellAccessoryDisclosureIndicator;
-  }
+  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  passwordItem.accessoryType =
+      MDCCollectionViewCellAccessoryDisclosureIndicator;
   return passwordItem;
 }
 
@@ -333,11 +331,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
   passwordItem.text = base::SysUTF8ToNSString(
       password_manager::GetShownOriginAndLinkUrl(*form).first);
-  if (experimental_flags::IsViewCopyPasswordsEnabled()) {
-    passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
-    passwordItem.accessoryType =
-        MDCCollectionViewCellAccessoryDisclosureIndicator;
-  }
+  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  passwordItem.accessoryType =
+      MDCCollectionViewCellAccessoryDisclosureIndicator;
   return passwordItem;
 }
 
@@ -519,9 +515,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 #pragma mark UICollectionViewDelegate
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
-  if (!experimental_flags::IsViewCopyPasswordsEnabled())
-    return;
-
   PasswordDetailsCollectionViewController* controller =
       [[PasswordDetailsCollectionViewController alloc]
             initWithPasswordForm:form

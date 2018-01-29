@@ -3411,11 +3411,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPwaPersistentNotificationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kPwaPersistentNotification)},
 #endif  // OS_ANDROID
-#if defined(OS_ANDROID)
-    {"ViewPasswords", flag_descriptions::kAndroidViewPasswordsName,
-     flag_descriptions::kAndroidViewPasswordsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(password_manager::features::kViewPasswords)},
-#endif  // OS_ANDROID
 
     {"enable-manual-fallbacks-filling",
      flag_descriptions::kEnableManualFallbacksFillingName,

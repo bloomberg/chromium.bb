@@ -141,7 +141,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kAndroidChromeHomePersonalizedSuggestions,
     &password_manager::features::kPasswordExport,
     &password_manager::features::kPasswordSearchMobile,
-    &password_manager::features::kViewPasswords,
     &subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI,
     &safe_browsing::kDispatchSafetyNetCheckOffThread,
 };

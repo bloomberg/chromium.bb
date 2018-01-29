@@ -51,9 +51,6 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 
-// Whether viewing and copying passwords is enabled.
-bool IsViewCopyPasswordsEnabled();
-
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
