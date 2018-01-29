@@ -6,11 +6,6 @@ var fail = chrome.test.callbackFail;
 
 var GESTURE_ERROR = "This function must be called during a user gesture";
 
-function busyLoop(milliseconds) {
-  var startTime = new Date().getTime();
-  while (new Date().getTime() - startTime < milliseconds) {}
-}
-
 chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     function testPermissionsRetainGesture() {
@@ -36,41 +31,6 @@ chrome.test.getConfig(function(config) {
 
               // Consume the user gesture
               window.open("", "", "");
-            }
-        );
-      });
-    },
-
-    function testPermissionsRetainGestureExpire() {
-      chrome.test.runWithUserGesture(function() {
-        chrome.permissions.request(
-            {permissions: ['bookmarks']},
-            function(granted) {
-              chrome.test.assertTrue(granted);
-
-              var request = function() {
-                // The following request will fail if the user gesture is
-                // expired.
-                chrome.permissions.request(
-                    {permissions: ['bookmarks']},
-                    function(granted1) {
-                      if (chrome.runtime.lastError) {
-                        chrome.test.assertFalse(!!granted1);
-                        chrome.test.assertEq(chrome.runtime.lastError.message,
-                                             GESTURE_ERROR);
-                        chrome.test.succeed();
-                      } else {
-                        console.log("Retrying permissions.request in 3 " +
-                            "seconds");
-                        busyLoop(3000);
-                        request();
-                      }
-                    });
-              };
-
-              // Wait 2s since the user gesture timeout is 1s.
-              busyLoop(2000);
-              request();
             }
         );
       });
