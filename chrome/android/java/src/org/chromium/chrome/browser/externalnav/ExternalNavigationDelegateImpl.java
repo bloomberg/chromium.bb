@@ -42,7 +42,9 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -69,10 +71,19 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     protected final Context mApplicationContext;
     private final Tab mTab;
+    private final TabObserver mTabObserver;
+    private boolean mIsTabDestroyed;
 
     public ExternalNavigationDelegateImpl(Tab tab) {
         mTab = tab;
         mApplicationContext = ContextUtils.getApplicationContext();
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onDestroyed(Tab tab) {
+                mIsTabDestroyed = true;
+            }
+        };
+        mTab.addObserver(mTabObserver);
     }
 
     /**
@@ -525,7 +536,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tab.loadUrl(loadUrlParams);
+                    // Tab might be closed when this is run. See https://crbug.com/662877
+                    if (!mIsTabDestroyed) {
+                        tab.loadUrl(loadUrlParams);
+                    }
                 }
             });
             return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
