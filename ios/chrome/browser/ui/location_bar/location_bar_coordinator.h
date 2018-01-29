@@ -15,12 +15,12 @@
 namespace ios {
 class ChromeBrowserState;
 }
+class WebStateList;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol UrlLoader;
+@protocol OmniboxPopupPositioner;
 @protocol ToolbarCoordinatorDelegate;
-class LocationBarControllerImpl;
-class WebStateList;
+@protocol UrlLoader;
 
 @interface LocationBarCoordinator
     : NSObject<LocationBarURLLoader, OmniboxFocuser, LocationBarDelegate>
@@ -33,20 +33,28 @@ class WebStateList;
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 // URL loader for the location bar.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
-// The location bar controller.
-// TODO: this class needs to own this instance instead of ToolbarCoordinator.
-@property(nonatomic, assign) LocationBarControllerImpl* locationBarController;
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 
+@property(nonatomic, weak) id<OmniboxPopupPositioner> popupPositioner;
+
 // Start this coordinator.
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
 
+// Indicates whether the popup has results to show or not.
+- (BOOL)omniboxPopupHasAutocompleteResults;
+
+// Indicates if the omnibox currently displays a popup with suggestions.
+- (BOOL)showingOmniboxPopup;
+
+// Focuses the omnibox and sets the caret visibility as if it was called from
+// the fakebox on NTP.
+- (void)focusOmniboxFromFakebox;
 
 @end
 
