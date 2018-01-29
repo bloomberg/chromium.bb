@@ -33,6 +33,7 @@ namespace content {
 class NavigationEntry;
 class NavigationHandle;
 class RenderFrameHost;
+class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHost;
 class WebContents;
@@ -128,9 +129,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
 
-  // This method is invoked when the process for the current main
-  // RenderFrameHost becomes unresponsive.
-  virtual void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) {}
+  // This method is invoked when a process in the WebContents becomes
+  // unresponsive.
+  virtual void OnRendererUnresponsive(RenderProcessHost* render_process_host) {}
 
   // Navigation ----------------------------------------------------------------
 

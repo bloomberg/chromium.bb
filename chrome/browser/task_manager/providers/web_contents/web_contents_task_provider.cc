@@ -13,12 +13,11 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
 using content::RenderFrameHost;
-using content::RenderWidgetHost;
+using content::RenderProcessHost;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -55,7 +54,7 @@ class WebContentsEntry : public content::WebContentsObserver {
                               RenderFrameHost* new_host) override;
   void RenderFrameCreated(RenderFrameHost*) override;
   void WebContentsDestroyed() override;
-  void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) override;
+  void OnRendererUnresponsive(RenderProcessHost* render_process_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
@@ -206,12 +205,11 @@ void WebContentsEntry::WebContentsDestroyed() {
 }
 
 void WebContentsEntry::OnRendererUnresponsive(
-    RenderWidgetHost* render_widget_host) {
-  // Find the first RenderFrameHost matching the RenderWidgetHost.
+    RenderProcessHost* render_process_host) {
+  // Find the first RenderFrameHost matching the RenderProcessHost.
   RendererTask* task = nullptr;
   for (const auto& pair : tasks_by_frames_) {
-    if (pair.first->GetView() == render_widget_host->GetView()) {
-      DCHECK_EQ(pair.first->GetProcess(), render_widget_host->GetProcess());
+    if (pair.first->GetProcess() == render_process_host) {
       task = pair.second;
       break;
     }
