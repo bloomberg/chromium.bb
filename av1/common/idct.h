@@ -32,18 +32,11 @@ typedef struct {
 #define MAX_TX_SCALE 1
 int av1_get_tx_scale(const TX_SIZE tx_size);
 
-void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     const TxfmParam *txfm_param);
-void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     const TxfmParam *txfm_param);
-
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  const tran_low_t *dqcoeff, int plane,
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
                                  int stride, int eob, int reduced_tx_set);
 
-void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                            int eob, int bd);
 void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
                                  int stride, const TxfmParam *param);
 #ifdef __cplusplus

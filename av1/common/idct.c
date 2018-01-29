@@ -1296,28 +1296,8 @@ void av1_iht64x16_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif  // CONFIG_TX64X64
 
 // idct
-void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     const TxfmParam *txfm_param) {
-  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-  const int eob = txfm_param->eob;
-  if (eob > 1)
-    av1_iht4x4_16_add(input, dest, stride, txfm_param);
-  else
-    aom_idct4x4_1_add(input, dest, stride);
-}
-
-void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     const TxfmParam *txfm_param) {
-  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-  const int eob = txfm_param->eob;
-  if (eob > 1)
-    aom_iwht4x4_16_add(input, dest, stride);
-  else
-    aom_iwht4x4_1_add(input, dest, stride);
-}
-
-void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                            int eob, int bd) {
+static void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest,
+                                   int stride, int eob, int bd) {
   if (eob > 1)
     aom_highbd_iwht4x4_16_add(input, dest, stride, bd);
   else
