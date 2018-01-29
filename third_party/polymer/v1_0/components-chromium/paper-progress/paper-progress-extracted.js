@@ -44,7 +44,7 @@ Polymer({
     },
 
     observers: [
-      '_progressChanged(secondaryProgress, value, min, max)'
+      '_progressChanged(secondaryProgress, value, min, max, indeterminate)'
     ],
 
     hostAttributes: {
@@ -66,7 +66,7 @@ Polymer({
       this._transformProgress(this.$.primaryProgress, ratio);
     },
 
-    _progressChanged: function(secondaryProgress, value, min, max) {
+    _progressChanged: function(secondaryProgress, value, min, max, indeterminate) {
       secondaryProgress = this._clampValue(secondaryProgress);
       value = this._clampValue(value);
 
@@ -79,7 +79,11 @@ Polymer({
 
       this.secondaryProgress = secondaryProgress;
 
-      this.setAttribute('aria-valuenow', value);
+      if (indeterminate) {
+        this.removeAttribute('aria-valuenow');
+      } else {
+        this.setAttribute('aria-valuenow', value);
+      }
       this.setAttribute('aria-valuemin', min);
       this.setAttribute('aria-valuemax', max);
     },
