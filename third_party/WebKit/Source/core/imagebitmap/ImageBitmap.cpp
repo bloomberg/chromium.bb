@@ -821,15 +821,8 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     return;
   }
   ImageBitmap* bitmap = new ImageBitmap(image);
-  if (bitmap && bitmap->BitmapImage())
-    bitmap->BitmapImage()->SetOriginClean(origin_clean);
-  if (bitmap && bitmap->BitmapImage()) {
-    resolver->Resolve(bitmap);
-  } else {
-    resolver->Reject(
-        ScriptValue(resolver->GetScriptState(),
-                    v8::Null(resolver->GetScriptState()->GetIsolate())));
-  }
+  bitmap->BitmapImage()->SetOriginClean(origin_clean);
+  resolver->Resolve(bitmap);
 }
 
 void ImageBitmap::RasterizeImageOnBackgroundThread(
@@ -887,11 +880,9 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   // poremultiply_alpha.
   if (src_rect.IsEmpty()) {
     ImageBitmap* bitmap = new ImageBitmap(MakeBlankImage(parsed_options));
-    if (bitmap && bitmap->BitmapImage()) {
+    if (bitmap->BitmapImage()) {
       bitmap->BitmapImage()->SetOriginClean(
           !image->WouldTaintOrigin(document->GetSecurityOrigin()));
-    }
-    if (bitmap && bitmap->BitmapImage()) {
       resolver->Resolve(bitmap);
     } else {
       resolver->Reject(
