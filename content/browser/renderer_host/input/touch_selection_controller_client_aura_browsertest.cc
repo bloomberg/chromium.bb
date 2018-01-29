@@ -233,6 +233,42 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 
+class GestureLongPressWaiter : public RenderWidgetHost::InputEventObserver {
+ public:
+  GestureLongPressWaiter(RenderWidgetHost* rwh)
+      : rwh_(static_cast<RenderWidgetHostImpl*>(rwh)->GetWeakPtr()),
+        gesture_long_press_seen_(false) {
+    rwh->AddInputEventObserver(this);
+  }
+  ~GestureLongPressWaiter() override {
+    if (rwh_)
+      rwh_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEventAck(InputEventAckSource,
+                       InputEventAckState,
+                       const blink::WebInputEvent& event) override {
+    if (event.GetType() == blink::WebInputEvent::kGestureLongPress) {
+      gesture_long_press_seen_ = true;
+      if (run_loop_)
+        run_loop_->Quit();
+    }
+  }
+
+  void Wait() {
+    if (gesture_long_press_seen_)
+      return;
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+ private:
+  base::WeakPtr<RenderWidgetHostImpl> rwh_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool gesture_long_press_seen_;
+};
+
 class TouchSelectionControllerClientAuraSiteIsolationTest
     : public TouchSelectionControllerClientAuraTest,
       public testing::WithParamInterface<bool> {
@@ -248,14 +284,21 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void SelectWithLongPress(gfx::Point point) {
+  void SelectWithLongPress(gfx::Point point,
+                           RenderWidgetHostViewBase* expected_target) {
     // Get main frame view for event insertion.
     RenderWidgetHostViewAura* main_view = GetRenderWidgetHostViewAura();
 
     SendTouch(main_view, ui::ET_TOUCH_PRESSED, point);
     SendTouch(main_view, ui::ET_TOUCH_RELEASED, point);
     SendGestureTap(main_view, point);
+
+    // Since our hit-testing is now asynchronous, wait for the Ack to come
+    // back before proceeding.
+    GestureLongPressWaiter long_press_waiter(
+        expected_target->GetRenderWidgetHost());
     SendGestureLongPress(main_view, point);
+    long_press_waiter.Wait();
   }
 
   void SimpleTap(gfx::Point point) {
@@ -406,7 +449,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
-  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
+  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()), child_view);
 
   parent_selection_controller_client->Wait();
 
@@ -523,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
-  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
+  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()), child_view);
 
   parent_selection_controller_client->Wait();
 
@@ -587,6 +630,14 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
 
   // Make sure we wait for the scroll to actually happen.
   filter->WaitForRect();
+  // Since the check below that compares the scroll_delta to the actual handle
+  // movement requires use of TransformPointToRootCoordSpaceF() in
+  // TouchSelectionControllerClientChildFrame::DidScroll(), we need to
+  // make sure the post-scroll frames have rendered before the transform
+  // can be trusted. This may point out a general concern with the timing
+  // of the main-frame's did-stop-flinging IPC and the rendering of the
+  // child frame's compositor frame.
+  child_frame_stable_observer.WaitUntilStable();
 
   // End scrolling: touch handles should re-appear.
   ui::GestureEventDetails scroll_end_details(ui::ET_GESTURE_SCROLL_END);
