@@ -241,7 +241,11 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (in_shutdown_ || !shelf_window)
     return;
 
-  if (state_.IsScreenLocked() || state_.IsAddingSecondaryUser()) {
+  if (shelf_->ShouldHideOnSecondaryDisplay(state_.session_state)) {
+    // Needed to hide system tray on secondary display.
+    SetState(SHELF_HIDDEN);
+  } else if ((state_.IsScreenLocked() || state_.IsAddingSecondaryUser())) {
+    // Needed to show system tray on web UI lock screen.
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);

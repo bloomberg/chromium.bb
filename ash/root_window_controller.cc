@@ -701,9 +701,6 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   InitLayoutManagers();
   InitTouchHuds();
-  // Initializing views shelf here will cause it being visible on login screen
-  // on secondary display once views based login is enabled. See
-  // https://crbug.com/796239.
   InitializeShelf();
 
   if (Shell::GetPrimaryRootWindowController()

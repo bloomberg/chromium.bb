@@ -294,6 +294,13 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchor() const {
   return GetStatusAreaWidget()->GetSystemTrayAnchor();
 }
 
+bool Shelf::ShouldHideOnSecondaryDisplay(session_manager::SessionState state) {
+  if (Shell::GetPrimaryRootWindowController()->shelf() == this)
+    return false;
+
+  return state != session_manager::SessionState::ACTIVE;
+}
+
 void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   keyboard::KeyboardStateDescriptor state;
   state.is_available = !bounds.IsEmpty();
