@@ -350,7 +350,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 
   // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());
-  SendSetControllerServiceWorker(version, notify_controllerchange);
+  SendSetControllerServiceWorker(notify_controllerchange);
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
@@ -626,8 +626,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   // commit, but we still need this for S13nServiceWorker case for setting the
   // use counter correctly.
   // TODO(kinuko): Stop doing this in S13nServiceWorker case.
-  SendSetControllerServiceWorker(controller_.get(),
-                                 false /* notify_controllerchange */);
+  SendSetControllerServiceWorker(false /* notify_controllerchange */);
 }
 
 mojom::ServiceWorkerProviderInfoForStartWorkerPtr
@@ -774,32 +773,35 @@ void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
 }
 
 void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
-    ServiceWorkerVersion* version,
     bool notify_controllerchange) {
   if (!dispatcher_host_)
     return;
 
-  if (version) {
-    DCHECK(associated_registration_);
-    DCHECK_EQ(associated_registration_->active_version(), version);
-    DCHECK_EQ(controller_.get(), version);
+  if (!controller_) {
+    container_->SetController(mojom::ControllerServiceWorkerInfo::New(),
+                              {} /* used_features */, notify_controllerchange);
+    return;
   }
 
-  std::vector<blink::mojom::WebFeature> used_features;
-  if (version) {
-    for (const uint32_t feature : version->used_features()) {
-      DCHECK_LT(feature, static_cast<uint32_t>(
-                             blink::mojom::WebFeature::kNumberOfFeatures));
-      used_features.push_back(static_cast<blink::mojom::WebFeature>(feature));
-    }
-  }
+  DCHECK(associated_registration_);
+  DCHECK_EQ(associated_registration_->active_version(), controller_.get());
 
   auto controller_info = mojom::ControllerServiceWorkerInfo::New();
-  controller_info->object_info = GetOrCreateServiceWorkerHandle(version);
+  // Set the info for the JavaScript ServiceWorkerContainer#controller object.
+  controller_info->object_info =
+      GetOrCreateServiceWorkerHandle(controller_.get());
 
-  // S13nServiceWorker: Send the controller ptr too so that controller changes/
-  // lost are propagated with the new controller ptr.
-  if (version && ServiceWorkerUtils::IsServicificationEnabled())
+  // Populate used features for UseCounter purposes.
+  std::vector<blink::mojom::WebFeature> used_features;
+  for (const uint32_t feature : controller_->used_features()) {
+    DCHECK_LT(feature, static_cast<uint32_t>(
+                           blink::mojom::WebFeature::kNumberOfFeatures));
+    used_features.push_back(static_cast<blink::mojom::WebFeature>(feature));
+  }
+
+  // S13nServiceWorker: Pass an endpoint for the client to talk to this
+  // controller.
+  if (ServiceWorkerUtils::IsServicificationEnabled())
     controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
 
   container_->SetController(std::move(controller_info), used_features,

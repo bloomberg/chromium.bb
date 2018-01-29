@@ -421,15 +421,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Sends information about the controller to the providers of the service
   // worker clients in the renderer. If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.  If
-  // |version| is non-null, it must be the same as |controller_|. |version| can
-  // be null while |controller_| is non-null in the strange case of cross-site
-  // transfer, which will be removed when the non-PlzNavigate code path is
-  // removed.
-  // TODO(falken): As non-PlzNavigate and cross-site transfer were removed, see
-  // if this can be simplified.
-  void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
-                                      bool notify_controllerchange);
+  // instructs the renderer to dispatch a 'controllerchange' event.
+  void SendSetControllerServiceWorker(bool notify_controllerchange);
 
   // Implements mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
