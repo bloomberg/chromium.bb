@@ -79,11 +79,6 @@ bool GetDeletionPreferenceFromDataType(
 BrowsingDataType GetDataTypeFromDeletionPreference(
     const std::string& pref_name);
 
-// Copies the deletion preferences for timeperiod, cache, history and cookies
-// to a separate preferences that are used to on the basic CBD tab.
-// This only happens the first time this method is called.
-void MigratePreferencesToBasic(PrefService* prefs);
-
 }  // namespace browsing_data
 
 #endif  // COMPONENTS_BROWSING_DATA_CORE_BROWSING_DATA_UTILS_H_

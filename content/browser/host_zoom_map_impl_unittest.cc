@@ -90,8 +90,6 @@ TEST_F(HostZoomMapTest, GetAllZoomLevels) {
 
 TEST_F(HostZoomMapTest, LastModifiedTimestamp) {
   HostZoomMapImpl host_zoom_map;
-  host_zoom_map.SetStoreLastModified(true);
-
   base::Time now = base::Time::Now();
   base::SimpleTestClock test_clock;
   host_zoom_map.SetClockForTesting(&test_clock);
@@ -128,8 +126,6 @@ TEST_F(HostZoomMapTest, LastModifiedTimestamp) {
 
 TEST_F(HostZoomMapTest, ClearZoomLevels) {
   HostZoomMapImpl host_zoom_map;
-  host_zoom_map.SetStoreLastModified(true);
-
   base::SimpleTestClock test_clock;
   host_zoom_map.SetClockForTesting(&test_clock);
 

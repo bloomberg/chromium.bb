@@ -11,14 +11,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
@@ -33,7 +31,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/static_cookie_policy.h"
-#include "ppapi/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1576,10 +1573,6 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
 }
 
 TEST_F(HostContentSettingsMapTest, ClearSettingsWithTimePredicate) {
-  base::test::ScopedFeatureList feature_list;
-  // Enable kTabsInCbd to activate last_modified timestmap recording.
-  feature_list.InitAndEnableFeature(features::kTabsInCbd);
-
   TestingProfile profile;
   auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
 
@@ -1635,9 +1628,6 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsWithTimePredicate) {
 }
 
 TEST_F(HostContentSettingsMapTest, GetSettingLastModified) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTabsInCbd);
-
   TestingProfile profile;
   auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
 
@@ -1677,10 +1667,6 @@ TEST_F(HostContentSettingsMapTest, GetSettingLastModified) {
 }
 
 TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
-  base::test::ScopedFeatureList feature_list;
-  // Enable kTabsInCbd to activate last_modified timestamp recording.
-  feature_list.InitAndEnableFeature(features::kTabsInCbd);
-
   TestingProfile profile;
   auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
   GURL url("https://www.google.com/");
@@ -1735,28 +1721,6 @@ TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   weak_provider->RemoveObserver(map);
   weak_other_provider->RemoveObserver(map);
-}
-
-TEST_F(HostContentSettingsMapTest, LastModifiedIsNotRecordedWhenDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kTabsInCbd);
-
-  TestingProfile profile;
-  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
-  ContentSettingsForOneType host_settings;
-
-  GURL url("https://www.google.com/");
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url);
-
-  // Add setting for url.
-  map->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
-                                     std::string(), CONTENT_SETTING_BLOCK);
-
-  base::Time t = map->GetSettingLastModifiedDate(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_POPUPS);
-  EXPECT_EQ(base::Time(), t);
 }
 
 TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {

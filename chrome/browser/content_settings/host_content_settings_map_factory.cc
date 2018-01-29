@@ -79,13 +79,11 @@ scoped_refptr<RefcountedKeyedService>
     GetForProfile(profile->GetOriginalProfile());
   }
 
-  bool store_last_modified = base::FeatureList::IsEnabled(features::kTabsInCbd);
-
   scoped_refptr<HostContentSettingsMap> settings_map(new HostContentSettingsMap(
       profile->GetPrefs(),
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE,
       profile->GetProfileType() == Profile::GUEST_PROFILE,
-      store_last_modified));
+      /*store_last_modified=*/true));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These must be registered before before the HostSettings are passed over to

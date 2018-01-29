@@ -4,20 +4,15 @@
 
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
-#include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -26,12 +21,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 #endif
-
-
-bool IsSiteDataCounterEnabled() {
-  // Only use the site data counter for the new CBD ui.
-  return base::FeatureList::IsEnabled(features::kTabsInCbd);
-}
 
 // A helper function to display the size of cache in units of MB or higher.
 // We need this, as 1 MB is the lowest nonzero cache size displayed by the
@@ -88,7 +77,6 @@ base::string16 GetChromeCounterTextFromResult(
   }
   if (pref_name == browsing_data::prefs::kDeleteCookies) {
     // Site data counter.
-    DCHECK(IsSiteDataCounterEnabled());
     browsing_data::BrowsingDataCounter::ResultInt origins =
         static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
             result)

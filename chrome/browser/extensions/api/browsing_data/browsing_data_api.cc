@@ -136,11 +136,8 @@ bool BrowsingDataSettingsFunction::isDataTypeSelected(
 ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
   prefs_ = Profile::FromBrowserContext(browser_context())->GetPrefs();
 
-  ClearBrowsingDataTab tab =
-      base::FeatureList::IsEnabled(features::kTabsInCbd)
-          ? static_cast<ClearBrowsingDataTab>(prefs_->GetInteger(
-                browsing_data::prefs::kLastClearBrowsingDataTab))
-          : ClearBrowsingDataTab::ADVANCED;
+  ClearBrowsingDataTab tab = static_cast<ClearBrowsingDataTab>(
+      prefs_->GetInteger(browsing_data::prefs::kLastClearBrowsingDataTab));
 
   // Fill origin types.
   // The "cookies" and "hosted apps" UI checkboxes both map to

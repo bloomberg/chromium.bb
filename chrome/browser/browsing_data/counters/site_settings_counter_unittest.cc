@@ -4,11 +4,9 @@
 
 #include "components/browsing_data/content/counters/site_settings_counter.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -25,9 +23,6 @@ namespace {
 class SiteSettingsCounterTest : public testing::Test {
  public:
   SiteSettingsCounterTest() {
-    base::test::ScopedFeatureList feature_list;
-    // Enable tabsInCbd to activate timestamp recording for content-settings.
-    feature_list.InitAndEnableFeature(features::kTabsInCbd);
     profile_ = base::MakeUnique<TestingProfile>();
     map_ = HostContentSettingsMapFactory::GetForProfile(profile());
 #if !defined(OS_ANDROID)

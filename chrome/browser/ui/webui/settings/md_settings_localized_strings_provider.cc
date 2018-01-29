@@ -465,7 +465,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
 #endif
 
   LocalizedString localized_strings[] = {
-      {"clearFollowingItemsFrom", IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM},
       {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
       {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
       {"clearBrowsingHistorySummary",
@@ -480,19 +479,11 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
       {"clearHostedAppData", IDS_SETTINGS_CLEAR_HOSTED_APP_DATA},
       {"clearMediaLicenses", IDS_SETTINGS_CLEAR_MEDIA_LICENSES},
-      {"clearDataHour", IDS_SETTINGS_CLEAR_DATA_HOUR},
-      {"clearDataDay", IDS_SETTINGS_CLEAR_DATA_DAY},
-      {"clearDataWeek", IDS_SETTINGS_CLEAR_DATA_WEEK},
-      {"clearData4Weeks", IDS_SETTINGS_CLEAR_DATA_4WEEKS},
-      {"clearDataEverything", IDS_SETTINGS_CLEAR_DATA_EVERYTHING},
       {"clearPeriodHour", IDS_SETTINGS_CLEAR_PERIOD_HOUR},
       {"clearPeriod24Hours", IDS_SETTINGS_CLEAR_PERIOD_24_HOURS},
       {"clearPeriod7Days", IDS_SETTINGS_CLEAR_PERIOD_7_DAYS},
       {"clearPeriod4Weeks", IDS_SETTINGS_CLEAR_PERIOD_FOUR_WEEKS},
       {"clearPeriodEverything", IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING},
-      {"warnAboutNonClearedData", IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS},
-      {"clearsSyncedData", IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA},
-      {"clearBrowsingDataLearnMoreUrl", IDS_SETTINGS_CLEAR_DATA_LEARN_MORE_URL},
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
       {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
@@ -514,12 +505,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
           base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
-  html_source->AddString(
-      "otherFormsOfBrowsingHistory",
-      l10n_util::GetStringFUTF16(
-          IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER,
-          l10n_util::GetStringUTF16(
-              IDS_SETTINGS_CLEAR_DATA_WEB_HISTORY_URL_IN_FOOTER)));
   html_source->AddString(
       "historyDeletionDialogBody",
       l10n_util::GetStringFUTF16(
@@ -1702,9 +1687,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-
-  html_source->AddBoolean("tabsInCbd",
-                          base::FeatureList::IsEnabled(features::kTabsInCbd));
 
   html_source->AddBoolean(
       "importantSitesInCbd",

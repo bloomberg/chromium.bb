@@ -50,24 +50,21 @@ namespace {
 const int kMaxTimesHistoryNoticeShown = 1;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
-const char* kCounterPrefs[] = {
+const char* kCounterPrefsAdvanced[] = {
     browsing_data::prefs::kDeleteBrowsingHistory,
     browsing_data::prefs::kDeleteCache,
+    browsing_data::prefs::kDeleteCookies,
     browsing_data::prefs::kDeleteDownloadHistory,
     browsing_data::prefs::kDeleteFormData,
     browsing_data::prefs::kDeleteHostedAppsData,
     browsing_data::prefs::kDeleteMediaLicenses,
     browsing_data::prefs::kDeletePasswords,
+    browsing_data::prefs::kDeleteSiteSettings,
 };
 
-// Additional counters for the tabbed ui.
+// Additional counters for the basic tab of CBD.
 const char* kCounterPrefsBasic[] = {
     browsing_data::prefs::kDeleteCacheBasic,
-};
-
-const char* kCounterPrefsAdvanced[] = {
-    browsing_data::prefs::kDeleteCookies,
-    browsing_data::prefs::kDeleteSiteSettings,
 };
 
 const char kRegisterableDomainField[] = "registerableDomain";
@@ -89,11 +86,7 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
       sync_service_observer_(this),
       show_history_footer_(false),
       show_history_deletion_dialog_(false),
-      weak_ptr_factory_(this) {
-  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
-    browsing_data::MigratePreferencesToBasic(profile_->GetPrefs());
-  }
-}
+      weak_ptr_factory_(this) {}
 
 ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 }
@@ -120,32 +113,25 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
     sync_service_observer_.Add(sync_service_);
 
   DCHECK(counters_.empty());
-  for (const std::string& pref : kCounterPrefs) {
+  for (const std::string& pref : kCounterPrefsBasic) {
+    AddCounter(BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
+               browsing_data::ClearBrowsingDataTab::BASIC);
+  }
+  for (const std::string& pref : kCounterPrefsAdvanced) {
     AddCounter(BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
                browsing_data::ClearBrowsingDataTab::ADVANCED);
   }
-  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
-    for (const std::string& pref : kCounterPrefsBasic) {
-      AddCounter(
-          BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
-          browsing_data::ClearBrowsingDataTab::BASIC);
-    }
-    for (const std::string& pref : kCounterPrefsAdvanced) {
-      AddCounter(
-          BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref),
-          browsing_data::ClearBrowsingDataTab::ADVANCED);
-    }
-    PrefService* prefs = profile_->GetPrefs();
-    period_ = std::make_unique<IntegerPrefMember>();
-    period_->Init(browsing_data::prefs::kDeleteTimePeriod, prefs,
-                  base::Bind(&ClearBrowsingDataHandler::HandleTimePeriodChanged,
-                             base::Unretained(this)));
-    periodBasic_ = std::make_unique<IntegerPrefMember>();
-    periodBasic_->Init(
-        browsing_data::prefs::kDeleteTimePeriodBasic, prefs,
-        base::Bind(&ClearBrowsingDataHandler::HandleTimePeriodChanged,
-                   base::Unretained(this)));
-  }
+  PrefService* prefs = profile_->GetPrefs();
+  period_ = std::make_unique<IntegerPrefMember>();
+  period_->Init(
+      browsing_data::prefs::kDeleteTimePeriod, prefs,
+      base::BindRepeating(&ClearBrowsingDataHandler::HandleTimePeriodChanged,
+                          base::Unretained(this)));
+  periodBasic_ = std::make_unique<IntegerPrefMember>();
+  periodBasic_->Init(
+      browsing_data::prefs::kDeleteTimePeriodBasic, prefs,
+      base::BindRepeating(&ClearBrowsingDataHandler::HandleTimePeriodChanged,
+                          base::Unretained(this)));
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {

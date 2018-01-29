@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-clear-browsing-data-dialog-tabs' allows the user to
  * delete browsing data that has been cached by Chromium.
- *
- * This file is a fork of clear_browsing_data_dialog.js until the new CBD UI is
- * launched.
  */
 Polymer({
   is: 'settings-clear-browsing-data-dialog-tabs',
@@ -283,7 +280,7 @@ Polymer({
     this.clearingInProgress_ = true;
     const tab = this.$.tabs.selectedItem;
 
-    checkboxes = tab.querySelectorAll('settings-checkbox');
+    const checkboxes = tab.querySelectorAll('settings-checkbox');
     const dataTypes = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked)

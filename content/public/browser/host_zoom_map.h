@@ -174,9 +174,6 @@ class HostZoomMap {
   virtual void ClearZoomLevels(base::Time delete_begin,
                                base::Time delete_end) = 0;
 
-  // Set whether the map should keep track of modification timestamps.
-  virtual void SetStoreLastModified(bool store_last_modified) = 0;
-
   // Clears the temporary zoom level stored for this WebContents.
   //
   // This should only be called on the UI thread.

@@ -54,7 +54,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSoundContentSetting,
     &features::kVrBrowsing,
     &features::kWebPayments,
-    &features::kTabsInCbd,
     &kAdjustWebApkInstallationSpace,
     &kAllowReaderForAccessibility,
     &kAndroidPayIntegrationV1,

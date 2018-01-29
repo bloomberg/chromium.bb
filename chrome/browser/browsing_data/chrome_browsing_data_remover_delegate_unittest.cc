@@ -2104,8 +2104,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveAllClientHints) {
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveZoomLevel) {
   content::HostZoomMap* zoom_map =
       content::HostZoomMap::GetDefaultForBrowserContext(GetProfile());
-  zoom_map->SetStoreLastModified(true);
-
   EXPECT_EQ(0u, zoom_map->GetAllZoomLevels().size());
 
   base::SimpleTestClock test_clock;

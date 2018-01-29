@@ -347,9 +347,6 @@ void ChromeZoomLevelPrefs::InitHostZoomMap(
 
   // Initialize the default zoom level.
   host_zoom_map_->SetDefaultZoomLevel(GetDefaultZoomLevelPref());
-  // Record timestamps if zoomlevels can be deleted in ClearBrowsingData.
-  bool store_last_modified = base::FeatureList::IsEnabled(features::kTabsInCbd);
-  host_zoom_map->SetStoreLastModified(store_last_modified);
 
   // Initialize the HostZoomMap with per-host zoom levels from the persisted
   // zoom-level preference values.
