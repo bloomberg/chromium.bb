@@ -100,8 +100,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                             @Override
                             public void onCaptureCompleted(CameraCaptureSession session,
                                     CaptureRequest request, TotalCaptureResult result) {
-                                mLastExposureTimeNs =
+                                // Since |result| is not guaranteed to contain a value for
+                                // key |SENSOR_EXPOSURE_TIME| we have to check for null.
+                                Long exposure_time_value =
                                         result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+                                if (exposure_time_value == null) return;
+                                mLastExposureTimeNs = exposure_time_value;
                             }
                         }, null);
 
